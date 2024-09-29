@@ -1,34 +1,34 @@
 ﻿namespace BossMod.Autorotation;
 
-[ConfigDisplay(Name = "Autorotation", Order = 5)]
+[ConfigDisplay(Name = "自动循环", Order = 5)]
 public sealed class AutorotationConfig : ConfigNode
 {
-    [PropertyDisplay("Show in-game UI")]
+    [PropertyDisplay("在游戏中显示 UI")]
     public bool ShowUI = false;
 
     public enum DtrStatus
     {
-        [PropertyDisplay("Disabled")]
+        [PropertyDisplay("禁用")]
         None,
-        [PropertyDisplay("Text only")]
+        [PropertyDisplay("仅文本")]
         TextOnly,
-        [PropertyDisplay("With icon")]
+        [PropertyDisplay("带图标")]
         Icon
     }
 
-    [PropertyDisplay("Show autorotation preset in the server info bar")]
+    [PropertyDisplay("在服务器信息条中显示自动循环预设")]
     public DtrStatus ShowDTR = DtrStatus.None;
 
-    [PropertyDisplay("Show positional hints in world", tooltip: "Show tips for positional abilities, indicating to move to the flank or rear of your target")]
+    [PropertyDisplay("在世界中显示位置提示", tooltip: "显示关于位置能力的提示，指示移动到目标的侧面或后方")]
     public bool ShowPositionals = false;
 
-    [PropertyDisplay("Automatically disable autorotation when exiting combat")]
+    [PropertyDisplay("退出战斗时自动禁用自动循环")]
     public bool ClearPresetOnCombatEnd = false;
 
-    [PropertyDisplay("Automatically reenable force-disabled autorotation when exiting combat")]
+    [PropertyDisplay("退出战斗时自动重新启用强制禁用的自动循环")]
     public bool ClearForceDisableOnCombatEnd = true;
 
-    [PropertyDisplay("Early pull threshold", tooltip: "If someone enters combat with a boss when the countdown is longer than this value, it's consider a ninja-pull and autorotation is force disabled")]
+    [PropertyDisplay("提前拉怪阈值", tooltip: "如果有人在倒计时超过该值时与 Boss 进入战斗，则视为忍者拉怪，自动循环被强制禁用")]
     [PropertySlider(0, 30, Speed = 1)]
     public float EarlyPullThreshold = 1.5f;
 }

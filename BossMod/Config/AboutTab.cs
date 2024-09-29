@@ -17,49 +17,48 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
     public void Draw()
     {
         using var wrap = ImRaii.TextWrapPos(0);
-
-        ImGui.TextUnformatted("BossModReborn (BMR) provides boss fight radar, auto-rotation, cooldown planning, and AI. All of its modules can be toggled individually. Support for it can be found in the Discord server linked at the bottom of this tab.");
-        ImGui.TextUnformatted("This is a FORK of veyn's BossMod (VBM). Please do not ask him for any support for problems you encounter while using this fork. Instead ask for support on the Combat Reborn Discord.");
-        ImGui.TextUnformatted("Please also make sure to not load VBM and this fork at the same time. The consequences of doing that are unexplored and unsupported.");
+        
+        
+        ImGui.TextUnformatted("BossModReborn (vbm) 提供了boss战雷达、自动循环、冷却规划和AI功能。所有模块都可以单独切换。支持信息可以在此标签页底部链接的Discord服务器中找到。");
         ImGui.Spacing();
         DrawSection("Radar",
         [
-            "Provides an on-screen window that contains an area mini-map showing player positions, boss position(s), various imminent AOEs, and other mechanics.",
-            "Useful because you don't have to remember what ability names mean.",
-            "See exactly whether you're getting clipped by incoming AOEs or not.",
-            "Enabled for supported bosses, visible in the \"Supported bosses\" tab.",
+            "雷达 提供一个屏幕窗口，包含显示玩家位置、boss位置、即将到来的AoE以及其他机制的区域小地图。",
+            "很有用，因为你不需要记住技能名称的含义。",
+            "你可以准确地看到自己是否会被即将到来的AoE击中。",
+            "针对支持的boss启用，在'支持的boss'标签页中可见。",
         ]);
         ImGui.Spacing();
         DrawSection("Autorotation",
         [
-            "Executes fully optimal rotations to the best of its ability.",
-            "Go to the \"Autorotation presets\" tab to create a preset.",
-            "Maturity of each rotation module is present in a tooltip.",
-            "Guide for using this feature can be found on the wiki.",
+            "自动循环 尽最大可能执行完全优化的循环。",
+            "前往'自动循环预设'标签页创建预设。 ",
+            "每个循环模块的成熟度可以通过工具提示查看。",
+            "使用该功能的指南可在项目的GitHub wiki上找到",
         ]);
         ImGui.Spacing();
-        DrawSection("Cooldown planner",
+        DrawSection("CD Planner",
         [
-            "Creates a CD plan for supported bosses.",
-            "Replaces autorotations in specific fights.",
-            "Allows you to time specific abilities to cast at specific times.",
-            "Guide for using this feature can be found on the wiki.",
+            "冷却规划 为支持的boss创建冷却计划。",
+            "在特定战斗中替代自动循环。",
+            "允许你在特定时间施放特定技能。",
+            "使用该功能的指南可在项目的GitHub wiki上找到。",
         ]);
         ImGui.Spacing();
         DrawSection("AI",
         [
-            "Automates movement during boss fights.",
-            "Automatically moves your character based on safe zones determined by a boss's module, visible on the radar.",
-            "Should not be used in when playing with unknown players.",
-            "Can be hooked by other plugins to automate entire duties.",
+            "AI 在boss战中自动移动。",
+            "根据boss模块确定的安全区域自动移动角色，显示在雷达上。",
+            "不应在任何组队内容中使用。",
+            "可以与其他插件连接以自动执行整个任务。",
         ]);
         ImGui.Spacing();
         DrawSection("Replays",
         [
-            "Useful for creating boss modules, analyzing problems with them, and making CD plans.",
-            "When asking for help, make sure to provide a replay! Please note that replays will contain your player name!",
-            "Enabled in Settings > Show replay management UI (or enable auto recording).",
-            $"Files are located in '{replayDir}'.",
+            "回放 对创建boss模块、分析问题以及制作冷却计划非常有用。 ",
+            "寻求帮助时，请确保提供回放！请注意，回放中会包含你的玩家名称！",
+            "在设置中启用 > 显示回放管理UI（或启用自动录制）。",
+            $"文件位于 '{replayDir}'。",
         ]);
         ImGui.Spacing();
         ImGui.Spacing();
@@ -77,6 +76,11 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         if (ImGui.Button("Open replay folder", new(180, 0)) && replayDir != null)
             _lastErrorMessage = OpenDirectory(replayDir);
 
+        if (ImGui.Button("爱发电", new(180, 0)))
+        {
+            _lastErrorMessage = OpenLink("https://afdian.com/a/a_44451516");
+        }
+        
         if (_lastErrorMessage.Length > 0)
         {
             using var color = ImRaii.PushColor(ImGuiCol.Text, Colors.TextColor3);

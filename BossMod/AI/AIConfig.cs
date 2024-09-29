@@ -1,48 +1,48 @@
 ﻿namespace BossMod.AI;
 
-[ConfigDisplay(Name = "AI configuration (AI is very experimental, use at your own risk!)", Order = 6)]
+[ConfigDisplay(Name = "AI 配置 (AI 处于非常实验阶段，请自行承担风险！)", Order = 6)]
 sealed class AIConfig : ConfigNode
 {
-    [PropertyDisplay("Show status in DTR bar")]
+    [PropertyDisplay("在 DTR 条中显示状态")]
     public bool ShowDTR = false;
 
-    [PropertyDisplay("Show AI interface")]
+    [PropertyDisplay("显示 AI 界面")]
     public bool DrawUI = true;
 
-    [PropertyDisplay("Focus target master")]
+    [PropertyDisplay("关注目标领导")]
     public bool FocusTargetLeader = true;
 
-    [PropertyDisplay("Broadcast keypresses to other windows")]
+    [PropertyDisplay("将按键广播到其他窗口")]
     public bool BroadcastToSlaves = false;
 
-    [PropertyDisplay("Follow party slot")]
+    [PropertyDisplay("跟随小队位置")]
     public int FollowSlot = 0;
 
-    [PropertyDisplay("Forbid actions")]
+    [PropertyDisplay("禁止动作")]
     public bool ForbidActions = false;
 
-    [PropertyDisplay("Forbid movement")]
+    [PropertyDisplay("禁止移动")]
     public bool ForbidMovement = false;
 
-    [PropertyDisplay("Follow during combat")]
+    [PropertyDisplay("战斗中跟随")]
     public bool FollowDuringCombat = false;
 
-    [PropertyDisplay("Follow during active boss module")]
+    [PropertyDisplay("在主动 Boss 模块期间跟随")]
     public bool FollowDuringActiveBossModule = false;
 
-    [PropertyDisplay("Follow out of combat")]
+    [PropertyDisplay("战斗外跟随")]
     public bool FollowOutOfCombat = false;
 
-    [PropertyDisplay("Follow target")]
+    [PropertyDisplay("跟随目标")]
     public bool FollowTarget = false;
 
-    [PropertyDisplay("Desired positional when following target")]
-    [PropertyCombo(["Any", "Flank", "Rear", "Front"])]
+    [PropertyDisplay("跟随目标时期望位置")]
+    [PropertyCombo(["任何", "侧面", "后方", "前方"])]
     public Positional DesiredPositional = Positional.Any;
 
-    [PropertyDisplay("Max distance to slot")]
+    [PropertyDisplay("到插槽的最大距离")]
     public float MaxDistanceToSlot = 1;
 
-    [PropertyDisplay("Max distance to target")]
+    [PropertyDisplay("到目标的最大距离")]
     public float MaxDistanceToTarget = 2.6f;
 }
