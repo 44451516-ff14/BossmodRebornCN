@@ -28,10 +28,10 @@ public class Cleave(BossModule module, ActionID aid, AOEShape shape, uint enemyO
             if (actor != target)
                 hints.AddForbiddenZone(Shape, origin.Position, angle, NextExpected);
             else
-                AddTargetSpecificHints(actor, origin.Position, angle, hints);
+                AddTargetSpecificHints(actor, origin, angle, hints);
     }
 
-    private void AddTargetSpecificHints(Actor actor, WPos origin, Angle angle, AIHints hints)
+    private void AddTargetSpecificHints(Actor actor, Actor source, Angle angle, AIHints hints)
     {
         switch (Shape)
         {
@@ -41,13 +41,13 @@ public class Cleave(BossModule module, ActionID aid, AOEShape shape, uint enemyO
                 break;
 
             case AOEShapeCone cone:
-                if (Raid.WithoutSlot().Exclude(actor).InShape(cone, origin, angle).Any())
-                    hints.AddForbiddenZone(ShapeDistance.Cone(origin, 100, angle, cone.HalfAngle));
+                foreach (var a in Raid.WithoutSlot().Exclude(actor))
+                    hints.AddForbiddenZone(ShapeDistance.Cone(source.Position, 100, source.AngleTo(a), cone.HalfAngle));
                 break;
 
             case AOEShapeRect rect:
-                if (Raid.WithoutSlot().Exclude(actor).InShape(rect, origin, angle).Any())
-                    hints.AddForbiddenZone(ShapeDistance.Rect(origin, angle, 100, default, rect.HalfWidth));
+                foreach (var a in Raid.WithoutSlot().Exclude(actor))
+                    hints.AddForbiddenZone(ShapeDistance.Rect(source.Position, source.AngleTo(a), 100, default, rect.HalfWidth));
                 break;
         }
     }

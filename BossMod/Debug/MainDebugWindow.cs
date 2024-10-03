@@ -29,7 +29,7 @@ class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ActionManage
         _debugClassDefinitions.Dispose();
         _debugAddon.Dispose();
         // _debugCollision.Dispose();
-        //_debugVfx.Dispose();
+        // _debugVfx.Dispose();
         base.Dispose(disposing);
     }
 
@@ -110,6 +110,10 @@ class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ActionManage
         if (ImGui.CollapsingHeader("Duty actions"))
         {
             _debugAction.DrawDutyActions();
+        }
+        if (ImGui.CollapsingHeader("Auto attacks"))
+        {
+            _debugAction.DrawAutoAttack();
         }
         if (ImGui.CollapsingHeader("Hate"))
         {

@@ -21,6 +21,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 870, // Boss->player, no cast, single-target
+
     ScorchingLeft = 18275, // Boss->self, 5.0s cast, range 40 180-degree cone
     ScorchingRight = 18274, // Boss->self, 5.0s cast, range 40 180-degree cone
     BlackFlame = 18269, // Helper->players, no cast, range 6 circle
@@ -184,8 +185,11 @@ class BlackFlame(BossModule module) : Components.GenericBaitAway(module)
 }
 
 class OtherworldlyHeat(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.OtherworldlyHeat), new AOEShapeCross(10, 2));
-class ScorchingLeft(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ScorchingLeft), new AOEShapeCone(40, 90.Degrees()));
-class ScorchingRight(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ScorchingRight), new AOEShapeCone(40, 90.Degrees()));
+
+abstract class Scorching(BossModule module, AID aid) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 90.Degrees()));
+class ScorchingLeft(BossModule module) : Scorching(module, AID.ScorchingLeft);
+class ScorchingRight(BossModule module) : Scorching(module, AID.ScorchingRight);
+
 class CullingBlade(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CullingBlade));
 class CaptiveBolt(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.CaptiveBolt));
 class FiresIre(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.FiresIre), new AOEShapeCone(20, 45.Degrees()));

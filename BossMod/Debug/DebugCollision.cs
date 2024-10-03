@@ -528,8 +528,9 @@
 //     private void VisualizeOBB(Vector3 min, Vector3 max, CollisionObjectShape* obj) => Camera.Instance?.DrawWorldOBB(min, max, obj->World.M, Colors.Safe);
 //     private void VisualizeVertex(Vector3 v, CollisionObjectShape* obj) => Camera.Instance?.DrawWorldSphere(SharpDX.Vector3.TransformCoordinate(new(v.X, v.Y, v.Z), obj->World.M).ToSystem(), 0.1f, Colors.Danger);
 
-//     private void VisualizePrimitive(CollisionShapePCBData* data, int iPrim, CollisionObjectShape* obj, uint color = Colors.Danger)
+//     private void VisualizePrimitive(CollisionShapePCBData* data, int iPrim, CollisionObjectShape* obj, uint color = 0)
 //     {
+//         var colors = color == 0 ? Colors.Danger : color;
 //         var pRaw = (float*)(data + 1);
 //         var pCompr = (ushort*)(pRaw + 3 * data->NumVertsRaw);
 //         var pPrim = (CollisionShapePrimitive*)(pCompr + 3 * data->NumVertsCompressed);
@@ -541,19 +542,20 @@
 //         var w1 = SharpDX.Vector3.TransformCoordinate(new(v1.X, v1.Y, v1.Z), w).ToSystem();
 //         var w2 = SharpDX.Vector3.TransformCoordinate(new(v2.X, v2.Y, v2.Z), w).ToSystem();
 //         var w3 = SharpDX.Vector3.TransformCoordinate(new(v3.X, v3.Y, v3.Z), w).ToSystem();
-//         Camera.Instance?.DrawWorldLine(w1, w2, color);
-//         Camera.Instance?.DrawWorldLine(w2, w3, color);
-//         Camera.Instance?.DrawWorldLine(w3, w1, color);
+//         Camera.Instance?.DrawWorldLine(w1, w2, colors);
+//         Camera.Instance?.DrawWorldLine(w2, w3, colors);
+//         Camera.Instance?.DrawWorldLine(w3, w1, colors);
 //     }
 
-//     private void VisualizeShape(CollisionShapePCBData* data, CollisionObjectShape* obj, uint color = Colors.Danger)
+//     private void VisualizeShape(CollisionShapePCBData* data, CollisionObjectShape* obj, uint color = 0)
 //     {
+//         var colors = color == 0 ? Colors.Danger : color;
 //         for (int i = 0; i < data->NumPrims; ++i)
 //             VisualizePrimitive(data, i, obj, color);
 //         if (data->Child1Offset != 0)
-//             VisualizeShape((CollisionShapePCBData*)((byte*)data + data->Child1Offset), obj, color);
+//             VisualizeShape((CollisionShapePCBData*)((byte*)data + data->Child1Offset), obj, colors);
 //         if (data->Child2Offset != 0)
-//             VisualizeShape((CollisionShapePCBData*)((byte*)data + data->Child2Offset), obj, color);
+//             VisualizeShape((CollisionShapePCBData*)((byte*)data + data->Child2Offset), obj, colors);
 //     }
 
 //     private void VisualizeObject(CollisionObjectBase* obj)

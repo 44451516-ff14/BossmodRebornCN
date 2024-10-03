@@ -77,9 +77,9 @@ public sealed class ConfigUI : IDisposable
 
     private static readonly Dictionary<string, string> _availableAICommands = new()
     {
-        { "on", "Enables the AI." },
-        { "off", "Disables the AI." },
-        { "toggle", "Toggles the AI on/off." },
+        { "on", "开启AI" },
+        { "off", "关闭AI " },
+        { "toggle", "切换 the AI on/off." },
         { "targetmaster", "Toggles the focus on target leader." },
         { "follow slotX", "Follows the specified slot, eg. Slot1." },
         { "follow name", "Follows the specified party member by name." },

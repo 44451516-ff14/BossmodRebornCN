@@ -1,4 +1,4 @@
-﻿namespace BossMod.Shadowbringers.Dungeon.D02DohnMheg.D031AencThon;
+namespace BossMod.Shadowbringers.Dungeon.D02DohnMheg.D031AencThon;
 
 public enum OID : uint
 {
@@ -106,7 +106,7 @@ class FunambulistsFantasia(BossModule module) : BossComponent(module)
     }
 }
 
-class Finale(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Finale), $"Enrage, destroy the Liar's Lyre!", true);
+class Finale(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Finale), "Enrage, destroy the Liar's Lyre!", true);
 
 class CorrosiveBile(BossModule module) : Components.GenericAOEs(module)
 {

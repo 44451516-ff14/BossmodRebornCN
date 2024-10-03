@@ -29,20 +29,6 @@ public enum OID : uint
     DragonEyeSW = 0x1E9E2C, // R2.000, x1, EventObj type
     DragonEyeW = 0x1E9E2D, // R2.000, x1, EventObj type
     DragonEyeNW = 0x1E9E2E, // R2.000, x1, EventObj type
-
-    //_Gen_Actor1e9e2f = 0x1E9E2F, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e30 = 0x1E9E30, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e31 = 0x1E9E31, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e32 = 0x1E9E32, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e33 = 0x1E9E33, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e34 = 0x1E9E34, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e35 = 0x1E9E35, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e36 = 0x1E9E36, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9e37 = 0x1E9E37, // R2.000, x1, EventObj type
-
-    //_Gen_Actor1e9e3b = 0x1E9E3B, // R2.000, x1, EventObj type
-    //_Gen_Actor1e9b99 = 0x1E9B99, // R2.000, x1, EventObj type
-    //_Gen_Actor1e8536 = 0x1E8536, // R2.000, x1, EventObj type
 }
 
 public enum AID : uint
@@ -93,6 +79,7 @@ public enum AID : uint
     HiemalStormAOE = 35310, // Helper->players, no cast, range 6 circle spread
     HolyMeteor = 35311, // Noudenet->self, 3.0s cast, single-target, visual (prey icons)
     CometImpact = 35314, // CometCircle->self, no cast, range 80+R circle (raidwide if small comet is not killed in time)
+    MeteorImpact = 35315, // MeteorCircle->self, no cast, range 80+R circle (raidwide if big comet is not killed in time)
     TargetedComet = 35316, // Helper->location, no cast, range 4 circle (spread for prey targets)
     HeavyImpactVisual = 35294, // Guerrique->self, no cast, single-target, visual (expanding aoes start)
     HeavyImpactAOE1 = 35295, // Helper->self, 3.0s cast, range 6+R 270?-degree cone

@@ -1,8 +1,8 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  8 September 2023                                                *
+* Date      :  5 July 2024                                                     *
 * Website   :  http://www.angusj.com                                           *
-* Copyright :  Angus Johnson 2010-2023                                         *
+* Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  FAST rectangular clipping                                       *
 * License   :  http://www.boost.org/LICENSE_1_0.txt                            *
 *******************************************************************************/
@@ -498,6 +498,23 @@ namespace Clipper2Lib
       } // switch
     }
 
+    private bool StartLocsAreClockwise(List<Location> startLocs)
+    {
+      int result = 0;
+      for (int i = 1; i < startLocs.Count; i++)
+      {
+        int d = (int)startLocs[i] - (int)startLocs[i - 1];
+        switch (d)
+        {
+          case -1: result -= 1; break;
+          case 1: result += 1; break;
+          case -3: result += 1; break;
+          case 3: result -= 1; break;
+        }
+      }
+      return result > 0;
+    }
+
     private void ExecuteInternal(Path64 path)
     {
       if (path.Count < 3 || rect_.IsEmpty()) return;      
@@ -624,10 +641,12 @@ namespace Clipper2Lib
           if (pathBounds_.Contains(rect_) &&
             Path1ContainsPath2(path, rectPath_))
           {
+            bool startLocsClockwise = StartLocsAreClockwise(startLocs);
             for (int j = 0; j < 4; j++)
             {
-              Add(rectPath_[j]);
-              AddToEdge(edges_[j * 2], results_[0]!);
+              int k = startLocsClockwise ? j : 3 - j; // ie reverse result path
+              Add(rectPath_[k]);
+              AddToEdge(edges_[k * 2], results_[0]!);
             }
           }
         }
@@ -694,8 +713,8 @@ namespace Clipper2Lib
         if (op == null) continue;
         do
         {
-          if (InternalClipper.CrossProduct(
-            op2!.prev!.pt, op2.pt, op2.next!.pt) == 0)
+          if (InternalClipper.IsCollinear(
+            op2!.prev!.pt, op2.pt, op2.next!.pt))
           {
             if (op2 == op)
             {
@@ -930,8 +949,8 @@ namespace Clipper2Lib
       OutPt2? op2 = op.next;
       while (op2 != null && op2 != op)
       {
-        if (InternalClipper.CrossProduct(
-          op2.prev!.pt, op2.pt, op2.next!.pt) == 0)
+        if (InternalClipper.IsCollinear(
+          op2.prev!.pt, op2.pt, op2.next!.pt))
         {
           op = op2.prev;
           op2 = UnlinkOp(op2);
@@ -1014,6 +1033,7 @@ namespace Clipper2Lib
         if (i > highI)
         {
           foreach (Point64 pt in path) Add(pt);
+          return;
         }                   
         if (prev == Location.inside) loc = Location.inside;
         i = 1;
@@ -1050,7 +1070,7 @@ namespace Clipper2Lib
           // intersect pt but we'll also need the first intersect pt (ip2)
           crossingLoc = prev;
           GetIntersection(rectPath_, prevPt, path[i], ref crossingLoc, out Point64 ip2);
-          Add(ip2);
+          Add(ip2, true);
           Add(ip);
         }
         else // path must be exiting rect

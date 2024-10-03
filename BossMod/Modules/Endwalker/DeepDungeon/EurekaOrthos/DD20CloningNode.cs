@@ -70,7 +70,7 @@ class FlameBreath(BossModule module) : Components.GenericAOEs(module)
         return false;
     }
 
-    private static WPos RoundPosition(WPos position) => new(MathF.Round(position.X * 2) / 2, MathF.Round(position.Z * 2) / 2);
+    private static WPos RoundPosition(WPos position) => new(MathF.Round(position.X * 2) * 0.5f, MathF.Round(position.Z * 2) * 0.5f);
 }
 
 class PiercingLaser(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.PiercingLaser), new AOEShapeRect(40, 2.5f));

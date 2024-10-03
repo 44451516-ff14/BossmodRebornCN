@@ -43,7 +43,7 @@ sealed class AIManagementWindow : UIWindow
     {
         ImGui.TextUnformatted($"Navi={_manager.Controller.NaviTargetPos}");
         _manager.Beh?.DrawDebug();
-        ImGui.Text("Follow party slot");
+        ImGui.Text("跟随队伍位置");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
         ImGui.SetNextWindowSizeConstraints(new Vector2(0, 0), new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
@@ -64,7 +64,7 @@ sealed class AIManagementWindow : UIWindow
                 }
             }
         }
-        ImGui.Text("Desired positional");
+        ImGui.Text("期望位置");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100);
         var positionalOptions = Enum.GetNames(typeof(Positional));
@@ -102,7 +102,8 @@ sealed class AIManagementWindow : UIWindow
                 _config.Modified.Fire();
             }
         }
-        ImGui.Text("Autorotation AI preset");
+        // ImGui.Text("Autorotation AI preset");
+        ImGui.Text("AI预设");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
         ImGui.SetNextWindowSizeConstraints(new Vector2(0, 0), new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));

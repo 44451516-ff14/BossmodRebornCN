@@ -13,7 +13,7 @@ class OpList(Replay replay, Replay.Encounter? enc, ModuleRegistry.Info? moduleIn
     public static readonly HashSet<uint> BoringOIDs = [0x3E1A, 0x3E1B, 0x3E1C, 0x447E, 0x447D, 0x4480, 0x4583, 0x447F, 0x4584, 0x4570, 0x4256, 0x260E, 0x260B,
     0x2630, 0x2611, 0x2610, 0x2617, 0x2608, 0x2613, 0x2618, 0x2609, 0x261A, 0x262F, 0x2609, 0x2614, 0x2664, 0x2668, 0x2619, 0x2631, 0x2632, 0x260A, 0x2616, 0x2667,
     0x2E7F, 0x2F33, 0x2F32, 0x2F38, 0x2E80, 0x2E82, 0x2E81, 0x2F36, 0x2E7D, 0x2F35, 0x2EB0, 0x2F31, 0x2F37, 0x2E7C, 0x2E7B, 0x2EAE, 0x2F3A, 0x2F30, 0x2E7E, 0x2EAF,
-     ];
+    0x428B ];
     private readonly HashSet<ActionID> _filteredActions = [];
     private readonly HashSet<uint> _filteredStatuses = [];
     private readonly HashSet<uint> _filteredDirectorUpdateTypes = [];
@@ -109,7 +109,7 @@ class OpList(Replay replay, Replay.Encounter? enc, ModuleRegistry.Info? moduleIn
             ActorState.OpHPMP => false,
             ActorState.OpTargetable op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpDead op => FilterInterestingActor(op.InstanceID, op.Timestamp, true),
-            ActorState.OpCombat => false,
+            ActorState.OpCombat op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpEventState op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpTarget op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpCastInfo op => FilterInterestingActor(op.InstanceID, op.Timestamp, false) && !_filteredActions.Contains(FindCast(replay.FindParticipant(op.InstanceID, op.Timestamp), op.Timestamp, op.Value != null)?.ID ?? new()),

@@ -95,7 +95,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         // now give class module a chance to improve targeting
         // typically it would switch targets for multidotting, or to hit more targets with AOE
         // in case of ties, it should prefer to return original target - this would prevent useless switches
-        var targeting = new Targeting(target!, autorot.Hints.RecommendedRangeToTarget - 0.1f);
+        var targeting = new Targeting(target!, player.Role is Role.Melee or Role.Tank ? 2.9f : 24.5f);
 
         var pos = autorot.Hints.RecommendedPositional;
         if (pos.Target != null && targeting.Target.Actor == pos.Target)
@@ -220,17 +220,19 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
     {
         var configModified = false;
 
-        configModified |= ImGui.Checkbox("Forbid actions", ref _config.ForbidActions);
+    
+      
+        configModified |= ImGui.Checkbox("禁止动作", ref _config.ForbidActions);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("Forbid movement", ref _config.ForbidMovement);
+        configModified |= ImGui.Checkbox("禁止移动", ref _config.ForbidMovement);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("Follow during combat", ref _config.FollowDuringCombat);
+        configModified |= ImGui.Checkbox("战斗中跟随", ref _config.FollowDuringCombat);
         ImGui.Spacing();
-        configModified |= ImGui.Checkbox("Follow during active boss module", ref _config.FollowDuringActiveBossModule);
+        configModified |= ImGui.Checkbox("激活Boss模块时跟随", ref _config.FollowDuringActiveBossModule);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("Follow out of combat", ref _config.FollowOutOfCombat);
+        configModified |= ImGui.Checkbox("非战斗中跟随", ref _config.FollowOutOfCombat);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("Follow target", ref _config.FollowTarget);
+        configModified |= ImGui.Checkbox("跟随目标", ref _config.FollowTarget);
 
         if (configModified)
             _config.Modified.Fire();

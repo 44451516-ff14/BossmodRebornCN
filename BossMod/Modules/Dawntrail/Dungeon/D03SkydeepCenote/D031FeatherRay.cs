@@ -146,7 +146,7 @@ class WorrisomeWavePlayer(BossModule module) : Components.GenericBaitAway(module
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if ((AID)spell.Action.ID == AID.WorrisomeWave1)
-            CurrentBaits.AddRange(Raid.WithoutSlot().Select(p => new Bait(p, p, cone)));
+            CurrentBaits.AddRange(Raid.WithoutSlot().Select(p => new Bait(p, p, cone, WorldState.FutureTime(6.3f))));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

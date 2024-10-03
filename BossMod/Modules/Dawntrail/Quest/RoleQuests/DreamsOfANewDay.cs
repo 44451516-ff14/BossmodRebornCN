@@ -4,7 +4,6 @@ public enum OID : uint
 {
     Boss = 0x4481, // R1.5
     BossP2 = 0x44A1, // R1.5
-    LoazenikweTheShutEye = 0x447E, // R0.5
     TentoawaTheWideEye = 0x447D, // R0.5
     UnboundRavager1 = 0x4484, // R0.5
     UnboundRavager2 = 0x4572, // R0.5
@@ -169,11 +168,10 @@ public class DreamsOfANewDay(WorldState ws, Actor primary) : BossModule(ws, prim
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(OID.BossP2).Concat([PrimaryActor]));
-        Arena.Actors(Enemies(OID.LoazenikweTheShutEye).Concat(Enemies(OID.TentoawaTheWideEye)), Colors.Vulnerable);
-        Arena.Actors(Enemies(OID.UnboundRaider1).Concat(Enemies(OID.UnboundRaider2)).Concat(Enemies(OID.UnboundRaider3)).Concat(Enemies(OID.UnboundRaider4))
-        .Concat(Enemies(OID.UnboundRavager1)).Concat(Enemies(OID.UnboundRavager2)).Concat(Enemies(OID.UnboundRavager3)).Concat(Enemies(OID.UnboundRavager4))
-        .Concat(Enemies(OID.UnboundRavager5)).Concat(Enemies(OID.UnboundRavager6).Concat(Enemies(OID.UnboundRavager7))).Concat(Enemies(OID.UnboundRavager8)));
+        Arena.Actors(Enemies(OID.BossP2).Concat([PrimaryActor]).Concat(Enemies(OID.UnboundRaider1)).Concat(Enemies(OID.UnboundRaider2))
+        .Concat(Enemies(OID.UnboundRaider3)).Concat(Enemies(OID.UnboundRaider4)).Concat(Enemies(OID.UnboundRavager1)).Concat(Enemies(OID.UnboundRavager2))
+        .Concat(Enemies(OID.UnboundRavager3)).Concat(Enemies(OID.UnboundRavager4)).Concat(Enemies(OID.UnboundRavager5)).Concat(Enemies(OID.UnboundRavager6)
+        .Concat(Enemies(OID.UnboundRavager7))).Concat(Enemies(OID.UnboundRavager8)));
     }
 
     protected override bool CheckPull() => Raid.WithoutSlot().Any(x => x.InCombat);

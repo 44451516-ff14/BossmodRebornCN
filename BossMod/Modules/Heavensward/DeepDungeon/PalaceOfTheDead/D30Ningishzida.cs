@@ -3,8 +3,8 @@ namespace BossMod.Heavensward.DeepDungeon.PalaceoftheDead.D30Ningishzida;
 public enum OID : uint
 {
     Boss = 0x16AC, // R4.800, x1
-    BallofFirePuddle = 0x1E8D9B, // R0.500, x0 (spawn during fight), EventObj type
-    BallofIcePuddle = 0x1E8D9C, // R0.500, x0 (spawn during fight), EventObj type
+    FireVoidPuddle = 0x1E8D9B, // R0.500, x0 (spawn during fight), EventObj type
+    IceVoidPuddle = 0x1E8D9C, // R0.500, x0 (spawn during fight), EventObj type
 }
 
 public enum AID : uint
@@ -17,15 +17,31 @@ public enum AID : uint
 }
 
 class Dissever(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Dissever), new AOEShapeCone(10.8f, 45.Degrees()), activeWhileCasting: false);
-class BallofFire(BossModule module) : Components.PersistentVoidzone(module, 6, m => m.Enemies(OID.BallofFirePuddle).Where(z => z.EventState != 7));
-class BallofIce(BossModule module) : Components.PersistentVoidzone(module, 6, m => m.Enemies(OID.BallofIcePuddle).Where(z => z.EventState != 7));
+class BallofFire(BossModule module) : Components.PersistentVoidzone(module, 6, m => m.Enemies(OID.FireVoidPuddle).Where(z => z.EventState != 7));
+class BallofIce(BossModule module) : Components.PersistentVoidzone(module, 6, m => m.Enemies(OID.IceVoidPuddle).Where(z => z.EventState != 7));
 class FearItself(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.FearItself), new AOEShapeDonut(5, 50));
 
 class Hints(BossModule module) : BossComponent(module)
 {
+    public int NumCasts { get; private set; }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if ((AID)spell.Action.ID is AID.BallOfFire or AID.BallOfIce or AID.FearItself)
+            ++NumCasts;
+
+        if (NumCasts >= 5)
+        {
+            NumCasts = 0;
+        }
+    }
+
     public override void AddGlobalHints(GlobalHints hints)
     {
-        hints.Add($" Bait the boss away from the middle of the arena. \n {Module.PrimaryActor.Name} will cast x2 Fire Puddles & x2 Ice Puddles, after the 4th puddle is dropped, run to the middle.");
+        if (NumCasts < 4)
+            hints.Add($"Bait the boss away from the middle of the arena. \n{Module.PrimaryActor.Name} will cast x2 Fire Puddles & x2 Ice Puddles. \nAfter the 4th puddle is dropped, run to the middle.");
+        if (NumCasts >= 4)
+            hints.Add($"Run to the middle of the arena! \n{Module.PrimaryActor.Name} is about to cast a donut AOE!");
     }
 }
 

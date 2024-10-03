@@ -99,6 +99,8 @@ public sealed class Plugin : IDalamudPlugin
         dalamud.UiBuilder.DisableAutomaticUiHide = true;
         dalamud.UiBuilder.Draw += DrawUI;
         dalamud.UiBuilder.OpenConfigUi += () => OpenConfigUI();
+
+        _ = new ConfigChangelogWindow();
     }
 
     public void Dispose()

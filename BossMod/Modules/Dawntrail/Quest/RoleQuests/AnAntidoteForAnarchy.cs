@@ -180,8 +180,6 @@ public class AnAntidoteForAnarchy(WorldState ws, Actor primary) : BossModule(ws,
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.LoashkanaTheLeal), Colors.Vulnerable);
-        Arena.Actors(Enemies(OID.KAModelMammet).Concat(Enemies(OID.KRModelMammet)).Concat(Enemies(OID.SuffocatingCloud)));
+        Arena.Actors(Enemies(OID.KAModelMammet).Concat(Enemies(OID.KRModelMammet)).Concat(Enemies(OID.SuffocatingCloud)).Concat([PrimaryActor]));
     }
 }

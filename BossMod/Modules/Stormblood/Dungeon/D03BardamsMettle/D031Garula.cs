@@ -13,6 +13,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 872, // Boss->player, no cast, single-target
+
     Heave = 7927, // Boss->self, 2.5s cast, range 9+R 120-degree cone
     CrumblingCrustVisual = 7928, // Boss->self, 4.0s cast, single-target
     CrumblingCrust = 7955, // Helper->location, 1.5s cast, range 3 circle

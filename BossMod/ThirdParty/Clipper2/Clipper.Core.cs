@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  24 March 2024                                                   *
+* Date      :  17 September 2024                                               *
 * Website   :  http://www.angusj.com                                           *
 * Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  Core structures and functions for the Clipper Library           *
@@ -473,19 +473,22 @@ namespace Clipper2Lib
 
   public class Path64 : List<Point64> 
   {
+    public Path64() : base() { }
     public Path64(int capacity = 0) : base(capacity) { }
     public Path64(IEnumerable<Point64> path) : base(path) { }
     public override string ToString()
     {
       string s = "";
       foreach (Point64 p in this)
-        s = s + p.ToString() + " ";
+        s = s + p.ToString() + ", ";
+      if (s != "") s = s.Remove(s.Length - 2);
       return s;
     }
   }
 
   public class Paths64 : List<Path64>
   {
+    public Paths64() : base() { }
     public Paths64(int capacity = 0) : base(capacity) { }
     public Paths64(IEnumerable<Path64> paths) : base(paths) { }
     public override string ToString()
@@ -499,6 +502,7 @@ namespace Clipper2Lib
 
   public class PathD : List<PointD>
   {
+    public PathD() : base() { }
     public PathD(int capacity = 0) : base(capacity) { }
     public PathD(IEnumerable<PointD> path) : base(path) { }
     public string ToString(int precision = 2)
@@ -506,12 +510,14 @@ namespace Clipper2Lib
       string s = "";
       foreach (PointD p in this)
         s = s + p.ToString(precision) + ", ";
+      if (s != "") s = s.Remove(s.Length - 2);
       return s;
     }
   }
 
   public class PathsD : List<PathD>
   {
+    public PathsD() : base() { }
     public PathsD(int capacity = 0) : base(capacity) { }
     public PathsD(IEnumerable<PathD> paths) : base(paths) { }
     public string ToString(int precision = 2)
@@ -526,7 +532,7 @@ namespace Clipper2Lib
   // Note: all clipping operations except for Difference are commutative.
   public enum ClipType
   {
-    None,
+    NoClip,
     Intersection,
     Union,
     Difference,
@@ -573,6 +579,13 @@ namespace Clipper2Lib
     private static readonly string
       precision_range_error = "Error: Precision is out of range.";
 
+    public static double CrossProduct(Point64 pt1, Point64 pt2, Point64 pt3)
+    {
+      // typecast to double to avoid potential int overflow
+      return ((double) (pt2.X - pt1.X) * (pt3.Y - pt2.Y) -
+              (double) (pt2.Y - pt1.Y) * (pt3.X - pt2.X));
+    }
+
 #if USINGZ
     public static Path64 SetZ(Path64 path, long Z)
     {
@@ -582,23 +595,74 @@ namespace Clipper2Lib
     }
 #endif
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void CheckPrecision(int precision)
     {
       if (precision < -8 || precision > 8)
         throw new Exception(precision_range_error);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsAlmostZero(double value)
     {
       return (Math.Abs(value) <= floatingPointTolerance);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static double CrossProduct(Point64 pt1, Point64 pt2, Point64 pt3)
+    internal static int TriSign(long x) // returns 0, 1 or -1
     {
-      // typecast to double to avoid potential int overflow
-      return ((double) (pt2.X - pt1.X) * (pt3.Y - pt2.Y) -
-              (double) (pt2.Y - pt1.Y) * (pt3.X - pt2.X));
+      if (x < 0) return -1;
+      else if (x > 1) return 1;  
+      else return 0;
+    }
+
+    public struct MultiplyUInt64Result
+    {
+      public ulong lo64;
+      public ulong hi64;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static MultiplyUInt64Result MultiplyUInt64(ulong a, ulong b) // #834,#835
+    {
+      ulong x1 = (a & 0xFFFFFFFF) * (b & 0xFFFFFFFF);
+      ulong x2 = (a >> 32) * (b & 0xFFFFFFFF) + (x1 >> 32);
+      ulong x3 = (a & 0xFFFFFFFF) * (b >> 32) + (x2 & 0xFFFFFFFF);
+      MultiplyUInt64Result result; 
+      result.lo64 = (x3 & 0xFFFFFFFF) << 32 | (x1 & 0xFFFFFFFF);
+      result.hi64 = (a >> 32) * (b >> 32) + (x2 >> 32) + (x3 >> 32);
+      return result;
+    }
+
+    // returns true if (and only if) a * b == c * d
+    internal static bool ProductsAreEqual(long a, long b, long c, long d)
+    {
+      // nb: unsigned values will be needed for CalcOverflowCarry()
+      ulong absA = (ulong) Math.Abs(a);
+      ulong absB = (ulong) Math.Abs(b);
+      ulong absC = (ulong) Math.Abs(c);
+      ulong absD = (ulong) Math.Abs(d);
+
+      MultiplyUInt64Result mul_ab = MultiplyUInt64(absA, absB);
+      MultiplyUInt64Result mul_cd = MultiplyUInt64(absC, absD);
+
+      // nb: it's important to differentiate 0 values here from other values
+      int sign_ab = TriSign(a) * TriSign(b);
+      int sign_cd = TriSign(c) * TriSign(d);
+
+      return mul_ab.lo64 == mul_cd.lo64 && mul_ab.hi64 == mul_cd.hi64 && sign_ab == sign_cd;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool IsCollinear(Point64 pt1, Point64 sharedPt, Point64 pt2)
+    {
+      long a = sharedPt.X - pt1.X;
+      long b = pt2.Y - sharedPt.Y;
+      long c = sharedPt.Y - pt1.Y;
+      long d = pt2.X - sharedPt.X;
+      // When checking for collinearity with very large coordinate values
+      // then ProductsAreEqual is more accurate than using CrossProduct.
+      return ProductsAreEqual(a, b, c, d);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

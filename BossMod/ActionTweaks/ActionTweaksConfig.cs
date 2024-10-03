@@ -57,7 +57,9 @@ public sealed class ActionTweaksConfig : ConfigNode
 
     [PropertyDisplay("为手动按下的技能使用自定义队列", tooltip: "此设置可以更好地与自动循环结合，并防止在自动循环过程中按下治疗技能时出现三次编织或GCD漂移的情况")]
     public bool UseManualQueue = false;
-
+    
+    [PropertyDisplay("自动管理自动攻击", tooltip: "此设置可防止在倒计时期间提前启动自动攻击，并在拉扯、切换目标和使用任何未明确取消自动攻击的操作时自动启动自动攻击。")]
+    public bool AutoAutos = false;
 
     [PropertyDisplay("自动下坐骑以执行技能")]
     public bool AutoDismount = true;

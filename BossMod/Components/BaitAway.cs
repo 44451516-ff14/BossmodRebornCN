@@ -78,13 +78,13 @@ public class GenericBaitAway(BossModule module, ActionID aid = default, bool alw
                 break;
 
             case AOEShapeCone cone:
-                if (Raid.WithoutSlot().Exclude(actor).InShape(cone, bait.Source.Position, bait.Rotation).Any())
-                    hints.AddForbiddenZone(ShapeDistance.Cone(bait.Source.Position, 100, bait.Rotation, cone.HalfAngle), bait.Activation);
+                foreach (var a in Raid.WithoutSlot().Exclude(actor))
+                    hints.AddForbiddenZone(ShapeDistance.Cone(bait.Source.Position, 100, bait.Source.AngleTo(a), cone.HalfAngle), bait.Activation);
                 break;
 
             case AOEShapeRect rect:
-                if (Raid.WithoutSlot().Exclude(actor).InShape(rect, bait.Source.Position, bait.Rotation).Any())
-                    hints.AddForbiddenZone(ShapeDistance.Rect(bait.Source.Position, bait.Rotation, 100, default, rect.HalfWidth), bait.Activation);
+                foreach (var a in Raid.WithoutSlot().Exclude(actor))
+                    hints.AddForbiddenZone(ShapeDistance.Rect(bait.Source.Position, bait.Source.AngleTo(a), 100, default, rect.HalfWidth), bait.Activation);
                 break;
             case AOEShapeCross cross:
                 foreach (var a in Raid.WithoutSlot().Exclude(actor))

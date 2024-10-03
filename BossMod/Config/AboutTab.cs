@@ -76,6 +76,7 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         if (ImGui.Button("Open replay folder", new(180, 0)) && replayDir != null)
             _lastErrorMessage = OpenDirectory(replayDir);
 
+        ImGui.SameLine();
         if (ImGui.Button("爱发电", new(180, 0)))
         {
             _lastErrorMessage = OpenLink("https://afdian.com/a/a_44451516");

@@ -1,6 +1,6 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  17 April 2024                                                   *
+* Date      :  24 July 2024                                                    *
 * Website   :  http://www.angusj.com                                           *
 * Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  Path Offset (Inflate/Shrink)                                    *
@@ -514,8 +514,8 @@ namespace Clipper2Lib
     {
       int cnt = path.Count;
       _normals.Clear();
+      if (cnt == 0) return;
       _normals.EnsureCapacity(cnt);
-
       for (int i = 0; i < cnt - 1; i++)
         _normals.Add(GetUnitNormal(path[i], path[i + 1]));
       _normals.Add(GetUnitNormal(path[cnt - 1], path[0]));
@@ -549,11 +549,15 @@ namespace Clipper2Lib
       if (cosA > -0.999 && (sinA * _groupDelta < 0)) // test for concavity first (#593)
       {
         // is concave
+        // by far the simplest way to construct concave joins, especially those joining very 
+        // short segments, is to insert 3 points that produce negative regions. These regions 
+        // will be removed later by the finishing union operation. This is also the best way 
+        // to ensure that path reversals (ie over-shrunk paths) are removed.
         pathOut.Add(GetPerpendic(path[j], _normals[k]));
-        // this extra point is the only simple way to ensure that path reversals
-        // (ie over-shrunk paths) are fully cleaned out with the trailing union op.
-        // However it's probably safe to skip this whenever an angle is almost flat.
-        if (cosA < 0.99) pathOut.Add(path[j]); // (#405)
+
+        // when the angle is almost flat (cos_a ~= 1), it's safe to skip this middle point
+        if (cosA < 0.999) pathOut.Add(path[j]); // (#405, #873)
+
         pathOut.Add(GetPerpendic(path[j], _normals[j]));
       }
       else if ((cosA > 0.999) && (_joinType != JoinType.Round))
