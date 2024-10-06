@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN3QueensGuard;
 
-class CoatOfArms(BossModule module) : Components.DirectionalParry(module, (uint)OID.AetherialWard)
+class CoatOfArms(BossModule module) : Components.DirectionalParry(module, [(uint)OID.AetherialWard])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

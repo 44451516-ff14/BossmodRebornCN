@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P2PlasmaShield(BossModule module) : Components.DirectionalParry(module, (uint)OID.PlasmaShield)
+class P2PlasmaShield(BossModule module) : Components.DirectionalParry(module, [(uint)OID.PlasmaShield])
 {
     public override void OnActorCreated(Actor actor)
     {

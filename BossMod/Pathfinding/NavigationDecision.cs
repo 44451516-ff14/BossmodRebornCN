@@ -60,7 +60,7 @@ public struct NavigationDecision
             // we're in forbidden zone => find path to safety (and ideally to uptime zone)
             // if such a path can't be found (that's always the case if we're inside imminent forbidden zone, but can also happen in other cases), try instead to find a path to safety that doesn't enter any other zones that we're not inside
             // first build a map with zones that we're outside of as blockers
-            hints.Bounds.PathfindMap(ctx.Map, hints.Center);
+            hints.PathfindMapBounds.PathfindMap(ctx.Map, hints.PathfindMapCenter);
             foreach (var (zf, inside) in hints.ForbiddenZones.Zip(inZone))
                 if (!inside)
                     AddBlockerZone(ctx.Map, imminent, zf.activation, zf.shapeDistance, forbiddenZoneCushion);
@@ -99,7 +99,7 @@ public struct NavigationDecision
             if (!player.Position.InCircle(targetPos.Value, targetRadius))
             {
                 // we're not in uptime zone, just run to it, avoiding any aoes
-                hints.Bounds.PathfindMap(ctx.Map, hints.Center);
+                hints.PathfindMapBounds.PathfindMap(ctx.Map, hints.PathfindMapCenter);
                 foreach (var (shape, activation) in hints.ForbiddenZones)
                     AddBlockerZone(ctx.Map, imminent, activation, shape, forbiddenZoneCushion);
                 var maxGoal = AddTargetGoal(ctx.Map, targetPos.Value, targetRadius, targetRot, Positional.Any, 0);
@@ -143,7 +143,7 @@ public struct NavigationDecision
             if (!inPositional)
             {
                 // we're in uptime zone, but not in correct quadrant - move there, avoiding all aoes and staying within uptime zone
-                hints.Bounds.PathfindMap(ctx.Map, hints.Center);
+                hints.PathfindMapBounds.PathfindMap(ctx.Map, hints.PathfindMapCenter);
                 ctx.Map.BlockPixelsInside(ShapeDistance.InvertedCircle(targetPos.Value, targetRadius), 0, 0);
                 foreach (var (shape, activation) in hints.ForbiddenZones)
                     AddBlockerZone(ctx.Map, imminent, activation, shape, forbiddenZoneCushion);

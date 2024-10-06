@@ -2,7 +2,7 @@
 
 // generic 'directional parry' component that shows actors and sides it's forbidden to attack them from
 // uses common status + custom prediction
-public class DirectionalParry(BossModule module, uint actorOID) : Adds(module, actorOID)
+public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(module, actorOID)
 {
     [Flags]
     public enum Side
@@ -17,13 +17,13 @@ public class DirectionalParry(BossModule module, uint actorOID) : Adds(module, a
 
     public const uint ParrySID = 680; // common 'directional parry' status
 
-    private readonly Dictionary<ulong, int> _actorStates = []; // value == active-side | (imminent-side << 4)
-    public bool Active => _actorStates.Values.Any(s => ActiveSides(s) != Side.None);
+    public readonly Dictionary<ulong, int> ActorStates = []; // value == active-side | (imminent-side << 4)
+    public bool Active => ActorStates.Values.Any(s => ActiveSides(s) != Side.None);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var target = Actors.FirstOrDefault(w => w.InstanceID == actor.TargetID);
-        if (target != null && _actorStates.TryGetValue(actor.TargetID, out var targetState))
+        if (target != null && ActorStates.TryGetValue(actor.TargetID, out var targetState))
         {
             var forbiddenSides = ActiveSides(targetState) | ImminentSides(targetState);
             var attackDir = (actor.Position - target.Position).Normalized();
@@ -46,7 +46,7 @@ public class DirectionalParry(BossModule module, uint actorOID) : Adds(module, a
         base.DrawArenaForeground(pcSlot, pc);
         foreach (var a in ActiveActors)
         {
-            if (_actorStates.TryGetValue(a.InstanceID, out var aState))
+            if (ActorStates.TryGetValue(a.InstanceID, out var aState))
             {
                 var active = ActiveSides(aState);
                 var imminent = ImminentSides(aState);
@@ -64,7 +64,7 @@ public class DirectionalParry(BossModule module, uint actorOID) : Adds(module, a
         {
             // TODO: front+back is 3, left+right is C, but I don't really know which is which, didn't see examples yet...
             // remove any predictions
-            _actorStates[actor.InstanceID] = status.Extra & 0xF;
+            ActorStates[actor.InstanceID] = status.Extra & 0xF;
         }
     }
 
@@ -96,14 +96,14 @@ public class DirectionalParry(BossModule module, uint actorOID) : Adds(module, a
         MiniArena.PathStroke(false, color);
     }
 
-    private int ActorState(ulong instanceID) => _actorStates.GetValueOrDefault(instanceID, 0);
+    public int ActorState(ulong instanceID) => ActorStates.GetValueOrDefault(instanceID, 0);
 
-    private void UpdateState(ulong instanceID, int state)
+    public void UpdateState(ulong instanceID, int state)
     {
         if (state == 0)
-            _actorStates.Remove(instanceID);
+            ActorStates.Remove(instanceID);
         else
-            _actorStates[instanceID] = state;
+            ActorStates[instanceID] = state;
     }
 
     private static Side ActiveSides(int state) => (Side)(state & (int)Side.All);

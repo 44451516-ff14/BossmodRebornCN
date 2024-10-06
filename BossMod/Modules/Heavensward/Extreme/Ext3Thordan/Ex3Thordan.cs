@@ -17,7 +17,7 @@ class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherI
 class SerZephirin(BossModule module) : Components.Adds(module, (uint)OID.SerZephirin);
 
 class BossReappear(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.BossReappear));
-class LightOfAscalon(BossModule module) : Components.Knockback(module, ActionID.MakeSpell(AID.FaithUnmoving), true)
+class LightOfAscalon(BossModule module) : Components.Knockback(module, ActionID.MakeSpell(AID.LightOfAscalon), true)
 {
     private readonly List<Source> _sources = [];
 
@@ -25,13 +25,9 @@ class LightOfAscalon(BossModule module) : Components.Knockback(module, ActionID.
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-
-        if ((AID)spell.Action.ID == AID.LightOfAscalon)
-        {
-            ++NumCasts;
-            if (_sources.Count > 0)
-                _sources.RemoveAt(0);
-        }
+        base.OnEventCast(caster, spell);
+        if (_sources.Count > 0 && (AID)spell.Action.ID == AID.LightOfAscalon)
+            _sources.RemoveAt(0);
         else if ((AID)spell.Action.ID == AID.BossReappear)
         {
             for (var i = 0; i < 7; ++i)

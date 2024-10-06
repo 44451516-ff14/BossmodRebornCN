@@ -48,5 +48,6 @@ public class D050ForgivenPrejudice(WorldState ws, Actor primary) : SimpleBossMod
         Arena.Actors(Enemies(OID.ForgivenApathy));
     }
 
+    public override bool CheckReset() => false;
     protected override bool CheckPull() => (!Enemies(OID.ForgivenApathy).Any(e => e.InCombat) || !Enemies(OID.ForgivenApathy).Any(e => e.IsTargetable)) && PrimaryActor.IsTargetable && PrimaryActor.InCombat || Enemies(OID.ForgivenExtortion).Any(e => e.InCombat) || Enemies(OID.ForgivenConformity).Any(e => e.InCombat) || Enemies(OID.ForgivenVenery).Any(e => e.InCombat);
 }

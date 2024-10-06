@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un3Sophia;
 
 // shows all three demiurges + handles directional parry from first; the reason is to simplify condition checks
-class Demiurges(BossModule module) : Components.DirectionalParry(module, (uint)OID.Demiurge1)
+class Demiurges(BossModule module) : Components.DirectionalParry(module, [(uint)OID.Demiurge1])
 {
     private readonly IReadOnlyList<Actor> _second = module.Enemies(OID.Demiurge2);
     private readonly IReadOnlyList<Actor> _third = module.Enemies(OID.Demiurge3);
