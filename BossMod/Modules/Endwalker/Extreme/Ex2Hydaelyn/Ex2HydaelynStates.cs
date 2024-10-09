@@ -4,11 +4,14 @@ class Ex2HydaelynStates : StateMachineBuilder
 {
     public Ex2HydaelynStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase)
+        SimplePhase(0, Phase1, "P1")
+            .ActivateOnEnter<WeaponTracker>()
+            .Raw.Update = () => Module.Enemies(OID.CrystalOfLight).Any();
+        DeathPhase(1, Phase2)
             .ActivateOnEnter<WeaponTracker>();
     }
 
-    private void SinglePhase(uint id)
+    private void Phase1(uint id)
     {
         HerosRadiance(id, 10.2f);
         ShiningSaber(id + 0x10000, 5.2f);
@@ -34,7 +37,6 @@ class Ex2HydaelynStates : StateMachineBuilder
         MousaScorn(id + 0x30000, 3.2f);
         Aureole(id + 0x40000, 5.2f);
         CrystallizeSwitchWeapon(id + 0x50000, 4.6f, true);
-        ForkFirstMerge(id, 2.2f);
     }
 
     private void ForkFirstChakram(uint id)
@@ -45,12 +47,11 @@ class Ex2HydaelynStates : StateMachineBuilder
         MagosRadiance(id + 0x30000, 2.7f);
         Aureole(id + 0x40000, 5.2f);
         CrystallizeSwitchWeapon(id + 0x50000, 4.6f, true);
-        ForkFirstMerge(id, 2.2f);
     }
 
-    private void ForkFirstMerge(uint id, float delay)
+    private void Phase2(uint id)
     {
-        Intermission(id + 0x100000, delay);
+        Intermission(id + 0x100000, 2.2f);
         Halo(id + 0x200000, 10.2f);
         Lightwave1(id + 0x210000, 4.1f);
         Lightwave2(id + 0x220000, 2.1f);

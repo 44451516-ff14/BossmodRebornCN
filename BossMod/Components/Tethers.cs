@@ -330,7 +330,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, float ac
     }
 
     // we support both player->enemy and enemy->player tethers
-    private (Actor? player, Actor? enemy) DetermineTetherSides(Actor source, ActorTetherInfo tether)
+    public (Actor? player, Actor? enemy) DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TIDGood && tether.ID != TIDBad)
             return (null, null);
@@ -339,8 +339,8 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, float ac
         if (target == null)
             return (null, null);
 
-        var (player, enemy) = source.Type is ActorType.Player or ActorType.Buddy ? (source, target) : (target, source);
-        if (player.Type is not ActorType.Player and not ActorType.Buddy || enemy.Type is ActorType.Player or ActorType.Buddy)
+        var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
+        if (!Raid.WithoutSlot().Contains(player) || enemy.Type is ActorType.Player or ActorType.Buddy)
         {
             ReportError($"Unexpected tether pair: {source.InstanceID:X} -> {target.InstanceID:X}");
             return (null, null);

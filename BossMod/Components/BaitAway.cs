@@ -1,4 +1,6 @@
-﻿namespace BossMod.Components;
+﻿using Clipper2Lib;
+
+namespace BossMod.Components;
 
 // generic component for mechanics that require baiting some aoe (by proximity, by tether, etc) away from raid
 // some players can be marked as 'forbidden' - if any of them is baiting, they are warned
@@ -26,6 +28,7 @@ public class GenericBaitAway(BossModule module, ActionID aid = default, bool alw
     public PlayerPriority BaiterPriority = PlayerPriority.Interesting;
     public BitMask ForbiddenPlayers; // these players should avoid baiting
     public List<Bait> CurrentBaits = [];
+    public const string BaitAwayHint = "Bait away from raid!";
 
     public IEnumerable<Bait> ActiveBaits => AllowDeadTargets ? CurrentBaits.Where(b => !b.Source.IsDead) : CurrentBaits.Where(b => !b.Source.IsDead && !b.Target.IsDead);
     public IEnumerable<Bait> ActiveBaitsOn(Actor target) => ActiveBaits.Where(b => b.Target == target);
@@ -47,7 +50,7 @@ public class GenericBaitAway(BossModule module, ActionID aid = default, bool alw
         else
         {
             if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(b).Any()))
-                hints.Add("Bait away from raid!");
+                hints.Add(BaitAwayHint);
         }
 
         if (!IgnoreOtherBaits && ActiveBaitsNotOn(actor).Any(b => IsClippedBy(actor, b)))
@@ -258,5 +261,48 @@ public class BaitAwayChargeCast(BossModule module, ActionID aid, float halfWidth
     {
         if (spell.Action == WatchedAction)
             CurrentBaits.RemoveAll(b => b.Source == caster);
+    }
+}
+
+// a variation of baits with tethers for charges that end at target
+public class BaitAwayChargeTether(BossModule module, float halfWidth, float activationDelay, uint tetherIDBad, uint tetherIDGood, ActionID aidGood, ActionID aidBad = default, uint enemyOID = default, float minimumDistance = default)
+: StretchTetherDuo(module, minimumDistance, activationDelay, tetherIDBad, tetherIDGood, new AOEShapeRect(default, halfWidth), default, enemyOID)
+{
+    public ActionID AidGood = aidGood;
+    public ActionID AidBad = aidBad; // supports 2nd AID incase the AID changes between good and bad tethers
+    public uint TetherIDBad = tetherIDBad;
+    public uint TetherIDGood = tetherIDGood;
+    public float HalfWidth = halfWidth;
+
+    public override void Update()
+    {
+        base.Update();
+        foreach (ref var b in CurrentBaits.AsSpan())
+        {
+            if (b.Shape is AOEShapeRect shape)
+            {
+                var length = (b.Target.Position - b.Source.Position).Length();
+                if (shape.LengthFront != length)
+                {
+                    b.Shape = shape with { LengthFront = length };
+                }
+            }
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action == AidGood || spell.Action == AidBad)
+        {
+            ++NumCasts;
+            CurrentBaits.RemoveAll(x => x.Target == WorldState.Actors.Find(spell.MainTargetID));
+        }
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        base.AddHints(slot, actor, hints);
+        if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(b).Any()))
+            hints.Add(BaitAwayHint);
     }
 }

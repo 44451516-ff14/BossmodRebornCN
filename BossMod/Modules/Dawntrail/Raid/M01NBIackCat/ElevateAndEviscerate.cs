@@ -56,7 +56,7 @@ class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(modul
             foreach (var index in damagedCells.SetBits())
             {
                 var tile = tiles[index];
-                yield return new AOEInstance(Mouser.Rect, tile.Center, Color: Colors.FutureVulnerable, Risky: false);
+                yield return new(Mouser.Rect, tile.Center, Color: Colors.FutureVulnerable, Risky: false);
             }
         }
     }
@@ -72,7 +72,7 @@ class ElevateAndEviscerateImpact(BossModule module) : Components.GenericAOEs(mod
         if (_kb.Tether != default && _kb.Tether.target != actor && Module.InBounds(_kb.Cache))
             yield return new(Mouser.Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, _kb.Activation.AddSeconds(3.6f));
         if (aoe != null)
-            yield return (AOEInstance)aoe;
+            yield return aoe.Value;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -84,6 +84,12 @@ class ElevateAndEviscerateImpact(BossModule module) : Components.GenericAOEs(mod
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if ((AID)spell.Action.ID == AID.Impact)
+            aoe = null;
+    }
+
+    public override void Update()
+    {
+        if (aoe != null && _kb.Tether != default && _kb.Tether.target.IsDead) // impact doesn't happen if player dies between ElevateAndEviscerate and Impact
             aoe = null;
     }
 }

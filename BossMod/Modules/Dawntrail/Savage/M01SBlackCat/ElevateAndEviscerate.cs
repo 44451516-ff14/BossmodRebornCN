@@ -17,7 +17,7 @@ class ElevateAndEviscerateShockwave(BossModule module) : Components.GenericAOEs(
                 yield return new(Mouser.Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, _kb.CurrentDeadline.AddSeconds(4.2f));
         }
         if (aoe != null && _kb.LastTarget != actor)
-            yield return (AOEInstance)aoe;
+            yield return aoe.Value;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -25,6 +25,12 @@ class ElevateAndEviscerateShockwave(BossModule module) : Components.GenericAOEs(
         if ((AID)spell.Action.ID is AID.ElevateAndEviscerateHitAOE or AID.ElevateAndEviscerateKnockbackAOE && Module.InBounds(_kb.Cache))
             aoe = new(Mouser.Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, WorldState.FutureTime(_kb.CurrentKnockbackDistance == 0 ? 1.4f : 3.6f));
         else if ((AID)spell.Action.ID is AID.ElevateAndEviscerateImpactHit or AID.ElevateAndEviscerateImpactKnockback)
+            aoe = null;
+    }
+
+    public override void Update()
+    {
+        if (aoe != null && _kb.CurrentTarget != null && _kb.CurrentTarget.IsDead) // impact doesn't happen if player dies between ElevateAndEviscerate and Impact
             aoe = null;
     }
 }
