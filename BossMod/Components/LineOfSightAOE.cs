@@ -3,10 +3,11 @@
 // generic component that shows line-of-sight cones for arbitrary origin and blocking shapes
 // TODO: add support for multiple AOE sources at the same time (I simplified Hermes from 4 AOEs into one)
 // add support for blockers that spawn or get destroyed after cast already started (Hermes: again a cheat here by only using that meteor that exists for the whole mechanic)
-public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, float maxRange, bool blockersImpassable, bool rect = false) : GenericAOEs(module, aid, "Hide behind obstacle!")
+public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : GenericAOEs(module, aid, "Hide behind obstacle!")
 {
     public DateTime NextExplosion;
     public bool BlockersImpassable = blockersImpassable;
+    public bool SafeInsideHitbox = safeInsideHitbox;
     public float MaxRange { get; private set; } = maxRange;
     public bool Rect { get; private set; } = rect; // if the AOE is a rectangle instead of a circle
     public WPos? Origin { get; private set; } // inactive if null
@@ -15,7 +16,6 @@ public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, flo
     public List<AOEInstance> Safezones = [];
     public List<Shape> UnionShapes = [];
     public List<Shape> DifferenceShapes = [];
-    private const float PCHitBoxRadius = 0.5f;
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => Safezones.Take(1);
     public void Modify(WPos? origin, IEnumerable<(WPos Center, float Radius)> blockers, DateTime nextExplosion = default)
@@ -56,19 +56,18 @@ public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, flo
             {
                 foreach (var v in Visibility)
                     UnionShapes.Add(new DonutSegmentHA(Origin.Value, v.Distance + 0.2f, MaxRange, v.Dir, v.HalfWidth));
-                if (BlockersImpassable)
-                    foreach (var b in Blockers)
-                        DifferenceShapes.Add(new Circle(b.Center, b.Radius + PCHitBoxRadius));
             }
             else if (Rect)
             {
                 foreach (var b in Blockers)
                 {
-                    UnionShapes.Add(new RectangleSE(b.Center, b.Center + MaxRange * rotation.ToDirection(), b.Radius));
-                    if (BlockersImpassable)
-                        DifferenceShapes.Add(new Circle(b.Center, b.Radius + PCHitBoxRadius));
+                    var dir = rotation.ToDirection();
+                    UnionShapes.Add(new RectangleSE(b.Center + 0.2f * dir, b.Center + MaxRange * dir, b.Radius));
                 }
             }
+            if (BlockersImpassable || !SafeInsideHitbox)
+                foreach (var b in Blockers)
+                    DifferenceShapes.Add(new Circle(b.Center, !SafeInsideHitbox ? b.Radius : b.Radius + 0.5f));
             Safezones.Add(new(new AOEShapeCustom(CopyShapes(UnionShapes), CopyShapes(DifferenceShapes), InvertForbiddenZone: true), Arena.Center, default, activation, Colors.SafeFromAOE));
             UnionShapes.Clear();
         }
@@ -94,7 +93,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
     public readonly List<Actor> Casters = [];
     public Actor? ActiveCaster => Casters.MinBy(c => c.CastInfo!.RemainingTime);
 
-    protected CastLineOfSightAOE(BossModule module, ActionID aid, float maxRange, bool blockersImpassable, bool rect = false) : base(module, aid, maxRange, blockersImpassable, rect)
+    protected CastLineOfSightAOE(BossModule module, ActionID aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox)
     {
         Refresh();
     }

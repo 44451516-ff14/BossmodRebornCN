@@ -12,13 +12,13 @@ class DrumOfVollokPlatforms(BossModule module) : BossComponent(module)
         switch (state)
         {
             case 0x00800040:
-                Module.Arena.Bounds = Ex2ZoraalJa.NWPlatformBounds;
-                Module.Arena.Center += 15 * 135.Degrees().ToDirection();
+                Arena.Bounds = Ex2ZoraalJa.NWPlatformBounds;
+                Arena.Center += 15 * 135.Degrees().ToDirection();
                 Active = true;
                 break;
             case 0x02000100:
-                Module.Arena.Bounds = Ex2ZoraalJa.NEPlatformBounds;
-                Module.Arena.Center += 15 * (-135).Degrees().ToDirection();
+                Arena.Bounds = Ex2ZoraalJa.NEPlatformBounds;
+                Arena.Center += 15 * (-135).Degrees().ToDirection();
                 Active = true;
                 break;
         }

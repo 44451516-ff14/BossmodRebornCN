@@ -117,8 +117,8 @@ class P4UltimatePredation(BossModule module) : BossComponent(module)
         {
             foreach (var (min2, max2) in safeSecond)
             {
-                var intersectMin = MathF.Max(min1.Rad, min2.Rad).Radians();
-                var intersectMax = MathF.Min(max1.Rad, max2.Rad).Radians();
+                var intersectMin = Math.Max(min1.Rad, min2.Rad).Radians();
+                var intersectMax = Math.Min(max1.Rad, max2.Rad).Radians();
                 if (intersectMin.Rad < intersectMax.Rad)
                 {
                     var midpoint = ((intersectMin + intersectMax) * 0.5f).Normalized();
@@ -135,7 +135,7 @@ class P4UltimatePredation(BossModule module) : BossComponent(module)
 
     private float AngularDistance((Angle, Angle) p)
     {
-        var dist = MathF.Abs(p.Item1.Rad - p.Item2.Rad);
+        var dist = Math.Abs(p.Item1.Rad - p.Item2.Rad);
         return dist < MathF.PI ? dist : 2 * MathF.PI - dist;
     }
 }

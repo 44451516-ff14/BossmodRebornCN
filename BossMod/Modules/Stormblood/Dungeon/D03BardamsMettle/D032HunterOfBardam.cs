@@ -54,7 +54,7 @@ class Comet(BossModule module) : Components.StandardChasingAOEs(module, new AOES
 class CometFirst(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.CometFirst), 4);
 class CometRest(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.CometRest), 4);
 
-class MeteorImpact(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.MeteorImpact), 50, false)
+class MeteorImpact(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.MeteorImpact), 50, safeInsideHitbox: false)
 {
     private DateTime activation;
 

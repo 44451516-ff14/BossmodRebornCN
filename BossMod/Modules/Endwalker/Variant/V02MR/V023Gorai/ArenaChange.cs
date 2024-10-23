@@ -6,7 +6,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public static readonly ArenaBoundsSquare StartingBounds = new(22.5f);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20);
     public static readonly WPos octagonCenter = new(731, -200);
-    private static readonly List<Shape> defaultSquare = [new Square(ArenaCenter, 20)];
+    private static readonly Square[] defaultSquare = [new Square(ArenaCenter, 20)];
     private static readonly AOEShapeCustom square = new([new Square(ArenaCenter, 23)], defaultSquare);
     private static readonly Angle rotation = 22.5f.Degrees();
     private static readonly ArenaBoundsComplex octagonTrap = new(defaultSquare, [new Polygon(octagonCenter, 8.5f, 8, rotation)],

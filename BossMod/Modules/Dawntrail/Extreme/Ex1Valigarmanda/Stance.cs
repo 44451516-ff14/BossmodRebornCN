@@ -17,7 +17,7 @@ class Stance(BossModule module) : Components.GenericAOEs(module)
         {
             AID.SusurrantBreathAOE => (_shapeCone, new(100, 75)),
             AID.SlitheringStrikeAOE => (_shapeOut, caster.Position),
-            AID.StranglingCoilAOE => (_shapeIn, Module.Center),
+            AID.StranglingCoilAOE => (_shapeIn, Arena.Center),
             _ => ((AOEShape?)null, default(WPos))
         };
         if (shape != null)

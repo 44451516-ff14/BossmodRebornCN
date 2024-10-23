@@ -196,7 +196,7 @@ class P5Delta(BossModule module) : BossComponent(module)
     {
         // 1. assign initial inner/outer
         float slotToOffsetX(int slot) => _eyeDir.OrthoR().Dot((Raid[slot]?.Position ?? Module.Center) - Module.Center);
-        float pairToOffsetX((int s1, int s2) slots) => MathF.Abs(slotToOffsetX(slots.s1) + slotToOffsetX(slots.s2));
+        float pairToOffsetX((int s1, int s2) slots) => Math.Abs(slotToOffsetX(slots.s1) + slotToOffsetX(slots.s2));
         var outerLocal = _localTethers.MaxBy(pairToOffsetX);
         var outerRemote = _remoteTethers.MaxBy(pairToOffsetX);
         foreach (ref var p in Players.AsSpan())

@@ -55,8 +55,5 @@ class UpperLaser(BossModule module) : Components.GenericAOEs(module, ActionID.Ma
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 736, NameID = 9650)]
 public class A23ArtilleryUnit(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    private static readonly List<Shape> union = [new Circle(new(200, -100), 29.5f)];
-    private static readonly List<Shape> difference = [new Circle(new(200, -100), 6)];
-
-    public static readonly ArenaBoundsComplex DefaultBounds = new(union, difference);
+    public static readonly ArenaBoundsComplex DefaultBounds = new([new Circle(new(200, -100), 29.5f)], [new Circle(new(200, -100), 6)]);
 }

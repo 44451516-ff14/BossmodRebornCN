@@ -5,7 +5,7 @@ public class ReplayManagementConfig : ConfigNode
 {
     [PropertyDisplay("显示录像管理界面")]
     public bool ShowUI = false;
-
+    
     [PropertyDisplay("副本开始自动录像")]
     public bool AutoRecord = true;
 

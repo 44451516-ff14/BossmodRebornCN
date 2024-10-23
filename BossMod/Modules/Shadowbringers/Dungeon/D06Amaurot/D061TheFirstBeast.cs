@@ -75,7 +75,7 @@ class Meteors(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class TheFinalSky(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.TheFinalSky), 70, false)
+class TheFinalSky(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.TheFinalSky), 70, safeInsideHitbox: false)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.FallenStar);
 }

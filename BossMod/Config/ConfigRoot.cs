@@ -82,7 +82,6 @@ public class ConfigRoot
         List<string> result = [];
         if (args.Count == 0)
         {
-            result.Add("Usage: /bmr cfg <config-type> <field> <value>");
             result.Add("Usage: /vbm cfg <config-type> <field> <value>");
             result.Add("Both config-type and field can be shortened. Valid config-types:");
             foreach (var t in _nodes.Keys)
@@ -108,7 +107,6 @@ public class ConfigRoot
             }
             else if (args.Count == 1)
             {
-                result.Add("Usage: /bmr cfg <config-type> <field> <value>");
                 result.Add("Usage: /vbm cfg <config-type> <field> <value>");
                 result.Add($"Valid fields for {matchingNodes[0].GetType().Name}:");
                 foreach (var f in matchingNodes[0].GetType().GetFields().Where(f => f.GetCustomAttribute<PropertyDisplayAttribute>() != null))
@@ -134,7 +132,6 @@ public class ConfigRoot
                 }
                 /*else if (args.Count == 2)
                 {
-                    result.Add("Usage: /bmr cfg <config-type> <field> <value>");
                     result.Add("Usage: /vbm cfg <config-type> <field> <value>");
                     result.Add($"Type of {matchingNodes[0].GetType().Name}.{matchingFields[0].Name} is {matchingFields[0].FieldType.Name}");
                 }*/
@@ -237,7 +234,7 @@ public class ConfigRoot
                 foreach (var (k, planData) in plans)
                 {
                     var oid = uint.Parse(k);
-                    var info = ModuleRegistry.FindByOID(oid);
+                    var info = BossModuleRegistry.FindByOID(oid);
                     var config = info?.PlanLevel > 0 ? info.ConfigType : null;
                     if (config?.FullName == null)
                         continue;
@@ -274,7 +271,7 @@ public class ConfigRoot
             {
                 if (config?["CooldownPlans"] is not JsonObject plans)
                     continue;
-                var isTEA = k == typeof(Shadowbringers.Ultimate.TEA.TEAConfig).FullName;
+                bool isTEA = k == typeof(Shadowbringers.Ultimate.TEA.TEAConfig).FullName;
                 foreach (var (cls, planList) in plans)
                 {
                     if (planList?["Available"] is not JsonArray avail)
@@ -353,7 +350,7 @@ public class ConfigRoot
             if (jChild is not JsonObject jChildObj)
                 continue;
 
-            var realTypeName = isV0 ? (jChildObj["__type__"]?.ToString() ?? childTypeName) : childTypeName;
+            string realTypeName = isV0 ? (jChildObj["__type__"]?.ToString() ?? childTypeName) : childTypeName;
             ConvertV1GatherChildren(result, jChildObj, isV0);
             result.Add(realTypeName, jChild);
         }
@@ -402,7 +399,7 @@ public class ConfigRoot
                     jplan.WriteString("Name", plan!["Name"]!.GetValue<string>());
                     jplan.WriteString("Encounter", t);
                     jplan.WriteString("Class", cls);
-                    jplan.WriteNumber("Level", type != null ? ModuleRegistry.FindByType(type)?.PlanLevel ?? 0 : 0);
+                    jplan.WriteNumber("Level", type != null ? BossModuleRegistry.FindByType(type)?.PlanLevel ?? 0 : 0);
                     jplan.WriteStartArray("PhaseDurations");
                     foreach (var d in plan["Timings"]!["PhaseDurations"]!.AsArray())
                         jplan.WriteNumberValue(d!.GetValue<float>());

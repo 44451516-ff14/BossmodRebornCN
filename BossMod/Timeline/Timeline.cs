@@ -128,7 +128,7 @@ public class Timeline
         ImGui.SetCursorScreenPos(_screenClientTL);
         _screenClientTL.X += _timeAxisWidth;
 
-        Height = MathF.Max(10, ImGui.GetWindowPos().Y + ImGui.GetWindowHeight() - _screenClientTL.Y - TopMargin - BottomMargin - 8);
+        Height = Math.Max(10, ImGui.GetWindowPos().Y + ImGui.GetWindowHeight() - _screenClientTL.Y - TopMargin - BottomMargin - 8);
         ImGui.InvisibleButton("canvas", new(_timeAxisWidth + Columns.Width, Height), ImGuiButtonFlags.MouseButtonLeft | ImGuiButtonFlags.MouseButtonRight);
         HandleScrollZoom();
         DrawTimeAxis();
@@ -202,8 +202,8 @@ public class Timeline
         }
 
         // clamp to data range
-        MinVisibleTime = MathF.Min(MinVisibleTime, MaxTime - Height / PixelsPerSecond);
-        MinVisibleTime = MathF.Max(MinVisibleTime, MinTime);
+        MinVisibleTime = Math.Min(MinVisibleTime, MaxTime - Height / PixelsPerSecond);
+        MinVisibleTime = Math.Max(MinVisibleTime, MinTime);
     }
 
     private void DrawTimeAxis()

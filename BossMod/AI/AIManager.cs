@@ -26,7 +26,7 @@ sealed class AIManager : IDisposable
         Instance = this;
         _wndAI = new AIManagementWindow(this);
         Autorot = autorot;
-        Controller = new(amex, movement);
+        Controller = new(autorot.WorldState, amex, movement);
         _config = Service.Config.Get<AIConfig>();
         Service.ChatGui.ChatMessage += OnChatMessage;
         Service.CommandManager.AddHandler("/bmrai", new Dalamud.Game.Command.CommandInfo(OnCommand) { HelpMessage = "Toggle AI mode" });
@@ -56,7 +56,7 @@ sealed class AIManager : IDisposable
 
         var player = WorldState.Party.Player();
         var master = WorldState.Party[MasterSlot];
-        if (Beh != null && player != null && master != null)
+        if (Beh != null && player != null && master != null && !WorldState.Party.Members[PartyState.PlayerSlot].InCutscene)
             Beh.Execute(player, master);
         else
             Controller.Clear();

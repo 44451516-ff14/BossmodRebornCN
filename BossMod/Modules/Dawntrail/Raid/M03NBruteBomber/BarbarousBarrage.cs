@@ -32,6 +32,7 @@ class BarbarousBarrageKnockback(BossModule module) : Components.Knockback(module
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        base.AddAIHints(slot, actor, assignment, hints);
         var towers = Module.FindComponent<BarbarousBarrageTower>()!.Towers;
         var isDelayDeltaLow = (towers.FirstOrDefault().Activation - WorldState.CurrentTime).TotalSeconds < 5;
         var isActorInsideTower = towers.Any(x => x.IsInside(actor));

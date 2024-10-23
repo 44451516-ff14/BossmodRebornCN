@@ -106,24 +106,18 @@ sealed class AIManagementWindow : UIWindow
         ImGui.Text("AI预设");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
-        ImGui.SetNextWindowSizeConstraints(new Vector2(0, 0), new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
+        ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
         using var presetCombo = ImRaii.Combo("##AI preset", _manager.AiPreset?.Name ?? "");
         if (presetCombo)
         {
-            foreach (var p in _manager.Autorot.Database.Presets.Presets)
+            foreach (var p in _manager.Autorot.Database.Presets.VisiblePresets)
             {
                 if (ImGui.Selectable(p.Name, p == _manager.AiPreset))
                     _manager.SetAIPreset(p);
-                if (ImGui.Selectable("Deactivate autorotation presets", p == _manager.AiPreset))
-                    _manager.SetAIPreset(null);
             }
+            if (_manager.AiPreset != null && ImGui.Selectable("Deactivate"))
+                _manager.SetAIPreset(null);
         }
-        // ImGui.SameLine();
-        // if (ImGui.Button("Deactivate autorotation presets"))
-        // {
-        //     if (_beh != null)
-        //         _beh.AIPreset = null;
-        // }
     }
 
     public override void OnClose() => SetVisible(false);

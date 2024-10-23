@@ -58,8 +58,8 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     public static readonly WPos ArenaCenter = new(0, -100);
     public static readonly ArenaBoundsRect StartingBounds = new(14.5f, 22.5f);
     private static readonly ArenaBoundsRect defaultBounds = new(12, 20);
-    private static readonly Rectangle startingRect = new(ArenaCenter, 15, 23);
-    private static readonly Rectangle defaultRect = new(ArenaCenter, 12, 20);
+    private static readonly Rectangle[] startingRect = [new(ArenaCenter, 15, 23)];
+    private static readonly Rectangle[] defaultRect = [new(ArenaCenter, 12, 20)];
     private static readonly WPos[] circlePositions =
     [
         new(12, -88), new(8, -92), new(4, -88), new(0, -88), new(-4, -88),
@@ -83,34 +83,34 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     private static readonly RectangleSE[] rectangles = rectanglePairs
         .Select(pair => new RectangleSE(circles[pair.Item1].Center, circles[pair.Item2].Center, Radius)).ToArray();
 
-    private static readonly AOEShapeCustom rectArenaChange = new([startingRect], [defaultRect]);
+    private static readonly AOEShapeCustom rectArenaChange = new(startingRect, defaultRect);
 
-    private static readonly List<Shape> union01000080Shapes = GetShapesForUnion([0, 1, 2, 3, 4, 5], [0, 1, 7, 9, 5, 6, 13, 20, 17, 18, 11, 14]);
+    private static readonly Shape[] union01000080Shapes = GetShapesForUnion([0, 1, 2, 3, 4, 5], [0, 1, 7, 9, 5, 6, 13, 20, 17, 18, 11, 14]);
     private static readonly AOEShapeCustom electricFences01000080AOE = new(union01000080Shapes);
-    private static readonly ArenaBoundsComplex electricFences01000080Arena = new([defaultRect], union01000080Shapes, Offset: -Radius);
+    private static readonly ArenaBoundsComplex electricFences01000080Arena = new(defaultRect, union01000080Shapes, Offset: -Radius);
 
-    private static readonly List<Shape> union08000400Shapes = GetShapesForUnion([6, 7, 8, 9, 10, 11], [21, 20, 14, 15, 12, 17, 1, 10, 3, 7, 6, 8]);
+    private static readonly Shape[] union08000400Shapes = GetShapesForUnion([6, 7, 8, 9, 10, 11], [21, 20, 14, 15, 12, 17, 1, 10, 3, 7, 6, 8]);
     private static readonly AOEShapeCustom electricFences08000400AOE = new(union08000400Shapes);
-    private static readonly ArenaBoundsComplex electricFences08000400Arena = new([defaultRect], union08000400Shapes, Offset: -Radius);
+    private static readonly ArenaBoundsComplex electricFences08000400Arena = new(defaultRect, union08000400Shapes, Offset: -Radius);
 
-    private static readonly List<Shape> union00020001Shapes = GetShapesForUnion([12, 13, 14, 15, 16, 17, 18, 19], [2, 8, 11, 10, 13, 16]);
+    private static readonly Shape[] union00020001Shapes = GetShapesForUnion([12, 13, 14, 15, 16, 17, 18, 19], [2, 8, 11, 10, 13, 16]);
     private static readonly AOEShapeCustom electricFences00020001AOE = new(union00020001Shapes);
-    private static readonly ArenaBoundsComplex electricFences00020001Arena = new([defaultRect], union00020001Shapes, Offset: -Radius);
+    private static readonly ArenaBoundsComplex electricFences00020001Arena = new(defaultRect, union00020001Shapes, Offset: -Radius);
 
-    private static readonly List<Shape> union00200010Shapes = GetShapesForUnion([20, 21, 22, 23, 24, 25, 26, 27], [4, 8, 11, 19, 13, 10]);
+    private static readonly Shape[] union00200010Shapes = GetShapesForUnion([20, 21, 22, 23, 24, 25, 26, 27], [4, 8, 11, 19, 13, 10]);
     private static readonly AOEShapeCustom electricFences00200010AOE = new(union00200010Shapes);
-    private static readonly ArenaBoundsComplex electricFences00200010Arena = new([defaultRect], union00200010Shapes, Offset: -Radius);
+    private static readonly ArenaBoundsComplex electricFences00200010Arena = new(defaultRect, union00200010Shapes, Offset: -Radius);
 
     private AOEInstance? _aoe;
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(_aoe);
 
-    private static List<Shape> GetShapesForUnion(int[] rectIndices, int[] circleIndices)
+    private static Shape[] GetShapesForUnion(int[] rectIndices, int[] circleIndices)
     {
         var shapes = new List<Shape>();
         shapes.AddRange(rectIndices.Select(index => rectangles[index]));
         shapes.AddRange(circleIndices.Select(index => circles[index]));
-        return shapes;
+        return [.. shapes];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

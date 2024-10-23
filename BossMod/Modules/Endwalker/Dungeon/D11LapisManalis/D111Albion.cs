@@ -173,7 +173,7 @@ class WildlifeCrossing(BossModule module) : Components.GenericAOEs(module)
 
     private void UpdateStampedeCount(ref Stampede stampede, float casterZ)
     {
-        if (MathF.Abs(casterZ - stampede.Position.Z) < 1)
+        if (Math.Abs(casterZ - stampede.Position.Z) < 1)
             ++stampede.Count;
 
         if (stampede.Count == 30)
@@ -199,7 +199,7 @@ class RightSlam(BossModule module) : Components.SelfTargetedAOEs(module, ActionI
 class LeftSlam(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.LeftSlam), new AOEShapeRect(20, 80, 0, 90.Degrees())); // full width = half width in this case + angle is detected incorrectly, length and width are also switched
 class AlbionsEmbrace(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.AlbionsEmbrace));
 
-class RoarOfAlbion(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.RoarOfAlbion), 60, false)
+class RoarOfAlbion(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.RoarOfAlbion), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.IcyCrystal);
 }

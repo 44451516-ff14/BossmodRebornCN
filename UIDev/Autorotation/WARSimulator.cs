@@ -121,14 +121,14 @@ namespace UIDev
 
         public Mistake AdvanceTime(Rotation.State state, ref float t, float newAnimLock, float cooldown)
         {
-            var dt = MathF.Max(state.AnimationLock, cooldown);
+            var dt = Math.Max(state.AnimationLock, cooldown);
             t += dt;
             var curBuffCycleIndex = MathF.Floor((t - BuffWindowOffset) / BuffWindowFreq);
             var timeInCycle = t - (BuffWindowOffset + curBuffCycleIndex * BuffWindowFreq);
-            state.RaidBuffsLeft = MathF.Max(0, BuffWindowDuration - timeInCycle);
+            state.RaidBuffsLeft = Math.Max(0, BuffWindowDuration - timeInCycle);
 
-            var potionLeft = MathF.Max(state.PotionCD - 240, 0);
-            state.RaidBuffsLeft = MathF.Max(state.RaidBuffsLeft, potionLeft);
+            var potionLeft = Math.Max(state.PotionCD - 240, 0);
+            state.RaidBuffsLeft = Math.Max(state.RaidBuffsLeft, potionLeft);
 
             var res = Mistake.None;
             state.AnimationLock = state.AnimationLockDelay + newAnimLock;
@@ -435,7 +435,7 @@ namespace UIDev
 
         private bool IncrementOvercap(ref float tracker, float value, float min, float max)
         {
-            tracker = MathF.Max(min, tracker);
+            tracker = Math.Max(min, tracker);
             if ((tracker += value) > max)
             {
                 tracker = max;

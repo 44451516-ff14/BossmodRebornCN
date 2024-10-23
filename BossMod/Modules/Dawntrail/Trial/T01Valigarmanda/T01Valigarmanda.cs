@@ -1,48 +1,23 @@
 ﻿namespace BossMod.Dawntrail.Trial.T01Valigarmanda;
 
-class T01ValigarmandaStates : StateMachineBuilder
+class SlitheringStrike(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.SlitheringStrike), new AOEShapeCone(24, 90.Degrees()));
+class Skyruin1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Skyruin1));
+class Skyruin2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Skyruin2));
+class HailOfFeathers(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HailOfFeathers));
+class DisasterZone1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DisasterZone1));
+class DisasterZone2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DisasterZone2));
+
+abstract class CalamitousCry(BossModule module, AID aid) : Components.LineStack(module, ActionID.MakeSpell(aid), ActionID.MakeSpell(AID.CalamitousCry), 5, 60, 3)
 {
-    public T01ValigarmandaStates(BossModule module) : base(module)
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        TrivialPhase()
-            //.ActivateOnEnter<StranglingCoil2>() Disabled for now, not displaying properly, showing on boss instead of helper
-            .ActivateOnEnter<SlitheringStrike2>()
-            .ActivateOnEnter<SusurrantBreath2>()
-            .ActivateOnEnter<Skyruin2>()
-            .ActivateOnEnter<Skyruin3>()
-            //.ActivateOnEnter<ThunderousBreath2>()
-            .ActivateOnEnter<HailOfFeathers3>()
-            .ActivateOnEnter<ArcaneLightning>() // Need to be tied to spawn of ArcaneSphere
-            .ActivateOnEnter<DisasterZone2>()
-            .ActivateOnEnter<DisasterZone4>()
-            .ActivateOnEnter<RuinfallTower>()
-            .ActivateOnEnter<Ruinfall3>()
-            .ActivateOnEnter<RuinfallAOE>()
-            .ActivateOnEnter<NorthernCross1>() // Need to be tied to animation
-            .ActivateOnEnter<NorthernCross2>() // Need to be tied to animation
-            .ActivateOnEnter<FreezingDust>()
-            .ActivateOnEnter<ChillingCataclysm2>()
-            .ActivateOnEnter<CalamitousEcho>()
-            .ActivateOnEnter<Tulidisaster1>()
-            .ActivateOnEnter<Eruption2>();
+        base.OnEventCast(caster, spell);
+        if ((AID)spell.Action.ID == AID.LimitBreakVisual4) // not sure if line stack gets cancelled when limit break phase ends, just a safety feature
+            CurrentBaits.Clear();
     }
 }
-class StranglingCoil2(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.StranglingCoil2), new AOEShapeDonut(7, 60));
-class SlitheringStrike2(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.SlitheringStrike2), new AOEShapeCone(24, 90.Degrees()));
-class SusurrantBreath2(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.SusurrantBreath2), new AOEShapeCone(50, 65.Degrees()));
-class Skyruin2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Skyruin2));
-class Skyruin3(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Skyruin3));
-class ThunderousBreath2(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ThunderousBreath2), new AOEShapeCone(50, 67.5f.Degrees()));
-class HailOfFeathers3(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HailOfFeathers3));
-class ArcaneLightning(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ArcaneLightning), new AOEShapeRect(50, 2.5f));
-class DisasterZone2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DisasterZone2));
-class DisasterZone4(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DisasterZone4));
-class RuinfallAOE(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.RuinfallAOE), new AOEShapeCircle(6));
-class Ruinfall3(BossModule module) : Components.KnockbackFromCastTarget(module, ActionID.MakeSpell(AID.Ruinfall3), 21, stopAtWall: true, kind: Kind.DirForward);
-class RuinfallTower(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.RuinfallTower), 6, 2, 2);
-
-class NorthernCross1(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.NorthernCross1), new AOEShapeRect(60, 60, DirectionOffset: -90.Degrees()));
-class NorthernCross2(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.NorthernCross2), new AOEShapeRect(60, 60, DirectionOffset: 90.Degrees()));
+class CalamitousCry1(BossModule module) : CalamitousCry(module, AID.CalamitousCryMarker1);
+class CalamitousCry2(BossModule module) : CalamitousCry(module, AID.CalamitousCryMarker2);
 
 class FreezingDust(BossModule module) : Components.StayMove(module)
 {
@@ -57,23 +32,71 @@ class FreezingDust(BossModule module) : Components.StayMove(module)
         if ((SID)status.ID == SID.FreezingUp && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             PlayerStates[slot] = default;
     }
+
+    public override void OnStatusGain(Actor actor, ActorStatus status) // it sometimes seems to skip the freezing up debuff?
+    {
+        if ((SID)status.ID == SID.DeepFreeze && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+            PlayerStates[slot] = default;
+    }
 }
 
-class ChillingCataclysm2(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ChillingCataclysm2), new AOEShapeCross(40, 2.5f));
 class RuinForetold(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RuinForetold));
 class CalamitousEcho(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.CalamitousEcho), new AOEShapeCone(40, 10.Degrees()));
-class Tulidisaster1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Tulidisaster1));
-class Eruption2(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.Eruption2), 6);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 832, NameID = 12854)]
+abstract class Tulidisaster(BossModule module, AID aid, float delay) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.TulidisasterVisual), ActionID.MakeSpell(aid), delay);
+class Tulidisaster1(BossModule module) : Tulidisaster(module, AID.Tulidisaster1, 3.1f);
+class Tulidisaster2(BossModule module) : Tulidisaster(module, AID.Tulidisaster2, 11.6f);
+class Tulidisaster3(BossModule module) : Tulidisaster(module, AID.Tulidisaster3, 19.6f);
+
+class Eruption(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.Eruption), 6);
+class IceTalon(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6), (uint)IconID.Tankbuster, ActionID.MakeSpell(AID.IceTalon), 5, true)
+{
+    public override void AddGlobalHints(GlobalHints hints)
+    {
+        if (CurrentBaits.Count > 0)
+            hints.Add("Tankbuster cleave");
+    }
+}
+
+class T01ValigarmandaStates : StateMachineBuilder
+{
+    public T01ValigarmandaStates(BossModule module) : base(module)
+    {
+        TrivialPhase()
+            .ActivateOnEnter<SlitheringStrike>()
+            .ActivateOnEnter<ArcaneLightning>()
+            .ActivateOnEnter<StranglingCoilSusurrantBreath>()
+            .ActivateOnEnter<Skyruin1>()
+            .ActivateOnEnter<Skyruin2>()
+            .ActivateOnEnter<HailOfFeathers>()
+            .ActivateOnEnter<DisasterZone1>()
+            .ActivateOnEnter<DisasterZone2>()
+            .ActivateOnEnter<RuinfallTower>()
+            .ActivateOnEnter<RuinfallKB>()
+            .ActivateOnEnter<RuinfallAOE>()
+            .ActivateOnEnter<ChillingCataclysm>()
+            .ActivateOnEnter<NorthernCross>()
+            .ActivateOnEnter<FreezingDust>()
+            .ActivateOnEnter<CalamitousEcho>()
+            .ActivateOnEnter<CalamitousCry1>()
+            .ActivateOnEnter<CalamitousCry2>()
+            .ActivateOnEnter<Tulidisaster1>()
+            .ActivateOnEnter<Eruption>()
+            .ActivateOnEnter<IceTalon>()
+            .ActivateOnEnter<Tulidisaster1>()
+            .ActivateOnEnter<Tulidisaster2>()
+            .ActivateOnEnter<Tulidisaster3>()
+            .ActivateOnEnter<ThunderPlatform>()
+            .ActivateOnEnter<BlightedBolt1>()
+            .ActivateOnEnter<BlightedBolt2>();
+    }
+}
+
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 832, NameID = 12854)]
 public class T01Valigarmanda(WorldState ws, Actor primary) : BossModule(ws, primary, new(100, 100), new ArenaBoundsRect(20, 15))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.IceBoulder));
-        Arena.Actors(Enemies(OID.FlameKissedBeacon));
-        Arena.Actors(Enemies(OID.GlacialBeacon));
-        Arena.Actors(Enemies(OID.ThunderousBeacon));
+        Arena.Actors(Enemies(OID.IceBoulder).Concat(Enemies(OID.FlameKissedBeacon)).Concat(Enemies(OID.GlacialBeacon)).Concat(Enemies(OID.ThunderousBeacon)).Concat([PrimaryActor]));
     }
 }

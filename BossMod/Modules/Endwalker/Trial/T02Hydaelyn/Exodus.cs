@@ -29,7 +29,7 @@ class Exodus(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.Exodus2)
+        if ((AID)spell.Action.ID == AID.Exodus)
             _activation = default;
     }
 }

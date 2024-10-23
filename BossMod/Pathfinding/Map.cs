@@ -1,4 +1,6 @@
-﻿namespace BossMod.Pathfinding;
+﻿using System.Runtime.InteropServices;
+
+namespace BossMod.Pathfinding;
 
 // 'map' used for running pathfinding algorithms
 // this is essentially a square grid representing an arena (or immediate neighbourhood of the player) where we rasterize forbidden/desired zones
@@ -10,6 +12,7 @@
 // typically we try to find a path to goal with highest priority; if that fails, try lower priorities; if no paths can be found (e.g. we're currently inside an imminent aoe) we find direct path to closest safe pixel
 public class Map
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct Pixel
     {
         public float MaxG; // MaxValue if not dangerous
@@ -78,7 +81,7 @@ public class Map
         var offset = world - Center;
         var x = offset.Dot(LocalZDivRes.OrthoL());
         var y = offset.Dot(LocalZDivRes);
-        return new(Width / 2 + x, Height / 2 + y);
+        return new(Width * 0.5f + x, Height * 0.5f + y);
     }
 
     public (int x, int y) FracToGrid(Vector2 frac) => ((int)MathF.Floor(frac.X), (int)MathF.Floor(frac.Y));
@@ -89,26 +92,23 @@ public class Map
     public WPos GridToWorld(int gx, int gy, float fx, float fy)
     {
         var rsq = Resolution * Resolution; // since we then multiply by _localZDivRes, end result is same as * res * rotation.ToDir()
-        var ax = (gx - Width / 2 + fx) * rsq;
-        var az = (gy - Height / 2 + fy) * rsq;
+        var ax = (gx - Width * 0.5f + fx) * rsq;
+        var az = (gy - Height * 0.5f + fy) * rsq;
         return Center + ax * LocalZDivRes.OrthoL() + az * LocalZDivRes;
     }
 
     // block all pixels for which function returns value smaller than threshold ('inside' shape + extra cushion)
     public void BlockPixelsInside(Func<WPos, float> shape, float maxG, float threshold)
     {
-        MaxG = MathF.Max(MaxG, maxG);
-        Parallel.ForEach(Partitioner.Create(0, Pixels.Length), range =>
+        MaxG = Math.Max(MaxG, maxG);
+        Parallel.For(0, Height, y =>
         {
-            for (var i = range.Item1; i < range.Item2; i++)
+            var rowPixels = Pixels.AsSpan(y * Width, Width);
+            for (var x = 0; x < Width; x++)
             {
-                var x = i % Width;
-                var y = i / Width;
-                var center = GridToWorld(x, y, 0.5f, 0.5f);
-                if (shape(center) <= threshold)
+                if (shape(GridToWorld(x, y, 0.5f, 0.5f)) <= threshold)
                 {
-                    ref var pixel = ref Pixels[i];
-                    pixel.MaxG = MathF.Min(pixel.MaxG, maxG);
+                    rowPixels[x].MaxG = Math.Min(rowPixels[x].MaxG, maxG);
                 }
             }
         });
@@ -117,21 +117,20 @@ public class Map
     // for testing 9 points per pixel for increased accuracy
     public void BlockPixelsInsideArenaBounds(Func<WPos, float> shape, float maxG, float threshold)
     {
-        MaxG = MathF.Max(MaxG, maxG);
-        float[] offsets = [1e-5f, 0.5f, 1 - 1e-5f];
-        Parallel.ForEach(Partitioner.Create(0, Pixels.Length), range =>
+        MaxG = Math.Max(MaxG, maxG);
+        float[] offsets = [1e-5f, 0.5f, 1f - 1e-5f];
+
+        Parallel.For(0, Height, y =>
         {
-            for (var i = range.Item1; i < range.Item2; i++)
+            var rowPixels = Pixels.AsSpan(y * Width, Width);
+            for (var x = 0; x < Width; x++)
             {
-                var x = i % Width;
-                var y = i / Width;
                 var blocked = false;
-                foreach (var dx in offsets)
+                for (var i = 0; i < 3; i++)
                 {
-                    foreach (var dy in offsets)
+                    for (var j = 0; j < 3; j++)
                     {
-                        var point = GridToWorld(x, y, dx, dy);
-                        if (shape(point) <= threshold)
+                        if (shape(GridToWorld(x, y, offsets[i], offsets[j])) <= threshold)
                         {
                             blocked = true;
                             break;
@@ -140,10 +139,10 @@ public class Map
                     if (blocked)
                         break;
                 }
+
                 if (blocked)
                 {
-                    ref var pixel = ref Pixels[i];
-                    pixel.MaxG = MathF.Min(pixel.MaxG, maxG);
+                    rowPixels[x].MaxG = Math.Min(rowPixels[x].MaxG, maxG);
                 }
             }
         });
@@ -160,14 +159,13 @@ public class Map
     public int AddGoal(Func<WPos, float> shape, float threshold, int minPriority, int deltaPriority)
     {
         var maxAdjustedPriority = minPriority;
-        Parallel.ForEach(Partitioner.Create(0, Pixels.Length), range =>
+        Parallel.For(0, Height, y =>
         {
-            for (var i = range.Item1; i < range.Item2; i++)
+            var rowBaseIndex = y * Width;
+            for (var x = 0; x < Width; x++)
             {
-                var x = i % Width;
-                var y = i / Width;
-                var center = GridToWorld(x, y, 0.5f, 0.5f);
-                if (shape(center) <= threshold)
+                var i = rowBaseIndex + x;
+                if (shape(GridToWorld(x, y, 0.5f, 0.5f)) <= threshold)
                 {
                     ref var pixel = ref Pixels[i];
                     if (pixel.Priority >= minPriority)
@@ -201,7 +199,7 @@ public class Map
         var rsq = Resolution * Resolution; // since we then multiply by _localZDivRes, end result is same as * res * rotation.ToDir()
         var dx = LocalZDivRes.OrthoL() * rsq;
         var dy = LocalZDivRes * rsq;
-        var cy = Center + (-Width / 2 + 0.5f) * dx + (-Height / 2 + 0.5f) * dy;
+        var cy = Center + (-Width * 0.5f + 0.5f) * dx + (-Height * 0.5f + 0.5f) * dy;
         for (var y = 0; y < Height; y++)
         {
             var cx = cy;

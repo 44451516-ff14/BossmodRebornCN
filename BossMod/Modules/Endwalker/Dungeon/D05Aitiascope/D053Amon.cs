@@ -39,8 +39,8 @@ public enum AID : uint
 
 class CurtainCallArenaChange(BossModule module) : BossComponent(module)
 {
-    private static readonly List<Circle> circle = [new(new(11, -490), 6.4f)]; // adjusted for player hitbox radius
-    public static readonly ArenaBoundsComplex CurtaincallArena = new(D053Amon.union, D053Amon.difference.Concat(circle));
+    private static readonly Shape[] circle = [new Polygon(new(11, -490), 6.4f / MathF.Cos(MathF.PI / 20), 20, 9.Degrees())];
+    public static readonly ArenaBoundsComplex CurtaincallArena = new(D053Amon.union, [.. D053Amon.difference, .. circle]);
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -63,7 +63,7 @@ class DarkForte(BossModule module) : Components.SingleTargetCast(module, ActionI
 class Entracte(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Entracte));
 class DreamsOfIce(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.DreamsOfIce), new AOEShapeCircle(6));
 
-class CurtainCall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CurtainCall), 60, false)
+class CurtainCall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CurtainCall), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.Ice);
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -126,7 +126,7 @@ class D053AmonStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 786, NameID = 10293)]
 public class D053Amon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly List<Shape> union = [new Circle(new(11, -490), 19.5f)];
-    public static readonly List<Shape> difference = [new Rectangle(new(11, -469), 20, 1.75f)];
+    public static readonly Polygon[] union = [new Polygon(new(11, -490), 19.5f, 48)];
+    public static readonly Shape[] difference = [new Rectangle(new(11, -469), 20, 1.75f)];
     public static readonly ArenaBoundsComplex arena = new(union, difference);
 }

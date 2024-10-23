@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class ThunderPlatform(BossModule module) : BossComponent(module)
+class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
 {
     public BitMask RequireLevitating;
     public BitMask RequireHint;
@@ -8,17 +8,11 @@ class ThunderPlatform(BossModule module) : BossComponent(module)
 
     private static readonly AOEShapeRect _shape = new(5, 5, 5);
 
-    public override void AddHints(int slot, Actor actor, TextHints hints)
+    public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (RequireHint[slot])
-            hints.Add(RequireLevitating[slot] ? "Levitate" : "Stay on ground", RequireLevitating[slot] != _levitating[slot]);
-    }
-
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        if (RequireHint[pcSlot])
         {
-            var highlightLevitate = RequireLevitating[pcSlot];
+            var highlightLevitate = RequireLevitating[slot];
             for (var x = 0; x < 2; ++x)
             {
                 for (var z = 0; z < 3; ++z)
@@ -26,12 +20,18 @@ class ThunderPlatform(BossModule module) : BossComponent(module)
                     var cellLevitating = ((x ^ z) & 1) != 0;
                     if (cellLevitating != highlightLevitate)
                     {
-                        _shape.Draw(Arena, Module.Center + new WDir(-5 - 10 * x, -10 + 10 * z), default, Colors.AOE);
-                        _shape.Draw(Arena, Module.Center + new WDir(+5 + 10 * x, -10 + 10 * z), default, Colors.AOE);
+                        yield return new(_shape, Arena.Center + new WDir(-5 - 10 * x, -10 + 10 * z));
+                        yield return new(_shape, Arena.Center + new WDir(+5 + 10 * x, -10 + 10 * z));
                     }
                 }
             }
         }
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        if (RequireHint[slot])
+            hints.Add(RequireLevitating[slot] ? "Levitate" : "Stay on ground", RequireLevitating[slot] != _levitating[slot]);
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)

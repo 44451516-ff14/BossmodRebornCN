@@ -20,9 +20,9 @@ class UpwellRest(BossModule module) : Components.Exaflare(module, new AOEShapeRe
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.UpwellFirst)
+        if ((AID)spell.Action.ID == AID.UpwellFirst)
         {
-            var check = caster.Position.AlmostEqual(Module.Center, 1);
+            var check = caster.Position.AlmostEqual(Arena.Center, 1);
             var isNorth = caster.Position.Z == 530;
             var isSouth = caster.Position.Z == 550;
             var numExplosions1 = check || isSouth ? 5 : 1;

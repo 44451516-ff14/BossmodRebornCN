@@ -23,7 +23,7 @@ class NorthernCross(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         if (offset != default)
-            AOE = new(_shape, Module.Center, -126.875f.Degrees() + offset, WorldState.FutureTime(9.2f));
+            AOE = new(_shape, Arena.Center, -126.875f.Degrees() + offset, WorldState.FutureTime(9.2f));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

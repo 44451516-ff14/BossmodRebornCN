@@ -24,7 +24,7 @@ public enum AID : uint
     HeavenswardRoar = 29593, // Boss->self, 5.0s cast, range 50 60-degree cone
 }
 
-class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.LunarCry), 80, false)
+class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.LunarCry), 80)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.Icicle).Where(x => x.ModelState.AnimState1 != 1);
 }

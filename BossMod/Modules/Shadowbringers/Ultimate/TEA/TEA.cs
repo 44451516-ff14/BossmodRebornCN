@@ -12,7 +12,7 @@ class P2Photon(BossModule module) : Components.CastCounter(module, ActionID.Make
 class P2SpinCrusher(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.SpinCrusher), new AOEShapeCone(10, 45.Degrees()));
 class P2Drainage(BossModule module) : Components.PersistentVoidzone(module, 8, m => m.Enemies(OID.LiquidRage)); // TODO: verify distance
 
-class P2PropellerWind(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.PropellerWind), 50, false)
+class P2PropellerWind(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.PropellerWind), 50)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.GelidGaol);
 }

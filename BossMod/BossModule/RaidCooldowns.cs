@@ -35,7 +35,7 @@ public sealed class RaidCooldowns : IDisposable
         }
         // find first ability coming off CD and return time until it happens
         var firstAvailable = _damageCooldowns.Select(e => e.AvailableAt).Min();
-        return MathF.Max(0, (float)(firstAvailable - _ws.CurrentTime).TotalSeconds);
+        return Math.Max(0, (float)(firstAvailable - _ws.CurrentTime).TotalSeconds);
     }
 
     // TODO: why do we need two versions?..
@@ -45,7 +45,7 @@ public sealed class RaidCooldowns : IDisposable
             return float.MaxValue;
 
         var firstAvailable = _damageCooldowns.Select(e => e.AvailableAt).Min();
-        return MathF.Min(float.MaxValue, (float)(firstAvailable - _ws.CurrentTime).TotalSeconds);
+        return Math.Min(float.MaxValue, (float)(firstAvailable - _ws.CurrentTime).TotalSeconds);
     }
 
     public static bool IsDamageBuff(uint statusID) => statusID
@@ -62,7 +62,7 @@ public sealed class RaidCooldowns : IDisposable
         return (float)(expireMax - _ws.CurrentTime).TotalSeconds;
     }
 
-    public float InterruptAvailableIn(int slot, DateTime now) => MathF.Max(0, (float)(_interruptCooldowns[slot] - now).TotalSeconds);
+    public float InterruptAvailableIn(int slot, DateTime now) => Math.Max(0, (float)(_interruptCooldowns[slot] - now).TotalSeconds);
 
     private void HandlePartyUpdate(PartyState.OpModify op)
     {

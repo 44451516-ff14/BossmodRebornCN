@@ -12,6 +12,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 870, // 27B0->player, no cast, single-target
+
     RipperFang = 15505, // 27B0->player, 4.0s cast, single-target
     Soundwave = 15506, // 27B0->self, 3.0s cast, range 40 circle
     Subsonics = 15507, // 27B0->self, 6.0s cast, single-target
@@ -39,13 +40,8 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
     {
         if ((AID)spell.Action.ID == AID.Soundwave)
         {
-            var updatedAOEs = new List<AOEInstance>();
-            foreach (var a in _aoes)
-            {
-                var updatedAOE = new AOEInstance(a.Shape, a.Origin, a.Rotation, Module.CastFinishAt(spell, 3.7f));
-                updatedAOEs.Add(updatedAOE);
-            }
-            _aoes = updatedAOEs;
+            for (var i = 0; i < _aoes.Count; ++i)
+                _aoes[i] = _aoes[i] with { Activation = Module.CastFinishAt(spell, 3.7f) };
         }
     }
 
@@ -81,5 +77,5 @@ class D032BatsquatchStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 651, NameID = 8232)]
 public class D032Batsquatch(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(62, -35.2f), 14.7f)], [new Rectangle(new(61.9f, -20), 20, 2), new Rectangle(new(61.9f, -50), 20, 2)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(62, -35), 14.5f / MathF.Cos(MathF.PI / 28), 28)], [new Rectangle(new(61.9f, -20), 20, 2), new Rectangle(new(61.9f, -50), 20, 2)]);
 }

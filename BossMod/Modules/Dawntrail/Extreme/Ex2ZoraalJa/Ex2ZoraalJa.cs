@@ -11,12 +11,8 @@ class HalfCircuitDonut(BossModule module) : Components.SelfTargetedAOEs(module, 
 class HalfCircuitCircle(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.HalfCircuitAOECircle), new AOEShapeCircle(10));
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 996, NameID = 12882, PlanLevel = 100)]
-public class Ex2ZoraalJa(WorldState ws, Actor primary) : BossModule(ws, primary, NormalCenter, NormalBounds)
+public class Ex2ZoraalJa(WorldState ws, Actor primary) : Trial.T02ZoraalJa.ZoraalJa(ws, primary)
 {
-    public static readonly Angle ArenaRotation = 45.Degrees();
-    public static readonly WPos NormalCenter = new(100, 100);
-    public static readonly ArenaBoundsSquare NormalBounds = new(20, ArenaRotation);
-    public static readonly ArenaBoundsSquare SmallBounds = new(10, ArenaRotation);
     public static readonly ArenaBoundsCustom NWPlatformBounds = BuildTwoPlatformsBounds(135.Degrees());
     public static readonly ArenaBoundsCustom NEPlatformBounds = BuildTwoPlatformsBounds(-135.Degrees());
 
@@ -25,6 +21,6 @@ public class Ex2ZoraalJa(WorldState ws, Actor primary) : BossModule(ws, primary,
         var dir = orientation.ToDirection();
         var main = new PolygonClipper.Operand(CurveApprox.Rect(-15 * dir, dir, 10, 10));
         var side = new PolygonClipper.Operand(CurveApprox.Rect(+15 * dir, dir, 10, 10));
-        return new(20, NormalBounds.Clipper.Union(main, side));
+        return new(20, DefaultBounds.Clipper.Union(main, side));
     }
 }

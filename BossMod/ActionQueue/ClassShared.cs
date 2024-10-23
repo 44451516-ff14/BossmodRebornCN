@@ -54,8 +54,13 @@ public enum AID : uint
     // Misc
     Resurrection = 173, // L12 SMN/SCH, 8.0s cast, GCD, range 30, single-target, targets=party/alliance/friendly
 
-    // Duties
+    // Duty actions
+    SmokeScreen = 7816,
     MagitekPulse = 7962, // MarkXLIIIMiniCannon->location, 1.0s cast, range 6 circle, Castrum Abania, 1st boss
+    AethericSiphon = 9102,
+    Shatterstone = 9823,
+    Deflect = 10006,
+    DeflectVeryEasy = 18863
 }
 
 public sealed class Definitions : IDisposable
@@ -113,8 +118,13 @@ public sealed class Definitions : IDisposable
         // Misc
         d.RegisterSpell(AID.Resurrection);
 
-        // Duties
+        // duty actions
         d.RegisterSpell(AID.MagitekPulse);
+        d.RegisterSpell(AID.SmokeScreen);
+        d.RegisterSpell(AID.AethericSiphon);
+        d.RegisterSpell(AID.Shatterstone);
+        d.RegisterSpell(AID.Deflect);
+        d.RegisterSpell(AID.DeflectVeryEasy);
 
         Customize(d);
     }

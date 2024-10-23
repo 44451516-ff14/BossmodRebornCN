@@ -32,13 +32,12 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public bool Safespots;
     private DateTime activation;
-    private ArenaBounds? arena;
     public static readonly WPos ArenaCenter = new(11, 144);
     public static readonly ArenaBoundsSquare DefaultBounds = new(19.5f);
-    private static readonly List<WPos> positions = [new(19.5f, 152), new(2.5f, 152), new(2.5f, 136),
+    private static readonly WPos[] positions = [new(19.5f, 152), new(2.5f, 152), new(2.5f, 136),
     new(19.5f, 136)];
     private static readonly Rectangle[] squares = positions.Select(pos => new Rectangle(pos, 2, 1.5f)).ToArray();
-    private static readonly List<Shape> rect = [new Rectangle(ArenaCenter, 6.5f, 19.5f)];
+    private static readonly Rectangle[] rect = [new(ArenaCenter, 6.5f, 19.5f)];
     private readonly List<Shape> union = [];
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -74,8 +73,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 
     private void UpdateArena()
     {
-        arena = new ArenaBoundsComplex(rect.Concat(union));
-        Arena.Bounds = arena;
+        Arena.Bounds = new ArenaBoundsComplex([.. rect, .. union]);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -1,6 +1,7 @@
 ﻿namespace BossMod.AI;
 
-[ConfigDisplay(Name = "AI 配置 (AI 处于非常实验阶段，请自行承担风险！)", Order = 6)]
+
+[ConfigDisplay(Name = "AI 配置 (AI 处于非常实验阶段，请自行承担风险！)", Order = 7)]
 sealed class AIConfig : ConfigNode
 {
     [PropertyDisplay("在 DTR 条中显示状态")]
@@ -9,7 +10,7 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("显示 AI 界面")]
     public bool DrawUI = true;
 
-    [PropertyDisplay("关注目标领导")]
+    [PropertyDisplay("将目标设置为焦点")]
     public bool FocusTargetLeader = true;
 
     [PropertyDisplay("将按键广播到其他窗口")]

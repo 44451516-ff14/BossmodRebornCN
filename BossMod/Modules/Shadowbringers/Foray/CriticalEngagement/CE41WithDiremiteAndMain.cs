@@ -49,12 +49,12 @@ class CrystallineFracture(BossModule module) : Components.SelfTargetedAOEs(modul
 class ResonantFrequencyDim(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ResonantFrequencyDim), new AOEShapeCircle(6));
 class ResonantFrequencyCorrupted(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ResonantFrequencyCorrupted), new AOEShapeCircle(6));
 
-class CrystallineStingers(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CrystallineStingers), 60, false)
+class CrystallineStingers(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CrystallineStingers), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.DimCrystal).Where(a => !a.IsDead);
 }
 
-class AetherialStingers(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.AetherialStingers), 60, false)
+class AetherialStingers(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.AetherialStingers), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.CorruptedCrystal).Where(a => !a.IsDead);
 }

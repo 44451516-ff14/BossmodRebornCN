@@ -28,7 +28,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
     public void Execute(Actor player, Actor master)
     {
         ForceMovementIn = float.MaxValue;
-        if (player.IsDead || ctrl.InCutscene)
+        if (player.IsDead)
             return;
 
         // keep master in focus
@@ -199,7 +199,6 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
             ctrl.NaviTargetVertical = master != player ? master.PosRot.Y : null;
             ctrl.AllowInterruptingCastByMovement = player.CastInfo != null && _naviDecision.LeewaySeconds <= player.CastInfo.RemainingTime - 0.5;
             ctrl.ForceCancelCast = false;
-            ctrl.WantJump = distSq >= 0.01f && autorot.Bossmods.ActiveModule?.StateMachine.ActiveState != null && autorot.Bossmods.ActiveModule.NeedToJump(player.Position, toDest.Normalized());
 
             //var cameraFacing = _ctrl.CameraFacing;
             //var dot = cameraFacing.Dot(_ctrl.TargetRot.Value);
@@ -239,7 +238,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
         var player = autorot.WorldState.Party.Player();
         var dist = _naviDecision.Destination != null && player != null ? (_naviDecision.Destination.Value - player.Position).Length() : 0;
-        ImGui.TextUnformatted($"Max-cast={MathF.Min(ForceMovementIn, 1000):f3}, afk={_afkMode}, follow={_followMaster}, algo={_naviDecision.DecisionType} {_naviDecision.Destination} (d={dist:f3}), master standing for {Math.Clamp((WorldState.CurrentTime - _masterLastMoved).TotalSeconds, 0, 1000):f1}");
+        ImGui.TextUnformatted($"Max-cast={Math.Min(ForceMovementIn, 1000):f3}, afk={_afkMode}, follow={_followMaster}, algo={_naviDecision.DecisionType} {_naviDecision.Destination} (d={dist:f3}), master standing for {Math.Clamp((WorldState.CurrentTime - _masterLastMoved).TotalSeconds, 0, 1000):f1}");
     }
 
     private bool TargetIsForbidden(ulong actorId) => autorot.Hints.ForbiddenTargets.Any(e => e.Actor.InstanceID == actorId);

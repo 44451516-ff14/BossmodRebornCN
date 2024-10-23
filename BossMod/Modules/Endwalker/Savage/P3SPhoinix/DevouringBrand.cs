@@ -8,7 +8,7 @@ class DevouringBrand(BossModule module) : BossComponent(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var offset = actor.Position - Module.Center;
-        if (MathF.Abs(offset.X) <= _halfWidth || MathF.Abs(offset.Z) <= _halfWidth)
+        if (Math.Abs(offset.X) <= _halfWidth || Math.Abs(offset.Z) <= _halfWidth)
         {
             hints.Add("GTFO from brand!");
         }
@@ -16,8 +16,8 @@ class DevouringBrand(BossModule module) : BossComponent(module)
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
-        Arena.ZoneRect(Module.Center, new WDir(1, 0), Module.Bounds.Radius, Module.Bounds.Radius, _halfWidth, Colors.AOE);
-        Arena.ZoneRect(Module.Center, new WDir(0, +1), Module.Bounds.Radius, -_halfWidth, _halfWidth, Colors.AOE);
-        Arena.ZoneRect(Module.Center, new WDir(0, -1), Module.Bounds.Radius, -_halfWidth, _halfWidth, Colors.AOE);
+        Arena.ZoneRect(Arena.Center, new WDir(1, 0), Arena.Bounds.Radius, Module.Bounds.Radius, _halfWidth, Colors.AOE);
+        Arena.ZoneRect(Arena.Center, new WDir(0, +1), Arena.Bounds.Radius, -_halfWidth, _halfWidth, Colors.AOE);
+        Arena.ZoneRect(Arena.Center, new WDir(0, -1), Arena.Bounds.Radius, -_halfWidth, _halfWidth, Colors.AOE);
     }
 }

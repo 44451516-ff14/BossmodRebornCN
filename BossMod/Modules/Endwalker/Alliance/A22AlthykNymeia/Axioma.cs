@@ -38,7 +38,7 @@ class Axioma(BossModule module) : Components.GenericAOEs(module)
     new(54.02f, -743.57f), new(52.47f, -742.63f), new(50.81f, -741.78f), new(48.48f, -740.79f), new(47.65f, -740.45f), new(48.05f, -736.33f),
     new(50.02f, -737.09f), new(52.5f, -738.17f), new(54.44f, -739.15f), new(56.42f, -740.38f), new(58.26f, -741.94f), new(59.73f, -743.55f),
     new(61.01f, -745.52f), new(62, -747.65f), new(62.67f, -749.58f), new(63.14f, -751.48f), new(63.79f, -754.5f)]);
-    private static readonly List<Shape> union = [shapeCustom1, shapeCustom2, shapeCustom3, shapeCustom4, shapeCustom5, shapeCustom6];
+    private static readonly Shape[] union = [shapeCustom1, shapeCustom2, shapeCustom3, shapeCustom4, shapeCustom5, shapeCustom6];
     private static readonly AOEShapeCustom voidzone = new(union);
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)

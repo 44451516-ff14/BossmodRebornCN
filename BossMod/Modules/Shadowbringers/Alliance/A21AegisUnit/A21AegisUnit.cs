@@ -8,8 +8,6 @@ class LifesLastSong(BossModule module) : Components.SelfTargetedAOEs(module, Act
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 736, NameID = 9642)]
 public class A21AegisUnit(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    private static readonly List<Shape> union = [new Circle(new(-230, 192), 25), new Circle(new(-245.1f, 183.2f), 12), new Circle(new(-230, 209.5f), 12), new Circle(new(-214.9f, 183.2f), 12)];
-    private static readonly List<Shape> difference = [new Circle(new(-230, 192), 10)];
-
-    public static readonly ArenaBoundsComplex DefaultBounds = new(union, difference);
+    private static readonly Circle[] union = [new(new(-230, 192), 25), new(new(-245.1f, 183.2f), 12), new(new(-230, 209.5f), 12), new(new(-214.9f, 183.2f), 12)];
+    public static readonly ArenaBoundsComplex DefaultBounds = new(union, [new Circle(new(-230, 192), 10)]);
 }

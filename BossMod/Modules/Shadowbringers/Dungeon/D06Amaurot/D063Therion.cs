@@ -51,7 +51,7 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
     private static readonly Shape[] rect = [new Rectangle(new WPos(0, -45), 10, 30)];
     public readonly List<Shape> unionRefresh = new(rect.Concat(shapes.Take(8)));
     private readonly List<Shape> difference = [];
-    public static readonly ArenaBoundsComplex DefaultArena = new(rect.Concat(shapes.Take(8)), Offset: PathfindingOffset);
+    public static readonly ArenaBoundsComplex DefaultArena = new([.. rect, .. shapes.Take(8)], Offset: PathfindingOffset);
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -73,7 +73,7 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
                             difference.Add(shapes[8]);
                         if (unionRefresh.Count == 5)
                             difference.Add(shapes[9]);
-                        ArenaBoundsComplex arena = new(unionRefresh, difference, Offset: PathfindingOffset);
+                        ArenaBoundsComplex arena = new([.. unionRefresh], [.. difference], Offset: PathfindingOffset);
                         Arena.Bounds = arena;
                         Arena.Center = arena.Center;
                     }

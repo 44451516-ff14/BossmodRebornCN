@@ -3,7 +3,7 @@
 class BlizzagaForte(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.BlizzagaForte), new AOEShapeCircle(10));
 class Darkness(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.Darkness), new AOEShapeCone(6, 22.5f.Degrees()));
 
-class CurtainCall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CurtainCall), 60, false)
+class CurtainCall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CurtainCall), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.IceCage).Where(a => !a.IsDead);
 }

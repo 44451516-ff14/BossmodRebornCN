@@ -15,7 +15,7 @@ class PrecisionGuidedMissile(BossModule module) : Components.SpreadFromCastTarge
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", PrimaryActorOID = (uint)OID.FlightUnitALpha, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 736, NameID = 9140)]
 public class A22FlightUnits(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    private static readonly List<Shape> union = [new Circle(new(-250, -160.4f), 19), new Circle(new(-230, -195), 19), new Circle(new(-210, -160.4f), 19), new Rectangle(new(-230, -172), 18, 30.5f), new Rectangle(new(-230, -172), 18, 30.5f, 60.Degrees()), new Rectangle(new(-230, -172), 18, 30.5f, -60.Degrees())];
+    private static readonly Shape[] union = [new Circle(new(-250, -160.4f), 19), new Circle(new(-230, -195), 19), new Circle(new(-210, -160.4f), 19), new Rectangle(new(-230, -172), 18, 30.5f), new Rectangle(new(-230, -172), 18, 30.5f, 60.Degrees()), new Rectangle(new(-230, -172), 18, 30.5f, -60.Degrees())];
 
     public static readonly ArenaBoundsComplex DefaultBounds = new(union);
 

@@ -138,19 +138,13 @@ public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rot
 
     private static float CalculateRadius(float HalfWidth, float HalfHeight, Angle Rotation)
     {
-        if (StaticCache.TryGetValue((HalfWidth, HalfHeight, Rotation), out var cachedResult))
-            return (float)cachedResult;
-
-        var cos = MathF.Abs(MathF.Cos(Rotation.Rad));
-        var sin = MathF.Abs(MathF.Sin(Rotation.Rad));
+        var cos = Math.Abs(MathF.Cos(Rotation.Rad));
+        var sin = Math.Abs(MathF.Sin(Rotation.Rad));
         var corner1 = new WDir(HalfWidth * cos - HalfHeight * sin, HalfWidth * sin + HalfHeight * cos);
         var corner2 = new WDir(HalfWidth * cos + HalfHeight * sin, HalfWidth * sin - HalfHeight * cos);
-        var maxDistX = Math.Max(MathF.Abs(corner1.X), MathF.Abs(corner2.X));
-        var maxDistZ = Math.Max(MathF.Abs(corner1.Z), MathF.Abs(corner2.Z));
-        var radius = Math.Max(maxDistX, maxDistZ);
-
-        StaticCache[(HalfWidth, HalfHeight, Rotation)] = radius;
-        return radius;
+        var maxDistX = Math.Max(Math.Abs(corner1.X), Math.Abs(corner2.X));
+        var maxDistZ = Math.Max(Math.Abs(corner1.Z), Math.Abs(corner2.Z));
+        return Math.Max(maxDistX, maxDistZ);
     }
 
     protected override PolygonClipper.Operand BuildClipPoly() => new(CurveApprox.Rect(Orientation, HalfWidth, HalfHeight));
@@ -160,10 +154,10 @@ public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rot
 
     public override WDir ClampToBounds(WDir offset)
     {
-        var dx = MathF.Abs(offset.Dot(Orientation.OrthoL()));
+        var dx = Math.Abs(offset.Dot(Orientation.OrthoL()));
         if (dx > HalfWidth)
             offset *= HalfWidth / dx;
-        var dy = MathF.Abs(offset.Dot(Orientation));
+        var dy = Math.Abs(offset.Dot(Orientation));
         if (dy > HalfHeight)
             offset *= HalfHeight / dy;
         return offset;
@@ -173,60 +167,78 @@ public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rot
 public record class ArenaBoundsSquare(float Radius, Angle Rotation = default, float MapResolution = 0.5f) : ArenaBoundsRect(Radius, Radius, Rotation, MapResolution) { }
 
 // custom complex polygon bounds
-public record class ArenaBoundsCustom(float Radius, RelSimplifiedComplexPolygon Poly, float MapResolution = 0.5f, float Offset = 0) : ArenaBounds(Radius, MapResolution)
+public record class ArenaBoundsCustom : ArenaBounds
 {
     private Pathfinding.Map? _cachedMap;
+    private readonly RelSimplifiedComplexPolygon poly;
+    private readonly (WDir, WDir)[] edges;
+    private readonly float offset;
+    public float HalfWidth, HalfHeight;
 
-    protected override PolygonClipper.Operand BuildClipPoly() => new(Poly);
+    public ArenaBoundsCustom(float Radius, RelSimplifiedComplexPolygon Poly, float MapResolution = 0.5f, float Offset = 0)
+        : base(Radius, MapResolution)
+    {
+        offset = Offset;
+        poly = Poly;
+
+        var edgeList = new List<(WDir, WDir)>();
+        for (var i = 0; i < Poly.Parts.Count; ++i)
+        {
+            var part = Poly.Parts[i];
+            edgeList.AddRange(part.ExteriorEdges);
+            for (var j = 0; j < part.Holes.Count(); ++j)
+            {
+                edgeList.AddRange(part.InteriorEdges(j));
+            }
+        }
+        edges = [.. edgeList];
+    }
+
+    protected override PolygonClipper.Operand BuildClipPoly() => new(poly);
     public override void PathfindMap(Pathfinding.Map map, WPos center) => map.Init(_cachedMap ??= BuildMap(), center);
 
     public override bool Contains(WDir offset)
     {
-        var cacheKey = (Poly, offset, Radius);
-        if (Cache.TryGetValue(cacheKey, out var cachedResult)) // caching contains seems to lower drawtime by ~33%
+        var cacheKey = (poly, offset, Radius);
+        if (Cache.TryGetValue(cacheKey, out var cachedResult))
             return (bool)cachedResult;
-        var result = Poly.Contains(offset);
+        var result = poly.Contains(offset);
         AddToInstanceCache(cacheKey, result);
         return result;
     }
 
     public override float IntersectRay(WDir originOffset, WDir dir)
     {
-        var cacheKey = (Poly, originOffset, dir);
-        if (Cache.TryGetValue(cacheKey, out var cachedResult)) // caching intersections seems to lower drawtime by ~12.5% while in use
+        var cacheKey = (poly, originOffset, dir);
+        if (Cache.TryGetValue(cacheKey, out var cachedResult))
             return (float)cachedResult;
-        var result = Intersect.RayPolygon(originOffset, dir, Poly);
+        var result = Intersect.RayPolygon(originOffset, dir, poly);
         AddToInstanceCache(cacheKey, result);
         return result;
     }
 
     public override WDir ClampToBounds(WDir offset)
     {
-        var cacheKey = (Poly, offset);
-        if (Cache.TryGetValue(cacheKey, out var cachedResult)) // caching ClampToBounds seems to lower drawtime by about 50%
+        var cacheKey = (poly, offset);
+        if (Cache.TryGetValue(cacheKey, out var cachedResult))
             return (WDir)cachedResult;
-        if (Contains(offset) || offset.AlmostEqual(default, 0.1f)) // if actor is almost in the center of the arena, do nothing (eg donut arena)
+        if (Contains(offset) || offset.AlmostEqual(default, 1)) // if actor is almost in the center of the arena, do nothing (eg donut arena)
         {
-            Cache[(Poly, offset)] = offset;
+            Cache[(poly, offset)] = offset;
             return offset;
         }
         var minDistance = float.MaxValue;
         var nearestPoint = offset;
-
-        foreach (var part in Poly.Parts)
+        for (var i = 0; i < edges.Length; ++i)
         {
-            foreach (var edge in part.ExteriorEdges.Concat(part.Holes.SelectMany(part.InteriorEdges)))
-            {
-                var edgeStart = edge.Item1;
-                var edgeEnd = edge.Item2;
-                var nearest = NearestPointOnSegment(offset, edgeStart, edgeEnd);
-                var distance = (nearest - offset).LengthSq();
+            var edge = edges[i];
+            var nearest = NearestPointOnSegment(offset, edge.Item1, edge.Item2);
+            var distance = (nearest - offset).LengthSq();
 
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                    nearestPoint = nearest;
-                }
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearestPoint = nearest;
             }
         }
         AddToInstanceCache(cacheKey, nearestPoint);
@@ -237,47 +249,38 @@ public record class ArenaBoundsCustom(float Radius, RelSimplifiedComplexPolygon 
     {
         var segmentVector = segmentEnd - segmentStart;
         var segmentLengthSq = segmentVector.LengthSq();
-        if (segmentLengthSq == 0)
-            return segmentStart;
-
         var t = Math.Max(0, Math.Min(1, (point - segmentStart).Dot(segmentVector) / segmentLengthSq));
         return segmentStart + t * segmentVector;
     }
 
-    private static (float halfWidth, float halfHeight) CalculatePolygonProperties(RelSimplifiedComplexPolygon Poly)
-    {
-        if (StaticCache.TryGetValue(Poly, out var cachedResult))
-            return ((float, float))cachedResult;
-
-        float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
-
-        foreach (var part in Poly.Parts)
-        {
-            foreach (var vertex in part.Exterior)
-            {
-                if (vertex.X < minX)
-                    minX = vertex.X;
-                if (vertex.X > maxX)
-                    maxX = vertex.X;
-                if (vertex.Z < minZ)
-                    minZ = vertex.Z;
-                if (vertex.Z > maxZ)
-                    maxZ = vertex.Z;
-            }
-        }
-
-        var result = ((maxX - minX) / 2, (maxZ - minZ) / 2);
-        StaticCache[Poly] = result;
-        return result;
-    }
-
     private Pathfinding.Map BuildMap()
     {
-        // faster than using the polygonwithholes shapedistance method directly
-        var polygon = Offset != 0 ? Poly.Offset(Offset) : Poly;
+        // faster than using the polygonwithholes distance method directly
+        var polygon = offset != 0 ? poly.Offset(offset) : poly;
+        if (HalfHeight == default) // calculate bounding box if not already done by ArenaBoundsComplex to reduce amount of point in polygon tests
+        {
+            float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
 
-        var (halfWidth, halfHeight) = CalculatePolygonProperties(polygon);
-        var map = new Pathfinding.Map(MapResolution, default, halfWidth, halfHeight);
+            for (var i = 0; i < polygon.Parts.Count; i++)
+            {
+                var part = polygon.Parts[i];
+                for (var j = 0; j < part.Exterior.Length; j++)
+                {
+                    var vertex = part.Exterior[j];
+                    if (vertex.X < minX)
+                        minX = vertex.X;
+                    if (vertex.X > maxX)
+                        maxX = vertex.X;
+                    if (vertex.Z < minZ)
+                        minZ = vertex.Z;
+                    if (vertex.Z > maxZ)
+                        maxZ = vertex.Z;
+                }
+            }
+            HalfWidth = (maxX - minX) * 0.5f;
+            HalfHeight = (maxZ - minZ) * 0.5f;
+        }
+        var map = new Pathfinding.Map(MapResolution, default, HalfWidth, HalfHeight);
         var halfSample = MapResolution / 2 - 1e-5f; // tiny offset to account for floating point inaccuracies
         WDir[] sampleOffsets =
         [
@@ -319,27 +322,26 @@ public record class ArenaBoundsCustom(float Radius, RelSimplifiedComplexPolygon 
 // for convenience third list will optionally perform additional unions at the end
 public record class ArenaBoundsComplex : ArenaBoundsCustom
 {
-    public WPos Center;
-
-    public ArenaBoundsComplex(IEnumerable<Shape> UnionShapes, IEnumerable<Shape>? DifferenceShapes = null, IEnumerable<Shape>? AdditionalShapes = null, float MapResolution = 0.5f, float Offset = 0)
-        : base(BuildBounds(UnionShapes, DifferenceShapes, AdditionalShapes, MapResolution, Offset, out var center))
+    public readonly WPos Center;
+    public ArenaBoundsComplex(Shape[] UnionShapes, Shape[]? DifferenceShapes = null, Shape[]? AdditionalShapes = null, float MapResolution = 0.5f, float Offset = 0)
+        : base(BuildBounds(UnionShapes, DifferenceShapes, AdditionalShapes, MapResolution, Offset, out var center, out var halfWidth, out var halfHeight))
     {
         Center = center;
+        HalfWidth = halfWidth + Offset;
+        HalfHeight = halfHeight + Offset;
     }
 
-    private static ArenaBoundsCustom BuildBounds(IEnumerable<Shape> unionShapes, IEnumerable<Shape>? differenceShapes, IEnumerable<Shape>? additionalShapes, float mapResolution, float offset, out WPos center)
+    private static ArenaBoundsCustom BuildBounds(Shape[] unionShapes, Shape[]? differenceShapes, Shape[]? additionalShapes, float mapResolution, float offset, out WPos center, out float halfWidth, out float halfHeight)
     {
-        var cacheKey = CreateCacheKey(unionShapes, differenceShapes ?? [], additionalShapes ?? []);
-        var properties = CalculatePolygonProperties(cacheKey, unionShapes, differenceShapes ?? [], additionalShapes ?? []);
+        var properties = CalculatePolygonProperties(unionShapes, differenceShapes ?? [], additionalShapes ?? []);
         center = properties.Center;
-        return new ArenaBoundsCustom(properties.Radius, properties.Poly, mapResolution, offset);
+        halfWidth = properties.HalfWidth;
+        halfHeight = properties.HalfHeight;
+        return new(properties.Radius, properties.Poly, mapResolution, offset);
     }
 
-    private static (WPos Center, float Radius, RelSimplifiedComplexPolygon Poly) CalculatePolygonProperties(int cacheKey, IEnumerable<Shape> unionShapes, IEnumerable<Shape> differenceShapes, IEnumerable<Shape> additionalShapes)
+    private static (WPos Center, float HalfWidth, float HalfHeight, float Radius, RelSimplifiedComplexPolygon Poly) CalculatePolygonProperties(Shape[] unionShapes, Shape[] differenceShapes, Shape[] additionalShapes)
     {
-        if (StaticCache.TryGetValue(cacheKey, out var cachedResult))
-            return ((WPos, float, RelSimplifiedComplexPolygon))cachedResult;
-
         var unionPolygons = ParseShapes(unionShapes);
         var differencePolygons = ParseShapes(differenceShapes);
         var additionalPolygons = ParseShapes(additionalShapes);
@@ -347,10 +349,13 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
         var combinedPoly = CombinePolygons(unionPolygons, differencePolygons, additionalPolygons);
 
         float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
-        foreach (var part in combinedPoly.Parts)
+        var count = combinedPoly.Parts.Count;
+        for (var i = 0; i < count; i++)
         {
-            foreach (var vertex in part.Exterior)
+            var part = combinedPoly.Parts[i];
+            for (var j = 0; j < part.Exterior.Length; j++)
             {
+                var vertex = part.Exterior[j];
                 if (vertex.X < minX)
                     minX = vertex.X;
                 if (vertex.X > maxX)
@@ -362,26 +367,17 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
             }
         }
 
-        var center = new WPos((minX + maxX) / 2, (minZ + maxZ) / 2);
-        var maxDistX = Math.Max(MathF.Abs(maxX - center.X), MathF.Abs(minX - center.X));
-        var maxDistZ = Math.Max(MathF.Abs(maxZ - center.Z), MathF.Abs(minZ - center.Z));
-        var radius = Math.Max(maxDistX, maxDistZ);
+        var center = new WPos((minX + maxX) * 0.5f, (minZ + maxZ) * 0.5f);
+        var maxDistX = Math.Max(Math.Abs(maxX - center.X), Math.Abs(minX - center.X));
+        var maxDistZ = Math.Max(Math.Abs(maxZ - center.Z), Math.Abs(minZ - center.Z));
+        var halfWidth = (maxX - minX) * 0.5f;
+        var halfHeight = (maxZ - minZ) * 0.5f;
 
         var combinedPolyCentered = CombinePolygons(ParseShapes(unionShapes, center), ParseShapes(differenceShapes, center), ParseShapes(additionalShapes, center));
-        var result = (center, radius, combinedPolyCentered);
-        StaticCache[cacheKey] = result;
-        return result;
+        return (center, halfWidth, halfHeight, Math.Max(maxDistX, maxDistZ), combinedPolyCentered);
     }
 
-    private static int CreateCacheKey(IEnumerable<Shape> unionShapes, IEnumerable<Shape> differenceShapes, IEnumerable<Shape> additionalShapes)
-    {
-        var hashCode = new HashCode();
-        foreach (var shape in unionShapes.Concat(differenceShapes).Concat(additionalShapes))
-            hashCode.Add(shape.GetHashCode());
-        return hashCode.ToHashCode();
-    }
-
-    private static RelSimplifiedComplexPolygon CombinePolygons(List<RelSimplifiedComplexPolygon> unionPolygons, List<RelSimplifiedComplexPolygon> differencePolygons, List<RelSimplifiedComplexPolygon> secondUnionPolygons)
+    private static RelSimplifiedComplexPolygon CombinePolygons(RelSimplifiedComplexPolygon[] unionPolygons, RelSimplifiedComplexPolygon[] differencePolygons, RelSimplifiedComplexPolygon[] secondUnionPolygons)
     {
         var clipper = new PolygonClipper();
         var operandUnion = new PolygonClipper.Operand();
@@ -395,14 +391,20 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
         foreach (var polygon in secondUnionPolygons)
             operandSecondUnion.AddPolygon(polygon);
 
-        var combinedShape = clipper.Union(operandUnion, new PolygonClipper.Operand());
-        if (differencePolygons.Count != 0)
-            combinedShape = clipper.Difference(new PolygonClipper.Operand(combinedShape), operandDifference);
-        if (secondUnionPolygons.Count != 0)
+        var combinedShape = clipper.Difference(operandUnion, operandDifference);
+        if (secondUnionPolygons.Length != 0)
             combinedShape = clipper.Union(new PolygonClipper.Operand(combinedShape), operandSecondUnion);
 
         return combinedShape;
     }
 
-    private static List<RelSimplifiedComplexPolygon> ParseShapes(IEnumerable<Shape> shapes, WPos center = default) => shapes.Select(shape => shape.ToPolygon(center)).ToList();
+    private static RelSimplifiedComplexPolygon[] ParseShapes(Shape[] shapes, WPos center = default)
+    {
+        var polygons = new RelSimplifiedComplexPolygon[shapes.Length];
+        for (var i = 0; i < shapes.Length; i++)
+        {
+            polygons[i] = shapes[i].ToPolygon(center);
+        }
+        return polygons;
+    }
 }

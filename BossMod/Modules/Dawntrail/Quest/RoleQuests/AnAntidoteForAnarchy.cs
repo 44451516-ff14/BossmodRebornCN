@@ -94,7 +94,7 @@ class SelfDestruct(BossModule module) : Components.SelfTargetedAOEs(module, Acti
 class SelfDestructKBMammet(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.SelfDestructKBMammet), new AOEShapeCircle(7), 8);
 class Fester(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Fester));
 
-class TriDisaster(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TriDisasterFirst), 5, 1, 2)
+class TriDisaster(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TriDisasterFirst), 5, 2, 2)
 {
     private int numCasts;
 

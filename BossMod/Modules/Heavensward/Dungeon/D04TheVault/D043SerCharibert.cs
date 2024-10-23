@@ -49,6 +49,7 @@ class AltarPyre(BossModule module) : Components.RaidwideCast(module, ActionID.Ma
 class HeavensflameAOE(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.HeavensflameAOE), 5);
 class HolyChain(BossModule module) : Components.Chains(module, (uint)TetherID.HolyChain, ActionID.MakeSpell(AID.HolyChainPlayerTether));
 class TurretTour(BossModule module) : Components.PersistentVoidzone(module, 2, m => m.Enemies(OID.DawnKnight).Concat(m.Enemies(OID.DuskKnight)).Where(x => x.ModelState.ModelState == 8), 10);
+class TurretTourHint(BossModule module) : Components.PersistentVoidzone(module, 2, m => m.Enemies(OID.DawnKnight).Concat(m.Enemies(OID.DuskKnight)).Where(x => x.ModelState.ModelState != 8 && !x.Position.AlmostEqual(module.Center, 10)), 3);
 
 class D043SerCharibertStates : StateMachineBuilder
 {
@@ -60,6 +61,7 @@ class D043SerCharibertStates : StateMachineBuilder
             .ActivateOnEnter<AltarPyre>()
             .ActivateOnEnter<HeavensflameAOE>()
             .ActivateOnEnter<HolyChain>()
+            .ActivateOnEnter<TurretTourHint>()
             .ActivateOnEnter<TurretTour>();
     }
 }

@@ -371,11 +371,11 @@ public class LineStack(BossModule module, ActionID aidMarker, ActionID aidResolv
         }
         if (isBaitNotTarget && !isBaitTarget && !forbiddenActors)
             foreach (var b in ActiveBaits.Where(x => x.Target != actor))
-                forbiddenInverted.Add(ShapeDistance.InvertedRect(b.Source.Position, (b.Target.Position - b.Source.Position).Normalized(), Range, 0, HalfWidth));
+                forbiddenInverted.Add(ShapeDistance.InvertedRect(b.Source.Position, b.Rotation, Range, 0, HalfWidth));
         // prevent overlapping if there are multiple line stacks, or if an actor is forbidden to enter
         if (isBaitNotTarget && isBaitTarget || forbiddenActors)
             foreach (var b in ActiveBaits.Where(x => x.Target != actor))
-                forbidden.Add(ShapeDistance.Rect(b.Source.Position, (b.Target.Position - b.Source.Position).Normalized(), Range, 0, 2 * HalfWidth));
+                forbidden.Add(ShapeDistance.Rect(b.Source.Position, b.Rotation, Range, 0, 2 * HalfWidth));
         if (forbiddenInverted.Count > 0)
             hints.AddForbiddenZone(p => forbiddenInverted.Select(f => f(p)).Max(), ActiveBaits.FirstOrDefault().Activation);
         if (forbidden.Count > 0)
@@ -389,7 +389,7 @@ public class LineStack(BossModule module, ActionID aidMarker, ActionID aidResolv
 
         var isBaitTarget = ActiveBaits.Any(x => x.Target == actor);
         var isBaitNotTarget = ActiveBaits.Any(x => x.Target != actor);
-        var isInBaitShape = ActiveBaits.Any(x => actor.Position.InRect(x.Source.Position, (x.Target.Position - x.Source.Position).Normalized(), Range, 0, HalfWidth));
+        var isInBaitShape = ActiveBaits.Any(x => actor.Position.InRect(x.Source.Position, x.Rotation, Range, 0, HalfWidth));
 
         if (isBaitNotTarget && !isBaitTarget && !isInBaitShape)
             hints.Add(HintStack);
@@ -398,7 +398,7 @@ public class LineStack(BossModule module, ActionID aidMarker, ActionID aidResolv
 
         if (ActiveBaits.Count() > 1 && isBaitTarget)
         {
-            var isInOtherBaitShape = ActiveBaits.Any(x => x.Target != actor && actor.Position.InRect(x.Source.Position, (x.Target.Position - x.Source.Position).Normalized(), Range, 0, 2 * HalfWidth));
+            var isInOtherBaitShape = ActiveBaits.Any(x => x.Target != actor && actor.Position.InRect(x.Source.Position, x.Rotation, Range, 0, 2 * HalfWidth));
             if (isInOtherBaitShape)
                 hints.Add(HintAvoidOther);
         }

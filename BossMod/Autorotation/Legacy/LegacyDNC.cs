@@ -13,7 +13,7 @@ public sealed class LegacyDNC : LegacyModule
     public static RotationModuleDefinition Definition()
     {
         // TODO: think about target overrides where they make sense
-        var res = new RotationModuleDefinition("Legacy DNC", "Old pre-refactoring module", "xan", RotationModuleQuality.WIP, BitMask.Build((int)Class.DNC), 100);
+        var res = new RotationModuleDefinition("Legacy DNC", "Old pre-refactoring module", "Legacy (pre-DT)", "xan", RotationModuleQuality.WIP, BitMask.Build((int)Class.DNC), 100);
 
         res.Define(Track.AOE).As<AOEStrategy>("AOE", uiPriority: 90)
             .AddOption(AOEStrategy.SingleTarget, "ST", "Use single-target actions")
@@ -142,10 +142,10 @@ public sealed class LegacyDNC : LegacyModule
         _state = new(this);
     }
 
-    public override void Execute(StrategyValues strategy, Actor? primaryTarget, float estimatedAnimLockDelay, float forceMovementIn, bool isMoving)
+    public override void Execute(StrategyValues strategy, Actor? primaryTarget, float estimatedAnimLockDelay, bool isMoving)
     {
         _state.UpdateCommon(primaryTarget, estimatedAnimLockDelay);
-        _state.AnimationLockDelay = MathF.Max(0.1f, _state.AnimationLockDelay);
+        _state.AnimationLockDelay = Math.Max(0.1f, _state.AnimationLockDelay);
 
         var gauge = World.Client.GetGauge<DancerGauge>();
         var curStep = (uint)gauge.CurrentStep;
@@ -164,8 +164,8 @@ public sealed class LegacyDNC : LegacyModule
         _state.ImprovisationLeft = StatusLeft(DNC.SID.Improvisation);
         _state.ImprovisedFinishLeft = StatusLeft(DNC.SID.ImprovisedFinish);
         _state.DevilmentLeft = StatusLeft(DNC.SID.Devilment);
-        _state.SymmetryLeft = MathF.Max(StatusLeft(DNC.SID.SilkenSymmetry), StatusLeft(DNC.SID.FlourishingSymmetry));
-        _state.FlowLeft = MathF.Max(StatusLeft(DNC.SID.SilkenFlow), StatusLeft(DNC.SID.FlourishingFlow));
+        _state.SymmetryLeft = Math.Max(StatusLeft(DNC.SID.SilkenSymmetry), StatusLeft(DNC.SID.FlourishingSymmetry));
+        _state.FlowLeft = Math.Max(StatusLeft(DNC.SID.SilkenFlow), StatusLeft(DNC.SID.FlourishingFlow));
         _state.FlourishingStarfallLeft = StatusLeft(DNC.SID.FlourishingStarfall);
         _state.ThreefoldLeft = StatusLeft(DNC.SID.ThreefoldFanDance);
         _state.FourfoldLeft = StatusLeft(DNC.SID.FourfoldFanDance);

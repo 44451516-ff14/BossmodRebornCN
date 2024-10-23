@@ -102,7 +102,7 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
 }
 
 class CrystalNeedle(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CrystalNeedle));
-class Shardfall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.Shardfall), 40, false)
+class Shardfall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.Shardfall), 40)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.DimCrystal).Where(e => !e.IsDead);
 }

@@ -22,7 +22,7 @@ public class P10SPandaemonium(WorldState ws, Actor primary) : BossModule(ws, pri
     private static readonly Rectangle[] bridgeL = [new(new(83, 92.5f), 4, 1)];
     private static readonly Rectangle[] bridgeR = [new(new(117, 92.5f), 4, 1)];
     public static readonly ArenaBoundsComplex DefaultArena = new(union);
-    public static readonly ArenaBoundsComplex ArenaL = new(union.Concat(bridgeL));
-    public static readonly ArenaBoundsComplex ArenaR = new(union.Concat(bridgeR));
-    public static readonly ArenaBoundsComplex ArenaLR = new(union.Concat(bridgeL).Concat(bridgeR));
+    public static readonly ArenaBoundsComplex ArenaL = new([.. union, .. bridgeL]);
+    public static readonly ArenaBoundsComplex ArenaR = new([.. union, .. bridgeR]);
+    public static readonly ArenaBoundsComplex ArenaLR = new([.. union, .. bridgeL, .. bridgeR]);
 }

@@ -7,7 +7,7 @@ public sealed class BRD(RotationModuleManager manager, Actor player) : Attackxan
 {
     public static RotationModuleDefinition Definition()
     {
-        var def = new RotationModuleDefinition("xan BRD", "Bard", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.ARC, Class.BRD), 100);
+        var def = new RotationModuleDefinition("xan BRD", "Bard", "Standard rotation (xan)|Ranged", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.ARC, Class.BRD), 100);
 
         def.DefineShared().AddAssociatedActions(AID.RagingStrikes, AID.MagesBallad, AID.ArmysPaeon, AID.WanderersMinuet, AID.BattleVoice, AID.ApexArrow);
 
@@ -143,10 +143,10 @@ public sealed class BRD(RotationModuleManager manager, Actor player) : Attackxan
         if (primaryTarget == null)
             return (float.MaxValue, float.MaxValue, float.MaxValue);
 
-        var wind = MathF.Max(StatusDetails(primaryTarget, SID.Windbite, Player.InstanceID, 45).Left, StatusDetails(primaryTarget, SID.Stormbite, Player.InstanceID, 45).Left);
-        var poison = MathF.Max(StatusDetails(primaryTarget, SID.VenomousBite, Player.InstanceID, 45).Left, StatusDetails(primaryTarget, SID.CausticBite, Player.InstanceID, 45).Left);
+        var wind = Math.Max(StatusDetails(primaryTarget, SID.Windbite, Player.InstanceID, 45).Left, StatusDetails(primaryTarget, SID.Stormbite, Player.InstanceID, 45).Left);
+        var poison = Math.Max(StatusDetails(primaryTarget, SID.VenomousBite, Player.InstanceID, 45).Left, StatusDetails(primaryTarget, SID.CausticBite, Player.InstanceID, 45).Left);
 
-        return (MathF.Min(wind, poison), wind, poison);
+        return (Math.Min(wind, poison), wind, poison);
     }
 
     private void OGCD(StrategyValues strategy, Actor? primaryTarget)
@@ -214,8 +214,8 @@ public sealed class BRD(RotationModuleManager manager, Actor player) : Attackxan
         if (!strategy.BuffsOk())
             return false;
 
-        if (CD(AID.RagingStrikes) > 55)
-            return CD(AID.RagingStrikes) < 60 || Soul == 100;
+        if (ReadyIn(AID.RagingStrikes) > 55)
+            return ReadyIn(AID.RagingStrikes) < 60 || Soul == 100;
 
         // use in 2min
         return RagingStrikes > GCD;

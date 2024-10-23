@@ -4,7 +4,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public static readonly WPos ArenaCenter = new(100, 100);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20);
-    private static readonly Square defaultSquare = new(ArenaCenter, 20);
+    private static readonly Square[] defaultSquare = [new(ArenaCenter, 20)];
     public BitMask DamagedCells;
     public BitMask DestroyedCells;
     public static readonly Square[] Tiles = Enumerable.Range(0, 16)
@@ -57,8 +57,8 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 
     private void UpdateArenaBounds()
     {
-        var brokenTiles = Tiles.Where((tile, index) => DestroyedCells[index]).ToList();
-        ArenaBoundsComplex arena = new([defaultSquare], brokenTiles, Offset: -0.5f);
+        Shape[] brokenTiles = Tiles.Where((tile, index) => DestroyedCells[index]).ToArray();
+        ArenaBoundsComplex arena = new(defaultSquare, brokenTiles, Offset: -0.5f);
         Arena.Bounds = arena;
         Arena.Center = arena.Center;
     }

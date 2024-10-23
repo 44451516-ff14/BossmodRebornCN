@@ -82,7 +82,7 @@ class NinefoldCurse(BossModule module) : Components.RaidwideCastDelay(module, Ac
 class NinetyNinefoldCurse(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.NinetyNinefoldCurse));
 class Roar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Roar));
 class SonicStorm(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SonicStorm), 6);
-class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4, 8.3f, (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, ActionID.MakeSpell(AID.RushBait), ActionID.MakeSpell(AID.RushBaitFail), (uint)OID.Dzo, 30);
+class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4, 8.3f, ActionID.MakeSpell(AID.RushBait), ActionID.MakeSpell(AID.RushBaitFail), (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30);
 class RushLineStack(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.RushLineStackMarker), ActionID.MakeSpell(AID.RushLineStack), 4.9f, markerIsFinalTarget: false);
 class Trample(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.Trample), new AOEShapeCircle(15));
 

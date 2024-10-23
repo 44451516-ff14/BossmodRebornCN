@@ -120,19 +120,19 @@ class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(mod
             return default;
 
         // so far I've only seen both enemies starting at (+-5, 0)
-        if (!Utils.AlmostEqual(actor.Position.Z, Module.Center.Z, 1))
+        if (!Utils.AlmostEqual(actor.Position.Z, Arena.Center.Z, 1))
             return default;
-        if (!Utils.AlmostEqual(MathF.Abs(actor.Position.X - Module.Center.X), 5, 1))
+        if (!Utils.AlmostEqual(Math.Abs(actor.Position.X - Arena.Center.X), 5, 1))
             return default;
 
-        var right = actor.Position.X > Module.Center.X;
+        var right = actor.Position.X > Arena.Center.X;
         var facingSouth = Utils.AlmostEqual(actor.Rotation.Rad, 0, 0.1f);
         var cw = right == facingSouth;
         var res = new ChargeInfo(actor);
         var firstPointDir = actor.Rotation;
         var angleBetweenPoints = (cw ? -1 : 1) * 112.5f.Degrees();
 
-        WPos posAt(Angle dir) => Module.Center + 21 * dir.ToDirection();
+        WPos posAt(Angle dir) => Arena.Center + 21 * dir.ToDirection();
         var p0 = actor.Position;
         var p1 = posAt(firstPointDir);
         var p2 = posAt(firstPointDir + angleBetweenPoints);

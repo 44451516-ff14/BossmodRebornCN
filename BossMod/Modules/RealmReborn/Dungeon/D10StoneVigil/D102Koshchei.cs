@@ -56,7 +56,7 @@ class Typhoon(BossModule module) : Components.Exaflare(module, 3)
         }
     }
 
-    private Line? FindLine(float z) => Lines.Find(l => MathF.Abs(l.Next.Z - z) < 1);
+    private Line? FindLine(float z) => Lines.Find(l => Math.Abs(l.Next.Z - z) < 1);
 }
 
 class D102KoshcheiStates : StateMachineBuilder

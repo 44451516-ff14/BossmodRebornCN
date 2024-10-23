@@ -26,7 +26,7 @@ class ChannelingFlow(BossModule module) : BossComponent(module)
             {
                 if (_arrows[otherSlot].Item1 == partnerDir)
                 {
-                    minDistance = MathF.Min(minDistance, partnerDir.Dot(actor.Position - otherActor.Position));
+                    minDistance = Math.Min(minDistance, partnerDir.Dot(actor.Position - otherActor.Position));
                     ++numPartners;
                     partner = otherActor;
                 }

@@ -150,7 +150,7 @@ class RushOfMight(BossModule module) : Components.GenericAOEs(module, ActionID.M
 
 class FlashOfSteel1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FlashOfSteel1), "Raidwide");
 class FlashOfSteel2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FlashOfSteel2), "Raidwide");
-class ShatteringSteelMeteor(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.ShatteringSteel), 60, false)
+class ShatteringSteelMeteor(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.ShatteringSteel), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.AntiqueBoulder).Where(a => !a.IsDead);
 }

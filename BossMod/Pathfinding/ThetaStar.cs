@@ -140,7 +140,7 @@ public class ThetaStar
                 nodeLeeway = losLeeway;
             }
 
-            if (nodeG + 0.00001f < _nodes[nodeIndex].GScore)
+            if (nodeG + 1e-5f < _nodes[nodeIndex].GScore)
             {
                 _nodes[nodeIndex].GScore = nodeG;
                 _nodes[nodeIndex].ParentX = parentX;
@@ -165,14 +165,14 @@ public class ThetaStar
 
     private float HeuristicDistance(int x, int y)
     {
-        var bestSq = float.MaxValue;
+        var best = float.MaxValue;
         foreach (var g in _goals)
         {
-            var curSq = DistanceSq(x, y, g.x, g.y);
-            if (curSq < bestSq)
-                bestSq = curSq;
+            var cur = Math.Abs(x - g.x) + Math.Abs(y - g.y);
+            if (cur < best)
+                best = cur;
         }
-        return _deltaGSide * MathF.Sqrt(bestSq);
+        return _deltaGSide * best;
     }
 
     private float DistanceSq(int x1, int y1, int x2, int y2)
@@ -267,9 +267,9 @@ public class ThetaStar
         ref var nodeR = ref _nodes[nodeIndexRight];
         var fl = nodeL.GScore + nodeL.HScore;
         var fr = nodeR.GScore + nodeR.HScore;
-        if (fl + 0.00001f < fr)
+        if (fl + 1e-5f < fr)
             return true;
-        else if (fr + 0.00001f < fl)
+        else if (fr + 1e-5f < fl)
             return false;
         else
             return nodeL.GScore > nodeR.GScore; // tie-break towards larger g-values

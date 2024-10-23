@@ -2,29 +2,20 @@
 
 public enum OID : uint
 {
-    Boss = 0x5B5, // x1
+    Boss = 0x5B5 // R4.24
 }
 
 public enum AID : uint
 {
     AutoAttack = 870, // Boss->player, no cast
+
     Rake = 901, // Boss->player, no cast, extra attack on tank
-    LionsBreath = 902, // Boss->self, 1.0s cast, range 10.25 ?-degree cone aoe
-    Swinge = 903, // Boss->self, 4.0s cast, range 40 ?-degree cone aoe
+    LionsBreath = 902, // Boss->self, 1.0s cast, range 6+R 120-degree cone aoe
+    Swinge = 903 // Boss->self, 4.0s cast, range 40+R 60-degree cone aoe
 }
 
-class LionsBreath(BossModule module) : Components.SelfTargetedLegacyRotationAOEs(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.25f, 60.Degrees())); // TODO: verify angle
-class Swinge(BossModule module) : Components.SelfTargetedLegacyRotationAOEs(module, ActionID.MakeSpell(AID.Swinge), new AOEShapeCone(40, 30.Degrees())); // TODO: verify angle
-
-// due to relatively short casts and the fact that boss likes moving across arena to cast swinge, we always want non-tanks to be positioned slightly behind
-class Positioning(BossModule module) : BossComponent(module)
-{
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (actor.Role != Role.Tank)
-            hints.AddForbiddenZone(ShapeDistance.Cone(Module.PrimaryActor.Position, 10, Module.PrimaryActor.Rotation, 90.Degrees()));
-    }
-}
+class LionsBreath(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.24f, 60.Degrees()), activeWhileCasting: false);
+class Swinge(BossModule module) : Components.SelfTargetedLegacyRotationAOEs(module, ActionID.MakeSpell(AID.Swinge), new AOEShapeCone(40, 30.Degrees()));
 
 class D101ChudoYudoStates : StateMachineBuilder
 {
@@ -32,8 +23,7 @@ class D101ChudoYudoStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<LionsBreath>()
-            .ActivateOnEnter<Swinge>()
-            .ActivateOnEnter<Positioning>();
+            .ActivateOnEnter<Swinge>();
     }
 }
 

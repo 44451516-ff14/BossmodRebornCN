@@ -61,7 +61,7 @@ class BracingWind(BossModule module) : Components.KnockbackFromCastTarget(module
     }
 }
 
-class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.LunarCry), 80, false)
+class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.LunarCry), 80)
 {
     private readonly List<Actor> _safePillars = [];
     private readonly BracingWind? _knockback = module.FindComponent<BracingWind>();

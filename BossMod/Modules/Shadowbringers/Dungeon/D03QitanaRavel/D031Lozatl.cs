@@ -68,5 +68,5 @@ class D031LozatlStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 651, NameID = 8231)]
 public class D031Lozatl(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(0, 315), 19.6f)], [new Rectangle(new(0, 335.25f), 20, 2), new Rectangle(new(0, 294.5f), 20, 2)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(0, 315), 19.5f / MathF.Cos(MathF.PI / 40), 40)], [new Rectangle(new(0, 335.1f), 20, 2), new Rectangle(new(0, 294.5f), 20, 2)]);
 }

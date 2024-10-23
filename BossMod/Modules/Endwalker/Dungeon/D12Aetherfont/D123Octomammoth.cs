@@ -67,18 +67,18 @@ public class D123Octomammoth(WorldState ws, Actor primary) : BossModule(ws, prim
     private const int BridgeLength = 10;
     private const int FillerLength = 2;
     private const float FillerHalfWidth = 0.5f;
-    private static readonly List<Shape> Circles = [
+    private static readonly Shape[] Circles = [
             new Circle(new(-345, -368), CircleRadius),
             new Circle(new(-387.678f, -350.322f), CircleRadius),
             new Circle(new(-352.322f, -350.322f), CircleRadius),
             new Circle(new(-370, -343), CircleRadius),
             new Circle(new(-395, -368), CircleRadius)];
-    private static readonly List<Shape> Bridges = [
+    private static readonly Shape[] Bridges = [
             new Rectangle(new(-347.71f, -359.78f), BridgeHalfWidth, BridgeLength, Angle225),
             new Rectangle(new(-360.77f, -346.3f), BridgeHalfWidth, BridgeLength, Angle675),
             new Rectangle(new(-392.29f, -359.78f), BridgeHalfWidth, BridgeLength, -Angle225),
             new Rectangle(new(-379.22f, -346f), BridgeHalfWidth, BridgeLength, -Angle675)];
-    private static readonly List<Shape> Fillers = [
+    private static readonly Shape[] Fillers = [
             new Rectangle(new(-390.8f, -361.7f), FillerLength, FillerHalfWidth, -Angle675),
             new Rectangle(new(-394.5f, -360.4f), FillerLength, FillerHalfWidth, Angle225),
             new Rectangle(new(-392.8f, -355.9f), FillerLength, FillerHalfWidth, -Angle675),
@@ -95,5 +95,5 @@ public class D123Octomammoth(WorldState ws, Actor primary) : BossModule(ws, prim
             new Rectangle(new(-347.3f, -356.2f), FillerLength, FillerHalfWidth, Angle675),
             new Rectangle(new(-345.4f, -360.4f), FillerLength, FillerHalfWidth, -Angle225),
             new Rectangle(new(-349.1f, -361.8f), FillerLength, FillerHalfWidth, Angle675)];
-    private static readonly ArenaBoundsComplex arena = new(Bridges.Concat(Circles).Concat(Fillers));
+    private static readonly ArenaBoundsComplex arena = new([.. Bridges, .. Circles, .. Fillers]);
 }

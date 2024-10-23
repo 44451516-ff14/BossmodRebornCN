@@ -67,7 +67,7 @@ public class StateMachine(List<StateMachine.Phase> phases)
     public float TimeSinceActivation => (float)(_curTime - _activation).TotalSeconds;
     public float TimeSincePhaseEnter => (float)(_curTime - _phaseEnter).TotalSeconds;
     public float TimeSinceTransition => (float)(_curTime - _lastTransition).TotalSeconds;
-    public float TimeSinceTransitionClamped => MathF.Min(TimeSinceTransition, ActiveState?.Duration ?? 0);
+    public float TimeSinceTransitionClamped => Math.Min(TimeSinceTransition, ActiveState?.Duration ?? 0);
 
     public int ActivePhaseIndex { get; private set; } = -1;
     public Phase? ActivePhase => Phases.ElementAtOrDefault(ActivePhaseIndex);
@@ -159,7 +159,7 @@ public class StateMachine(List<StateMachine.Phase> phases)
     private (string, State?) BuildComplexStateNameAndDuration(State start, float timeActive, bool writeTime)
     {
         var res = new StringBuilder(start.Name);
-        var timeLeft = MathF.Max(0, start.Duration - timeActive);
+        var timeLeft = Math.Max(0, start.Duration - timeActive);
         if (writeTime && res.Length > 0)
         {
             res.Append($" in {timeLeft:f1}s");
@@ -169,7 +169,7 @@ public class StateMachine(List<StateMachine.Phase> phases)
         while (start.EndHint.HasFlag(StateHint.GroupWithNext) && start.NextStates?.Length == 1)
         {
             start = start.NextStates[0];
-            timeLeft += MathF.Max(0, start.Duration);
+            timeLeft += Math.Max(0, start.Duration);
             if (start.Name.Length > 0)
             {
                 if (res.Length > 0)

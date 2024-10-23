@@ -10,7 +10,7 @@ public static class CurveApprox
     {
         // select max angle such that tesselation error is smaller than desired
         // error = R * (1 - cos(phi/2)) => cos(phi/2) = 1 - error/R
-        var tessAngle = 2 * MathF.Acos(1 - MathF.Min(maxError / radius, 1));
+        var tessAngle = 2 * MathF.Acos(1 - Math.Min(maxError / radius, 1));
         var tessNumSegments = (int)MathF.Ceiling(angularLength.Rad / tessAngle);
         tessNumSegments = (tessNumSegments + 1) & ~1; // round up to even for symmetry
         return Math.Clamp(tessNumSegments, 4, 512);

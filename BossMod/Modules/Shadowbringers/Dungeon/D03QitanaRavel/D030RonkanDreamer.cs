@@ -86,8 +86,18 @@ class D030RonkanDreamerStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 651, NameID = 8639)]
 public class D030RonkanDreamer(WorldState ws, Actor primary) : BossModule(ws, primary, primary.Position.Z > 550 ? arena1.Center : arena2.Center, primary.Position.Z > 550 ? arena1 : arena2)
 {
-    private static readonly ArenaBoundsComplex arena1 = new([new Rectangle(new(0, 640), 17.5f, 23)], [new Rectangle(new(-5.2f, 642.7f), 1.15f, 3.5f), new Rectangle(new(5.1f, 627.6f), 1.15f, 3.5f)]);
-    private static readonly ArenaBoundsComplex arena2 = new([new Rectangle(new(0, 434.5f), 17.5f, 24)], [new Rectangle(new(-5.1f, 421.7f), 1.15f, 3.5f), new Rectangle(new(5.1f, 436.6f), 1.15f, 3.5f)]);
+    private static readonly WPos[] vertices1 = [new(-3.82f, 640.12f), new(-3.95f, 640.67f), new(-3.98f, 646.62f), new(-6.08f, 646.51f), new(-6.58f, 644.99f),
+    new(-6.28f, 643.05f), new(-6.38f, 641.22f), new(-6.60f, 639.71f), new(-6.29f, 639.34f), new(-4.27f, 639.03f)];
+    private static readonly WPos[] vertices2 = [new(6.61f, 625.6f), new(6.3f, 627.46f), new(6.32f, 629.1f), new(6.54f, 630.78f), new(6.28f, 631.19f),
+    new(4.28f, 631.45f), new(3.83f, 630.55f), new(3.82f, 629.67f), new(3.96f, 623.91f), new(6.07f, 623.83f)];
+    private static readonly WPos[] vertices3 = [new(-3.77f, 418.91f), new(-3.94f, 419.58f), new(-3.97f, 425.34f), new(-6.11f, 425.47f), new(-6.59f, 423.67f),
+    new(-6.38f, 421.66f), new(-6.38f, 420.01f), new(-6.53f, 418.49f), new(-6.27f, 418.12f), new(-4, 417.82f),
+    new(-3.77f, 418.91f)];
+    private static readonly WPos[] vertices4 = [new(6.09f, 432.98f), new(6.64f, 434.58f), new(6.37f, 436.54f), new(6.31f, 438.11f), new(6.50f, 439.59f),
+    new(6.48f, 440.24f), new(4.29f, 440.32f), new(3.81f, 439.47f), new(3.95f, 438.75f), new(4.00f, 432.74f),
+    new(6.09f, 432.98f)];
+    private static readonly ArenaBoundsComplex arena1 = new([new Rectangle(new(0, 640), 17.5f, 23)], [new PolygonCustom(vertices1), new PolygonCustom(vertices2)]);
+    private static readonly ArenaBoundsComplex arena2 = new([new Rectangle(new(0, 434.5f), 17.5f, 24)], [new PolygonCustom(vertices3), new PolygonCustom(vertices4)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

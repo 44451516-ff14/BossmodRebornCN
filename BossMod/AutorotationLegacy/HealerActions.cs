@@ -106,7 +106,7 @@
 //                    {
 //                        foreach (var e in Autorot.Hints.PredictedDamage.Where(e => e.players[i]))
 //                        {
-//                            var time = MathF.Max(0, (float)(e.activation - Autorot.WorldState.CurrentTime).TotalSeconds);
+//                            var time = Math.Max(0, (float)(e.activation - Autorot.WorldState.CurrentTime).TotalSeconds);
 //                            if (time >= minTime && time <= maxTime)
 //                            {
 //                                valid = true;

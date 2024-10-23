@@ -11,10 +11,10 @@ public class P9SKokytos(WorldState ws, Actor primary) : BossModule(ws, primary, 
     private const int rectWidth = 8;
     private const int rectHeight = 2;
 
-    private static readonly List<Shape> union = [new Circle(center, 20)];
-    private static readonly List<Shape> difference0 = [new Rectangle(new(100, 119.5f), rectWidth, rectHeight), new Rectangle(new(80.5f, 100), rectWidth, rectHeight, 90.Degrees()),
-    new Rectangle(new(119.5f, 100), rectWidth, rectHeight, 90.Degrees()), new Rectangle(new(100, 80.5f), rectWidth, rectHeight)];
-    private static readonly List<Shape> difference45 = [RotatedRectangle(new WPos(100, 119.5f), 45.Degrees()),
+    private static readonly Circle[] union = [new(center, 20)];
+    private static readonly Rectangle[] difference0 = [new(new(100, 119.5f), rectWidth, rectHeight), new(new(80.5f, 100), rectWidth, rectHeight, 90.Degrees()),
+    new(new(119.5f, 100), rectWidth, rectHeight, 90.Degrees()), new(new(100, 80.5f), rectWidth, rectHeight)];
+    private static readonly Rectangle[] difference45 = [RotatedRectangle(new WPos(100, 119.5f), 45.Degrees()),
     RotatedRectangle(new WPos(80.5f, 100), 135.Degrees()), RotatedRectangle(new WPos(119.5f, 100), -45.Degrees()),
     RotatedRectangle(new WPos(100, 80.5f), -135.Degrees())];
     public static readonly ArenaBounds arena = new ArenaBoundsComplex(union);

@@ -66,7 +66,7 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
                     toEdit = AddElement(node, delay, 0, false, GetDefaultValue());
                 }
 
-                _edit = new(toEdit, MathF.Abs(lclickPos.Y - Timeline.TimeToScreenCoord(toEdit.Window.TimeSinceGlobalStart(Tree) + toEdit.Window.Duration)) < 5);
+                _edit = new(toEdit, Math.Abs(lclickPos.Y - Timeline.TimeToScreenCoord(toEdit.Window.TimeSinceGlobalStart(Tree) + toEdit.Window.Duration)) < 5);
                 if (_edit.EditingEnd)
                     toEdit.WindowLength = toEdit.Window.Duration; // if we're starting edit of the window-end, ensure it's matching visual value (clamped to phase duration)
             }

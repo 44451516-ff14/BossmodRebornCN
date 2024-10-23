@@ -33,23 +33,19 @@ public class Cleave(BossModule module, ActionID aid, AOEShape shape, uint enemyO
 
     private void AddTargetSpecificHints(Actor actor, Actor source, Angle angle, AIHints hints)
     {
-        switch (Shape)
-        {
-            case AOEShapeCircle circle:
-                foreach (var a in Raid.WithoutSlot().Exclude(actor))
+        foreach (var a in Raid.WithoutSlot().Exclude(actor))
+            switch (Shape)
+            {
+                case AOEShapeCircle circle:
                     hints.AddForbiddenZone(circle, a.Position);
-                break;
-
-            case AOEShapeCone cone:
-                foreach (var a in Raid.WithoutSlot().Exclude(actor))
+                    break;
+                case AOEShapeCone cone:
                     hints.AddForbiddenZone(ShapeDistance.Cone(source.Position, 100, source.AngleTo(a), cone.HalfAngle));
-                break;
-
-            case AOEShapeRect rect:
-                foreach (var a in Raid.WithoutSlot().Exclude(actor))
-                    hints.AddForbiddenZone(ShapeDistance.Rect(source.Position, source.AngleTo(a), 100, default, rect.HalfWidth));
-                break;
-        }
+                    break;
+                case AOEShapeRect rect:
+                    hints.AddForbiddenZone(ShapeDistance.Cone(source.Position, 100, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (actor.Position - source.Position).Length())));
+                    break;
+            }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)

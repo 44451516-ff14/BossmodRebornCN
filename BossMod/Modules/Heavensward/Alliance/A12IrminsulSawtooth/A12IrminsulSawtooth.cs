@@ -9,7 +9,7 @@ class Rootstorm(BossModule module) : Components.RaidwideCast(module, ActionID.Ma
 class Ambush(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.Ambush), new AOEShapeCircle(9));
 class AmbushKnockback(BossModule module) : Components.KnockbackFromCastTarget(module, ActionID.MakeSpell(AID.Ambush), 30, stopAtWall: true, kind: Kind.TowardsOrigin);
 
-class ShockwaveStomp(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.ShockwaveStomp), 70, false)
+class ShockwaveStomp(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.ShockwaveStomp), 70)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.Irminsul).Where(a => !a.IsDead);
 }

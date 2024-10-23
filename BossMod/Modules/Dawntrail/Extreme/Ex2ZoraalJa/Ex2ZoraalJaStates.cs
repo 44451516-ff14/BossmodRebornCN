@@ -122,7 +122,7 @@ class Ex2ZoraalJaStates : StateMachineBuilder
             .DeactivateOnExit<ForgedTrack>()
             .DeactivateOnExit<ChasmOfVollokPlayer>(); // this resolves right as cast starts
         CastEnd(id + 0x3001, 5, "Raidwide + normal arena")
-            .OnExit(() => Module.Arena.Bounds = Ex2ZoraalJa.NormalBounds)
+            .OnExit(() => Module.Arena.Bounds = Trial.T02ZoraalJa.ZoraalJa.DefaultBounds)
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -169,8 +169,8 @@ class Ex2ZoraalJaStates : StateMachineBuilder
         Cast(id + 0x6000, AID.Actualize, 15.2f, 5, "Raidwide + normal arena")
             .DeactivateOnExit<BurningChains>()
             .DeactivateOnExit<AeroIII>()
-            .OnExit(() => Module.Arena.Bounds = Ex2ZoraalJa.NormalBounds)
-            .OnExit(() => Module.Arena.Center = Ex2ZoraalJa.NormalCenter)
+            .OnExit(() => Module.Arena.Bounds = Trial.T02ZoraalJa.ZoraalJa.DefaultBounds)
+            .OnExit(() => Module.Arena.Center = Trial.T02ZoraalJa.ZoraalJa.ArenaCenter)
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -206,7 +206,7 @@ class Ex2ZoraalJaStates : StateMachineBuilder
             .DeactivateOnExit<ForgedTrack>()
             .DeactivateOnExit<ChasmOfVollokPlayer>(); // this resolves right as cast starts
         CastEnd(id + 0x3001, 5, "Raidwide + normal arena")
-            .OnExit(() => Module.Arena.Bounds = Ex2ZoraalJa.NormalBounds)
+            .OnExit(() => Module.Arena.Bounds = Trial.T02ZoraalJa.ZoraalJa.DefaultBounds)
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 

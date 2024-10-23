@@ -78,11 +78,19 @@ public sealed class AIHints
     // AI will attempt to shield & mitigate
     public List<(BitMask players, DateTime activation)> PredictedDamage = [];
 
+    // estimate of the maximal time we can spend casting before we need to move
+    // TODO: reconsider...
+    public float MaxCastTimeEstimate = float.MaxValue;
+
     // actions that we want to be executed, gathered from various sources (manual input, autorotation, planner, ai, modules, etc.)
     public ActionQueue ActionsToExecute = new();
 
     // buffs to be canceled asap
     public List<(uint statusId, ulong sourceId)> StatusesToCancel = [];
+
+    // misc stuff to execute
+    public bool WantJump;
+    public bool WantDismount;
 
     // clear all stored data
     public void Clear()
@@ -100,8 +108,11 @@ public sealed class AIHints
         ForbiddenDirections.Clear();
         ImminentSpecialMode = default;
         PredictedDamage.Clear();
+        MaxCastTimeEstimate = float.MaxValue;
         ActionsToExecute.Clear();
         StatusesToCancel.Clear();
+        WantJump = false;
+        WantDismount = false;
     }
 
     // fill list of potential targets from world state
@@ -134,6 +145,30 @@ public sealed class AIHints
             });
         }
     }
+
+    public void PrioritizeTargetsByOID(uint oid, int priority = 0)
+    {
+        foreach (var h in PotentialTargets)
+            if (h.Actor.OID == oid)
+                h.Priority = Math.Max(priority, h.Priority);
+    }
+    public void PrioritizeTargetsByOID<OID>(OID oid, int priority = 0) where OID : Enum => PrioritizeTargetsByOID((uint)(object)oid, priority);
+
+    public void PrioritizeTargetsByOID(uint[] oids, int priority = 0)
+    {
+        foreach (var h in PotentialTargets)
+            if (oids.Contains(h.Actor.OID))
+                h.Priority = Math.Max(priority, h.Priority);
+    }
+
+    public void PrioritizeAll()
+    {
+        foreach (var h in PotentialTargets)
+            h.Priority = Math.Max(h.Priority, 0);
+    }
+
+    public void InteractWithOID(WorldState ws, uint oid) => InteractWithTarget = ws.Actors.FirstOrDefault(a => a.OID == oid && a.IsTargetable);
+    public void InteractWithOID<OID>(WorldState ws, OID oid) where OID : Enum => InteractWithOID(ws, (uint)(object)oid);
 
     public void AddForbiddenZone(Func<WPos, float> shapeDistance, DateTime activation = new()) => ForbiddenZones.Add((shapeDistance, activation));
     public void AddForbiddenZone(AOEShape shape, WPos origin, Angle rot = new(), DateTime activation = new()) => ForbiddenZones.Add((shape.Distance(origin, rot), activation));
@@ -186,10 +221,10 @@ public sealed class AIHints
 
     // goal zones
     // simple goal zone that returns 1 if target is in range, useful for single-target actions
-    public Func<WPos, float> GoalSingleTarget(WPos target, float radius)
+    public Func<WPos, float> GoalSingleTarget(WPos target, float radius, float weight = 1)
     {
         var effRsq = radius * radius;
-        return p => (p - target).LengthSq() <= effRsq ? 1 : 0;
+        return p => (p - target).LengthSq() <= effRsq ? weight : 0;
     }
     public Func<WPos, float> GoalSingleTarget(Actor target, float range) => GoalSingleTarget(target.Position, range + target.HitboxRadius + 0.5f);
 

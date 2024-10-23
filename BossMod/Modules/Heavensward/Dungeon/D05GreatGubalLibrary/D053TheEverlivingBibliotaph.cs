@@ -111,14 +111,20 @@ class VoidCall(BossModule module) : Components.GenericTowers(module)
             Towers.RemoveAll(x => x.Position == actor.Position);
     }
 
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if ((AID)spell.Action.ID == AID.VoidCall) // there seems to be a rare bug where a tower bugs, safeguard against it
+            Towers.Clear();
+    }
+
     public override void Update()
     {
         if (Towers.Count == 0)
             return;
         var towerCount = Module.Enemies(OID.Tower).Count;
-        var minSoakers = towerCount == 2 ? 3 : towerCount == 3 ? 2 : 1;
+        var soakers = towerCount == 2 ? 3 : towerCount == 3 ? 2 : 1;
         for (var i = 0; i < Towers.Count; i++)
-            Towers[i] = new(Towers[i].Position, Towers[i].Radius, minSoakers, minSoakers, default, Towers[i].Activation);
+            Towers[i] = Towers[i] with { MinSoakers = soakers, MaxSoakers = soakers };
     }
 }
 

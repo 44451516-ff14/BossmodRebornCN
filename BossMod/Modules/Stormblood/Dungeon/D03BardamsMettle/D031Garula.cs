@@ -28,11 +28,11 @@ public enum AID : uint
 class CrumblingCrust(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.CrumblingCrust), 3);
 class Heave(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.Heave), new AOEShapeCone(13, 60.Degrees()));
 class WideBlaster(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.WideBlaster), new AOEShapeCone(29.15f, 60.Degrees()));
-class Rush(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.Rush), 4);
-class RushTether(BossModule module) : Components.StretchTetherDuo(module, 16, 10.1f)
+class Rush(BossModule module) : Components.BaitAwayChargeTether(module, 4, 10.1f, ActionID.MakeSpell(AID.Rush), minimumDistance: 23)
 {
     public override void Update()
     {
+        base.Update();
         if (Module.PrimaryActor.CastInfo == null)
             CurrentBaits.Clear();
     }
@@ -50,7 +50,6 @@ class D031GarulaStates : StateMachineBuilder
             .ActivateOnEnter<Heave>()
             .ActivateOnEnter<WideBlaster>()
             .ActivateOnEnter<Rush>()
-            .ActivateOnEnter<RushTether>()
             .ActivateOnEnter<RushYamaa>()
             .ActivateOnEnter<Lullaby>();
     }

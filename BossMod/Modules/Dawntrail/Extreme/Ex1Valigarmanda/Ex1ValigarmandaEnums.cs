@@ -25,17 +25,17 @@ public enum AID : uint
     Spikesicle = 36850, // Boss->self, 10.0+0.5s cast, single-target, visual (curved aoes)
     SpikesicleRepeat = 36851, // Boss->self, no cast, single-target, visual (second+ curve)
     SpikesicleEnd = 36852, // Boss->self, no cast, single-target, visual (mechanic end)
-    SpikesicleAOE1 = 36853, // Helper->self, 1.7s cast, range ?-25 donut
-    SpikesicleAOE2 = 36854, // Helper->self, 1.7s cast, range ?-30 donut
-    SpikesicleAOE3 = 36855, // Helper->self, 1.7s cast, range ?-35 donut
-    SpikesicleAOE4 = 36856, // Helper->self, 1.7s cast, range ?-40 donut
+    SpikesicleAOE1 = 36853, // Helper->self, 1.7s cast, range 20-25 donut
+    SpikesicleAOE2 = 36854, // Helper->self, 1.7s cast, range 25-30 donut
+    SpikesicleAOE3 = 36855, // Helper->self, 1.7s cast, range 30-35 donut
+    SpikesicleAOE4 = 36856, // Helper->self, 1.7s cast, range 35-40 donut
     SpikesicleAOE5 = 36857, // Helper->self, 1.7s cast, range 40 width 5 rect
     SphereShatter = 39261, // IceBoulder->self, 1.5s cast, range 13 circle
 
     SusurrantBreathThunder = 36805, // Boss->self, 6.5s cast, single-target, visual (cone in thunder phase)
     SusurrantBreathIce = 36806, // Boss->self, 6.5s cast, single-target, visual (cone in ice phase)
     SusurrantBreathFire = 36807, // Boss->self, 6.5s cast, single-target, visual (cone in fire phase)
-    SusurrantBreathAOE = 36808, // Helper->self, 7.3s cast, range 50 ?-degree cone
+    SusurrantBreathAOE = 36808, // Helper->self, 7.3s cast, range 50 80-degree cone
     SlitheringStrikeThunder = 36809, // Boss->self, 6.5s cast, single-target, visual (out in thunder phase)
     SlitheringStrikeIce = 36810, // Boss->self, 6.5s cast, single-target, visual (out in ice phase)
     SlitheringStrikeFire = 36811, // Boss->self, 6.5s cast, single-target, visual (out in fire phase)
@@ -110,7 +110,7 @@ public enum AID : uint
     BlightedBoltFail = 36832, // Helper->player, no cast, range 3 circle, ??? (second hit if mechanic failed)
     BlightedBoltAOE = 36833, // Helper->FeatherOfRuin, 5.8s cast, range 8 circle
     ThunderousBreath = 36834, // Boss->self, 7.0+0.9s cast, single-target, visual (lines + require levitation)
-    ThunderousBreathAOE = 36835, // Helper->self, 7.9s cast, range 50 ?-degree cone
+    ThunderousBreathAOE = 36835, // Helper->self, 7.9s cast, range 50 135-degree cone
     ArcaneLightning = 39002, // ArcaneSphere->self, 1.0s cast, range 50 width 5 rect
     Ruinfall = 36860, // Boss->self, 4.0+1.6s cast, single-target, visual (shared tankbuster tower + knockbacks)
     RuinfallTower = 36861, // Helper->self, 5.6s cast, range 6 circle, 2-man tankbuster tower

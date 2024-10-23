@@ -51,7 +51,7 @@ public abstract class CommonState(RotationModule module)
     public bool CanWeave(float deadline) => AnimationLock + OGCDSlotLength <= deadline; // is it still possible to weave typical oGCD without missing deadline?
     // check whether weaving ogcd with specified remaining cooldown and lock time would end its animation lock by the specified deadline
     // deadline is typically either infinity (if we don't care about GCDs) or GCD (for second/only ogcd slot) or GCD-OGCDSlotLength (for first ogcd slot)
-    public bool CanWeave(float cooldown, float actionLock, float deadline) => deadline < 10000 ? MathF.Max(cooldown, AnimationLock) + actionLock + AnimationLockDelay <= deadline : cooldown <= AnimationLock;
+    public bool CanWeave(float cooldown, float actionLock, float deadline) => deadline < 10000 ? Math.Max(cooldown, AnimationLock) + actionLock + AnimationLockDelay <= deadline : cooldown <= AnimationLock;
     public bool CanWeave<AID>(AID aid, float actionLock, float deadline) where AID : Enum => CanWeave(CD(aid), actionLock, deadline);
 
     public void UpdateCommon(Actor? target, float estimatedAnimLockDelay)
@@ -68,7 +68,7 @@ public abstract class CommonState(RotationModule module)
         RaidBuffsLeft = vuln.Item1 ? vuln.Item2 : 0;
         foreach (var status in Module.Player.Statuses.Where(s => IsDamageBuff(s.ID)))
         {
-            RaidBuffsLeft = MathF.Max(RaidBuffsLeft, StatusDuration(status.ExpireAt));
+            RaidBuffsLeft = Math.Max(RaidBuffsLeft, StatusDuration(status.ExpireAt));
         }
         // TODO: also check damage-taken debuffs on target
 
@@ -95,7 +95,7 @@ public abstract class CommonState(RotationModule module)
         NextPositionalImminent = !ignore && positional.imm;
         NextPositionalCorrect = ignore || target == null || positional.pos switch
         {
-            Positional.Flank => MathF.Abs(target.Rotation.ToDirection().Dot((Module.Player.Position - target.Position).Normalized())) < 0.7071067f,
+            Positional.Flank => Math.Abs(target.Rotation.ToDirection().Dot((Module.Player.Position - target.Position).Normalized())) < 0.7071067f,
             Positional.Rear => target.Rotation.ToDirection().Dot((Module.Player.Position - target.Position).Normalized()) < -0.7071068f,
             _ => true
         };

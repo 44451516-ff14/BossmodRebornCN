@@ -47,7 +47,7 @@ public record struct WDir(float X, float Z)
     {
         var dotDir = Dot(direction);
         var dotNormal = Dot(direction.OrthoL());
-        return dotDir >= -lenBack && dotDir <= lenFront && MathF.Abs(dotNormal) <= halfWidth;
+        return dotDir >= -lenBack && dotDir <= lenFront && Math.Abs(dotNormal) <= halfWidth;
     }
 }
 

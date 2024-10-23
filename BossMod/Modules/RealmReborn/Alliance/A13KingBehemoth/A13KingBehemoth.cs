@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Alliance.A13KingBehemoth;
 
-class EclipticMeteor(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.EclipticMeteor), 60, false)
+class EclipticMeteor(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.EclipticMeteor), 60)
 {
     public override IEnumerable<Actor> BlockerActors() => Module.Enemies(OID.Comet).Where(a => !a.IsDead);
 }
