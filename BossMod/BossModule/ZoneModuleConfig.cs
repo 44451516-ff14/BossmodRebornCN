@@ -1,20 +1,20 @@
 ﻿namespace BossMod;
 
-[ConfigDisplay(Name = "Full duty automation", Order = 6)]
+[ConfigDisplay(Name = "全职自动化?-Full duty automation", Order = 6)]
 public sealed class ZoneModuleConfig : ConfigNode
 {
-    [PropertyDisplay("Required maturity for zone modules to be loaded")]
+    [PropertyDisplay("加载区域模块所需的最低完成度")]
     public BossModuleInfo.Maturity MinMaturity = BossModuleInfo.Maturity.Contributed;
 
-    [PropertyDisplay("Enable automatic execution of quest battles / solo duties")]
+    [PropertyDisplay("启用自动执行任务战斗/单人单人任务")]
     public bool EnableQuestBattles = false;
 
-    [PropertyDisplay("Draw waypoints in game world")]
+    [PropertyDisplay("在游戏世界中绘制路径点")]
     public bool ShowWaypoints = false;
 
-    [PropertyDisplay("Use dash abilities for navigation (Smudge, Elusive Jump, etc)")]
-    public bool UseDash = true;
+    [PropertyDisplay("使用冲刺技能进行导航（Smudge、Elusive Jump等）")]
+    public bool UseDash = false;
 
-    [PropertyDisplay("Show xan debug UI")]
+    [PropertyDisplay("显示xan调试UI")]
     public bool ShowXanDebugger = false;
 }

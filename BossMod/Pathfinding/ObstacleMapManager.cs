@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Pathfinding;
 
-[ConfigDisplay(Name = "Obstacle map development", Order = 8)]
+[ConfigDisplay(Name = "障碍地图开发-Obstacle map development", Order = 8)]
 public sealed class ObstacleMapConfig : ConfigNode
 {
-    [PropertyDisplay("Developer mode: load obstacle maps from source rather than from plugin distribution")]
+    [PropertyDisplay("开发者模式：从源代码加载障碍地图，而非插件分发包")]
     public bool LoadFromSource;
 
-    [PropertyDisplay("Developer mode: source path", tooltip: "Should be <repo root>/BossMod/Pathfinding/ObstacleMaps/maplist.json")]
+    [PropertyDisplay("开发者模式：源路径", tooltip: "应为 <repo root>/BossMod/Pathfinding/ObstacleMaps/maplist.json")]
     public string SourcePath = "";
 }
 

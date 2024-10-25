@@ -3,7 +3,7 @@ using ImGuiNET;
 
 namespace BossMod;
 
-[ConfigDisplay(Name = "Party roles assignment", Order = 2)]
+[ConfigDisplay(Name = "队伍位置分配(打高难最好设置一下)M1/D1,M2/D2,R1/D3,R2/D4", Order = 2)]
 public class PartyRolesConfig : ConfigNode
 {
     public enum Assignment { MT, OT, H1, H2, M1, M2, R1, R2, Unassigned }
