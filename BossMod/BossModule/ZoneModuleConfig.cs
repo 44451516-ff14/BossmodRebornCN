@@ -6,7 +6,7 @@ public sealed class ZoneModuleConfig : ConfigNode
     [PropertyDisplay("加载区域模块所需的最低完成度")]
     public BossModuleInfo.Maturity MinMaturity = BossModuleInfo.Maturity.Contributed;
 
-    [PropertyDisplay("启用自动执行任务战斗/单人单人任务")]
+    [PropertyDisplay("启用自动执行任务战斗/单人任务")]
     public bool EnableQuestBattles = false;
 
     [PropertyDisplay("在游戏世界中绘制路径点")]
