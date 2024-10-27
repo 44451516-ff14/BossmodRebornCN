@@ -32,7 +32,7 @@ class MiniArenaTest : TestWindow
             _arena.Bounds = _arenaIsCircle ? new ArenaBoundsCircle(_arena.Bounds.Radius) : new ArenaBoundsSquare(_arena.Bounds.Radius);
         }
 
-        _arena.Begin(_azimuth.Degrees());
+        _ = _arena.Begin(_azimuth.Degrees());
         if (_coneEnabled)
             _arena.ZoneCone(new(_conePos), _coneRadius.X, _coneRadius.Y, _coneAngles.X.Degrees(), _coneAngles.Y.Degrees(), Colors.Safe);
         _arena.Border(Colors.Border);

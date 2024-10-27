@@ -11,7 +11,7 @@ public sealed class ZoneModuleConfig : ConfigNode
 
     [PropertyDisplay("在游戏世界中绘制路径点")]
     public bool ShowWaypoints = false;
-
+    
     [PropertyDisplay("使用冲刺技能进行导航（Smudge、Elusive Jump等）")]
     public bool UseDash = false;
 

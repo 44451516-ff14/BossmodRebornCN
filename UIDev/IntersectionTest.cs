@@ -29,7 +29,7 @@ class IntersectionTest : TestWindow
         var intersect = Intersect.CircleCone(circleCenter, _circleRadius, _coneRadius, _coneDirDeg.Degrees().ToDirection(), _coneHalfAngleDeg.Degrees());
         ImGui.TextUnformatted($"Intersect: {intersect}");
 
-        _arena.Begin(default);
+        _ = _arena.Begin(default);
         _arena.AddCone(default, _coneRadius, _coneDirDeg.Degrees(), _coneHalfAngleDeg.Degrees(), Colors.Safe);
         _arena.AddCircle(circleCenter.ToWPos(), _circleRadius, Colors.Danger);
         MiniArena.End();

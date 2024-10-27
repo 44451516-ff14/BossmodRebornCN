@@ -41,8 +41,9 @@ public class Map
     public void Init(float resolution, WPos center, float worldHalfWidth, float worldHalfHeight, Angle rotation = new())
     {
         Resolution = resolution;
-        Width = 2 * (int)MathF.Ceiling(worldHalfWidth / resolution);
-        Height = 2 * (int)MathF.Ceiling(worldHalfHeight / resolution);
+        var res = 1 / resolution;
+        Width = 2 * (int)MathF.Ceiling(worldHalfWidth * res);
+        Height = 2 * (int)MathF.Ceiling(worldHalfHeight * res);
 
         var numPixels = Width * Height;
         if (Pixels.Length < numPixels)
@@ -51,7 +52,7 @@ public class Map
 
         Center = center;
         Rotation = rotation;
-        LocalZDivRes = rotation.ToDirection() / Resolution;
+        LocalZDivRes = rotation.ToDirection() * res;
 
         MaxG = 0;
         MaxPriority = 0;
@@ -114,11 +115,11 @@ public class Map
         });
     }
 
-    // for testing 9 points per pixel for increased accuracy
-    public void BlockPixelsInsideArenaBounds(Func<WPos, float> shape, float maxG, float threshold)
+    // for testing 4 points per pixel for increased accuracy, suiteable for convex polygons
+    public void BlockPixelsInsideConvex(Func<WPos, float> shape, float maxG, float threshold)
     {
         MaxG = Math.Max(MaxG, maxG);
-        float[] offsets = [1e-5f, 0.5f, 1f - 1e-5f];
+        float[] offsets = [1e-5f, 1 - 1e-5f];
 
         Parallel.For(0, Height, y =>
         {
@@ -126,9 +127,9 @@ public class Map
             for (var x = 0; x < Width; x++)
             {
                 var blocked = false;
-                for (var i = 0; i < 3; i++)
+                for (var i = 0; i < 2; i++)
                 {
-                    for (var j = 0; j < 3; j++)
+                    for (var j = 0; j < 2; j++)
                     {
                         if (shape(GridToWorld(x, y, offsets[i], offsets[j])) <= threshold)
                         {
@@ -215,45 +216,26 @@ public class Map
     // enumerate pixels along line starting from (x1, y1) to (x2, y2); first is not returned, last is returned
     public IEnumerable<(int x, int y)> EnumeratePixelsInLine(int x1, int y1, int x2, int y2)
     {
-        var dx = x2 - x1;
-        var dy = y2 - y1;
-        var sx = dx > 0 ? 1 : -1;
-        var sy = dy > 0 ? 1 : -1;
-        dx = Math.Abs(dx);
-        dy = Math.Abs(dy);
-        if (dx >= dy)
+        int dx = Math.Abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+        int dy = -Math.Abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
+        int err = dx + dy, e2;
+
+        while (true)
         {
-            var err = 2 * dy - dx;
-            do
+            yield return (x1, y1);
+            if (x1 == x2 && y1 == y2)
+                break;
+            e2 = 2 * err;
+            if (e2 >= dy)
             {
+                err += dy;
                 x1 += sx;
-                yield return (x1, y1);
-                if (err > 0)
-                {
-                    y1 += sy;
-                    yield return (x1, y1);
-                    err -= 2 * dx;
-                }
-                err += 2 * dy;
             }
-            while (x1 != x2);
-        }
-        else
-        {
-            var err = 2 * dx - dy;
-            do
+            if (e2 <= dx)
             {
+                err += dx;
                 y1 += sy;
-                yield return (x1, y1);
-                if (err > 0)
-                {
-                    x1 += sx;
-                    yield return (x1, y1);
-                    err -= 2 * dy;
-                }
-                err += 2 * dx;
             }
-            while (y1 != y2);
         }
     }
 }

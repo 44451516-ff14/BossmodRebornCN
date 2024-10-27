@@ -20,6 +20,7 @@ public class BossModuleConfig : ConfigNode
     [PropertyDisplay("锁定雷达和提示窗口的移动和鼠标交互")]
     public bool Lock = false;
 
+
     [PropertyDisplay("透明的雷达窗口背景", tooltip: "移除雷达周围的黑色窗口；如果将雷达移至其他显示器，此功能将无效")]
     public bool TrishaMode = false;
 
@@ -28,6 +29,7 @@ public class BossModuleConfig : ConfigNode
 
     [PropertyDisplay("在各种雷达标记上显示轮廓和阴影")]
     public bool ShowOutlinesAndShadows = false;
+
 
     [PropertyDisplay("雷达竞技场缩放系数", tooltip: "雷达窗口内竞技场的缩放比例")]
     [PropertySlider(0.1f, 10, Speed = 0.1f, Logarithmic = true)]
@@ -41,6 +43,10 @@ public class BossModuleConfig : ConfigNode
 
     [PropertyDisplay("为旋转提供雷达额外空间", tooltip: "如果你使用了上述设置，此选项为雷达边缘提供额外空间，以避免在战斗时旋转相机时被剪切")]
     public bool AddSlackForRotations = true;
+
+    [PropertyDisplay("为雷达旋转提供额外空间", tooltip: "如果您正在使用上述设置，您可以在边缘被裁剪前为雷达两侧提供额外空间，以便在遇到情况时旋转相机，或者为方位提供空间。", since: "7.2.0.169")]
+    [PropertySlider(1, 2, Speed = 0.1f, Logarithmic = true)]
+    public float SlackForRotations = 1.5f;
 
 
     [PropertyDisplay("在雷达中显示竞技场边框")]
@@ -71,10 +77,10 @@ public class BossModuleConfig : ConfigNode
     [PropertyDisplay("始终显示所有存活的队员", separator: true)]
     public bool ShowIrrelevantPlayers = false;
 
-        [PropertyDisplay("在雷达上为未着色的玩家显示基于角色的颜色")]
+    [PropertyDisplay("在雷达上为未着色的玩家显示基于角色的颜色")]
     public bool ColorPlayersBasedOnRole = false;
 
-   [PropertyDisplay("始终显示焦点目标的队员", separator: true)]
+    [PropertyDisplay("始终显示焦点目标的队员", separator: true)]
     public bool ShowFocusTargetPlayer = false;
 
     // hint window settings

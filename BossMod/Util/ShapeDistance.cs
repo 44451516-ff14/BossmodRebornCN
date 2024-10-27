@@ -22,11 +22,7 @@ public static class ShapeDistance
         });
     }
 
-    public static Func<WPos, float> InvertedDonut(WPos origin, float innerRadius, float outerRadius)
-    {
-        var donut = Donut(origin, innerRadius, outerRadius);
-        return p => -donut(p);
-    }
+    public static Func<WPos, float> InvertedDonut(WPos origin, float innerRadius, float outerRadius) => p => -Donut(origin, innerRadius, outerRadius)(p);
 
     public static Func<WPos, float> Cone(WPos origin, float radius, Angle centerDir, Angle halfAngle)
     {
@@ -51,11 +47,7 @@ public static class ShapeDistance
         };
     }
 
-    public static Func<WPos, float> InvertedCone(WPos origin, float radius, Angle centerDir, Angle halfAngle)
-    {
-        var cone = Cone(origin, radius, centerDir, halfAngle);
-        return p => -cone(p);
-    }
+    public static Func<WPos, float> InvertedCone(WPos origin, float radius, Angle centerDir, Angle halfAngle) => p => -Cone(origin, radius, centerDir, halfAngle)(p);
 
     public static Func<WPos, float> DonutSector(WPos origin, float innerRadius, float outerRadius, Angle centerDir, Angle halfAngle)
     {
@@ -65,7 +57,7 @@ public static class ShapeDistance
             return Donut(origin, innerRadius, outerRadius);
         if (innerRadius <= 0)
             return Cone(origin, outerRadius, centerDir, halfAngle);
-        float coneFactor = halfAngle.Rad > MathF.PI / 2 ? -1 : 1;
+        float coneFactor = halfAngle.Rad > MathF.PI * 0.5f ? -1 : 1;
         var nl = coneFactor * (centerDir + halfAngle + 90.Degrees()).ToDirection();
         var nr = coneFactor * (centerDir - halfAngle - 90.Degrees()).ToDirection();
         return p =>
@@ -81,10 +73,7 @@ public static class ShapeDistance
     }
 
     public static Func<WPos, float> InvertedDonutSector(WPos origin, float innerRadius, float outerRadius, Angle centerDir, Angle halfAngle)
-    {
-        var donutSectir = DonutSector(origin, innerRadius, outerRadius, centerDir, halfAngle);
-        return p => -donutSectir(p);
-    }
+        => p => -DonutSector(origin, innerRadius, outerRadius, centerDir, halfAngle)(p);
 
     public static Func<WPos, float> Tri(WPos origin, RelTriangle tri)
     {
@@ -112,11 +101,7 @@ public static class ShapeDistance
         };
     }
 
-    public static Func<WPos, float> InvertedTri(WPos origin, RelTriangle tri)
-    {
-        var triangle = Tri(origin, tri);
-        return p => -triangle(p);
-    }
+    public static Func<WPos, float> InvertedTri(WPos origin, RelTriangle tri) => p => -Tri(origin, tri)(p);
 
     public static Func<WPos, float> TriList(WPos origin, List<RelTriangle> tris) => Union([.. tris.Select(tri => Tri(origin, tri))]);
 
@@ -144,18 +129,10 @@ public static class ShapeDistance
         return Rect(from, dir / l, l, 0, halfWidth);
     }
 
-    public static Func<WPos, float> InvertedRect(WPos origin, WDir dir, float lenFront, float lenBack, float halfWidth)
-    {
-        var rect = Rect(origin, dir, lenFront, lenBack, halfWidth);
-        return p => -rect(p);
-    }
-    public static Func<WPos, float> InvertedRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth) => InvertedRect(origin, direction.ToDirection(), lenFront, lenBack, halfWidth);
-    public static Func<WPos, float> InvertedRect(WPos from, WPos to, float halfWidth)
-    {
-        var dir = to - from;
-        var l = dir.Length();
-        return InvertedRect(from, dir / l, l, 0, halfWidth);
-    }
+    public static Func<WPos, float> InvertedRect(WPos origin, WDir dir, float lenFront, float lenBack, float halfWidth) => p => -Rect(origin, dir, lenFront, lenBack, halfWidth)(p);
+
+    public static Func<WPos, float> InvertedRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth) => p => -Rect(origin, direction.ToDirection(), lenFront, lenBack, halfWidth)(p);
+    public static Func<WPos, float> InvertedRect(WPos from, WPos to, float halfWidth) => p => -Rect(from, to, halfWidth)(p);
 
     public static Func<WPos, float> Capsule(WPos origin, WDir dir, float length, float radius) => p =>
     {
@@ -189,11 +166,7 @@ public static class ShapeDistance
         };
     }
 
-    public static Func<WPos, float> InvertedCross(WPos origin, Angle direction, float length, float halfWidth)
-    {
-        var cross = Cross(origin, direction, length, halfWidth);
-        return p => -cross(p);
-    }
+    public static Func<WPos, float> InvertedCross(WPos origin, Angle direction, float length, float halfWidth) => p => -Cross(origin, direction, length, halfWidth)(p);
 
     // positive offset increases area
     public static Func<WPos, float> ConvexPolygon(IEnumerable<(WPos, WPos)> edges, bool cw, float offset = 0)
@@ -211,11 +184,7 @@ public static class ShapeDistance
 
     public static Func<WPos, float> ConvexPolygon(IEnumerable<WPos> vertices, bool cw, float offset = 0) => ConvexPolygon(PolygonUtil.EnumerateEdges(vertices), cw, offset);
 
-    public static Func<WPos, float> InvertedConvexPolygon(IEnumerable<WPos> vertices, bool cw, float offset = 0)
-    {
-        var convexPolygon = ConvexPolygon(vertices, cw, offset);
-        return p => -convexPolygon(p);
-    }
+    public static Func<WPos, float> InvertedConvexPolygon(IEnumerable<WPos> vertices, bool cw, float offset = 0) => p => -ConvexPolygon(vertices, cw, offset)(p);
 
     public static Func<WPos, float> Intersection(List<Func<WPos, float>> funcs, float offset = 0) => p => funcs.Max(e => e(p)) - offset;
     public static Func<WPos, float> Union(List<Func<WPos, float>> funcs, float offset = 0) => p => funcs.Min(e => e(p)) - offset;

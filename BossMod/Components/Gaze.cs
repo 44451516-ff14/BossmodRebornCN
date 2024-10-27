@@ -18,6 +18,7 @@ public abstract class GenericGaze(BossModule module, ActionID aid = new(), bool 
     private const float _eyeInnerR = 4;
     private const float _eyeOuterR = (_eyeOuterH * _eyeOuterH + _eyeOuterV * _eyeOuterV) / (2 * _eyeOuterV);
     private const float _eyeOffsetV = _eyeOuterR - _eyeOuterV;
+    private const float halfPi = MathF.PI / 2;
     private static readonly float _eyeHalfAngle = MathF.Asin(_eyeOuterH / _eyeOuterR);
 
     public abstract IEnumerable<Eye> ActiveEyes(int slot, Actor actor);
@@ -49,8 +50,8 @@ public abstract class GenericGaze(BossModule module, ActionID aid = new(), bool 
             var danger = HitByEye(pc, eye) != Inverted;
             var eyeCenter = IndicatorScreenPos(eye.Position);
             var dl = ImGui.GetWindowDrawList();
-            dl.PathArcTo(eyeCenter - new Vector2(0, _eyeOffsetV), _eyeOuterR, MathF.PI / 2 + _eyeHalfAngle, MathF.PI / 2 - _eyeHalfAngle);
-            dl.PathArcTo(eyeCenter + new Vector2(0, _eyeOffsetV), _eyeOuterR, -MathF.PI / 2 + _eyeHalfAngle, -MathF.PI / 2 - _eyeHalfAngle);
+            dl.PathArcTo(eyeCenter - new Vector2(0, _eyeOffsetV), _eyeOuterR, halfPi + _eyeHalfAngle, halfPi - _eyeHalfAngle);
+            dl.PathArcTo(eyeCenter + new Vector2(0, _eyeOffsetV), _eyeOuterR, -halfPi + _eyeHalfAngle, -halfPi - _eyeHalfAngle);
             dl.PathFillConvex(danger ? Colors.Enemy : Colors.PC);
             dl.AddCircleFilled(eyeCenter, _eyeInnerR, Colors.Border);
 

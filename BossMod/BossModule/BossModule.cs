@@ -159,7 +159,7 @@ public abstract class BossModule : IDisposable
         }
         if (includeArena)
         {
-            Arena.Begin(cameraAzimuth);
+            _ = Arena.Begin(cameraAzimuth);
             DrawArena(pcSlot, pc, pcHints.Any(h => h.Item2));
             MiniArena.End();
         }

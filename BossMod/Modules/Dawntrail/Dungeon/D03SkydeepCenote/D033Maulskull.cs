@@ -68,9 +68,11 @@ public enum AID : uint
 
 class StayInBounds(BossModule module) : BossComponent(module)
 {
+    private static readonly WDir offset = new(0, 19);
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center + new WDir(0, 19), Arena.Center + new WDir(0, -19), 19));
+        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center + offset, Arena.Center - offset, 19));
     }
 }
 

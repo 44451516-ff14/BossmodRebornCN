@@ -71,30 +71,27 @@ class TeaAwhirl : Components.GenericAOEs
         cupPositions = new Dictionary<uint, Action>
         {
             { 0x02000100, () => HandleActivation(11.5f,
-                new List<(WPos, WPos?, WPos[])>
-                {
+                [
                     (new(17, -163), new(17, -177), [new(3.5f, -161.5f), new(30.5f, -178.5f)]),
                     (new(17, -153), new(10, -170), [new(25.5f, -156.5f), new(20.5f, -178.5f)]),
                     (new(17, -153), new(17, -177), [new(20.5f, -178.5f), new(3.5f, -161.5f)]),
                     (new(34, -170), null, [new(8.5f, -173.5f)]),
                     (new(0, -170), null, [new(25.5f, -166.5f)])
-                })
+                ])
             },
             { 0x10000800, () => HandleActivation(14.5f,
-                new List<(WPos, WPos?, WPos[])>
-                {
+                [
                     (new(0, -170), new(34, -170), [new(8.5f, -156.5f), new(25.5f, -183.5f)]),
                     (new(0, -170), new(17, -187), [new(3.5f, -178.5f), new(8.5f, -156.5f)]),
                     (new(17, -187), new(17, -153), [new(30.5f, -161.5f), new(3.5f, -178.5f)])
-                })
+                ])
             },
             { 0x00100001, () => AddAOEs(WorldState.FutureTime(16), _cups[0].Position, _cups[1].Position) },
             { 0x00400020, () => HandleActivation(19f,
-                new List<(WPos, WPos?, WPos[])>
-                {
+                [
                     (new(0, -170), new(17, -163), [new(5, -165), new(22, -182)]),
                     (new(17, -177), new(17, -153), [new(5, -175), new(29, -175)])
-                })
+                ])
             }
         };
     }

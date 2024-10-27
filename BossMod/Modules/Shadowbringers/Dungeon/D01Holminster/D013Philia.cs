@@ -11,6 +11,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 872, // Boss->player, no cast, single-target
+
     ScavengersDaughter = 15832, // Boss->self, 4.0s cast, range 40 circle
     HeadCrusher = 15831, // Boss->player, 4.0s cast, single-target
     Pendulum = 16777, // Boss->self, 5.0s cast, single-target, cast to jump

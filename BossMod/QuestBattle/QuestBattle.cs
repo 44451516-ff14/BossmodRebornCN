@@ -390,11 +390,8 @@ public abstract class QuestBattle : ZoneModule
         }
     }
 
-    public override void DrawExtra()
+    public void DrawDebugInfo()
     {
-        if (!_config.ShowXanDebugger)
-            return;
-
         if (UIMisc.Button("Leave duty", !ImGui.GetIO().KeyShift, "Hold shift to leave"))
             _abandonDuty?.Invoke(false);
         ImGui.SameLine();

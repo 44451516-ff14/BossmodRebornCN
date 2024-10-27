@@ -10,7 +10,11 @@ public record struct Angle(float Rad)
     public readonly float Deg => Rad * RadToDeg;
 
     public static Angle FromDirection(WDir dir) => new(MathF.Atan2(dir.X, dir.Z));
-    public readonly WDir ToDirection() => new(Sin(), Cos());
+    public readonly WDir ToDirection()
+    {
+        var (sin, cos) = MathF.SinCos(Rad);
+        return new(sin, cos);
+    }
 
     public static Angle operator +(Angle a, Angle b) => new(a.Rad + b.Rad);
     public static Angle operator -(Angle a, Angle b) => new(a.Rad - b.Rad);

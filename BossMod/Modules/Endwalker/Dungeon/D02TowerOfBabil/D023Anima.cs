@@ -147,6 +147,13 @@ class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 
         else if (Chasers.Any(x => x.Target == actor))
             hints.AddForbiddenZone(ShapeDistance.InvertedRect(actor.Position, 90.Degrees(), 40, 40, 3));
     }
+
+    public override void Update()
+    {
+        base.Update();
+        if (Chasers.Count > 0 && Module.Enemies(OID.LowerAnima).Any(x => !x.IsTargetable))
+            Chasers.Clear();
+    }
 }
 
 class PhantomPain(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.PhantomPain2), new AOEShapeRect(10, 10, 10));
