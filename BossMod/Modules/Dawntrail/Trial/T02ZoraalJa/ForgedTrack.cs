@@ -11,7 +11,7 @@ class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
     {
         // there are is only one possible pattern for each direction in normal mode. NE and SW are always XX pattern, NW and SE are always crossed resulting in AOEs in the same lane
         var casterOffset = source.Position - Arena.Center;
-        var patternX = source.Rotation.AlmostEqual(Helpers.AnglesIntercardinals[0], Angle.DegToRad) || source.Rotation.AlmostEqual(Helpers.AnglesIntercardinals[2], Angle.DegToRad);
+        var patternX = source.Rotation.AlmostEqual(Angle.AnglesIntercardinals[0], Angle.DegToRad) || source.Rotation.AlmostEqual(Angle.AnglesIntercardinals[2], Angle.DegToRad);
         var rightDir = source.Rotation.ToDirection().OrthoR();
         var laneOffset = casterOffset.Dot(rightDir);
         var lane1 = laneOffset is < -7 and > -8;

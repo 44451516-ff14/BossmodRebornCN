@@ -185,6 +185,12 @@ sealed class AIManager : IDisposable
             case "MAXDISTANCESLOT":
                 configModified = HandleMaxDistanceSlotCommand(messageData);
                 break;
+            case "SETPRESETNAME":
+                if (cmd.Length <= 2)
+                    Service.Log("Specify an AI autorotation preset name.");
+                else
+                    ParseAIAutorotationSetCommand(messageData);
+                break;
             default:
                 Service.ChatGui.Print($"[AI] Unknown command: {messageData[0]}");
                 break;
@@ -489,5 +495,40 @@ sealed class AIManager : IDisposable
                 return i;
         }
         return -1;
+    }
+
+    private void ParseAIAutorotationSetCommand(string[] presetName)
+    {
+        if (presetName.Length < 2)
+        {
+            Service.Log("No valid preset name provided.");
+            return;
+        }
+
+        var userInput = string.Join(" ", presetName.Skip(1)).Trim();
+        if (userInput == "null" || string.IsNullOrWhiteSpace(userInput))
+        {
+            Autorot.Preset = null;
+            _config.AIAutorotPresetName = null;
+            Service.Log("Disabled AI autorotation preset.");
+            return;
+        }
+
+        var normalizedInput = userInput.ToUpperInvariant();
+        var preset = Autorot.Database.Presets.VisiblePresets
+            .FirstOrDefault(p => p.Name.Trim().Equals(normalizedInput, StringComparison.OrdinalIgnoreCase))
+            ?? RotationModuleManager.ForceDisable;
+
+        if (preset != null)
+        {
+            var newPreset = Autorot.Preset == preset ? null : preset;
+            Service.Log($"Console: Changed preset from '{Autorot.Preset?.Name ?? "<n/a>"}' to '{newPreset?.Name ?? "<n/a>"}'");
+            Autorot.Preset = newPreset;
+            _config.AIAutorotPresetName = preset.Name;
+        }
+        else
+        {
+            Service.ChatGui.PrintError($"Failed to find preset '{userInput}'");
+        }
     }
 }

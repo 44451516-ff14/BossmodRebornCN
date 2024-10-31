@@ -27,11 +27,11 @@ class StageCombo(BossModule module) : Components.GenericAOEs(module)
         {
             var firstActivation = Module.CastFinishAt(spell, 1.2f);
             var lastActivation = Module.CastFinishAt(spell, 7.5f);
-            _aoes.Add(new(first, Module.Center, 180.Degrees(), firstActivation));
-            AddAOEs(firstRot, Helpers.AnglesCardinals, firstActivation);
-            _aoes.Add(new(_shapeCross, Module.Center, 180.Degrees(), Module.CastFinishAt(spell, 4.2f)));
-            _aoes.Add(new(last, Module.Center, 180.Degrees(), lastActivation));
-            AddAOEs(firstRot, Helpers.AnglesIntercardinals, lastActivation);
+            _aoes.Add(new(first, Arena.Center, 180.Degrees(), firstActivation));
+            AddAOEs(firstRot, Angle.AnglesCardinals, firstActivation);
+            _aoes.Add(new(_shapeCross, Arena.Center, 180.Degrees(), Module.CastFinishAt(spell, 4.2f)));
+            _aoes.Add(new(last, Arena.Center, 180.Degrees(), lastActivation));
+            AddAOEs(firstRot, Angle.AnglesIntercardinals, lastActivation);
         }
     }
 

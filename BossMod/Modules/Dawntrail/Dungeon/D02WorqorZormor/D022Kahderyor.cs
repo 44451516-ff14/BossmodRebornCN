@@ -139,9 +139,9 @@ class WindShotStack(BossModule module) : Components.DonutStack(module, ActionID.
         var comp = Module.FindComponent<WindEarthShot>()!.ActiveAOEs(slot, actor).ToList();
         var forbidden = new List<Func<WPos, float>>();
         foreach (var c in Raid.WithoutSlot().Exclude(actor).Where(x => comp.Any(c => c.Shape is AOEShapeDonut && !c.Check(x.Position) || c.Shape is AOEShapeCustom && c.Check(x.Position))))
-            forbidden.Add(ShapeDistance.InvertedCircle(c.Position, Donut.InnerRadius / 3));
+            forbidden.Add(ShapeDistance.InvertedCircle(c.Position, Donut.InnerRadius * 0.33f));
         if (forbidden.Count > 0)
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), ActiveStacks.FirstOrDefault().Activation);
+            hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), ActiveStacks.FirstOrDefault().Activation);
     }
 }
 
@@ -175,7 +175,8 @@ class D022KahderyorStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12703)]
 public class D022Kahderyor(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Circle(new(-53, -57), 19.5f)], [new Rectangle(new(-72.5f, -57), 20, 0.75f, 90.Degrees()), new Rectangle(new(-53, -37), 20, 1.5f)]);
+    private static readonly WPos arenaCenter = new(-53, -57);
+    public static readonly ArenaBoundsComplex DefaultBounds = new([new Circle(arenaCenter, 19.5f)], [new Rectangle(new(-72.5f, -57), 20, 0.75f, 90.Degrees()), new Rectangle(arenaCenter, 20, 1.5f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

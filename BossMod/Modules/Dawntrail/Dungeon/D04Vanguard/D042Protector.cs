@@ -123,7 +123,6 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     {
         if (Arena.Bounds == defaultBounds)
         {
-            var player = Module.Raid.Player()!;
             var aoeChecks = new[]
             {
                 new { AOE = electricFences01000080AOE, Bounds = electricFences01000080Arena },
@@ -132,11 +131,12 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 new { AOE = electricFences00200010AOE, Bounds = electricFences00200010Arena }
             };
 
-            foreach (var check in aoeChecks)
+            for (var i = 0; i < aoeChecks.Length; ++i)
             {
-                if (ActiveAOEs(0, player).Any(c => c.Shape == check.AOE && c.Activation <= WorldState.CurrentTime))
+                var aoe = aoeChecks[i];
+                if (ActiveAOEs(0, Raid.Player()!).Any(c => c.Shape == aoe.AOE && c.Activation <= WorldState.CurrentTime))
                 {
-                    Arena.Bounds = check.Bounds;
+                    Arena.Bounds = aoe.Bounds;
                     _aoe = null;
                     break;
                 }

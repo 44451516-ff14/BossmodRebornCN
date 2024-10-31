@@ -69,10 +69,10 @@ class VacuumBladePapercutter(BossModule module) : Components.GenericAOEs(module)
                         _aoes.Add(new(circle, e.Position, default, activation));
                         break;
                     case 0xB1:
-                        _aoes.Add(new(rect, e.Position, -0.003f.Degrees(), activation));
+                        _aoes.Add(new(rect, e.Position, Angle.AnglesCardinals[1], activation));
                         break;
                     case 0xB2:
-                        _aoes.Add(new(rect, e.Position, 89.999f.Degrees(), activation));
+                        _aoes.Add(new(rect, e.Position, Angle.AnglesCardinals[3], activation));
                         break;
                 }
             }

@@ -83,7 +83,7 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
     private static Square[] GenerateTiles(WPos[] positions) => positions.Select(pos => new Square(pos, HalfSize)).ToArray();
 
     private static Square[] GenerateRotatedTiles(float angle)
-        => defaultGreenTiles.Select(pos => new Square(Helpers.RotateAroundOrigin(angle, D092LeananSith.ArenaCenter, pos), HalfSize)).ToArray();
+        => defaultGreenTiles.Select(pos => new Square(WPos.RotateAroundOrigin(angle, D092LeananSith.ArenaCenter, pos), HalfSize)).ToArray();
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -134,7 +134,7 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
             forbidden.Add(ShapeDistance.InvertedCircle(seed.Position, 3));
         var distance = (actor.Position - closestSeed.Position).LengthSq();
         if (forbidden.Count > 0 && distance > 9)
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max());
+            hints.AddForbiddenZone(p => forbidden.Max(f => f(p)));
         else if (distance < 9)
             hints.InteractWithTarget = closestSeed;
     }

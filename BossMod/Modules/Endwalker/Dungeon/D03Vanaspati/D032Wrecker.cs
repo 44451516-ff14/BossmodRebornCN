@@ -80,16 +80,18 @@ class AetherSprayWaterKB(BossModule module) : Components.KnockbackFromCastTarget
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var forbidden = new List<Func<WPos, float>>();
         var source = Sources(slot, actor).FirstOrDefault();
         if (Module.FindComponent<QueerBubble>()!.ActiveAOEs(slot, actor).Any() && source != default)
         {
-            forbidden.Add(ShapeDistance.InvertedCircle(Arena.Center, 7));
+            var forbidden = new List<Func<WPos, float>>
+            {
+                ShapeDistance.InvertedCircle(Arena.Center, 7)
+            };
             for (var i = 0; i < 6; i++)
-                if (Module.Enemies(OID.QueerBubble).Where(x => x.Position.AlmostEqual(Helpers.RotateAroundOrigin(i * 60, Arena.Center, x.Position), 1) && Module.FindComponent<QueerBubble>()!._aoes.Contains(x)) != null)
+                if (Module.Enemies(OID.QueerBubble).Where(x => x.Position.AlmostEqual(WPos.RotateAroundOrigin(i * 60, Arena.Center, x.Position), 1) && Module.FindComponent<QueerBubble>()!._aoes.Contains(x)) != null)
                     forbidden.Add(ShapeDistance.Cone(Arena.Center, 20, i * 60.Degrees(), 10.Degrees()));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), source.Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), source.Activation);
         }
     }
 }

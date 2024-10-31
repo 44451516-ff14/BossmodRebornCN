@@ -75,8 +75,8 @@ public class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
     {
         if (helper != null && _currentPattern != Pattern.None)
         {
-            AddAOEs(helper, _currentPattern == Pattern.Cardinals ? Helpers.AnglesCardinals : Helpers.AnglesIntercardinals, 9);
-            AddAOEs(helper, _currentPattern == Pattern.Cardinals ? Helpers.AnglesIntercardinals : Helpers.AnglesCardinals, 11);
+            AddAOEs(helper, _currentPattern == Pattern.Cardinals ? Angle.AnglesCardinals : Angle.AnglesIntercardinals, 9);
+            AddAOEs(helper, _currentPattern == Pattern.Cardinals ? Angle.AnglesIntercardinals : Angle.AnglesCardinals, 11);
             _currentPattern = Pattern.None;
             helper = null;
         }

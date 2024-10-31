@@ -17,7 +17,7 @@ class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStackSpread
     public override void OnEventIcon(Actor actor, uint iconID)
     {
         if ((IconID)iconID == IconID.DoritoStack && Stacks.Count == 0)
-            Stacks.Add(new(Helpers.FakeActor, 1.5f, 8, 8, activation: WorldState.FutureTime(5.1f)));
+            Stacks.Add(new(actor, 1.5f, 8, 8, activation: WorldState.FutureTime(5.1f)));
     }
 
     public override void Update()
@@ -27,7 +27,7 @@ class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStackSpread
             var player = Raid.Player()!;
             var sort = Raid.WithoutSlot().Exclude(player).OrderBy(a => (player.Position - a.Position).LengthSq());
             var actor = sort.FirstOrDefault(x => !(Module.FindComponent<AbsoluteAuthorityCircle>()?.ActiveAOEs(0, x).Any(z => z.Shape.Check(x.Position, z.Origin, z.Rotation) && z.Risky) ?? false));
-            Stacks[0] = Stacks[0] with { Target = actor ?? Helpers.FakeActor };
+            Stacks[0] = Stacks[0] with { Target = actor ?? player };
         }
     }
 

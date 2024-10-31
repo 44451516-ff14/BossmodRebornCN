@@ -19,11 +19,13 @@ public class PersistentVoidzone(BossModule module, float radius, Func<BossModule
             {
                 var position = a.Position;
                 var directionOffset = MoveHintLength * a.Rotation.ToDirection();
+                var pos = a.Position + directionOffset;
                 var shapes = new Shape[]
                 {
+
                     new Circle(a.Position, Radius),
-                    new Circle(a.Position + directionOffset, Radius),
-                    new RectangleSE(a.Position, a.Position + directionOffset, Radius)
+                    new Circle(pos, Radius),
+                    new RectangleSE(a.Position, pos, Radius)
                 };
                 return new AOEInstance(new AOEShapeCustom(shapes), Arena.Center);
             });
@@ -36,7 +38,7 @@ public class PersistentVoidzone(BossModule module, float radius, Func<BossModule
         var forbidden = new List<Func<WPos, float>>();
         foreach (var s in Sources(Module))
             forbidden.Add(MoveHintLength > 0 ? ShapeDistance.Capsule(s.Position, s.Rotation, MoveHintLength, Shape.Radius) : Shape.Distance(s.Position, s.Rotation));
-        hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min());
+        hints.AddForbiddenZone(p => forbidden.Min(f => f(p)));
     }
 }
 

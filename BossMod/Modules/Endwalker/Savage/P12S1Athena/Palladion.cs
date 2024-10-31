@@ -184,7 +184,7 @@ class PalladionWhiteFlame : Components.GenericBaitAway
         CurrentBaits.Clear();
         if (_palladion != null && _palladion.NumBaitsDone < _palladion.NumBaitsAssigned && _palladion.BaitOrder[_palladion.NumBaitsDone])
             foreach (var t in Raid.WithoutSlot().SortedByRange(Module.Center).Take(2))
-                CurrentBaits.Add(new(Helpers.FakeActor, t, _shape));
+                CurrentBaits.Add(new(Actor.FakeActor, t, _shape));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

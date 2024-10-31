@@ -187,7 +187,7 @@ class P2SanctityOfTheWard2Towers1(BossModule module) : Components.CastTowers(mod
         if (offset.LengthSq() < 7 * 7)
         {
             // inner tower: intercardinal, ~6m from center
-            return 12 + (dir.Rad > 0 ? (dir.Rad > MathF.PI / 2 ? 0 : 1) : (dir.Rad < -MathF.PI / 2 ? 3 : 2));
+            return 12 + (dir.Rad > 0 ? (dir.Rad > Angle.HalfPi ? 0 : 1) : (dir.Rad < -Angle.HalfPi ? 3 : 2));
         }
         else
         {

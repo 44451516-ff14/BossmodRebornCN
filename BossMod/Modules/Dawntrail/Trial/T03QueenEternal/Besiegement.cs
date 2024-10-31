@@ -2,7 +2,6 @@ namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
 class Besiegement(BossModule module) : Components.GenericAOEs(module)
 {
-    private const int Z = 80;
     private const int L = 60;
     public readonly List<AOEInstance> AOEs = [];
     private static readonly AOEShapeRect[] rects = [new(L, 2), new(L, 4), new(L, 5), new(L, 6), new(L, 9)];
@@ -25,7 +24,7 @@ class Besiegement(BossModule module) : Components.GenericAOEs(module)
         if (aoeMap.TryGetValue(state, out var aoes))
         {
             foreach (var (index, x) in aoes)
-                AOEs.Add(new(rects[index], new WPos(x, Z), angle, WorldState.FutureTime(6.6f)));
+                AOEs.Add(new(rects[index], new WPos(x, 80), angle, WorldState.FutureTime(6.6f)));
             ++NumCasts;
         }
     }

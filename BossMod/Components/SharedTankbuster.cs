@@ -48,7 +48,7 @@ public class GenericSharedTankbuster(BossModule module, ActionID aid, AOEShape s
         else if (Source != null && Target != null && Target == actor && Shape is AOEShapeCircle circle)
         {
             var shape = circle;
-            foreach (var c in Raid.WithoutSlot().Where(x => x.Role != Role.Tank))
+            foreach (var c in Raid.WithoutSlot().Where(x => x.Role != Role.Tank && x != Target))
                 hints.AddForbiddenZone(ShapeDistance.Circle(c.Position, shape.Radius), Activation);
         }
     }

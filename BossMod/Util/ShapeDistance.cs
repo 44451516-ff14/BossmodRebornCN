@@ -33,7 +33,7 @@ public static class ShapeDistance
         // for <= 180-degree cone: result = intersection of circle and two half-planes with normals pointing outside cone sides
         // for > 180-degree cone: result = intersection of circle and negated intersection of two half-planes with inverted normals
         // both normals point outside
-        float coneFactor = halfAngle.Rad > MathF.PI / 2 ? -1 : 1;
+        float coneFactor = halfAngle.Rad > Angle.HalfPi ? -1 : 1;
         var nl = coneFactor * (centerDir + halfAngle).ToDirection().OrthoL();
         var nr = coneFactor * (centerDir - halfAngle).ToDirection().OrthoR();
         return p =>
@@ -57,7 +57,7 @@ public static class ShapeDistance
             return Donut(origin, innerRadius, outerRadius);
         if (innerRadius <= 0)
             return Cone(origin, outerRadius, centerDir, halfAngle);
-        float coneFactor = halfAngle.Rad > MathF.PI * 0.5f ? -1 : 1;
+        float coneFactor = halfAngle.Rad > Angle.HalfPi ? -1 : 1;
         var nl = coneFactor * (centerDir + halfAngle + 90.Degrees()).ToDirection();
         var nr = coneFactor * (centerDir - halfAngle - 90.Degrees()).ToDirection();
         return p =>

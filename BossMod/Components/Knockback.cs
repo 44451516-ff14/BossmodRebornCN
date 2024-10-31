@@ -204,9 +204,10 @@ public abstract class Knockback(BossModule module, ActionID aid = new(), bool ig
                     if (t < distanceToWall && t <= s.Distance)
                         distanceToWall = t;
                 }
+                var hitboxradius = actor.HitboxRadius < approxHitBoxRadius ? 0.5f : actor.HitboxRadius; // some NPCs have less than 0.5 radius and cause error while clamping
                 distance = distanceToWall < float.MaxValue
-                    ? Math.Min(distance, distanceToWall - Math.Clamp(actor.HitboxRadius - approxHitBoxRadius, maxIntersectionError, actor.HitboxRadius - approxHitBoxRadius))
-                    : Math.Min(distance, Module.Arena.IntersectRayBounds(from, dir) + maxIntersectionError);
+                    ? Math.Min(distance, distanceToWall - Math.Clamp(hitboxradius - approxHitBoxRadius, maxIntersectionError, hitboxradius - approxHitBoxRadius))
+                    : Math.Min(distance, Arena.IntersectRayBounds(from, dir) + maxIntersectionError);
             }
 
             var to = from + distance * dir;

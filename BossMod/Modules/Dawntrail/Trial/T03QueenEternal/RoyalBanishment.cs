@@ -8,9 +8,9 @@ class RoyalBanishment(BossModule module) : Components.GenericAOEs(module)
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_aoes.Count > 0)
-            foreach (var a in _aoes)
-                if ((a.Activation - _aoes[0].Activation).TotalSeconds <= 1)
-                    yield return a;
+            for (var i = 0; i < _aoes.Count; ++i)
+                if ((_aoes[i].Activation - _aoes[0].Activation).TotalSeconds <= 1)
+                    yield return _aoes[i];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -27,4 +27,3 @@ class RoyalBanishment(BossModule module) : Components.GenericAOEs(module)
             _aoes.RemoveAt(0);
     }
 }
-

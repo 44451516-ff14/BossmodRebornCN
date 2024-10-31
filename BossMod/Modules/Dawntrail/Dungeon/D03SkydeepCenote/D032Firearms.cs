@@ -43,15 +43,15 @@ class DynamicDominanceArenaChange(BossModule module) : Components.GenericAOEs(mo
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(_aoe);
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.DynamicDominance && Module.Arena.Bounds == D032Firearms.StartingBounds)
-            _aoe = new(square, Module.Center, default, Module.CastFinishAt(spell, 0.6f));
+        if ((AID)spell.Action.ID == AID.DynamicDominance && Arena.Bounds == D032Firearms.StartingBounds)
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.6f));
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (state == 0x00020001 && index == 0x14)
         {
-            Module.Arena.Bounds = D032Firearms.DefaultBounds;
+            Arena.Bounds = D032Firearms.DefaultBounds;
             _aoe = null;
         }
     }

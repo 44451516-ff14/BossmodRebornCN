@@ -50,8 +50,8 @@ class OneTwoPawShade(BossModule module) : Components.GenericAOEs(module)
     {
         var dir = (AID)spell.Action.ID switch
         {
-            AID.OneTwoPawBossRL => -90.Degrees(),
-            AID.OneTwoPawBossLR => 90.Degrees(),
+            AID.OneTwoPawBossRL => Angle.AnglesCardinals[0],
+            AID.OneTwoPawBossLR => Angle.AnglesCardinals[3],
             _ => default
         };
         if (dir != default)
@@ -85,7 +85,7 @@ class LeapingOneTwoPaw(BossModule module) : Components.GenericAOEs(module)
     AID.LeapingOneTwoPawBossAOERSecond, AID.LeapingOneTwoPawShadeAOERFirst, AID.LeapingOneTwoPawShadeAOELSecond, AID.LeapingOneTwoPawShadeAOELFirst, AID.LeapingOneTwoPawShadeAOERSecond];
 
     private static readonly AOEShapeCone _shape = new(100, 90.Degrees());
-    private static readonly List<Angle> angles = [89.999f.Degrees(), -90.004f.Degrees()];
+    private static readonly List<Angle> angles = [Angle.AnglesCardinals[3], Angle.AnglesCardinals[0]];
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

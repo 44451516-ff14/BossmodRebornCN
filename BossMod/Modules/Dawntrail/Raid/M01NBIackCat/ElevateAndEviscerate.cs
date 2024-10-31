@@ -39,7 +39,7 @@ class ElevateAndEviscerate(BossModule module) : Components.Knockback(module, ign
         }
     }
 
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => (Module.FindComponent<ElevateAndEviscerateHint>()?.ActiveAOEs(slot, actor).Any(z => z.Shape.Check(pos, z.Origin, z.Rotation)) ?? false) || !Module.InBounds(pos);
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => (Module.FindComponent<ElevateAndEviscerateHint>()?.ActiveAOEs(slot, actor).Any(z => z.Shape.Check(pos, z.Origin, z.Rotation)) ?? false) || !Arena.InBounds(pos);
 }
 
 class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(module)

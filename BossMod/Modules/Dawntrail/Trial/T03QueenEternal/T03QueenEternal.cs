@@ -56,6 +56,6 @@ public class T03QueenEternal(WorldState ws, Actor primary) : BossModule(ws, prim
     public static readonly ArenaBoundsRect FinalBounds = new(20, 15);
     public static readonly ArenaBoundsRect SplitGravityBounds = new(12, 8);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20);
-    public static readonly ArenaBoundsComplex XArena = new([new Rectangle(new(100, 82.5f), 12.5f, 2.5f), new Rectangle(new(100, 102.5f), 12.5f, 2.5f), new Cross(new(100, 92.5f), 15, 2.5f, 45.Degrees())]);
+    public static readonly ArenaBoundsComplex XArena = new([new Rectangle(new(100, 82.5f), 12.5f, 2.5f), new Rectangle(new(100, 102.5f), 12.5f, 2.5f), new Cross(new(100, 92.5f), 15, 2.5f, 45.Degrees())], Offset: -0.5f);
     public static readonly ArenaBoundsComplex SplitArena = new([new Rectangle(LeftSplitCenter, 4, 8), new Rectangle(RightSplitCenter, 4, 8)]);
 }

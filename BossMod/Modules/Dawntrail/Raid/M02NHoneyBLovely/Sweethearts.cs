@@ -11,11 +11,12 @@ abstract class Sweethearts(BossModule module, uint oid, uint aid) : Components.G
         {
             var position = a.Position;
             var directionOffset = 3 * a.Rotation.ToDirection();
+            var pos = position + directionOffset;
             var shapes = new Shape[]
             {
-                new Circle(a.Position, Radius),
-                new Circle(a.Position + directionOffset, Radius),
-                new RectangleSE(a.Position, a.Position + directionOffset, Radius)
+                new Circle(position, Radius),
+                new Circle(pos, Radius),
+                new RectangleSE(position, pos, Radius)
             };
             return new AOEInstance(new AOEShapeCustom(shapes), Arena.Center);
         });
@@ -47,7 +48,7 @@ abstract class Sweethearts(BossModule module, uint oid, uint aid) : Components.G
         foreach (var o in _hearts)
             forbidden.Add(ShapeDistance.Capsule(o.Position, o.Rotation, 3, Radius));
         forbidden.Add(ShapeDistance.Circle(Arena.Center, Module.PrimaryActor.HitboxRadius));
-        hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min());
+        hints.AddForbiddenZone(p => forbidden.Min(f => f(p)));
     }
 }
 

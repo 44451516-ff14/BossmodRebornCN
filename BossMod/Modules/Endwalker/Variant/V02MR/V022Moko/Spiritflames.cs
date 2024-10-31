@@ -12,11 +12,12 @@ class Spiritflames(BossModule module) : Components.GenericAOEs(module)
         {
             var position = a.Position;
             var directionOffset = 6 * a.Rotation.ToDirection();
+            var pos = position + directionOffset;
             var shapes = new Shape[]
             {
-                new Circle(a.Position, Radius),
-                new Circle(a.Position + directionOffset, Radius),
-                new RectangleSE(a.Position, a.Position + directionOffset, Radius)
+                new Circle(position, Radius),
+                new Circle(pos, Radius),
+                new RectangleSE(a.Position, pos, Radius)
             };
             return new AOEInstance(new AOEShapeCustom(shapes), Arena.Center);
         });
@@ -40,6 +41,6 @@ class Spiritflames(BossModule module) : Components.GenericAOEs(module)
         var forbidden = new List<Func<WPos, float>>();
         foreach (var o in _flames)
             forbidden.Add(ShapeDistance.Capsule(o.Position, o.Rotation, 6, Radius));
-        hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min());
+        hints.AddForbiddenZone(p => forbidden.Min(f => f(p)));
     }
 }

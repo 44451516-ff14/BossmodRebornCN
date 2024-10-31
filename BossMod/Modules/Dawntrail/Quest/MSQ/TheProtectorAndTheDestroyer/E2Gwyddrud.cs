@@ -95,7 +95,7 @@ class RoaringBoltKB(BossModule module) : Components.KnockbackFromCastTarget(modu
             foreach (var c in component)
                 forbidden.Add(ShapeDistance.Cone(Arena.Center, 19.5f, Angle.FromDirection(c.Origin - Arena.Center), 25.Degrees()));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), source.Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), source.Activation);
         }
     }
 }

@@ -25,7 +25,7 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
     private Angle startrotation;
     public enum Types { None, SatelliteLaser, DiffractiveLaser, LaserShower }
     public Types Type { get; private set; }
-    private const float maxError = MathF.PI / 180;
+
     private static readonly AOEShapeRect rect = new(100, 3);
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -37,15 +37,15 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
                     yield return new(rect, p.Position, p.Rotation, _times[1]);
                 if (Type == Types.DiffractiveLaser && WorldState.CurrentTime > _times[0] || Type == Types.LaserShower)
                 {
-                    if (NumCasts < 5 && p.Rotation.AlmostEqual(startrotation, maxError))
+                    if (NumCasts < 5 && p.Rotation.AlmostEqual(startrotation, Angle.DegToRad))
                         yield return new(rect, p.Position, p.Rotation, _times[1], Colors.Danger);
-                    if (NumCasts < 5 && (p.Rotation.AlmostEqual(startrotation + 90.Degrees(), maxError) || p.Rotation.AlmostEqual(startrotation - 90.Degrees(), maxError)))
+                    if (NumCasts < 5 && (p.Rotation.AlmostEqual(startrotation + 90.Degrees(), Angle.DegToRad) || p.Rotation.AlmostEqual(startrotation - 90.Degrees(), Angle.DegToRad)))
                         yield return new(rect, p.Position, p.Rotation, _times[2]);
-                    if (NumCasts >= 5 && NumCasts < 9 && (p.Rotation.AlmostEqual(startrotation + 90.Degrees(), maxError) || p.Rotation.AlmostEqual(startrotation - 90.Degrees(), maxError)))
+                    if (NumCasts >= 5 && NumCasts < 9 && (p.Rotation.AlmostEqual(startrotation + 90.Degrees(), Angle.DegToRad) || p.Rotation.AlmostEqual(startrotation - 90.Degrees(), Angle.DegToRad)))
                         yield return new(rect, p.Position, p.Rotation, _times[2], Colors.Danger);
-                    if (NumCasts >= 5 && NumCasts < 9 && p.Rotation.AlmostEqual(startrotation + 180.Degrees(), maxError))
+                    if (NumCasts >= 5 && NumCasts < 9 && p.Rotation.AlmostEqual(startrotation + 180.Degrees(), Angle.DegToRad))
                         yield return new(rect, p.Position, p.Rotation, _times[3]);
-                    if (NumCasts >= 9 && p.Rotation.AlmostEqual(startrotation + 180.Degrees(), maxError))
+                    if (NumCasts >= 9 && p.Rotation.AlmostEqual(startrotation + 180.Degrees(), Angle.DegToRad))
                         yield return new(rect, p.Position, p.Rotation, _times[3], Colors.Danger);
                 }
             }
@@ -63,14 +63,14 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
         if ((AID)spell.Action.ID == AID.DiffractiveLaser)
         {
             DateTime[] times = [_time.AddSeconds(2), _time.AddSeconds(8.8f), _time.AddSeconds(10.6f), _time.AddSeconds(12.4f)];
-            startrotation = Helpers.AnglesCardinals.FirstOrDefault(r => spell.Rotation.AlmostEqual(r, maxError)) + 180.Degrees();
+            startrotation = Angle.AnglesCardinals.FirstOrDefault(r => spell.Rotation.AlmostEqual(r, Angle.DegToRad)) + 180.Degrees();
             Type = Types.DiffractiveLaser;
             _times.AddRange(times);
         }
         if ((AID)spell.Action.ID == AID.LaserShower2)
         {
             DateTime[] times = [_time, _time.AddSeconds(6.5f), _time.AddSeconds(8.3f), _time.AddSeconds(10.1f)];
-            startrotation = Helpers.AnglesCardinals.FirstOrDefault(r => caster.Rotation.AlmostEqual(r, maxError));
+            startrotation = Angle.AnglesCardinals.FirstOrDefault(r => caster.Rotation.AlmostEqual(r, Angle.DegToRad));
             Type = Types.LaserShower;
             _times.AddRange(times);
         }

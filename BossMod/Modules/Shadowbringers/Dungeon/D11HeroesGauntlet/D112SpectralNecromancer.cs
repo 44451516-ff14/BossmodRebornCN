@@ -96,7 +96,7 @@ class Necrobombs(BossModule module) : BossComponent(module)
         foreach (var e in WorldState.Actors.Where(x => !x.IsAlly && x.Tether.ID == (uint)TetherID.CrawlingNecrobombs))
             forbidden.Add(circle.Distance(e.Position, default));
         if (forbidden.Count > 0)
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min());
+            hints.AddForbiddenZone(p => forbidden.Min(f => f(p)));
     }
 }
 
@@ -125,6 +125,8 @@ class Doom(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _doomed = [];
 
+    public static bool CanActorCureDoom(Actor actor) => actor.Role == Role.Healer || actor.Class == Class.BRD;
+
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if ((SID)status.ID == SID.Doom)
@@ -139,25 +141,33 @@ class Doom(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_doomed.Contains(actor) && !(actor.Role == Role.Healer || actor.Class == Class.BRD))
-            hints.Add("You were doomed! Get cleansed fast.");
-        if (_doomed.Contains(actor) && (actor.Role == Role.Healer || actor.Class == Class.BRD))
-            hints.Add("Cleanse yourself! (Doom).");
-        foreach (var c in _doomed)
-            if (!_doomed.Contains(actor) && (actor.Role == Role.Healer || actor.Class == Class.BRD))
-                hints.Add($"Cleanse {c.Name}! (Doom)");
+        if (_doomed.Contains(actor))
+        {
+            if (!CanActorCureDoom(actor))
+                hints.Add("You were doomed! Get cleansed fast.");
+            else
+                hints.Add("Cleanse yourself! (Doom).");
+        }
+        if (CanActorCureDoom(actor))
+            for (var i = 0; i < _doomed.Count; ++i)
+            {
+                var doomed = _doomed[i];
+                if (doomed != actor)
+                    hints.Add($"Cleanse {doomed.Name}! (Doom)");
+            }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        base.AddAIHints(slot, actor, assignment, hints);
-        foreach (var c in _doomed)
-        {
-            if (_doomed.Count > 0 && actor.Role == Role.Healer)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), c, ActionQueue.Priority.High);
-            else if (_doomed.Count > 0 && actor.Class == Class.BRD)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), c, ActionQueue.Priority.High);
-        }
+        if (_doomed.Count > 0 && CanActorCureDoom(actor))
+            for (var i = 0; i < _doomed.Count; ++i)
+            {
+                var doomed = _doomed[i];
+                if (actor.Role == Role.Healer)
+                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), doomed, ActionQueue.Priority.High);
+                else if (actor.Class == Class.BRD)
+                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), doomed, ActionQueue.Priority.High);
+            }
     }
 }
 

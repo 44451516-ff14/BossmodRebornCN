@@ -79,7 +79,6 @@ class AuraSphere(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var orb = ActiveOrbs.FirstOrDefault();
         var orbs = new List<Func<WPos, float>>();
         if (ActiveOrbs.Any())
         {
@@ -130,15 +129,17 @@ class Allfire(BossModule module) : Components.GenericAOEs(module)
         var source = Module.FindComponent<GreatFlood>()!.Sources(slot, actor).FirstOrDefault();
         if (source == default)
         {
+            var count1 = _aoesWave1.Count;
+            var count2 = _aoesWave2.Count;
             if (_aoesWave1.Count > 0)
                 foreach (var a in _aoesWave1)
                     yield return a with { Color = Colors.Danger };
             if (_aoesWave2.Count > 0)
                 foreach (var a in _aoesWave2)
-                    yield return a with { Color = _aoesWave1.Count > 0 ? Colors.AOE : Colors.Danger, Risky = _aoesWave1.Count == 0 };
+                    yield return a with { Color = count1 > 0 ? Colors.AOE : Colors.Danger, Risky = count1 == 0 };
             if (_aoesWave1.Count == 0 && _aoesWave3.Count > 0)
                 foreach (var a in _aoesWave3)
-                    yield return a with { Color = _aoesWave2.Count > 0 ? Colors.AOE : Colors.Danger, Risky = _aoesWave2.Count == 0 };
+                    yield return a with { Color = count2 > 0 ? Colors.AOE : Colors.Danger, Risky = count2 == 0 };
         }
         else if ((_aoesWave3.Count > 0 || _aoesWave1.Count > 0) && source != default)
             yield return new(safespot, source.Origin, source.Direction, source.Activation, Colors.SafeFromAOE);
@@ -220,6 +221,7 @@ class Windswrath2(BossModule module) : Windswrath(module, AID.Windswrath2)
     private static readonly Angle a165 = 165.Degrees();
     private static readonly Angle a105 = 105.Degrees();
     private static readonly Angle a75 = 75.Degrees();
+    private static readonly WDir offset = new(0, 1);
 
     public override void OnActorCreated(Actor actor)
     {
@@ -246,15 +248,15 @@ class Windswrath2(BossModule module) : Windswrath(module, AID.Windswrath2)
             if (timespan <= 3)
             {
                 var patternWEWE = CurrentPattern == Pattern.WEWE;
-                forbidden.Add(ShapeDistance.InvertedCone(sources.Origin - (patternWEWE ? new WDir(0, 1) : new(0, 1)), 5, patternWEWE ? a15 : -a15, a15));
-                forbidden.Add(ShapeDistance.InvertedCone(sources.Origin - (patternWEWE ? new WDir(0, -1) : new(0, -1)), 5, patternWEWE ? -a165 : a165, a15));
+                forbidden.Add(ShapeDistance.InvertedCone(sources.Origin - offset, 5, patternWEWE ? a15 : -a15, a15));
+                forbidden.Add(ShapeDistance.InvertedCone(sources.Origin + offset, 5, patternWEWE ? -a165 : a165, a15));
                 forbidden.Add(ShapeDistance.InvertedCone(sources.Origin, 5, patternWEWE ? a105 : -a105, a15));
                 forbidden.Add(ShapeDistance.InvertedCone(sources.Origin, 5, patternWEWE ? -a75 : a75, a15));
             }
             else
                 forbidden.Add(ShapeDistance.InvertedCircle(sources.Origin, 8));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), sources.Activation);
+                hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), sources.Activation);
         }
     }
 }

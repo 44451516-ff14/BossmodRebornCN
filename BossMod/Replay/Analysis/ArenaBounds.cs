@@ -63,8 +63,12 @@ class ArenaBounds
         {
             Task.Run(() =>
             {
-                var playerPoints = _points.Where(p => p.Item2.OID == 0).Select(x => new WPos(x.Item4.XZ())).ToList();
-                var points = ConcaveHull.GenerateConcaveHull(playerPoints, 0.5f, 0);
+                var playerPoints = _points
+                    .Where(p => p.Item2.OID == 0)
+                    .Select(x => new WPos(RoundToNearestHundredth(x.Item4.X), RoundToNearestHundredth(x.Item4.Z)))
+                    .ToList();
+
+                var points = ConcaveHull.GenerateConcaveHull(playerPoints, 0.5f, 0.2f);
                 var center = CalculateCentroid(points);
                 var sb = new StringBuilder("private static readonly WPos[] vertices = [");
 
@@ -89,6 +93,7 @@ class ArenaBounds
         }
     }
 
+    private static float RoundToNearestHundredth(float value) => MathF.Round(value, 3);
     private static WPos CalculateCentroid(List<WPos> points)
     {
         if (points == null || points.Count < 3)
@@ -185,15 +190,16 @@ public static class ConcaveHull
 
     private static List<WPos> RemoveCollinearPoints(List<WPos> points)
     {
-        if (points.Count < 3)
+        var count = points.Count;
+        if (count < 3)
             return points;
 
         List<WPos> filteredPoints = [];
         for (var i = 0; i < points.Count; i++)
         {
-            var prev = points[(i - 1 + points.Count) % points.Count];
+            var prev = points[(i - 1 + count) % count];
             var curr = points[i];
-            var next = points[(i + 1) % points.Count];
+            var next = points[(i + 1) % count];
 
             if (!AreCollinear(prev, curr, next))
                 filteredPoints.Add(curr);
@@ -201,12 +207,23 @@ public static class ConcaveHull
         return filteredPoints;
     }
 
-    private static bool AreCollinear(WPos a, WPos b, WPos c)
+    private static bool AreCollinear(WPos a, WPos b, WPos c, float toleranceDegrees = 4)
     {
-        var ab = b - a;
-        var bc = c - b;
-        var crossProduct = ab.X * bc.Z - ab.Z * bc.X;
-        return Math.Abs(crossProduct) < 0.015f;
+        var ab = new Vector2(b.X - a.X, b.Z - a.Z);
+        var bc = new Vector2(c.X - b.X, c.Z - b.Z);
+
+        var magnitudeAB = ab.Length();
+        var magnitudeBC = bc.Length();
+
+        if (magnitudeAB == 0 || magnitudeBC == 0)
+            return false;
+
+        var dotProduct = ab.X * bc.X + ab.Y * bc.Y;
+
+        var cosTheta = dotProduct / (magnitudeAB * magnitudeBC);
+        cosTheta = Math.Clamp(cosTheta, -1, 1);
+        var angle = MathF.Acos(cosTheta) * Angle.RadToDeg;
+
+        return Math.Abs(angle) < toleranceDegrees || Math.Abs(angle - 180) < toleranceDegrees;
     }
 }
-

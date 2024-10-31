@@ -14,8 +14,9 @@ public enum AID : uint
     Swinge = 903 // Boss->self, 4.0s cast, range 40+R 60-degree cone aoe
 }
 
-class LionsBreath(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.24f, 60.Degrees()), activeWhileCasting: false);
-class Swinge(BossModule module) : Components.SelfTargetedLegacyRotationAOEs(module, ActionID.MakeSpell(AID.Swinge), new AOEShapeCone(40, 30.Degrees()));
+class LionsBreathCleave(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.24f, 60.Degrees()), activeWhileCasting: false);
+class LionsBreath(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.24f, 60.Degrees()));
+class Swinge(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.Swinge), new AOEShapeCone(40, 30.Degrees()));
 
 class D101ChudoYudoStates : StateMachineBuilder
 {
@@ -23,6 +24,7 @@ class D101ChudoYudoStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<LionsBreath>()
+            .ActivateOnEnter<LionsBreathCleave>()
             .ActivateOnEnter<Swinge>();
     }
 }

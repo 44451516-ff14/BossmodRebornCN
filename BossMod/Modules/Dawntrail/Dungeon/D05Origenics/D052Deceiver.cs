@@ -45,36 +45,35 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     public static readonly WPos ArenaCenter = new(-172, -142);
     public static readonly ArenaBoundsSquare StartingBounds = new(24.5f);
     private static readonly ArenaBoundsSquare defaultBounds = new(20);
-    private static readonly Square defaultSquare = new(ArenaCenter, 20);
-    private static readonly AOEShapeCustom square = new([new Square(ArenaCenter, 25)], [new Square(ArenaCenter, 20)]);
-
-    private static readonly RectangleSE[] westRows =
-    [
-        new(new(-192, -157), new(-187.5f, -157), HalfWidth),
-        new(new(-192, -147), new(-187.5f, -147), HalfWidth),
-        new(new(-192, -137), new(-187.5f, -137), HalfWidth),
-        new(new(-192, -127), new(-187.5f, -127), HalfWidth),
+    private static readonly Square[] defaultSquare = [new(ArenaCenter, 20)];
+    private static readonly AOEShapeCustom square = new([new Square(ArenaCenter, 25)], defaultSquare);
+    private const float XWest2 = -187.5f, XEast2 = -156.5f;
+    private const int XWest1 = -192, XEast1 = -152, ZRow1 = -127, ZRow2 = -137, ZRow3 = -147, ZRow4 = -157;
+    public static readonly Dictionary<byte, ArenaBoundsComplex> ArenaBoundsMap = InitializeArenaBounds();
+    private static RectangleSE[] CreateRows(float x1, float x2)
+    => [
+        new(new(x1, ZRow4), new(x2, ZRow4), HalfWidth),
+        new(new(x1, ZRow3), new(x2, ZRow3), HalfWidth),
+        new(new(x1, ZRow2), new(x2, ZRow2), HalfWidth),
+        new(new(x1, ZRow1), new(x2, ZRow1), HalfWidth),
     ];
-
-    private static readonly RectangleSE[] eastRows =
-    [
-        new(new(-152, -157), new(-156.5f, -157), HalfWidth),
-        new(new(-152, -147), new(-156.5f, -147), HalfWidth),
-        new(new(-152, -137), new(-156.5f, -137), HalfWidth),
-        new(new(-152, -127), new(-156.5f, -127), HalfWidth),
-    ];
-
-    public static readonly Dictionary<byte, ArenaBoundsComplex> ArenaBoundsMap = new()
+    private static Dictionary<byte, ArenaBoundsComplex> InitializeArenaBounds()
     {
-        { 0x2A, new([defaultSquare], [westRows[1], westRows[3]]) },
-        { 0x1B, new([defaultSquare], [westRows[1], westRows[3], eastRows[0], eastRows[2]]) },
-        { 0x2C, new([defaultSquare], [westRows[1], westRows[2]]) },
-        { 0x1E, new([defaultSquare], [westRows[1], westRows[2], eastRows[0], eastRows[3]]) },
-        { 0x2D, new([defaultSquare], [westRows[0], westRows[3]]) },
-        { 0x1D, new([defaultSquare], [westRows[0], westRows[3], eastRows[1], eastRows[2]]) },
-        { 0x2B, new([defaultSquare], [westRows[0], westRows[2]]) },
-        { 0x1C, new([defaultSquare], [westRows[0], westRows[2], eastRows[1], eastRows[3]]) },
-    };
+        var westRows = CreateRows(XWest1, XWest2);
+        var eastRows = CreateRows(XEast1, XEast2);
+
+        return new Dictionary<byte, ArenaBoundsComplex>
+        {
+            { 0x2A, new(defaultSquare, [westRows[1], westRows[3]]) },
+            { 0x1B, new(defaultSquare, [westRows[1], westRows[3], eastRows[0], eastRows[2]]) },
+            { 0x2C, new(defaultSquare, [westRows[1], westRows[2]]) },
+            { 0x1E, new(defaultSquare, [westRows[1], westRows[2], eastRows[0], eastRows[3]]) },
+            { 0x2D, new(defaultSquare, [westRows[0], westRows[3]]) },
+            { 0x1D, new(defaultSquare, [westRows[0], westRows[3], eastRows[1], eastRows[2]]) },
+            { 0x2B, new(defaultSquare, [westRows[0], westRows[2]]) },
+            { 0x1C, new(defaultSquare, [westRows[0], westRows[2], eastRows[1], eastRows[3]]) },
+        };
+    }
 
     private AOEInstance? _aoe;
 
@@ -113,14 +112,17 @@ class Electray(BossModule module) : Components.SpreadFromCastTargets(module, Act
 class Surge(BossModule module) : Components.Knockback(module)
 {
     private readonly List<Source> _sources = [];
-    private static readonly List<SafeWall> walls2A1B = [new(new(-187.5f, -142), new(-187.5f, -152)), new(new(-187.5f, -122), new(-187.5f, -132)),
-    new(new(-156.5f, -152), new(-156.5f, -162)), new(new(-156.5f, -132), new(-156.5f, -142))];
-    private static readonly List<SafeWall> walls2C1E = [new(new(-187.5f, -142), new(-187.5f, -152)), new(new(-187.5f, -132), new(-187.5f, -142)),
-    new(new(-156.5f, -152), new(-156.5f, -162)), new(new(-156.5f, -122), new(-156.5f, -132))];
-    private static readonly List<SafeWall> walls2D1D = [new(new(-187.5f, -152), new(-187.5f, -162)), new(new(-187.5f, -122), new(-187.5f, -132)),
-    new(new(-156.5f, -142), new(-156.5f, -152)), new(new(-156.5f, -132), new(-156.5f, -142))];
-    private static readonly List<SafeWall> walls2B1C = [new(new(-187.5f, -152), new(-187.5f, -162)), new(new(-187.5f, -132), new(-187.5f, -142)),
-    new(new(-156.5f, -142), new(-156.5f, -152)), new(new(-156.5f, -122), new(-156.5f, -132))];
+    private const float XWest = -187.5f, XEast = -156.5f;
+    private const int ZRow1 = -122, ZRow2 = -132, ZRow3 = -142, ZRow4 = -152, ZRow5 = -162;
+    private static readonly WDir offset = new(4, 0);
+    private static readonly SafeWall[] walls2A1B = [new(new(XWest, ZRow3), new(XWest, ZRow4)), new(new(XWest, ZRow1), new(XWest, ZRow2)),
+    new(new(XEast, ZRow4), new(XEast, ZRow5)), new(new(XEast, ZRow2), new(XEast, ZRow3))];
+    private static readonly SafeWall[] walls2C1E = [new(new(XWest, ZRow3), new(XWest, ZRow4)), new(new(XWest, ZRow2), new(XWest, ZRow3)),
+    new(new(XEast, ZRow4), new(XEast, ZRow5)), new(new(XEast, ZRow1), new(XEast, ZRow2))];
+    private static readonly SafeWall[] walls2D1D = [new(new(XWest, ZRow4), new(XWest, ZRow5)), new(new(XWest, ZRow1), new(XWest, ZRow2)),
+    new(new(XEast, ZRow3), new(XEast, ZRow4)), new(new(XEast, ZRow2), new(XEast, ZRow3))];
+    private static readonly SafeWall[] walls2B1C = [new(new(XWest, ZRow4), new(XWest, ZRow5)), new(new(XWest, ZRow2), new(XWest, ZRow3)),
+    new(new(XEast, ZRow3), new(XEast, ZRow4)), new(new(XEast, ZRow1), new(XEast, ZRow2))];
     private static readonly AOEShapeCone _shape = new(60, 90.Degrees());
 
     public override IEnumerable<Source> Sources(int slot, Actor actor) => _sources;
@@ -130,31 +132,28 @@ class Surge(BossModule module) : Components.Knockback(module)
         if ((AID)spell.Action.ID == AID.Surge)
         {
             var activation = Module.CastFinishAt(spell, 0.8f);
-            _sources.Add(new(caster.Position, 30, activation, _shape, spell.Rotation + 90.Degrees(), Kind.DirForward, default, ActiveSafeWalls));
-            _sources.Add(new(caster.Position, 30, activation, _shape, spell.Rotation - 90.Degrees(), Kind.DirForward, default, ActiveSafeWalls));
+            _sources.Add(new(caster.Position, 30, activation, _shape, spell.Rotation + Angle.AnglesCardinals[3], Kind.DirForward, default, GetActiveSafeWalls()));
+            _sources.Add(new(caster.Position, 30, activation, _shape, spell.Rotation + Angle.AnglesCardinals[0], Kind.DirForward, default, GetActiveSafeWalls()));
         }
     }
 
-    public List<SafeWall> ActiveSafeWalls
+    public SafeWall[] GetActiveSafeWalls()
     {
-        get
+        foreach (var kvp in ArenaChanges.ArenaBoundsMap)
         {
-            foreach (var kvp in ArenaChanges.ArenaBoundsMap)
+            if (Arena.Bounds == kvp.Value)
             {
-                if (Arena.Bounds == kvp.Value)
+                return kvp.Key switch
                 {
-                    return kvp.Key switch
-                    {
-                        0x1B => walls2A1B,
-                        0x1E => walls2C1E,
-                        0x1D => walls2D1D,
-                        0x1C => walls2B1C,
-                        _ => []
-                    };
-                }
+                    0x1B => walls2A1B,
+                    0x1E => walls2C1E,
+                    0x1D => walls2D1D,
+                    0x1C => walls2B1C,
+                    _ => []
+                };
             }
-            return [];
         }
+        return [];
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -172,9 +171,10 @@ class Surge(BossModule module) : Components.Knockback(module)
         if (source != default)
         {
             var forbidden = new List<Func<WPos, float>>();
-            foreach (var w in ActiveSafeWalls)
-                forbidden.Add(ShapeDistance.InvertedRect(new(Arena.Center.X, w.Vertex1.Z - 5), w.Vertex1.X == -187.5f ? new WDir(-4, 0) : new(4, 0), 10, 0, 20));
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), source.Activation);
+            var safewalls = GetActiveSafeWalls();
+            for (var i = 0; i < safewalls.Length; ++i)
+                forbidden.Add(ShapeDistance.InvertedRect(new(Arena.Center.X, safewalls[i].Vertex1.Z - 5), safewalls[i].Vertex1.X == XWest ? -offset : offset, 10, default, 20));
+            hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), source.Activation);
         }
     }
 }
@@ -188,10 +188,10 @@ class SurgeHint(BossModule module) : Components.GenericAOEs(module)
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var component = Module.FindComponent<Surge>()!.Sources(slot, actor).Any();
-        var activeSafeWalls = Module.FindComponent<Surge>()!.ActiveSafeWalls;
+        var activeSafeWalls = Module.FindComponent<Surge>()!.GetActiveSafeWalls();
         if (component)
-            foreach (var w in activeSafeWalls)
-                yield return new(rect, new(Arena.Center.X, w.Vertex1.Z - 5), w.Vertex1.X == -187.5f ? -90.Degrees() : 90.Degrees(), default, Colors.SafeFromAOE, false);
+            for (var i = 0; i < activeSafeWalls.Length; ++i)
+                yield return new(rect, new(Arena.Center.X, activeSafeWalls[i].Vertex1.Z - 5), activeSafeWalls[i].Vertex1.X == -187.5f ? Angle.AnglesCardinals[0] : Angle.AnglesCardinals[3], default, Colors.SafeFromAOE, false);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -202,7 +202,7 @@ class SurgeHint(BossModule module) : Components.GenericAOEs(module)
         {
             if (!activeSafespot.Any(c => c.Check(actor.Position)))
                 hints.Add(Risk2Hint);
-            else if (activeSafespot.Any(c => c.Check(actor.Position)))
+            else
                 hints.Add(StayHint, false);
         }
     }

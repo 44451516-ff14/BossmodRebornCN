@@ -47,20 +47,17 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
         ImGui.SetNextWindowSizeConstraints(new Vector2(0, 0), new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
-        using (var leaderCombo = ImRaii.Combo("##Leader", _manager.Beh == null ? "<idle>" : _manager.WorldState.Party[_manager.MasterSlot]?.Name ?? "<unknown>"))
+        if (ImRaii.Combo("##Leader", _manager.Beh == null ? "<idle>" : _manager.WorldState.Party[_manager.MasterSlot]?.Name ?? "<unknown>"))
         {
-            if (leaderCombo)
+            if (ImGui.Selectable("<idle>", _manager.Beh == null))
+                _manager.SwitchToIdle();
+            foreach (var (i, p) in _manager.WorldState.Party.WithSlot(true))
             {
-                if (ImGui.Selectable("<idle>", _manager.Beh == null))
-                    _manager.SwitchToIdle();
-                foreach (var (i, p) in _manager.WorldState.Party.WithSlot(true))
+                if (ImGui.Selectable(p.Name, _manager.MasterSlot == i))
                 {
-                    if (ImGui.Selectable(p.Name, _manager.MasterSlot == i))
-                    {
-                        _manager.SwitchToFollow(i);
-                        _config.FollowSlot = i;
-                        _config.Modified.Fire();
-                    }
+                    _manager.SwitchToFollow(i);
+                    _config.FollowSlot = i;
+                    _config.Modified.Fire();
                 }
             }
         }
@@ -107,16 +104,30 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
         ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
-        using var presetCombo = ImRaii.Combo("##AI preset", _manager.AiPreset?.Name ?? "");
-        if (presetCombo)
+        var aipreset = _config.AIAutorotPresetName;
+        var presets = _manager.Autorot.Database.Presets.VisiblePresets;
+        var presetNames = presets.Select(p => p.Name).ToList();
+        if (aipreset != null)
+            presetNames.Add("Deactivate");
+
+        var selectedIndex = presetNames.IndexOf(aipreset ?? "");
+        if (selectedIndex == -1 && _manager.AiPreset == null)
+            selectedIndex = -1;
+        if (ImGui.Combo("##AI preset", ref selectedIndex, [.. presetNames], presetNames.Count))
         {
-            foreach (var p in _manager.Autorot.Database.Presets.VisiblePresets)
+            if (selectedIndex == presetNames.Count - 1 && aipreset != null)
             {
-                if (ImGui.Selectable(p.Name, p == _manager.AiPreset))
-                    _manager.SetAIPreset(p);
-            }
-            if (_manager.AiPreset != null && ImGui.Selectable("Deactivate"))
                 _manager.SetAIPreset(null);
+                _config.AIAutorotPresetName = null;
+                selectedIndex = -1;
+            }
+            else if (selectedIndex >= 0 && selectedIndex < presets.Count())
+            {
+                var selectedPreset = presets.ElementAt(selectedIndex);
+                _manager.SetAIPreset(selectedPreset);
+                _config.AIAutorotPresetName = selectedPreset.Name;
+            }
+            _config.Modified.Fire();
         }
     }
 

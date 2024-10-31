@@ -169,7 +169,7 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
     public void AddCone(WPos center, float radius, Angle centerDirection, Angle halfAngle, uint color = 0, float thickness = 1)
     {
         var sCenter = WorldPositionToScreenPosition(center);
-        var sDir = MathF.PI / 2 - centerDirection.Rad + _cameraAzimuth.Rad;
+        var sDir = Angle.HalfPi - centerDirection.Rad + _cameraAzimuth.Rad;
         var drawlist = ImGui.GetWindowDrawList();
         drawlist.PathLineTo(sCenter);
         drawlist.PathArcTo(sCenter, radius / Bounds.Radius * ScreenHalfSize, sDir - halfAngle.Rad, sDir + halfAngle.Rad);
@@ -179,10 +179,13 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
     public void AddDonutCone(WPos center, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle, uint color = 0, float thickness = 1)
     {
         var sCenter = WorldPositionToScreenPosition(center);
-        var sDir = MathF.PI / 2 - centerDirection.Rad + _cameraAzimuth.Rad;
+        var sDir = Angle.HalfPi - centerDirection.Rad + _cameraAzimuth.Rad;
         var drawlist = ImGui.GetWindowDrawList();
-        drawlist.PathArcTo(sCenter, innerRadius / Bounds.Radius * ScreenHalfSize, sDir + halfAngle.Rad, sDir - halfAngle.Rad);
-        drawlist.PathArcTo(sCenter, outerRadius / Bounds.Radius * ScreenHalfSize, sDir - halfAngle.Rad, sDir + halfAngle.Rad);
+        var invRadius = 1 / Bounds.Radius * ScreenHalfSize;
+        var sDirP = sDir + halfAngle.Rad;
+        var sDirN = sDir - halfAngle.Rad;
+        drawlist.PathArcTo(sCenter, innerRadius * invRadius, sDirP, sDirN);
+        drawlist.PathArcTo(sCenter, outerRadius * invRadius, sDirN, sDirP);
         drawlist.PathStroke(color != 0 ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
     }
 
@@ -209,7 +212,7 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
     // adds a bunch of points corresponding to arc - if path is non empty, this adds an edge from last point to first arc point
     public void PathArcTo(WPos center, float radius, float amin, float amax)
     {
-        ImGui.GetWindowDrawList().PathArcTo(WorldPositionToScreenPosition(center), radius / Bounds.Radius * ScreenHalfSize, MathF.PI / 2 - amin + _cameraAzimuth.Rad, MathF.PI / 2 - amax + _cameraAzimuth.Rad);
+        ImGui.GetWindowDrawList().PathArcTo(WorldPositionToScreenPosition(center), radius / Bounds.Radius * ScreenHalfSize, Angle.HalfPi - amin + _cameraAzimuth.Rad, Angle.HalfPi - amax + _cameraAzimuth.Rad);
     }
 
     public static void PathStroke(bool closed, uint color = 0, float thickness = 1)
@@ -228,8 +231,11 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
         var drawlist = ImGui.GetWindowDrawList();
         var restoreFlags = drawlist.Flags;
         drawlist.Flags &= ~ImDrawListFlags.AntiAliasedFill;
-        foreach (var tri in triangulation)
+        for (var i = 0; i < triangulation.Count; ++i)
+        {
+            var tri = triangulation[i];
             drawlist.AddTriangleFilled(ScreenCenter + WorldOffsetToScreenOffset(tri.A), ScreenCenter + WorldOffsetToScreenOffset(tri.B), ScreenCenter + WorldOffsetToScreenOffset(tri.C), color != 0 ? color : Colors.AOE);
+        }
         drawlist.Flags = restoreFlags;
     }
 
@@ -262,7 +268,7 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
     public void TextScreen(Vector2 center, string text, uint color, float fontSize = 17)
     {
         var size = ImGui.CalcTextSize(text) * Config.ArenaScale;
-        ImGui.GetWindowDrawList().AddText(ImGui.GetFont(), fontSize * Config.ArenaScale, center - size / 2, color, text);
+        ImGui.GetWindowDrawList().AddText(ImGui.GetFont(), fontSize * Config.ArenaScale, center - size * 0.5f, color, text);
     }
 
     public void TextWorld(WPos center, string text, uint color, float fontSize = 17)
@@ -275,28 +281,37 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
     public void Border(uint color)
     {
         var dl = ImGui.GetWindowDrawList();
-        foreach (var p in Bounds.ShapeSimplified.Parts)
+
+        for (var partIndex = 0; partIndex < Bounds.ShapeSimplified.Parts.Count; partIndex++)
         {
+            var part = Bounds.ShapeSimplified.Parts[partIndex];
             Vector2? lastPoint = null;
-            foreach (var off in p.Exterior)
+
+            for (var exteriorIndex = 0; exteriorIndex < part.Exterior.Length; exteriorIndex++)
             {
-                var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(off);
+                var offset = part.Exterior[exteriorIndex];
+                var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(offset);
                 if (lastPoint != currentPoint)
                     dl.PathLineTo(currentPoint);
                 lastPoint = currentPoint;
             }
+
             dl.PathStroke(color, ImDrawFlags.Closed, 2);
 
-            foreach (var i in p.Holes)
+            foreach (var holeIndex in part.Holes)
             {
                 lastPoint = null;
-                foreach (var off in p.Interior(i))
+
+                var holeInteriorPoints = part.Interior(holeIndex);
+                for (var interiorIndex = 0; interiorIndex < holeInteriorPoints.Length; interiorIndex++)
                 {
-                    var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(off);
+                    var offset = holeInteriorPoints[interiorIndex];
+                    var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(offset);
                     if (lastPoint != currentPoint)
                         dl.PathLineTo(currentPoint);
                     lastPoint = currentPoint;
                 }
+
                 dl.PathStroke(color, ImDrawFlags.Closed, 2);
             }
         }
@@ -319,18 +334,22 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
     {
         var scale = Config.ActorScale;
         var dir = rotation.ToDirection();
-        var normal = dir.OrthoR();
+        var scale07 = scale * 0.7f * dir;
+        var scale035 = scale * 0.35f * dir;
+        var scale0433 = scale * 0.433f * dir.OrthoR();
         if (Config.ShowOutlinesAndShadows)
-            AddTriangle(position + scale * 0.7f * dir, position - scale * 0.35f * dir + scale * 0.433f * normal, position - scale * 0.35f * dir - scale * 0.433f * normal, Colors.Shadows, 2);
-        AddTriangleFilled(position + scale * 0.7f * dir, position - scale * 0.35f * dir + scale * 0.433f * normal, position - scale * 0.35f * dir - scale * 0.433f * normal, color);
+            AddTriangle(position + scale07, position - scale035 + scale0433, position - scale035 - scale0433, Colors.Shadows, 2);
+        AddTriangleFilled(position + scale07, position - scale035 + scale0433, position - scale035 - scale0433, color);
     }
 
     public void ActorOutsideBounds(WPos position, Angle rotation, uint color)
     {
         var scale = Config.ActorScale;
         var dir = rotation.ToDirection();
-        var normal = dir.OrthoR();
-        AddTriangle(position + scale * 0.7f * dir, position - scale * 0.35f * dir + scale * 0.433f * normal, position - scale * 0.35f * dir - scale * 0.433f * normal, color);
+        var scale07 = scale * 0.7f * dir;
+        var scale035 = scale * 0.35f * dir;
+        var scale0433 = scale * 0.433f * dir.OrthoR();
+        AddTriangle(position + scale07, position - scale035 + scale0433, position - scale035 - scale0433, color);
     }
 
     public void ActorProjected(WPos from, WPos to, Angle rotation, uint color)

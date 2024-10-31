@@ -177,7 +177,7 @@ public class MapVisualizer
         }
         else
         {
-            var sDir = MathF.PI / 2 - dir.Rad;
+            var sDir = Angle.HalfPi - dir.Rad;
             dl.PathArcTo(sCenter, ir / Map.Resolution * ScreenPixelSize, sDir + halfWidth.Rad, sDir - halfWidth.Rad);
             dl.PathArcTo(sCenter, or / Map.Resolution * ScreenPixelSize, sDir - halfWidth.Rad, sDir + halfWidth.Rad);
             dl.PathStroke(Colors.Enemy, ImDrawFlags.Closed, 1);

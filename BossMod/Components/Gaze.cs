@@ -18,8 +18,11 @@ public abstract class GenericGaze(BossModule module, ActionID aid = new(), bool 
     private const float _eyeInnerR = 4;
     private const float _eyeOuterR = (_eyeOuterH * _eyeOuterH + _eyeOuterV * _eyeOuterV) / (2 * _eyeOuterV);
     private const float _eyeOffsetV = _eyeOuterR - _eyeOuterV;
-    private const float halfPi = MathF.PI / 2;
+
     private static readonly float _eyeHalfAngle = MathF.Asin(_eyeOuterH / _eyeOuterR);
+    private static readonly Vector2 offset = new(0, _eyeOffsetV);
+    private static readonly float halfPIHalfAngleP = Angle.HalfPi + _eyeHalfAngle;
+    private static readonly float halfPIHalfAngleM = Angle.HalfPi - _eyeHalfAngle;
 
     public abstract IEnumerable<Eye> ActiveEyes(int slot, Actor actor);
 
@@ -50,8 +53,8 @@ public abstract class GenericGaze(BossModule module, ActionID aid = new(), bool 
             var danger = HitByEye(pc, eye) != Inverted;
             var eyeCenter = IndicatorScreenPos(eye.Position);
             var dl = ImGui.GetWindowDrawList();
-            dl.PathArcTo(eyeCenter - new Vector2(0, _eyeOffsetV), _eyeOuterR, halfPi + _eyeHalfAngle, halfPi - _eyeHalfAngle);
-            dl.PathArcTo(eyeCenter + new Vector2(0, _eyeOffsetV), _eyeOuterR, -halfPi + _eyeHalfAngle, -halfPi - _eyeHalfAngle);
+            dl.PathArcTo(eyeCenter - offset, _eyeOuterR, halfPIHalfAngleP, halfPIHalfAngleM);
+            dl.PathArcTo(eyeCenter + offset, _eyeOuterR, -halfPIHalfAngleP, -halfPIHalfAngleM);
             dl.PathFillConvex(danger ? Colors.Enemy : Colors.PC);
             dl.AddCircleFilled(eyeCenter, _eyeInnerR, Colors.Border);
 
@@ -64,18 +67,18 @@ public abstract class GenericGaze(BossModule module, ActionID aid = new(), bool 
         }
     }
 
-    private bool HitByEye(Actor actor, Eye eye) => (actor.Rotation + eye.Forward).ToDirection().Dot((eye.Position - actor.Position).Normalized()) >= 0.707107f; // 45-degree
+    private static bool HitByEye(Actor actor, Eye eye) => (actor.Rotation + eye.Forward).ToDirection().Dot((eye.Position - actor.Position).Normalized()) >= 0.707107f; // 45-degree
 
     private Vector2 IndicatorScreenPos(WPos eye)
     {
-        if (Module.InBounds(eye))
+        if (Arena.InBounds(eye))
         {
             return Arena.WorldPositionToScreenPosition(eye);
         }
         else
         {
-            var dir = (eye - Module.Center).Normalized();
-            return Arena.ScreenCenter + Arena.RotatedCoords(dir.ToVec2()) * (Arena.ScreenHalfSize + Arena.ScreenMarginSize / 2);
+            var dir = (eye - Arena.Center).Normalized();
+            return Arena.ScreenCenter + Arena.RotatedCoords(dir.ToVec2()) * (Arena.ScreenHalfSize + Arena.ScreenMarginSize * 0.5f);
         }
     }
 }

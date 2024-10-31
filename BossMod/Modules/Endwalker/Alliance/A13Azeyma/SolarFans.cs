@@ -83,8 +83,8 @@ class RadiantFlourish(BossModule module) : Components.GenericAOEs(module)
             if (++teleportcounter > 8)
             {
                 teleportcounter = 0;
-                _aoes.Add(new(circle, Helpers.RotateAroundOrigin(90, Arena.Center, _aoes[0].Origin), default, _aoes[0].Activation.AddSeconds(1.4f)));
-                _aoes.Add(new(circle, Helpers.RotateAroundOrigin(90, Arena.Center, _aoes[1].Origin), default, _aoes[1].Activation.AddSeconds(1.4f)));
+                _aoes.Add(new(circle, WPos.RotateAroundOrigin(90, Arena.Center, _aoes[0].Origin), default, _aoes[0].Activation.AddSeconds(1.4f)));
+                _aoes.Add(new(circle, WPos.RotateAroundOrigin(90, Arena.Center, _aoes[1].Origin), default, _aoes[1].Activation.AddSeconds(1.4f)));
                 _aoes.RemoveRange(0, 2);
             }
         }

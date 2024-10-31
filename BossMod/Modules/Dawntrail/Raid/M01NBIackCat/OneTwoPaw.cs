@@ -6,7 +6,7 @@ class OneTwoPaw(BossModule module) : Components.GenericAOEs(module)
     private enum Pattern { None, WestEast, EastWest }
     private Pattern _currentPattern;
     private static readonly AOEShapeCone cone = new(60, 90.Degrees());
-    private static readonly Angle[] angles = [89.999f.Degrees(), -90.004f.Degrees()];
+    private static readonly Angle[] angles = [Angle.AnglesCardinals[3], Angle.AnglesCardinals[0]];
     private Actor? helper;
     private static readonly HashSet<AID> oneTwoPaw = [AID.OneTwoPaw1, AID.OneTwoPaw2, AID.OneTwoPaw3, AID.OneTwoPaw4];
     private static readonly HashSet<AID> leapingVisuals = [AID.LeapingBlackCatCrossingVisual1, AID.LeapingBlackCatCrossingVisual2,

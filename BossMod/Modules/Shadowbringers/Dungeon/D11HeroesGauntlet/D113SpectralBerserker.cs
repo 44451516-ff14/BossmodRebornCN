@@ -145,7 +145,7 @@ class WildRageKnockback(BossModule module) : Components.KnockbackFromCastTarget(
             var dir = source.Origin.X == 738 ? 1 : -1;
             forbidden.Add(ShapeDistance.InvertedDonutSector(source.Origin, 8, 9, a45 * dir, a10));
             forbidden.Add(ShapeDistance.InvertedDonutSector(source.Origin, 8, 9, 3 * a45 * dir, a10));
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), source.Activation);
+            hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), source.Activation);
         }
     }
 }
@@ -163,7 +163,7 @@ class CratersWildRampage(BossModule module) : Components.GenericAOEs(module)
     public readonly List<Circle> Circles = [];
     private bool invert;
     private DateTime activation;
-    private const string hint = "Go inside crater!";
+    private const string Hint = "Go inside crater!";
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -203,9 +203,9 @@ class CratersWildRampage(BossModule module) : Components.GenericAOEs(module)
         if (activeSafespot.Count != 0)
         {
             if (!activeSafespot.Any(c => c.Check(actor.Position)))
-                hints.Add(hint);
-            else if (activeSafespot.Any(c => c.Check(actor.Position)))
-                hints.Add(hint, false);
+                hints.Add(Hint);
+            else
+                hints.Add(Hint, false);
         }
         else
             base.AddHints(slot, actor, hints);

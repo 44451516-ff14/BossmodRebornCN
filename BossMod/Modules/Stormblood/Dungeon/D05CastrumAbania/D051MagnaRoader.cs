@@ -51,7 +51,7 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
         {
             var distance = (actor.Position - closestTurret.Position).LengthSq();
             if (forbidden.Count > 0 && distance > 9)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max());
+                hints.AddForbiddenZone(p => forbidden.Max(f => f(p)));
             else if (distance < 9)
             {
                 hints.InteractWithTarget = closestTurret;
@@ -62,7 +62,7 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
 
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (Module.Enemies(OID.MarkXLIIIMiniCannon).Any(x => x.IsTargetable) && _aoe.ActiveAOEs(default, Helpers.FakeActor).Any())
+        if (Module.Enemies(OID.MarkXLIIIMiniCannon).Any(x => x.IsTargetable) && _aoe.ActiveAOEs(default, Actor.FakeActor).Any())
             hints.Add("Use the turrets to stun the boss!");
     }
 

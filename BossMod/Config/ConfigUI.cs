@@ -97,8 +97,9 @@ public sealed class ConfigUI : IDisposable
         { "followtarget", "Toggles following targets during combat." },
         { "followtarget on/off", "Sets following target during combat to on or off." },
         { "positional X", "Switch to positional when following targets. (any, rear, flank, front)" },
-        { "maxdistancetarget X", "Set max distance to target. (default = 2.6)" },
-        { "maxdistanceslot X", "Set max distance to slot. (default = 1)" }
+        { "maxdistancetarget X", "Sets max distance to target. (default = 2.6)" },
+        { "maxdistanceslot X", "Sets max distance to slot. (default = 1)" },
+        { "setpresetname X", "Sets an autorotation preset for the AI, eg. setpresetname vbm default." }
     };
 
     private static readonly Dictionary<string, string> _autorotationCommands = new()

@@ -2,13 +2,14 @@
 
 public enum OID : uint
 {
-    Boss = 0x38CD, // x1
-    Helper = 0x233C, // x7
+    Boss = 0x38CD, // R4.4
+    Helper = 0x233C
 }
 
 public enum AID : uint
 {
     AutoAttack = 870, // Boss->player, no cast, single-target
+
     ThermobaricStrike = 28778, // Boss->self, 4.0s cast, single-target, visual
     ThermobaricCharge = 28779, // Helper->self, 7.0s cast, range 60 circle aoe with ? falloff
     Hypercharge = 28780, // Boss->self, 4.1s cast, single-target, visual
@@ -17,7 +18,7 @@ public enum AID : uint
     TargetedSupport = 28783, // Boss->self, 4.0s cast, single-target, visual
     TargetedSupportAOE = 28784, // Helper->self, 3.0s cast, range 5 circle aoe
     CermetDrill = 28785, // Boss->player, 5.0s cast, single-target tankbuster
-    Overcharge = 29146, // Boss->self, 3.0s cast, range 11 120-degree cone aoe
+    Overcharge = 29146 // Boss->self, 3.0s cast, range 11 120-degree cone aoe
 }
 
 class ThermobaricCharge(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.ThermobaricCharge), new AOEShapeCircle(20));
@@ -41,5 +42,5 @@ class D132MagitekVanguardF1States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 15, NameID = 2116)]
-public class D132MagitekVanguardF1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-13, 31), new ArenaBoundsRect(20, 20, 20.Degrees()));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 15, NameID = 2116)]
+public class D132MagitekVanguardF1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-13, 31), new ArenaBoundsSquare(19.5f, 11.Degrees()));

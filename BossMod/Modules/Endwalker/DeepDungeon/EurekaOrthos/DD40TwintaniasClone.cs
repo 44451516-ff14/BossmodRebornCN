@@ -69,14 +69,14 @@ class Turbine(BossModule module) : Components.KnockbackFromCastTarget(module, Ac
         if (source != default && component != null)
         {
             forbidden.Add(ShapeDistance.InvertedCircle(Arena.Center, 5));
-            foreach (var c in component)
-                forbidden.Add(ShapeDistance.Cone(Arena.Center, 20, Angle.FromDirection(c.Origin - Arena.Center), 20.Degrees()));
+            for (var i = 0; i < component.Count; ++i)
+                forbidden.Add(ShapeDistance.Cone(Arena.Center, 20, Angle.FromDirection(component[i].Origin - Arena.Center), 20.Degrees()));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), source.Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), source.Activation);
         }
     }
 
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => (Module.FindComponent<BitingWind>()?.ActiveAOEs(slot, actor).Any(z => z.Shape.Check(pos, z.Origin, z.Rotation)) ?? false) || !Module.InBounds(pos);
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => (Module.FindComponent<BitingWind>()?.ActiveAOEs(slot, actor).Any(z => z.Shape.Check(pos, z.Origin, z.Rotation)) ?? false) || !Arena.InBounds(pos);
 }
 
 class DD40TwintaniasCloneStates : StateMachineBuilder

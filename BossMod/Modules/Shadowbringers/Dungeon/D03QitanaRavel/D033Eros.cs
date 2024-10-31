@@ -85,7 +85,7 @@ class Inhale(BossModule module) : Components.KnockbackFromCastTarget(module, Act
             foreach (var c in component)
                 forbidden.Add(ShapeDistance.Rect(c.Origin, Module.PrimaryActor.Rotation, 40, 0, 6));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), source.Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), source.Activation);
         }
     }
 
@@ -106,7 +106,7 @@ class HeavingBreath(BossModule module) : Components.KnockbackFromCastTarget(modu
             foreach (var c in component)
                 forbidden.Add(ShapeDistance.Rect(c.Origin, new Angle(), 40, 40, 6));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), source.Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), source.Activation);
         }
     }
 

@@ -22,7 +22,7 @@ public class P9SKokytos(WorldState ws, Actor primary) : BossModule(ws, primary, 
     public static readonly ArenaBounds arenaUplift45 = new ArenaBoundsComplex(union, difference45);
     private static Rectangle RotatedRectangle(WPos position, Angle rotation)
     {
-        var rotatedPosition = Helpers.RotateAroundOrigin(45, center, position);
+        var rotatedPosition = WPos.RotateAroundOrigin(45, center, position);
         return new(rotatedPosition, rectWidth, rectHeight, rotation);
     }
 }

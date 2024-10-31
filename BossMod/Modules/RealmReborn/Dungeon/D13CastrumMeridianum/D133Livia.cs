@@ -2,8 +2,8 @@
 
 public enum OID : uint
 {
-    Boss = 0x38CE, // x1
-    Helper = 0x233C, // x50
+    Boss = 0x38CE, // R1.507
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -215,5 +215,9 @@ class D133LiviaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 15, NameID = 2118)]
-public class D133Livia(WorldState ws, Actor primary) : BossModule(ws, primary, new(-98, -33), new ArenaBoundsCircle(20));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 15, NameID = 2118)]
+public class D133Livia(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+{
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-98, -33), 19.5f / MathF.Cos(MathF.PI / 36), 36)],
+    [new Rectangle(new(-78.187f, -36.886f), 20, 1.25f, 79.Degrees())]);
+}

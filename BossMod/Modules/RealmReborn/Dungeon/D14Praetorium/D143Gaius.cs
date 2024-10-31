@@ -3,10 +3,11 @@
 public enum OID : uint
 {
     Boss = 0x3875, // x1
-    Helper = 0x233C, // x16
-    PhantomGaiusSide = 0x3876, // x5, untargetable
-    PhantomGaiusAdd = 0x3877, // x4, adds that become targetable on low hp
-    TerminusEst = 0x3878, // spawn during fight
+
+    PhantomGaiusSide = 0x3876, // R1.65, untargetable
+    PhantomGaiusAdd = 0x3877, // R1.65, adds that become targetable on low hp
+    TerminusEst = 0x3878, // R=1.0
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -33,12 +34,31 @@ public enum AID : uint
     AddPhaseStart = 28497, // Boss->self, no cast, single-target, visual (enemy 'lb' gauge starts filling over 90 secs)
     Heirsbane = 28498, // PhantomGaiusAdd->player, 5.0s cast, single-target damage
     VeniVidiVici = 28499, // Boss->self, no cast, raidwide on last add death
-    VeniVidiViciEnrage = 28500, // Boss->self, no cast, enrage (if adds aren't killed in 90s)
+    VeniVidiViciEnrage = 28500 // Boss->self, no cast, enrage (if adds aren't killed in 90s)
 }
 
-class TerminusEstTriple(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.TerminusEstTriple), new AOEShapeRect(40, 2));
-class TerminusEstQuintuple(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.TerminusEstQuintuple), new AOEShapeRect(40, 2));
-class HandOfTheEmpire(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HandOfTheEmpireAOE), 5, false);
+class TerminusEst(BossModule module) : Components.GenericAOEs(module)
+{
+    private readonly List<AOEInstance> _aoes = [];
+
+    private static readonly AOEShapeRect rect = new(40, 2);
+
+    public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes;
+
+    public override void OnActorCreated(Actor actor)
+    {
+        if ((OID)actor.OID == OID.TerminusEst)
+            _aoes.Add(new(rect, actor.Position, actor.Rotation, WorldState.FutureTime(6)));
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if ((AID)spell.Action.ID is AID.TerminusEstTriple or AID.TerminusEstQuintuple)
+            _aoes.Clear();
+    }
+}
+
+class HandOfTheEmpire(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HandOfTheEmpireAOE), 5);
 class FestinaLente(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.FestinaLente), 6, 4, 4);
 class Innocence(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Innocence));
 class HorridaBella(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HorridaBella));
@@ -68,8 +88,7 @@ class D143GaiusStates : StateMachineBuilder
     public D143GaiusStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<TerminusEstTriple>()
-            .ActivateOnEnter<TerminusEstQuintuple>()
+            .ActivateOnEnter<TerminusEst>()
             .ActivateOnEnter<HandOfTheEmpire>()
             .ActivateOnEnter<FestinaLente>()
             .ActivateOnEnter<Innocence>()
@@ -80,12 +99,11 @@ class D143GaiusStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 16, NameID = 2136)]
-public class D143Gaius(WorldState ws, Actor primary) : BossModule(ws, primary, new(-562, 220), new ArenaBoundsRect(15, 20))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "veyn, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 16, NameID = 2136)]
+public class D143Gaius(WorldState ws, Actor primary) : BossModule(ws, primary, new(-562, 220), new ArenaBoundsRect(14.5f, 19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.PhantomGaiusAdd));
+        Arena.Actors(Enemies(OID.PhantomGaiusAdd).Concat([PrimaryActor]));
     }
 }

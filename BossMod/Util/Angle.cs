@@ -6,6 +6,9 @@ public record struct Angle(float Rad)
 {
     public const float RadToDeg = 180 / MathF.PI;
     public const float DegToRad = MathF.PI / 180;
+    public const float HalfPi = MathF.PI / 2;
+    public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
+    public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180.Degrees(), 89.999f.Degrees()];
 
     public readonly float Deg => Rad * RadToDeg;
 

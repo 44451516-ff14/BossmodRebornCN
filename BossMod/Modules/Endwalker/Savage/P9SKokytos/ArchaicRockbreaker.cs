@@ -19,9 +19,9 @@ class ArchaicRockbreakerShockwave(BossModule module) : Components.Knockback(modu
 
     private static SafeWall RotatedSafeWall(WPos start, WPos end)
     {
-        var rotatedStart = Helpers.RotateAroundOrigin(45, P9SKokytos.center, start);
-        var rotatedEnd = Helpers.RotateAroundOrigin(45, P9SKokytos.center, end);
-        return new SafeWall(rotatedStart, rotatedEnd);
+        var rotatedStart = WPos.RotateAroundOrigin(45, P9SKokytos.center, start);
+        var rotatedEnd = WPos.RotateAroundOrigin(45, P9SKokytos.center, end);
+        return new(rotatedStart, rotatedEnd);
     }
 }
 

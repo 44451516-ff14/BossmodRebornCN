@@ -131,31 +131,32 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShapeRect rect = new(40, 5);
-    private static readonly Angle _rot1 = 89.999f.Degrees();
-    private static readonly Angle _rot2 = -90.004f.Degrees();
-    private static readonly Dictionary<byte, (WPos position, Angle direction)> _towerPositions = new()
-        {{ 0x01, (new(-20, 45), _rot1) },
-        { 0x02, (new(-20, 55), _rot1) },
-        { 0x03, (new(-20, 65), _rot1) },
-        { 0x04, (new(-20, 75), _rot1) },
-        { 0x05, (new(20, 45), _rot2) },
-        { 0x06, (new(20, 55), _rot2) },
-        { 0x07, (new(20, 65), _rot2) },
-        { 0x08, (new(20, 75), _rot2) }};
+    private const int X = 20;
+    private static readonly Dictionary<byte, (WPos position, Angle direction)> _towerPositions = [];
+
+    static Towerfall()
+    {
+        int[] xPositions = [-X, X];
+        Angle[] angles = [Angle.AnglesCardinals[3], Angle.AnglesCardinals[0]];
+        var zStart = 45;
+        var zStep = 10;
+        byte index = 1;
+
+        for (var i = 0; i < 2; i++)
+            for (var j = 0; j < 4; j++)
+                _towerPositions[index++] = new(new(xPositions[i], zStart + j * zStep), angles[i]);
+    }
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        foreach (var t in _aoes)
-            yield return new(rect, t.Origin, t.Rotation, Module.FindComponent<Landslip>()!.Activation.AddSeconds(0.7f), Risky: Module.FindComponent<Landslip>()!.TowerDanger);
+        for (var i = 0; i < _aoes.Count; ++i)
+            yield return new(rect, _aoes[i].Origin, _aoes[i].Rotation, Module.FindComponent<Landslip>()!.Activation.AddSeconds(0.7f), Risky: Module.FindComponent<Landslip>()!.TowerDanger);
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && _towerPositions.TryGetValue(index, out var value))
-        {
-            var towers = value;
+        if (state == 0x00020001 && _towerPositions.TryGetValue(index, out var towers))
             _aoes.Add(new(rect, towers.position, towers.direction));
-        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -177,17 +178,17 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
             {
                 var distance = Math.Abs(_aoes[0].Origin.Z - _aoes[1].Origin.Z);
                 if (distance is 10 or 30)
-                    foreach (var t in _aoes)
-                        forbiddenInverted.Add(ShapeDistance.InvertedRect(t.Origin, t.Rotation, 40, 0, 5));
+                    for (var i = 0; i < _aoes.Count; ++i)
+                        forbiddenInverted.Add(ShapeDistance.InvertedRect(_aoes[i].Origin, _aoes[i].Rotation, rect.LengthFront, default, rect.HalfWidth));
                 else
-                    foreach (var t in _aoes)
-                        forbidden.Add(ShapeDistance.Rect(t.Origin, t.Rotation, 40, 0, 5));
+                    for (var i = 0; i < _aoes.Count; ++i)
+                        forbidden.Add(ShapeDistance.Rect(_aoes[i].Origin, _aoes[i].Rotation, rect.LengthFront, default, rect.HalfWidth));
             }
             var activation = Module.FindComponent<Landslip>()!.Activation.AddSeconds(0.7f);
             if (forbiddenInverted.Count > 0)
-                hints.AddForbiddenZone(p => forbiddenInverted.Select(f => f(p)).Max(), activation);
+                hints.AddForbiddenZone(p => forbiddenInverted.Max(f => f(p)), activation);
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), activation);
         }
         else
             base.AddAIHints(slot, actor, assignment, hints);

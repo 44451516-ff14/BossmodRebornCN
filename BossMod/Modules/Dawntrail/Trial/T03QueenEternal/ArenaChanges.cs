@@ -42,4 +42,3 @@ class ArenaChanges(BossModule module) : BossComponent(module)
             SetArena(T03QueenEternal.SplitArena, T03QueenEternal.SplitArena.Center);
     }
 }
-

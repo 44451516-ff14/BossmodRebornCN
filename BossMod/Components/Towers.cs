@@ -75,16 +75,16 @@ public class GenericTowers(BossModule module, ActionID aid = default) : CastCoun
                     forbidden.Add(ShapeDistance.Circle(t.Position, t.Radius));
             }
             if (forbidden.Count == 0 || inTower || missingSoakers && forbiddenInverted.Count > 0)
-                hints.AddForbiddenZone(p => forbiddenInverted.Select(f => f(p)).Max(), Towers[0].Activation);
+                hints.AddForbiddenZone(p => forbiddenInverted.Max(f => f(p)), Towers[0].Activation);
             else if (forbidden.Count > 0 && !inTower)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), Towers[0].Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), Towers[0].Activation);
         }
         else if (Towers.Any(x => x.ForbiddenSoakers[slot]))
         {
             foreach (var t in Towers)
                 forbidden.Add(ShapeDistance.Circle(t.Position, t.Radius));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), Towers[0].Activation);
+                hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), Towers[0].Activation);
         }
         foreach (var t in Towers)
             hints.PredictedDamage.Add((Module.Raid.WithSlot().ExcludedFromMask(t.ForbiddenSoakers).InRadius(t.Position, t.Radius).Mask(), t.Activation));

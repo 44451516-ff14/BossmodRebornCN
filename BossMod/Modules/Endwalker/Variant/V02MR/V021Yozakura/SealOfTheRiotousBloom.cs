@@ -44,11 +44,11 @@ class SealOfRiotousBloom(BossModule module) : Components.GenericAOEs(module)
                 break;
 
             case Element.Thunder:
-                AddConeAOEs(Helpers.AnglesCardinals, activation);
+                AddConeAOEs(Angle.AnglesCardinals, activation);
                 break;
 
             case Element.Water:
-                AddConeAOEs(Helpers.AnglesIntercardinals, activation);
+                AddConeAOEs(Angle.AnglesIntercardinals, activation);
                 break;
 
             case Element.Wind:

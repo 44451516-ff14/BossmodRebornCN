@@ -117,7 +117,7 @@ public class GenericStackSpread(BossModule module, bool alwaysShowSpreads = fals
                 foreach (var stackWith in ActiveStacks.Where(s => s.Target == actor))
                     forbidden.Add(ShapeDistance.InvertedCircle(Raid.WithoutSlot().FirstOrDefault(x => !x.IsDead && !IsSpreadTarget(x) && !IsStackTarget(x))!.Position, actorStack.Radius / 3));
                 if (forbidden.Count > 0)
-                    hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), actorStack.Activation);
+                    hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), actorStack.Activation);
             }
         }
         else if (!IsSpreadTarget(actor) && !IsStackTarget(actor))
@@ -127,7 +127,7 @@ public class GenericStackSpread(BossModule module, bool alwaysShowSpreads = fals
             || !x.IsInside(actor) && x.InsufficientAmountInside(Module))))
                 forbidden.Add(ShapeDistance.InvertedCircle(s.Target.Position, s.Radius - 0.25f));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), ActiveStacks.FirstOrDefault().Activation);
+                hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), ActiveStacks.FirstOrDefault().Activation);
         }
 
         if (RaidwideOnResolve)
@@ -377,9 +377,9 @@ public class LineStack(BossModule module, ActionID aidMarker, ActionID aidResolv
             foreach (var b in ActiveBaits.Where(x => x.Target != actor))
                 forbidden.Add(ShapeDistance.Rect(b.Source.Position, b.Rotation, Range, 0, 2 * HalfWidth));
         if (forbiddenInverted.Count > 0)
-            hints.AddForbiddenZone(p => forbiddenInverted.Select(f => f(p)).Max(), ActiveBaits.FirstOrDefault().Activation);
+            hints.AddForbiddenZone(p => forbiddenInverted.Max(f => f(p)), ActiveBaits.FirstOrDefault().Activation);
         if (forbidden.Count > 0)
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min(), ActiveBaits.FirstOrDefault().Activation);
+            hints.AddForbiddenZone(p => forbidden.Min(f => f(p)), ActiveBaits.FirstOrDefault().Activation);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -453,9 +453,9 @@ public class DonutStack(BossModule module, ActionID aid, uint icon, float innerR
             return;
         var forbidden = new List<Func<WPos, float>>();
         foreach (var c in Raid.WithoutSlot().Where(x => ActiveStacks.Any(y => y.Target == x)).Exclude(actor))
-            forbidden.Add(ShapeDistance.InvertedCircle(c.Position, Donut.InnerRadius / 4));
+            forbidden.Add(ShapeDistance.InvertedCircle(c.Position, Donut.InnerRadius * 0.25f));
         if (forbidden.Count > 0)
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), ActiveStacks.FirstOrDefault().Activation);
+            hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), ActiveStacks.FirstOrDefault().Activation);
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)

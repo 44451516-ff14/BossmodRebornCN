@@ -73,6 +73,16 @@ public record struct WPos(float X, float Z)
     public readonly WPos Rounded(float precision) => Scaled(1.0f / precision).Rounded().Scaled(precision);
     public static WPos Lerp(WPos from, WPos to, float progress) => new(from.ToVec2() * (1 - progress) + to.ToVec2() * progress);
 
+    public static WPos RotateAroundOrigin(float rotateByDegrees, WPos origin, WPos caster)
+    {
+        var (sin, cos) = MathF.SinCos(rotateByDegrees * Angle.DegToRad);
+        var deltaX = caster.X - origin.X;
+        var deltaZ = caster.Z - origin.Z;
+        var rotatedX = cos * deltaX - sin * deltaZ;
+        var rotatedZ = sin * deltaX + cos * deltaZ;
+        return new(origin.X + rotatedX, origin.Z + rotatedZ);
+    }
+
     public override readonly string ToString() => $"[{X:f3}, {Z:f3}]";
     public override readonly int GetHashCode() => (X, Z).GetHashCode(); // TODO: this is a hack, the default should be good enough, but for whatever reason (X, -Z).GetHashCode() == (-X, Z).GetHashCode()...
 

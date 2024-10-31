@@ -5,12 +5,9 @@ public enum OID : uint
     Boss = 0x42B4, // R10.05
     Fang1 = 0x42AA, // R1.0
     Fang2 = 0x42B6, // R1.0
-    ShadowOfTural1 = 0x43A8, // R0.5
-    ShadowOfTural2 = 0x42AC, // R1.0
-    ShadowOfTural3 = 0x42AD, // R1.0
     HalfCircuitHelper = 0x42B9, // R10.05
     ForgedTrackHelper = 0x19A, // R0.5
-    Helper = 0x233C, // R0.5
+    Helper = 0x233C
 }
 
 public enum AID : uint

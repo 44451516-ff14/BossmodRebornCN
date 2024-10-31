@@ -107,6 +107,7 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string nam
     public Angle Rotation => PosRot.W.Radians();
     public bool Omnidirectional => Utils.CharacterIsOmnidirectional(OID);
     public bool IsDeadOrDestroyed => IsDead || IsDestroyed;
+    public static readonly Actor FakeActor = new(0, 0, -1, "dummy", 0, ActorType.None, Class.None, 0, new(100, 0, 100, 0));
 
     private static readonly HashSet<uint> ignoreNPC = [0x2EFE]; // friendly NPCs that should not count as party members
     public bool IsFriendlyNPC => Type == ActorType.Enemy && IsAlly && IsTargetable && !ignoreNPC.Contains(OID);

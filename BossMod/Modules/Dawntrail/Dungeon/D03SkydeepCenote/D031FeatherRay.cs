@@ -96,7 +96,7 @@ class AiryBubble(BossModule module) : Components.GenericAOEs(module)
         foreach (var o in _aoes)
             forbidden.Add(ShapeDistance.Capsule(o.Position, o.Rotation, 2.5f, Radius));
         forbidden.Add(ShapeDistance.Circle(Arena.Center, Module.PrimaryActor.HitboxRadius));
-        hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Min());
+        hints.AddForbiddenZone(p => forbidden.Min(f => f(p)));
     }
 }
 

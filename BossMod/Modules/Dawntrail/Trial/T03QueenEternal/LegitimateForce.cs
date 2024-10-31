@@ -9,6 +9,9 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
     private static readonly WDir offset1 = new(0, 20);
     private static readonly WDir offset2 = new(0, 8);
     private readonly Besiegement _aoe = module.FindComponent<Besiegement>()!;
+    private static readonly Func<WPos, float> stayInBounds = p =>
+        Math.Max(ShapeDistance.InvertedRect(T03QueenEternal.LeftSplitCenter + offset2, T03QueenEternal.LeftSplitCenter - offset2, 4)(p),
+            ShapeDistance.InvertedRect(T03QueenEternal.RightSplitCenter + offset2, T03QueenEternal.RightSplitCenter - offset2, 4)(p));
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -64,19 +67,9 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         var besiegeCount = besiege.Count;
         var gravityBounds = Arena.Bounds == T03QueenEternal.SplitGravityBounds;
-        var leftCenter = T03QueenEternal.LeftSplitCenter;
-        var rightCenter = T03QueenEternal.RightSplitCenter;
         if (count > 0 && Arena.Center != T03QueenEternal.SplitArena.Center || besiegeCount == 0 && count == 2 && gravityBounds)
             hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center + offset1, Arena.Center - offset1, 3), _aoes[0].Activation);
         else if (count != 2 && besiegeCount == 0 && gravityBounds)
-        {
-            var forbidden = new List<Func<WPos, float>>
-            {
-            ShapeDistance.InvertedRect(leftCenter + offset2, leftCenter - offset2, 4),
-            ShapeDistance.InvertedRect(rightCenter + offset2, rightCenter - offset2, 4)
-            };
-            if (forbidden.Count > 0)
-                hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), count > 0 ? _aoes[0].Activation : besiegeCount > 0 ? besiege[0].Activation : default);
-        }
+            hints.AddForbiddenZone(stayInBounds, count > 0 ? _aoes[0].Activation : besiegeCount > 0 ? besiege[0].Activation : default);
     }
 }

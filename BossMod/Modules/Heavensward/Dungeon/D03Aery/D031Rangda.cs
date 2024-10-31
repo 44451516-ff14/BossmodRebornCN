@@ -67,7 +67,7 @@ class IonosphericCharge(BossModule module) : Components.BaitAwayTethers(module, 
         foreach (var a in Module.Enemies(OID.BlackenedStatue))
             forbidden.Add(ShapeDistance.InvertedCircle(a.Position, 4));
         if (forbidden.Count > 0)
-            hints.AddForbiddenZone(p => forbidden.Select(f => f(p)).Max(), ActiveBaits.FirstOrDefault().Activation);
+            hints.AddForbiddenZone(p => forbidden.Max(f => f(p)), ActiveBaits.FirstOrDefault().Activation);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)

@@ -5,7 +5,7 @@ class StayInBounds(BossModule module) : BossComponent(module)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (!Module.InBounds(actor.Position))
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Module.Center, 3));
+        if (!Arena.InBounds(actor.Position))
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 3));
     }
 }
