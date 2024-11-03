@@ -6,25 +6,18 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "BossModReborn/7.2.0.173": {
+      "BossModReborn/7.2.0.176": {
         "dependencies": {
           "DalamudPackager": "2.1.13",
-          "FFXIVClientStructs": "1.0.0",
-          "SharpDX.Mathematics": "4.2.0"
+          "InteropGenerator.Runtime": "1.0.0",
+          "SharpDX.Mathematics": "4.2.0",
+          "FFXIVClientStructs": "0.0.4966.0"
         },
         "runtime": {
           "BossModReborn.dll": {}
         }
       },
       "DalamudPackager/2.1.13": {},
-      "JetBrains.Annotations/2021.2.0": {
-        "runtime": {
-          "lib/netstandard2.0/JetBrains.Annotations.dll": {
-            "assemblyVersion": "2021.2.0.0",
-            "fileVersion": "2021.2.0.0"
-          }
-        }
-      },
       "Microsoft.NETCore.Platforms/1.1.0": {},
       "Microsoft.NETCore.Targets/1.1.0": {},
       "Microsoft.Win32.Primitives/4.3.0": {
@@ -714,24 +707,23 @@
           "System.Xml.ReaderWriter": "4.3.0"
         }
       },
-      "FFXIVClientStructs/1.0.0": {
-        "dependencies": {
-          "InteropGenerator.Runtime": "1.0.0",
-          "JetBrains.Annotations": "2021.2.0"
-        },
-        "runtime": {
-          "FFXIVClientStructs.dll": {}
-        }
-      },
       "InteropGenerator.Runtime/1.0.0": {
         "runtime": {
           "InteropGenerator.Runtime.dll": {}
+        }
+      },
+      "FFXIVClientStructs/0.0.4966.0": {
+        "runtime": {
+          "FFXIVClientStructs.dll": {
+            "assemblyVersion": "0.0.4966.0",
+            "fileVersion": "0.0.4966.0"
+          }
         }
       }
     }
   },
   "libraries": {
-    "BossModReborn/7.2.0.173": {
+    "BossModReborn/7.2.0.176": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -742,13 +734,6 @@
       "sha512": "sha512-rMN1omGe8536f4xLMvx9NwfvpAc9YFFfeXJ1t4P4PE6Gu8WCIoFliR1sh07hM+bfODmesk/dvMbji7vNI+B/pQ==",
       "path": "dalamudpackager/2.1.13",
       "hashPath": "dalamudpackager.2.1.13.nupkg.sha512"
-    },
-    "JetBrains.Annotations/2021.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-kKSyoVfndMriKHLfYGmr0uzQuI4jcc3TKGyww7buJFCYeHb/X0kodYBPL7n9454q7v6ASiRmDgpPGaDGerg/Hg==",
-      "path": "jetbrains.annotations/2021.2.0",
-      "hashPath": "jetbrains.annotations.2021.2.0.nupkg.sha512"
     },
     "Microsoft.NETCore.Platforms/1.1.0": {
       "type": "package",
@@ -1275,13 +1260,13 @@
       "path": "system.xml.xdocument/4.3.0",
       "hashPath": "system.xml.xdocument.4.3.0.nupkg.sha512"
     },
-    "FFXIVClientStructs/1.0.0": {
+    "InteropGenerator.Runtime/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "InteropGenerator.Runtime/1.0.0": {
-      "type": "project",
+    "FFXIVClientStructs/0.0.4966.0": {
+      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

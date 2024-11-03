@@ -142,6 +142,7 @@ public static class ShapeDistance
         return (p - proj).Length() - radius;
     };
     public static Func<WPos, float> Capsule(WPos origin, Angle direction, float length, float radius) => Capsule(origin, direction.ToDirection(), length, radius);
+    public static Func<WPos, float> InvertedCapsule(WPos origin, Angle direction, float length, float radius) => p => -Capsule(origin, direction.ToDirection(), length, radius)(p);
 
     public static Func<WPos, float> Cross(WPos origin, Angle direction, float length, float halfWidth)
     {

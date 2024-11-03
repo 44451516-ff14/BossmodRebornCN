@@ -24,6 +24,7 @@ public record class RelPolygonWithHoles(List<WDir> Vertices, List<int> HoleStart
     private ContourEdgeBuckets? _exteriorEdgeBuckets;
     private List<ContourEdgeBuckets> _holeEdgeBuckets = [];
     private const int BucketCount = 10;
+    private const float Epsilon = 1e-8f;
 
     private int ExteriorEnd => HoleStarts.Count > 0 ? HoleStarts[0] : Vertices.Count;
     private int HoleEnd(int index) => index + 1 < HoleStarts.Count ? HoleStarts[index + 1] : Vertices.Count;
@@ -121,7 +122,7 @@ public record class RelPolygonWithHoles(List<WDir> Vertices, List<int> HoleStart
                 maxY = y;
         }
 
-        var invBucketHeight = BucketCount / (maxY - minY + 1e-8f);
+        var invBucketHeight = BucketCount / (maxY - minY + Epsilon);
 
         var edgeBucketsArray = new List<Edges>[BucketCount];
         for (var b = 0; b < BucketCount; b++)
@@ -214,11 +215,12 @@ public record class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> Parts)
         var clipperOffset = new ClipperOffset();
         var allPaths = new Paths64();
 
-        foreach (var part in Parts)
+        for (var i = 0; i < Parts.Count; ++i)
         {
+            var part = Parts[i];
             allPaths.Add(ToPath64(part.Exterior));
-            foreach (var i in part.Holes)
-                allPaths.Add(ToPath64(part.Interior(i)));
+            foreach (var j in part.Holes)
+                allPaths.Add(ToPath64(part.Interior(j)));
         }
 
         var solution = new Paths64();
@@ -274,9 +276,10 @@ public class PolygonClipper
 
         public void AddContour(ReadOnlySpan<WDir> contour, bool isOpen = false)
         {
-            Path64 path = new(contour.Length);
-            foreach (var p in contour)
-                path.Add(ConvertPoint(p));
+            var count = contour.Length;
+            Path64 path = new(count);
+            for (var i = 0; i < count; ++i)
+                path.Add(ConvertPoint(contour[i]));
             AddContour(path, isOpen);
         }
 
@@ -382,7 +385,9 @@ public static class PolygonUtil
 
 public readonly struct Edge(float ax, float ay, float dx, float dy)
 {
-    public readonly float Ax = ax, Ay = ay, Dx = dx, Dy = dy, InvLengthSq = 1 / (dx * dx + dy * dy + 1e-8f);
+    private const float Epsilon = 1e-8f;
+
+    public readonly float Ax = ax, Ay = ay, Dx = dx, Dy = dy, InvLengthSq = 1 / (dx * dx + dy * dy + Epsilon);
 }
 
 public class SpatialIndex
@@ -496,14 +501,16 @@ public readonly struct PolygonWithHolesDistanceFunction
         {
             var part = polygon.Parts[i];
             var exteriorEdges = GetEdges(part.Exterior, origin);
-            Array.Copy(exteriorEdges, 0, _edges, edgeIndex, exteriorEdges.Length);
-            edgeIndex += exteriorEdges.Length;
+            var exteriorCount = exteriorEdges.Length;
+            Array.Copy(exteriorEdges, 0, _edges, edgeIndex, exteriorCount);
+            edgeIndex += exteriorCount;
 
             for (var j = 0; j < part.Holes.Count(); ++j)
             {
                 var holeEdges = GetEdges(part.Interior(j), origin);
-                Array.Copy(holeEdges, 0, _edges, edgeIndex, holeEdges.Length);
-                edgeIndex += holeEdges.Length;
+                var holeEdgesCount = holeEdges.Length;
+                Array.Copy(holeEdges, 0, _edges, edgeIndex, holeEdgesCount);
+                edgeIndex += holeEdgesCount;
             }
         }
         _spatialIndex = new(_edges);

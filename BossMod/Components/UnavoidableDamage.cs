@@ -123,5 +123,21 @@ public class SingleTargetCastDelay(BossModule module, ActionID actionVisual, Act
     }
 }
 
+// generic unavoidable instant single-target damage initiated by a cast (usually visual-only)
+public class SingleTargetEventDelay(BossModule module, ActionID actionVisual, ActionID actionAOE, float delay, string hint = "Tankbuster") : SingleTargetInstant(module, actionAOE, delay, hint)
+{
+    public ActionID ActionVisual = actionVisual;
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        base.OnEventCast(caster, spell);
+        if (spell.Action == ActionVisual)
+        {
+            var target = spell.MainTargetID != caster.InstanceID ? spell.MainTargetID : caster.TargetID; // assume self-targeted casts actually hit main target
+            Targets.Add((Raid.FindSlot(target), WorldState.FutureTime(Delay)));
+        }
+    }
+}
+
 // generic unavoidable single-target damage, started and finished by a single cast, that can be delayed by moving out of range (typically tankbuster, but not necessary)
 public class SingleTargetDelayableCast(BossModule module, ActionID aid, string hint = "Tankbuster") : SingleTargetCastDelay(module, aid, aid, 0, hint);

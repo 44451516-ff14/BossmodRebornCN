@@ -6,29 +6,12 @@ namespace BossMod.Components;
 // TODO: typically sources are either eventobj's with eventstate != 7 or normal actors that are non dead; other conditions are much rarer
 public class PersistentVoidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, float moveHintLength = 0) : GenericAOEs(module, default, "GTFO from voidzone!")
 {
-    public AOEShapeCircle Shape { get; init; } = new(radius);
+    public AOEShape Shape { get; init; } = moveHintLength == 0 ? new AOEShapeCircle(radius) : new AOEShapeCapsule(radius, moveHintLength);
     public Func<BossModule, IEnumerable<Actor>> Sources { get; init; } = sources;
-    public float MoveHintLength = moveHintLength;
-    public float Radius = radius;
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        return MoveHintLength == 0
-            ? Sources(Module).Select(s => new AOEInstance(Shape, s.Position, s.Rotation))
-            : Sources(Module).Select(a =>
-            {
-                var position = a.Position;
-                var directionOffset = MoveHintLength * a.Rotation.ToDirection();
-                var pos = a.Position + directionOffset;
-                var shapes = new Shape[]
-                {
-
-                    new Circle(a.Position, Radius),
-                    new Circle(pos, Radius),
-                    new RectangleSE(a.Position, pos, Radius)
-                };
-                return new AOEInstance(new AOEShapeCustom(shapes), Arena.Center);
-            });
+        return Sources(Module).Select(s => new AOEInstance(Shape, s.Position, s.Rotation));
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -37,7 +20,7 @@ public class PersistentVoidzone(BossModule module, float radius, Func<BossModule
             return;
         var forbidden = new List<Func<WPos, float>>();
         foreach (var s in Sources(Module))
-            forbidden.Add(MoveHintLength > 0 ? ShapeDistance.Capsule(s.Position, s.Rotation, MoveHintLength, Shape.Radius) : Shape.Distance(s.Position, s.Rotation));
+            forbidden.Add(Shape.Distance(s.Position, s.Rotation));
         hints.AddForbiddenZone(p => forbidden.Min(f => f(p)));
     }
 }

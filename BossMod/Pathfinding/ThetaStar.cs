@@ -18,6 +18,7 @@ public class ThetaStar
     private readonly List<int> _openList = [];
     private float _deltaGSide;
     private float _deltaGDiag;
+    private const float Epsilon = 1e-5f;
 
     public ref Node NodeByIndex(int index) => ref _nodes[index];
     public int CellIndex(int x, int y) => y * _map.Width + x;
@@ -125,7 +126,7 @@ public class ThetaStar
                 nodeLeeway = losLeeway;
             }
 
-            if (nodeG + 1e-5f < _nodes[nodeIndex].GScore)
+            if (nodeG + Epsilon < _nodes[nodeIndex].GScore)
             {
                 _nodes[nodeIndex].GScore = nodeG;
                 _nodes[nodeIndex].ParentX = parentX;
@@ -257,9 +258,9 @@ public class ThetaStar
         ref var nodeR = ref _nodes[nodeIndexRight];
         var fl = nodeL.GScore + nodeL.HScore;
         var fr = nodeR.GScore + nodeR.HScore;
-        if (fl + 1e-5f < fr)
+        if (fl + Epsilon < fr)
             return true;
-        else if (fr + 1e-5f < fl)
+        else if (fr + Epsilon < fl)
             return false;
         else
             return nodeL.GScore > nodeR.GScore; // tie-break towards larger g-values

@@ -17,7 +17,7 @@ public enum AID : uint
 }
 
 class AncientAero(BossModule module) : Components.SelfTargetedAOEs(module, ActionID.MakeSpell(AID.AncientAero), new AOEShapeRect(52.4f, 4));
-class AncientAeroII(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.AncientAeroII), 6, "Get out of the aoe!");
+class AncientAeroII(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.AncientAeroII), 6);
 class AncientAeroIII(BossModule module) : Components.KnockbackFromCastTarget(module, ActionID.MakeSpell(AID.AncientAeroIII), 23.5f, true, stopAtWall: true);
 class Tornado(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Tornado), 6);
 class Windage(BossModule module) : Components.PersistentVoidzone(module, 8, m => m.Enemies(OID.Whirlwind).Where(z => z.EventState != 7));

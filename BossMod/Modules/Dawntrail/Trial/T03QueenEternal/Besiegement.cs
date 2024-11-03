@@ -7,7 +7,6 @@ class Besiegement(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeRect[] rects = [new(L, 2), new(L, 4), new(L, 5), new(L, 6), new(L, 9)];
     private static readonly HashSet<AID> casts = [AID.Besiegement1, AID.Besiegement2, AID.Besiegement3, AID.Besiegement4,
     AID.Besiegement5];
-    private static readonly Angle angle = -0.003f.Degrees();
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOEs;
 
@@ -24,7 +23,7 @@ class Besiegement(BossModule module) : Components.GenericAOEs(module)
         if (aoeMap.TryGetValue(state, out var aoes))
         {
             foreach (var (index, x) in aoes)
-                AOEs.Add(new(rects[index], new WPos(x, 80), angle, WorldState.FutureTime(6.6f)));
+                AOEs.Add(new(rects[index], new WPos(x, 80), Angle.AnglesCardinals[1], WorldState.FutureTime(6.6f)));
             ++NumCasts;
         }
     }

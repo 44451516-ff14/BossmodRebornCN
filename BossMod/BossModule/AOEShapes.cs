@@ -154,6 +154,22 @@ public sealed record class AOEShapeTriCone(float SideLength, Angle HalfAngle, An
     }
 }
 
+public sealed record class AOEShapeCapsule(float Radius, float Length, Angle DirectionOffset = default, bool InvertForbiddenZone = false) : AOEShape
+{
+    public override string ToString() => $"Capsule: radius={Radius:f3}, length={Length}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override bool Check(WPos position, WPos origin, Angle rotation) => position.InCapsule(origin, (rotation + DirectionOffset).ToDirection(), Radius, Length);
+
+    public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = 0) => arena.ZoneCapsule(origin, (rotation + DirectionOffset).ToDirection(), Radius, Length, color);
+
+    public override Func<WPos, float> Distance(WPos origin, Angle rotation)
+    {
+        return !InvertForbiddenZone ? ShapeDistance.Capsule(origin, rotation, Length, Radius) : ShapeDistance.InvertedCapsule(origin, rotation, Length, Radius);
+    }
+
+    public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = 0)
+    => arena.AddCapsule(origin, (rotation + DirectionOffset).ToDirection(), Radius, Length, color);
+}
+
 public enum OperandType
 {
     Union,
@@ -247,14 +263,15 @@ public sealed record class AOEShapeCustom(IEnumerable<Shape> Shapes1, IEnumerabl
     public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = 0)
     {
         var combinedPolygon = polygon ?? GetCombinedPolygon(origin);
-        foreach (var part in combinedPolygon.Parts)
+        for (var i = 0; i < combinedPolygon.Parts.Count; ++i)
         {
+            var part = combinedPolygon.Parts[i];
             var exteriorEdges = part.ExteriorEdges.ToList();
-            for (var i = 0; i < exteriorEdges.Count; i++)
+            for (var j = 0; j < exteriorEdges.Count; j++)
             {
-                var (start, end) = exteriorEdges[i];
+                var (start, end) = exteriorEdges[j];
                 arena.PathLineTo(origin + start);
-                if (i != exteriorEdges.Count - 1)
+                if (j != exteriorEdges.Count - 1)
                     arena.PathLineTo(origin + end);
             }
             MiniArena.PathStroke(true, color);
@@ -262,11 +279,11 @@ public sealed record class AOEShapeCustom(IEnumerable<Shape> Shapes1, IEnumerabl
             foreach (var holeIndex in part.Holes)
             {
                 var interiorEdges = part.InteriorEdges(holeIndex).ToList();
-                for (var i = 0; i < interiorEdges.Count; i++)
+                for (var j = 0; j < interiorEdges.Count; j++)
                 {
-                    var (start, end) = interiorEdges[i];
+                    var (start, end) = interiorEdges[j];
                     arena.PathLineTo(origin + start);
-                    if (i != interiorEdges.Count - 1)
+                    if (j != interiorEdges.Count - 1)
                         arena.PathLineTo(origin + end);
                 }
                 MiniArena.PathStroke(true, color);

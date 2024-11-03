@@ -5,6 +5,7 @@
 public abstract record class ArenaBounds(float Radius, float MapResolution, float ScaleFactor = 1)
 {
     // fields below are used for clipping & drawing borders
+    public const float Half = 0.5f;
     public readonly PolygonClipper Clipper = new();
     public float MaxApproxError { get; private set; }
     public RelSimplifiedComplexPolygon ShapeSimplified { get; private set; } = new();
@@ -61,7 +62,8 @@ public abstract record class ArenaBounds(float Radius, float MapResolution, floa
 
     public List<RelTriangle> ClipAndTriangulateCircle(WDir centerOffset, float radius)
         => ClipAndTriangulate(CurveApprox.Circle(radius, MaxApproxError).Select(p => p + centerOffset));
-
+    public List<RelTriangle> ClipAndTriangulateCapsule(WDir centerOffset, WDir direction, float radius, float length)
+        => ClipAndTriangulate(CurveApprox.Capsule(direction, length, radius, CurveApprox.ScreenError).Select(p => p + centerOffset));
     public List<RelTriangle> ClipAndTriangulateDonut(WDir centerOffset, float innerRadius, float outerRadius)
         => innerRadius < outerRadius && innerRadius >= 0
             ? ClipAndTriangulate(CurveApprox.Donut(innerRadius, outerRadius, MaxApproxError).Select(p => p + centerOffset))
@@ -106,7 +108,7 @@ public abstract record class ArenaBounds(float Radius, float MapResolution, floa
     }
 }
 
-public record class ArenaBoundsCircle(float Radius, float MapResolution = 0.5f) : ArenaBounds(Radius, MapResolution)
+public record class ArenaBoundsCircle(float Radius, float MapResolution = ArenaBounds.Half) : ArenaBounds(Radius, MapResolution)
 {
     private Pathfinding.Map? _cachedMap;
 
@@ -131,7 +133,7 @@ public record class ArenaBoundsCircle(float Radius, float MapResolution = 0.5f) 
 }
 
 // if rotation is 0, half-width is along X and half-height is along Z
-public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rotation = default, float MapResolution = 0.5f) : ArenaBounds(Math.Max(HalfWidth, HalfHeight), MapResolution, Rotation != default ? CalculateScaleFactor(Rotation) : 1)
+public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rotation = default, float MapResolution = ArenaBounds.Half) : ArenaBounds(Math.Max(HalfWidth, HalfHeight), MapResolution, Rotation != default ? CalculateScaleFactor(Rotation) : 1)
 {
     private Pathfinding.Map? _cachedMap;
     public readonly WDir Orientation = Rotation.ToDirection();
@@ -167,18 +169,19 @@ public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rot
     }
 }
 
-public record class ArenaBoundsSquare(float Radius, Angle Rotation = default, float MapResolution = 0.5f) : ArenaBoundsRect(Radius, Radius, Rotation, MapResolution) { }
+public record class ArenaBoundsSquare(float Radius, Angle Rotation = default, float MapResolution = ArenaBounds.Half) : ArenaBoundsRect(Radius, Radius, Rotation, MapResolution) { }
 
 // custom complex polygon bounds
 public record class ArenaBoundsCustom : ArenaBounds
 {
+    private const float Epsilon = 1e-5f;
     private Pathfinding.Map? _cachedMap;
     private readonly RelSimplifiedComplexPolygon poly;
     private readonly (WDir, WDir)[] edges;
     private readonly float offset;
     public float HalfWidth, HalfHeight;
 
-    public ArenaBoundsCustom(float Radius, RelSimplifiedComplexPolygon Poly, float MapResolution = 0.5f, float Offset = 0)
+    public ArenaBoundsCustom(float Radius, RelSimplifiedComplexPolygon Poly, float MapResolution = Half, float Offset = 0)
         : base(Radius, MapResolution)
     {
         offset = Offset;
@@ -272,11 +275,11 @@ public record class ArenaBoundsCustom : ArenaBounds
                         maxZ = vertex.Z;
                 }
             }
-            HalfWidth = (maxX - minX) * 0.5f;
-            HalfHeight = (maxZ - minZ) * 0.5f;
+            HalfWidth = (maxX - minX) * Half;
+            HalfHeight = (maxZ - minZ) * Half;
         }
         var map = new Pathfinding.Map(MapResolution, default, HalfWidth, HalfHeight);
-        var halfSample = MapResolution / 2 - 1e-5f; // tiny offset to account for floating point inaccuracies
+        var halfSample = MapResolution * Half - Epsilon; // tiny offset to account for floating point inaccuracies
         WDir[] sampleOffsets =
         [
         new(-halfSample, -halfSample),
@@ -298,7 +301,7 @@ public record class ArenaBoundsCustom : ArenaBounds
             var rowOffset = y * width;
             for (var x = 0; x < width; x++)
             {
-                var pos = map.GridToWorld(x, y, 0.5f, 0.5f);
+                var pos = map.GridToWorld(x, y, Half, Half);
                 var relativeCenter = new WDir(pos.X, pos.Z);
                 var allInside = true;
                 for (var i = 0; i < 9; i++)
@@ -326,7 +329,7 @@ public record class ArenaBoundsCustom : ArenaBounds
 public record class ArenaBoundsComplex : ArenaBoundsCustom
 {
     public readonly WPos Center;
-    public ArenaBoundsComplex(Shape[] UnionShapes, Shape[]? DifferenceShapes = null, Shape[]? AdditionalShapes = null, float MapResolution = 0.5f, float Offset = 0)
+    public ArenaBoundsComplex(Shape[] UnionShapes, Shape[]? DifferenceShapes = null, Shape[]? AdditionalShapes = null, float MapResolution = Half, float Offset = 0)
         : base(BuildBounds(UnionShapes, DifferenceShapes, AdditionalShapes, MapResolution, Offset, out var center, out var halfWidth, out var halfHeight))
     {
         Center = center;
@@ -370,11 +373,11 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
             }
         }
 
-        var center = new WPos((minX + maxX) * 0.5f, (minZ + maxZ) * 0.5f);
+        var center = new WPos((minX + maxX) * Half, (minZ + maxZ) * Half);
         var maxDistX = Math.Max(Math.Abs(maxX - center.X), Math.Abs(minX - center.X));
         var maxDistZ = Math.Max(Math.Abs(maxZ - center.Z), Math.Abs(minZ - center.Z));
-        var halfWidth = (maxX - minX) * 0.5f;
-        var halfHeight = (maxZ - minZ) * 0.5f;
+        var halfWidth = (maxX - minX) * Half;
+        var halfHeight = (maxZ - minZ) * Half;
 
         var combinedPolyCentered = CombinePolygons(ParseShapes(unionShapes, center), ParseShapes(differenceShapes, center), ParseShapes(additionalShapes, center));
         return (center, halfWidth, halfHeight, Math.Max(maxDistX, maxDistZ), combinedPolyCentered);

@@ -49,12 +49,8 @@ class T03QueenEternalStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 984, NameID = 13029)]
 public class T03QueenEternal(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultBounds)
 {
-    public static readonly WPos ArenaCenter = new(100, 100);
-    public static readonly WPos FinalCenter = new(100, 105);
-    public static readonly WPos LeftSplitCenter = new(108, 94);
-    public static readonly WPos RightSplitCenter = new(92, 94);
-    public static readonly ArenaBoundsRect FinalBounds = new(20, 15);
-    public static readonly ArenaBoundsRect SplitGravityBounds = new(12, 8);
+    public static readonly WPos ArenaCenter = new(100, 100), FinalCenter = new(100, 105), LeftSplitCenter = new(108, 94), RightSplitCenter = new(92, 94);
+    public static readonly ArenaBoundsRect FinalBounds = new(20, 15), SplitGravityBounds = new(12, 8);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20);
     public static readonly ArenaBoundsComplex XArena = new([new Rectangle(new(100, 82.5f), 12.5f, 2.5f), new Rectangle(new(100, 102.5f), 12.5f, 2.5f), new Cross(new(100, 92.5f), 15, 2.5f, 45.Degrees())], Offset: -0.5f);
     public static readonly ArenaBoundsComplex SplitArena = new([new Rectangle(LeftSplitCenter, 4, 8), new Rectangle(RightSplitCenter, 4, 8)]);

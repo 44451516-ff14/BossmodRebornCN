@@ -13,9 +13,7 @@ public abstract class GenericGaze(BossModule module, ActionID aid = new(), bool 
 
     public bool Inverted = inverted; // if inverted, player should face eyes instead of averting
 
-    private const float _eyeOuterH = 10;
-    private const float _eyeOuterV = 6;
-    private const float _eyeInnerR = 4;
+    private const float _eyeOuterH = 10, _eyeOuterV = 6, _eyeInnerR = 4;
     private const float _eyeOuterR = (_eyeOuterH * _eyeOuterH + _eyeOuterV * _eyeOuterV) / (2 * _eyeOuterV);
     private const float _eyeOffsetV = _eyeOuterR - _eyeOuterV;
 

@@ -176,7 +176,7 @@ class D022KahderyorStates : StateMachineBuilder
 public class D022Kahderyor(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
     private static readonly WPos arenaCenter = new(-53, -57);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Circle(arenaCenter, 19.5f)], [new Rectangle(new(-72.5f, -57), 20, 0.75f, 90.Degrees()), new Rectangle(arenaCenter, 20, 1.5f)]);
+    public static readonly ArenaBoundsComplex DefaultBounds = new([new Circle(arenaCenter, 19.5f)], [new Rectangle(new(-72.5f, -57), 20, 0.75f, 90.Degrees()), new Rectangle(new(-53, -37), 20, 1.5f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

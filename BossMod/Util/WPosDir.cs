@@ -159,4 +159,30 @@ public record struct WPos(float X, float Z)
 
         return windingNumber != 0;
     }
+
+    public readonly bool InCapsule(WPos origin, WDir direction, float radius, float length)
+    {
+        var D = direction.Normalized();
+        var OP = this - origin;
+        var t = WDir.Dot(OP, D);
+
+        if (t <= 0)
+        {
+            // Closest point is at the origin
+            return OP.LengthSq() <= radius * radius;
+        }
+        else if (t >= length)
+        {
+            // Closest point is at the end point of the capsule
+            var EP = this - (origin + D * length);
+            return EP.LengthSq() <= radius * radius;
+        }
+        else
+        {
+            // Closest point is along the segment between origin and end point
+            var closestPoint = origin + D * t;
+            var CP = this - closestPoint;
+            return CP.LengthSq() <= radius * radius;
+        }
+    }
 }

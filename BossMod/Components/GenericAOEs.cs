@@ -82,10 +82,36 @@ public class SelfTargetedLegacyRotationAOEs(BossModule module, ActionID aid, AOE
     }
 }
 
-// location-targeted aoe that happens at the end of the cast
-public class LocationTargetedAOEs(BossModule module, ActionID aid, float radius, string warningText = "GTFO from puddle!", int maxCasts = int.MaxValue) : GenericAOEs(module, aid, warningText)
+// location-targeted circle aoe that happens at the end of the cast
+public class LocationTargetedAOEs(BossModule module, ActionID aid, float radius, int maxCasts = int.MaxValue) : GenericAOEs(module, aid)
 {
     public AOEShapeCircle Shape { get; init; } = new(radius);
+    public int MaxCasts = maxCasts; // used for staggered aoes, when showing all active would be pointless
+    public uint Color; // can be customized if needed
+    public bool Risky = true; // can be customized if needed
+    public readonly List<Actor> Casters = [];
+
+    public IEnumerable<Actor> ActiveCasters => Casters.Take(MaxCasts);
+
+    public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => ActiveCasters.Select(c => new AOEInstance(Shape, WorldState.Actors.Find(c.CastInfo!.TargetID)?.Position ?? c.CastInfo!.LocXZ, c.CastInfo.Rotation, Module.CastFinishAt(c.CastInfo), Color, Risky));
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action == WatchedAction)
+            Casters.Add(caster);
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action == WatchedAction)
+            Casters.Remove(caster);
+    }
+}
+
+// location-targeted aoe component which supports shapes that aren't circles
+public class LocationTargetedAOEsOther(BossModule module, ActionID aid, AOEShape shape, int maxCasts = int.MaxValue) : GenericAOEs(module, aid)
+{
+    public AOEShape Shape { get; init; } = shape;
     public int MaxCasts = maxCasts; // used for staggered aoes, when showing all active would be pointless
     public uint Color; // can be customized if needed
     public bool Risky = true; // can be customized if needed

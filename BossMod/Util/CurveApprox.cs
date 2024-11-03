@@ -5,6 +5,8 @@
 public static class CurveApprox
 {
     public const float ScreenError = 0.05f; // typical maximal screen-space error; tradeoff between performance and fidelity
+    private static readonly Angle a0 = 0.Degrees(), a90 = 90.Degrees(), a270 = 270.Degrees(), a360 = 360.Degrees();
+    private const float DoublePI = 2 * MathF.PI;
 
     public static int CalculateCircleSegments(float radius, Angle angularLength, float maxError)
     {
@@ -20,8 +22,8 @@ public static class CurveApprox
     // winding: points are in CCW order
     public static IEnumerable<WDir> Circle(float radius, float maxError)
     {
-        var numSegments = CalculateCircleSegments(radius, (2 * MathF.PI).Radians(), maxError);
-        var angle = (2 * MathF.PI / numSegments).Radians();
+        var numSegments = CalculateCircleSegments(radius, a360, maxError);
+        var angle = (DoublePI / numSegments).Radians();
         for (var i = 0; i < numSegments; ++i) // note: do not include last point
             yield return PolarToCartesian(radius, i * angle);
     }
@@ -38,6 +40,7 @@ public static class CurveApprox
             yield return PolarToCartesian(radius, angleStart + i * angle);
     }
     public static IEnumerable<WPos> CircleArc(WPos center, float radius, Angle angleStart, Angle angleEnd, float maxError) => CircleArc(radius, angleStart, angleEnd, maxError).Select(off => center + off);
+    public static IEnumerable<WDir> CircleArc(WDir dirZ, float radius, Angle angleStart, Angle angleEnd, float maxError) => CircleArc(radius, angleStart, angleEnd, maxError);
 
     // return polygon points approximating circle sector; implicitly closed path - center + arc
     public static IEnumerable<WDir> CircleSector(float radius, Angle angleStart, Angle angleEnd, float maxError)
@@ -53,8 +56,8 @@ public static class CurveApprox
     {
         foreach (var v in Circle(outerRadius, maxError))
             yield return v;
-        yield return PolarToCartesian(outerRadius, 0.0f.Radians());
-        yield return PolarToCartesian(innerRadius, 0.0f.Radians());
+        yield return PolarToCartesian(outerRadius, a0);
+        yield return PolarToCartesian(innerRadius, a0);
         foreach (var v in Circle(innerRadius, maxError).Reverse())
             yield return v;
     }
@@ -86,4 +89,30 @@ public static class CurveApprox
 
     // for angles, we use standard FF convention: 0 is 'south'/down/(0, -r), and then increases clockwise
     private static WDir PolarToCartesian(float r, Angle phi) => r * phi.ToDirection();
+
+    public static IEnumerable<WDir> Capsule(WDir dir, float length, float radius, float maxError)
+    {
+        var p0 = default(WDir);
+        var p1 = length * dir;
+
+        var dirPerp = dir.OrthoL();
+        var angleDir = Angle.FromDirection(dir);
+
+        var angleStartP1 = angleDir - a90;
+        var angleEnd = angleDir + a90;
+        var angleEndP0 = angleDir + a270;
+        var radiusDirPerp = radius * dirPerp;
+
+        yield return p0 + radiusDirPerp;
+        yield return p1 + radiusDirPerp;
+        foreach (var v in CircleArc(radius, angleStartP1, angleEnd, maxError).Select(off => p1 + off))
+            yield return v;
+        yield return p1 - radiusDirPerp;
+        yield return p0 - radiusDirPerp;
+        foreach (var v in CircleArc(radius, angleEnd, angleEndP0, maxError).Select(off => p0 + off))
+            yield return v;
+    }
+
+    public static IEnumerable<WDir> Capsule(WDir origin, WDir dir, float length, float radius, float maxError)
+        => Capsule(dir, length, radius, maxError).Select(off => origin + off);
 }

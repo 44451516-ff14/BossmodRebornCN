@@ -79,7 +79,7 @@ class Drench(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Electrogenesis(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.Electrogenesis), 8, "Get out of the AOE");
+class Electrogenesis(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.Electrogenesis), 8);
 
 class D70TaquaruStates : StateMachineBuilder
 {

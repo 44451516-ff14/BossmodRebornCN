@@ -42,27 +42,22 @@ class Orbs(BossModule module) : Components.GenericAOEs(module, default, "GTFO fr
 {
     private readonly List<Actor> _orbs = [];
     private const int Radius = 3;
+    private static readonly AOEShapeCapsule capsule = new(Radius, default);
     private static readonly AOEShapeCircle circle = new(Radius);
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        return _orbs.Select(a =>
+        foreach (var o in _orbs)
         {
-            var position = a.Position;
-            var inRect = Module.Enemies(OID.Rings).FirstOrDefault(x => x.Position.InRect(position, 20 * a.Rotation.ToDirection(), Radius));
+            var inRect = Module.Enemies(OID.Rings).FirstOrDefault(x => x.Position.InRect(o.Position, 20 * o.Rotation.ToDirection(), Radius));
             if (inRect != null)
             {
-                var shapes = new Shape[]
-                {
-                    new Circle(a.Position, Radius),
-                    new Circle(inRect.Position, Radius),
-                    new RectangleSE(a.Position, inRect.Position, Radius)
-                };
-                return new AOEInstance(new AOEShapeCustom(shapes), Arena.Center);
+                var length = (inRect.Position - o.Position).Length();
+                yield return new(capsule with { Length = length }, o.Position, o.Rotation);
             }
             else
-                return new(circle, a.Position);
-        });
+                yield return new(circle, o.Position);
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

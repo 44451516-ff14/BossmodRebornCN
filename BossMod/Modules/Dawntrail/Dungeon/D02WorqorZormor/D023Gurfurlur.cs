@@ -87,7 +87,7 @@ class AuraSphere(BossModule module) : BossComponent(module)
                 orbs.Add(ShapeDistance.InvertedCircle(o.Position + 0.5f * o.Rotation.ToDirection(), 0.5f));
         }
         if (orbs.Count > 0)
-            hints.AddForbiddenZone(p => orbs.Select(f => f(p)).Max());
+            hints.AddForbiddenZone(p => orbs.Max(f => f(p)));
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -115,13 +115,10 @@ class GreatFlood(BossModule module) : Components.KnockbackFromCastTarget(module,
 
 class Allfire(BossModule module) : Components.GenericAOEs(module)
 {
-    private const string Risk2Hint = "Walk into safespot for knockback!";
-    private const string StayHint = "Wait inside safespot for knockback!";
+    private const string Risk2Hint = "Walk into safespot for knockback!", StayHint = "Wait inside safespot for knockback!";
     private bool tutorial;
     private static readonly AOEShapeRect rect = new(5, 5, 5);
-    private readonly List<AOEInstance> _aoesWave1 = [];
-    private readonly List<AOEInstance> _aoesWave2 = [];
-    private readonly List<AOEInstance> _aoesWave3 = [];
+    private readonly List<AOEInstance> _aoesWave1 = [], _aoesWave2 = [], _aoesWave3 = [];
     private static readonly AOEShapeRect safespot = new(15, 10, InvertForbiddenZone: true);
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -217,10 +214,7 @@ class Windswrath2(BossModule module) : Windswrath(module, AID.Windswrath2)
 {
     private enum Pattern { None, EWEW, WEWE }
     private Pattern CurrentPattern;
-    private static readonly Angle a15 = 15.Degrees();
-    private static readonly Angle a165 = 165.Degrees();
-    private static readonly Angle a105 = 105.Degrees();
-    private static readonly Angle a75 = 75.Degrees();
+    private static readonly Angle a15 = 15.Degrees(), a165 = 165.Degrees(), a105 = 105.Degrees(), a75 = 75.Degrees();
     private static readonly WDir offset = new(0, 1);
 
     public override void OnActorCreated(Actor actor)

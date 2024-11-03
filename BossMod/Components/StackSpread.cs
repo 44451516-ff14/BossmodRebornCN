@@ -2,7 +2,7 @@
 
 // generic 'stack/spread' mechanic has some players that have to spread away from raid, some other players that other players need to stack with
 // there are various variants (e.g. everyone should spread, or everyone should stack in one or more groups, or some combination of that)
-public class GenericStackSpread(BossModule module, bool alwaysShowSpreads = false, bool raidwideOnResolve = true, bool includeDeadTargets = false) : BossComponent(module)
+public abstract class GenericStackSpread(BossModule module, bool alwaysShowSpreads = false, bool raidwideOnResolve = true, bool includeDeadTargets = false) : BossComponent(module)
 {
     public struct Stack(Actor target, float radius, int minSize = 2, int maxSize = int.MaxValue, DateTime activation = default, BitMask forbiddenPlayers = default)
     {
@@ -192,7 +192,7 @@ public class GenericStackSpread(BossModule module, bool alwaysShowSpreads = fals
 }
 
 // stack/spread with same properties for all stacks and all spreads (most common variant)
-public class UniformStackSpread(BossModule module, float stackRadius, float spreadRadius, int minStackSize = 2, int maxStackSize = int.MaxValue, bool alwaysShowSpreads = false, bool raidwideOnResolve = true, bool includeDeadTargets = false)
+public abstract class UniformStackSpread(BossModule module, float stackRadius, float spreadRadius, int minStackSize = 2, int maxStackSize = int.MaxValue, bool alwaysShowSpreads = false, bool raidwideOnResolve = true, bool includeDeadTargets = false)
     : GenericStackSpread(module, alwaysShowSpreads, raidwideOnResolve, includeDeadTargets)
 {
     public float StackRadius = stackRadius;

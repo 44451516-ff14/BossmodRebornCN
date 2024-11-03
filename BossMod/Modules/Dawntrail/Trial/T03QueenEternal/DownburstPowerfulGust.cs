@@ -13,9 +13,7 @@ class PowerfulGustKB(BossModule module) : Components.KnockbackFromCastTarget(mod
 class DownburstKB(BossModule module) : Components.KnockbackFromCastTarget(module, ActionID.MakeSpell(AID.Downburst), 10, stopAfterWall: true)
 {
     private Angle offset;
-    private static readonly WPos botLeft = new(92.5f, 100);
-    private static readonly WPos botRight = new(107.5f, 100);
-    private static readonly WPos topRight = new(107.5f, 85);
+    private static readonly WPos botLeft = new(92.5f, 100), botRight = new(107.5f, 100), topRight = new(107.5f, 85);
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

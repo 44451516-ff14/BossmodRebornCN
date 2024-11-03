@@ -23,6 +23,8 @@ public class Map
     public int Width { get; private set; } // always even
     public int Height { get; private set; } // always even
     public Pixel[] Pixels = [];
+    private const float Epsilon = 1e-5f;
+    private const float HalfPixel = 0.5f;
 
     public WPos Center { get; private set; } // position of map center in world units
     public Angle Rotation { get; private set; } // rotation relative to world space (=> ToDirection() is equal to direction of local 'height' axis in world space)
@@ -82,7 +84,7 @@ public class Map
         var offset = world - Center;
         var x = offset.Dot(LocalZDivRes.OrthoL());
         var y = offset.Dot(LocalZDivRes);
-        return new(Width * 0.5f + x, Height * 0.5f + y);
+        return new(Width * HalfPixel + x, Height * HalfPixel + y);
     }
 
     public (int x, int y) FracToGrid(Vector2 frac) => ((int)MathF.Floor(frac.X), (int)MathF.Floor(frac.Y));
@@ -93,8 +95,8 @@ public class Map
     public WPos GridToWorld(int gx, int gy, float fx, float fy)
     {
         var rsq = Resolution * Resolution; // since we then multiply by _localZDivRes, end result is same as * res * rotation.ToDir()
-        var ax = (gx - Width * 0.5f + fx) * rsq;
-        var az = (gy - Height * 0.5f + fy) * rsq;
+        var ax = (gx - Width * HalfPixel + fx) * rsq;
+        var az = (gy - Height * HalfPixel + fy) * rsq;
         return Center + ax * LocalZDivRes.OrthoL() + az * LocalZDivRes;
     }
 
@@ -107,7 +109,7 @@ public class Map
             var rowPixels = Pixels.AsSpan(y * Width, Width);
             for (var x = 0; x < Width; x++)
             {
-                if (shape(GridToWorld(x, y, 0.5f, 0.5f)) <= threshold)
+                if (shape(GridToWorld(x, y, HalfPixel, HalfPixel)) <= threshold)
                 {
                     rowPixels[x].MaxG = Math.Min(rowPixels[x].MaxG, maxG);
                 }
@@ -119,7 +121,7 @@ public class Map
     public void BlockPixelsInsideConvex(Func<WPos, float> shape, float maxG, float threshold)
     {
         MaxG = Math.Max(MaxG, maxG);
-        float[] offsets = [1e-5f, 1 - 1e-5f];
+        float[] offsets = [Epsilon, 1 - Epsilon];
 
         Parallel.For(0, Height, y =>
         {
@@ -166,7 +168,7 @@ public class Map
             for (var x = 0; x < Width; x++)
             {
                 var i = rowBaseIndex + x;
-                if (shape(GridToWorld(x, y, 0.5f, 0.5f)) <= threshold)
+                if (shape(GridToWorld(x, y, HalfPixel, HalfPixel)) <= threshold)
                 {
                     ref var pixel = ref Pixels[i];
                     if (pixel.Priority >= minPriority)
@@ -200,7 +202,7 @@ public class Map
         var rsq = Resolution * Resolution; // since we then multiply by _localZDivRes, end result is same as * res * rotation.ToDir()
         var dx = LocalZDivRes.OrthoL() * rsq;
         var dy = LocalZDivRes * rsq;
-        var cy = Center + (-Width * 0.5f + 0.5f) * dx + (-Height * 0.5f + 0.5f) * dy;
+        var cy = Center + (-Width * HalfPixel + HalfPixel) * dx + (-Height * HalfPixel + HalfPixel) * dy;
         for (var y = 0; y < Height; y++)
         {
             var cx = cy;
