@@ -73,8 +73,9 @@ class RamsDragonVoice(BossModule module) : Components.GenericAOEs(module)
 
     public override void Update()
     {
-        if (_aoes.Count > 0)
-            for (var i = 0; i < _aoes.Count; i++)
+        var count = _aoes.Count;
+        if (count > 0)
+            for (var i = 0; i < count; ++i)
                 _aoes[i] = new(_aoes[i].Shape, Module.PrimaryActor.Position, default, _aoes[i].Activation);
     }
 
@@ -109,8 +110,8 @@ class Cacophony(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        foreach (var c in _orbs)
-            yield return new(circle, c.Position);
+        for (var i = 0; i < _orbs.Count; ++i)
+            yield return new(circle, _orbs[i].Position);
     }
 
     public override void OnActorCreated(Actor actor)
@@ -128,8 +129,11 @@ class Cacophony(BossModule module) : Components.GenericAOEs(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        foreach (var w in _orbs)
+        for (var i = 0; i < _orbs.Count; ++i)
+        {
+            var w = _orbs[i];
             hints.AddForbiddenZone(circle, w.Position + 2 * w.Rotation.ToDirection());
+        }
     }
 }
 

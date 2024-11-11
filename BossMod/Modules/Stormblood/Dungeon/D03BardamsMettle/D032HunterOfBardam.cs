@@ -41,13 +41,13 @@ public enum AID : uint
     Reconstruct = 7934, // Helper->location, 4.0s cast, range 5 circle
 
     Tremblor = 9605, // Boss->self, 3.5s cast, single-target
-    MeteorImpact = 9602, // LoomingShadow->self, 30.0s cast, ???
+    MeteorImpact = 9602 // LoomingShadow->self, 30.0s cast, ???
 }
 
 public enum IconID : uint
 {
     BardamsRing = 58, // player
-    ChasingAOE = 197, // player
+    ChasingAOE = 197 // player
 }
 
 class Comet(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4), ActionID.MakeSpell(AID.CometFirst), ActionID.MakeSpell(AID.CometRest), 10, 1.5f, 9, true, (uint)IconID.ChasingAOE);

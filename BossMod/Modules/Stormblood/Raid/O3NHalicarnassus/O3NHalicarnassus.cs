@@ -48,12 +48,13 @@ class TheQueensWaltz2(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
         {
             var aoeCount = 12;
-            for (var i = aoeCount; i < _aoes.Count; i++)
+            for (var i = aoeCount; i < count; ++i)
                 yield return _aoes[i];
-            for (var i = 0; i < aoeCount; i++)
+            for (var i = 0; i < aoeCount; ++i)
                 yield return _aoes[i] with { Color = Colors.AOE };
         }
     }
@@ -80,10 +81,9 @@ class TheQueensWaltz2(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count > 0 && (AID)spell.Action.ID == AID.TheQueensWaltz2)
+        if ((AID)spell.Action.ID == AID.TheQueensWaltz2)
         {
-            for (var i = 0; i < 12; i++)
-                _aoes.RemoveAt(0);
+            _aoes.Clear();
         }
     }
 }
@@ -115,10 +115,10 @@ class TheGame(BossModule module) : Components.GenericAOEs(module)
             }
 
             var tiles = 16;
-            for (var i = tiles; i < _aoes.Count; i++)
+            for (var i = tiles; i < _aoes.Count; ++i)
                 yield return _aoes[i];
 
-            for (var i = 0; i < tiles; i++)
+            for (var i = 0; i < tiles; ++i)
             {
                 if (!safeTiles.Contains(i))
                 {
@@ -147,10 +147,9 @@ class TheGame(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count > 0 && (AID)spell.Action.ID == AID.TheGame)
+        if ((AID)spell.Action.ID == AID.TheGame)
         {
-            for (var i = 0; i < 16; i++)
-                _aoes.RemoveAt(0);
+            _aoes.Clear();
         }
     }
 }

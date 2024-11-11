@@ -172,8 +172,11 @@ public class D173TheGriffin(WorldState ws, Actor primary) : BossModule(ws, prima
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var e in hints.PotentialTargets)
+        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
+        {
+            var e = hints.PotentialTargets[i];
             e.Priority = e.Actor.OID == (uint)OID.BladeOfTheGriffin ? e.Actor.Position.AlmostEqual(Arena.Center, 5) ? 2 : -1
             : e.Actor.OID == (uint)OID.RestraintCollar ? 2 : 1;
+        }
     }
 }

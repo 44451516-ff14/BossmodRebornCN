@@ -95,7 +95,7 @@ class MiniArenaTest : TestWindow
     private IEnumerable<WPos> KBContour()
     {
         var cnt = 256;
-        var coeff = 2 * MathF.PI / cnt;
+        var coeff = Angle.DoublePI / cnt;
         WPos kbCenter = new(_kbCenter);
         var centerOffset = kbCenter - _arena.Center;
         var c = centerOffset.LengthSq() - _arena.Bounds.Radius * _arena.Bounds.Radius;

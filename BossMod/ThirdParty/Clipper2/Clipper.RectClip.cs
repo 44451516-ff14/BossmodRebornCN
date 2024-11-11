@@ -50,7 +50,7 @@ namespace Clipper2Lib
       rectPath_ = rect_.AsPath();
       results_ = new List<OutPt2?>();
       edges_ = new List<OutPt2?>[8];
-      for (int i = 0; i < 8; i++)
+      for (int i = 0; i < 8; ++i)
         edges_[i] = new List<OutPt2?>();
     }
 
@@ -203,7 +203,7 @@ namespace Clipper2Lib
     private static void UncoupleEdge(OutPt2 op)
     {
       if (op.edge == null) return;
-      for (int i = 0; i < op.edge.Count; i++)
+      for (int i = 0; i < op.edge.Count; ++i)
       {
         OutPt2? op2 = op.edge[i];
         if (op2 == op)
@@ -435,7 +435,7 @@ namespace Clipper2Lib
       {
         case Location.left:
           {
-            while (i <= highI && path[i].X <= rect_.left) i++;
+            while (i <= highI && path[i].X <= rect_.left) ++i;
             if (i > highI) break;
             if (path[i].X >= rect_.right) loc = Location.right;
             else if (path[i].Y <= rect_.top) loc = Location.top;
@@ -446,7 +446,7 @@ namespace Clipper2Lib
 
         case Location.top:
           {
-            while (i <= highI && path[i].Y <= rect_.top) i++;
+            while (i <= highI && path[i].Y <= rect_.top) ++i;
             if (i > highI) break;
             if (path[i].Y >= rect_.bottom) loc = Location.bottom;
             else if (path[i].X <= rect_.left) loc = Location.left;
@@ -457,7 +457,7 @@ namespace Clipper2Lib
 
         case Location.right:
           {
-            while (i <= highI && path[i].X >= rect_.right) i++;
+            while (i <= highI && path[i].X >= rect_.right) ++i;
             if (i > highI) break;
             if (path[i].X <= rect_.left) loc = Location.left;
             else if (path[i].Y <= rect_.top) loc = Location.top;
@@ -468,7 +468,7 @@ namespace Clipper2Lib
 
         case Location.bottom:
           {
-            while (i <= highI && path[i].Y >= rect_.bottom) i++;
+            while (i <= highI && path[i].Y >= rect_.bottom) ++i;
             if (i > highI) break;
             if (path[i].Y <= rect_.top) loc = Location.top;
             else if (path[i].X <= rect_.left) loc = Location.left;
@@ -488,7 +488,7 @@ namespace Clipper2Lib
               else
               {
                 Add(path[i]);
-                i++;
+                ++i;
                 continue;
               }
               break;
@@ -501,7 +501,7 @@ namespace Clipper2Lib
     private bool StartLocsAreClockwise(List<Location> startLocs)
     {
       int result = 0;
-      for (int i = 1; i < startLocs.Count; i++)
+      for (int i = 1; i < startLocs.Count; ++i)
       {
         int d = (int)startLocs[i] - (int)startLocs[i - 1];
         switch (d)
@@ -527,7 +527,7 @@ namespace Clipper2Lib
       if (!GetLocation(rect_, path[highI], out Location loc))
       {
         i = highI - 1;
-        while (i >= 0 && !GetLocation(rect_, path[i], out prev)) i--;
+        while (i >= 0 && !GetLocation(rect_, path[i], out prev)) --i;
         if (i < 0)
         {
           foreach(Point64 pt in path) { Add(pt); }
@@ -642,7 +642,7 @@ namespace Clipper2Lib
             Path1ContainsPath2(path, rectPath_))
           {
             bool startLocsClockwise = StartLocsAreClockwise(startLocs);
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < 4; ++j)
             {
               int k = startLocsClockwise ? j : 3 - j; // ie reverse result path
               Add(rectPath_[k]);
@@ -699,7 +699,7 @@ namespace Clipper2Lib
 
         //clean up after every loop
         results_.Clear();
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 8; ++i)
           edges_[i].Clear();
       }
       return result;
@@ -707,7 +707,7 @@ namespace Clipper2Lib
 
     private void CheckEdges()
     {
-      for (int i = 0; i < results_.Count; i++)
+      for (int i = 0; i < results_.Count; ++i)
       {
         OutPt2? op = results_[i], op2 = op;
         if (op == null) continue;
@@ -999,7 +999,7 @@ namespace Clipper2Lib
 
         //clean up after every loop
         results_.Clear();
-        for(int i = 0; i < 8; i++)
+        for(int i = 0; i < 8; ++i)
           edges_[i].Clear();
       }
       return result;
@@ -1029,7 +1029,7 @@ namespace Clipper2Lib
       int i = 1, highI = path.Count - 1;
       if (!GetLocation(rect_, path[0], out Location loc))
       {
-        while (i <= highI && !GetLocation(rect_, path[i], out prev)) i++;
+        while (i <= highI && !GetLocation(rect_, path[i], out prev)) ++i;
         if (i > highI)
         {
           foreach (Point64 pt in path) Add(pt);

@@ -33,10 +33,7 @@ public class ThetaStar
         var numPixels = map.Width * map.Height;
         if (_nodes.Length < numPixels)
             _nodes = new Node[numPixels];
-        for (var i = 0; i < numPixels; i++)
-        {
-            _nodes[i] = default;
-        }
+        Array.Fill(_nodes, default, 0, numPixels);
         _openList.Clear();
         _deltaGSide = map.Resolution * gMultiplier;
         _deltaGDiag = _deltaGSide * 1.414214f;

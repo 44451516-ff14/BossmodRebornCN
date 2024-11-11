@@ -21,7 +21,7 @@ public enum AID : uint
     AutoAttack2 = 872, // Boss/GymnasiouSinapi/GymnasiouAkantha->player, no cast, single-target
 
     OdiousAtmosphereComboStart = 32199, // Boss->self, no cast, single-target
-    OdiousAtmosphere0 = 32241, // Boss->self, 4.0s cast, single-target
+    OdiousAtmosphere = 32241, // Boss->self, 4.0s cast, single-target
     OdiousAtmosphere1 = 32242, // Helper->self, 5.3s cast, range 40 180-degree cone
     OdiousAtmosphere2 = 33015, // Helper->self, 5.3s cast, range 40 180-degree cone
     OdiousAtmosphere3 = 33016, // Helper->self, 3.0s cast, range 40 180-degree cone
@@ -56,7 +56,7 @@ class OdiousAtmosphere(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.OdiousAtmosphere0)
+        if ((AID)spell.Action.ID == AID.OdiousAtmosphere1)
             _aoe = new(cone, caster.Position, spell.Rotation, Module.CastFinishAt(spell));
     }
 
@@ -64,11 +64,10 @@ class OdiousAtmosphere(BossModule module) : Components.GenericAOEs(module)
     {
         switch ((AID)spell.Action.ID)
         {
-            case AID.OdiousAtmosphere0:
             case AID.OdiousAtmosphere1:
             case AID.OdiousAtmosphere2:
             case AID.OdiousAtmosphere3:
-                if (++NumCasts == 6)
+                if (++NumCasts == 5)
                 {
                     _aoe = null;
                     NumCasts = 0;

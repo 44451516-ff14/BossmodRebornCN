@@ -43,7 +43,7 @@ public class Cleave(BossModule module, ActionID aid, AOEShape shape, uint enemyO
                     hints.AddForbiddenZone(ShapeDistance.Cone(source.Position, 100, source.AngleTo(a), cone.HalfAngle));
                     break;
                 case AOEShapeRect rect:
-                    hints.AddForbiddenZone(ShapeDistance.Cone(source.Position, 100, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (actor.Position - source.Position).Length())));
+                    hints.AddForbiddenZone(ShapeDistance.Cone(source.Position, 100, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (a.Position - source.Position).Length())));
                     break;
             }
     }

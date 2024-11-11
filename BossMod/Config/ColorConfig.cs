@@ -30,6 +30,7 @@ public sealed class ColorConfig : ConfigNode
 
     [PropertyDisplay("Arena: player character")]
     public Color ArenaPC = new(0xff00ff00);
+
     [PropertyDisplay("Arena: trap")]
     public Color ArenaTrap = new(0x80000080);
 
@@ -95,6 +96,18 @@ public sealed class ColorConfig : ConfigNode
 
     [PropertyDisplay("Waymark: 4")]
     public Color Waymark4 = new(0xffbc567a);
+
+    [PropertyDisplay("Cardinal: North")]
+    public Color CardinalN = new(0xff0000ff);
+
+    [PropertyDisplay("Cardinal: East")]
+    public Color CardinalE = new(0xffffffff);
+
+    [PropertyDisplay("Cardinal: South")]
+    public Color CardinalS = new(0xffffffff);
+
+    [PropertyDisplay("Cardinal: West")]
+    public Color CardinalW = new(0xffffffff);
 
     [PropertyDisplay("Positional colors")]
     public Color[] PositionalColors = [new(0xff00ff00), new(0xff0000ff), new(0xffffffff), new(0xff00ffff)];

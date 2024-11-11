@@ -349,7 +349,7 @@ namespace Clipper2Lib
 
     public readonly Point64 MidPoint()
     {
-      return new Point64((left + right) /2, (top + bottom)/2);
+      return new Point64((left + right) * 0.5, (top + bottom) * 0.5);
     }
 
     public readonly bool Contains(Point64 pt)
@@ -436,7 +436,7 @@ namespace Clipper2Lib
 
     public readonly PointD MidPoint()
     {
-      return new PointD((left + right) / 2, (top + bottom) / 2);
+      return new PointD((left + right) * 0.5, (top + bottom) * 0.5);
     }
 
     public readonly bool Contains(PointD pt)
@@ -765,7 +765,7 @@ namespace Clipper2Lib
       int len = polygon.Count, start = 0;
       if (len < 3) return PointInPolygonResult.IsOutside;
 
-      while (start < len && polygon[start].Y == pt.Y) start++;
+      while (start < len && polygon[start].Y == pt.Y) ++start;
       if (start == len) return PointInPolygonResult.IsOutside;
 
       double d;
@@ -782,12 +782,12 @@ namespace Clipper2Lib
         
         if (isAbove)
         {
-          while (i < end && polygon[i].Y < pt.Y) i++;
+          while (i < end && polygon[i].Y < pt.Y) ++i;
           if (i == end) continue;
         }
         else
         {
-          while (i < end && polygon[i].Y > pt.Y) i++;
+          while (i < end && polygon[i].Y > pt.Y) ++i;
           if (i == end) continue;
         }
 
@@ -800,7 +800,7 @@ namespace Clipper2Lib
           if (curr.X == pt.X || (curr.Y == prev.Y &&
             ((pt.X < prev.X) != (pt.X < curr.X))))
             return PointInPolygonResult.IsOn;
-          i++;
+          ++i;
           if (i == start) break;
           continue;
         }
@@ -820,7 +820,7 @@ namespace Clipper2Lib
           if ((d < 0) == isAbove) val = 1 - val;
         }
         isAbove = !isAbove;
-        i++;
+        ++i;
       }
 
       if (isAbove != startingAbove)

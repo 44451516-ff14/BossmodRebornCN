@@ -285,21 +285,25 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, float ac
         {
             if (!ActivationDelayOnActor.Any(x => x.Item1 == player))
                 ActivationDelayOnActor.Add((player, WorldState.FutureTime(ActivationDelay)));
-            CurrentBaits.Add(new(enemy, player, Shape ?? new AOEShapeCircle(0), ActivationDelayOnActor.FirstOrDefault(x => x.Item1 == player).Item2));
+            CurrentBaits.Add(new(enemy, player, Shape ?? new AOEShapeCircle(default), ActivationDelayOnActor.FirstOrDefault(x => x.Item1 == player).Item2));
             TetherOnActor.Add((player, tether.ID));
         }
     }
 
     public override void Update()
     {
-        if (ActivationDelayOnActor.Count > 0)
+        var count = ActivationDelayOnActor.Count;
+        if (count > 0)
         {
             var actorsToRemove = new List<(Actor, DateTime)>();
-            foreach (var a in ActivationDelayOnActor)
+            for (var i = 0; i < count; ++i)
+            {
+                var a = ActivationDelayOnActor[i];
                 if (a.Item2.AddSeconds(1) <= WorldState.CurrentTime)
                     actorsToRemove.Add(a);
-            foreach (var a in actorsToRemove)
-                ActivationDelayOnActor.Remove(a);
+            }
+            for (var i = 0; i < actorsToRemove.Count; ++i)
+                ActivationDelayOnActor.Remove(actorsToRemove[i]);
         }
     }
 
@@ -315,7 +319,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, float ac
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!ActiveBaits.Any())
+        if (CurrentBaits.Count == 0)
             return;
         var immunity = IsImmune(slot, ActiveBaits.FirstOrDefault(x => x.Target == actor).Activation);
         var bait = ActiveBaits.Any(x => x.Target == actor);
@@ -329,7 +333,6 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, float ac
             hints.Add(HintKnockbackImmmunityBad);
     }
 
-    // we support both player->enemy and enemy->player tethers
     public (Actor? player, Actor? enemy) DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TIDGood && tether.ID != TIDBad)
@@ -340,12 +343,6 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, float ac
             return (null, null);
 
         var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
-        if (!Raid.WithoutSlot().Contains(player) || enemy.Type is ActorType.Player or ActorType.Buddy)
-        {
-            ReportError($"Unexpected tether pair: {source.InstanceID:X} -> {target.InstanceID:X}");
-            return (null, null);
-        }
-
         return (player, enemy);
     }
 

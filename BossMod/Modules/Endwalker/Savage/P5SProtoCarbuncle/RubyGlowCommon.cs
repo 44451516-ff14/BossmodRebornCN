@@ -39,7 +39,7 @@ abstract class RubyGlowCommon(BossModule module, ActionID watchedAction = defaul
         var c = QuadrantCenter(q);
         var w = Waymark.Count;
         var wd = float.MaxValue;
-        for (var i = Waymark.A; i < Waymark.Count; i++)
+        for (var i = Waymark.A; i < Waymark.Count; ++i)
         {
             var pos = WorldState.Waymarks[i];
             var dist = pos != null ? (new WPos(pos.Value.XZ()) - c).LengthSq() : float.MaxValue;

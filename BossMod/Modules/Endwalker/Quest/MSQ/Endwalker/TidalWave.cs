@@ -1,4 +1,4 @@
-﻿namespace BossMod.Endwalker.Quest.Endwalker;
+﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
 // TODO: Make AI function for Destination Unsafe
 class TidalWave(BossModule module) : Components.KnockbackFromCastTarget(module, ActionID.MakeSpell(AID.TidalWaveVisual), 25, kind: Kind.DirForward, stopAtWall: true)

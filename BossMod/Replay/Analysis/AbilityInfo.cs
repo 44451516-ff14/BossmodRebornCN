@@ -180,9 +180,9 @@ class AbilityInfo : CommonEnumInfo
                     var toSource = Angle.FromDirection(src - new WPos(posRot.XZ()));
                     var angle = toSource - posRot.W.Radians();
                     if (angle.Rad > MathF.PI)
-                        angle.Rad -= 2 * MathF.PI;
+                        angle.Rad -= Angle.DoublePI;
                     if (angle.Rad < -MathF.PI)
-                        angle.Rad += 2 * MathF.PI;
+                        angle.Rad += Angle.DoublePI;
                     var hit = !target.Effects.All(eff => eff.Type is ActionEffectType.Miss or ActionEffectType.StartActionCombo);
                     _points.Add((i, target.Target, angle, hit));
                 }

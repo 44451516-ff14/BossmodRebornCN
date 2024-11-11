@@ -68,10 +68,11 @@ class SapSpiller(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
         {
             yield return _aoes[0] with { Color = Colors.Danger };
-            foreach (var a in _aoes.Skip(1).Take(_aoes.Count - 1))
+            foreach (var a in _aoes.Skip(1).Take(count - 1))
                 yield return a;
         }
     }

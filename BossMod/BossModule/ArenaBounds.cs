@@ -112,7 +112,7 @@ public record class ArenaBoundsCircle(float Radius, float MapResolution = ArenaB
 {
     private Pathfinding.Map? _cachedMap;
 
-    protected override PolygonClipper.Operand BuildClipPoly() => new(CurveApprox.Circle(Radius, MaxApproxError));
+    protected override PolygonClipper.Operand BuildClipPoly() => new((ReadOnlySpan<WDir>)CurveApprox.Circle(Radius, MaxApproxError));
     public override void PathfindMap(Pathfinding.Map map, WPos center) => map.Init(_cachedMap ??= BuildMap(), center);
     public override bool Contains(WDir offset) => offset.LengthSq() <= Radius * Radius;
     public override float IntersectRay(WDir originOffset, WDir dir) => Intersect.RayCircle(originOffset, dir, Radius);
@@ -143,7 +143,7 @@ public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rot
         return Math.Abs(cos) + Math.Abs(sin);
     }
 
-    protected override PolygonClipper.Operand BuildClipPoly() => new(CurveApprox.Rect(Orientation, HalfWidth, HalfHeight));
+    protected override PolygonClipper.Operand BuildClipPoly() => new((ReadOnlySpan<WDir>)CurveApprox.Rect(Orientation, HalfWidth, HalfHeight));
     public override void PathfindMap(Pathfinding.Map map, WPos center) => map.Init(_cachedMap ??= BuildMap(), center);
     private Pathfinding.Map BuildMap()
     {
@@ -159,13 +159,13 @@ public record class ArenaBoundsRect(float HalfWidth, float HalfHeight, Angle Rot
     {
         if (offset.X == default) // if actor is almost in the center of the arena, do nothing
             return offset;
-        var dx = Math.Abs(offset.Dot(Orientation.OrthoL()));
-        if (dx > HalfWidth)
-            offset *= HalfWidth / dx;
-        var dy = Math.Abs(offset.Dot(Orientation));
-        if (dy > HalfHeight)
-            offset *= HalfHeight / dy;
-        return offset;
+        var offsetX = offset.Dot(Orientation.OrthoL());
+        var offsetY = offset.Dot(Orientation);
+        if (Math.Abs(offsetX) > HalfWidth)
+            offsetX = Math.Sign(offsetX) * HalfWidth;
+        if (Math.Abs(offsetY) > HalfHeight)
+            offsetY = Math.Sign(offsetY) * HalfHeight;
+        return Orientation.OrthoL() * offsetX + Orientation * offsetY;
     }
 }
 
@@ -259,10 +259,10 @@ public record class ArenaBoundsCustom : ArenaBounds
         {
             float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
 
-            for (var i = 0; i < polygon.Parts.Count; i++)
+            for (var i = 0; i < polygon.Parts.Count; ++i)
             {
                 var part = polygon.Parts[i];
-                for (var j = 0; j < part.Exterior.Length; j++)
+                for (var j = 0; j < part.Exterior.Length; ++j)
                 {
                     var vertex = part.Exterior[j];
                     if (vertex.X < minX)
@@ -279,7 +279,15 @@ public record class ArenaBoundsCustom : ArenaBounds
             HalfHeight = (maxZ - minZ) * Half;
         }
         var map = new Pathfinding.Map(MapResolution, default, HalfWidth, HalfHeight);
+        var pixels = map.Pixels;
+        var width = map.Width;
+        var height = map.Height;
+        var resolution = map.Resolution;
+        var rotation = map.Rotation;
+        var center = map.Center;
+
         var halfSample = MapResolution * Half - Epsilon; // tiny offset to account for floating point inaccuracies
+
         WDir[] sampleOffsets =
         [
         new(-halfSample, -halfSample),
@@ -293,18 +301,22 @@ public record class ArenaBoundsCustom : ArenaBounds
         new(halfSample, halfSample)
         ];
 
-        var pixels = map.Pixels;
-        var width = map.Width;
+        var dir = rotation.ToDirection();
+        var dx = dir.OrthoL() * resolution;
+        var dy = dir * resolution;
+        var startPos = center - (width * Half - Half) * dx - (height * Half - Half) * dy;
 
-        Parallel.For(0, map.Height, y =>
+        Parallel.For(0, height, y =>
         {
             var rowOffset = y * width;
-            for (var x = 0; x < width; x++)
+            var posY = startPos + y * dy;
+            for (var x = 0; x < width; ++x)
             {
-                var pos = map.GridToWorld(x, y, Half, Half);
+                var pos = posY + x * dx;
+
                 var relativeCenter = new WDir(pos.X, pos.Z);
                 var allInside = true;
-                for (var i = 0; i < 9; i++)
+                for (var i = 0; i < 9; ++i)
                 {
                     var samplePoint = relativeCenter + sampleOffsets[i];
                     if (!polygon.Contains(samplePoint))
@@ -356,10 +368,10 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
 
         float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
         var count = combinedPoly.Parts.Count;
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
         {
             var part = combinedPoly.Parts[i];
-            for (var j = 0; j < part.Exterior.Length; j++)
+            for (var j = 0; j < part.Exterior.Length; ++j)
             {
                 var vertex = part.Exterior[j];
                 if (vertex.X < minX)
@@ -390,12 +402,12 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
         var operandDifference = new PolygonClipper.Operand();
         var operandSecondUnion = new PolygonClipper.Operand();
 
-        foreach (var polygon in unionPolygons)
-            operandUnion.AddPolygon(polygon);
-        foreach (var polygon in differencePolygons)
-            operandDifference.AddPolygon(polygon);
-        foreach (var polygon in secondUnionPolygons)
-            operandSecondUnion.AddPolygon(polygon);
+        for (var i = 0; i < unionPolygons.Length; ++i)
+            operandUnion.AddPolygon(unionPolygons[i]);
+        for (var i = 0; i < differencePolygons.Length; ++i)
+            operandDifference.AddPolygon(differencePolygons[i]);
+        for (var i = 0; i < secondUnionPolygons.Length; ++i)
+            operandSecondUnion.AddPolygon(secondUnionPolygons[i]);
 
         var combinedShape = clipper.Difference(operandUnion, operandDifference);
         if (secondUnionPolygons.Length != 0)
@@ -406,8 +418,9 @@ public record class ArenaBoundsComplex : ArenaBoundsCustom
 
     private static RelSimplifiedComplexPolygon[] ParseShapes(Shape[] shapes, WPos center = default)
     {
-        var polygons = new RelSimplifiedComplexPolygon[shapes.Length];
-        for (var i = 0; i < shapes.Length; i++)
+        var lenght = shapes.Length;
+        var polygons = new RelSimplifiedComplexPolygon[lenght];
+        for (var i = 0; i < lenght; ++i)
         {
             polygons[i] = shapes[i].ToPolygon(center);
         }

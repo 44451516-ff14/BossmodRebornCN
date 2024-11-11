@@ -110,7 +110,7 @@ class RapidRotary(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        for (var i = 0; i < Math.Clamp(_aoes.Count, 0, 7); i++)
+        for (var i = 0; i < Math.Clamp(_aoes.Count, 0, 7); ++i)
         {
             var aoe = _aoes[i];
             yield return new(aoe.Shape, aoe.Origin, aoe.Rotation, aoe.Activation, i < 2 ? Colors.Danger : Colors.AOE);
@@ -138,7 +138,7 @@ class RapidRotary(BossModule module) : Components.GenericAOEs(module)
 
     private void AddAOEs(AOEShape shape1, AOEShape shape2, Angle initialAngle, DateTime finishAt)
     {
-        for (var i = 0; i < 3; i++)
+        for (var i = 0; i < 3; ++i)
         {
             var angle = initialAngle - i * a120;
             _aoes.Add(new(shape1, Module.Center, angle, finishAt.AddSeconds(ActivationDelay + i * ActivationDelayIncrement)));

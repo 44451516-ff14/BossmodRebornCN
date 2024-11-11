@@ -18,7 +18,7 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
         {
             var count = _aoes.Count;
             var compare = count > 1 && _aoes[0].Rotation != _aoes[1].Rotation;
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 if (i == 0)
                     yield return compare ? _aoes[i] with { Color = Colors.Danger } : _aoes[i];

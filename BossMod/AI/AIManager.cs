@@ -489,7 +489,7 @@ sealed class AIManager : IDisposable
 
     private int FindPartyMemberByName(string name)
     {
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < 8; ++i)
         {
             var member = Autorot.WorldState.Party[i];
             if (member != null && member.Name.Equals(name, StringComparison.OrdinalIgnoreCase))

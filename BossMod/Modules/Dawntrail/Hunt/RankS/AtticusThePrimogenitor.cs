@@ -8,6 +8,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 39015, // Boss->player, no cast, single-target
+
     HeadSpeaks = 39883, // Boss->self, no cast, single-target
     HeadSpeaks2 = 39884, // Boss->self, no cast, single-target
     BreathSequenceFirstFront = 39003, // Boss->self, 5.0s cast, range 60 120-degree cone
@@ -84,9 +85,10 @@ class BreathSequence(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
             yield return _aoes[0] with { Color = Colors.Danger };
-        if (_aoes.Count > 1)
+        if (count > 1)
             yield return _aoes[1];
     }
 
@@ -103,14 +105,15 @@ class BreathSequence(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
             switch ((AID)spell.Action.ID)
             {
                 case AID.BreathSequenceFirstFront:
                 case AID.BreathSequenceFirstLeft:
                 case AID.BreathSequenceFirstRight:
-                    for (var i = 0; i < _aoes.Count; i++)
-                        _aoes[i] = new(_aoes[i].Shape, _aoes[i].Origin, _aoes[i].Rotation, Module.CastFinishAt(spell, 2.3f * i));
+                    for (var i = 0; i < count; ++i)
+                        _aoes[i] = _aoes[i] with { Activation = Module.CastFinishAt(spell, 2.3f * i) };
                     break;
             }
     }

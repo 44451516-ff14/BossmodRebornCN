@@ -14,11 +14,12 @@ public class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 3)
-            for (var i = 0; i < 4; i++)
+        var count = _aoes.Count;
+        if (count > 3)
+            for (var i = 0; i < 4; ++i)
                 yield return _aoes[i] with { Color = Colors.Danger };
-        if (_aoes.Count > 7)
-            for (var i = 4; i < 8; i++)
+        if (count > 7)
+            for (var i = 4; i < 8; ++i)
                 yield return _aoes[i] with { Risky = false };
     }
 
@@ -84,7 +85,7 @@ public class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
 
     private void AddAOEs(Actor actor, Angle[] angles, int futureTime)
     {
-        foreach (var angle in angles)
-            _aoes.Add(new(cone, actor.Position, angle, WorldState.FutureTime(futureTime)));
+        for (var i = 0; i < angles.Length; ++i)
+            _aoes.Add(new(cone, actor.Position, angles[i], WorldState.FutureTime(futureTime)));
     }
 }

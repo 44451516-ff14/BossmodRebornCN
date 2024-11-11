@@ -7,7 +7,7 @@ class FlamesMeet(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        for (var i = 0; i < _aoes.Count; i++)
+        for (var i = 0; i < _aoes.Count; ++i)
         {
             var aoe = _aoes[i];
             if (i == 0)

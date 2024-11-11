@@ -1,4 +1,4 @@
-﻿namespace BossMod.Endwalker.Quest.Endwalker;
+﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
 class Candlewick(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {

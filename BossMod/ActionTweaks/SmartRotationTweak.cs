@@ -57,13 +57,13 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
                 var min = center - d.halfWidth;
                 if (min.Rad < -MathF.PI)
                 {
-                    _forbidden.Add(min.Rad + 2 * MathF.PI, MathF.PI);
+                    _forbidden.Add(min.Rad + Angle.DoublePI, MathF.PI);
                     min = -MathF.PI.Radians();
                 }
                 var max = center + d.halfWidth;
                 if (max.Rad > MathF.PI)
                 {
-                    _forbidden.Add(-MathF.PI, max.Rad - 2 * MathF.PI);
+                    _forbidden.Add(-MathF.PI, max.Rad - Angle.DoublePI);
                     max = MathF.PI.Radians();
                 }
                 _forbidden.Add(min.Rad, max.Rad);
@@ -117,7 +117,7 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
 
         // find widest safe range in the whole circle
         {
-            var best = initBest(_forbidden[^1].Max, _forbidden[0].Min + 2 * MathF.PI);
+            var best = initBest(_forbidden[^1].Max, _forbidden[0].Min + Angle.DoublePI);
             for (int i = 1; i < _forbidden.Count; ++i)
                 updateBest(ref best, _forbidden[i - 1].Max, _forbidden[i].Min);
             return midpoint + best.mid.Radians();

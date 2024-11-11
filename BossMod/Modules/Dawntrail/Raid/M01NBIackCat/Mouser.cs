@@ -71,14 +71,15 @@ class Mouser(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var aoeCount = Math.Clamp(_aoes.Count, 0, NumCasts > 2 ? 2 : 3);
-        var aoeCount2 = Math.Clamp(_aoes.Count, 0, 4);
-        var totalAoeCount = Math.Min(_aoes.Count, aoeCount + aoeCount2);
+        var count = _aoes.Count;
+        var aoeCount = Math.Clamp(count, 0, NumCasts > 2 ? 2 : 3);
+        var aoeCount2 = Math.Clamp(count, 0, 4);
+        var totalAoeCount = Math.Min(count, aoeCount + aoeCount2);
         if (_aoes.Count >= totalAoeCount)
-            for (var i = aoeCount; i < totalAoeCount; i++)
+            for (var i = aoeCount; i < totalAoeCount; ++i)
                 yield return _aoes[i];
         if (_aoes.Count > 0)
-            for (var i = 0; i < aoeCount; i++)
+            for (var i = 0; i < aoeCount; ++i)
                 yield return _aoes[i] with { Color = Colors.Danger };
     }
 

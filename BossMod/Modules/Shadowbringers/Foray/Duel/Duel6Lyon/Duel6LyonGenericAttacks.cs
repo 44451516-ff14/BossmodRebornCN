@@ -51,7 +51,7 @@ class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(module)
     private void UpdateIncrement(Angle increment)
     {
         _increment = increment;
-        for (var i = 0; i < Sequences.Count; i++)
+        for (var i = 0; i < Sequences.Count; ++i)
         {
             var sequence = Sequences[i];
             sequence.Increment = _increment;
@@ -65,15 +65,14 @@ class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(module)
             UpdateIncrement(-30.Degrees());
         else if ((AID)spell.Action.ID == AID.HeavenAndEarthCCW)
             UpdateIncrement(30.Degrees());
-
-        if ((AID)spell.Action.ID == AID.HeavenAndEarthStart)
+        else if ((AID)spell.Action.ID == AID.HeavenAndEarthStart)
             Sequences.Add(new(_shape, caster.Position, spell.Rotation, _increment, Module.CastFinishAt(spell), 1.2f, 4));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if ((AID)spell.Action.ID == AID.HeavenAndEarthMove && Sequences.Count > 0)
-            AdvanceSequence(_index++ % Sequences.Count, WorldState.CurrentTime);
+            AdvanceSequence(++_index % Sequences.Count, WorldState.CurrentTime);
     }
 }
 

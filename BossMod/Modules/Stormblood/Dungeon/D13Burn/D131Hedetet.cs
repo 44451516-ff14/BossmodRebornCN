@@ -53,7 +53,8 @@ class ShardstrikeCrystals(BossModule module) : Components.GenericAOEs(module)
 class Hailfire(BossModule module) : Components.GenericAOEs(module)
 {
     private Actor? _target;
-    private const string hint = "Hide behind crystal!";
+    private const string Hint = "Hide behind crystal!";
+    private const float Length = 44.2f;
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -61,16 +62,14 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
         {
             var boss = Module.PrimaryActor;
             List<RectangleSE> rects = [];
-            var dir = 44.2f * boss.DirectionTo(_target);
-            foreach (var c in Module.Enemies(OID.DimCrystal).Where(x => !x.IsDead && x.Position.InRect(boss.Position, dir, 20)))
-                rects.Add(new(c.Position + 0.1f * boss.DirectionTo(_target), c.Position + dir, 1.6f));
-            if (rects.Count == 0)
-                foreach (var c in Module.Enemies(OID.DimCrystal).Where(x => !x.IsDead && !x.Position.InRect(boss.Position, dir, 20)))
-                    rects.Add(new(c.Position, c.Position - dir, 1.6f));
-            if (_target == actor)
-                yield return new(new AOEShapeCustom(rects, InvertForbiddenZone: true), Arena.Center, Color: Colors.SafeFromAOE);
-            else if (_target != actor)
-                yield return new(new AOEShapeCustom([new RectangleSE(boss.Position, boss.Position + dir, 2)], rects), Arena.Center);
+            foreach (var c in Module.Enemies(OID.DimCrystal).Where(x => !x.IsDead))
+            {
+                var dir = boss.DirectionTo(c);
+                rects.Add(new(c.Position + 0.1f * dir, c.Position + Length * dir, 1.6f));
+            }
+            yield return _target == actor
+                ? new(new AOEShapeCustom(rects, InvertForbiddenZone: true), Arena.Center, Color: Colors.SafeFromAOE)
+                : new(new AOEShapeCustom([new RectangleSE(boss.Position, boss.Position + Length * boss.DirectionTo(_target), 2)], rects), Arena.Center);
         }
     }
 
@@ -88,13 +87,12 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var activeSafespot = ActiveAOEs(slot, actor).ToList();
-        if (_target == actor && activeSafespot.Count != 0)
+        if (_target == actor)
         {
-            if (!activeSafespot.Any(c => c.Check(actor.Position)))
-                hints.Add(hint);
-            else if (activeSafespot.Any(c => c.Check(actor.Position)))
-                hints.Add(hint, false);
+            if (!ActiveAOEs(slot, actor).Any(c => c.Check(actor.Position)))
+                hints.Add(Hint);
+            else
+                hints.Add(Hint, false);
         }
         else
             base.AddHints(slot, actor, hints);

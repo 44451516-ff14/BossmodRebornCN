@@ -1,9 +1,9 @@
-namespace BossMod.Shadowbringers.Dungeon.D08AkademiaAnyder.D081Cladoselache;
+namespace BossMod.Shadowbringers.Dungeon.D08AkadaemiaAnyder.D081Cladoselache;
 
 public enum OID : uint
 {
-    Doliodus = 0x27AC, // R2.47
     Boss = 0x27AB, // R2.47
+    Doliodus = 0x27AC, // R2.47
     Voidzone = 0x1E909F,
     Helper = 0x233C
 }

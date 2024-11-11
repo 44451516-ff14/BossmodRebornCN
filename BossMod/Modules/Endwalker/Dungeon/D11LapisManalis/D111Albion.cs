@@ -127,7 +127,7 @@ class WildlifeCrossing(BossModule module) : Components.GenericAOEs(module)
     public override void Update()
     {
         var stampedeList = stampedes.ToList();
-        for (var i = 0; i < stampedeList.Count; i++)
+        for (var i = 0; i < stampedeList.Count; ++i)
         {
             var stampede = stampedeList[i];
             UpdateStampede(ref stampede);
@@ -161,7 +161,7 @@ class WildlifeCrossing(BossModule module) : Components.GenericAOEs(module)
         if ((AID)spell.Action.ID == AID.WildlifeCrossing)
         {
             var stampedeList = stampedes.ToList();
-            for (var i = 0; i < stampedeList.Count; i++)
+            for (var i = 0; i < stampedeList.Count; ++i)
             {
                 var stampede = stampedeList[i];
                 UpdateStampedeCount(ref stampede, caster.Position.Z);

@@ -7,6 +7,7 @@ public record struct Angle(float Rad)
     public const float RadToDeg = 180 / MathF.PI;
     public const float DegToRad = MathF.PI / 180;
     public const float HalfPi = MathF.PI / 2;
+    public const float DoublePI = 2 * MathF.PI;
     public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
     public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180.Degrees(), 89.999f.Degrees()];
 
@@ -15,7 +16,7 @@ public record struct Angle(float Rad)
     public static Angle FromDirection(WDir dir) => new(MathF.Atan2(dir.X, dir.Z));
     public readonly WDir ToDirection()
     {
-        var (sin, cos) = MathF.SinCos(Rad);
+        var (sin, cos) = ((float, float))Math.SinCos(Rad);
         return new(sin, cos);
     }
 
@@ -41,9 +42,9 @@ public record struct Angle(float Rad)
     {
         var r = Rad;
         while (r < -MathF.PI)
-            r += 2 * MathF.PI;
+            r += DoublePI;
         while (r > MathF.PI)
-            r -= 2 * MathF.PI;
+            r -= DoublePI;
         return new(r);
     }
 

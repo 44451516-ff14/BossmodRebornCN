@@ -8,6 +8,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 870, // Boss/4379->player, no cast, single-target
+
     CullingBlade = 39295, // Boss->self, 4.0s cast, range 80 circle
     PyreOfRebirth = 39288, // Boss->self, 4.0s cast, range 32 circle, status effect boiling, turns into pyretic
     FiresDomain = 39285, // Boss->players, 5.0s cast, width 6 rect charge
@@ -77,10 +78,11 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
             yield return _aoes[0] with { Color = Colors.Danger };
-        if (_aoes.Count > 1)
-            yield return _aoes[1] with { Risky = _aoes.Count == 2 };
+        if (count > 1)
+            yield return _aoes[1] with { Risky = _aoes[1].Shape != cone };
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

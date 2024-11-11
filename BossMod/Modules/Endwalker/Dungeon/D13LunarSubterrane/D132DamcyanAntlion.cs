@@ -142,8 +142,8 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
         var zStep = 10;
         byte index = 1;
 
-        for (var i = 0; i < 2; i++)
-            for (var j = 0; j < 4; j++)
+        for (var i = 0; i < 2; ++i)
+            for (var j = 0; j < 4; ++j)
                 _towerPositions[index++] = new(new(xPositions[i], zStart + j * zStep), angles[i]);
     }
 

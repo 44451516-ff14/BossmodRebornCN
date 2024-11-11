@@ -376,7 +376,7 @@ public class Earcut
 
         var len = holeIndices.Count;
 
-        for (var i = 0; i < len; i++)
+        for (var i = 0; i < len; ++i)
         {
             var start = holeIndices[i] * 2;
             var end = i < len - 1 ? holeIndices[i + 1] * 2 : data.Length;
@@ -392,7 +392,7 @@ public class Earcut
         queue.Sort(CompareX);
 
         // process holes from left to right
-        for (var i = 0; i < queue.Count; i++)
+        for (var i = 0; i < queue.Count; ++i)
         {
             EliminateHole(queue[i], outerNode);
             outerNode = FilterPoints(outerNode, outerNode.next);
@@ -541,12 +541,12 @@ public class Earcut
 
             while (p != null)
             {
-                numMerges++;
+                ++numMerges;
                 q = p;
                 pSize = 0;
-                for (i = 0; i < inSize; i++)
+                for (i = 0; i < inSize; ++i)
                 {
-                    pSize++;
+                    ++pSize;
                     q = q.nextZ;
                     if (q == null)
                     {
@@ -847,7 +847,7 @@ public class Earcut
         {
             var len = holeIndices.Length;
 
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
             {
                 var start = holeIndices[i] * 2;
                 var end = i < len - 1 ? holeIndices[i + 1] * 2 : data.Length;

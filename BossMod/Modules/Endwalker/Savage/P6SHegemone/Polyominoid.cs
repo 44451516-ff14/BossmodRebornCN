@@ -37,7 +37,7 @@ class Polyominoid(BossModule module) : Components.GenericAOEs(module, ActionID.M
 
         _dangerDirty = false;
         _dangerCells = new();
-        for (var i = 0; i < effStates.Length; i++)
+        for (var i = 0; i < effStates.Length; ++i)
         {
             switch (effStates[i])
             {
@@ -131,7 +131,7 @@ class Polyominoid(BossModule module) : Components.GenericAOEs(module, ActionID.M
     {
         var x = sq & 0x3;
         var z = sq & 0xC;
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 4; ++i)
             _dangerCells.Set(z + i);
         for (var i = 0; i < 4; ++i)
             _dangerCells.Set(x + i * 4);

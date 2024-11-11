@@ -35,7 +35,7 @@ class MalformedPrayer(BossModule module) : Components.GenericTowers(module)
     {
         if (Towers.Count == 0)
             return;
-        for (var i = 0; i < Towers.Count; i++)
+        for (var i = 0; i < Towers.Count; ++i)
             Towers[i] = new(Towers[i].Position, Towers[i].Radius, i > 0 ? 0 : 1, i > 0 ? 0 : 4, default, Towers[i].Activation);
     }
 }

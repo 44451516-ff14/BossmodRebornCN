@@ -40,9 +40,9 @@ namespace Clipper2Lib
       int g = isClosed ? pathLen - 1 : 0;
 
       int h = patLen - 1;
-      for (int i = delta; i < pathLen; i++)
+      for (int i = delta; i < pathLen; ++i)
       {
-        for (int j = 0; j < patLen; j++)
+        for (int j = 0; j < patLen; ++j)
         {
           Path64 quad = new Path64(4)
           {

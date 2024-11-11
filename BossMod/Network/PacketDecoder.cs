@@ -6,6 +6,10 @@ namespace BossMod.Network;
 public abstract unsafe class PacketDecoder
 {
     protected DateTime Now;
+    private const float Hundredth = 1e-2f;
+    private const float Thousandth = 1e-3f;
+    private const float TwoKD65k = 2000f / 65535;
+    private const float Inv65k = 1f / 65535;
 
     public class TextNode(string text)
     {
@@ -180,8 +184,8 @@ public abstract unsafe class PacketDecoder
         var details = category switch
         {
             ActorControlCategory.CancelCast => $"{Utils.LogMessageString(p1)}; action={new ActionID((ActionType)p2, p3)}, interrupted={p4 == 1}", // note: some successful boss casts have this message on completion
-            ActorControlCategory.RecastDetails => $"group {p1}: {p2 * 0.01f:f2}/{p3 * 0.01f:f2}s",
-            ActorControlCategory.Cooldown => $"group {p1}: action={new ActionID(ActionType.Spell, p2)}, time={p3 * 0.01f:f2}s",
+            ActorControlCategory.RecastDetails => $"group {p1}: {p2 * Hundredth:f2}/{p3 * Hundredth:f2}s",
+            ActorControlCategory.Cooldown => $"group {p1}: action={new ActionID(ActionType.Spell, p2)}, time={p3 * Hundredth:f2}s",
             ActorControlCategory.GainEffect => $"{Utils.StatusString(p1)}: extra={p2:X4}",
             ActorControlCategory.LoseEffect => $"{Utils.StatusString(p1)}: extra={p2:X4}, source={DecodeActor(p3)}, unk-update={p4 != 0}",
             ActorControlCategory.UpdateEffect => $"#{p1} {Utils.StatusString(p2)}: extra={p3:X4}",
@@ -199,13 +203,13 @@ public abstract unsafe class PacketDecoder
             ActorControlCategory.EObjAnimation => $"{p1:X4} {p2:X4}",
             ActorControlCategory.LimitBreakGauge => $"{p1} bars, {p2}/{p3}, uE={p4}, uF={p5}",
             ActorControlCategory.AchievementProgress => $"{p1} '{Service.LuminaRow<Lumina.Excel.GeneratedSheets.Achievement>(p1)?.Name}': {p2}/{p3}",
-            ActorControlCategory.ActionRejected => $"{Utils.LogMessageString(p1)}; action={new ActionID((ActionType)p2, p3)}, recast={p4 * 0.01f:f2}/{p5 * 0.01f:f2}, src-seq={p6}",
+            ActorControlCategory.ActionRejected => $"{Utils.LogMessageString(p1)}; action={new ActionID((ActionType)p2, p3)}, recast={p4 * Hundredth:f2}/{p5 * Hundredth:f2}, src-seq={p6}",
             ActorControlCategory.SetDutyActionSet => $"row={p1}",
             ActorControlCategory.SetDutyActionDetails => $"slot0: {new ActionID(ActionType.Spell, p1)} ({p5}/{p2} charges), slot1: {new ActionID(ActionType.Spell, p3)} ({p6}/{p4} charges)",
             ActorControlCategory.SetDutyActionPresent => $"value={p1}",
             ActorControlCategory.SetDutyActionActive => $"slot0={p1}, slot1={p2}",
             ActorControlCategory.SetDutyActionCharges => $"slot0={p1}, slot1={p2}",
-            ActorControlCategory.IncrementRecast => $"group {p1}: dt=dt={p2 * 0.01f:f2}s",
+            ActorControlCategory.IncrementRecast => $"group {p1}: dt=dt={p2 * Hundredth:f2}s",
             _ => ""
         };
         return new TextNode($"{category} {details} ({p1:X8} {p2:X8} {p3:X8} {p4:X8} {p5:X8} {p6:X8} {DecodeActor(targetID)})");
@@ -323,22 +327,22 @@ public abstract unsafe class PacketDecoder
     {
         var res = new TextNode($"pad={p->pad1:X2} {p->pad2:X4}");
         for (var i = 0; i < 8; ++i)
-            res.AddChild($"{(Waymark)i}: {(p->Mask & (1 << i)) != 0} at {Utils.Vec3String(new(p->PosX[i] * 0.001f, p->PosY[i] * 0.001f, p->PosZ[i] * 0.001f))}");
+            res.AddChild($"{(Waymark)i}: {(p->Mask & (1 << i)) != 0} at {Utils.Vec3String(new(p->PosX[i] * Thousandth, p->PosY[i] * Thousandth, p->PosZ[i] * Thousandth))}");
         return res;
     }
-    private TextNode DecodeWaymark(ServerIPC.Waymark* p) => new($"{p->ID}: {p->Active != 0} at {Utils.Vec3String(new(p->PosX * 0.001f, p->PosY * 0.001f, p->PosZ * 0.001f))}, pad={p->pad2:X4}");
+    private TextNode DecodeWaymark(ServerIPC.Waymark* p) => new($"{p->ID}: {p->Active != 0} at {Utils.Vec3String(new(p->PosX * Thousandth, p->PosY * Thousandth, p->PosZ * Thousandth))}, pad={p->pad2:X4}");
 
     public static Vector3 IntToFloatCoords(ushort x, ushort y, ushort z)
     {
-        var fx = x * (2000.0f / 65535) - 1000;
-        var fy = y * (2000.0f / 65535) - 1000;
-        var fz = z * (2000.0f / 65535) - 1000;
+        var fx = x * TwoKD65k - 1000;
+        var fy = y * TwoKD65k - 1000;
+        var fz = z * TwoKD65k - 1000;
         return new(fx, fy, fz);
     }
 
     public static Angle IntToFloatAngle(ushort rot)
     {
-        return (rot / 65535.0f * (2 * MathF.PI) - MathF.PI).Radians();
+        return (rot * Inv65k * Angle.DoublePI - MathF.PI).Radians();
     }
 }
 

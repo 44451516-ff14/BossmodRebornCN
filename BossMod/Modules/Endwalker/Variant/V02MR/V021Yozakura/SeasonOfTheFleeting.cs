@@ -9,12 +9,13 @@ class SeasonsOfTheFleeting(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
         {
-            var aoeCount = Math.Clamp(_aoes.Count, 0, 4);
-            for (var i = aoeCount; i < Math.Clamp(_aoes.Count, 0, 8); i++)
+            var aoeCount = Math.Clamp(count, 0, 4);
+            for (var i = aoeCount; i < Math.Clamp(count, 0, 8); ++i)
                 yield return _aoes[i];
-            for (var i = 0; i < aoeCount; i++)
+            for (var i = 0; i < aoeCount; ++i)
                 yield return _aoes[i] with { Color = Colors.Danger };
         }
     }

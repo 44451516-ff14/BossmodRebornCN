@@ -201,47 +201,16 @@ public sealed class Plugin : IDalamudPlugin
     {
         var defaultConfig = ColorConfig.DefaultConfig;
         var currentConfig = Service.Config.Get<ColorConfig>();
+        var properties = typeof(ColorConfig).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-        currentConfig.PlannerBackground = defaultConfig.PlannerBackground;
-        currentConfig.PlannerBackgroundHighlight = defaultConfig.PlannerBackgroundHighlight;
-        currentConfig.PlannerCooldown = defaultConfig.PlannerCooldown;
-        currentConfig.PlannerFallback = defaultConfig.PlannerFallback;
-        currentConfig.PlannerEffect = defaultConfig.PlannerEffect;
-        currentConfig.PlannerWindow = defaultConfig.PlannerWindow;
+        for (var i = 0; i < properties.Length; ++i)
+        {
+            var property = properties[i];
+            if (!property.CanWrite)
+                continue;
+            property.SetValue(currentConfig, property.GetValue(defaultConfig));
+        }
         currentConfig.ArenaBackground = defaultConfig.ArenaBackground;
-        currentConfig.ArenaBorder = defaultConfig.ArenaBorder;
-        currentConfig.ArenaAOE = defaultConfig.ArenaAOE;
-        currentConfig.ArenaSafeFromAOE = defaultConfig.ArenaSafeFromAOE;
-        currentConfig.ArenaDanger = defaultConfig.ArenaDanger;
-        currentConfig.ArenaSafe = defaultConfig.ArenaSafe;
-        currentConfig.ArenaTrap = defaultConfig.ArenaTrap;
-        currentConfig.ArenaPC = defaultConfig.ArenaPC;
-        currentConfig.ArenaEnemy = defaultConfig.ArenaEnemy;
-        currentConfig.ArenaObject = defaultConfig.ArenaObject;
-        currentConfig.ArenaPlayerInteresting = defaultConfig.ArenaPlayerInteresting;
-        currentConfig.ArenaPlayerGeneric = defaultConfig.ArenaPlayerGeneric;
-        currentConfig.ArenaVulnerable = defaultConfig.ArenaVulnerable;
-        currentConfig.ArenaFutureVulnerable = defaultConfig.ArenaFutureVulnerable;
-        currentConfig.ArenaMeleeRangeIndicator = defaultConfig.ArenaMeleeRangeIndicator;
-        currentConfig.ArenaOther = defaultConfig.ArenaOther;
-        currentConfig.Shadows = defaultConfig.Shadows;
-        currentConfig.WaymarkA = defaultConfig.WaymarkA;
-        currentConfig.WaymarkB = defaultConfig.WaymarkB;
-        currentConfig.WaymarkC = defaultConfig.WaymarkC;
-        currentConfig.WaymarkD = defaultConfig.WaymarkD;
-        currentConfig.Waymark1 = defaultConfig.Waymark1;
-        currentConfig.Waymark2 = defaultConfig.Waymark2;
-        currentConfig.Waymark3 = defaultConfig.Waymark3;
-        currentConfig.Waymark4 = defaultConfig.Waymark4;
-        currentConfig.ButtonPushColor = defaultConfig.ButtonPushColor;
-        currentConfig.TextColors = defaultConfig.TextColors;
-        currentConfig.PositionalColors = defaultConfig.PositionalColors;
-        currentConfig.ArenaPlayerGenericTank = defaultConfig.ArenaPlayerGenericTank;
-        currentConfig.ArenaPlayerGenericHealer = defaultConfig.ArenaPlayerGenericHealer;
-        currentConfig.ArenaPlayerGenericPhysRanged = defaultConfig.ArenaPlayerGenericPhysRanged;
-        currentConfig.ArenaPlayerGenericCaster = defaultConfig.ArenaPlayerGenericCaster;
-        currentConfig.ArenaPlayerGenericMelee = defaultConfig.ArenaPlayerGenericMelee;
-        currentConfig.ArenaPlayerGenericFocus = defaultConfig.ArenaPlayerGenericFocus;
         currentConfig.Modified.Fire();
         Service.Log("Colors have been reset to default values.");
     }
@@ -349,10 +318,10 @@ public sealed class Plugin : IDalamudPlugin
                 if (cmd.Length <= 2)
                     Service.Log("Specify an autorotation preset name.");
                 else
-                    ParseAutorotationSetCommand(cmd[2], false);
+                    ParseAutorotationSetCommand(cmd.Skip(1).ToArray(), false);
                 break;
             case "TOGGLE":
-                ParseAutorotationSetCommand(cmd.Length > 2 ? cmd[2] : "", true);
+                ParseAutorotationSetCommand(cmd.Length > 2 ? cmd.Skip(1).ToArray() : [""], true);
                 break;
             case "ui":
                 _wndRotation.SetVisible(!_wndRotation.IsOpen);
@@ -360,9 +329,25 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
-    private void ParseAutorotationSetCommand(string presetName, bool toggle)
+    private void ParseAutorotationSetCommand(string[] presetName, bool toggle)
     {
-        var preset = presetName.Length > 0 ? _rotation.Database.Presets.VisiblePresets.FirstOrDefault(p => p.Name == presetName) : RotationModuleManager.ForceDisable;
+        if (presetName.Length < 2)
+        {
+            Service.Log("No valid preset name provided.");
+            return;
+        }
+
+        var userInput = string.Join(" ", presetName.Skip(1)).Trim();
+        if (userInput == "null" || string.IsNullOrWhiteSpace(userInput))
+        {
+            _rotation.Preset = null;
+            Service.Log("Disabled AI autorotation preset.");
+            return;
+        }
+        var normalizedInput = userInput.ToUpperInvariant();
+        var preset = _rotation.Database.Presets.VisiblePresets
+            .FirstOrDefault(p => p.Name.Trim().Equals(normalizedInput, StringComparison.OrdinalIgnoreCase))
+            ?? RotationModuleManager.ForceDisable;
         if (preset != null)
         {
             var newPreset = toggle && _rotation.Preset == preset ? null : preset;

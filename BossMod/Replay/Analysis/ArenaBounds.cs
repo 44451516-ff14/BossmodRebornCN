@@ -72,7 +72,7 @@ class ArenaBounds
                 var center = CalculateCentroid(points);
                 var sb = new StringBuilder("private static readonly WPos[] vertices = [");
 
-                for (var i = 0; i < points.Count; i++)
+                for (var i = 0; i < points.Count; ++i)
                 {
                     if (i % 5 == 0 && i != 0)
                         sb.Append("\n  ");
@@ -87,7 +87,7 @@ class ArenaBounds
                 }
 
                 sb.Append("];");
-                sb.Append($"\n// Centroid of the polygon is at: ({center.X.ToString("F2", CultureInfo.InvariantCulture)}f, {center.Z.ToString("F2", CultureInfo.InvariantCulture)}f)");
+                sb.Append($"\n// Centroid of the polygon is at: ({center.X.ToString("F3", CultureInfo.InvariantCulture)}f, {center.Z.ToString("F3", CultureInfo.InvariantCulture)}f)");
                 ImGui.SetClipboardText(sb.ToString());
             });
         }
@@ -102,7 +102,7 @@ class ArenaBounds
         float sumX = 0, sumZ = 0;
         float area = 0;
 
-        for (var i = 0; i < points.Count; i++)
+        for (var i = 0; i < points.Count; ++i)
         {
             var current = points[i];
             var next = points[(i + 1) % points.Count];
@@ -133,8 +133,8 @@ public static class ConcaveHull
         return filteredPoints;
     }
 
-    private static Path64 ConvertToPath64(List<WPos> points, double scale) => new(points.Select(p => new Point64((long)(p.X * scale), (long)(p.Z * scale))).ToList());
-    private static List<WPos> ConvertToPoints(Path64 path, double scale) => path.Select(p => new WPos((float)(p.X / scale), (float)(p.Y / scale))).ToList();
+    private static Path64 ConvertToPath64(List<WPos> points) => new(points.Select(p => new Point64((long)(p.X * PolygonClipper.Scale), (long)(p.Z * PolygonClipper.Scale))).ToList());
+    private static List<WPos> ConvertToPoints(Path64 path) => path.Select(p => new WPos((float)(p.X * PolygonClipper.InvScale), (float)(p.Y * PolygonClipper.InvScale))).ToList();
 
     public static List<WPos> GenerateConcaveHull(List<WPos> points, float alpha, float epsilon)
     {
@@ -142,20 +142,19 @@ public static class ConcaveHull
             return new List<WPos>(points); // Not enough points to form a polygon
 
         points = FilterClosePoints(points, epsilon);
-        var scale = 100000.0;
-        var inputPath = ConvertToPath64(points, scale);
+        var inputPath = ConvertToPath64(points);
         var co = new ClipperOffset();
         co.AddPath(inputPath, JoinType.Miter, EndType.Polygon);
 
         Paths64 solution = [];
 
-        co.Execute(0.1 * scale, solution);
+        co.Execute(0.1 * PolygonClipper.Scale, solution);
 
         if (solution.Count == 0)
             return points;
 
         var mergedPolygon = MergePaths(solution);
-        var hull = ConvertToPoints(mergedPolygon, scale);
+        var hull = ConvertToPoints(mergedPolygon);
         hull = ApplyAlphaFilter(hull, alpha);
         hull = RemoveCollinearPoints(hull);
 
@@ -175,7 +174,7 @@ public static class ConcaveHull
     {
         List<WPos> filteredHull = [hull[0]];
 
-        for (var i = 1; i < hull.Count; i++)
+        for (var i = 1; i < hull.Count; ++i)
         {
             var currentPoint = hull[i];
             var lastAddedPoint = filteredHull.Last();
@@ -195,7 +194,7 @@ public static class ConcaveHull
             return points;
 
         List<WPos> filteredPoints = [];
-        for (var i = 0; i < points.Count; i++)
+        for (var i = 0; i < points.Count; ++i)
         {
             var prev = points[(i - 1 + count) % count];
             var curr = points[i];

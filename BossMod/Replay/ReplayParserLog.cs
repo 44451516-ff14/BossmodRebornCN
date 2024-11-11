@@ -656,7 +656,7 @@ public sealed class ReplayParserLog : IDisposable
     {
         var contents = new uint[ClientState.NumBlueMageSpells];
         var count = _input.ReadByte(false);
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; ++i)
             contents[i] = _input.ReadUInt(false);
         return new(contents);
     }
@@ -664,7 +664,7 @@ public sealed class ReplayParserLog : IDisposable
     private ClientState.OpClassJobLevelsChange ParseClientClassJobLevels()
     {
         var contents = new short[_input.ReadByte(false)];
-        for (int i = 0; i < contents.Length; i++)
+        for (var i = 0; i < contents.Length; ++i)
             contents[i] = _input.ReadShort();
         return new(contents);
     }

@@ -20,6 +20,7 @@ sealed class WorldStateGameSync : IDisposable
 {
     private const int ObjectTableSize = 629; // should match CS; note that different ranges are used for different purposes - consider splitting?..
     private const uint InvalidEntityId = 0xE0000000;
+    private const float Thousandth = 1e-3f;
 
     private readonly WorldState _ws;
     private readonly ActionManagerEx _amex;
@@ -164,7 +165,7 @@ sealed class WorldStateGameSync : IDisposable
 
         _playerEnmity.Clear();
         var uiState = UIState.Instance();
-        for (var i = 0; i < uiState->Hater.HaterCount; i++)
+        for (var i = 0; i < uiState->Hater.HaterCount; ++i)
             _playerEnmity.Add(uiState->Hater.Haters[i].EntityId);
 
         UpdateWaymarks();
@@ -178,7 +179,7 @@ sealed class WorldStateGameSync : IDisposable
         var wm = Waymark.A;
         foreach (ref var marker in MarkingController.Instance()->FieldMarkers)
         {
-            Vector3? pos = marker.Active ? new(marker.X / 1000.0f, marker.Y / 1000.0f, marker.Z / 1000.0f) : null;
+            Vector3? pos = marker.Active ? new(marker.X * Thousandth, marker.Y * Thousandth, marker.Z * Thousandth) : null;
             if (_ws.Waymarks[wm] != pos)
                 _ws.Execute(new WaymarkState.OpWaymarkChange(wm, pos));
             ++wm;

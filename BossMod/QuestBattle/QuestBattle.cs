@@ -644,7 +644,7 @@ public abstract class QuestBattle : ZoneModule
         ImGui.Separator();
         ImGui.Spacing();
 
-        for (var i = 0; i < Objectives.Count; i++)
+        for (var i = 0; i < Objectives.Count; ++i)
         {
             var n = Objectives[i];
             var highlight = i == CurrentObjectiveIndex;

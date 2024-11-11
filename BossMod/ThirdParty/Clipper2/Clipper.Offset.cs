@@ -68,8 +68,10 @@ namespace Clipper2Lib
       }
     }
 
-    private static readonly double Tolerance = 1.0E-12;
-
+    private const double Tolerance = 1.0E-12;
+    private const double DoublePI = 2 * Math.PI;
+    private const double InvDoublePI = 1 / DoublePI;
+  
     private readonly List<Group> _groupList = new List<Group>();
     private Path64 pathOut = new Path64();
     private readonly PathD _normals = new PathD();
@@ -481,10 +483,9 @@ namespace Clipper2Lib
           ArcTolerance :
           Math.Log10(2 + absDelta) * InternalClipper.defaultArcTolerance;
         double stepsPer360 = Math.PI / Math.Acos(1 - arcTol / absDelta);
-        _stepSin = Math.Sin((2 * Math.PI) / stepsPer360);
-        _stepCos = Math.Cos((2 * Math.PI) / stepsPer360);
+        (_stepSin, _stepCos) = Math.SinCos(DoublePI / stepsPer360);
         if (_groupDelta < 0.0) _stepSin = -_stepSin;
-        _stepsPerRad = stepsPer360 / (2 * Math.PI);
+          _stepsPerRad = stepsPer360 * InvDoublePI;
       }
 
       Point64 pt = path[j];
@@ -496,7 +497,7 @@ namespace Clipper2Lib
       pathOut.Add(new Point64(pt.X + offsetVec.x, pt.Y + offsetVec.y));
 #endif
       int steps = (int) Math.Ceiling(_stepsPerRad * Math.Abs(angle));
-      for (int i = 1; i < steps; i++) // ie 1 less than steps
+      for (int i = 1; i < steps; ++i) // ie 1 less than steps
       {
         offsetVec = new PointD(offsetVec.x * _stepCos - _stepSin * offsetVec.y,
             offsetVec.x * _stepSin + offsetVec.y * _stepCos);
@@ -516,7 +517,7 @@ namespace Clipper2Lib
       _normals.Clear();
       if (cnt == 0) return;
       _normals.EnsureCapacity(cnt);
-      for (int i = 0; i < cnt - 1; i++)
+      for (int i = 0; i < cnt - 1; ++i)
         _normals.Add(GetUnitNormal(path[i], path[i + 1]));
       _normals.Add(GetUnitNormal(path[cnt - 1], path[0]));
     }
@@ -586,7 +587,7 @@ namespace Clipper2Lib
     {
       pathOut = new Path64();
       int cnt = path.Count, prev = cnt - 1;
-      for (int i = 0; i < cnt; i++)
+      for (int i = 0; i < cnt; ++i)
         OffsetPoint(group, path, i, ref prev);
       _solution.Add(pathOut);
     }
@@ -626,11 +627,11 @@ namespace Clipper2Lib
         }
 
       // offset the left side going forward
-      for (int i = 1, k = 0; i < highI; i++)
+      for (int i = 1, k = 0; i < highI; ++i)
         OffsetPoint(group, path, i, ref k);
 
       // reverse normals ...
-      for (int i = highI; i > 0; i--)
+      for (int i = highI; i > 0; --i)
         _normals[i] = new PointD(-_normals[i - 1].x, -_normals[i - 1].y);
       _normals[0] = _normals[highI];
 
@@ -654,7 +655,7 @@ namespace Clipper2Lib
         }
 
       // offset the left side going back
-      for (int i = highI -1, k = highI; i > 0; i--)
+      for (int i = highI -1, k = highI; i > 0; --i)
         OffsetPoint(group, path, i, ref k);
 
       _solution.Add(pathOut);
@@ -688,10 +689,9 @@ namespace Clipper2Lib
           ArcTolerance :              
           Math.Log10(2 + absDelta) * InternalClipper.defaultArcTolerance; 
         double stepsPer360 = Math.PI / Math.Acos(1 - arcTol / absDelta);
-        _stepSin = Math.Sin((2 * Math.PI) / stepsPer360);
-        _stepCos = Math.Cos((2 * Math.PI) / stepsPer360);
+        (_stepSin, _stepCos) = Math.SinCos(DoublePI / stepsPer360);
         if (_groupDelta < 0.0) _stepSin = -_stepSin;
-        _stepsPerRad = stepsPer360 / (2 * Math.PI);
+          _stepsPerRad = stepsPer360 * InvDoublePI;
       }
 
       using List<Path64>.Enumerator pathIt = group.inPaths.GetEnumerator();
@@ -717,7 +717,7 @@ namespace Clipper2Lib
           if (group.endType == EndType.Round)
           {
             double r = absDelta;
-            int steps = (int) Math.Ceiling(_stepsPerRad * 2 * Math.PI);
+            int steps = (int) Math.Ceiling(_stepsPerRad * DoublePI);
             pathOut = Clipper.Ellipse(pt, r, r, steps);
 #if USINGZ
             pathOut = InternalClipper.SetZ(pathOut, pt.Z);

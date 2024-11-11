@@ -104,12 +104,26 @@ public class Map
     public void BlockPixelsInside(Func<WPos, float> shape, float maxG, float threshold)
     {
         MaxG = Math.Max(MaxG, maxG);
-        Parallel.For(0, Height, y =>
+        var pixels = Pixels;
+        var width = Width;
+        var height = Height;
+        var resolution = Resolution;
+        var rotation = Rotation;
+        var center = Center;
+
+        var dir = rotation.ToDirection();
+        var dx = dir.OrthoL() * resolution;
+        var dy = dir * resolution;
+        var startPos = center - (width * HalfPixel - HalfPixel) * dx - (height * HalfPixel - HalfPixel) * dy;
+
+        Parallel.For(0, height, y =>
         {
-            var rowPixels = Pixels.AsSpan(y * Width, Width);
-            for (var x = 0; x < Width; x++)
+            var rowPixels = pixels.AsSpan(y * width, width);
+            var posY = startPos + y * dy;
+            for (var x = 0; x < width; ++x)
             {
-                if (shape(GridToWorld(x, y, HalfPixel, HalfPixel)) <= threshold)
+                var pos = posY + x * dx;
+                if (shape(pos) <= threshold)
                 {
                     rowPixels[x].MaxG = Math.Min(rowPixels[x].MaxG, maxG);
                 }
@@ -121,19 +135,33 @@ public class Map
     public void BlockPixelsInsideConvex(Func<WPos, float> shape, float maxG, float threshold)
     {
         MaxG = Math.Max(MaxG, maxG);
+        var width = Width;
+        var height = Height;
+        var pixels = Pixels;
+        var resolution = Resolution;
+        var rotation = Rotation;
+        var center = Center;
         float[] offsets = [Epsilon, 1 - Epsilon];
 
-        Parallel.For(0, Height, y =>
+        var dir = rotation.ToDirection();
+        var dx = dir.OrthoL() * resolution;
+        var dy = dir * resolution;
+        var startPos = center - width * HalfPixel * dx - height * HalfPixel * dy;
+
+        Parallel.For(0, height, y =>
         {
-            var rowPixels = Pixels.AsSpan(y * Width, Width);
-            for (var x = 0; x < Width; x++)
+            var rowPixels = pixels.AsSpan(y * width, width);
+            var posY = startPos + y * dy;
+            for (var x = 0; x < width; ++x)
             {
+                var posBase = posY + x * dx;
                 var blocked = false;
-                for (var i = 0; i < 2; i++)
+                for (var i = 0; i < 2; ++i)
                 {
-                    for (var j = 0; j < 2; j++)
+                    for (var j = 0; j < 2; ++j)
                     {
-                        if (shape(GridToWorld(x, y, offsets[i], offsets[j])) <= threshold)
+                        var pos = posBase + offsets[i] * dx + offsets[j] * dy;
+                        if (shape(pos) <= threshold)
                         {
                             blocked = true;
                             break;
@@ -145,7 +173,8 @@ public class Map
 
                 if (blocked)
                 {
-                    rowPixels[x].MaxG = Math.Min(rowPixels[x].MaxG, maxG);
+                    ref var pixel = ref rowPixels[x];
+                    pixel.MaxG = Math.Min(pixel.MaxG, maxG);
                 }
             }
         });
@@ -165,7 +194,7 @@ public class Map
         Parallel.For(0, Height, y =>
         {
             var rowBaseIndex = y * Width;
-            for (var x = 0; x < Width; x++)
+            for (var x = 0; x < Width; ++x)
             {
                 var i = rowBaseIndex + x;
                 if (shape(GridToWorld(x, y, HalfPixel, HalfPixel)) <= threshold)
@@ -186,7 +215,7 @@ public class Map
     public IEnumerable<(int x, int y, int priority)> Goals()
     {
         var index = 0;
-        for (var y = 0; y < Height; y++)
+        for (var y = 0; y < Height; ++y)
         {
             for (var x = 0; x < Width; ++x)
             {

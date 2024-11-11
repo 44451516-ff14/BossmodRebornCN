@@ -127,7 +127,7 @@ class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
         if (CurrentBaits.Count == 0)
             return;
 
-        for (var i = 0; i < CurrentBaits.Count; i++)
+        for (var i = 0; i < CurrentBaits.Count; ++i)
         {
             var b = CurrentBaits[i];
             var activation = WorldState.FutureTime(9.7f);

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Endwalker.Quest.Endwalker;
+﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
 class Exaflare(BossModule module) : Components.Exaflare(module, 6)
 {

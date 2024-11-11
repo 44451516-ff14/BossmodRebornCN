@@ -90,34 +90,14 @@ class FeveredFlagellation(BossModule module) : Components.BaitAwayCast(module, A
 
 class WitchHunt(BossModule module) : Components.GenericBaitAway(module)
 {
-    private readonly AOEShapeRect rect = new(0, 5); //note: this can't be static or length won't be recalculated properly
+    private static readonly AOEShapeRect rect = new(default, 5);
     private bool witchHunt1done;
-
-    public override void Update()
-    {
-        foreach (ref var b in CurrentBaits.AsSpan())
-        {
-            if (b.Shape is AOEShapeRect shape)
-            {
-                var len = (b.Target.Position - b.Source.Position).Length();
-                if (shape.LengthFront != len)
-                    b.Shape = shape with { LengthFront = len };
-            }
-        }
-
-        if (CurrentBaits.Count > 0 && witchHunt1done) //updating WitchHunt2 target incase of sudden tank swap
-        {
-            var Target = CurrentBaits[0];
-            Target.Target = WorldState.Actors.Find(Module.PrimaryActor.TargetID)!;
-            CurrentBaits[0] = Target;
-        }
-    }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if ((AID)spell.Action.ID == AID.SanctifiedShock)
             CurrentBaits.Add(new(Module.PrimaryActor, WorldState.Actors.Find(spell.MainTargetID)!, rect));
-        if ((AID)spell.Action.ID == AID.WitchHunt2)
+        else if ((AID)spell.Action.ID == AID.WitchHunt2)
         {
             CurrentBaits.Clear();
             witchHunt1done = false;
@@ -131,6 +111,20 @@ class WitchHunt(BossModule module) : Components.GenericBaitAway(module)
             CurrentBaits.Clear();
             CurrentBaits.Add(new(Module.PrimaryActor, WorldState.Actors.Find(Module.PrimaryActor.TargetID)!, rect));
         }
+    }
+
+    public override void Update()
+    {
+        if (CurrentBaits.Count == 0)
+            return;
+        for (var i = 0; i < CurrentBaits.Count; ++i)
+        {
+            var b = CurrentBaits[i];
+            CurrentBaits[i] = b with { Shape = rect with { LengthFront = (b.Target.Position - b.Source.Position).Length() } };
+        }
+
+        if (witchHunt1done) //updating WitchHunt2 target incase of sudden tank swap
+            CurrentBaits[0] = CurrentBaits[0] with { Target = WorldState.Actors.Find(Module.PrimaryActor.TargetID)! };
     }
 }
 

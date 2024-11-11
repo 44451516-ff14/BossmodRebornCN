@@ -136,6 +136,6 @@ class P4UltimatePredation(BossModule module) : BossComponent(module)
     private float AngularDistance((Angle, Angle) p)
     {
         var dist = Math.Abs(p.Item1.Rad - p.Item2.Rad);
-        return dist < MathF.PI ? dist : 2 * MathF.PI - dist;
+        return dist < MathF.PI ? dist : Angle.DoublePI - dist;
     }
 }

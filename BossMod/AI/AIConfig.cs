@@ -47,6 +47,11 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("到目标的最大距离")]
     public float MaxDistanceToTarget = 2.6f;
 
+    [PropertyDisplay("启用自动离开(AFK)模式", tooltip: "如果处于非战斗状态，则启用自动离开模式。在离开状态下，AI将不会自动旋转或选择目标")]
+    public bool AutoAFK = false;
+
+    [PropertyDisplay("启用非战斗离开(AFK)模式", tooltip: "非战斗状态下等待指定秒数后启用离开模式。任何移动将重置计时器，或在离开模式已激活时禁用该模式")]
+    public float AFKModeTimer = 10;
 
     public string? AIAutorotPresetName;
 }

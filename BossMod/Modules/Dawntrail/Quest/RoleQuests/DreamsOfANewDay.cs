@@ -81,7 +81,7 @@ class Conviction(BossModule module) : Components.CastTowers(module, ActionID.Mak
             return;
 
         var stack = _stack.ActiveStacks.Any();
-        for (var i = 0; i < Towers.Count; i++)
+        for (var i = 0; i < Towers.Count; ++i)
             Towers[i] = new(Towers[i].Position, Towers[i].Radius, stack ? 0 : 1, stack ? 0 : 1, default, Towers[i].Activation);
     }
 }

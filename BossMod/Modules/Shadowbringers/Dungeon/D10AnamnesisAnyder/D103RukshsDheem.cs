@@ -85,7 +85,7 @@ class Wavebreaker(BossModule module) : Components.GenericAOEs(module)
             yield break;
         var count = _aoes.Count;
         if (Arena.Bounds == D103RukshsDheem.SplitBounds)
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 if (i == 0)
                     yield return _aoes[i] with { Color = Colors.Danger };
@@ -93,10 +93,10 @@ class Wavebreaker(BossModule module) : Components.GenericAOEs(module)
                     yield return _aoes[i];
             }
         else if (Arena.Bounds == D103RukshsDheem.DefaultBounds)
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
                 yield return _aoes[i];
         else
-            for (var i = 0; i < Math.Clamp(count, 0, 4); i++)
+            for (var i = 0; i < Math.Clamp(count, 0, 4); ++i)
             {
                 if (_aoes[i].Rotation == _aoes[0].Rotation)
                     if (i == 0)
@@ -155,8 +155,8 @@ class Drains(BossModule module) : Components.GenericAOEs(module)
         var zStep = 10;
         var index = 0;
 
-        for (var i = 0; i < 2; i++)
-            for (var j = 0; j < 4; j++)
+        for (var i = 0; i < 2; ++i)
+            for (var j = 0; j < 4; ++j)
                 drainPositions[index++] = new(xPositions[i], zStart + j * zStep);
     }
 

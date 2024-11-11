@@ -24,16 +24,19 @@ public enum AID : uint
 
     ScorchingLeft = 18275, // Boss->self, 5.0s cast, range 40 180-degree cone
     ScorchingRight = 18274, // Boss->self, 5.0s cast, range 40 180-degree cone
+
     BlackFlame = 18269, // Helper->players, no cast, range 6 circle
     OtherworldlyHeatVisual = 18267, // Boss->self, 5.0s cast, single-target
     OtherworldlyHeat = 18268, // Helper->self, 2.5s cast, range 10 width 4 cross
     CaptiveBolt = 18276, // Boss->player, 5.0s cast, single-target, tankbuster
     MortalFlameVisual = 18265, // Boss->self, 5.0s cast, single-target
     MortalFlame = 18266, // Helper->player, 5.5s cast, single-target
+
     FiresDomainVisual = 18270, // Boss->self, 8.0s cast, single-target
     FiresDomain1 = 18272, // Boss->player, no cast, width 4 rect charge
     FiresDomain2 = 18271, // Boss->player, no cast, width 4 rect charge
     FiresIre = 18273, // Boss->self, 2.0s cast, range 20 90-degree cone
+
     CullingBlade = 18277, // Boss->self, 6.0s cast, range 80 circle
     CullingBladeVisual = 18278, // Helper->self, no cast, range 80 circle
     Plummet = 18279 // Helper->self, 1.6s cast, range 3 circle
@@ -196,27 +199,18 @@ class FiresIre(BossModule module) : Components.SelfTargetedAOEs(module, ActionID
 class Plummet(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.Plummet), 3);
 class FiresDomainTether(BossModule module) : Components.StretchTetherDuo(module, default, default)
 {
+    private static readonly WDir offset = new(0, 24);
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (CurrentBaits.Any(x => x.Target == actor))
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center + new WDir(0, 24), Arena.Center + new WDir(0, -24), 24));
+            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center + offset, Arena.Center - offset, 24));
     }
 }
 
 class FiresDomain(BossModule module) : Components.GenericBaitAway(module)
 {
-    public override void Update()
-    {
-        foreach (ref var b in CurrentBaits.AsSpan())
-        {
-            if (b.Shape is AOEShapeRect shape)
-            {
-                var len = (b.Target.Position - b.Source.Position).Length();
-                if (shape.LengthFront != len)
-                    b.Shape = shape with { LengthFront = len };
-            }
-        }
-    }
+    private readonly AOEShapeRect rect = new(default, 2);
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -227,7 +221,16 @@ class FiresDomain(BossModule module) : Components.GenericBaitAway(module)
     public override void OnEventIcon(Actor actor, uint iconID)
     {
         if ((IconID)iconID is >= IconID.Target1 and <= IconID.Target4)
-            CurrentBaits.Add(new(Module.PrimaryActor, actor, new AOEShapeRect(0, 2)));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, rect));
+    }
+
+    public override void Update()
+    {
+        for (var i = 0; i < CurrentBaits.Count; ++i)
+        {
+            var b = CurrentBaits[i];
+            CurrentBaits[i] = b with { Shape = rect with { LengthFront = (b.Target.Position - b.Source.Position).Length() } };
+        }
     }
 }
 

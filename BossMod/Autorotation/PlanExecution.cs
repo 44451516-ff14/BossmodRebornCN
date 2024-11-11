@@ -40,7 +40,7 @@ public sealed class PlanExecution
         tree.ApplyTimings(plan?.PhaseDurations);
 
         StateData? nextPhaseStart = null;
-        for (var i = tree.Phases.Count - 1; i >= 0; i--)
+        for (var i = tree.Phases.Count - 1; i >= 0; --i)
             nextPhaseStart = ProcessState(tree, tree.Phases[i].StartingNode, null, nextPhaseStart);
         UpdateTransitions(Pull, nextPhaseStart);
 

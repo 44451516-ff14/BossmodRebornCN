@@ -791,7 +791,7 @@ namespace Clipper2Lib
       }
 
       _scanlineList.EnsureCapacity(_minimaList.Count);
-      for (int i = _minimaList.Count - 1; i >= 0; i--)
+      for (int i = _minimaList.Count - 1; i >= 0; --i)
         _scanlineList.Add(_minimaList[i].vertex.pt.Y);
 
       _currentBotY = 0;
@@ -1069,9 +1069,9 @@ namespace Clipper2Lib
         while (ae2 != ae)
         {
           if (GetPolyType(ae2!) == PathType.Clip)
-            cnt2++;
+            ++cnt2;
           else if (!IsOpen(ae2!))
-            cnt1++;
+            ++cnt1;
           ae2 = ae2!.nextInAEL;
         }
 
@@ -2027,7 +2027,7 @@ namespace Clipper2Lib
         if (!EdgesAdjacentInAEL(_intersectList[i]))
         {
           int j = i + 1;
-          while (!EdgesAdjacentInAEL(_intersectList[j])) j++;
+          while (!EdgesAdjacentInAEL(_intersectList[j])) ++j;
           // swap
           (_intersectList[j], _intersectList[i]) =
             (_intersectList[i], _intersectList[j]);
@@ -2550,16 +2550,16 @@ private void DoHorizontal(Active horz)
     private void ConvertHorzSegsToJoins()
     {
       int k = 0;
-      foreach (HorzSegment hs in _horzSegList)
-        if (UpdateHorzSegment(hs)) k++;
+      for (int i = 0; i < _horzSegList.Count; ++i)
+        if (UpdateHorzSegment(_horzSegList[i])) ++k;
       if (k < 2) return;
       _horzSegList.Sort(HorzSegSort);
 
-      for (int i = 0; i < k -1; i++)
+      for (int i = 0; i < k -1; ++i)
       {
         HorzSegment hs1 = _horzSegList[i];
         // for each HorzSegment, find others that overlap
-        for (int j = i + 1; j < k; j++)
+        for (int j = i + 1; j < k; ++j)
         {
           HorzSegment hs2 = _horzSegList[j];
           if ((hs2.leftOp!.pt.X >= hs1.rightOp!.pt.X) || 
@@ -3453,7 +3453,7 @@ private void DoHorizontal(Active horz)
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public bool MoveNext()
       {
-        position++;
+        ++position;
         return (position < _nodes.Count);
       }
 
@@ -3516,7 +3516,7 @@ private void DoHorizontal(Active horz)
       else
         result += string.Format("{0}+- polygon ({1}) contains {2} hole{3}.\n", padding, idx, _childs.Count, plural);
 
-      for (int i = 0; i < Count; i++)
+      for (int i = 0; i < Count; ++i)
         if (_childs[i].Count > 0)
           result += _childs[i].ToStringInternal(i, level +1);
       return result;
@@ -3528,7 +3528,7 @@ private void DoHorizontal(Active horz)
       string plural = "s";
       if (_childs.Count == 1) plural = "";
       string result = string.Format("Polytree with {0} polygon{1}.\n", _childs.Count, plural);
-      for (int i = 0; i < Count; i++)
+      for (int i = 0; i < Count; ++i)
         if (_childs[i].Count > 0)
           result += _childs[i].ToStringInternal(i, 1);
       return result + '\n';

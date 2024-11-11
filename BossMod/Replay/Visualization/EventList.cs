@@ -237,7 +237,7 @@ class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB, Replay
         if (ImGui.Button("Show timeline"))
             OpenTimeline(enc, new());
         ImGui.SameLine();
-        for (var i = 0; i < enc.PartyMembers.Count; i++)
+        for (var i = 0; i < enc.PartyMembers.Count; ++i)
         {
             var (p, c, l) = enc.PartyMembers[i];
             if (ImGui.Button($"{c}{l} {p.NameHistory.FirstOrDefault().Value.name}"))

@@ -131,14 +131,14 @@ class CeruleumTanks(BossModule module) : Components.GenericAOEs(module)
     {
         if ((OID)actor.OID == OID.CeruleumTank && _aoes.Count == 0)
         {
-            for (var i = 0; i < origins.Length; i++)
+            for (var i = 0; i < origins.Length; ++i)
             {
                 float activation;
                 if (_aoes.Count == 0)
                     activation = 8.8f;
                 else
                 {
-                    var set = (_aoes.Count + 1) / 2;
+                    var set = (_aoes.Count + 1) * 0.5f;
                     activation = 8.8f + 2.4f * set;
                 }
                 _aoes.Add(new(circle, origins[i], default, WorldState.FutureTime(activation)));
@@ -164,10 +164,13 @@ class Crosshatch(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
+        {
             yield return _aoes[0] with { Color = Colors.Danger };
-        for (var i = 1; i < _aoes.Count; ++i)
-            yield return _aoes[i];
+            for (var i = 1; i < count; ++i)
+                yield return _aoes[i];
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

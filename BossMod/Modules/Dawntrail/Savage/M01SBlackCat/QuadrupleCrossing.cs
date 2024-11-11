@@ -105,9 +105,9 @@ class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(module)
         if (ready)
         {
             var aoeCount = Math.Clamp(_aoes.Count, 0, 4);
-            for (var i = aoeCount; i < _aoes.Count; i++)
+            for (var i = aoeCount; i < _aoes.Count; ++i)
                 yield return _aoes[i];
-            for (var i = 0; i < aoeCount; i++)
+            for (var i = 0; i < aoeCount; ++i)
                 yield return _aoes[i] with { Color = Colors.Danger };
         }
     }

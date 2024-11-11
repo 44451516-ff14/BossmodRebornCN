@@ -295,7 +295,7 @@ public sealed class ClientState
         protected override void Exec(WorldState ws)
         {
             Array.Fill(ws.Client.ClassJobLevels, (short)0);
-            for (var i = 0; i < Values.Length; i++)
+            for (var i = 0; i < Values.Length; ++i)
                 ws.Client.ClassJobLevels[i] = Values[i];
             ws.Client.ClassJobLevelsChanged.Fire(this);
         }

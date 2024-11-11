@@ -220,25 +220,35 @@ class Doom(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
+        var count = _doomed.Count;
+        if (count == 0)
+            return;
         if (_doomed.Contains(actor) && !(actor.Role == Role.Healer || actor.Class == Class.BRD))
             hints.Add("You were doomed! Get cleansed fast.");
-        else if (_doomed.Contains(actor) && (actor.Role == Role.Healer || actor.Class == Class.BRD))
+        if (!(actor.Role == Role.Healer || actor.Class == Class.BRD))
+            return;
+        if (_doomed.Contains(actor))
             hints.Add("Cleanse yourself! (Doom).");
-        foreach (var c in _doomed)
-            if (!_doomed.Contains(actor) && (actor.Role == Role.Healer || actor.Class == Class.BRD))
-                hints.Add($"Cleanse {c.Name} (Doom)");
+        for (var i = 0; i < count; ++i)
+        {
+            var doom = _doomed[i];
+            if (!_doomed.Contains(actor))
+                hints.Add($"Cleanse {doom.Name} (Doom)");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        base.AddAIHints(slot, actor, assignment, hints);
-        foreach (var c in _doomed)
-        {
-            if (_doomed.Count > 0 && actor.Role == Role.Healer)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), c, ActionQueue.Priority.High);
-            else if (_doomed.Count > 0 && actor.Class == Class.BRD)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), c, ActionQueue.Priority.High);
-        }
+        var count = _doomed.Count;
+        if (count != 0)
+            for (var i = 0; i < count; ++i)
+            {
+                var doom = _doomed[i];
+                if (actor.Role == Role.Healer)
+                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), doom, ActionQueue.Priority.High);
+                else if (actor.Class == Class.BRD)
+                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), doom, ActionQueue.Priority.High);
+            }
     }
 }
 

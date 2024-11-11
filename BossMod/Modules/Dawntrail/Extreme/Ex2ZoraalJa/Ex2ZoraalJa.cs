@@ -19,8 +19,8 @@ public class Ex2ZoraalJa(WorldState ws, Actor primary) : Trial.T02ZoraalJa.Zoraa
     private static ArenaBoundsCustom BuildTwoPlatformsBounds(Angle orientation)
     {
         var dir = orientation.ToDirection();
-        var main = new PolygonClipper.Operand(CurveApprox.Rect(-15 * dir, dir, 10, 10));
-        var side = new PolygonClipper.Operand(CurveApprox.Rect(+15 * dir, dir, 10, 10));
+        var main = new PolygonClipper.Operand((ReadOnlySpan<WDir>)CurveApprox.Rect(-15 * dir, dir, 10, 10));
+        var side = new PolygonClipper.Operand((ReadOnlySpan<WDir>)CurveApprox.Rect(+15 * dir, dir, 10, 10));
         return new(20, DefaultBounds.Clipper.Union(main, side));
     }
 }

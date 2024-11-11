@@ -87,7 +87,7 @@ class AetherSprayWaterKB(BossModule module) : Components.KnockbackFromCastTarget
             {
                 ShapeDistance.InvertedCircle(Arena.Center, 7)
             };
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < 6; ++i)
                 if (Module.Enemies(OID.QueerBubble).Where(x => x.Position.AlmostEqual(WPos.RotateAroundOrigin(i * 60, Arena.Center, x.Position), 1) && Module.FindComponent<QueerBubble>()!._aoes.Contains(x)) != null)
                     forbidden.Add(ShapeDistance.Cone(Arena.Center, 20, i * 60.Degrees(), 10.Degrees()));
             if (forbidden.Count > 0)

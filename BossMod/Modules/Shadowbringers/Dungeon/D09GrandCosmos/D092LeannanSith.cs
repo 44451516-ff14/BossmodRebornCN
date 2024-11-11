@@ -95,7 +95,7 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
             var offset = 10 * knockbackDirection.ToDirection();
             var tileList = tiles.ToList();
             var newTiles = new List<Square>();
-            for (var i = 0; i < tileList.Count; i++)
+            for (var i = 0; i < tileList.Count; ++i)
                 tileList[i] = new(tileList[i].Center - offset, tileList[i].HalfSize);
             foreach (var t in tileList.Where(x => (caster.Position - x.Center).LengthSq() > 625))
                 newTiles.Add(new(t.Center + offset, t.HalfSize));

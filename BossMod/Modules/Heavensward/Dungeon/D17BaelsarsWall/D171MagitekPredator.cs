@@ -56,12 +56,12 @@ public class D171MagitekPredator(WorldState ws, Actor primary) : BossModule(ws, 
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var e in hints.PotentialTargets)
+        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
         {
+            var e = hints.PotentialTargets[i];
             e.Priority = (OID)e.Actor.OID switch
             {
-                OID.SkyArmorReinforcement => 2,
-                OID.Boss => 1,
+                OID.SkyArmorReinforcement => 1,
                 _ => 0
             };
         }

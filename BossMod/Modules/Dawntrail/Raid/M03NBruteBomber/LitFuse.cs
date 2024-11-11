@@ -10,11 +10,12 @@ public class LitFuse(BossModule module) : Components.GenericAOEs(module)
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var towers = Module.FindComponent<BarbarousBarrageTower>()!.Towers;
-        if (_aoes.Count > 3)
-            for (var i = 0; i < 4; i++)
+        var count = _aoes.Count;
+        if (count > 3)
+            for (var i = 0; i < 4; ++i)
                 yield return _aoes[i] with { Color = Colors.Danger, Risky = towers.Count == 0 };
-        if (_aoes.Count > 7)
-            for (var i = 4; i < 8; i++)
+        if (count > 7)
+            for (var i = 4; i < 8; ++i)
                 yield return _aoes[i] with { Risky = false };
     }
 
@@ -27,11 +28,13 @@ public class LitFuse(BossModule module) : Components.GenericAOEs(module)
     public override void Update()
     {
         var towers = Module.FindComponent<BarbarousBarrageTower>()!.Towers;
-        if (towers.Count > 0 && fusesOfFury && _aoes.Count == 8)
+        var count = _aoes.Count;
+        if (towers.Count > 0 && fusesOfFury && count == 8)
         {
             var updatedAOEs = new List<AOEInstance>();
-            foreach (var a in _aoes)
+            for (var i = 0; i < count; ++i)
             {
+                var a = _aoes[i];
                 var updatedAOE = new AOEInstance(a.Shape, a.Origin, default, a.Activation.AddSeconds(3));
                 updatedAOEs.Add(updatedAOE);
             }

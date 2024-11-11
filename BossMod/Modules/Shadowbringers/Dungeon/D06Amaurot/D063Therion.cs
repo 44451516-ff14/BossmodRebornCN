@@ -63,7 +63,7 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
     {
         if (state == 0x00040008)
         {
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < 8; ++i)
             {
                 if (actor.Position.AlmostEqual(positions[i], MaxError))
                 {
@@ -71,7 +71,7 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
                     {
                         if (unionRefresh.Count == 7)
                             difference.Add(shapes[8]);
-                        if (unionRefresh.Count == 5)
+                        else if (unionRefresh.Count == 5)
                             difference.Add(shapes[9]);
                         ArenaBoundsComplex arena = new([.. unionRefresh], [.. difference], Offset: PathfindingOffset);
                         Arena.Bounds = arena;
@@ -83,7 +83,7 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
         }
         if (state == 0x00100020)
         {
-            for (var i = 0; i < 8; i++)
+            for (var i = 0; i < 8; ++i)
             {
                 if (actor.Position.AlmostEqual(positions[i], MaxError))
                     BreakingPlatforms.Add(new(_square, positions[i], Color: Colors.FutureVulnerable));
@@ -179,21 +179,22 @@ class DeathlyRayThereion(BossModule module) : Components.GenericAOEs(module)
 class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect _rect = new(60, 3);
-    private readonly List<AOEInstance> _aoesFirst = [];
-    private readonly List<AOEInstance> _aoesRest = [];
+    private readonly List<AOEInstance> _aoesFirst = [], _aoesRest = [];
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        foreach (var a in _aoesFirst)
-            yield return a;
-        foreach (var a in _aoesRest)
-            yield return a with { Color = _aoesFirst.Count > 0 ? Colors.AOE : Colors.Danger, Risky = _aoesFirst.Count == 0 };
+        for (var i = 0; i < _aoesFirst.Count; ++i)
+            yield return _aoesFirst[i];
+        for (var i = 0; i < _aoesRest.Count; ++i)
+            yield return _aoesRest[i] with { Color = _aoesFirst.Count > 0 ? Colors.AOE : Colors.Danger, Risky = _aoesFirst.Count == 0 };
 
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.DeathlyRayFacesFirst && _aoesFirst.Count == 0 && _aoesRest.Count == 0)
+        var countFirst = _aoesFirst.Count;
+        var countRest = _aoesRest.Count;
+        if ((AID)spell.Action.ID == AID.DeathlyRayFacesFirst && countFirst == 0 && countRest == 0)
         {
             foreach (var c in Module.Enemies(OID.TheFaceOfTheBeast).Where(x => x.Rotation.AlmostEqual(caster.Rotation, Angle.DegToRad)))
                 _aoesFirst.Add(new(_rect, c.Position, c.Rotation, default, Colors.Danger));
@@ -203,12 +204,12 @@ class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
         if ((AID)spell.Action.ID is AID.DeathlyRayFacesFirst or AID.DeathlyRayFacesRest)
         {
             ++NumCasts;
-            if (NumCasts == 5 * _aoesFirst.Count)
+            if (NumCasts == 5 * countFirst)
             {
                 _aoesFirst.Clear();
                 NumCasts = 0;
             }
-            if (_aoesFirst.Count == 0 && NumCasts == 5 * _aoesRest.Count)
+            if (countFirst == 0 && NumCasts == 5 * countRest)
             {
                 _aoesRest.Clear();
                 NumCasts = 0;

@@ -86,7 +86,7 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
 
         if (Config.OpaqueArenaBackground)
         {
-            await GenerateBackgroundAsync().ConfigureAwait(false);
+            await GenerateBackgroundAsync().ConfigureAwait(true);
         }
     }
     private Task GenerateBackgroundAsync()
@@ -364,10 +364,10 @@ public sealed class MiniArena(BossModuleConfig config, WPos center, ArenaBounds 
         var sizeoffset = fontSetting - 17;
         var offS = RotatedCoords(new(0, offCenter + sizeoffset));
         var offE = RotatedCoords(new(offCenter + sizeoffset, 0));
-        TextScreen(ScreenCenter - offS, "N", Colors.Border, fontSetting);
-        TextScreen(ScreenCenter + offS, "S", Colors.Border, fontSetting);
-        TextScreen(ScreenCenter + offE, "E", Colors.Border, fontSetting);
-        TextScreen(ScreenCenter - offE, "W", Colors.Border, fontSetting);
+        TextScreen(ScreenCenter - offS, "N", Colors.CardinalN, fontSetting);
+        TextScreen(ScreenCenter + offS, "S", Colors.CardinalS, fontSetting);
+        TextScreen(ScreenCenter + offE, "E", Colors.CardinalE, fontSetting);
+        TextScreen(ScreenCenter - offE, "W", Colors.CardinalW, fontSetting);
     }
 
     public void ActorInsideBounds(WPos position, Angle rotation, uint color)

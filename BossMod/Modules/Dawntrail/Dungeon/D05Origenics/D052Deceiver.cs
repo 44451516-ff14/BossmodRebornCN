@@ -36,7 +36,7 @@ public enum AID : uint
     SurgeNPCs = 39736, // Helper->self, 8.5s cast, range 40 width 40 rect, knockback 15 dir left/right, only seems to apply to NPCs
     Surge = 36367, // Boss->location, 8.0s cast, range 40 width 40 rect, knockback 30 dir left/right
 
-    Electray = 38320, // Helper->player, 8.0s cast, range 5 circle
+    Electray = 38320 // Helper->player, 8.0s cast, range 5 circle
 }
 
 class ArenaChanges(BossModule module) : Components.GenericAOEs(module)

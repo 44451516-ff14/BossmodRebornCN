@@ -114,6 +114,10 @@ public enum AID : uint
     EnrageP3Warrior = 22794, // Warrior->self, 70.0s cast
     EnrageP3Soldier = 22795, // Soldier->self, 70.0s cast
     EnrageP3Gunner = 22796, // Gunner->self, 70.0s cast
+    EnrageP3WarriorRepeat = 23453, // Knight->self, no cast, range 60 circle
+    EnrageP3KnightRepeat = 23454, // Knight->self, no cast, range 60 circle
+    EnrageP3SoldierRepeat = 23455, // Soldier->self, no cast, range 60 circle
+    EnrageP3GunnerRepeat = 23456, // Gunner->self, no cast, range 60 circle
 }
 
 public enum SID : uint

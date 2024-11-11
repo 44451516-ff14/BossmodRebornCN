@@ -18,7 +18,7 @@ public enum AID : uint
     ElementalBlessing = 14472, // KanESenna->self, no cast, ???
     UnbreakableCermetBlade = 14470, // ScholaColossusRubricatus->self, 9.0s cast, range 30 circle
     GrandSword = 14967, // ScholaColossusRubricatus->self, 3.0s cast, range 15+R 120-degree cone
-    SelfDetonate = 14574, // ScholaColossusRubricatus->self, 35.0s cast, range 30 circle, enrage
+    SelfDetonate = 14574 // ScholaColossusRubricatus->self, 35.0s cast, range 30 circle, enrage
 }
 
 class MagitekMissile(BossModule module) : Components.LocationTargetedAOEs(module, ActionID.MakeSpell(AID.MagitekMissile), 15);

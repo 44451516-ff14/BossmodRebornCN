@@ -101,7 +101,7 @@ class CuttingWind(BossModule module) : Components.GenericAOEs(module)
             foreach (var pos in coords.Keys)
                 if (actor.Position.AlmostEqual(pos, 1))
                 {
-                    for (var i = 0; i < coords[pos].Length; i++)
+                    for (var i = 0; i < coords[pos].Length; ++i)
                         AddAOEs(coords[pos][i], delays[i]);
                     break;
                 }

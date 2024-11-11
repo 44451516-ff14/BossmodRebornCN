@@ -1,4 +1,4 @@
-﻿namespace BossMod.Endwalker.Quest.Endwalker;
+﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
 class SilveredEdge(BossModule module) : Components.GenericAOEs(module)
 {
@@ -6,21 +6,27 @@ class SilveredEdge(BossModule module) : Components.GenericAOEs(module)
     private bool active;
     private bool casting;
     private Angle _rotation;
+    private static readonly Angle a120 = 120.Degrees(), a240 = 240.Degrees();
     private static readonly AOEShapeRect rect = new(40, 3);
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (active && casting)
+        if (active)
         {
-            yield return new(rect, Module.PrimaryActor.Position, Angle.FromDirection(actor.Position - Module.PrimaryActor.Position), _activation);
-            yield return new(rect, Module.PrimaryActor.Position, Angle.FromDirection(actor.Position - Module.PrimaryActor.Position) + 120.Degrees(), _activation);
-            yield return new(rect, Module.PrimaryActor.Position, Angle.FromDirection(actor.Position - Module.PrimaryActor.Position) + 240.Degrees(), _activation);
-        }
-        if (active && !casting)
-        {
-            yield return new(rect, Module.PrimaryActor.Position, _rotation, _activation);
-            yield return new(rect, Module.PrimaryActor.Position, _rotation + 120.Degrees(), _activation);
-            yield return new(rect, Module.PrimaryActor.Position, _rotation + 240.Degrees(), _activation);
+            var pos = Module.PrimaryActor.Position;
+            if (casting)
+            {
+                var angle = Angle.FromDirection(actor.Position - pos);
+                yield return new(rect, pos, angle, _activation);
+                yield return new(rect, pos, angle + a120, _activation);
+                yield return new(rect, pos, angle + a240, _activation);
+            }
+            else
+            {
+                yield return new(rect, pos, _rotation, _activation);
+                yield return new(rect, pos, _rotation + a120, _activation);
+                yield return new(rect, pos, _rotation + a240, _activation);
+            }
         }
     }
 
@@ -47,8 +53,7 @@ class SilveredEdge(BossModule module) : Components.GenericAOEs(module)
     {
         if ((AID)spell.Action.ID == AID.SilveredEdgeVisual)
         {
-            ++NumCasts;
-            if (NumCasts == 3)
+            if (++NumCasts == 3)
             {
                 NumCasts = 0;
                 active = false;

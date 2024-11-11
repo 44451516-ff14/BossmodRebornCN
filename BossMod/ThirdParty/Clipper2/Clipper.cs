@@ -24,6 +24,10 @@ namespace Clipper2Lib
 
   public static class Clipper
   {
+    private const double DoublePI = 2 * Math.PI;
+    private const double Half = 0.5;
+    private const double Third = 1d / 3;
+  
     private static Rect64 invalidRect64 = new Rect64(false);
     public static Rect64 InvalidRect64 => invalidRect64;
 
@@ -255,7 +259,7 @@ namespace Clipper2Lib
         a += (double) (prevPt.Y + pt.Y) * (prevPt.X - pt.X);
         prevPt = pt;
       }
-      return a * 0.5;
+      return a * Half;
     }
 
     public static double Area(Paths64 paths)
@@ -277,7 +281,7 @@ namespace Clipper2Lib
         a += (prevPt.y + pt.y) * (prevPt.x - pt.x);
         prevPt = pt;
       }
-      return a * 0.5;
+      return a * Half;
     }
 
     public static double Area(PathsD paths)
@@ -608,27 +612,27 @@ namespace Clipper2Lib
 
     public static Path64 MakePath(int[] arr)
     {
-      int len = arr.Length / 2;
+      int len = (int)(arr.Length * Half);
       Path64 p = new Path64(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         p.Add(new Point64(arr[i * 2], arr[i * 2 + 1]));
       return p;
     }
 
     public static Path64 MakePath(long[] arr)
     {
-      int len = arr.Length / 2;
+      int len = (int)(arr.Length * Half);
       Path64 p = new Path64(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         p.Add(new Point64(arr[i * 2], arr[i * 2 + 1]));
       return p;
     }
 
     public static PathD MakePath(double[] arr)
     {
-      int len = arr.Length / 2;
+      int len = (int)(arr.Length * Half);
       PathD p = new PathD(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         p.Add(new PointD(arr[i * 2], arr[i * 2 + 1]));
       return p;
     }
@@ -636,17 +640,17 @@ namespace Clipper2Lib
 #if USINGZ
     public static Path64 MakePathZ(long[] arr)
     {
-      int len = arr.Length / 3;
+      int len = (int)(arr.Length * Third);
       Path64 p = new Path64(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         p.Add(new Point64(arr[i * 3], arr[i * 3 + 1], arr[i * 3 + 2]));
       return p;
     }
     public static PathD MakePathZ(double[] arr)
     {
-      int len = arr.Length / 3;
+      int len = (int)(arr.Length * Third);
       PathD p = new PathD(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         p.Add(new PointD(arr[i * 3], arr[i * 3 + 1], (long)arr[i * 3 + 2]));
       return p;
     }
@@ -674,13 +678,13 @@ namespace Clipper2Lib
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Point64 MidPoint(Point64 pt1, Point64 pt2)
     {
-      return new Point64((pt1.X + pt2.X) / 2, (pt1.Y + pt2.Y) / 2);
+      return new Point64((pt1.X + pt2.X) * Half, (pt1.Y + pt2.Y) * Half);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PointD MidPoint(PointD pt1, PointD pt2)
     {
-      return new PointD((pt1.x + pt2.x) / 2, (pt1.y + pt2.y) / 2);
+      return new PointD((pt1.x + pt2.x) * Half, (pt1.y + pt2.y) * Half);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -715,7 +719,7 @@ namespace Clipper2Lib
       if (cnt == 0) return result;
       PointD lastPt = path[0];
       result.Add(lastPt);
-      for (int i = 1; i < cnt; i++)
+      for (int i = 1; i < cnt; ++i)
         if (!PointsNearEqual(lastPt, path[i], minEdgeLenSqrd))
         {
           lastPt = path[i];
@@ -737,7 +741,7 @@ namespace Clipper2Lib
       if (cnt == 0) return result;
       Point64 lastPt = path[0];
       result.Add(lastPt);
-      for (int i = 1; i < cnt; i++)
+      for (int i = 1; i < cnt; ++i)
         if (lastPt != path[i])
         {
           lastPt = path[i];
@@ -753,7 +757,7 @@ namespace Clipper2Lib
     {
       if (polyPath.Polygon!.Count > 0)
         paths.Add(polyPath.Polygon);
-      for (int i = 0; i < polyPath.Count; i++)
+      for (int i = 0; i < polyPath.Count; ++i)
         AddPolyNodeToPaths((PolyPath64) polyPath._childs[i], paths);
     }
 
@@ -761,7 +765,7 @@ namespace Clipper2Lib
     public static Paths64 PolyTreeToPaths64(PolyTree64 polyTree)
     {
       Paths64 result = new Paths64();
-      for (int i = 0; i < polyTree.Count; i++)
+      for (int i = 0; i < polyTree.Count; ++i)
         AddPolyNodeToPaths((PolyPath64) polyTree._childs[i], result);
       return result;
     }
@@ -771,7 +775,7 @@ namespace Clipper2Lib
     {
       if (polyPath.Polygon!.Count > 0)
         paths.Add(polyPath.Polygon);
-      for (int i = 0; i < polyPath.Count; i++)
+      for (int i = 0; i < polyPath.Count; ++i)
         AddPolyNodeToPathsD((PolyPathD) polyPath._childs[i], paths);
     }
 
@@ -972,7 +976,7 @@ namespace Clipper2Lib
           dsq[prev] = PerpendicDistFromLineSqrd(path[prev], path[prior2], path[curr]);
       }
       Path64 result = new Path64(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         if (!flags[i]) result.Add(path[i]);
       return result;
     }
@@ -1044,7 +1048,7 @@ namespace Clipper2Lib
           dsq[prev] = PerpendicDistFromLineSqrd(path[prev], path[prior2], path[curr]);
       }
       PathD result = new PathD(len);
-      for (int i = 0; i < len; i++)
+      for (int i = 0; i < len; ++i)
         if (!flags[i]) result.Add(path[i]);
       return result;
     }
@@ -1065,8 +1069,8 @@ namespace Clipper2Lib
       if (!isOpen)
       {
         while (i < len - 1 && 
-          InternalClipper.IsCollinear(path[len - 1], path[i], path[i + 1])) i++;
-        while (i < len - 1 && InternalClipper.IsCollinear(path[len - 2], path[len - 1], path[i])) len--;
+          InternalClipper.IsCollinear(path[len - 1], path[i], path[i + 1])) ++i;
+        while (i < len - 1 && InternalClipper.IsCollinear(path[len - 2], path[len - 1], path[i])) --len;
       }
 
       if (len - i < 3)
@@ -1079,7 +1083,7 @@ namespace Clipper2Lib
       Path64 result = new Path64(len - i);
       Point64 last = path[i];
       result.Add(last);
-      for (i++; i < len - 1; i++)
+      for (++i; i < len - 1; ++i)
       {
         if (InternalClipper.IsCollinear(last, path[i], path[i + 1])) continue;
         last = path[i];
@@ -1133,10 +1137,9 @@ namespace Clipper2Lib
       if (radiusX <= 0) return new Path64();
       if (radiusY <= 0) radiusY = radiusX;
       if (steps <= 2)
-        steps = (int) Math.Ceiling(Math.PI * Math.Sqrt((radiusX + radiusY) / 2));
+        steps = (int) Math.Ceiling(Math.PI * Math.Sqrt((radiusX + radiusY) * Half));
 
-      double si = Math.Sin(2 * Math.PI / steps);
-      double co = Math.Cos(2 * Math.PI / steps);
+      var (si, co) = Math.SinCos(DoublePI / steps);
       double dx = co, dy = si;
       Path64 result = new Path64(steps) { new Point64(center.X + radiusX, center.Y) };
       for (int i = 1; i < steps; ++i)
@@ -1155,10 +1158,9 @@ namespace Clipper2Lib
       if (radiusX <= 0) return new PathD();
       if (radiusY <= 0) radiusY = radiusX;
       if (steps <= 2)
-        steps = (int) Math.Ceiling(Math.PI * Math.Sqrt((radiusX + radiusY) / 2));
+        steps = (int) Math.Ceiling(Math.PI * Math.Sqrt((radiusX + radiusY) * Half));
 
-      double si = Math.Sin(2 * Math.PI / steps);
-      double co = Math.Cos(2 * Math.PI / steps);
+      var (si, co) = Math.SinCos(DoublePI / steps);
       double dx = co, dy = si;
       PathD result = new PathD(steps) { new PointD(center.x + radiusX, center.y) };
       for (int i = 1; i < steps; ++i)

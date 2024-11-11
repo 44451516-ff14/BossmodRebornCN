@@ -1,4 +1,4 @@
-namespace BossMod.Shadowbringers.Dungeon.D08AkademiaAnyder.D083Quetzalcoatl;
+namespace BossMod.Shadowbringers.Dungeon.D08AkadaemiaAnyder.D083Quetzalcoatl;
 
 public enum OID : uint
 {

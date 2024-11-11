@@ -115,7 +115,7 @@ public class TrackPartyHealth(WorldState World)
         foreach (var caster in World.Party.WithoutSlot(excludeAlliance: true).Where(a => a.CastInfo?.IsSpell(BossMod.WHM.AID.Esuna) ?? false))
             esunas.Set(World.Party.FindSlot(caster.CastInfo!.TargetID));
 
-        for (var i = 0; i < PartyState.MaxAllies; i++)
+        for (var i = 0; i < PartyState.MaxAllies; ++i)
         {
             var actor = World.Party[i];
             ref var state = ref PartyMemberStates[i];

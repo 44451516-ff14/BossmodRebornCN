@@ -1,4 +1,4 @@
-namespace BossMod.Shadowbringers.Dungeon.D08AkademiaAnyder.D082MorbolMarquis;
+namespace BossMod.Shadowbringers.Dungeon.D08AkadaemiaAnyder.D082MorbolMarquis;
 
 public enum OID : uint
 {
@@ -133,15 +133,15 @@ class D082MorbolMarquisStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 661, NameID = 8272)]
 public class D082MorbolMarquis(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    private const int X = -224, InnerRadius = 10, OuterRadius = 15, Radius = 25, Vertices = 12;
+    private const int X = -224, InnerRadius = 10, OuterRadius = 15, Radius = 25, Edges = 12;
     private static readonly WPos ArenaCenter = new(X, -38);
     public static readonly Angle A45 = 45.Degrees(), a135 = 135.Degrees();
     private static readonly Polygon[] defaultCircle = [new(ArenaCenter, 24.5f / MathF.Cos(MathF.PI / 48), 48)];
     private static readonly Rectangle[] defaultDifference = [new(new(X, -13), Radius, 1.1f), new(new(X, -63), Radius, 1.1f)];
-    private static readonly Shape[] blueBlossom = [new ConeV(ArenaCenter, InnerRadius, A45, A45, Vertices), new ConeV(ArenaCenter, InnerRadius, -a135, A45, Vertices),
-    new DonutSegmentV(ArenaCenter, OuterRadius, Radius, A45, A45, Vertices), new DonutSegmentV(ArenaCenter, OuterRadius, Radius, -a135, A45, Vertices)];
-    private static readonly Shape[] yellowBlossom = [new ConeV(ArenaCenter, InnerRadius, -A45, A45, Vertices), new ConeV(ArenaCenter, InnerRadius, a135, A45, Vertices),
-    new DonutSegmentV(ArenaCenter, OuterRadius, Radius, -A45, A45, Vertices), new DonutSegmentV(ArenaCenter, OuterRadius, Radius, a135, A45, Vertices)];
+    private static readonly Shape[] blueBlossom = [new ConeV(ArenaCenter, InnerRadius, A45, A45, Edges), new ConeV(ArenaCenter, InnerRadius, -a135, A45, Edges),
+    new DonutSegmentV(ArenaCenter, OuterRadius, Radius, A45, A45, Edges), new DonutSegmentV(ArenaCenter, OuterRadius, Radius, -a135, A45, Edges)];
+    private static readonly Shape[] yellowBlossom = [new ConeV(ArenaCenter, InnerRadius, -A45, A45, Edges), new ConeV(ArenaCenter, InnerRadius, a135, A45, Edges),
+    new DonutSegmentV(ArenaCenter, OuterRadius, Radius, -A45, A45, Edges), new DonutSegmentV(ArenaCenter, OuterRadius, Radius, a135, A45, Edges)];
     public static readonly ArenaBoundsComplex DefaultBounds = new(defaultCircle, defaultDifference);
     public static readonly ArenaBoundsComplex BlueBlossomBounds = new(defaultCircle, [.. defaultDifference, .. blueBlossom]);
     public static readonly ArenaBoundsComplex YellowBlossomBounds = new(defaultCircle, [.. defaultDifference, .. yellowBlossom]);

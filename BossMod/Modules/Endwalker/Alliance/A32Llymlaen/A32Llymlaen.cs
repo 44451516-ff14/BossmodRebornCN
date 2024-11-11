@@ -20,7 +20,7 @@ public class A32Llymlaen(WorldState ws, Actor primary) : BossModule(ws, primary,
 
     public static ArenaBoundsCustom BuildCorridorBounds(float dx)
     {
-        var corridor = new PolygonClipper.Operand(CurveApprox.Rect(DefaultBounds.Orientation, CorridorHalfLength, 10));
+        var corridor = new PolygonClipper.Operand((ReadOnlySpan<WDir>)CurveApprox.Rect(DefaultBounds.Orientation, CorridorHalfLength, 10));
         var standard = new PolygonClipper.Operand(CurveApprox.Rect(DefaultBounds.Orientation, DefaultBounds.HalfWidth, DefaultBounds.HalfHeight).Select(o => new WDir(o.X - dx * CorridorHalfLength, o.Z)));
         return new(CorridorHalfLength, DefaultBounds.Clipper.Union(corridor, standard));
     }

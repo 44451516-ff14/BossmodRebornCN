@@ -36,8 +36,7 @@ class HereticsForkBreakingWheelStreak(BossModule module) : Components.GenericAOE
 {
     private static readonly AOEShapeDonut donut = new(5, 60);
     private static readonly AOEShapeCross cross = new(60, 5);
-    private readonly List<AOEInstance> _spell1 = [];
-    private readonly List<AOEInstance> _spell2 = [];
+    private readonly List<AOEInstance> _spell1 = [], _spell2 = [];
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

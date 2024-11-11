@@ -40,7 +40,7 @@ class PerfectContrition(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if ((OID)actor.OID == OID.Brightsphere)
-            _aoes.Add(new AOEInstance(donut, actor.Position, default, WorldState.FutureTime(10.6f)));
+            _aoes.Add(new(donut, actor.Position, default, WorldState.FutureTime(10.6f)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

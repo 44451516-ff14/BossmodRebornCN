@@ -8,6 +8,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 39517, // Boss->player, no cast, single-target
+
     Aethermodynamics1 = 39840, // Boss->self, 5.0s cast, range 40 circle
     Aethermodynamics2 = 39512, // Boss->self, 5.0s cast, range 40 circle
     Aethermodynamics3 = 39511, // Boss->self, 5.0s cast, range 40 circle
@@ -131,9 +132,10 @@ class SoullessStreamFireBlizzardCombo(BossModule module) : Components.GenericAOE
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.Count > 0)
+        var count = _aoes.Count;
+        if (count > 0)
             yield return _aoes[0] with { Color = Colors.Danger };
-        if (_aoes.Count > 1)
+        if (count > 1)
             yield return _aoes[1];
     }
 

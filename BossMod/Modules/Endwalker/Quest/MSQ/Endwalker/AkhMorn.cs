@@ -1,13 +1,13 @@
-﻿namespace BossMod.Endwalker.Quest.Endwalker;
+﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
-class AetherialRay(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+class AkhMorn(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private DateTime _activation;
 
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (_activation != default)
-            hints.Add("Tankbuster 5x");
+            hints.Add($"Tankbuster x{NumExpectedCasts()}");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -18,22 +18,25 @@ class AetherialRay(BossModule module) : Components.GenericBaitAway(module, cente
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AetherialRay)
+        if ((AID)spell.Action.ID == AID.AkhMorn)
+        {
+            CurrentBaits.Add(new(Module.PrimaryActor, Raid.Player()!, new AOEShapeCircle(4)));
             _activation = Module.CastFinishAt(spell);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AetherialRay)
+        if ((AID)spell.Action.ID == AID.AkhMorn)
             ++NumCasts;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.AetherialRayVisual)
+        if ((AID)spell.Action.ID == AID.AkhMornVisual)
         {
             ++NumCasts;
-            if (NumCasts == 5)
+            if (NumCasts == NumExpectedCasts())
             {
                 CurrentBaits.Clear();
                 NumCasts = 0;
@@ -41,4 +44,6 @@ class AetherialRay(BossModule module) : Components.GenericBaitAway(module, cente
             }
         }
     }
+
+    private int NumExpectedCasts() => Module.PrimaryActor.IsDead ? 8 : 6;
 }

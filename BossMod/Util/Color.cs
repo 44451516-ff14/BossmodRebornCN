@@ -71,6 +71,10 @@ public static class Colors
     public static uint Other5 => _config.ArenaOther[4].ABGR;
     public static uint Other6 => _config.ArenaOther[5].ABGR;
     public static uint Shadows => _config.Shadows.ABGR;
+    public static uint CardinalN => _config.CardinalN.ABGR;
+    public static uint CardinalE => _config.CardinalE.ABGR;
+    public static uint CardinalS => _config.CardinalS.ABGR;
+    public static uint CardinalW => _config.CardinalW.ABGR;
     public static uint WaymarkA => _config.WaymarkA.ABGR;
     public static uint WaymarkB => _config.WaymarkB.ABGR;
     public static uint WaymarkC => _config.WaymarkC.ABGR;

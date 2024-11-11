@@ -15,12 +15,13 @@ class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
 
     public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (AOEs.Count > 0)
+        var count = AOEs.Count;
+        if (count > 0)
         {
-            var aoeCount = Math.Clamp(AOEs.Count, 0, 2);
-            for (var i = aoeCount; i < AOEs.Count; i++)
+            var aoeCount = Math.Clamp(count, 0, 2);
+            for (var i = aoeCount; i < count; ++i)
                 yield return AOEs[i];
-            for (var i = 0; i < aoeCount; i++)
+            for (var i = 0; i < aoeCount; ++i)
                 yield return AOEs[i] with { Color = Colors.Danger };
         }
     }
@@ -34,11 +35,16 @@ class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
         }
         else if (circleTelegraphs.Contains((AID)spell.Action.ID))
             AOEs.Add(new(circle, caster.Position, default, Module.CastFinishAt(spell)));
-        if (AOEs.Count == 12 && !sorted)
+        var count = AOEs.Count;
+        if (count == 12 && !sorted)
         {
             AOEs.SortBy(x => x.Activation);
-            for (var i = 0; i < AOEs.Count; i++)
-                AOEs[i] = new(AOEs[i].Shape, AOEs[i].Origin, AOEs[i].Rotation, WorldState.FutureTime(13.5f + i * 0.5f));
+            for (var i = 0; i < count; ++i)
+            {
+                var aoe = AOEs[i];
+                aoe.Activation = WorldState.FutureTime(13.5f + i * 0.5f);
+                AOEs[i] = aoe;
+            }
             sorted = true;
         }
     }

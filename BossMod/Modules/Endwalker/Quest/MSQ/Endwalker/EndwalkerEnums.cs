@@ -1,4 +1,4 @@
-﻿namespace BossMod.Endwalker.Quest.Endwalker;
+﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
 public enum OID : uint
 {
@@ -12,6 +12,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttackBoss = 27767, // ZenosP1/ZenosP2->player, no cast, single-target
+
     TidalWave = 26917, // ZenosP1->self, 10.0s cast, single-target
     TidalWaveVisual = 26918, // Helpers->self, 10.0s cast, range 60 width 60 rect
     Megaflare = 26919, // Helpers->location, 7.5s cast, range 6 circle

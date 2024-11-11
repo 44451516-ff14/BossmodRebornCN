@@ -25,12 +25,12 @@ public class ArcList(WPos center, float radius)
         var min = center - halfWidth;
         if (min.Rad < -MathF.PI)
         {
-            Forbidden.Add(min.Rad + 2 * MathF.PI, MathF.PI);
+            Forbidden.Add(min.Rad + Angle.DoublePI, MathF.PI);
         }
         var max = center + halfWidth;
         if (max.Rad > MathF.PI)
         {
-            Forbidden.Add(-MathF.PI, max.Rad - 2 * MathF.PI);
+            Forbidden.Add(-MathF.PI, max.Rad - Angle.DoublePI);
             max = MathF.PI.Radians();
         }
         Forbidden.Add(min.Rad, max.Rad);
@@ -99,7 +99,7 @@ public class ArcList(WPos center, float radius)
         if (Forbidden.Segments[0].Min > -MathF.PI)
             yield return (last.Max.Radians() - 360.Degrees(), Forbidden.Segments[0].Min.Radians());
 
-        for (var i = 1; i < Forbidden.Segments.Count; i++)
+        for (var i = 1; i < Forbidden.Segments.Count; ++i)
             yield return (Forbidden.Segments[i - 1].Max.Radians(), Forbidden.Segments[i].Min.Radians());
 
         if (last.Max < MathF.PI)

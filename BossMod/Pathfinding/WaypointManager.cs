@@ -19,10 +19,10 @@ public class WaypointManager
 
     public void AddWaypointsWithRandomization(WPos[] waypointsList, float radius, int numRandomWaypoints)
     {
-        for (var i = 0; i < waypointsList.Length - 1; i++)
+        for (var i = 0; i < waypointsList.Length - 1; ++i)
         {
             AddWaypoint(waypointsList[i]);
-            for (var j = 0; j < numRandomWaypoints; j++)
+            for (var j = 0; j < numRandomWaypoints; ++j)
                 AddWaypoint(GenerateRandomPointNearWaypoint(waypointsList[i + 1], radius));
         }
         AddWaypoint(waypointsList[^1]);
@@ -59,11 +59,12 @@ public class WaypointManager
     public static WPos GenerateRandomPointNearWaypoint(WPos waypoint, float radius)
     {
         using var rng = RandomNumberGenerator.Create();
-        var angle = GetRandomFloat(rng) * 2 * Math.PI;
+        var angle = GetRandomFloat(rng) * Angle.DoublePI;
         var distance = GetRandomFloat(rng) * radius;
-        var offsetX = distance * (float)Math.Cos(angle);
-        var offsetZ = distance * (float)Math.Sin(angle);
-        return new WPos(waypoint.X + offsetX, waypoint.Z + offsetZ);
+        var (sin, cos) = ((float, float))MathF.SinCos(angle);
+        var offsetX = distance * cos;
+        var offsetZ = distance * sin;
+        return new(waypoint.X + offsetX, waypoint.Z + offsetZ);
     }
 
     private static float GetRandomFloat(RandomNumberGenerator rng)

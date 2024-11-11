@@ -103,31 +103,40 @@ public sealed record class AOEShapeCross(float Length, float HalfWidth, Angle Di
     public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = 0) => arena.ZonePoly((GetType(), origin, rotation + DirectionOffset, Length, HalfWidth), ContourPoints(origin, rotation), color);
     public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = 0)
     {
-        foreach (var p in ContourPoints(origin, rotation))
-            arena.PathLineTo(p);
+        var points = ContourPoints(origin, rotation);
+        for (var i = 0; i < 12; ++i)
+            arena.PathLineTo(points[i]);
         MiniArena.PathStroke(true, color);
     }
 
-    private IEnumerable<WPos> ContourPoints(WPos origin, Angle rotation, float offset = 0)
+    private WPos[] ContourPoints(WPos origin, Angle rotation, float offset = 0)
     {
         var dx = (rotation + DirectionOffset).ToDirection();
         var dy = dx.OrthoL();
-        var dx1 = dx * (Length + offset);
-        var dx2 = dx * (HalfWidth + offset);
-        var dy1 = dy * (Length + offset);
-        var dy2 = dy * (HalfWidth + offset);
-        yield return origin + dx1 - dy2;
-        yield return origin + dx2 - dy2;
-        yield return origin + dx2 - dy1;
-        yield return origin - dx2 - dy1;
-        yield return origin - dx2 - dy2;
-        yield return origin - dx1 - dy2;
-        yield return origin - dx1 + dy2;
-        yield return origin - dx2 + dy2;
-        yield return origin - dx2 + dy1;
-        yield return origin + dx2 + dy1;
-        yield return origin + dx2 + dy2;
-        yield return origin + dx1 + dy2;
+
+        var lengthOffset = Length + offset;
+        var halfWidthOffset = HalfWidth + offset;
+
+        var dxLength = dx * lengthOffset;
+        var dxWidth = dx * halfWidthOffset;
+        var dyLength = dy * lengthOffset;
+        var dyWidth = dy * halfWidthOffset;
+
+        return
+        [
+            origin + dxLength - dyWidth,
+            origin + dxWidth - dyWidth,
+            origin + dxWidth - dyLength,
+            origin - dxWidth - dyLength,
+            origin - dxWidth - dyWidth,
+            origin - dxLength - dyWidth,
+            origin - dxLength + dyWidth,
+            origin - dxWidth + dyWidth,
+            origin - dxWidth + dyLength,
+            origin + dxWidth + dyLength,
+            origin + dxWidth + dyWidth,
+            origin + dxLength + dyWidth
+        ];
     }
 
     public override Func<WPos, float> Distance(WPos origin, Angle rotation)
@@ -267,7 +276,7 @@ public sealed record class AOEShapeCustom(IEnumerable<Shape> Shapes1, IEnumerabl
         {
             var part = combinedPolygon.Parts[i];
             var exteriorEdges = part.ExteriorEdges.ToList();
-            for (var j = 0; j < exteriorEdges.Count; j++)
+            for (var j = 0; j < exteriorEdges.Count; ++j)
             {
                 var (start, end) = exteriorEdges[j];
                 arena.PathLineTo(origin + start);
@@ -279,7 +288,7 @@ public sealed record class AOEShapeCustom(IEnumerable<Shape> Shapes1, IEnumerabl
             foreach (var holeIndex in part.Holes)
             {
                 var interiorEdges = part.InteriorEdges(holeIndex).ToList();
-                for (var j = 0; j < interiorEdges.Count; j++)
+                for (var j = 0; j < interiorEdges.Count; ++j)
                 {
                     var (start, end) = interiorEdges[j];
                     arena.PathLineTo(origin + start);
