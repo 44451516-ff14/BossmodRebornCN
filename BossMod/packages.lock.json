@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     "net8.0-windows7.0": {
+      "Backport.System.Threading.Lock": {
+        "type": "Direct",
+        "requested": "[3.1.0, )",
+        "resolved": "3.1.0",
+        "contentHash": "0LBbzppcDFbd51CPvlbc475DHcHOWGZKcpa0D4pjf2hsQdiCMKQiahCKy6VgpLm49mQLkNvlHsLPYLP1B+FpaQ=="
+      },
       "DalamudPackager": {
         "type": "Direct",
         "requested": "[2.1.13, )",
