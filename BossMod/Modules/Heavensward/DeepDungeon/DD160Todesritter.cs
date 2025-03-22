@@ -43,9 +43,11 @@ class Infatuation(BossModule module) : Components.SimpleAOEs(module, ActionID.Ma
 class Valfodr(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.Valfodr), 3f);
 class ValfodrKB(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.Valfodr), stopAtWall: true) // note actual knockback is delayed by upto 1.2s in replay
 {
+    private readonly Infatuation _aoe1 = module.FindComponent<Infatuation>()!;
+    private readonly HallOfSorrow _aoe2 = module.FindComponent<HallOfSorrow>()!;
+
     private int _target;
     private Knockback? _source;
-    private readonly Infatuation _aoe = module.FindComponent<Infatuation>()!;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -73,36 +75,50 @@ class ValfodrKB(BossModule module) : Components.GenericKnockback(module, ActionI
         }
     }
 
-    private Func<WPos, float>? GetFireballZone()
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var count = _aoe.Casters.Count;
-        if (count == 0)
-            return null;
-        var forbidden = new Func<WPos, float>[count];
+        var aoes1 = _aoe1.Casters;
+        var count = aoes1.Count;
         for (var i = 0; i < count; ++i)
-            forbidden[i] = ShapeDistance.Circle(_aoe.Casters[i].Origin, 7f);
-        return ShapeDistance.Union(forbidden);
+        {
+            if (aoes1[i].Check(pos))
+                return true;
+        }
+        var aoes2 = _aoe2.ActiveAOEs(slot, actor);
+        var len = aoes2.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            if (aoes2[i].Check(pos))
+                return true;
+        }
+        return !Module.InBounds(pos);
     }
-
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => GetFireballZone() is var z && z != null && z(pos) < 0f;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_target != slot || _source == null)
-            return;
-
-        var dangerZone = GetFireballZone();
-        if (dangerZone == null)
-            return;
-
-        var kbSource = _source.Value.Origin;
-
-        hints.AddForbiddenZone(p =>
+        base.AddAIHints(slot, actor, assignment, hints);
+        if (_target == slot && _source != null)
         {
-            var dir = (p - kbSource).Normalized();
-            var proj = Arena.ClampToBounds(p + dir * 25f);
-            return dangerZone(proj);
-        }, _source.Value.Activation);
+            var voidzones = Module.Enemies((uint)OID.Voidzone);
+            var countV = voidzones.Count;
+            var countI = _aoe1.Casters.Count;
+            var total = countV + countI;
+            if (total == 0)
+                return;
+            var forbidden = new Func<WPos, float>[total];
+            var pos = Module.PrimaryActor.Position;
+            for (var i = 0; i < countV; ++i)
+            {
+                var a = voidzones[i];
+                forbidden[i] = ShapeDistance.Cone(pos, 100f, Module.PrimaryActor.AngleTo(a), Angle.Asin(9f / (a.Position - pos).Length()));
+            }
+            for (var i = 0; i < countI; ++i)
+            {
+                var a = _aoe1.Casters[i];
+                forbidden[i + countV] = ShapeDistance.Cone(pos, 100f, Module.PrimaryActor.AngleTo(a.Origin), Angle.Asin(7f / (a.Origin - pos).Length()));
+            }
+            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), _source!.Value.Activation);
+        }
     }
 }
 

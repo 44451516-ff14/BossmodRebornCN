@@ -50,17 +50,27 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, ActionID
         if (dir == default)
             return;
 
-        WDir[] safespots = [.. _canonicalSafespots.Select(d => d.Rotate(dir))];
+        var safespots = new WDir[2];
+        for (var i = 0; i < 2; ++i)
+            safespots[i] = _canonicalSafespots[i].Rotate(dir);
+
         var activation = WorldState.FutureTime(17.1d);
         for (var z = -3; z <= 3; z += 2)
         {
             for (var x = -3; x <= 3; x += 2)
             {
-                var cellOffset = new WDir(x * 6, z * 6);
-                if (!safespots.Any(s => s.AlmostEqual(cellOffset, 1f)))
+                var cellOffset = new WDir(x * 6f, z * 6f);
+                var found = false;
+                for (var i = 0; i < 2; ++i)
                 {
-                    AOEs.Add(new(_shape, WPos.ClampToGrid(Arena.Center + cellOffset), default, activation));
+                    if (safespots[i].AlmostEqual(cellOffset, 1f))
+                    {
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found)
+                    AOEs.Add(new(_shape, WPos.ClampToGrid(Arena.Center + cellOffset), default, activation));
             }
         }
     }
@@ -68,6 +78,9 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, ActionID
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (AOEs.Count != 0 && spell.Action == WatchedAction)
+        {
             AOEs.Clear();
+            ++NumCasts;
+        }
     }
 }

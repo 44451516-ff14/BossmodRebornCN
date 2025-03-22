@@ -32,7 +32,7 @@ class Landwaker(BossModule module) : Components.SimpleAOEs(module, ActionID.Make
 class Furrow(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Furrow), 6, 8);
 class HeavensEarth(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.HeavensEarthAOE), new AOEShapeCircle(5), true);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12065)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12065, PlanLevel = 90)]
 public class A21Nophica(WorldState ws, Actor primary) : BossModule(ws, primary, new(0, -238), DefaultBounds)
 {
     public static readonly ArenaBoundsCircle DefaultBounds = new(34);

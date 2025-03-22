@@ -4,47 +4,52 @@ class P3DarkdragonDiveCounter(BossModule module) : Components.GenericTowers(modu
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var numSoakers = (AID)spell.Action.ID switch
+        var numSoakers = spell.Action.ID switch
         {
-            AID.DarkdragonDive1 => 1,
-            AID.DarkdragonDive2 => 2,
-            AID.DarkdragonDive3 => 3,
-            AID.DarkdragonDive4 => 4,
+            (uint)AID.DarkdragonDive1 => 1,
+            (uint)AID.DarkdragonDive2 => 2,
+            (uint)AID.DarkdragonDive3 => 3,
+            (uint)AID.DarkdragonDive4 => 4,
             _ => 0
         };
         if (numSoakers == 0)
             return;
 
-        Towers.Add(new(spell.LocXZ, 5, numSoakers, numSoakers));
+        Towers.Add(new(spell.LocXZ, 5f, numSoakers, numSoakers));
         if (Towers.Count == 4)
             InitAssignments();
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.DarkdragonDive1 or AID.DarkdragonDive2 or AID.DarkdragonDive3 or AID.DarkdragonDive4)
-            for (var i = 0; i < Towers.Count; ++i)
+        if (spell.Action.ID is (uint)AID.DarkdragonDive1 or (uint)AID.DarkdragonDive2 or (uint)AID.DarkdragonDive3 or (uint)AID.DarkdragonDive4)
+        {
+            var count = Towers.Count;
+            var pos = caster.Position;
+            for (var i = 0; i < count; ++i)
             {
                 var tower = Towers[i];
-                if (tower.Position == caster.Position)
+                if (tower.Position.AlmostEqual(pos, 1f))
                 {
                     Towers.Remove(tower);
                     break;
                 }
             }
+        }
     }
 
     // 0 = NW, then CW order
     private int ClassifyTower(WPos tower)
     {
         var offset = tower - Arena.Center;
-        return offset.Z > 0 ? (offset.X > 0 ? 2 : 3) : (offset.X > 0 ? 1 : 0);
+        return offset.Z > 0f ? (offset.X > 0f ? 2 : 3) : (offset.X > 0f ? 1 : 0);
     }
 
     private void InitAssignments()
     {
         int[] towerIndices = [-1, -1, -1, -1];
-        for (var i = 0; i < Towers.Count; ++i)
+        var count = Towers.Count;
+        for (var i = 0; i < count; ++i)
             towerIndices[ClassifyTower(Towers[i].Position)] = i;
 
         var config = Service.Config.Get<DSW2Config>();
@@ -65,18 +70,20 @@ class P3DarkdragonDiveCounter(BossModule module) : Components.GenericTowers(modu
         }
     }
 
-    private IEnumerable<int> FlexOrder(int starting, bool preferCCW)
+    private int[] FlexOrder(int starting, bool preferCCW)
     {
+        var order = new int[3];
         if (preferCCW)
         {
-            yield return (starting + 3) & 3;
-            yield return (starting + 1) & 3;
+            order[0] = (starting + 3) & 3;
+            order[1] = (starting + 1) & 3;
         }
         else
         {
-            yield return (starting + 1) & 3;
-            yield return (starting + 3) & 3;
+            order[0] = (starting + 1) & 3;
+            order[1] = (starting + 3) & 3;
         }
-        yield return (starting + 2) & 3;
+        order[2] = (starting + 2) & 3;
+        return order;
     }
 }

@@ -16,5 +16,5 @@ class RiseOfTheTwinMoons(BossModule module) : Components.CastCounter(module, Act
 class CrateringChill(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrateringChillAOE), 20);
 class MoonsetRays(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.MoonsetRaysAOE), 6, 4);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12063)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12063, PlanLevel = 90)]
 public class A24Menphina(WorldState ws, Actor primary) : BossModule(ws, primary, new(800, 750), new ArenaBoundsCircle(25));

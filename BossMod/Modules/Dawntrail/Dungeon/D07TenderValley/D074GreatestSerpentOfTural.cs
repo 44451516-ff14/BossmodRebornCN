@@ -77,7 +77,7 @@ class DubiousTulidisasterArenaChange(BossModule module) : Components.GenericAOEs
     }
 }
 
-class ScreesOfFury(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(3), (uint)IconID.Tankbuster, ActionID.MakeSpell(AID.ScreesOfFury), 5.3f, true, tankbuster: true);
+class ScreesOfFury(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(3f), (uint)IconID.Tankbuster, ActionID.MakeSpell(AID.ScreesOfFury), 5.3f, true, tankbuster: true);
 
 class GreatestFlood(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.GreatestFlood), 15f)
 {
@@ -85,16 +85,17 @@ class GreatestFlood(BossModule module) : Components.SimpleKnockbacks(module, Act
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
             hints.AddForbiddenZone(ShapeDistance.InvertedCone(source.Position, 4f, source.Rotation, a45), Module.CastFinishAt(source.CastInfo));
+        }
     }
 }
 
 class GreatestLabyrinth(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
-    private const string TileHint = "Walk onto safe square!";
     private static readonly Square middle = new(D074GreatestSerpentOfTural.ArenaCenter, 4f);
     private const float Radius = 2f;
 
@@ -156,22 +157,29 @@ class GreatestLabyrinth(BossModule module) : Components.GenericAOEs(module)
     {
         if (_aoes.Count == 0)
             return;
-        if (!_aoes[1].Check(actor.Position))
-            hints.Add(TileHint);
-        else
-            hints.Add(TileHint, false);
+        hints.Add("Walk onto safe square!", !_aoes[1].Check(actor.Position));
     }
 }
 
-class MightyBlorp(BossModule module, IconID iconID, AID aid, float radius) : Components.StackWithIcon(module, (uint)iconID, ActionID.MakeSpell(aid), radius, 4.6f, 4, 4);
-class MightyBlorp1(BossModule module) : MightyBlorp(module, IconID.Stackmarker1, AID.MightyBlorp1, 6f);
-class MightyBlorp2(BossModule module) : MightyBlorp(module, IconID.Stackmarker2, AID.MightyBlorp2, 5f);
-class MightyBlorp3(BossModule module) : MightyBlorp(module, IconID.Stackmarker3, AID.MightyBlorp3, 4f);
+class MightyBlorp(BossModule module, uint iconID, AID aid, float radius) : Components.StackWithIcon(module, iconID, ActionID.MakeSpell(aid), radius, 4.6f, 4, 4);
+class MightyBlorp1(BossModule module) : MightyBlorp(module, (uint)IconID.Stackmarker1, AID.MightyBlorp1, 6f);
+class MightyBlorp2(BossModule module) : MightyBlorp(module, (uint)IconID.Stackmarker2, AID.MightyBlorp2, 5f);
+class MightyBlorp3(BossModule module) : MightyBlorp(module, (uint)IconID.Stackmarker3, AID.MightyBlorp3, 4f);
 
-class SludgeVoidzone(BossModule module, float radius, OID oid) : Components.Voidzone(module, radius, m => m.Enemies(oid).Where(z => z.EventState != 7));
-class SludgeVoidzone1(BossModule module) : SludgeVoidzone(module, 6f, OID.SludgeVoidzone1);
-class SludgeVoidzone2(BossModule module) : SludgeVoidzone(module, 5f, OID.SludgeVoidzone2);
-class SludgeVoidzone3(BossModule module) : SludgeVoidzone(module, 4f, OID.SludgeVoidzone3);
+class SludgeVoidzone(BossModule module, float radius, uint oid) : Components.Voidzone(module, radius, m => GetVoidzones(m, oid))
+{
+    private static Actor[] GetVoidzones(BossModule module, uint oid)
+    {
+        var enemies = module.Enemies(oid);
+        if (enemies.Count != 0 && enemies[0].EventState != 7)
+            return [enemies[0]];
+        return [];
+    }
+}
+
+class SludgeVoidzone1(BossModule module) : SludgeVoidzone(module, 6f, (uint)OID.SludgeVoidzone1);
+class SludgeVoidzone2(BossModule module) : SludgeVoidzone(module, 5f, (uint)OID.SludgeVoidzone2);
+class SludgeVoidzone3(BossModule module) : SludgeVoidzone(module, 4f, (uint)OID.SludgeVoidzone3);
 
 class DubiousTulidisaster(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DubiousTulidisaster));
 class GreatestLabyrinthRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GreatestLabyrinth));

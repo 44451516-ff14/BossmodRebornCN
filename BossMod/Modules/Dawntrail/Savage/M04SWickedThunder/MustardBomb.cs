@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class MustardBomb(BossModule module) : Components.UniformStackSpread(module, 0, 6, alwaysShowSpreads: true)
+class MustardBomb(BossModule module) : Components.UniformStackSpread(module, default, 6f, alwaysShowSpreads: true)
 {
     public enum Mechanic { None, Tethers, Nisi, Done }
 
@@ -63,7 +63,7 @@ class MustardBomb(BossModule module) : Components.UniformStackSpread(module, 0, 
     public override void OnUntethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.MustardBomb)
-            _bombTargets[Raid.FindSlot(source.InstanceID)] = true;
+            _bombTargets[Raid.FindSlot(source.InstanceID)] = false;
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)

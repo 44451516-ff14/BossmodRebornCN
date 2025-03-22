@@ -45,8 +45,7 @@ class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStackSpread
                     continue;
                 for (var j = 0; j < lenaoes; ++j)
                 {
-                    ref readonly var aoe = ref aoes[j];
-                    if (!aoe.Check(p.Position))
+                    if (!aoes[i].Check(p.Position))
                     {
                         closest = p;
                         break;

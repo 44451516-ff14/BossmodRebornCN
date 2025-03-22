@@ -83,8 +83,7 @@ class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, Acti
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
             var count = _aoe.AOEs.Count;
             var forbidden = new Func<WPos, float>[count];
@@ -93,7 +92,7 @@ class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, Acti
                 forbidden[i] = ShapeDistance.Cone(Arena.Center, 20f, Angle.FromDirection(_aoe.AOEs[i].Origin - Arena.Center), cone);
             }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(source.CastInfo));
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(Casters[0].CastInfo));
         }
     }
 }

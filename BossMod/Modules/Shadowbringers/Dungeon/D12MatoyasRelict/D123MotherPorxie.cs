@@ -76,9 +76,8 @@ class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, Acti
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 5f));
+        if (Casters.Count != 0)
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Casters[0].Position, 5f));
     }
 }
 

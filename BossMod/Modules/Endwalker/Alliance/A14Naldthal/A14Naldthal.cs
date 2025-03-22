@@ -14,5 +14,5 @@ class MagmaticSpell(BossModule module) : Components.StackWithCastTargets(module,
 class TippedScales(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.TippedScalesAOE));
 
 // TODO: balancing counter
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 866, NameID = 11286, SortOrder = 6)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 866, NameID = 11286, SortOrder = 6, PlanLevel = 90)]
 public class A14Naldthal(WorldState ws, Actor primary) : BossModule(ws, primary, new(750, -750), new ArenaBoundsCircle(30));

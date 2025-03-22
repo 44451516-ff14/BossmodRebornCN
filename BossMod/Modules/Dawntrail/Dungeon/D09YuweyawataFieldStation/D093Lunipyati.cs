@@ -40,7 +40,6 @@ public enum AID : uint
 class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(15f, 35f);
-    private static readonly AOEShapeCircle circle = new(11f);
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
@@ -49,8 +48,6 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.LeporineLoaf)
             _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9f));
-        else if (spell.Action.ID == (uint)AID.CraterCarve)
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell));
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -69,17 +66,19 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
+class CraterCarve(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CraterCarve), 11f, riskyWithSecondsLeft: 2.5f);
+
 class RagingClaw(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    public AOEInstance? AOE;
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RagingClawFirst)
-            _aoe = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+            AOE = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -90,7 +89,7 @@ class RagingClaw(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.RagingClawRepeat:
                 if (++NumCasts == 6)
                 {
-                    _aoe = null;
+                    AOE = null;
                     NumCasts = 0;
                 }
                 break;
@@ -128,7 +127,20 @@ class BoulderDance(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.JaggedEdge), 6f);
+class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.JaggedEdge), 6f)
+{
+    private readonly RagingClaw _aoe = module.FindComponent<RagingClaw>()!;
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (_aoe.AOE != null && Spreads.Count != 0 && !IsSpreadTarget(actor))
+        {
+            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, default, 1f, 50f), Spreads[0].Activation);
+            return;
+        }
+        base.AddAIHints(slot, actor, assignment, hints);
+    }
+}
 class TuraliStoneIV(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TuraliStoneIV), 6f, 4, 4);
 class LeporineLoaf(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.LeporineLoaf));
 class BeastlyRoarRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BeastlyRoar));
@@ -154,10 +166,7 @@ class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > maxCasts ? maxCasts : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
-            aoes[i] = _aoes[i];
-        return aoes;
+        return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -279,6 +288,7 @@ class D093LunipyatiStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<ArenaChanges>()
+            .ActivateOnEnter<CraterCarve>()
             .ActivateOnEnter<RagingClaw>()
             .ActivateOnEnter<BoulderDance>()
             .ActivateOnEnter<JaggedEdge>()

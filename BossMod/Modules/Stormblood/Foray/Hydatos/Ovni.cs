@@ -29,13 +29,18 @@ public enum IconID : uint
     IonShower = 111 // player->self
 }
 
+public enum SID : uint
+{
+    DamageUp = 1766 // Boss->Boss, extra=0x1
+}
+
 class PullOfTheVoid(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.PullOfTheVoid), 30f, kind: Kind.TowardsOrigin, minDistanceBetweenHitboxes: true);
 class Megastorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Megastorm), new AOEShapeDonut(5f, 40f));
 class ConcussiveOscillation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ConcussiveOscillation), 24f);
 class VitriolicBarrage(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.VitriolicBarrage));
 class RockHard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RockHard), 8);
 class TorrentialTorment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TorrentialTorment), new AOEShapeCone(56f, 22.5f.Degrees()));
-
+class Fluorescence(BossModule module) : DispelComponent(module, (uint)SID.DamageUp);
 class IonShower(BossModule module) : Components.GenericStackSpread(module, alwaysShowSpreads: true, raidwideOnResolve: false)
 {
     private int _numCasts;
@@ -88,6 +93,7 @@ class OvniStates : StateMachineBuilder
             .ActivateOnEnter<RockHard>()
             .ActivateOnEnter<TorrentialTorment>()
             .ActivateOnEnter<IonShower>()
+            .ActivateOnEnter<Fluorescence>()
             .ActivateOnEnter<PlainPound>();
     }
 }

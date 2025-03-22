@@ -196,6 +196,7 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string nam
     public WDir DirectionTo(WPos other) => (other - Position).Normalized();
     public WDir DirectionTo(Actor other) => DirectionTo(other.Position);
     public Angle AngleTo(Actor other) => Angle.FromDirection(other.Position - Position);
+    public Angle AngleTo(WPos other) => Angle.FromDirection(other - Position);
 
     public float DistanceToHitbox(Actor? other) => other == null ? float.MaxValue : (other.Position - Position).Length() - other.HitboxRadius - HitboxRadius;
     public float DistanceToPoint(WPos pos) => (pos - Position).Length();

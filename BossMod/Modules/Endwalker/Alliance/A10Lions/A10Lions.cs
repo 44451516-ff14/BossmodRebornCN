@@ -26,7 +26,7 @@ public class A10Lions(WorldState ws, Actor primary) : BossModule(ws, primary, ne
     {
         // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
         // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _lioness ??= StateMachine.ActivePhaseIndex == 0 ? Enemies(OID.Lioness).FirstOrDefault() : null;
+        _lioness ??= Enemies((uint)OID.Lioness)[0];
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

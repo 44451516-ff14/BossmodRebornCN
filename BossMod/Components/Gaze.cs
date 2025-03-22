@@ -114,16 +114,8 @@ public class CastGaze(BossModule module, ActionID aid, bool inverted = false, fl
         var count = Eyes.Count;
         if (count == 0)
             return [];
-
         var max = count > MaxCasts ? MaxCasts : count;
-
-        var eyes = new Eye[max];
-        for (var i = 0; i < max; ++i)
-        {
-            var eye = Eyes[i];
-            eyes[i] = eye;
-        }
-        return eyes;
+        return CollectionsMarshal.AsSpan(Eyes)[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

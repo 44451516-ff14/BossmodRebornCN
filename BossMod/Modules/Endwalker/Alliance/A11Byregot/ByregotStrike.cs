@@ -2,13 +2,27 @@
 
 class ByregotStrikeJump(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotStrikeJump), 8f);
 class ByregotStrikeJumpCone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotStrikeJumpCone), 8f);
-class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ByregotStrikeKnockback), 18f);
+class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ByregotStrikeKnockback), 18f)
+{
+    private static readonly Angle a45 = 45f.Degrees(), a180 = 180f.Degrees();
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.InvertedCone(source.Position, 14f, source.Rotation + a180, a45), act);
+        }
+    }
+}
 
 class ByregotStrikeCone(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(4);
 
-    private static readonly AOEShapeCone _shape = new(90, 22.5f.Degrees());
+    private static readonly AOEShapeCone _shape = new(90f, 22.5f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

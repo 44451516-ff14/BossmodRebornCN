@@ -47,16 +47,23 @@ class WhispersOfTheWood(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
+            {
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
             else
-                aoes[i] = aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad) ? aoe with { Risky = false } : aoe;
+            {
+                if (aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad))
+                    aoe.Risky = false;
+            }
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -78,7 +85,7 @@ class WhispersOfTheWood(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < 4; ++i)
             {
                 var angle = (i == 0 ? spell.Rotation : _aoes[i - 1].Rotation) + angles[i];
-                _aoes.Add(new(cone, Module.PrimaryActor.Position, angle, Module.CastFinishAt(spell, 9.3f + 2 * i)));
+                _aoes.Add(new(cone, spell.LocXZ, angle, Module.CastFinishAt(spell, 9.3f + 2f * i)));
             }
         }
     }

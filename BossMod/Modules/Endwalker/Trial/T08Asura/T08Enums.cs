@@ -55,11 +55,13 @@ public enum AID : uint
     ManyFaces2 = 36014, // Boss->self, no cast, single-target
     TheFaceOfWrathA = 35984, // Boss->self, 8.0s cast, single-target
     TheFaceOfWrathB = 35986, // Boss->self, 8.0s cast, single-target
+    TheFaceOfWrathC = 35988, // Boss->self, 8.0s cast, single-target
     TheFaceOfWrath = 36022, // Helper->self, no cast, single-target
     FaceMechanicWrath = 36015, // Helper->self, 8.0s cast, range 20 180-degree cone
     FaceMechanicDelight = 36016, // Helper->self, 8.0s cast, range 20 180-degree cone
     TheFaceOfDelightA = 35989, // Boss->self, 8.0s cast, single-target
     TheFaceOfDelightB = 35987, // Boss->self, 8.0s cast, single-target
+    TheFaceOfDelightC = 35985, // Boss->self, 8.0s cast, single-target
     TheFaceOfDelight = 36023, // Helper->self, no cast, single-target
     TheFaceOfDelightAOE = 36007, // Helper->self, no cast, range 20 180-degree cone
     TheFaceOfWrathAOE = 36006, // Helper->self, no cast, range 20 180-degree cone

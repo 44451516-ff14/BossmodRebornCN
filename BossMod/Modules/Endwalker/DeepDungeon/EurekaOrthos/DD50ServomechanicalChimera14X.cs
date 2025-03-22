@@ -35,25 +35,42 @@ class RamsDragonVoice(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeDonut donut = new(8f, 40f);
     private static readonly AOEShapeCircle circle = new(9f);
     private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<(AOEShape, DateTime)> _shapes = new(2);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var countA = _aoes.Count;
+        if (countA != 0)
         {
-            for (var i = 0; i < max; ++i)
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            for (var i = 0; i < countA; ++i)
             {
-                var aoe = _aoes[i];
+                ref var aoe = ref aoes[i];
                 if (i == 0)
-                    aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
+                {
+                    if (countA > 1)
+                        aoe.Color = Colors.Danger;
+                    aoe.Risky = true;
+                }
                 else
-                    aoes[i] = aoe with { Risky = false };
+                    aoe.Risky = false;
             }
+            return aoes;
         }
-        return aoes;
+        var countS = _shapes.Count;
+        if (countS != 0)
+        {
+            var aoes = new AOEInstance[countS];
+            var shapes = CollectionsMarshal.AsSpan(_shapes);
+            var pos = WPos.ClampToGrid(Module.PrimaryActor.Position);
+            for (var i = 0; i < countS; ++i)
+            {
+                ref readonly var shape = ref shapes[i];
+                aoes[i] = new(shape.Item1, pos, default, shape.Item2, i == 0 && countS > 1 ? Colors.Danger : 0u, i != 0);
+            }
+            return aoes;
+        }
+        return [];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -61,48 +78,53 @@ class RamsDragonVoice(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.SongsOfIceAndThunder:
-                AddAOEs(circle, donut, spell);
+                AddAOEs(circle, donut);
                 break;
             case (uint)AID.SongsOfThunderAndIce:
-                AddAOEs(donut, circle, spell);
+                AddAOEs(donut, circle);
                 break;
         }
-    }
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        switch (spell.Action.ID)
+        void AddAOEs(AOEShape first, AOEShape second)
         {
-            case (uint)AID.ColdThunder:
-                AddAOEs(circle, donut, spell);
-                break;
-            case (uint)AID.ThunderousCold:
-                AddAOEs(donut, circle, spell);
-                break;
+            var position = spell.LocXZ;
+            _aoes.Add(new(first, position, default, Module.CastFinishAt(spell)));
+            _aoes.Add(new(second, position, default, Module.CastFinishAt(spell, 3f)));
         }
     }
 
-    private void AddAOEs(AOEShape first, AOEShape second, ActorCastInfo spell)
+    public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
-        var position = spell.LocXZ;
-        _aoes.Add(new(first, position, default, Module.CastFinishAt(spell)));
-        _aoes.Add(new(second, position, default, Module.CastFinishAt(spell, 3f)));
+        if (_aoes.Count != 0 || _shapes.Count != 0)
+            return;
+
+        if (modelState == 4)
+            AddAOEs(circle, donut);
+        else if (modelState == 5)
+            AddAOEs(donut, circle);
+        void AddAOEs(AOEShape first, AOEShape second)
+        {
+            _shapes.Add((first, WorldState.FutureTime(2.4d)));
+            _shapes.Add((second, WorldState.FutureTime(5.5d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0)
-            switch (spell.Action.ID)
-            {
-                case (uint)AID.TheDragonsVoice1:
-                case (uint)AID.TheRamsVoice1:
-                case (uint)AID.TheDragonsVoice2:
-                case (uint)AID.TheRamsVoice2:
-                case (uint)AID.SongsOfIceAndThunder:
-                case (uint)AID.SongsOfThunderAndIce:
+        switch (spell.Action.ID)
+        {
+            case (uint)AID.TheDragonsVoice1:
+            case (uint)AID.TheRamsVoice1:
+            case (uint)AID.TheDragonsVoice2:
+            case (uint)AID.TheRamsVoice2:
+            case (uint)AID.SongsOfIceAndThunder:
+            case (uint)AID.SongsOfThunderAndIce:
+                if (_aoes.Count != 0)
                     _aoes.RemoveAt(0);
-                    break;
-            }
+                else if (_shapes.Count != 0)
+                    _shapes.RemoveAt(0);
+                break;
+        }
     }
 }
 
@@ -119,7 +141,7 @@ class ChargeTether(BossModule module) : Components.StretchTetherDuo(module, 15f,
 class Cacophony(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6);
-    private readonly List<Actor> _orbs = [];
+    private readonly List<Actor> _orbs = new(2);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -132,10 +154,10 @@ class Cacophony(BossModule module) : Components.GenericAOEs(module)
         return aoes;
     }
 
-    public override void OnActorCreated(Actor actor)
+    public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if (actor.OID == (uint)OID.Cacophony)
-            _orbs.Add(actor);
+        if (source.OID == (uint)OID.Cacophony)
+            _orbs.Add(source);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

@@ -36,18 +36,19 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
 
         var bits = Module.Enemies((uint)OID.MagitekBit);
         var count = bits.Count;
-        var aoes = new AOEInstance[count * 2];
+        var aoes = new AOEInstance[count];
         var index = 0;
         for (var i = 0; i < count; ++i)
         {
             var p = bits[i];
             var pos = WPos.ClampToGrid(p.Position);
             var rot = p.Rotation;
-            if (Type == Types.SatelliteLaser && WorldState.CurrentTime > _times[0])
+            var time = WorldState.CurrentTime > _times[0];
+            if (Type == Types.SatelliteLaser && time)
             {
                 aoes[index++] = new(rect, pos, rot, _times[1]);
             }
-            else if (Type == Types.DiffractiveLaser && WorldState.CurrentTime > _times[0] || Type == Types.LaserShower)
+            else if (Type == Types.DiffractiveLaser && time || Type == Types.LaserShower)
             {
                 if (NumCasts < 5)
                 {
@@ -56,15 +57,13 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
                     else if (rot.AlmostEqual(startrotation + a90, Angle.DegToRad) || rot.AlmostEqual(startrotation - a90, Angle.DegToRad))
                         aoes[index++] = new(rect, pos, rot, _times[2]);
                 }
-                else if (NumCasts is >= 5 and < 9)
+                else
                 {
                     if (rot.AlmostEqual(startrotation + a180, Angle.DegToRad))
                         aoes[index++] = new(rect, pos, rot, _times[3]);
-                    else if (rot.AlmostEqual(startrotation + a90, Angle.DegToRad) || rot.AlmostEqual(startrotation - a90, Angle.DegToRad))
+                    else if (NumCasts < 9 && (rot.AlmostEqual(startrotation + a90, Angle.DegToRad) || rot.AlmostEqual(startrotation - a90, Angle.DegToRad)))
                         aoes[index++] = new(rect, pos, rot, _times[2], Colors.Danger);
                 }
-                else if (NumCasts >= 9 && rot.AlmostEqual(startrotation + a180, Angle.DegToRad))
-                    aoes[index++] = new(rect, pos, rot, _times[3], Colors.Danger);
             }
         }
         return aoes.AsSpan()[..index];
@@ -86,7 +85,7 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
         }
         else if (spell.Action.ID == (uint)AID.LaserShower)
         {
-            startrotation = spell.Rotation;
+            startrotation = caster.Rotation;
             Type = Types.LaserShower;
             _times = [_time, _time.AddSeconds(6.5d), _time.AddSeconds(8.3d), _time.AddSeconds(10.1d)];
         }
@@ -96,8 +95,7 @@ class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.RefractedLaser)
         {
-            ++NumCasts;
-            if (NumCasts == 14)
+            if (++NumCasts == 14)
             {
                 NumCasts = 0;
                 Type = Types.None;

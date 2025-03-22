@@ -23,40 +23,40 @@ public abstract class HoHFloorModule(WorldState ws) : AutoClear(ws, 70)
 {
     protected override void OnCastStarted(Actor actor)
     {
-        switch ((AID)actor.CastInfo!.Action.ID)
+        switch (actor.CastInfo!.Action.ID)
         {
-            case AID.Cry:
+            case (uint)AID.Cry:
                 Stuns.Add(actor);
                 break;
-            case AID.Malice:
-            case AID.HorrisonousBlast:
-            case AID.Northerlies:
+            case (uint)AID.Malice:
+            case (uint)AID.HorrisonousBlast:
+            case (uint)AID.Northerlies:
                 Interrupts.Add(actor);
                 break;
-            case AID.StoneGaze:
-                AddGaze(actor, 100); // actually a single target cast
+            case (uint)AID.StoneGaze:
+                AddGaze(actor, 100f); // actually a single target cast
                 break;
-            case AID.BlindingBurst:
-                AddGaze(actor, 25);
+            case (uint)AID.BlindingBurst:
+                AddGaze(actor, 25f);
                 HintDisabled.Add(actor);
                 break;
-            case AID.NightmarishLight:
-            case AID.ShiftingLight:
-                AddGaze(actor, 35);
+            case (uint)AID.NightmarishLight:
+            case (uint)AID.ShiftingLight:
+                AddGaze(actor, 35f);
                 break;
-            case AID.Eyeshine:
-            case AID.FrondFatale:
-                AddGaze(actor, 40);
+            case (uint)AID.Eyeshine:
+            case (uint)AID.FrondFatale:
+                AddGaze(actor, 40f);
                 break;
-            case AID.Hex:
-                AddGaze(actor, 30);
+            case (uint)AID.Hex:
+                AddGaze(actor, 30f);
                 break;
-            case AID.AtropineSpore:
-                Donuts.Add((actor, 9.5f, 41));
+            case (uint)AID.AtropineSpore:
+                Donuts.Add((actor, 9.5f, 41f));
                 HintDisabled.Add(actor);
                 break;
-            case AID.TheDragonsVoice:
-                Donuts.Add((actor, 8, 30));
+            case (uint)AID.TheDragonsVoice:
+                Donuts.Add((actor, 8f, 30f));
                 HintDisabled.Add(actor);
                 break;
         }

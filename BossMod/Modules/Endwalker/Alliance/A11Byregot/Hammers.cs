@@ -1,17 +1,17 @@
 ﻿namespace BossMod.Endwalker.Alliance.A11Byregot;
 
-class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.DestroySideTiles), "GTFO from dangerous cell!")
+class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.DestroySideTiles), "GTFO from dangerous tile!")
 {
     public bool Active;
     public bool MovementPending;
-    private readonly int[] _lineOffset = new int[5];
-    private readonly int[] _lineMovement = new int[5];
-
+    public readonly int[] LineOffset = new int[5];
+    public readonly int[] LineMovement = new int[5];
     private static readonly AOEShapeRect _shape = new(5f, 5f, 5f);
+    private DateTime activation;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (!Active)
+        if (!MovementPending)
             return [];
 
         var aoes = new List<AOEInstance>();
@@ -19,29 +19,12 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.
         {
             for (var x = -2; x <= 2; ++x)
             {
-                if (CellDangerous(x, z, true))
-                    aoes.Add(new(_shape, CellCenter(x, z)));
-                else if (CellDangerous(x, z, false))
-                    aoes.Add(new(_shape, CellCenter(x, z), Color: Colors.SafeFromAOE));
+                var center = CellCenter(x, z);
+                if (Module.InBounds(center) && CellDangerous(x, z))
+                    aoes.Add(new(_shape, center, default, activation));
             }
         }
         return CollectionsMarshal.AsSpan(aoes);
-    }
-
-    public override void DrawArenaForeground(int pcSlot, Actor pc)
-    {
-        if (!Active)
-            return;
-        var pos = Arena.Center;
-        var color = Colors.Border;
-        Arena.AddLine(pos + new WDir(-15, -25), pos + new WDir(-15, +25), color);
-        Arena.AddLine(pos + new WDir(-05, -25), pos + new WDir(-05, +25), color);
-        Arena.AddLine(pos + new WDir(+05, -25), pos + new WDir(+05, +25), color);
-        Arena.AddLine(pos + new WDir(+15, -25), pos + new WDir(+15, +25), color);
-        Arena.AddLine(pos + new WDir(-25, -15), pos + new WDir(+25, -15), color);
-        Arena.AddLine(pos + new WDir(-25, -05), pos + new WDir(+25, -05), color);
-        Arena.AddLine(pos + new WDir(-25, +05), pos + new WDir(+25, +05), color);
-        Arena.AddLine(pos + new WDir(-25, +15), pos + new WDir(+25, +15), color);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -50,50 +33,137 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.
             Active = true;
     }
 
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action == WatchedAction)
+            Arena.Bounds = A11Byregot.StartingHammerBounds;
+    }
+
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index is >= 7 and <= 11)
+        if (index is >= 0x07 and <= 0x0B)
         {
-            var i = index - 7;
-            (_lineOffset[i], _lineMovement[i]) = state switch
+            var i = index - 0x07;
+            (LineOffset[i], LineMovement[i]) = state switch
             {
-                0x00020001 => (00, +1),
-                0x08000400 => (-1, +1),
-                0x00800040 => (00, -1),
-                0x80004000 => (+1, -1),
-                _ => (_lineOffset[i], 0),
+                0x00020001u => (0, +1),
+                0x08000400u => (-1, +1),
+                0x00800040u => (0, -1),
+                0x80004000u => (+1, -1),
+                _ => (LineOffset[i], 0),
             };
             MovementPending = true;
-            if (_lineMovement[i] == 0)
-                ReportError($"Unexpected env-control {i}={state:X}, offset={_lineOffset[i]}");
+            activation = WorldState.FutureTime(16d);
         }
-        else if (index == 26)
+        else if (index == 0x1A)
         {
             MovementPending = false;
             for (var i = 0; i < 5; ++i)
             {
-                _lineOffset[i] += _lineMovement[i];
-                _lineMovement[i] = 0;
+                LineOffset[i] += LineMovement[i];
+                LineMovement[i] = 0;
             }
+            var rects = new Rectangle[5];
+            var start = new WPos(default, 680f);
+            for (var i = 0; i < 5; ++i)
+            {
+                rects[i] = new(start + new WDir(LineOffset[i] * 10f, 10f * i), 15f, 5f);
+            }
+            var arena = new ArenaBoundsComplex(rects);
+            Arena.Bounds = arena;
+            Arena.Center = arena.Center;
         }
-        else if (index == 79 && state == 0x00080004)
+        else if (index == 0x4F && state == 0x00080004u)
         {
             Active = false;
-            Array.Fill(_lineOffset, 0);
-            Array.Fill(_lineMovement, 0);
+            Array.Fill(LineOffset, 0);
+            Array.Fill(LineMovement, 0);
         }
     }
 
-    private WPos CellCenter(int x, int z) => Arena.Center + 10 * new WDir(x, z);
+    public static WPos CellCenter(int x, int z) => A11Byregot.ArenaCenter + 10f * new WDir(x, z);
 
-    private bool CellDangerous(int x, int z, bool future)
+    private bool CellDangerous(int x, int z)
     {
-        var off = _lineOffset[z + 2];
-        if (future)
-            off += _lineMovement[z + 2];
+        var off = LineOffset[z + 2] + LineMovement[z + 2];
         return Math.Abs(x - off) > 1;
     }
 }
 
-class HammersLevinforge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Levinforge), new AOEShapeRect(50f, 5f));
-class HammersSpire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotSpire), new AOEShapeRect(50f, 15f));
+abstract class Rect(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50f, 5f));
+class DestroySideTiles(BossModule module) : Rect(module, AID.DestroySideTiles);
+class HammersLevinforge(BossModule module) : Rect(module, AID.Levinforge);
+
+class HammersSpire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotSpire), new AOEShapeRect(50f, 15f))
+{
+    private WPos? _safespot;
+    private readonly HammersCells _cells = module.FindComponent<HammersCells>()!;
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _safespot != null ? [] : CollectionsMarshal.AsSpan(Casters);
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        base.OnCastStarted(caster, spell);
+        if (spell.Action == WatchedAction)
+        {
+            ref readonly var aoe = ref CollectionsMarshal.AsSpan(Casters)[0];
+            var safespots = new List<WPos>();
+            {
+                for (var z = -2; z <= 2; ++z)
+                {
+                    for (var x = -2; x <= 2; ++x)
+                    {
+                        var center = HammersCells.CellCenter(x, z);
+                        if (!CellSafe(x, z, true) && CellSafe(x, z, false) && !aoe.Check(center))
+                            safespots.Add(center);
+                    }
+                }
+                var count = safespots.Count;
+                var minDistSq = float.MaxValue;
+                var primaryPos = Module.PrimaryActor.Position;
+                for (var i = 0; i < count; ++i)
+                {
+                    var safespot = safespots[i];
+                    var distSq = (safespot - primaryPos).LengthSq();
+                    if (distSq < minDistSq)
+                    {
+                        minDistSq = distSq;
+                        _safespot = safespot;
+                    }
+                }
+
+                bool CellSafe(int x, int z, bool future)
+                {
+                    var off = _cells.LineOffset[z + 2];
+                    if (future)
+                        off += _cells.LineMovement[z + 2];
+                    return Math.Abs(x - off) > 1;
+                }
+            }
+        }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (_safespot is WPos pos)
+            Arena.AddRect(pos, new(default, 1), 5f, 5f, 5f, Colors.Safe, 2);
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+        if (_safespot is WPos pos)
+            hints.GoalZones.Add(ShapeDistance.InvertedRect(pos, new WDir(default, 1f), 5f, 5f, 10f));
+    }
+
+    public override void OnEventEnvControl(byte index, uint state)
+    {
+        _safespot = null;
+    }
+
+    public override void AddGlobalHints(GlobalHints hints)
+    {
+        if (_safespot != null)
+            hints.Add("Prepare to go to upcoming safespot!");
+    }
+}

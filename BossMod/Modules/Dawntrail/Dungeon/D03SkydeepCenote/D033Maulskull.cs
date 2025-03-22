@@ -78,14 +78,18 @@ class Stonecarver(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = AOEs[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[i] = count != 1 ? aoe with { Color = Colors.Danger } : aoe;
+            {
+                if (count != 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
             else
-                aoes[i] = aoe with { Risky = false };
+                aoe.Risky = false;
         }
         return aoes;
     }
@@ -177,9 +181,11 @@ class Impact1(BossModule module) : Impact(module, AID.Impact1, 18f)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
             hints.AddForbiddenZone(ShapeDistance.InvertedDonutSector(source.Position, 10f, 12f, default, halfAngle), Module.CastFinishAt(source.CastInfo));
+        }
     }
 }
 
@@ -192,9 +198,11 @@ class Impact2(BossModule module) : Impact(module, AID.Impact2, 18f)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
             hints.AddForbiddenZone(ShapeDistance.InvertedDonutSector(source.Position, 10f, 12f, default, halfAngle), Module.CastFinishAt(source.CastInfo));
+        }
     }
 }
 
@@ -204,9 +212,11 @@ class Impact3(BossModule module) : Impact(module, AID.Impact3, 20f)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
             hints.AddForbiddenZone(ShapeDistance.InvertedDonutSector(source.Position, 10f, 15f, (source.Position.X == 90f ? 1f : -1f) * direction, halfAngle), Module.CastFinishAt(source.CastInfo));
+        }
     }
 }
 

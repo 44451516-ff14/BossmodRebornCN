@@ -149,6 +149,8 @@ public sealed record class ActionDefinition(ActionID ID)
 // note that it is associated to a specific worldstate, so that it can be used for things like action conditions
 public sealed class ActionDefinitions : IDisposable
 {
+    private static readonly ActionTweaksConfig _config = Service.Config.Get<ActionTweaksConfig>();
+
     private readonly Lumina.Excel.ExcelSheet<Lumina.Excel.Sheets.Action> _actionsSheet = Service.LuminaSheet<Lumina.Excel.Sheets.Action>()!;
     private readonly Lumina.Excel.ExcelSheet<Lumina.Excel.Sheets.Item> _itemsSheet = Service.LuminaSheet<Lumina.Excel.Sheets.Item>()!;
     private readonly Lumina.Excel.ExcelSheet<Lumina.Excel.RawRow> _cjcSheet = Service.LuminaGameData!.Excel.GetSheet<Lumina.Excel.RawRow>(null, "ClassJobCategory")!;
@@ -174,13 +176,14 @@ public sealed class ActionDefinitions : IDisposable
     public static readonly ActionID IDPotionInt = new(ActionType.Item, 1044165); // hq grade 2 gemdraught of intelligence
     public static readonly ActionID IDPotionMnd = new(ActionType.Item, 1044166); // hq grade 2 gemdraught of mind
 
-    // deep dungeon consumables
+    // content specific consumables
     public static readonly ActionID IDPotionSustaining = new(ActionType.Item, 20309);
     public static readonly ActionID IDPotionMax = new(ActionType.Item, 1013637);
     public static readonly ActionID IDPotionEmpyrean = new(ActionType.Item, 23163);
     public static readonly ActionID IDPotionSuper = new(ActionType.Item, 1023167);
     public static readonly ActionID IDPotionOrthos = new(ActionType.Item, 38944);
     public static readonly ActionID IDPotionHyper = new(ActionType.Item, 1038956);
+    public static readonly ActionID IDPotionEureka = new(ActionType.Item, 22306);
 
     // special general actions that we support
     public static readonly ActionID IDGeneralLimitBreak = new(ActionType.General, 3);
@@ -234,6 +237,7 @@ public sealed class ActionDefinitions : IDisposable
         RegisterPotion(IDPotionSuper, 1.1f);
         RegisterPotion(IDPotionOrthos, 1.1f);
         RegisterPotion(IDPotionHyper, 1.1f);
+        RegisterPotion(IDPotionEureka, 1.1f);
 
         // special content actions - bozja, deep dungeons, etc
         for (var i = BozjaHolsterID.None + 1; i < BozjaHolsterID.Count; ++i)
@@ -269,8 +273,13 @@ public sealed class ActionDefinitions : IDisposable
     // TODO should we check if dash trajectory will cross any zones with imminent activation?
     public static bool PreventDashIfDangerous(WorldState _, Actor player, Actor? target, AIHints hints)
     {
-        if (target == null || !Service.Config.Get<ActionTweaksConfig>().PreventDangerousDash)
+        if (target == null || !_config.PreventDangerousDash)
             return false;
+
+        // if there are pending knockbacks, god only knows where we would be sent after using a gapcloser
+        // note that once the knockback is actually active and not pending, we can probably cancel it with a dash
+        if (player.PendingKnockbacks.Count > 0)
+            return true;
 
         var dist = player.DistanceToHitbox(target);
         var dir = player.DirectionTo(target).Normalized();

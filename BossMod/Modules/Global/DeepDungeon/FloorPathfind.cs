@@ -28,13 +28,17 @@ internal sealed class FloorPathfind(ReadOnlySpan<RoomFlags> Map)
         Queue.Enqueue([startRoom]);
         while (Queue.TryDequeue(out var v))
         {
-            if (v[^1] == destRoom)
+            var v1 = v[^1];
+            if (v1 == destRoom)
             {
                 v.RemoveAt(0);
                 return v;
             }
-            foreach (var w in Edges(v[^1]))
+            var edges = CollectionsMarshal.AsSpan(Edges(v1));
+            var len = edges.Length;
+            for (var i = 0; i < len; ++i)
             {
+                var w = edges[i];
                 if (!Explored[w])
                 {
                     Explored[w] = true;
@@ -46,16 +50,18 @@ internal sealed class FloorPathfind(ReadOnlySpan<RoomFlags> Map)
         return [];
     }
 
-    private IEnumerable<int> Edges(int roomIndex)
+    private List<int> Edges(int roomIndex)
     {
         var md = Map[roomIndex];
+        var edges = new List<int>(4);
         if (md.HasFlag(RoomFlags.ConnectionN))
-            yield return roomIndex - 5;
+            edges.Add(roomIndex - 5);
         if (md.HasFlag(RoomFlags.ConnectionS))
-            yield return roomIndex + 5;
+            edges.Add(roomIndex + 5);
         if (md.HasFlag(RoomFlags.ConnectionW))
-            yield return roomIndex - 1;
+            edges.Add(roomIndex - 1);
         if (md.HasFlag(RoomFlags.ConnectionE))
-            yield return roomIndex + 1;
+            edges.Add(roomIndex + 1);
+        return edges;
     }
 }

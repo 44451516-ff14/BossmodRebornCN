@@ -1,35 +1,54 @@
 ﻿namespace BossMod.Dawntrail.Unreal.Un1Byakko;
 
-class VoiceOfThunder : Components.PersistentInvertibleVoidzone
+class VoiceOfThunder(BossModule module) : BossComponent(module)
 {
-    public VoiceOfThunder(BossModule module) : base(module, 2f, GetOrbs)
+    public static List<Actor> GetOrbs(BossModule module)
     {
-        InvertResolveAt = WorldState.CurrentTime;
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        var orbs = GetOrbs(Module);
-        if (orbs.Length != 0)
-            hints.Add("Touch the orbs!");
-    }
-
-    private static Actor[] GetOrbs(BossModule module)
-    {
-        var enemies = module.Enemies((uint)OID.AramitamaSoul);
-        var count = enemies.Count;
+        var orbs = module.Enemies((uint)OID.AramitamaSoul);
+        var count = orbs.Count;
         if (count == 0)
             return [];
 
-        var voidzones = new Actor[count];
-        var index = 0;
+        var filteredorbs = new List<Actor>(count);
         for (var i = 0; i < count; ++i)
         {
-            var z = enemies[i];
+            var z = orbs[i];
             if (!z.IsDead)
-                voidzones[index++] = z;
+                filteredorbs.Add(z);
         }
-        return voidzones[..index];
+        return filteredorbs;
+    }
+
+    public override void AddGlobalHints(GlobalHints hints)
+    {
+        var orbs = GetOrbs(Module);
+        var count = orbs.Count;
+        if (count != 0)
+            hints.Add("Soak the orbs!");
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var orbs = GetOrbs(Module);
+        var count = orbs.Count;
+        if (count != 0)
+        {
+            var forbidden = new Func<WPos, float>[count];
+            for (var i = 0; i < count; ++i)
+            {
+                var o = orbs[i];
+                forbidden[i] = ShapeDistance.InvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(default, 1f), 0.5f, 0.5f, 0.5f);
+            }
+            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), DateTime.MaxValue);
+        }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        var orbs = GetOrbs(Module);
+        var count = orbs.Count;
+        for (var i = 0; i < count; ++i)
+            Arena.AddCircle(orbs[i].Position, 2f, Colors.Safe);
     }
 }
 
@@ -57,11 +76,20 @@ class IntermissionOrbAratama(BossModule module) : Components.GenericAOEs(module,
         switch (spell.Action.ID)
         {
             case (uint)AID.IntermissionOrbSpawn:
-                AOEs.Add(new(_shape, spell.TargetXZ, default, WorldState.FutureTime(5.1f)));
+                AOEs.Add(new(_shape, spell.TargetXZ, default, WorldState.FutureTime(5.1d)));
                 break;
             case (uint)AID.IntermissionOrbAratama:
                 ++NumCasts;
-                AOEs.RemoveAll(aoe => aoe.Origin.AlmostEqual(spell.TargetXZ, 1f));
+                var count = AOEs.Count;
+                var pos = spell.TargetXZ;
+                for (var i = 0; i < count; ++i)
+                {
+                    if (AOEs[i].Origin.AlmostEqual(pos, 1f))
+                    {
+                        AOEs.RemoveAt(i);
+                        return;
+                    }
+                }
                 break;
         }
     }

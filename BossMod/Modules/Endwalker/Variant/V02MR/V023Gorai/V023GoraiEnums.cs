@@ -19,13 +19,13 @@ public enum AID : uint
     SulphuricStone = 34006, // Boss->self, 3.0s cast, single-target, summons stones
     FlameAndSulphur = 34007, // Boss->self, 3.0s cast, single-target, summons both
 
-    BrazenBalladExpanding = 34009, // Boss->self, 5.0s cast, single-target, modifies stones and flames, moves flame rect out, turns stones to donut aoe
-    FallingRockExpand = 34014, // Helper->self, no cast, range 5-16 donut
-    FireSpreadExpand = 34011, // Helper->self, no cast, range 46 width 5 rect
+    BrazenBalladSplitting = 34009, // Boss->self, 5.0s cast, single-target, modifies stones and flames, extends flame rect width, turns stones into large aoe
+    FallingRockSplit = 34014, // Helper->self, no cast, range 5-16 donut
+    FireSpreadSplit = 34011, // Helper->self, no cast, range 46 width 5 rect
 
-    BrazenBalladSplitting = 34008, // Boss->self, 5.0s cast, single-target, mofifies stones and flames, extends flame rect width, turns stones into large aoe
-    FireSpreadSplit = 34010, // Helper->self, no cast, range 46 width 10 rect
-    FallingRockSplit = 34013, // Helper->self, no cast, range 11 circle
+    BrazenBalladExpanding = 34008, // Boss->self, 5.0s cast, single-target, modifies stones and flames, moves flame rect out, turns stones to donut aoe
+    FireSpreadExpand = 34010, // Helper->self, no cast, range 46 width 10 rect
+    FallingRockExpand = 34013, // Helper->self, no cast, range 11 circle
 
     Unenlightenment = 34048, // Boss->self, 5.0s cast, single-target
     UnenlightenmentAOE = 34049, // Helper->self, no cast, range 60 circle

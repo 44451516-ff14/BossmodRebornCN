@@ -13,7 +13,7 @@ class FurysAegis(BossModule module) : Components.CastCounterMulti(module, [Actio
 ActionID.MakeSpell(AID.FurysAegisAOE2), ActionID.MakeSpell(AID.FurysAegisAOE3), ActionID.MakeSpell(AID.FurysAegisAOE4), ActionID.MakeSpell(AID.FurysAegisAOE5),
 ActionID.MakeSpell(AID.FurysAegisAOE6)]);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12064)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12064, PlanLevel = 90)]
 public class A23Halone(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultBounds)
 {
     public static readonly WPos ArenaCenter = new(-700f, 600f);

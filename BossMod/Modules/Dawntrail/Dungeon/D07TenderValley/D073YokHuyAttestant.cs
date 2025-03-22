@@ -30,7 +30,7 @@ public enum TetherID : uint
 
 class TectonicShift(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TectonicShift), 8f);
 class BoulderToss(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.BoulderToss));
-class SunToss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SunToss), 6);
+class SunToss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SunToss), 6f);
 
 class AncientWrath(BossModule module) : Components.GenericAOEs(module)
 {
@@ -39,7 +39,7 @@ class AncientWrath(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeRect rectMedium = new(22f, 4f);
     private static readonly AOEShapeRect rectLong = new(35f, 4f);
 
-    private static readonly (WPos Position, AOEShapeRect Shape)[] AOEMap =
+    private static readonly (WPos Position, AOEShapeRect Shape)[] aoeMap =
         [(new(-112.5f, -486.5f), rectMedium), (new(-147.5f, -471.5f), rectMedium),
         (new(-147.5f, -486.5f), rectShort), (new(-112.5f, -471.5f), rectShort)];
 
@@ -50,7 +50,7 @@ class AncientWrath(BossModule module) : Components.GenericAOEs(module)
         if (tether.ID == (uint)TetherID.StatueActivate)
         {
             var aoeShape = GetAOEShape(source.Position) ?? rectLong;
-            _aoes.Add(new(aoeShape, source.Position, source.Rotation, WorldState.FutureTime(8.1d)));
+            _aoes.Add(new(aoeShape, WPos.ClampToGrid(source.Position), source.Rotation, WorldState.FutureTime(8.1d)));
         }
     }
 
@@ -62,9 +62,12 @@ class AncientWrath(BossModule module) : Components.GenericAOEs(module)
 
     private static AOEShapeRect? GetAOEShape(WPos position)
     {
-        foreach (var (pos, shape) in AOEMap)
-            if (position.AlmostEqual(pos, 1))
-                return shape;
+        for (var i = 0; i < 4; ++i)
+        {
+            var aoe = aoeMap[i];
+            if (position.AlmostEqual(aoe.Position, 1f))
+                return aoe.Shape;
+        }
         return null;
     }
 }
@@ -84,7 +87,12 @@ class D073YokHuyAttestantStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12801)]
 public class D073YokHuyAttestant(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Rectangle(new(-130f, -475f), 17.5f, 22f)], [new Rectangle(new(-135.05f, -486.25f), 1.35f, 3.5f), new Rectangle(new(-124.4f, -471.4f), 1.3f, 3.75f)]);
+    private static readonly WPos[] vertices1 = [new(-134.226f, -482.956f), new(-134.105f, -483.161f), new(-134.227f, -484.617f), new(-134.259f, -486.314f), new(-134.168f, -488.471f),
+    new(-134.361f, -489.473f), new(-135.919f, -489.514f), new(-135.919f, -483.988f), new(-136.099f, -483.434f), new(-135.750f, -482.812f)];
+    private static readonly WPos[] vertices2 = [new(-125.309f, -474.651f), new(-125.429f, -474.446f), new(-125.308f, -472.991f), new(-125.276f, -471.294f), new(-125.366f, -469.136f),
+    new(-125.173f, -468.134f), new(-123.615f, -468.094f), new(-123.615f, -473.619f), new(-123.436f, -474.173f), new(-123.784f, -474.795f)];
+    private static readonly ArenaBoundsComplex arena = new([new Rectangle(new(-130f, -475f), 17.4f, 22f)], [new PolygonCustomO(vertices1, 0.5f), new PolygonCustomO(vertices2, 0.5f)]);
+
     private static readonly uint[] Trash = [(uint)OID.YokHuyAltar, (uint)OID.YokHuyAltar2, (uint)OID.YokHuyOrb];
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

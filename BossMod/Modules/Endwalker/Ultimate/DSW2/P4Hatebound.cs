@@ -27,16 +27,16 @@ class P4Hatebound(BossModule module) : BossComponent(module)
         {
             Arena.Actor(o.orb, Colors.Object, true);
             if (OrbReady(o.orb))
-                Arena.AddCircle(o.orb.Position, 6, _playerColors[pcSlot] == Color.Red ? Colors.Safe : Colors.Danger);
+                Arena.AddCircle(o.orb.Position, 6, _playerColors[pcSlot] == Color.Red ? Colors.Safe : 0);
         }
     }
 
     public override void OnActorCreated(Actor actor)
     {
-        var color = (OID)actor.OID switch
+        var color = actor.OID switch
         {
-            OID.AzurePrice => Color.Blue,
-            OID.GildedPrice => Color.Red,
+            (uint)OID.AzurePrice => Color.Blue,
+            (uint)OID.GildedPrice => Color.Red,
             _ => Color.None
         };
         if (color != Color.None)
@@ -45,10 +45,10 @@ class P4Hatebound(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var color = (SID)status.ID switch
+        var color = status.ID switch
         {
-            SID.Clawbound => Color.Red,
-            SID.Fangbound => Color.Blue,
+            (uint)SID.Clawbound => Color.Red,
+            (uint)SID.Fangbound => Color.Blue,
             _ => Color.None
         };
         if (color != Color.None && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
@@ -60,7 +60,7 @@ class P4Hatebound(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.FlareStar or AID.FlareNova or AID.FlareNovaFail && _orbs.FindIndex(o => o.orb == caster) is var index && index >= 0)
+        if (spell.Action.ID is (uint)AID.FlareStar or (uint)AID.FlareNova or (uint)AID.FlareNovaFail && _orbs.FindIndex(o => o.orb == caster) is var index && index >= 0)
             _orbs.AsSpan()[index].exploded = true;
     }
 
@@ -105,14 +105,14 @@ class P4MirageDive(BossModule module) : Components.CastCounter(module, ActionID.
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Clawbound)
-            _baiters.Set(Raid.FindSlot(actor.InstanceID));
+        if (status.ID == (uint)SID.Clawbound)
+            _baiters[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Clawbound)
-            _baiters.Clear(Raid.FindSlot(actor.InstanceID));
+        if (status.ID == (uint)SID.Clawbound)
+            _baiters[Raid.FindSlot(actor.InstanceID)] = false;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -121,9 +121,14 @@ class P4MirageDive(BossModule module) : Components.CastCounter(module, ActionID.
         if (spell.Action == WatchedAction)
         {
             _targets.Add(Raid.FindSlot(spell.MainTargetID));
-            _forbidden.Reset();
-            foreach (var i in _targets.TakeLast(4))
-                _forbidden.Set(i);
+            _forbidden = default;
+            var count = _targets.Count;
+            var startIndex = Math.Max(0, count - 4);
+
+            for (var i = startIndex; i < count; i++)
+            {
+                _forbidden[_targets[i]] = true;
+            }
         }
     }
 }

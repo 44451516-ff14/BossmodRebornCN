@@ -152,19 +152,26 @@ class Allfire(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
 
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
         if (!first)
-            return CollectionsMarshal.AsSpan(AOEs);
+            return aoes;
 
         var max = count >= 12 ? 12 : count == 8 ? 8 : 4;
-        var aoes = new AOEInstance[max];
-        var act0 = AOEs[0].Activation;
+        var deadline = aoes[0].Activation.AddSeconds(1d);
         var color = Colors.Danger;
         for (var i = 0; i < max; ++i)
         {
-            var aoe = AOEs[i];
-            aoes[i] = (aoe.Activation - act0).TotalSeconds < 1d ? aoe with { Color = count > 4 ? color : 0 } : aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            if (aoe.Activation < deadline)
+            {
+                if (count > 4)
+                    aoe.Color = color;
+                aoe.Risky = true;
+            }
+            else
+                aoe.Risky = false;
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

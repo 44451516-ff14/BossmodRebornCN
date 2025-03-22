@@ -43,7 +43,7 @@ class Boiling(BossModule module) : Components.StayMove(module)
     {
         if (status.ID == (uint)SID.Boiling && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
-            _boiling.Set(Raid.FindSlot(actor.InstanceID));
+            _boiling[Raid.FindSlot(actor.InstanceID)] = true;
             PlayerStates[slot] = new(Requirement.Stay, status.ExpireAt);
         }
     }
@@ -53,7 +53,7 @@ class Boiling(BossModule module) : Components.StayMove(module)
         if (Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             if (status.ID == (uint)SID.Boiling)
-                _boiling.Clear(Raid.FindSlot(actor.InstanceID));
+                _boiling[Raid.FindSlot(actor.InstanceID)] = false;
             else if (status.ID == (uint)SID.Pyretic)
                 PlayerStates[slot] = default;
         }
@@ -63,7 +63,10 @@ class Boiling(BossModule module) : Components.StayMove(module)
     {
         base.AddHints(slot, actor, hints);
         if (_boiling[slot])
-            hints.Add($"Boiling on you in {(actor.FindStatus(SID.Boiling)!.Value.ExpireAt - WorldState.CurrentTime).TotalSeconds:f1}s. (Pyretic!)");
+        {
+            var remaining = (PlayerStates[slot].Activation - WorldState.CurrentTime).TotalSeconds;
+            hints.Add($"Boiling on you in {remaining:f1}s. (Pyretic!)", remaining < 3d);
+        }
     }
 }
 
@@ -80,16 +83,20 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = aoe.Shape != cone };
+            {
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
+            else if (aoe.Shape != cone)
+                aoe.Risky = false;
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -111,9 +118,9 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
         }
         void AddAOEs(AOEShape? secondaryShape)
         {
-            var position = Module.PrimaryActor.Position;
+            var position = spell.LocXZ;
             _aoes.Add(new(cone, position, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.Add(new(cone, position, spell.Rotation + 180.Degrees(), Module.CastFinishAt(spell, 2.3f)));
+            _aoes.Add(new(cone, position, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 2.3f)));
             if (secondaryShape != null)
                 _aoes.Add(new(secondaryShape, position, default, Module.CastFinishAt(spell, 4.5f)));
         }
@@ -138,7 +145,7 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
 
 class HaloOfHeat1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HaloOfHeat1), new AOEShapeDonut(10f, 40f));
 class VeilOfHeat1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VeilOfHeat1), 15f);
-class FiresDomain(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.FiresDomain), 3);
+class FiresDomain(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.FiresDomain), 3f);
 class CaptiveBolt(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.CaptiveBolt), 6f, 8);
 class PyreOfRebirth(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PyreOfRebirth));
 class CullingBlade(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CullingBlade));

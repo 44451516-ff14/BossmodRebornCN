@@ -30,9 +30,9 @@ public enum AID : uint
     TenderFury = 39242 // Boss->player, 5.0s cast, single-target, tankbuster
 }
 
-class HeavyweightNeedlesArenaChange(BossModule module) : Components.GenericAOEs(module)
+class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCustom square = new([new Square(D071Barreltender.ArenaCenter, 25)], [new Square(D071Barreltender.ArenaCenter, 20)]);
+    private static readonly AOEShapeCustom square = new([new Square(D071Barreltender.ArenaCenter, 25f)], [new Square(D071Barreltender.ArenaCenter, 20f)]);
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
@@ -52,48 +52,62 @@ class HeavyweightNeedlesArenaChange(BossModule module) : Components.GenericAOEs(
     }
 }
 
-class NeedleStormSuperstormHeavyWeightNeedles(BossModule module) : Components.GenericAOEs(module)
+class HeavyweightNeedles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavyweightNeedles), new AOEShapeCone(36f, 25f.Degrees()))
 {
-    private readonly List<AOEInstance> _aoesCircles = new(16);
-    private readonly List<AOEInstance> _aoesCones = new(8);
-    private static readonly AOEShapeCircle circleBig = new(11f);
-    private static readonly AOEShapeCircle circleSmall = new(6f);
-    private static readonly AOEShapeCone cone = new(36f, 25f.Degrees());
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = Casters.Count;
+        if (count == 0)
+            return;
+        base.AddAIHints(slot, actor, assignment, hints);
+        if (NumCasts < 16)
+            return;
+        var aoe = Casters[0];
+        // stay close to the middle to switch safespots
+        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
+    }
+}
+
+class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(module)
+{
+    private readonly List<AOEInstance> _aoes = new(16);
+    private static readonly AOEShapeCircle circleBig = new(11f), circleSmall = new(6f);
+
     private readonly BarrelBreaker _kb = module.FindComponent<BarrelBreaker>()!;
+    private readonly HeavyweightNeedles _aoe = module.FindComponent<HeavyweightNeedles>()!;
     private bool cactiActive;
-    private bool cactiActive2;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var countCircles = _aoesCircles.Count;
-        var countCones = _aoesCones.Count;
-        var adjCircleCount = cactiActive ? (countCircles > 8 ? 8 : countCircles) : 0; // next wave of cactus helpers spawns immediately after first wave starts casting, so we need to limit to 8
-        var total = adjCircleCount + countCones;
-        if (total == 0)
+        if (_aoe.Casters.Count != 0)
             return [];
-        var aoes = new AOEInstance[total];
-        if (cactiActive)
+        var count = _aoes.Count;
+        var max = cactiActive ? (count > 8 ? 8 : count) : 0; // next wave of cactus helpers spawns immediately after first wave starts casting, so we need to limit to 8
+        if (max == 0)
+            return [];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+
+        var kb = _kb;
+        var isKnockback = kb.Casters.Count != 0;
+        var isKnockbackImmune = isKnockback && _kb.IsImmune(slot, Module.CastFinishAt(_kb.Casters[0].CastInfo));
+        var isKnockbackButImmune = isKnockback && isKnockbackImmune;
+        for (var i = 0; i < max; ++i)
         {
-            var kb = _kb;
-            var isKnockback = kb.Casters.Count != 0;
-            var isKnockbackImmune = isKnockback && _kb.IsImmune(slot, Module.CastFinishAt(_kb.Casters[0].CastInfo));
-            var isKnockbackButImmune = isKnockback && isKnockbackImmune;
-            var areConesActive = countCircles > 0;
-            for (var i = 0; i < adjCircleCount; ++i)
-                aoes[i] = _aoesCircles[i] with { Risky = cactiActive2 && !areConesActive && isKnockbackButImmune };
+            aoes[i].Risky = !isKnockback || isKnockbackButImmune;
         }
-        if (countCones != 0)
-            for (var i = 0; i < countCones; ++i)
-                aoes[adjCircleCount + i] = _aoesCones[i] with { Color = cactiActive ? Colors.Danger : default };
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnActorCreated(Actor actor)
     {
-        if (actor.OID == (uint)OID.CactusSmall)
-            _aoesCircles.Add(new(circleSmall, actor.Position));
-        else if (actor.OID == (uint)OID.CactusBig)
-            _aoesCircles.Add(new(circleBig, actor.Position));
+        AOEShape? shape = actor.OID switch
+        {
+            (uint)OID.CactusSmall => circleSmall,
+            (uint)OID.CactusBig => circleBig,
+            _ => null
+        };
+        if (shape != null)
+            _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position)));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -101,75 +115,90 @@ class NeedleStormSuperstormHeavyWeightNeedles(BossModule module) : Components.Ge
         if (spell.Action.ID == (uint)AID.TenderDrop)
         {
             cactiActive = true;
-            var count = _aoesCircles.Count;
-            for (var i = 0; i < count; ++i)
-                _aoesCircles[i] = _aoesCircles[i] with { Activation = Module.CastFinishAt(spell, 13.7f) };
+            var count = _aoes.Count;
+            var max = count > 8 ? 8 : count;
+            var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
+
+            for (var i = 0; i < max; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                aoe.Activation = Module.CastFinishAt(spell, 13.7f);
+            }
         }
-        else if (spell.Action.ID == (uint)AID.HeavyweightNeedles)
-        {
-            _aoesCones.Add(new(cone, caster.Position, spell.Rotation, Module.CastFinishAt(spell)));
-            if (cactiActive)
-                cactiActive2 = true;
-        }
-        else if (spell.Action.ID == (uint)AID.BarrelBreaker)
-            cactiActive2 = true;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (_aoesCircles.Count != 0 && spell.Action.ID is (uint)AID.NeedleStorm or (uint)AID.NeedleSuperstorm)
+        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.NeedleStorm or (uint)AID.NeedleSuperstorm)
         {
-            _aoesCircles.RemoveAt(0);
+            _aoes.RemoveAt(0);
             cactiActive = false;
-            cactiActive2 = false;
         }
-        else if (spell.Action.ID == (uint)AID.HeavyweightNeedles)
-            _aoesCones.Clear();
     }
 }
 
-abstract class Prickly(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(36f, 165f.Degrees()));
+class Prickly(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(36f, 165f.Degrees()));
 class PricklyRight(BossModule module) : Prickly(module, AID.PricklyRight);
 class PricklyLeft(BossModule module) : Prickly(module, AID.PricklyLeft);
 
 class SucculentStomp(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.SucculentStomp), 6f, 4, 4);
 class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BarrelBreaker), 20f)
 {
-    private static readonly Angle a5 = 5f.Degrees(), a135 = 135f.Degrees(), a45 = 45f.Degrees();
-    private readonly NeedleStormSuperstormHeavyWeightNeedles _aoe = module.FindComponent<NeedleStormSuperstormHeavyWeightNeedles>()!;
+    private static readonly Angle a10 = 10f.Degrees(), a135 = 135f.Degrees(), a45 = 45f.Degrees();
+    private enum Pattern { None, NESW, NWSE }
+    private Pattern CurrentPattern;
+
+    public override void OnActorEAnim(Actor actor, uint state)
+    {
+        if (actor.OID == (uint)OID.CactusSmall && state == 0x00010002)
+        {
+            var add = actor.Position.X + actor.Position.Z;
+            if (add == 400f) // new WPos(-55f, 455f)
+                CurrentPattern = Pattern.NESW;
+            else if (add == 430f) // new WPos(-55f, 485f)
+                CurrentPattern = Pattern.NWSE;
+        }
+    }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
-            var forbidden = new Func<WPos, float>[2];
-            var cactiSmall = Module.Enemies((uint)OID.CactusSmall);
-            var count = cactiSmall.Count;
-            var pattern = false;
-            for (var i = 0; i < count; ++i)
+            var source = Casters[0];
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (!IsImmune(slot, act))
             {
-                if (cactiSmall[i].Position == new WPos(-55f, 455f))
-                {
-                    pattern = true;
-                    break;
-                }
+                var forbidden = new Func<WPos, float>[2];
+                var pattern = CurrentPattern == Pattern.NESW;
+                var castInfo = source.CastInfo;
+                var pos = castInfo!.LocXZ;
+                forbidden[0] = ShapeDistance.InvertedCone(pos, 4f, pattern ? a135 : -a135, a10);
+                forbidden[1] = ShapeDistance.InvertedCone(pos, 4f, pattern ? -a45 : a45, a10);
+                hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
             }
-            forbidden[0] = ShapeDistance.InvertedDonutSector(source.Position, 4f, 5f, pattern ? a135 : -a135, a5);
-            forbidden[1] = ShapeDistance.InvertedDonutSector(source.Position, 4f, 5f, pattern ? -a45 : a45, a5);
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(source.CastInfo));
         }
     }
+
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoes = _aoe.ActiveAOEs(slot, actor);
-        var len = aoes.Length;
-        for (var i = 0; i < len; ++i)
+        var aoe = Module.FindComponent<NeedleStormSuperstorm>();
+        if (aoe != null)
         {
-            if (aoes[i].Check(pos))
-                return true;
+            var aoes = aoe.ActiveAOEs(slot, actor);
+            var len = aoes.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                if (aoes[i].Check(pos))
+                    return true;
+            }
         }
         return !Module.InBounds(pos);
+    }
+
+    public override void OnActorDestroyed(Actor actor)
+    {
+        if (actor.OID == (uint)OID.CactusSmall)
+            CurrentPattern = Pattern.None;
     }
 }
 
@@ -181,9 +210,10 @@ class D071BarreltenderStates : StateMachineBuilder
     public D071BarreltenderStates(BossModule module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<BarrelBreaker>()
-            .ActivateOnEnter<HeavyweightNeedlesArenaChange>()
-            .ActivateOnEnter<NeedleStormSuperstormHeavyWeightNeedles>()
+            .ActivateOnEnter<HeavyweightNeedles>()
+            .ActivateOnEnter<NeedleStormSuperstorm>()
             .ActivateOnEnter<PricklyRight>()
             .ActivateOnEnter<PricklyLeft>()
             .ActivateOnEnter<TenderFury>()

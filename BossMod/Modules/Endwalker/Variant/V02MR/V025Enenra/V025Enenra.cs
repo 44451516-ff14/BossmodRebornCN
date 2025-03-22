@@ -13,9 +13,8 @@ class ClearingSmoke(BossModule module) : Components.SimpleKnockbacks(module, Act
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (_aoe.Casters.Count != 0 && source != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 4f), Module.CastFinishAt(source.CastInfo));
+        if (Casters.Count != 0 && _aoe.Casters.Count != 0)
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 4f), Module.CastFinishAt(Casters[0].CastInfo));
     }
 }
 

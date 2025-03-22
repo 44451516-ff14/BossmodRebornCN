@@ -11,5 +11,5 @@ class RightBank(BossModule module) : Bank(module, AID.RightBank);
 class HieroglyphikaLeftBank(BossModule module) : Bank(module, AID.HieroglyphikaLeftBank);
 class HieroglyphikaRightBank(BossModule module) : Bank(module, AID.HieroglyphikaRightBank);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus, LTS", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962, NameID = 11298, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus, LTS", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962, NameID = 11298, SortOrder = 2, PlanLevel = 90)]
 public class A31Thaliak(WorldState ws, Actor primary) : BossModule(ws, primary, TetraktysBorder.NormalCenter, TetraktysBorder.NormalBounds);

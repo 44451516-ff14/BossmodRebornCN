@@ -24,8 +24,8 @@ public enum AID : uint
 
     BuilderForge = 29034, // Boss->self, no cast, single-target, visual
     DestroySideTiles = 29044, // Helper->self, 9.0s cast, range 50 width 10 rect (cast at e.g. [+-20, 675])
-    PealOfTheHammer1 = 29039, // Boss->self, no cast, single-target, triggers side hammers (envcontrol 7-11)
-    PealOfTheHammer2 = 29041, // Boss->self, no cast, single-target, triggers levinforge hammer (envcontrol 21)
+    PealOfTheHammer1 = 29039, // Boss->self, no cast, single-target, triggers side hammers (envcontrol 0x07-0x0B)
+    PealOfTheHammer2 = 29041, // Boss->self, no cast, single-target, triggers levinforge hammer (envcontrol 0x15)
     Levinforge = 29042, // Helper->self, 18.5s cast, range 50 width 10 rect aoe, caster starts at 'adjusted' location by hammer's hit (e.g. [0, 675])
     ByregotSpire = 29040, // Boss->self, 11.0s cast, range 50 width 30 rect aoe
 

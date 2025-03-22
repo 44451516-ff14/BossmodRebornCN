@@ -121,8 +121,7 @@ class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(modu
             var len = aoes.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var aoe = ref aoes[i];
-                if (aoe.Check(pos))
+                if (aoes[i].Check(pos))
                     return true;
             }
         }

@@ -13,11 +13,11 @@ public enum AID : uint
     ProximityPlasma2 = 39113, // Boss->self, 1.0s cast, range 20 circle
     RingLightning1 = 39107, // Boss->self, 5.0s cast, range 8-60 donut
     RingLightning2 = 39114, // Boss->self, 1.0s cast, range 8-60 donut
-    Magnetron = 39108, // Boss->self, 3.0s cast, range 40 circle, applies positive/negative charges
-    Magnetoplasma1 = 39109, // Boss->self, 6.0s cast, range 60 circle, circle
-    Magnetoplasma2 = 39111, // Boss->self, 6.0s cast, range 60 circle, circle
-    Magnetoring1 = 39112, // Boss->self, 6.0s cast, range 60 circle, donut
-    Magnetoring2 = 39110, // Boss->self, 6.0s cast, range 60 circle, donut
+    Magnetron = 39108, // Boss->self, 3.0s cast, range 40 circle, applies positive/negative charges, knockback or attract distance 10
+    Magnetoplasma1 = 39109, // Boss->self, 6.0s cast, range 60 circle, circle, positive charge
+    Magnetoplasma2 = 39111, // Boss->self, 6.0s cast, range 60 circle, circle, negative charge
+    Magnetoring1 = 39110, // Boss->self, 6.0s cast, range 60 circle, donut, positive charge
+    Magnetoring2 = 39112, // Boss->self, 6.0s cast, range 60 circle, donut, negative charge
     ThunderousShower = 39115, // Boss->player, 5.0s cast, range 6 circle stack
     Electrowave = 39116 // Boss->self, 4.0s cast, range 60 circle
 }
@@ -36,59 +36,22 @@ public enum IconID : uint
 
 class Magnetism(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly MagnetismCircleDonut? _aoe = module.FindComponent<MagnetismCircleDonut>();
-    private enum MagneticPole { None, Plus, Minus }
-    private MagneticPole CurrentPole;
-    private enum Shape { None, Donut, Circle, Any }
-    private Shape CurrentShape;
-    private readonly HashSet<(Actor, uint)> statusOnActor = [];
+    private BitMask positiveCharge;
+    private BitMask negativeCharge;
     private DateTime activation;
-    private bool done;
-    private DateTime activation2;
-
-    private bool IsKnockback(Actor actor, Shape shape, MagneticPole pole)
-        => (shape == Shape.Any || CurrentShape == shape) && CurrentPole == pole && statusOnActor.Contains((actor, (uint)(pole == MagneticPole.Plus ? SID.PositiveCharge : SID.NegativeCharge)));
-
-    private bool IsPull(Actor actor, Shape shape, MagneticPole pole)
-        => (shape == Shape.Any || CurrentShape == shape) && CurrentPole == pole && statusOnActor.Contains((actor, (uint)(pole == MagneticPole.Plus ? SID.NegativeCharge : SID.PositiveCharge)));
+    private bool bossCharge; // false if negative, true if positive
+    private bool shape; // false if circle, true if donut
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        if (IsKnockback(actor, Shape.Any, MagneticPole.Plus) || IsKnockback(actor, Shape.Any, MagneticPole.Minus))
-            return new Knockback[1] { new(Module.PrimaryActor.Position, 10f, activation) };
-        else if (IsPull(actor, Shape.Any, MagneticPole.Plus) || IsPull(actor, Shape.Any, MagneticPole.Minus))
-            return new Knockback[1] { new(Module.PrimaryActor.Position, 10f, activation, Kind: Kind.TowardsOrigin) };
+        if (activation != default)
+        {
+            if (positiveCharge[slot])
+                return new Knockback[1] { new(Module.PrimaryActor.Position, 10f, activation, Kind: bossCharge ? Kind.AwayFromOrigin : Kind.TowardsOrigin) };
+            if (negativeCharge[slot])
+                return new Knockback[1] { new(Module.PrimaryActor.Position, 10f, activation, Kind: bossCharge ? Kind.TowardsOrigin : Kind.AwayFromOrigin) };
+        }
         return [];
-    }
-
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
-    {
-        if (_aoe == null)
-            return false;
-        var aoes = _aoe.ActiveAOEs(slot, actor);
-        var len = aoes.Length;
-        for (var i = 0; i < len; ++i)
-        {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
-                return true;
-        }
-        return false;
-    }
-
-    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
-    {
-        switch (iconID)
-        {
-            case (uint)IconID.PositiveChargeBoss:
-                CurrentPole = MagneticPole.Plus;
-                activation = WorldState.FutureTime(6);
-                break;
-            case (uint)IconID.NegativeChargeBoss:
-                CurrentPole = MagneticPole.Minus;
-                activation = WorldState.FutureTime(6);
-                break;
-        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -96,58 +59,86 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.Magnetoplasma1:
-            case (uint)AID.Magnetoplasma2:
-                CurrentShape = Shape.Circle;
-                break;
             case (uint)AID.Magnetoring1:
+                bossCharge = true;
+                shape = spell.Action.ID == (uint)AID.Magnetoring1;
+                activation = Module.CastFinishAt(spell);
+                break;
+            case (uint)AID.Magnetoplasma2:
             case (uint)AID.Magnetoring2:
-                CurrentShape = Shape.Donut;
+                bossCharge = false;
+                shape = spell.Action.ID == (uint)AID.Magnetoring2;
+                activation = Module.CastFinishAt(spell);
                 break;
         }
-    }
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        base.OnStatusGain(actor, status);
-        if (status.ID is ((uint)SID.PositiveCharge) or ((uint)SID.NegativeCharge))
-            statusOnActor.Add((actor, status.ID));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.Magnetoring1 or (uint)AID.Magnetoring2 or (uint)AID.Magnetoplasma1 or (uint)AID.Magnetoplasma2)
+        if (spell.Action.ID is (uint)AID.Magnetoplasma1 or (uint)AID.Magnetoplasma2 or (uint)AID.Magnetoring1 or (uint)AID.Magnetoring2)
+            activation = default;
+    }
+
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
+    {
+        var comp = Module.FindComponent<MagnetismCircleDonut>();
+        if (comp != null && comp.AOE is Components.GenericAOEs.AOEInstance aoe)
         {
-            done = true;
-            activation2 = WorldState.FutureTime(1);
+            if (aoe.Check(pos))
+                return true;
+        }
+        return false;
+    }
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.PositiveCharge:
+                positiveCharge[Raid.FindSlot(actor.InstanceID)] = true;
+                break;
+            case (uint)SID.NegativeCharge:
+                negativeCharge[Raid.FindSlot(actor.InstanceID)] = true;
+                break;
         }
     }
 
-    public override void Update()
+    public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if (activation2 != default && done && WorldState.CurrentTime > activation2) // delay clearing knockbacks/pulls to wait for action effects
+        switch (status.ID)
         {
-            CurrentPole = MagneticPole.None;
-            CurrentShape = Shape.None;
-            statusOnActor.Clear();
-            activation2 = default;
-            done = false;
+            case (uint)SID.PositiveCharge:
+                positiveCharge[Raid.FindSlot(actor.InstanceID)] = false;
+                break;
+            case (uint)SID.NegativeCharge:
+                negativeCharge[Raid.FindSlot(actor.InstanceID)] = false;
+                break;
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveKnockbacks(slot, actor).Length != 0 && IsImmune(slot, ActiveKnockbacks(slot, actor)[0].Activation))
+        if (activation == default)
             return;
 
-        Func<WPos, float>? forbidden = null;
-        if (IsKnockback(actor, Shape.Circle, MagneticPole.Plus) || IsKnockback(actor, Shape.Circle, MagneticPole.Minus))
-            forbidden = ShapeDistance.Circle(Module.PrimaryActor.Position, 10f);
-        else if (IsPull(actor, Shape.Circle, MagneticPole.Plus) || IsPull(actor, Shape.Circle, MagneticPole.Minus))
-            forbidden = ShapeDistance.Circle(Module.PrimaryActor.Position, 30f);
-        else if (IsKnockback(actor, Shape.Donut, MagneticPole.Plus) || IsKnockback(actor, Shape.Donut, MagneticPole.Minus))
-            forbidden = ShapeDistance.InvertedCircle(Module.PrimaryActor.Position, 1f);
-        else if (IsPull(actor, Shape.Donut, MagneticPole.Plus) || IsPull(actor, Shape.Donut, MagneticPole.Minus))
-            forbidden = ShapeDistance.InvertedCircle(Module.PrimaryActor.Position, 18f);
+        var active = ActiveKnockbacks(slot, actor);
+        if (active.Length == 0 || IsImmune(slot, active[0].Activation))
+            return;
+
+        var isPositive = positiveCharge[slot];
+        var isNegative = negativeCharge[slot];
+        var isPull = !bossCharge && isPositive || bossCharge && isNegative;
+        var isKnockback = bossCharge && isPositive || !bossCharge && isNegative;
+        var pos = Module.PrimaryActor.Position;
+
+        var forbidden = shape
+            ? isPull ? ShapeDistance.InvertedCircle(pos, 18f)
+            : isKnockback ? ShapeDistance.InvertedCircle(pos, 1f)
+            : null
+            : isPull ? ShapeDistance.Circle(pos, 30f)
+            : isKnockback ? ShapeDistance.Circle(pos, 10f)
+            : null;
+
         if (forbidden != null)
             hints.AddForbiddenZone(forbidden, activation);
     }
@@ -158,21 +149,27 @@ class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(module)
     private readonly Magnetism _kb = module.FindComponent<Magnetism>()!;
     private static readonly AOEShapeDonut donut = new(8f, 60f);
     private static readonly AOEShapeCircle circle = new(20f);
-    private AOEInstance? _aoe;
+    public AOEInstance? AOE;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(AOEShape shape) => _aoe = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, 2.5f));
+        void AddAOE(AOEShape shape, float delay = default) => AOE = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay));
         switch (spell.Action.ID)
         {
             case (uint)AID.Magnetoplasma1:
             case (uint)AID.Magnetoplasma2:
+                AddAOE(circle, 2.5f);
+                break;
+            case (uint)AID.ProximityPlasma1:
                 AddAOE(circle);
                 break;
             case (uint)AID.Magnetoring1:
             case (uint)AID.Magnetoring2:
+                AddAOE(donut, 2.5f);
+                break;
+            case (uint)AID.RingLightning1:
                 AddAOE(donut);
                 break;
         }
@@ -180,8 +177,8 @@ class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.ProximityPlasma2 or (uint)AID.RingLightning2)
-            _aoe = null;
+        if (spell.Action.ID is (uint)AID.ProximityPlasma1 or (uint)AID.ProximityPlasma2 or (uint)AID.RingLightning1 or (uint)AID.RingLightning2)
+            AOE = null;
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -192,8 +189,6 @@ class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ProximityPlasma1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ProximityPlasma1), 20f);
-class RingLightning1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RingLightning1), new AOEShapeDonut(8f, 60f));
 class ThunderousShower(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ThunderousShower), 6f, 8);
 class Electrowave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Electrowave));
 class Magnetron(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Magnetron));
@@ -204,10 +199,9 @@ class UrnaVariabilisStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Magnetron>()
+            .ActivateOnEnter<Electrowave>()
             .ActivateOnEnter<Magnetism>()
             .ActivateOnEnter<MagnetismCircleDonut>()
-            .ActivateOnEnter<ProximityPlasma1>()
-            .ActivateOnEnter<RingLightning1>()
             .ActivateOnEnter<ThunderousShower>();
     }
 }

@@ -87,9 +87,9 @@ class Turbine(BossModule module) : Components.SimpleKnockbacks(module, ActionID.
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
+            var source = Casters[0];
             var component = _aoe.Sources(Module).ToList();
             var forbidden = new List<Func<WPos, float>>
             {
@@ -103,12 +103,14 @@ class Turbine(BossModule module) : Components.SimpleKnockbacks(module, ActionID.
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        foreach (var aoe in _aoe.ActiveAOEs(slot, actor))
+        var aoes = _aoe.ActiveAOEs(slot, actor);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
                 return true;
         }
-        return !Arena.InBounds(pos);
+        return !Module.InBounds(pos);
     }
 }
 

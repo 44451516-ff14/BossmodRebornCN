@@ -26,9 +26,9 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
     {
         var movements = ForcedMovements(actor);
         var count = movements.Count;
-        if (movements.Count == 0)
+        if (count == 0)
             return;
-        var last = ForcedMovements(actor)[count - 1];
+        var last = movements[count - 1];
         if (last.from != last.to && DestinationUnsafe(slot, actor, last.to))
             hints.Add("Aim for safe spot!");
     }
@@ -37,8 +37,6 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
     {
         var movements = ForcedMovements(pc);
         var count = movements.Count;
-        if (count == 0)
-            return;
         for (var i = 0; i < count; ++i)
         {
             var m = movements[i];

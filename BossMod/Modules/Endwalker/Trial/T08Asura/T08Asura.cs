@@ -7,14 +7,14 @@ class Ephemerality(BossModule module) : Components.RaidwideCast(module, ActionID
 
 class CuttingJewel(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.CuttingJewel), new AOEShapeCircle(4f), true, tankbuster: true);
 
-class IconographyPedestalPurge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyPedestalPurge), 10);
-class PedestalPurge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PedestalPurge), 60);
-class IconographyWheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyWheelOfDeincarnation), new AOEShapeDonut(8, 40));
-class WheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WheelOfDeincarnation), new AOEShapeDonut(48, 96));
-class IconographyBladewise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyBladewise), new AOEShapeRect(50, 3));
-class Bladewise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bladewise), new AOEShapeRect(100, 14));
-class Scattering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scattering), new AOEShapeRect(20, 3));
-class OrderedChaos(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.OrderedChaos), 5);
+class IconographyPedestalPurge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyPedestalPurge), 10f);
+class PedestalPurge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PedestalPurge), 60f);
+class IconographyWheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyWheelOfDeincarnation), new AOEShapeDonut(8f, 40f));
+class WheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WheelOfDeincarnation), new AOEShapeDonut(48f, 96f));
+class IconographyBladewise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyBladewise), new AOEShapeRect(50f, 3f));
+class Bladewise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bladewise), new AOEShapeRect(100f, 14f));
+class Scattering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scattering), new AOEShapeRect(20f, 3f));
+class OrderedChaos(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.OrderedChaos), 5f);
 
 class T08AsuraStates : StateMachineBuilder
 {

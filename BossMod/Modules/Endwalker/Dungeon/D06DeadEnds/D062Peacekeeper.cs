@@ -88,8 +88,7 @@ class EclipsingExhaustKnockback(BossModule module) : Components.SimpleKnockbacks
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
                 return true;
         }
         return !Module.InBounds(pos);
@@ -97,9 +96,9 @@ class EclipsingExhaustKnockback(BossModule module) : Components.SimpleKnockbacks
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
+            var source = Casters[0];
             var component = _aoe.Casters;
             var count = component.Count;
             var forbidden = new Func<WPos, float>[count + 1];

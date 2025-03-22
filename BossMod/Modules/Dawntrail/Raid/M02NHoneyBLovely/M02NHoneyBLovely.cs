@@ -34,11 +34,30 @@ class Fracture(BossModule module) : Components.CastTowers(module, ActionID.MakeS
 {
     public override void Update()
     {
-        if (Towers.Count == 0)
+        var count = Towers.Count;
+        if (count == 0)
             return;
-        var forbidden = Raid.WithSlot(false, true, true).WhereActor(p => p.Statuses.Any(i => i.ID is ((uint)SID.HeadOverHeels) or ((uint)SID.HopelessDevotion))).Mask();
-        foreach (ref var t in Towers.AsSpan())
+        var party = Raid.WithoutSlot(false, true, true);
+        var len = party.Length;
+        BitMask forbidden = new();
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var statuses = ref party[i].Statuses;
+            var lenStatuses = statuses.Length;
+            for (var j = 0; j < lenStatuses; ++j)
+            {
+                if (statuses[j].ID is ((uint)SID.HeadOverHeels) or ((uint)SID.HopelessDevotion))
+                {
+                    forbidden[i] = true;
+                }
+            }
+        }
+        var towers = CollectionsMarshal.AsSpan(Towers);
+        for (var i = 0; i < count; ++i)
+        {
+            ref var t = ref towers[i];
             t.ForbiddenSoakers = forbidden;
+        }
     }
 }
 

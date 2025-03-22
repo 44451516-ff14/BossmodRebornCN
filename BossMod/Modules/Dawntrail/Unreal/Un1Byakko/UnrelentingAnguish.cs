@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Unreal.Un1Byakko;
 
-class UnrelentingAnguish(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 2)
+class UnrelentingAnguish(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 2f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -27,8 +27,22 @@ class OminousWind(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (Targets[slot] && Raid.WithSlot(false, true, true).IncludedInMask(Targets).InRadiusExcluding(actor, 6).Any())
-            hints.Add("GTFO from other bubble!");
+        if (Targets[slot])
+        {
+            var party = Raid.WithSlot(false, true, true);
+            var len = party.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var p = ref party[i];
+                if (p.Item1 == slot)
+                    continue;
+                if (Targets[i] && p.Item2.Position.InCircle(actor.Position, 6f))
+                {
+                    hints.Add("GTFO from other bubble!");
+                    return;
+                }
+            }
+        }
     }
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => Targets[pcSlot] && Targets[playerSlot] ? PlayerPriority.Danger : PlayerPriority.Irrelevant;
@@ -36,24 +50,58 @@ class OminousWind(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (Targets[pcSlot])
-            foreach (var (_, p) in Raid.WithSlot(false, true, true).IncludedInMask(Targets).Exclude(pc))
-                Arena.AddCircle(p.Position, 6, Colors.Danger);
+        {
+            var party = Raid.WithSlot(false, true, true);
+            var len = party.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var p = ref party[i];
+                if (p.Item1 == pcSlot)
+                    continue;
+                if (Targets[p.Item1])
+                    Arena.AddCircle(p.Item2.Position, 6f);
+            }
+        }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.OminousWind)
-            Targets.Set(Raid.FindSlot(actor.InstanceID));
+        if (status.ID == (uint)SID.OminousWind)
+            Targets[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.OminousWind)
-            Targets.Clear(Raid.FindSlot(actor.InstanceID));
+        if (status.ID == (uint)SID.OminousWind)
+            Targets[Raid.FindSlot(actor.InstanceID)] = false;
     }
 }
 
-class GaleForce(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6), (uint)IconID.Bombogenesis, ActionID.MakeSpell(AID.GaleForce), 8.1f, true);
+class GaleForce(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6f), (uint)IconID.Bombogenesis, ActionID.MakeSpell(AID.GaleForce), 8.1f, true);
 
-class VacuumClaw(BossModule module) : Components.Voidzone(module, 12, m => m.Enemies(OID.VacuumClaw).Where(z => !z.IsDead));
-class VacuumBlade(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.VacuumBlade));
+class VacuumClaw(BossModule module) : Components.Voidzone(module, 12f, GetVoidzones)
+{
+    private static Actor[] GetVoidzones(BossModule module)
+    {
+        var enemies = module.Enemies((uint)OID.VacuumClaw);
+        var count = enemies.Count;
+        if (count == 0)
+            return [];
+
+        var voidzones = new Actor[count];
+        var index = 0;
+        for (var i = 0; i < count; ++i)
+        {
+            var z = enemies[i];
+            if (!z.IsDead)
+                voidzones[index++] = z;
+        }
+        return voidzones[..index];
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.VacuumClaw)
+            ++NumCasts;
+    }
+}

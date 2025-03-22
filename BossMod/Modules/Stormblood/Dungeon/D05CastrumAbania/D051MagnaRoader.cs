@@ -54,7 +54,7 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
             var turret = turrets[i];
             if (turret.IsTargetable)
             {
-                hints.GoalZones.Add(hints.GoalSingleTarget(turret, 1f, 5f));
+                hints.GoalZones.Add(hints.GoalSingleTarget(turret, 3f, 5f));
                 var distSq = (actor.Position - turret.Position).LengthSq();
                 if (distSq < minDistSq)
                 {

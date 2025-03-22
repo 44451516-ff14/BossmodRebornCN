@@ -32,28 +32,28 @@ public abstract class PalaceFloorModule(WorldState ws) : AutoClear(ws, 60)
 {
     protected override void OnCastStarted(Actor actor)
     {
-        switch ((AID)actor.CastInfo!.Action.ID)
+        switch (actor.CastInfo!.Action.ID)
         {
-            case AID.MysteriousLight:
-                AddGaze(actor, 30);
+            case (uint)AID.MysteriousLight:
+                AddGaze(actor, 30f);
                 break;
-            case AID.StoneGazeSingle:
-                AddGaze(actor, 100);
+            case (uint)AID.StoneGazeSingle:
+                AddGaze(actor, 100f);
                 break;
-            case AID.StoneGazeCone:
-                AddGaze(actor, new AOEShapeCone(8.2f, 45.Degrees()));
+            case (uint)AID.StoneGazeCone:
+                AddGaze(actor, new AOEShapeCone(8.2f, 45f.Degrees()));
                 HintDisabled.Add(actor);
                 break;
-            case AID.Chirp:
+            case (uint)AID.Chirp:
                 HintDisabled.Add(actor);
                 break;
-            case AID.Infatuation:
-            case AID.VoidBlizzard:
-            case AID.HorroisonousBlast:
-            case AID.Mucin:
-            case AID.BladeOfSuffering:
-            case AID.ParalyzeIII:
-            case AID.ParalyzeIII2:
+            case (uint)AID.Infatuation:
+            case (uint)AID.VoidBlizzard:
+            case (uint)AID.HorroisonousBlast:
+            case (uint)AID.Mucin:
+            case (uint)AID.BladeOfSuffering:
+            case (uint)AID.ParalyzeIII:
+            case (uint)AID.ParalyzeIII2:
                 Interrupts.Add(actor);
                 break;
         }
@@ -61,21 +61,21 @@ public abstract class PalaceFloorModule(WorldState ws) : AutoClear(ws, 60)
 
     protected override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.BlazeSpikes:
-            case SID.IceSpikes:
-                Spikes.Add((actor, World.FutureTime(10)));
+            case (uint)SID.BlazeSpikes:
+            case (uint)SID.IceSpikes:
+                Spikes.Add((actor, World.FutureTime(10d)));
                 break;
         }
     }
 
     protected override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.BlazeSpikes:
-            case SID.IceSpikes:
+            case (uint)SID.BlazeSpikes:
+            case (uint)SID.IceSpikes:
                 Spikes.RemoveAll(t => t.Actor == actor);
                 break;
         }
@@ -83,8 +83,10 @@ public abstract class PalaceFloorModule(WorldState ws) : AutoClear(ws, 60)
 
     protected override void CalculateExtraHints(int playerSlot, Actor player, AIHints hints)
     {
-        foreach (var p in hints.PotentialTargets)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
+            var p = hints.PotentialTargets[i];
             // this mob will enrage after some time
             if (p.Actor.OID == 0x1842 && p.Actor.InCombat && p.Actor.TargetID == player.InstanceID)
                 p.Priority = 10;

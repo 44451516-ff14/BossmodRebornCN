@@ -17,8 +17,8 @@ class DestructiveCharge(BossModule module) : Components.GenericAOEs(module)
         // 00100004 = +45/-135
         var dir = state switch
         {
-            0x00080004 => -45f.Degrees(),
-            0x00100004 => 45f.Degrees(),
+            0x00080004u => -45f.Degrees(),
+            0x00100004u => 45f.Degrees(),
             _ => default
         };
         if (dir != default)

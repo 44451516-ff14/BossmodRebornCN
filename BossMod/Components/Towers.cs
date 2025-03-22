@@ -31,7 +31,7 @@ public class GenericTowers(BossModule module, ActionID aid = default, bool prior
         public readonly bool TooManyInside(BossModule module) => NumInside(module) is var count && count > MaxSoakers;
     }
 
-    public readonly List<Tower> Towers = [];
+    public List<Tower> Towers = [];
     public readonly bool PrioritizeInsufficient = prioritizeInsufficient; // give priority to towers with more than 0 but less than min soakers
 
     // default tower styling

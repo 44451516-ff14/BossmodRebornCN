@@ -46,4 +46,6 @@ public class AutoDDConfig : ConfigNode
 
     [PropertyDisplay("Reveal all rooms before proceeding to next floor")]
     public bool FullClear = false;
+    [PropertyDisplay("Allow automatic pomander use")]
+    public bool AllowPomander = false;
 }

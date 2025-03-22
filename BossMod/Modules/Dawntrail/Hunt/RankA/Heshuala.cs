@@ -8,6 +8,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 872, // Boss->player, no cast, single-target
+
     HigherPower1 = 39095, // Boss->self, 2.0s cast, single-target, spin x3
     HigherPower2 = 39096, // Boss->self, 2.0s cast, single-target, spin x4
     HigherPower3 = 39097, // Boss->self, 2.0s cast, single-target, spin x5
@@ -56,7 +57,7 @@ class SpinShock(BossModule module) : Components.GenericRotatingAOE(module)
                 AddSequence(-90f.Degrees());
                 break;
         }
-        void AddSequence(Angle increment) => Sequences.Add(new(cone, WPos.ClampToGrid(caster.Position), spell.Rotation, increment, Module.CastFinishAt(spell), 2.7f, Spins));
+        void AddSequence(Angle increment) => Sequences.Add(new(cone, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.7f, Spins));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -72,8 +73,7 @@ class SpinShock(BossModule module) : Components.GenericRotatingAOE(module)
 class ShockingCrossXMarksTheShock(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly SpinShock _rotation = module.FindComponent<SpinShock>()!;
-    private enum Cross { None, Cardinal, Intercardinal }
-    private Cross currentCross;
+    private bool currentShape; // false = intercards, true cardinal
     private static readonly AOEShapeCross _cross = new(50f, 5f);
     private AOEInstance? _aoe;
 
@@ -90,10 +90,10 @@ class ShockingCrossXMarksTheShock(BossModule module) : Components.GenericAOEs(mo
         switch (status.ID)
         {
             case (uint)SID.XMarksTheShock:
-                currentCross = Cross.Intercardinal;
+                currentShape = false;
                 break;
             case (uint)SID.ShockingCross:
-                currentCross = Cross.Cardinal;
+                currentShape = true;
                 break;
         }
     }
@@ -102,17 +102,16 @@ class ShockingCrossXMarksTheShock(BossModule module) : Components.GenericAOEs(mo
     {
         if (spell.Action.ID is (uint)AID.XMarksTheShock or (uint)AID.ShockingCross)
         {
-            currentCross = Cross.None;
             _aoe = null;
         }
     }
 
     public override void Update()
     {
-        if (_aoe == null && currentCross != Cross.None && _rotation.Sequences.Count > 0)
+        if (_aoe == null && _rotation.Sequences.Count > 0)
         {
             var sequence = _rotation.Sequences[0];
-            var rotationOffset = currentCross == Cross.Cardinal ? default : 45f.Degrees();
+            var rotationOffset = currentShape ? default : 45f.Degrees();
             var activation = WorldState.FutureTime(11.5d + _rotation.Spins * 2d);
             _aoe = new(_cross, sequence.Origin, sequence.Rotation + rotationOffset, activation);
         }

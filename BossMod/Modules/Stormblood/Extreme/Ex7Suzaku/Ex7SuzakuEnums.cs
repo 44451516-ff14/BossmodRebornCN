@@ -45,7 +45,7 @@ public enum AID : uint
 
     Rout = 13040, // Boss->self, 3s cast, range 55 width 6 rect
 
-    RekindleSpread = 13024, // Helper1->players, no cast, range 6 circle spread
+    Rekindle = 13024, // Helper1->players, no cast, range 6 circle, spread
 
     FleetingSummer = 13011, // Boss->self, 3s cast, range 40 90-degree cone
 
@@ -66,7 +66,7 @@ public enum AID : uint
 
     WellOfFlame = 13025, // Boss->self, 4s cast, range 41 width 20 rect
 
-    ScathingNetStack = 12867, // Helper1->player, no cast, range 6 circle
+    ScathingNet = 12867, // Helper1->player, no cast, range 6 circle, stack
 
     PhantomFlurryVisual = 13020, // Boss->self, 4s cast, single-target, tank swap tankbuster
     PhantomFlurryTB = 13021, // Helper->players, no cast, single-target

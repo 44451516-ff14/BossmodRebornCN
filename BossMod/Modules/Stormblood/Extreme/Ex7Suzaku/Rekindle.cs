@@ -1,6 +1,7 @@
 namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
+abstract class Rekindle(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.Rekindle), 6f, 5.1f);
 
-class RekindleSpread(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.RekindleSpread), 6f, 5.1f)
+class RekindleP1(BossModule module) : Rekindle(module)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -50,3 +51,5 @@ class RekindleSpread(BossModule module) : Components.SpreadFromIcon(module, (uin
         }
     }
 }
+
+class RekindleP2(BossModule module) : Rekindle(module);

@@ -16,6 +16,9 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorEAnim(Actor actor, uint state)
     {
         if (actor.OID == (uint)OID.RapturousEchoPlatform && state == 0x00040008)
+        {
             Arena.Bounds = Ex7Suzaku.Phase2Bounds;
+            _aoe = null;
+        }
     }
 }

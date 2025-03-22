@@ -21,15 +21,13 @@ public class ConcentricAOEs(BossModule module, AOEShape[] shapes, bool showall =
         for (var i = 0; i < count; ++i)
         {
             var s = Sequences[i];
-            if (s.NumCastsDone < Shapes.Length)
+            if (!showall)
+                aoes[i] = new(Shapes[s.NumCastsDone], s.Origin, s.Rotation, s.NextActivation);
+            else
             {
-                if (!showall)
-                    aoes[i] = new(Shapes[s.NumCastsDone], s.Origin, s.Rotation, s.NextActivation);
-                else
-                {
-                    for (var j = s.NumCastsDone; j < Shapes.Length; ++j)
-                        aoes[i] = new(Shapes[j], s.Origin, s.Rotation, s.NextActivation);
-                }
+                var len = Shapes.Length;
+                for (var j = s.NumCastsDone; j < len; ++j)
+                    aoes[i] = new(Shapes[j], s.Origin, s.Rotation, s.NextActivation);
             }
         }
         return aoes;
@@ -45,7 +43,7 @@ public class ConcentricAOEs(BossModule module, AOEShape[] shapes, bool showall =
 
         ++NumCasts;
 
-        var index = Sequences.FindIndex(s => s.NumCastsDone == order && s.Origin.AlmostEqual(origin, 1) && s.Rotation.AlmostEqual(rotation, 0.05f));
+        var index = Sequences.FindIndex(s => s.NumCastsDone == order && s.Origin.AlmostEqual(origin, 1f) && s.Rotation.AlmostEqual(rotation, 0.05f));
         if (index < 0)
             return false;
 

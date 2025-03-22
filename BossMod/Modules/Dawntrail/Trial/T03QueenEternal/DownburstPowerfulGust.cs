@@ -4,12 +4,13 @@ class PowerfulGustKB(BossModule module) : Components.SimpleKnockbacks(module, Ac
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source == null)
-            return;
-        var act = Module.CastFinishAt(source.CastInfo);
-        if (source != null && !IsImmune(slot, act))
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(source.Position, source.Rotation, 9.5f, default, 20f), act);
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.InvertedRect(source.Position, source.Rotation, 9.5f, default, 20f), act);
+        }
     }
 }
 
@@ -20,23 +21,24 @@ class DownburstKB(BossModule module) : Components.SimpleKnockbacks(module, Actio
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source == null)
-            return;
-        var act = Module.CastFinishAt(source.CastInfo);
-        if (!IsImmune(slot, act))
+        if (Casters.Count != 0)
         {
-            if (source.Position != Arena.Center)
+            var source = Casters[0];
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (!IsImmune(slot, act))
             {
-                offset = source.Position == topRight ? -90.Degrees() : source.Position == botLeft ? 90f.Degrees() : source.Position == botRight ? 180f.Degrees() : default;
-                hints.AddForbiddenZone(ShapeDistance.InvertedCone(source.Position, 5f, source.Rotation + offset, 10.Degrees()), act);
-            }
-            else
-            {
-                var forbidden = new Func<WPos, float>[4];
-                for (var i = 0; i < 4; ++i)
-                    forbidden[i] = ShapeDistance.InvertedCone(source.Position, 5, source.Rotation + Angle.AnglesCardinals[i], 10f.Degrees());
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
+                if (source.Position != Arena.Center)
+                {
+                    offset = source.Position == topRight ? -90f.Degrees() : source.Position == botLeft ? 90f.Degrees() : source.Position == botRight ? 180f.Degrees() : default;
+                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(source.Position, 5f, source.Rotation + offset, 10f.Degrees()), act);
+                }
+                else
+                {
+                    var forbidden = new Func<WPos, float>[4];
+                    for (var i = 0; i < 4; ++i)
+                        forbidden[i] = ShapeDistance.InvertedCone(source.Position, 5, source.Rotation + Angle.AnglesCardinals[i], 10f.Degrees());
+                    hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
+                }
             }
         }
     }

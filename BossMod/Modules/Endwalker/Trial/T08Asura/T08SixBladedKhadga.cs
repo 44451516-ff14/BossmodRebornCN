@@ -12,16 +12,23 @@ class SixBladedKhadga(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
+            {
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
             else
-                aoes[i] = aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad) ? aoe with { Risky = false } : aoe;
+            {
+                if (aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad))
+                    aoe.Risky = false;
+            }
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -50,5 +57,19 @@ class SixBladedKhadga(BossModule module) : Components.GenericAOEs(module)
                     _aoes.RemoveAt(0);
                     break;
             }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = _aoes.Count;
+        if (count == 0)
+            return;
+        base.AddAIHints(slot, actor, assignment, hints);
+        if (count > 1)
+        {
+            var aoe = _aoes[0];
+            // stay close to the middle if there is more than one aoe left
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
+        }
     }
 }

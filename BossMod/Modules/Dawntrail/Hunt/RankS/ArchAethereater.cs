@@ -69,7 +69,10 @@ class Heatstroke(BossModule module) : Components.StayMove(module, 3f)
     {
         base.AddHints(slot, actor, hints);
         if (_heatstroke[slot])
-            hints.Add($"Heatstroke on you in {(actor.FindStatus((uint)SID.Heatstroke)!.Value.ExpireAt - WorldState.CurrentTime).TotalSeconds:f1}s. (Pyretic!)");
+        {
+            var remaining = (PlayerStates[slot].Activation - WorldState.CurrentTime).TotalSeconds;
+            hints.Add($"Heatstroke on you in {remaining:f1}s. (Pyretic!)", remaining < 3d);
+        }
     }
 }
 
@@ -101,7 +104,10 @@ class ColdSweats(BossModule module) : Components.StayMove(module, 3)
     {
         base.AddHints(slot, actor, hints);
         if (_coldsweats[slot])
-            hints.Add($"Cold Sweats on you in {(actor.FindStatus((uint)SID.ColdSweats)!.Value.ExpireAt - WorldState.CurrentTime).TotalSeconds:f1}s. (Freezing!)");
+        {
+            var remaining = (PlayerStates[slot].Activation - WorldState.CurrentTime).TotalSeconds;
+            hints.Add($"Cold Sweats on you in {remaining:f1}s. (Freezing!)", remaining < 3d);
+        }
     }
 }
 
@@ -133,17 +139,9 @@ class SoullessStreamFireBlizzardCombo(BossModule module) : Components.GenericAOE
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        {
-            for (var i = 0; i < count; ++i)
-            {
-                var aoe = _aoes[i];
-                if (i == 0)
-                    aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-                else
-                    aoes[i] = aoe;
-            }
-        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
+            aoes[0].Color = Colors.Danger;
         return aoes;
     }
 
@@ -163,7 +161,7 @@ class SoullessStreamFireBlizzardCombo(BossModule module) : Components.GenericAOE
 
         void AddAOEs(AOEShape primaryShape, AOEShape secondaryShape)
         {
-            var position = Module.PrimaryActor.Position;
+            var position = spell.LocXZ;
             _aoes.Add(new(primaryShape, position, spell.Rotation, Module.CastFinishAt(spell)));
             _aoes.Add(new(secondaryShape, position, default, Module.CastFinishAt(spell, 2.5f)));
         }

@@ -1,4 +1,6 @@
-﻿namespace BossMod.Dawntrail.Hunt.RankA.TheRaintriller;
+﻿using BossMod.Stormblood.TreasureHunt.ShiftingAltarsOfUznair.AltarSkatene;
+
+namespace BossMod.Dawntrail.Hunt.RankA.TheRaintriller;
 
 public enum OID : uint
 {
@@ -20,97 +22,110 @@ public enum AID : uint
     DropOfVenom = 39754, // Boss->player, 5.0s cast, range 6 circle
 }
 
+public enum NPCYell : ushort
+{
+    Chirp = 17815, // circle
+    ChirpRibbit = 17719, // circle, donut
+    RibbitChirpCroak = 17720, // donut, circle, cone
+    ChirpRibbitCroak = 17721, // circle, donut, cone
+    CroakRibbitChirp = 17722, // cone, donut, circle
+    RibbitCroakChirp = 17723, // donut, cone, circle
+    CroakChirpRibbit = 17724, // cone, circle, donut
+    ChirpCroakRibbit = 17725, // circle, cone, donut
+    ChirpCroakChirp = 17734, // circle, cone, circle
+    RibbitRibbitChirp = 17793 // donut, donut, circle
+}
+
 class DoReMisery(BossModule module) : Components.GenericAOEs(module)
 {
-    private Actor? _caster;
-    private readonly List<AOEInstance> _aoes = [];
-    private readonly Queue<uint> _doReMiseryActions = new();
-    private static readonly AOEShapeCircle _shapeOut = new(12f);
-    private static readonly AOEShapeDonut _shapeIn = new(10f, 40f);
-    private static readonly AOEShapeCone _shapeBehind = new(40f, 135f.Degrees());
-    private int _actionCount;
-
-    private static readonly Dictionary<ushort, uint[]> DoReMiseryNpcYellMap = new()
-        {
-            { 17815, new[] { (uint)AID.Croakdown } },
-            { 17719, new[] { (uint)AID.Croakdown, (uint)AID.Ribbitygibbet } },
-            { 17720, new[] { (uint)AID.Ribbitygibbet, (uint)AID.Croakdown, (uint)AID.ChirpOTheWisp } },
-            { 17721, new[] { (uint)AID.Croakdown, (uint)AID.Ribbitygibbet, (uint)AID.ChirpOTheWisp } },
-            { 17722, new[] { (uint)AID.ChirpOTheWisp, (uint)AID.Ribbitygibbet, (uint)AID.Croakdown } },
-            { 17723, new[] { (uint)AID.Ribbitygibbet, (uint)AID.ChirpOTheWisp, (uint)AID.Croakdown } },
-            { 17724, new[] { (uint)AID.ChirpOTheWisp, (uint)AID.Croakdown, (uint)AID.Ribbitygibbet } },
-            { 17725, new[] { (uint)AID.Croakdown, (uint)AID.ChirpOTheWisp, (uint)AID.Ribbitygibbet } },
-            { 17734, new[] { (uint)AID.Croakdown, (uint)AID.ChirpOTheWisp, (uint)AID.Croakdown } },
-            { 17793, new[] { (uint)AID.Ribbitygibbet, (uint)AID.Ribbitygibbet, (uint)AID.Croakdown } }
-        };
+    private readonly List<AOEInstance> _aoes = new(3);
+    private AOEShape[] shapes = [];
+    private static readonly AOEShapeCircle circle = new(12f);
+    private static readonly AOEShapeDonut donut = new(10f, 40f);
+    private static readonly AOEShapeCone cone = new(40f, 135f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var max = count > 2 ? 2 : count;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
-            if (aoe.Shape == _shapeBehind && _caster != null)
-                aoes[i] = new(_shapeBehind, _caster.Position, _caster.Rotation, aoe.Activation, aoe.Color, aoe.Risky);
-            else
-                aoes[i] = aoe;
+            ref var aoe = ref aoes[i];
+            if (i == 0)
+            {
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
+            else if (aoe.Shape != cone)
+                aoe.Risky = false;
         }
-        return aoes;
+        return aoes[..max];
+    }
+
+    public override void AddGlobalHints(GlobalHints hints)
+    {
+        var count = _aoes.Count;
+        if (count > 0)
+        {
+            var sb = new StringBuilder(18);
+            for (var i = 0; i < count; i++)
+            {
+                var shapeHint = _aoes[i].Shape switch
+                {
+                    AOEShapeCircle => "Out",
+                    AOEShapeDonut => "In",
+                    AOEShapeCone => "Back",
+                    _ => ""
+                };
+                sb.Append(shapeHint);
+
+                if (i < count - 1)
+                    sb.Append(" -> ");
+            }
+            hints.Add(sb.ToString());
+        }
+    }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.DoReMisery1 or (uint)AID.DoReMisery2 or (uint)AID.DoReMisery3)
+        {
+            var len = shapes.Length;
+            for (var i = 0; i < len; ++i)
+                AddAOE(shapes[i], i * 3.2f);
+            shapes = [];
+            void AddAOE(AOEShape shape, float delay)
+            => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 1.2f + delay)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (caster != Module.PrimaryActor || spell.Action.ID is not (uint)AID.Croakdown and not (uint)AID.Ribbitygibbet and not (uint)AID.ChirpOTheWisp || _aoes.Count == 0)
-            return;
-
-        _aoes.RemoveAt(0);
-        _actionCount++;
-
-        if (_actionCount == 1 && _aoes.Count > 0 || _actionCount == 2 && _aoes.Count > 0)
-            _aoes[0] = new(_aoes[0].Shape, _aoes[0].Origin, _aoes[0].Rotation, _aoes[0].Activation, Colors.Danger);
-
-        if (_doReMiseryActions.Count > 0 && _caster != null)
-            _aoes.Add(CreateAOEInstance(_doReMiseryActions.Dequeue(), WorldState.FutureTime(10), _actionCount >= 2 ? Colors.Danger : 0, false));
-
-        if (_doReMiseryActions.Count == 0 && _aoes.Count == 0)
-        {
-            _aoes.Clear();
-            _doReMiseryActions.Clear();
-            _actionCount = 0;
-        }
+        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.Croakdown or (uint)AID.ChirpOTheWisp or (uint)AID.Ribbitygibbet)
+            _aoes.RemoveAt(0);
     }
 
     public override void OnActorNpcYell(Actor actor, ushort id)
     {
-        _caster ??= actor;
-        if (!DoReMiseryNpcYellMap.TryGetValue(id, out var actions))
-            return;
-
-        _doReMiseryActions.Clear();
-        _aoes.Clear();
-        _actionCount = 0;
-        foreach (var action in actions)
-            _doReMiseryActions.Enqueue(action);
-        if (_caster != null)
+        shapes = id switch
         {
-            if (_doReMiseryActions.Count > 0)
-                _aoes.Add(CreateAOEInstance(_doReMiseryActions.Dequeue(), WorldState.FutureTime(10d), Colors.Danger));
-
-            if (_doReMiseryActions.Count > 0)
-                _aoes.Add(CreateAOEInstance(_doReMiseryActions.Dequeue(), WorldState.FutureTime(10d), Colors.AOE, false));
-        }
+            (ushort)NPCYell.Chirp => [circle],
+            (ushort)NPCYell.ChirpRibbit => [circle, donut],
+            (ushort)NPCYell.ChirpCroakRibbit => [circle, cone, donut],
+            (ushort)NPCYell.ChirpRibbitCroak => [circle, donut, cone],
+            (ushort)NPCYell.ChirpCroakChirp => [circle, cone, circle],
+            (ushort)NPCYell.RibbitChirpCroak => [donut, circle, cone],
+            (ushort)NPCYell.RibbitCroakChirp => [donut, cone, circle],
+            (ushort)NPCYell.RibbitRibbitChirp => [donut, donut, circle],
+            (ushort)NPCYell.CroakRibbitChirp => [cone, donut, circle],
+            (ushort)NPCYell.CroakChirpRibbit => [cone, circle, donut],
+            _ => []
+        };
     }
-
-    private AOEInstance CreateAOEInstance(uint aid, DateTime activation, uint color, bool risky = true) => aid switch
-    {
-        (uint)AID.Ribbitygibbet => new(_shapeIn, _caster!.Position, default, activation, color, risky),
-        (uint)AID.Croakdown => new(_shapeOut, _caster!.Position, default, activation, color, risky),
-        (uint)AID.ChirpOTheWisp => new(_shapeBehind, _caster!.Position, _caster.Rotation, activation, color, risky),
-        _ => new(_shapeIn, _caster!.Position, default, activation, color, risky)
-    };
 }
 
 class DropOfVenom(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.DropOfVenom), 6f);
@@ -125,5 +140,5 @@ class TheRaintrillerStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13442)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13442)]
 public class TheRaintriller(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

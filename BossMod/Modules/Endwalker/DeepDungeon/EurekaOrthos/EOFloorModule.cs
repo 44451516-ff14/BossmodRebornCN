@@ -195,10 +195,10 @@ public abstract class EOFloorModule(WorldState ws, bool autoRaiseOnEnter = false
                 Voidzones.Add((actor, new AOEShapeCone(12f, 90f.Degrees())));
                 break;
             case (uint)AID.Electromagnetism:
-                Voidzones.Add((actor, new AOEShapeCircle(6)));
+                Voidzones.Add((actor, new AOEShapeCircle(6f)));
                 break;
             case (uint)AID.RipeBanana:
-                Voidzones.Add((actor, new AOEShapeCircle(52)));
+                Voidzones.Add((actor, new AOEShapeCircle(52f)));
                 break;
 
             case (uint)AID.GoobSneeze:
@@ -245,7 +245,8 @@ public abstract class EOFloorModule(WorldState ws, bool autoRaiseOnEnter = false
     public override void CalculateAIHints(int playerSlot, Actor player, AIHints hints)
     {
         base.CalculateAIHints(playerSlot, player, hints);
-
+        if (!Config.Enable || !Config.AllowPomander)
+            return;
         if (autoRaiseOnEnter && Palace.Floor % 10 == 1)
         {
             var raising = Palace.GetPomanderState(PomanderID.ProtoRaising);

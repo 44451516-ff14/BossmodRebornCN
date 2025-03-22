@@ -188,9 +188,9 @@ class CosmicKissKnockback(BossModule module) : Components.SimpleKnockbacks(modul
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var component = _aoe.AOEs;
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (component.Count != 0 && source != null)
+        if (component.Count != 0 && Casters.Count != 0)
         {
+            var source = Casters[0];
             var forbidden = new List<Func<WPos, float>>(2);
 
             var hasMinus142 = false;

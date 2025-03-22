@@ -73,7 +73,7 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
         {
             var target = WorldState.Actors.Find(tether.Target)!;
             var targetPos = target.Position;
-            var midpoint = WPos.ClampToGrid(new WPos((source.Position.X + targetPos.X) / 2, (source.Position.Z + targetPos.Z) / 2));
+            var midpoint = WPos.ClampToGrid(new WPos((source.Position.X + targetPos.X) * 0.5f, (source.Position.Z + targetPos.Z) * 0.5f));
             switch (source.OID)
             {
                 case (uint)OID.FrozenStar:

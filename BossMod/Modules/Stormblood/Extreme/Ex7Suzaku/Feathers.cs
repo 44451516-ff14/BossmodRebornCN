@@ -2,22 +2,22 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
 class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    public readonly List<AOEInstance> AOEs = new(5);
     private static readonly AOEShapeCircle circle = new(9f);
     private static readonly uint[] _feathers = [(uint)OID.ScarletTailFeather, (uint)OID.ScarletPlume];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WingAndAPrayerTailFeather)
-            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell)));
+            AOEs.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WingAndAPrayerTailFeather)
-            _aoes.Clear();
+            AOEs.Clear();
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

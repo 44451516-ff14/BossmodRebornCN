@@ -38,19 +38,20 @@ class Cocopult(BossModule module) : Components.StackWithCastTargets(module, Acti
 
 class RavagingRoots(BossModule module) : Components.GenericRotatingAOE(module)
 {
-    private static readonly AOEShapeCross cross = new(30, 3);
+    private static readonly AOEShapeCross cross = new(30f, 3f);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         switch (spell.Action.ID)
         {
             case (uint)AID.RavagingRootsCW:
-                Sequences.Add(new(cross, Module.PrimaryActor.Position, spell.Rotation, 45f.Degrees(), Module.CastFinishAt(spell), 2.4f, 8));
+                AddSequence(45f.Degrees());
                 break;
             case (uint)AID.RavagingRootsCCW:
-                Sequences.Add(new(cross, Module.PrimaryActor.Position, spell.Rotation, -45f.Degrees(), Module.CastFinishAt(spell), 2.4f, 8));
+                AddSequence(-45f.Degrees());
                 break;
         }
+        void AddSequence(Angle increment) => Sequences.Add(new(cross, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.4f, 8));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -71,15 +72,9 @@ class SapSpiller(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
-        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
+            aoes[0].Color = Colors.Danger;
         return aoes;
     }
 

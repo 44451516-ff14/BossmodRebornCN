@@ -8,153 +8,103 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 872, // Boss->player, no cast, single-target
-    WhirlingOmen1 = 38627, // Boss->self, 5.0s cast, single-target
-    DactailToTurnspit = 38633, // Boss->self, 5.0s cast, single-target
-    Dactail = 38637, // Boss->self, 0.8s cast, range 40 150.000-degree cone
-    Pteraspit = 38638, // Boss->self, 0.8s cast, range 40 150.000-degree cone
-    WhirlingOmen2 = 38628, // Boss->self, 5.0s cast, single-target
-    TurntailToPteraspit = 38635, // Boss->self, 5.0s cast, single-target
-    TurnspitToDactail = 38634, // Boss->self, 5.0s cast, single-target
-    Dactail2 = 38639, // Boss->self, 0.8s cast, range 40 150.000-degree cone
-    Pteraspit2 = 38636, // Boss->self, 0.8s cast, range 40 150.000-degree cone
-    PteraspitToTurntail = 38632, // Boss->self, 5.0s cast, single-target
-    Dactail3 = 38641, // Boss->self, 0.8s cast, range 40 150.000-degree cone
-    WhirlingOmen3 = 39878, // Boss->self, 5.0s cast, range 50 circle
-    WhirlingOmen4 = 38631, // Boss->self, 5.0s cast, single-target
-    Pteraspit3 = 38640 // Boss->self, 0.8s cast, range 40 150.000-degree cone
+
+    WhirlingOmen1 = 38626, // Boss->self, 5.0s cast, single-target, left
+    WhirlingOmen2 = 38627, // Boss->self, 5.0s cast, single-target, right
+    WhirlingOmen3 = 38628, // Boss->self, 5.0s cast, single-target, left --> right
+    WhirlingOmen4 = 38629, // Boss->self, 5.0s cast, single-target, left -> left
+    WhirlingOmen5 = 38630, // Boss->self, 5.0s cast, single-target, right -> left
+    WhirlingOmen6 = 38631, // Boss->self, 5.0s cast, single-target, right -> right
+    WhirlingOmenRaidwide = 39878, // Boss->self, 5.0s cast, range 50 circle
+    DactailToTurnspit = 38633, // Boss->self, 5.0s cast, single-target, back, turn, front
+    TurntailToPteraspit = 38635, // Boss->self, 5.0s cast, single-target, turn, back, front
+    TurnspitToDactail = 38634, // Boss->self, 5.0s cast, single-target, turn, front, back
+    PteraspitToTurntail = 38632, // Boss->self, 5.0s cast, single-target, front, turn, back
+    Dactail1 = 38637, // Boss->self, 0.8s cast, range 40 150-degree cone, front
+    Dactail2 = 38639, // Boss->self, 0.8s cast, range 40 150-degree cone, turn right -> back
+    Dactail3 = 38641, // Boss->self, 0.8s cast, range 40 150-degree cone, turn left -> back
+    Pteraspit1 = 38638, // Boss->self, 0.8s cast, range 40 150-degree cone, turn left -> front
+    Pteraspit2 = 38636, // Boss->self, 0.8s cast, range 40 150-degree cone, back
+    Pteraspit3 = 38640, // Boss->self, 0.8s cast, range 40 150-degree cone, turn right -> front
 }
 
-public enum SID : uint
+class WhirlingOmenRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WhirlingOmenRaidwide), "Raidwide, no turn buffs this time!");
+
+class WhirlingOmen(BossModule module) : Components.GenericAOEs(module)
 {
-    RightWindup = 4030,
-    LeftWindup = 4029,
-    RightWindup2 = 4032,
-    LeftWindup2 = 4031
-}
+    private readonly List<AOEInstance> _aoes = new(2);
+    private List<Angle> offsets = new(2);
+    private static readonly Angle a90 = 90f.Degrees(), a180 = 180f.Degrees();
+    private static readonly AOEShapeCone cone = new(40f, 75f.Degrees());
 
-class WhirlingOmenRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WhirlingOmen3), "Raidwide, no turn buffs this time!");
-
-class TailSpit(BossModule module) : Components.GenericAOEs(module)
-{
-    private readonly List<Angle> _windupDirections = [];
-    private readonly List<AOEInstance> _aoes = [];
-    private int _castCount;
-
-    private static readonly AOEShapeCone _cone = new(40, 75.Degrees());
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        switch (status.ID)
-        {
-            case (uint)SID.RightWindup:
-            case (uint)SID.RightWindup2:
-                _windupDirections.Add(-90f.Degrees());
-                break;
-            case (uint)SID.LeftWindup:
-            case (uint)SID.LeftWindup2:
-                _windupDirections.Add(90f.Degrees());
-                break;
-        }
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (_windupDirections.Count != 0)
-            switch (status.ID)
-            {
-                case (uint)SID.RightWindup:
-                case (uint)SID.RightWindup2:
-                case (uint)SID.LeftWindup:
-                case (uint)SID.LeftWindup2:
-                    _windupDirections.RemoveAt(0);
-                    break;
-            }
+        var count = _aoes.Count;
+        if (count == 0)
+            return [];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
+            aoes[0].Color = Colors.Danger;
+        return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var facingDirection = Module.PrimaryActor.Rotation;
-
-        switch (spell.Action.ID)
+        if (offsets.Count == 0)
+            offsets = spell.Action.ID switch
+            {
+                (uint)AID.WhirlingOmen1 => [a90],
+                (uint)AID.WhirlingOmen2 => [-a90],
+                (uint)AID.WhirlingOmen3 => [a90, -a90],
+                (uint)AID.WhirlingOmen4 => [a90, a90],
+                (uint)AID.WhirlingOmen5 => [-a90, a90],
+                (uint)AID.WhirlingOmen6 => [-a90, -a90],
+                _ => []
+            };
+        else // there might be no offsets if player joined fight late
         {
-            case (uint)AID.TurnspitToDactail:
-                _aoes.Clear();
-                // Turnspit (uses windup, frontal) then Dactail (back, no windup)
-                facingDirection = HandleWindup(facingDirection, caster.Position, true, true); // Front cone with windup
-                HandleWindup(facingDirection, caster.Position, false, false, true); // Back cone without windup
-                break;
-            case (uint)AID.DactailToTurnspit:
-                _aoes.Clear();
-                // Dactail (back, no windup) then Turnspit (uses windup, frontal)
-                facingDirection = HandleWindup(facingDirection, caster.Position, false, false); // Back cone without windup
-                HandleWindup(facingDirection, caster.Position, true, true, true); // Front cone with second turn using windup
-                break;
-            case (uint)AID.PteraspitToTurntail:
-                _aoes.Clear();
-                // Pteraspit (front, no windup) then Turntail (uses windup, back)
-                facingDirection = HandleWindup(facingDirection, caster.Position, true, false); // Front cone with no windup
-                HandleWindup(facingDirection, caster.Position, false, true, true); // Back cone with windup
-                break;
-            case (uint)AID.TurntailToPteraspit:
-                _aoes.Clear();
-                // Turntail (uses windup, back) then Pteraspit (front, no windup)
-                facingDirection = HandleWindup(facingDirection, caster.Position, false, true); // Back cone with windup
-                HandleWindup(facingDirection, caster.Position, true, false, true); // Front cone with no windup
-                break;
-        }
-    }
+            var offset0 = offsets[0];
+            switch (spell.Action.ID)
+            {
+                case (uint)AID.PteraspitToTurntail:
+                    AddAOEs(default, offset0 + a180);
+                    break;
+                case (uint)AID.DactailToTurnspit:
+                    AddAOEs(a180, offset0);
+                    break;
+                case (uint)AID.TurnspitToDactail:
+                    AddAOEs(offset0, offset0 + a180);
+                    break;
+                case (uint)AID.TurntailToPteraspit:
+                    AddAOEs(offset0 + a180, offset0);
+                    break;
+            }
 
-    private Angle HandleWindup(Angle facingDirection, WPos casterPosition, bool isFront, bool turn = false, bool second = false)
-    {
-        if (turn && _windupDirections.Count > 0)
-        {
-            facingDirection += _windupDirections[0];
+            void AddAOEs(Angle offset1, Angle offset2)
+            {
+                AddAOE(offset1, 1.4f);
+                AddAOE(offset2, 3.8f);
+                offsets.RemoveAt(0);
+            }
+            void AddAOE(Angle offset, float delay)
+            => _aoes.Add(new(cone, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, delay)));
         }
-
-        if (isFront)
-        {
-            _aoes.Add(new(_cone, casterPosition, facingDirection, WorldState.FutureTime(5.8d), Colors.Danger));
-        }
-        else
-        {
-            _aoes.Add(new(_cone, casterPosition, facingDirection + 180f.Degrees(), WorldState.FutureTime(5.8d), Colors.Danger));
-        }
-
-        if (second)
-        {
-            var currentAOE = _aoes[1];
-            _aoes[1] = new(currentAOE.Shape, currentAOE.Origin, currentAOE.Rotation, WorldState.FutureTime(6.6d));
-        }
-
-        return facingDirection;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.Dactail or (uint)AID.Dactail2 or (uint)AID.Dactail3
-            or (uint)AID.Pteraspit or (uint)AID.Pteraspit2 or (uint)AID.Pteraspit3)
-        {
-            _castCount++;
-
-            if (_aoes.Count > 0)
+        if (_aoes.Count != 0)
+            switch (spell.Action.ID)
             {
-                _aoes.RemoveAt(0);
+                case (uint)AID.Dactail1:
+                case (uint)AID.Dactail2:
+                case (uint)AID.Dactail3:
+                case (uint)AID.Pteraspit1:
+                case (uint)AID.Pteraspit2:
+                case (uint)AID.Pteraspit3:
+                    _aoes.RemoveAt(0);
+                    break;
             }
-
-            if (_aoes.Count > 0)
-            {
-                var currentAOE = _aoes[0];
-                _aoes[0] = new(currentAOE.Shape, currentAOE.Origin, currentAOE.Rotation, currentAOE.Activation, Colors.Danger);
-            }
-
-            if (_castCount >= 2)
-            {
-                _aoes.Clear();
-                _castCount = 0;
-            }
-        }
     }
 }
 
@@ -164,9 +114,9 @@ class YehehetoauapyoStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<WhirlingOmenRaidwide>()
-            .ActivateOnEnter<TailSpit>();
+            .ActivateOnEnter<WhirlingOmen>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13400)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13400)]
 public class Yehehetoauapyo(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

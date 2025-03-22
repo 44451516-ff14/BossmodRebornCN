@@ -100,9 +100,11 @@ class DancingWind(BossModule module) : Components.SimpleKnockbacks(module, Actio
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
             hints.AddForbiddenZone(ShapeDistance.Circle(source.Position, 18.5f), Module.CastFinishAt(source.CastInfo));
+        }
     }
 }
 

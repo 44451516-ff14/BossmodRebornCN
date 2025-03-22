@@ -7,7 +7,6 @@ public enum OID : uint
     IronNail = 0x3401, // R=1.0
     LunarNail = 0x33FE, // R=1.0
     MegaGraviton = 0x33FF, // R=1.0
-    Actor1eb239 = 0x1EB239, // R0.500, x0 (spawn during fight), EventObj type
     Helper = 0x233C
 }
 

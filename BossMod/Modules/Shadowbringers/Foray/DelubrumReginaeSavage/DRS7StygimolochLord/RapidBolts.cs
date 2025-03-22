@@ -31,8 +31,8 @@ class RapidBoltsAOE(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.RapidBoltsAOE)
         {
             ++NumCasts;
-            var count = _puddles.Count;
-            for (var i = count - 1; i <= 0; --i)
+            var count = _puddles.Count - 1;
+            for (var i = count; i >= 0; --i)
             {
                 var puddle = _puddles[i];
                 if (puddle.pos.InCircle(spell.TargetXZ, 1f))

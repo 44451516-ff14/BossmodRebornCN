@@ -220,9 +220,10 @@ public class ThetaStar
         var destSafe = pixMaxG == float.MaxValue;
         var pathSafe = pathLeeway > 0;
         var destBetter = pixMaxG > _startMaxG;
+
         if (destSafe && pathSafe)
         {
-            var prio = _map.PixelPriority[pixelIndex];
+            ref readonly var prio = ref _map.PixelPriority[pixelIndex];
             return prio == _map.MaxPriority ? Score.SafeMaxPrio : prio > _startPrio ? Score.SafeBetterPrio : Score.Safe;
         }
 
@@ -365,6 +366,9 @@ public class ThetaStar
             PathMinG = candidateMinG,
             Score = CalculateScore(destPixG, candidateMinG, candidateLeeway, nodeIndex)
         };
+
+        if (currentParentNode.Score == Score.Safe && altNode.Score == Score.JustBad) // don't leave safe cells if it requires going through bad cells
+            return;
 
         var grandParentIndex = currentParentNode.ParentIndex;
 

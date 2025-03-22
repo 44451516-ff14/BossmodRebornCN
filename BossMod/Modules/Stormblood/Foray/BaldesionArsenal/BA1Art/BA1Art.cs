@@ -40,8 +40,8 @@ class LegendaryGeasStay(BossModule module) : Components.StayMove(module)
     }
 }
 
-class GloryUnearthed(BossModule module) : Components.OpenWorldChasingAOEs(module, new AOEShapeCircle(10), ActionID.MakeSpell(AID.GloryUnearthedFirst), ActionID.MakeSpell(AID.GloryUnearthedRest), 6.5f, 1.5f, 5, true, (uint)IconID.ChasingAOE);
-class PiercingDark(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.PiercingDark), 6);
+class GloryUnearthed(BossModule module) : Components.OpenWorldChasingAOEs(module, new AOEShapeCircle(10f), ActionID.MakeSpell(AID.GloryUnearthedFirst), ActionID.MakeSpell(AID.GloryUnearthedRest), 6.5f, 1.5f, 5, true, (uint)IconID.ChasingAOE);
+class PiercingDark(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.PiercingDark), 6f);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7968, PlanLevel = 70, SortOrder = 1)]
 public class BA1Art(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)

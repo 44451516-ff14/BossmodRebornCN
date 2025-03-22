@@ -53,8 +53,7 @@ class ShudderingSwipeKB(BossModule module) : Components.GenericKnockback(module,
             var voidzones = new Func<WPos, float>[len];
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var aoe = ref aoes[i];
-                voidzones[i] = new(ShapeDistance.Circle(aoe.Origin, 6f));
+                voidzones[i] = new(ShapeDistance.Circle(aoes[i].Origin, 6f));
             }
             var windzone = ShapeDistance.Union(voidzones);
             float projectedDist(WPos pos)

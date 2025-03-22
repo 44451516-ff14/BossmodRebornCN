@@ -83,18 +83,23 @@ class SlitherbaneBurstCombo(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        for (var i = 0; i < max; ++i)
         {
-            for (var i = 0; i < max; ++i)
+            ref var aoe = ref aoes[i];
+            if (i == 0)
             {
-                var aoe = _aoes[i];
-                if (i == 0)
-                    aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-                else
-                    aoes[i] = aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad) ? aoe with { Risky = false } : aoe;
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
+            else
+            {
+                if (aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad))
+                    aoe.Risky = false;
             }
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

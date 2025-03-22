@@ -119,8 +119,7 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
             var isRisky = true;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var aoe = ref aoes[i];
-                if (aoe.Check(actor.Position))
+                if (aoes[i].Check(actor.Position))
                 {
                     isRisky = false;
                     break;

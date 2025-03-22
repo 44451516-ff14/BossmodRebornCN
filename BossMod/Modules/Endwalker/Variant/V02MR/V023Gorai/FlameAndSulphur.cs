@@ -15,37 +15,37 @@ class FlameAndSulphur(BossModule module) : Components.GenericAOEs(module)
         var activation = Module.CastFinishAt(spell, 3.1f);
         switch (spell.Action.ID)
         {
-            case (uint)AID.BrazenBalladSplitting:
+            case (uint)AID.BrazenBalladExpanding:
                 AddAOEs(_shapeFlameExpand, (uint)OID.FlameAndSulphurFlame);
                 AddAOEs(_shapeRockExpand, (uint)OID.FlameAndSulphurRock);
                 break;
-            case (uint)AID.BrazenBalladExpanding:
+            case (uint)AID.BrazenBalladSplitting:
                 AddAOEs(_shapeFlameSplit, (uint)OID.FlameAndSulphurFlame, true);
                 AddAOEs(_shapeRockSplit, (uint)OID.FlameAndSulphurRock);
                 break;
+        }
 
-                void AddAOEs(AOEShape shape, uint actors, bool twice = false)
+        void AddAOEs(AOEShape shape, uint actors, bool twice = false)
+        {
+            var enemies = Module.Enemies(actors);
+            var count = enemies.Count;
+
+            if (!twice)
+                for (var i = 0; i < count; ++i)
                 {
-                    var enemies = Module.Enemies(actors);
-                    var count = enemies.Count;
-
-                    if (!twice)
-                        for (var i = 0; i < count; ++i)
-                        {
-                            var enemy = enemies[i];
-                            AddAOE(shape, enemy.Position, enemy.Rotation);
-                        }
-                    else
-                        for (var i = 0; i < count; ++i)
-                        {
-                            var enemy = enemies[i];
-                            var rot = enemy.Rotation;
-                            var offset = rot.ToDirection().OrthoL() * 7.5f;
-                            AddAOE(shape, enemy.Position + offset, rot);
-                            AddAOE(shape, enemy.Position - offset, rot);
-                        }
-                    void AddAOE(AOEShape shape, WPos origin, Angle rotation) => _aoes.Add(new(shape, WPos.ClampToGrid(origin), rotation, activation));
+                    var enemy = enemies[i];
+                    AddAOE(shape, enemy.Position, enemy.Rotation);
                 }
+            else
+                for (var i = 0; i < count; ++i)
+                {
+                    var enemy = enemies[i];
+                    var rot = enemy.Rotation;
+                    var offset = rot.ToDirection().OrthoL() * 7.5f;
+                    AddAOE(shape, enemy.Position + offset, rot);
+                    AddAOE(shape, enemy.Position - offset, rot);
+                }
+            void AddAOE(AOEShape shape, WPos origin, Angle rotation) => _aoes.Add(new(shape, WPos.ClampToGrid(origin), rotation, activation));
         }
     }
 

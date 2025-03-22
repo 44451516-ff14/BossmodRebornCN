@@ -6,13 +6,13 @@ class StateOfShock(BossModule module) : Components.CastCounter(module, ActionID.
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Stun)
+        if (status.ID == (uint)SID.Stun)
             ++NumStuns;
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Stun)
+        if (status.ID == (uint)SID.Stun)
             --NumStuns;
     }
 }
@@ -25,7 +25,7 @@ class HighestStakes(BossModule module) : Components.GenericTowers(module, Action
     {
         if (iconID == (uint)IconID.HighestStakes)
         {
-            Towers.Add(new(actor.Position, 6, 3, 3, _forbidden, WorldState.FutureTime(6.1f)));
+            Towers.Add(new(actor.Position, 6f, 3, 3, _forbidden, WorldState.FutureTime(6.1d)));
         }
     }
 
@@ -35,8 +35,9 @@ class HighestStakes(BossModule module) : Components.GenericTowers(module, Action
         {
             ++NumCasts;
             Towers.Clear();
-            foreach (var t in spell.Targets)
-                _forbidden.Set(Raid.FindSlot(t.ID));
+            var count = spell.Targets.Count;
+            for (var i = 0; i < count; ++i)
+                _forbidden[Raid.FindSlot(spell.Targets[i].ID)] = true;
         }
     }
 }

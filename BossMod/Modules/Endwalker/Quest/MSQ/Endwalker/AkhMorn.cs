@@ -3,6 +3,7 @@
 class AkhMorn(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private DateTime _activation;
+    private static readonly AOEShapeCircle circle = new(4f);
 
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -18,22 +19,22 @@ class AkhMorn(BossModule module) : Components.GenericBaitAway(module, centerAtTa
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AkhMorn)
+        if (spell.Action.ID == (uint)AID.AkhMorn)
         {
-            CurrentBaits.Add(new(Module.PrimaryActor, Raid.Player()!, new AOEShapeCircle(4)));
+            CurrentBaits.Add(new(Module.PrimaryActor, Raid.Player()!, circle));
             _activation = Module.CastFinishAt(spell);
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AkhMorn)
+        if (spell.Action.ID == (uint)AID.AkhMorn)
             ++NumCasts;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.AkhMornVisual)
+        if (spell.Action.ID == (uint)AID.AkhMornVisual)
         {
             ++NumCasts;
             if (NumCasts == NumExpectedCasts())

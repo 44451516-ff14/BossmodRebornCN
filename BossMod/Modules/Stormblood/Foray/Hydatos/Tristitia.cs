@@ -144,7 +144,7 @@ class TristitiaStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.EurekaNM, GroupID = 639, NameID = 1422, PrimaryActorOID = (uint)OID.Tristitia, SortOrder = 13)]
 public class Tristitia(WorldState ws, Actor primary) : BASupportFate(ws, primary);
 
-public abstract class BASupportFate(WorldState ws, Actor primary) : BossModule(ws, primary, new(-123.4f, -128.283f), SharedBounds.Circle)
+public abstract class BASupportFate(WorldState ws, Actor primary) : BossModule(ws, primary, new(-125.7764f, -111.1819f), SharedBounds.Circle)
 {
     public static readonly uint[] All = [(uint)OID.Boss, (uint)OID.Tristitia];
     protected override void DrawEnemies(int pcSlot, Actor pc)

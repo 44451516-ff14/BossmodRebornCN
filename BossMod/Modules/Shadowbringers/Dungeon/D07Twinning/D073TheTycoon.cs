@@ -53,11 +53,11 @@ class TemporalParadoxMagitekRay(BossModule module) : Components.GenericAOEs(modu
     {
         if (spell.Action.ID is (uint)AID.TemporalParadox or (uint)AID.MagitekRay)
         {
-            var count = _aoes.Count;
+            var count = _aoes.Count - 1;
             var pos = caster.Position;
-            for (var i = 0; i < count; ++i)
+            for (var i = count; i >= 0; --i)
             {
-                if (_aoes[i].Origin == pos)
+                if (_aoes[i].Origin.AlmostEqual(pos, 1f))
                 {
                     _aoes.RemoveAt(i);
                 }

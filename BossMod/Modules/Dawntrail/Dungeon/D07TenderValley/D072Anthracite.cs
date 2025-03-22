@@ -73,10 +73,10 @@ class D072AnthraciteStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12853)]
 public class D072Anthracite(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private const float Radius = 3.75f;
-    private static readonly Square square1 = new(new(-118f, -57f), Radius);
-    private static readonly Square square2 = new(new(-142f, -45f), Radius);
-    private static readonly Circle circle1 = new(new(-124f, -39f), Radius);
-    private static readonly Circle circle2 = new(new(-136f, -63f), Radius);
+    private const float Radius = 3.8f;
+    private static readonly Square square1 = new(new(-118.001f, -56.999f), Radius);
+    private static readonly Square square2 = new(new(-142.001f, -44.999f), Radius);
+    private static readonly Polygon circle1 = new(new(-124.001f, -38.999f), Radius, 20);
+    private static readonly Polygon circle2 = new(new(-136.001f, -62.999f), Radius, 20);
     private static readonly ArenaBoundsComplex arena = new([new Square(new(-130f, -51f), 17.5f)], [square1, square2, circle1, circle2]);
 }

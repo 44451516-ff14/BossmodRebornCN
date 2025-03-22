@@ -35,9 +35,9 @@ public enum AID : uint
     Electrify = 40634, // RawElectrope->self, 16.0s cast, range 40 circle
 }
 
-abstract class LineVoltage(BossModule module, AID narrow, float delay, AID? wide1 = null, AID? wide2 = null) : Components.GenericAOEs(module)
+abstract class LineVoltage(BossModule module, uint narrow, double delay, uint? wide1 = null, uint? wide2 = null) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rectNarrow = new(50, 2.5f), rectWide = new(50, 5);
+    private static readonly AOEShapeRect rectNarrow = new(50f, 2.5f), rectWide = new(50f, 5);
     public readonly List<AOEInstance> AOEs = new(18);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -45,34 +45,60 @@ abstract class LineVoltage(BossModule module, AID narrow, float delay, AID? wide
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        var deadline = aoes[0].Activation.AddSeconds(delay);
+        var isNotLastSet = aoes[^1].Activation > deadline;
+        var color = Colors.Danger;
         for (var i = 0; i < count; ++i)
         {
-            var aoe = AOEs[i];
-            aoes[i] = (aoe.Activation - AOEs[0].Activation).TotalSeconds <= delay ? aoe with { Color = Colors.Danger } : aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            if (aoe.Activation < deadline)
+            {
+                if (isNotLastSet)
+                    aoe.Color = color;
+                aoe.Risky = true;
+            }
+            else
+                aoe.Risky = false;
         }
         return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == narrow)
-            AOEs.Add(new(rectNarrow, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-        else if ((AID)spell.Action.ID == wide1 || (AID)spell.Action.ID == wide2)
-            AOEs.Add(new(rectWide, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-        if (AOEs.Count > 1)
-            AOEs.SortBy(x => x.Activation);
+        if (spell.Action.ID == narrow)
+            AddAOE(rectNarrow);
+        else if (spell.Action.ID == wide1 || spell.Action.ID == wide2)
+            AddAOE(rectWide);
+
+        void AddAOE(AOEShapeRect shape)
+        {
+            AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            if (AOEs.Count > 1)
+                AOEs.SortBy(x => x.Activation);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (AOEs.Count != 0 && (AID)spell.Action.ID == narrow || (AID)spell.Action.ID == wide1 || (AID)spell.Action.ID == wide2)
-            AOEs.RemoveAt(0);
+        if (spell.Action.ID == narrow || spell.Action.ID == wide1 || spell.Action.ID == wide2)
+        {
+            var count = AOEs.Count;
+            var id = caster.InstanceID;
+            for (var i = 0; i < count; ++i)
+            {
+                if (AOEs[i].ActorID == id)
+                {
+                    AOEs.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 }
 
-class LineVoltage1(BossModule module) : LineVoltage(module, AID.LineVoltageNarrow1, 1);
-class LineVoltage2(BossModule module) : LineVoltage(module, AID.LineVoltageNarrow2, 2, AID.LineVoltageWide1, AID.LineVoltageWide2);
+class LineVoltage1(BossModule module) : LineVoltage(module, (uint)AID.LineVoltageNarrow1, 1.5d);
+class LineVoltage2(BossModule module) : LineVoltage(module, (uint)AID.LineVoltageNarrow2, 2d, (uint)AID.LineVoltageWide1, (uint)AID.LineVoltageWide2);
 
 class LightningBolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightningBolt), 6);
 class LightningStorm(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.LightningStorm), 5);

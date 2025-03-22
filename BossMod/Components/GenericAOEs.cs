@@ -85,18 +85,19 @@ public class SimpleAOEs(BossModule module, ActionID aid, AOEShape shape, int max
         var max = count > MaxCasts ? MaxCasts : count;
         var hasMaxDangerColor = count > MaxDangerColor;
 
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(Casters);
         for (var i = 0; i < max; ++i)
         {
-            var caster = Casters[i];
-            var color = (hasMaxDangerColor && i < MaxDangerColor) ? Colors.Danger : 0;
+            ref var aoe = ref aoes[i];
+            var color = (hasMaxDangerColor && i < MaxDangerColor) ? Colors.Danger : default;
             var risky = Risky && (MaxRisky == null || i < MaxRisky);
 
             if (RiskyWithSecondsLeft != 0)
-                risky &= caster.Activation.AddSeconds(-RiskyWithSecondsLeft) <= time;
-            aoes[i] = caster with { Color = color, Risky = risky };
+                risky &= aoe.Activation.AddSeconds(-RiskyWithSecondsLeft) <= time;
+            aoe.Color = color;
+            aoe.Risky = risky;
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

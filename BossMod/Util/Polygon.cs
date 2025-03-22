@@ -125,12 +125,11 @@ public record class RelPolygonWithHoles(List<WDir> Vertices, List<int> HoleStart
         if (!InSimplePolygon(p, edgeBuckets.ExteriorEdgeBuckets))
             return false;
         var len = edgeBuckets.HoleEdgeBuckets.Length;
-        if (len != 0)
-            for (var i = 0; i < len; ++i)
-            {
-                if (InSimplePolygon(p, edgeBuckets.HoleEdgeBuckets[i]))
-                    return false;
-            }
+        for (var i = 0; i < len; ++i)
+        {
+            if (InSimplePolygon(p, edgeBuckets.HoleEdgeBuckets[i]))
+                return false;
+        }
         return true;
     }
 
@@ -140,7 +139,7 @@ public record class RelPolygonWithHoles(List<WDir> Vertices, List<int> HoleStart
         var bucketIndex = (int)((y - buckets.MinY) * buckets.InvBucketHeight);
         if ((uint)bucketIndex >= BucketCount)
             return false;
-        ref var edges = ref buckets.EdgeBuckets[bucketIndex];
+        ref readonly var edges = ref buckets.EdgeBuckets[bucketIndex];
         var inside = false;
         var len = edges.Length;
         for (var i = 0; i < len; ++i)
@@ -423,7 +422,7 @@ public class SpatialIndex
         var len = _edges.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref var edge = ref _edges[i];
+            ref readonly var edge = ref _edges[i];
             var edgeAx = edge.Ax * InvGridSize;
             var edgeAy = edge.Ay * InvGridSize;
             var edgeAxDx = (edgeAx + edge.Dx) * InvGridSize;
@@ -454,7 +453,7 @@ public class SpatialIndex
         var len = _edges.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref var edge = ref _edges[i];
+            ref readonly var edge = ref _edges[i];
             var edgeAx = edge.Ax;
             var edgeAy = edge.Ay;
             var edgeAxDx = edgeAx + edge.Dx;
@@ -575,7 +574,7 @@ public readonly struct PolygonWithHolesDistanceFunction
         var len = indices.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref var edge = ref _edges[indices[i]];
+            ref readonly var edge = ref _edges[indices[i]];
             var edgeAx = edge.Ax;
             var edgeAy = edge.Ay;
             var edgeDx = edge.Dx;
@@ -602,7 +601,7 @@ public readonly struct PolygonWithHolesDistanceFunction
         var len = indices.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref var edge = ref _edges[indices[i]];
+            ref readonly var edge = ref _edges[indices[i]];
             var edgeAx = edge.Ax;
             var edgeAy = edge.Ay;
             var edgeDx = edge.Dx;

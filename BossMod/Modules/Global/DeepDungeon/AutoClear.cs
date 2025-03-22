@@ -113,7 +113,7 @@ public abstract class AutoClear : ZoneModule
             ws.Actors.IsDeadChanged.Subscribe(op =>
             {
                 if (!op.IsAlly && op.IsDead)
-                    Kills++;
+                    ++Kills;
             }),
             ws.Actors.EventOpenTreasure.Subscribe(OnOpenTreasure),
             ws.Actors.EventObjectAnimation.Subscribe(OnEObjAnim),
@@ -291,8 +291,8 @@ public abstract class AutoClear : ZoneModule
 
     public override void DrawExtra()
     {
-        var player = World.Party.Player();
-        var targetRoom = new Minimap(Palace, player?.Rotation ?? default, DesiredRoom).Draw();
+        var player = World.Party.Player()!;
+        var targetRoom = new Minimap(Palace, player, DesiredRoom).Draw();
         if (targetRoom >= 0)
             DesiredRoom = targetRoom;
 
@@ -331,9 +331,40 @@ public abstract class AutoClear : ZoneModule
 
         if (ImGui.Button("Set closest trap location as ignored"))
         {
-            var pos = _trapsCurrentZone.Except(ProblematicTrapLocations).MinBy(t => (t - player.Position).LengthSq()).Rounded(0.1f);
-            ProblematicTrapLocations.Add(pos);
-            IgnoreTraps.Add(pos);
+            WPos? pos = null;
+            var minDistanceSq = float.MaxValue;
+            var lenCurrent = _trapsCurrentZone.Length;
+            var countProblematic = ProblematicTrapLocations.Count;
+            for (var i = 0; i < lenCurrent; ++i)
+            {
+                ref readonly var trap = ref _trapsCurrentZone[i];
+                var isProblematic = false;
+                for (var j = 0; j < countProblematic; ++j)
+                {
+                    if (trap == ProblematicTrapLocations[j])
+                    {
+                        isProblematic = true;
+                        break;
+                    }
+                }
+
+                if (isProblematic)
+                    continue;
+
+                var distanceSq = (trap - player.Position).LengthSq();
+
+                if (distanceSq < minDistanceSq)
+                {
+                    minDistanceSq = distanceSq;
+                    pos = trap;
+                }
+            }
+            if (pos is WPos position)
+            {
+                pos = position.Rounded(0.1f);
+                ProblematicTrapLocations.Add(position);
+                IgnoreTraps.Add(position);
+            }
         }
     }
 
@@ -387,7 +418,28 @@ public abstract class AutoClear : ZoneModule
         if (!Config.Enable || Palace.IsBossFloor || BetweenFloors)
             return;
 
-        var canNavigate = Config.MaxPull == 0 ? !player.InCombat : hints.PotentialTargets.Count(t => t.Actor.AggroPlayer && !t.Actor.IsDeadOrDestroyed) < Config.MaxPull;
+        bool canNavigate;
+
+        if (Config.MaxPull == 0)
+        {
+            canNavigate = !player.InCombat;
+        }
+        else
+        {
+            var count = 0;
+            var countTargets = hints.PotentialTargets.Count;
+            for (var i = 0; i < countTargets; ++i)
+            {
+                var target = hints.PotentialTargets[i];
+                if (target.Actor.AggroPlayer && !target.Actor.IsDeadOrDestroyed)
+                {
+                    ++count;
+                    if (count >= Config.MaxPull)
+                        break;
+                }
+            }
+            canNavigate = count < Config.MaxPull;
+        }
 
         var countWalls = Walls.Count;
         for (var i = 0; i < countWalls; ++i)
@@ -448,7 +500,7 @@ public abstract class AutoClear : ZoneModule
                 passage = a;
 
             if (RevealedTrapOIDs.Contains(a.OID))
-                revealedTraps.Add(ShapeDistance.Circle(a.Position, 2));
+                revealedTraps.Add(ShapeDistance.Circle(a.Position, 2f));
         }
 
         var fullClear = false;
@@ -473,9 +525,9 @@ public abstract class AutoClear : ZoneModule
                 {
                     var shouldIgnore = false;
                     var countIgnoreTraps = IgnoreTraps.Count;
-                    for (var j = 0; i < countIgnoreTraps; ++j)
+                    for (var j = 0; j < countIgnoreTraps; ++j)
                     {
-                        if (IgnoreTraps[i].AlmostEqual(trap, 1f))
+                        if (IgnoreTraps[j].AlmostEqual(trap, 1f))
                         {
                             shouldIgnore = true;
                             break;
@@ -512,7 +564,7 @@ public abstract class AutoClear : ZoneModule
             }
         }
 
-        if (!isStunned && pomanderToUseHere is PomanderID p2 && player.FindStatus((uint)SID.ItemPenalty) == null)
+        if (Config.AllowPomander && !isStunned && pomanderToUseHere is PomanderID p2 && player.FindStatus((uint)SID.ItemPenalty) == null)
             hints.ActionsToExecute.Push(new ActionID(ActionType.Pomander, (uint)p2), null, ActionQueue.Priority.VeryHigh);
 
         Actor? wantCoffer = null;
@@ -644,7 +696,7 @@ public abstract class AutoClear : ZoneModule
                     hints.GoalZones.Add(p =>
                     {
                         var dist = (p - d.Source.Position).Length();
-                        return dist >= desiredDistance ? 100f : 0f;
+                        return dist >= desiredDistance ? 100f : default;
                     });
                 }
             }

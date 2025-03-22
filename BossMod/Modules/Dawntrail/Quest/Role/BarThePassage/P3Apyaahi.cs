@@ -122,9 +122,11 @@ class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(module,
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0].CastInfo : null;
-        if (source != null)
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0].CastInfo!;
             hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.LocXZ, 6f), Module.CastFinishAt(source));
+        }
     }
 }
 

@@ -42,14 +42,21 @@ class Geyser(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var act0 = _aoes[0].Activation;
-        var compareFL = (_aoes[count - 1].Activation - act0).TotalSeconds > 1d;
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
+        var isNotLastSet = aoes[^1].Activation > deadline;
         var color = Colors.Danger;
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
-            aoes[i] = (aoe.Activation - act0).TotalSeconds < 1d ? aoe with { Color = compareFL ? color : 0 } : aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            if (aoe.Activation < deadline)
+            {
+                if (isNotLastSet)
+                    aoe.Color = color;
+                aoe.Risky = true;
+            }
+            else
+                aoe.Risky = false;
         }
         return aoes;
     }

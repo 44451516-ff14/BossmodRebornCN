@@ -71,9 +71,11 @@ class RahuCometKB(BossModule module, AID aid, float distance) : Components.Simpl
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null && _aoe1.Casters.Count == 0)
+        if (Casters.Count != 0 && _aoe1.Casters.Count == 0)
+        {
+            var source = Casters[0];
             hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 20f, Angle.FromDirection(Arena.Center - source.Position), 20f.Degrees()), Module.CastFinishAt(source.CastInfo));
+        }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)

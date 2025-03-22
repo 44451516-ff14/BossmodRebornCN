@@ -11,10 +11,7 @@ class ImpurePurgation(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 4 ? 4 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
-            aoes[i] = AOEs[i];
-        return aoes;
+        return CollectionsMarshal.AsSpan(AOEs)[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

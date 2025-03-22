@@ -186,12 +186,12 @@ class WildRageKnockback(BossModule module) : Components.SimpleKnockbacks(module,
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
+            var source = Casters[0];
             var forbidden = new Func<WPos, float>[2];
             var pos = source.Position;
-            var dir = pos.X == 738 ? 1 : -1;
+            var dir = pos.X == 738f ? 1 : -1;
             forbidden[0] = ShapeDistance.InvertedDonutSector(pos, 8f, 9f, a45 * dir, a10);
             forbidden[1] = ShapeDistance.InvertedDonutSector(pos, 8f, 9f, 3f * a45 * dir, a10);
             hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(source.CastInfo));
@@ -257,8 +257,7 @@ class CratersWildRampage(BossModule module) : Components.GenericAOEs(module)
             var isRisky = true;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var aoe = ref aoes[i];
-                if (aoe.Check(actor.Position))
+                if (aoes[i].Check(actor.Position))
                 {
                     isRisky = false;
                     break;

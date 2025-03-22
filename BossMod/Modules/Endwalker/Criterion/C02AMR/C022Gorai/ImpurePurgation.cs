@@ -4,7 +4,7 @@ class ImpurePurgationBait(BossModule module) : Components.BaitAwayEveryone(modul
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.NImpurePurgationBait or AID.SImpurePurgationBait)
+        if (spell.Action.ID is (uint)AID.NImpurePurgationBait or (uint)AID.SImpurePurgationBait)
         {
             ++NumCasts;
             CurrentBaits.Clear();

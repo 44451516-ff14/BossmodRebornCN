@@ -18,29 +18,29 @@ class P5DeathOfTheHeavensDooms(BossModule module) : BossComponent(module)
     // note: we could also use status, but it appears slightly later
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.Deathstorm)
+        if (spell.Action.ID == (uint)AID.Deathstorm)
             foreach (var t in spell.Targets)
-                Dooms.Set(Raid.FindSlot(t.ID));
+                Dooms[Raid.FindSlot(t.ID)] = true;
     }
 }
 
 class P5DeathOfTheHeavensLightningStorm : Components.UniformStackSpread
 {
-    public P5DeathOfTheHeavensLightningStorm(BossModule module) : base(module, 0, 5)
+    public P5DeathOfTheHeavensLightningStorm(BossModule module) : base(module, default, 5f)
     {
         AddSpreads(Raid.WithoutSlot(true, true, true));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.LightningStormAOE)
+        if (spell.Action.ID == (uint)AID.LightningStormAOE)
             Spreads.Clear();
     }
 }
 
 class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.HeavensflameAOE))
 {
-    public bool KnockbackDone { get; private set; }
+    public bool KnockbackDone;
     private readonly WPos[] _playerAdjustedPositions = new WPos[PartyState.MaxPartySize];
     private readonly int[] _playerIcons = new int[PartyState.MaxPartySize]; // 0 = unassigned, 1 = circle/red, 2 = triangle/green, 3 = cross/blue, 4 = square/purple
     private BitMask _brokenTethers;
@@ -48,9 +48,9 @@ class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKno
     private readonly List<WPos> _cleanses = [];
     private WDir _relSouth; // TODO: this is quite hacky, works for LPDU...
 
-    private const float _knockbackDistance = 16;
-    private const float _aoeRadius = 10;
-    private const float _tetherBreakDistance = 32; // TODO: verify...
+    private const float _knockbackDistance = 16f;
+    private const float _aoeRadius = 10f;
+    private const float _tetherBreakDistance = 32f; // TODO: verify...
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {

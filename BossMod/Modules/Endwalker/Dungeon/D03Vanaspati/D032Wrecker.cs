@@ -116,17 +116,21 @@ class AetherSprayWaterKB(BossModule module) : Components.SimpleKnockbacks(module
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        foreach (var z in _aoe.ActiveAOEs(slot, actor))
-            if (z.Shape.Check(pos, z.Origin, z.Rotation))
+        var aoes = _aoe.ActiveAOEs(slot, actor);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            if (aoes[i].Check(pos))
                 return true;
+        }
         return !Module.InBounds(pos);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (_aoe.AOEs.Count != 0 && source != null)
+        if (Casters.Count != 0 && _aoe.AOEs.Count != 0)
         {
+            var source = Casters[0];
             var forbidden = new List<Func<WPos, float>>(7)
             {
                 ShapeDistance.InvertedCircle(Arena.Center, 7f)

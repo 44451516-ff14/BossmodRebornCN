@@ -18,19 +18,19 @@ class AetherialRay(BossModule module) : Components.GenericBaitAway(module, cente
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AetherialRay)
+        if (spell.Action.ID == (uint)AID.AetherialRay)
             _activation = Module.CastFinishAt(spell);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AetherialRay)
+        if (spell.Action.ID == (uint)AID.AetherialRay)
             ++NumCasts;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.AetherialRayVisual)
+        if (spell.Action.ID == (uint)AID.AetherialRayVisual)
         {
             if (++NumCasts == 5)
             {

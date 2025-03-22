@@ -13,9 +13,9 @@ class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(module, Ac
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
+            var source = Casters[0];
             var component = _aoe1.Sources(Module).ToList();
             var forbidden = new List<Func<WPos, float>>
             {

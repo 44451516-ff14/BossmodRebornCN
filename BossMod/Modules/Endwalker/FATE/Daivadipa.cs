@@ -200,17 +200,15 @@ class DivineCall(BossModule module) : Components.StatusDrivenForcedMarch(module,
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        const string hint = "Aim into AOEs!";
-        var movements = ForcedMovements(actor).ToList();
-        if (movements.Count == 0)
+        var movements = ForcedMovements(actor);
+        var count = movements.Count;
+        if (count == 0)
             return;
+
         if (_aoe1.Casters.Count != 0 || _aoe2.Casters.Count != 0)
             base.AddHints(slot, actor, hints);
         else if (_lit.AOEs.Count != 0)
-            if (DestinationUnsafe(slot, actor, movements.LastOrDefault().to))
-                hints.Add(hint);
-            else
-                hints.Add(hint, false);
+            hints.Add("Aim into AOEs!", DestinationUnsafe(slot, actor, movements[count - 1].to));
     }
 }
 

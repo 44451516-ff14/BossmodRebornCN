@@ -63,16 +63,14 @@ class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, Acti
         var len1 = aoes1.Length;
         for (var i = 0; i < len1; ++i)
         {
-            ref readonly var aoe = ref aoes1[i];
-            if (aoe.Check(pos))
+            if (aoes1[i].Check(pos))
                 return true;
         }
         var aoes2 = _aoe2.ActiveAOEs(slot, actor);
         var len2 = aoes2.Length;
         for (var i = 0; i < len2; ++i)
         {
-            ref readonly var aoe = ref aoes1[i];
-            if (aoe.Check(pos))
+            if (aoes2[i].Check(pos))
                 return true;
         }
         return !Module.InBounds(pos);
@@ -152,8 +150,7 @@ class RubberBullet(BossModule module) : Components.GenericKnockback(module)
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
                 return true;
         }
         return !Module.InBounds(pos);

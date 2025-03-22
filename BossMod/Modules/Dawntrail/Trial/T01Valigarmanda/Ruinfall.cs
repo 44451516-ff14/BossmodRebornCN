@@ -8,25 +8,23 @@ class RuinfallKB(BossModule module) : Components.SimpleKnockbacks(module, Action
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null && actor.Role != Role.Tank)
+        if (Casters.Count == 0)
+            return;
+        if (actor.Role != Role.Tank)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, new Angle(), 1f, default, 20f), Module.CastFinishAt(source.CastInfo));
+            var source = Casters[0];
+            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, new WDir(default, 1f), 1f, default, 20f), Module.CastFinishAt(source.CastInfo));
+            return;
         }
         var towers = _tower.Towers;
         var count = towers.Count;
         if (count == 0)
             return;
-        var isDelayDeltaLow = (towers[0].Activation - WorldState.CurrentTime).TotalSeconds < 5d;
+        var t0 = towers[0];
+        var isDelayDeltaLow = (t0.Activation - WorldState.CurrentTime).TotalSeconds < 5d;
         var isActorInsideTower = false;
-        for (var i = 0; i < count; ++i)
-        {
-            if (towers[i].IsInside(actor))
-            {
-                isActorInsideTower = true;
-                break;
-            }
-        }
+        if (t0.IsInside(actor))
+            isActorInsideTower = true;
         if (isDelayDeltaLow && isActorInsideTower)
             hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.ArmsLength), actor, ActionQueue.Priority.High);
     }

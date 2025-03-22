@@ -4,26 +4,37 @@ class MesmerizingMelody(BossModule module) : Components.SimpleKnockbacks(module,
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
-            hints.AddForbiddenZone(ShapeDistance.Circle(source.Position, 14.5f), Module.CastFinishAt(source.CastInfo));
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.Circle(source.Position, 14.5f), act);
+        }
     }
 }
 
-class RuthlessRefrain(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.RuthlessRefrain), 11f, kind: Kind.AwayFromOrigin)
+class RuthlessRefrain(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.RuthlessRefrain), 11f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 11f), Module.CastFinishAt(source.CastInfo));
+        if (Casters.Count != 0)
+        {
+            var source = Casters[0];
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 9f), act);
+        }
     }
 }
 
-class PayThePiper : Components.GenericForcedMarch
+abstract class PayThePiper : Components.GenericForcedMarch
 {
-    public PayThePiper(BossModule module) : base(module)
+    private readonly float _offset;
+
+    protected PayThePiper(BossModule module, float offset) : base(module)
     {
+        _offset = offset;
         OverrideDirection = true;
     }
 
@@ -32,7 +43,16 @@ class PayThePiper : Components.GenericForcedMarch
         var target = WorldState.Actors.Find(tether.Target)!;
         if (target == Module.PrimaryActor || (TetherID)tether.ID != TetherID.PayThePiper)
             return;
-        AddForcedMovement(target, new Angle(MathF.Round(source.Rotation.Deg / 90f) * 90f) * Angle.DegToRad + 180f.Degrees(), 4f, WorldState.FutureTime(10d));
+        Angle? rot = source.OID switch
+        {
+            (uint)OID.NorthernPyre => 180f.Degrees(),
+            (uint)OID.EasternPyre => 90f.Degrees(),
+            (uint)OID.SouthernPyre => new Angle(),
+            (uint)OID.WesternPyre => -90f.Degrees(),
+            _ => default
+        };
+        if (rot is Angle direction)
+            AddForcedMovement(target, direction, 4f, WorldState.FutureTime(10d));
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
@@ -60,8 +80,11 @@ class PayThePiper : Components.GenericForcedMarch
         var move0 = state.PendingMoves[0];
         var dir = move0.dir.ToDirection();
         var forbidden = new Func<WPos, float>[2];
-        forbidden[0] = ShapeDistance.InvertedCircle(Ex7Suzaku.ArenaCenter - 25f * dir, 19f);
+        forbidden[0] = ShapeDistance.InvertedCircle(Ex7Suzaku.ArenaCenter - _offset * dir, 19f);
         forbidden[1] = ShapeDistance.Rect(Ex7Suzaku.ArenaCenter, -dir, 20f, default, 4.5f);
         hints.AddForbiddenZone(ShapeDistance.Union(forbidden), move0.activation);
     }
 }
+
+class PayThePiperRegular(BossModule module) : PayThePiper(module, 25f);
+class PayThePiperHotspotCombo(BossModule module) : PayThePiper(module, 30f);

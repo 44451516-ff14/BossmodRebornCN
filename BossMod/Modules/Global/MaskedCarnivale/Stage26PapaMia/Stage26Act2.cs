@@ -80,8 +80,7 @@ class DadJoke(BossModule module) : Components.GenericKnockback(module)
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
                 return true;
         }
         return !Module.InBounds(pos);

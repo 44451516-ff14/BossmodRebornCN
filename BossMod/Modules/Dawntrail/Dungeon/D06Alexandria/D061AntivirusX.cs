@@ -70,26 +70,28 @@ class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        for (var i = 0; i < max; ++i)
         {
-            for (var i = 0; i < max; ++i)
+            ref var aoe = ref aoes[i];
+            if (i == 0)
             {
-                var aoe = _aoes[i];
-                if (i == 0)
-                    aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-                else
-                {
-                    var aoe0 = _aoes[0];
-                    var isDonuts = aoe0.Shape == donut && aoe.Shape == donut;
-                    var isConeWithDelay = (aoe.Shape == coneBig || aoe.Shape == coneSmall) && (aoe.Activation - aoe0.Activation).TotalSeconds > 2;
-                    var isCross = aoe0.Shape == cross;
-                    var isFrontDonutAndConeSmall = aoe.Origin == new WPos(852f, 823f) && aoe.Shape == donut && aoe0.Shape == coneSmall;
-                    var isRisky = !isDonuts && !isConeWithDelay && !isFrontDonutAndConeSmall || isCross;
-                    aoes[i] = aoe with { Risky = isRisky };
-                }
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
+            else
+            {
+                ref readonly var aoe0 = ref aoes[0];
+                var isDonuts = aoe0.Shape == donut && aoe.Shape == donut;
+                var isConeWithDelay = (aoe.Shape == coneBig || aoe.Shape == coneSmall) && (aoe.Activation - aoe0.Activation).TotalSeconds > 2d;
+                var isCross = aoe0.Shape == cross;
+                var isFrontDonutAndConeSmall = aoe.Origin == Arena.Center && aoe.Shape == donut && aoe0.Shape == coneSmall;
+                var isRisky = !isDonuts && !isConeWithDelay && !isFrontDonutAndConeSmall || isCross;
+                aoe.Risky = isRisky;
             }
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -107,7 +109,7 @@ class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(module)
         {
             AOEShape shape = actor.OID == (int)OID.InterferonR ? donut : cross;
             var activationTime = _aoes.Count == 0 ? WorldState.FutureTime(9.9d) : _aoes[0].Activation.AddSeconds(2.5d * _aoes.Count);
-            AddAOE(new(shape, actor.Position, actor.Rotation, activationTime));
+            AddAOE(new(shape, actor.Position, default, activationTime)); // intentionally not using quantized values here
         }
     }
 

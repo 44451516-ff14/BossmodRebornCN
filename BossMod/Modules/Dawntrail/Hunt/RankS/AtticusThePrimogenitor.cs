@@ -75,18 +75,10 @@ class BreathSequence(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        {
-            for (var i = 0; i < max; ++i)
-            {
-                var aoe = _aoes[i];
-                if (i == 0)
-                    aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-                else
-                    aoes[i] = aoe;
-            }
-        }
-        return aoes;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
+            aoes[0].Color = Colors.Danger;
+        return aoes[..max];
     }
 
     public override void OnActorNpcYell(Actor actor, ushort id)
