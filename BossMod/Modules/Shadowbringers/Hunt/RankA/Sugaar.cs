@@ -20,9 +20,9 @@ public enum AID : uint
     TailSnapRotationAOE = 18099 // Boss->self (behind), 0.5 cast, range 18, 120 degree cone
 }
 
-class BodySlam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BodySlam), 11f);
-class NumbingNoise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NumbingNoise), NumbingNoiseTailSnapRotating.ShapeNumbingNoise);
-class TailSnap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSnap), NumbingNoiseTailSnapRotating.ShapeTailSnap);
+class BodySlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BodySlam, 11f);
+class NumbingNoise(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NumbingNoise, NumbingNoiseTailSnapRotating.ShapeNumbingNoise);
+class TailSnap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSnap, NumbingNoiseTailSnapRotating.ShapeTailSnap);
 
 class NumbingNoiseTailSnapRotating(BossModule module) : Components.GenericRotatingAOE(module)
 {

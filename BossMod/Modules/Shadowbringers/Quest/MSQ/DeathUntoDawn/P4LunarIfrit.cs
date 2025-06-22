@@ -17,13 +17,13 @@ public enum AID : uint
     AgonyOfTheDamned1 = 24062, // Helper->self, 0.7s cast, range 40 circle
 }
 
-class Hellfire1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Hellfire1));
-class Hellfire2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Hellfire2));
-class AgonyOfTheDamned(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AgonyOfTheDamned1));
-class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RadiantPlume1), 8f);
-class CrimsonCyclone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrimsonCyclone), new AOEShapeRect(49f, 9f), 3);
+class Hellfire1(BossModule module) : Components.RaidwideCast(module, (uint)AID.Hellfire1);
+class Hellfire2(BossModule module) : Components.RaidwideCast(module, (uint)AID.Hellfire2);
+class AgonyOfTheDamned(BossModule module) : Components.RaidwideCast(module, (uint)AID.AgonyOfTheDamned1);
+class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlume1, 8f);
+class CrimsonCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrimsonCyclone, new AOEShapeRect(49f, 9f), 3);
 class InfernalNail(BossModule module) : Components.Adds(module, (uint)OID.InfernalNail, 5);
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), new AOEShapeCross(80f, 5f), 2);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeCross(80f, 5f), 2);
 
 class LunarIfritStates : StateMachineBuilder
 {

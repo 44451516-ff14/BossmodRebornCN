@@ -36,6 +36,19 @@ public sealed class AIHints
         Misdirection, // temporary misdirection - if current time is greater than activation, use special pathfinding codepath
     }
 
+    public enum PredictedDamageType
+    {
+        None,
+        Tankbuster, // cast is expected to do a decent amount of damage, tank AI should use mitigation
+        Raidwide, // cast is expected to hit everyone and deal minor damage; also used for spread components
+        Shared, // cast is expected to hit multiple players; modules might have special behavior when intentionally taking this damage solo
+    }
+
+    public record struct DamagePrediction(BitMask Players, DateTime Activation, PredictedDamageType Type = PredictedDamageType.None)
+    {
+        public readonly BitMask Players = Players;
+    }
+
     public static readonly ArenaBounds DefaultBounds = new ArenaBoundsSquare(30);
 
     // information needed to build base pathfinding map (onto which forbidden/goal zones are later rasterized), if needed (lazy, since it's somewhat expensive and not always needed)
@@ -88,7 +101,7 @@ public sealed class AIHints
 
     // predicted incoming damage (raidwides, tankbusters, etc.)
     // AI will attempt to shield & mitigate
-    public readonly List<(BitMask players, DateTime activation)> PredictedDamage = [];
+    public readonly List<DamagePrediction> PredictedDamage = [];
 
     // list of party members with cleansable debuffs that are dangerous enough to sacrifice a GCD to cleanse them, i.e. doom, throttle, some types of vuln debuff, etc
     public BitMask ShouldCleanse;
@@ -135,7 +148,7 @@ public sealed class AIHints
         WantDismount = false;
     }
 
-    public void PrioritizeTargetsByOID(uint oid, int priority = 0)
+    public void PrioritizeTargetsByOID(uint oid, int priority = default)
     {
         var count = PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
@@ -144,22 +157,32 @@ public sealed class AIHints
             if (h.Actor.OID == oid)
             {
                 ref var hPriority = ref h.Priority;
-                hPriority = priority ^ ((hPriority ^ priority) & -(hPriority > priority ? 1 : 0)); // Math.Max(priority, h.Priority)
+                // Math.Max(priority, h.Priority)
+                var diff = priority - hPriority;
+                var mask = diff >> 31; // mask is -1 if diff < 0, 0 if diff >= 0
+                hPriority = priority - (diff & mask);
             }
         }
     }
-    public void PrioritizeTargetsByOID<OID>(OID oid, int priority = 0) where OID : Enum => PrioritizeTargetsByOID((uint)(object)oid, priority);
 
-    public void PrioritizeTargetsByOID(uint[] oids, int priority = 0)
+    public void PrioritizeTargetsByOID(uint[] oids, int priority = default)
     {
         var count = PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
         {
             var h = PotentialTargets[i];
-            if (oids.Contains(h.Actor.OID))
+            var len = oids.Length;
+            for (var j = 0; j < len; ++j)
             {
-                ref var hPriority = ref h.Priority;
-                hPriority = priority ^ ((hPriority ^ priority) & -(hPriority > priority ? 1 : 0)); // Math.Max(priority, h.Priority)
+                if (oids[j] == h.Actor.OID)
+                {
+                    ref var hPriority = ref h.Priority;
+                    // Math.Max(priority, h.Priority)
+                    var diff = priority - hPriority;
+                    var mask = diff >> 31; // mask is -1 if diff < 0, 0 if diff >= 0
+                    hPriority = priority - (diff & mask);
+                    break;
+                }
             }
         }
     }
@@ -170,21 +193,25 @@ public sealed class AIHints
         for (var i = 0; i < count; ++i)
         {
             var h = PotentialTargets[i];
-            h.Priority &= ~(h.Priority >> 31); // Math.Max(h.priority, 0)
+            // Math.Max(h.priority, 0)
+            var mask = h.Priority >> 31; // 0 if positive, -1 if negative
+            h.Priority &= ~mask; // clears to 0 if negative
         }
     }
 
-    public void SetPriority(Actor actor, int priority)
+    public void SetPriority(Actor? actor, int priority)
     {
-        if (FindEnemy(actor) is { } enemy)
-            enemy.Priority = priority;
+        var enemy = FindEnemy(actor);
+        enemy?.Priority = priority;
     }
 
     public void InteractWithOID(WorldState ws, uint oid) => InteractWithTarget = ws.Actors.FirstOrDefault(a => a.OID == oid && a.IsTargetable);
     public void InteractWithOID<OID>(WorldState ws, OID oid) where OID : Enum => InteractWithOID(ws, (uint)(object)oid);
 
-    public void AddForbiddenZone(Func<WPos, float> shapeDistance, DateTime activation = new(), ulong source = 0) => ForbiddenZones.Add((shapeDistance, activation, source));
-    public void AddForbiddenZone(AOEShape shape, WPos origin, Angle rot = new(), DateTime activation = new(), ulong source = 0) => ForbiddenZones.Add((shape.Distance(origin, rot), activation, source));
+    public void AddForbiddenZone(Func<WPos, float> shapeDistance, DateTime activation = default, ulong source = default) => ForbiddenZones.Add((shapeDistance, activation, source));
+    public void AddForbiddenZone(AOEShape shape, WPos origin, Angle rot = default, DateTime activation = default, ulong source = default) => ForbiddenZones.Add((shape.Distance(origin, rot), activation, source));
+
+    public void AddPredictedDamage(BitMask players, DateTime activation, PredictedDamageType type = PredictedDamageType.Raidwide) => PredictedDamage.Add(new(players, activation, type));
 
     public void AddSpecialMode(SpecialMode mode, DateTime activation)
     {
@@ -196,11 +223,11 @@ public sealed class AIHints
     // TODO: note that the name is misleading - it actually happens mid frame, before all actions are gathered (eg before autorotation runs), but further steps (eg ai) might consume previously gathered data
     public void Normalize()
     {
-        PotentialTargets.SortByReverse(x => x.Priority);
+        PotentialTargets.Sort((b, a) => a.Priority.CompareTo(b.Priority));
         HighestPotentialTargetPriority = Math.Max(0, PotentialTargets.FirstOrDefault()?.Priority ?? 0);
-        ForbiddenZones.SortBy(e => e.activation);
-        ForbiddenDirections.SortBy(e => e.activation);
-        PredictedDamage.SortBy(e => e.activation);
+        ForbiddenZones.Sort((a, b) => a.activation.CompareTo(b.activation));
+        ForbiddenDirections.Sort((a, b) => a.activation.CompareTo(b.activation));
+        PredictedDamage.Sort((a, b) => a.Activation.CompareTo(b.Activation));
     }
 
     public void InitPathfindMap(Pathfinding.Map map)
@@ -214,7 +241,7 @@ public sealed class AIHints
             for (var y = r.Top; y < r.Bottom; ++y)
                 for (var x = r.Left; x < r.Right; ++x)
                     if (PathfindMapObstacles.Bitmap[x, y])
-                        map.PixelMaxG[(y + offY) * map.Width + x + offX] = -900;
+                        map.PixelMaxG[(y + offY) * map.Width + x + offX] = -900f;
         }
     }
 
@@ -261,11 +288,11 @@ public sealed class AIHints
     public int NumPriorityTargetsInAOERect(WPos origin, WDir direction, float lenFront, float halfWidth, float lenBack = 0) => NumPriorityTargetsInAOE(a => TargetInAOERect(a.Actor, origin, direction, lenFront, halfWidth, lenBack));
     public bool TargetInAOECircle(Actor target, WPos origin, float radius) => target.Position.InCircle(origin, radius + target.HitboxRadius);
     public bool TargetInAOECone(Actor target, WPos origin, float radius, WDir direction, Angle halfAngle) => Intersect.CircleCone(target.Position, target.HitboxRadius, origin, radius, direction, halfAngle);
-    public bool TargetInAOERect(Actor target, WPos origin, WDir direction, float lenFront, float halfWidth, float lenBack = 0)
+    public bool TargetInAOERect(Actor target, WPos origin, WDir direction, float lenFront, float halfWidth, float lenBack = default)
     {
-        var rectCenterOffset = (lenFront - lenBack) / 2;
+        var rectCenterOffset = (lenFront - lenBack) * 0.5f;
         var rectCenter = origin + direction * rectCenterOffset;
-        return Intersect.CircleRect(target.Position, target.HitboxRadius, rectCenter, direction, halfWidth, (lenFront + lenBack) / 2);
+        return Intersect.CircleRect(target.Position, target.HitboxRadius, rectCenter, direction, halfWidth, (lenFront + lenBack) * 0.5f);
     }
 
     // goal zones
@@ -273,7 +300,7 @@ public sealed class AIHints
     public Func<WPos, float> GoalSingleTarget(WPos target, float radius, float weight = 1f)
     {
         var effRsq = radius * radius;
-        return p => (p - target).LengthSq() <= effRsq ? weight : 0;
+        return p => (p - target).LengthSq() <= effRsq ? weight : default;
     }
     public Func<WPos, float> GoalSingleTarget(Actor target, float range, float weight = 1f) => GoalSingleTarget(target.Position, range + target.HitboxRadius, weight);
 
@@ -300,7 +327,7 @@ public sealed class AIHints
                 Positional.Front => front > side, // TODO: reconsider this, it's not a real positional?..
                 _ => false
             };
-            return inPositional ? 2 : 1;
+            return inPositional ? 2f : 1f;
         };
     }
     public Func<WPos, float> GoalSingleTarget(Actor target, Positional positional, float range = 2.6f) => GoalSingleTarget(target.Position, target.Rotation, positional, range + target.HitboxRadius);
@@ -360,7 +387,7 @@ public sealed class AIHints
         };
     }
 
-    public Func<WPos, float> GoalAOERect(Actor primaryTarget, float lenFront, float halfWidth, float lenBack = 0f)
+    public Func<WPos, float> GoalAOERect(Actor primaryTarget, float lenFront, float halfWidth, float lenBack = default)
     {
         var count = PriorityTargets.Count;
         var targets = new (WPos pos, float radius)[count];
@@ -401,7 +428,7 @@ public sealed class AIHints
         return p =>
         {
             var aoeTargets = aoe(p) - minAOETargets;
-            return aoeTargets >= 0 ? 3 + aoeTargets : singleTarget(p);
+            return aoeTargets >= 0 ? 3f + aoeTargets : singleTarget(p);
         };
     }
 
@@ -412,12 +439,13 @@ public sealed class AIHints
         return p =>
         {
             var dist = (p - destination).Length();
-            var weight = 1f - Math.Clamp(invDist * dist, 0f, 1f);
+            var weight = 1f - Math.Clamp(invDist * dist, default, 1f);
             return maxWeight * weight;
         };
     }
+    public Func<WPos, float> GoalProximity(Actor target, float range, float weight = 1f) => GoalProximity(target.Position, range + target.HitboxRadius, weight);
 
-    public Func<WPos, float> PullTargetToLocation(Actor target, WPos destination, float destRadius = 2)
+    public Func<WPos, float> PullTargetToLocation(Actor target, WPos destination, float destRadius = 2f)
     {
         var enemy = FindEnemy(target);
         if (enemy == null)
@@ -431,6 +459,6 @@ public sealed class AIHints
             var dest = destination - adjRange * desiredToTarget.Normalized();
             return GoalSingleTarget(dest, PathfindMapBounds.MapResolution, 10f);
         }
-        return _ => 0f;
+        return _ => default;
     }
 }

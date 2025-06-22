@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Savage.M02SHoneyBLovely;
 
-class RottenHeart(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.RottenHeartAOE));
+sealed class RottenHeart(BossModule module) : Components.CastCounter(module, (uint)AID.RottenHeartAOE);
 
-class RottenHeartBigBurst(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.RottenHeartBigBurst))
+sealed class RottenHeartBigBurst(BossModule module) : Components.CastCounter(module, (uint)AID.RottenHeartBigBurst)
 {
     private int _numRaidwides;
     private readonly int[] _order = new int[PartyState.MaxPartySize];
@@ -25,7 +25,7 @@ class RottenHeartBigBurst(BossModule module) : Components.CastCounter(module, Ac
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID is SID.BeelovedVenomA or SID.BeelovedVenomB && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        if (status.ID is (uint)SID.BeelovedVenomA or (uint)SID.BeelovedVenomB && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             _order[slot] = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds switch
             {
@@ -39,12 +39,12 @@ class RottenHeartBigBurst(BossModule module) : Components.CastCounter(module, Ac
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.RottenHeartBigBurst:
+            case (uint)AID.RottenHeartBigBurst:
                 ++NumCasts;
                 break;
-            case AID.CallMeHoney:
+            case (uint)AID.CallMeHoney:
                 ++_numRaidwides;
                 break;
         }
@@ -55,7 +55,7 @@ class RottenHeartBigBurst(BossModule module) : Components.CastCounter(module, Ac
         var order = _order[slot];
         if (order == 0)
             return null;
-        for (int i = 0; i < _order.Length; ++i)
+        for (var i = 0; i < 8; ++i)
             if (i != slot && _order[i] == order)
                 return Raid[i];
         return null;

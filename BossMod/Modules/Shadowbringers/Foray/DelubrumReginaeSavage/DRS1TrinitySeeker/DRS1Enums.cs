@@ -34,11 +34,11 @@ public enum AID : uint
     MercifulBreeze = 23240, // Helper->self, 2.5s cast, range 50 width 5 rect aoe (crisscross)
     MercifulMoon = 23241, // AetherialOrb->self, no cast, range 50 circle gaze
     MercifulBlooms = 23242, // Helper->self, 9.0s cast, range 4 circle aoe (real radius is 20 due to influence up)
-    MercifulArc = 23252, // Boss->self, no cast, range 12 ?-degree cone cleave
+    MercifulArc = 23252, // Boss->self, no cast, range 12 90-degree cone cleave
 
     VerdantPathSword = 23192, // Boss->self, 3.0s cast, single-target, visual (switch to sword, side aoes)
     BalefulSwathe = 23248, // Boss->self, no cast, single-target, visual (side aoes)
-    BalefulSwatheAOE = 23249, // Helper->self, no cast, range 50 ?-degree cone (doesn't really look like cone...)
+    BalefulSwatheAOE = 23249, // Helper->self, no cast, range 50 180-degree cone
     BalefulOnslaught = 23690, // Boss->self, 4.0s cast, single-target, visual (tankbuster, shareable or skipping closest target)
     BalefulOnslaughtAOE1 = 23253, // Boss->self, no cast, range 10 ?-degree cone tankbuster (shareable/invulnable)
     BalefulOnslaughtAOE2 = 23254, // Boss->self, no cast, range 10 ?-degree cone tankbuster (solo, skipping closest target)
@@ -68,7 +68,7 @@ public enum AID : uint
 
 public enum SID : uint
 {
-    Mercy = 2056, // none->Boss, extra=0xF7 (-45 deg)/0xF8 (-135 deg)/0xF9 (+45deg)/0xFA (+135 deg)
+    Mercy = 2056 // none->Boss, extra=0xF7 (-45 deg)/0xF8 (-135 deg)/0xF9 (+45deg)/0xFA (+135 deg)
     //MercifulAir = 2489, // Boss->SeekerAvatar/Boss, extra=0x194
     //BalefulAir = 2490, // Boss->Boss/SeekerAvatar, extra=0x195
     //IronAir = 2491, // Boss->Boss/SeekerAvatar, extra=0x196
@@ -79,13 +79,12 @@ public enum SID : uint
 
 public enum TetherID : uint
 {
-    BurningChains = 128, // player->player
-    DeadIron = 138, // player->SeekerAvatar
+    BurningChains = 128 // player->player
 }
 
 public enum IconID : uint
 {
     BurningChains = 238, // player
     DeadIron = 237, // player
-    MercifulArc = 243, // player
+    MercifulArc = 243 // player
 }

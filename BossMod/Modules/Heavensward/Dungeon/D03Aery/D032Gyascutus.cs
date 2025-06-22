@@ -38,7 +38,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x00)
+        if (state == 0x00020001u && index == 0x00u)
         {
             Arena.Bounds = defaultbounds;
             _aoe = null;
@@ -46,12 +46,12 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ProximityPyre(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ProximityPyre), 12f);
-class Burst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burst), 10f);
-class CripplingBlow(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CripplingBlow));
-class DeafeningBellow(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DeafeningBellow));
-class AshenOuroboros(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AshenOuroboros), new AOEShapeDonut(11f, 20f));
-class BodySlam(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BodySlam), 10f)
+class ProximityPyre(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProximityPyre, 12f);
+class Burst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burst, 10f);
+class CripplingBlow(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CripplingBlow);
+class DeafeningBellow(BossModule module) : Components.RaidwideCast(module, (uint)AID.DeafeningBellow);
+class AshenOuroboros(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AshenOuroboros, new AOEShapeDonut(11f, 20f));
+class BodySlam(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodySlam, 10f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -80,5 +80,5 @@ class D032GyascutusStates : StateMachineBuilder
 public class D032Gyascutus(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(11.978f, 67.979f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Circle(ArenaCenter, 26.5f)], [new Rectangle(new(38.805f, 66.371f), 20, 0.8f, 86.104f.Degrees()), new Rectangle(new(-11.441f, 56.27f), 20, 0.9f, -64.554f.Degrees()), new Circle(new(-16.5f, 66.1f), 2.5f)]);
+    public static readonly ArenaBoundsComplex StartingBounds = new([new Circle(ArenaCenter, 26.5f)], [new Rectangle(new(38.805f, 66.371f), 20f, 0.8f, -86.104f.Degrees()), new Rectangle(new(-11.441f, 56.27f), 20f, 0.9f, 64.554f.Degrees()), new Circle(new(-16.5f, 66.1f), 2.5f)]);
 }

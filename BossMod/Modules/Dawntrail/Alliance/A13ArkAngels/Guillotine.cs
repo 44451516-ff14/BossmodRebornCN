@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class Guillotine(BossModule module) : Components.GenericAOEs(module)
+sealed class Guillotine(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
 

@@ -1,11 +1,10 @@
 ﻿using ImGuiNET;
 using Lumina.Excel.Sheets;
 using System.Globalization;
-using System.Text;
 
 namespace BossMod.ReplayAnalysis;
 
-class ParticipantInfo : CommonEnumInfo
+sealed class ParticipantInfo : CommonEnumInfo
 {
     class ParticipantData
     {
@@ -114,8 +113,10 @@ class ParticipantInfo : CommonEnumInfo
         if (ImGui.MenuItem("Generate missing enum values for boss module"))
         {
             var sb = new StringBuilder();
-            foreach (var (oid, data) in _data.Where(kv => _oidType?.GetEnumName(kv.Key) == null))
-                sb.AppendLine(EnumMemberString(oid, data));
+            foreach (var (name, val) in Utils.DedupKeys(_data.Where(kv => _oidType?.GetEnumName(kv.Key) == null).Select(d => EnumMemberString(d.Key, d.Value))))
+            {
+                sb.AppendLine($"{name} = {val}");
+            }
             ImGui.SetClipboardText(sb.ToString());
         }
     }
@@ -157,7 +158,7 @@ class ParticipantInfo : CommonEnumInfo
     private string RadiusString(ParticipantData d) => d.MinRadius != d.MaxRadius ? string.Create(CultureInfo.InvariantCulture, $"{d.MinRadius:f3}-{d.MaxRadius:f3}") : string.Create(CultureInfo.InvariantCulture, $"{d.MinRadius:f3}");
     private string GuessName(uint oid, ParticipantData d) => Utils.StringToIdentifier(d.Names.Count > 0 ? d.Names[0].name : $"Actor{oid:X}");
 
-    private string EnumMemberString(uint oid, ParticipantData data, string? forcedName = null)
+    private (string Name, string Value) EnumMemberString(uint oid, ParticipantData data, string? forcedName = null)
     {
         var enumName = forcedName ?? _oidType?.GetEnumName(oid) ?? ("_Gen_" + GuessName(oid, data));
         var spawnStr = data.SpawnedPreFight.Count switch
@@ -174,15 +175,17 @@ class ParticipantInfo : CommonEnumInfo
             1 => data.Types[0] == ActorType.Enemy ? "" : $", {data.Types[0]} type",
             _ => ", mixed types"
         };
-        return $"{enumName} = 0x{oid:X}, // R{RadiusString(data)}, x{spawnStr}{typeStr}";
+        return (enumName, $"0x{oid:X}, // R{RadiusString(data)}, x{spawnStr}{typeStr}");
     }
 
     private StringBuilder AddOIDEnum(StringBuilder sb, uint forcedBossOID = 0)
     {
+        var members = _data.Select(d => EnumMemberString(d.Key, d.Value, d.Key == forcedBossOID ? "Boss" : null));
+
         sb.AppendLine("public enum OID : uint");
         sb.AppendLine("{");
-        foreach (var (oid, data) in _data)
-            sb.AppendLine($"    {EnumMemberString(oid, data, oid == forcedBossOID ? "Boss" : null)}");
+        foreach (var (key, val) in Utils.DedupKeys(members))
+            sb.AppendLine($"    {key} = {val}");
         sb.AppendLine("}");
         return sb;
     }
@@ -196,7 +199,7 @@ class ParticipantInfo : CommonEnumInfo
         sb.AppendLine($"    Helper = 0x233C,");
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine($"class {name}States : StateMachineBuilder");
+        sb.AppendLine($"sealed class {name}States : StateMachineBuilder");
         sb.AppendLine("{");
         sb.AppendLine($"    public {name}States(BossModule module) : base(module)");
         sb.AppendLine("    {");
@@ -210,7 +213,7 @@ class ParticipantInfo : CommonEnumInfo
             sb.AppendLine();
             sb.AppendLine("    private void SinglePhase(uint id)");
             sb.AppendLine("    {");
-            sb.AppendLine("        SimpleState(id + 0xFF0000, 10000, \"???\"");
+            sb.AppendLine("        SimpleState(id + 0xFF0000u, 10000, \"???\");");
             sb.AppendLine("    }");
             sb.AppendLine();
             sb.AppendLine("    //private void XXX(uint id, float delay)");
@@ -218,7 +221,7 @@ class ParticipantInfo : CommonEnumInfo
         sb.AppendLine("}");
         sb.AppendLine();
         sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, GroupType = BossModuleInfo.GroupType.CFC, GroupID = {data.Zones.FirstOrDefault().cfcId}, NameID = {data.Names.FirstOrDefault().id})]");
-        sb.AppendLine($"public class {name}(WorldState ws, Actor primary) : BossModule(ws, primary, new(100, 100), new ArenaBoundsCircle(20));");
+        sb.AppendLine($"public sealed class {name}(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));");
         return sb;
     }
 }

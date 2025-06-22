@@ -1,13 +1,13 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V025Enenra;
 
 class PipeCleaner(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(60f, 5f), (uint)TetherID.PipeCleaner);
-class Uplift(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Uplift), 6f);
-class Snuff(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.Snuff), new AOEShapeCircle(6f), true, tankbuster: true);
+class Uplift(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Uplift, 6f);
+class Snuff(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Snuff, 6f, tankbuster: true);
 
-class Smoldering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Smoldering), 8f, 8);
-class FlagrantCombustion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FlagrantCombustion));
-class SmokeRings(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SmokeRings), 16f);
-class ClearingSmoke(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ClearingSmoke), 16f, stopAfterWall: true)
+class Smoldering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Smoldering, 8f, 8);
+class FlagrantCombustion(BossModule module) : Components.RaidwideCast(module, (uint)AID.FlagrantCombustion);
+class SmokeRings(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SmokeRings, 16f);
+class ClearingSmoke(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ClearingSmoke, 16f, stopAfterWall: true)
 {
     private readonly Smoldering _aoe = module.FindComponent<Smoldering>()!;
 

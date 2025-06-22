@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex3QueenEternal;
 
-class AbsoluteAuthorityPuddles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbsoluteAuthorityPuddlesAOE), 8f);
+sealed class AbsoluteAuthorityPuddles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbsoluteAuthorityPuddlesAOE, 8f);
 
-class AbsoluteAuthorityExpansionBoot(BossModule module) : Components.UniformStackSpread(module, 6f, 15f, 4, alwaysShowSpreads: true) // TODO: verify falloff
+sealed class AbsoluteAuthorityExpansionBoot(BossModule module) : Components.UniformStackSpread(module, 6f, 15f, 4, alwaysShowSpreads: true) // TODO: verify falloff
 {
     public int NumCasts;
     private readonly Ex3QueenEternalConfig _config = Service.Config.Get<Ex3QueenEternalConfig>();
@@ -32,14 +32,14 @@ class AbsoluteAuthorityExpansionBoot(BossModule module) : Components.UniformStac
     }
 }
 
-class AbsoluteAuthorityHeel(BossModule module) : Components.GenericStackSpread(module)
+sealed class AbsoluteAuthorityHeel(BossModule module) : Components.GenericStackSpread(module)
 {
     public int NumCasts;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.AuthoritysHeel && Stacks.Count == 0)
-            Stacks.Add(new(actor, 1.5f, 8, 8, activation: WorldState.FutureTime(5.1f)));
+            Stacks.Add(new(actor, 1.5f, 8, 8, activation: WorldState.FutureTime(5.1d)));
     }
 
     public override void Update()
@@ -62,4 +62,4 @@ class AbsoluteAuthorityHeel(BossModule module) : Components.GenericStackSpread(m
     }
 }
 
-class AbsoluteAuthorityKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AbsoluteAuthorityKnockback), 30, kind: Kind.DirForward);
+sealed class AbsoluteAuthorityKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AbsoluteAuthorityKnockback, 30f, kind: Kind.DirForward);

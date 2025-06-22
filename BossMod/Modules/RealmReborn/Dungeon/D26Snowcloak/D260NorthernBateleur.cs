@@ -93,9 +93,9 @@ class Frostbite(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class WingCutter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingCutter), new AOEShapeCone(6.9f, 30f.Degrees()));
-class DoubleSmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DoubleSmash), new AOEShapeCone(7.69f, 60f.Degrees()));
-class SicklySneeze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SicklySneeze), new AOEShapeCone(7.9f, 45f.Degrees()));
+class WingCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingCutter, new AOEShapeCone(6.9f, 30f.Degrees()));
+class DoubleSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSmash, new AOEShapeCone(7.69f, 60f.Degrees()));
+class SicklySneeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SicklySneeze, new AOEShapeCone(7.9f, 45f.Degrees()));
 
 class D260NorthernBateleurStates : StateMachineBuilder
 {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.Duel.Duel6Lyon;
 
-class TasteOfBloodAndDuelOrDie(BossModule module) : Components.GenericAOEs(module)
+sealed class TasteOfBloodAndDuelOrDie(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShape _tasteOfBloodShape = new AOEShapeCone(40, 90.Degrees());
     public readonly List<Actor> Casters = [];
@@ -11,7 +11,7 @@ class TasteOfBloodAndDuelOrDie(BossModule module) : Components.GenericAOEs(modul
         var count = Casters.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var caster = Casters[i];

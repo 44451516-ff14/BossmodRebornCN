@@ -12,31 +12,31 @@ class P9SKokytosStates : StateMachineBuilder
     {
         GluttonysAugur(id, 6.5f);
 
-        Ravening(id + 0x100000, 8.4f, AID.RaveningMage, false, false);
+        Ravening(id + 0x100000, 8.4f, (uint)AID.RaveningMage, false, false);
         DualityOfDeath(id + 0x110000, 10.0f);
         TripleDualspell(id + 0x120000, 5.2f);
 
-        Ravening(id + 0x200000, 16.1f, AID.RaveningMartialist, true, false);
+        Ravening(id + 0x200000, 16.1f, (uint)AID.RaveningMartialist, true, false);
         AscendantFist(id + 0x210000, 7.8f);
         ArchaicRockbreakerCombination(id + 0x220000, 7.4f);
         GluttonysAugur(id + 0x230000, 1.0f);
         AscendantFist(id + 0x240000, 5.8f);
 
-        Ravening(id + 0x300000, 17.3f, AID.RaveningChimeric, true, false);
+        Ravening(id + 0x300000, 17.3f, (uint)AID.RaveningChimeric, true, false);
         LevinstrikeSummoning(id + 0x310000, 2.5f);
         GluttonysAugur(id + 0x320000, 1.0f);
 
-        Ravening(id + 0x400000, 13.6f, AID.RaveningBeast, false, true);
+        Ravening(id + 0x400000, 13.6f, (uint)AID.RaveningBeast, false, true);
         Charibdys(id + 0x410000, 2.5f);
 
-        Ravening(id + 0x500000, 14.3f, AID.RaveningChimeric, true, false);
+        Ravening(id + 0x500000, 14.3f, (uint)AID.RaveningChimeric, true, false);
         DualityOfDeath(id + 0x510000, 7.9f);
         ArchaicRockbreakerDualspell(id + 0x520000, 1.0f);
         GluttonysAugur(id + 0x530000, 0.3f);
         ChimericSuccession(id + 0x540000, 6.9f);
         Dualspell(id + 0x550000, 3.8f, true);
 
-        Ravening(id + 0x600000, 11.0f, AID.RaveningMage, false, false);
+        Ravening(id + 0x600000, 11.0f, (uint)AID.RaveningMage, false, false);
         Dualspell(id + 0x610000, 2.5f);
         GluttonysAugur(id + 0x620000, 0.4f);
         Dualspell(id + 0x630000, 1.6f);
@@ -44,20 +44,20 @@ class P9SKokytosStates : StateMachineBuilder
         Dualspell(id + 0x650000, 1.0f);
         GluttonysAugur(id + 0x660000, 0.3f);
 
-        Ravening(id + 0x700000, 16.8f, AID.RaveningChimeric, false, false);
-        Cast(id + 0x710000, AID.Disintegration, 2.5f, 10, "Enrage");
+        Ravening(id + 0x700000, 16.8f, (uint)AID.RaveningChimeric, false, false);
+        Cast(id + 0x710000, (uint)AID.Disintegration, 2.5f, 10, "Enrage");
     }
 
     private void GluttonysAugur(uint id, float delay)
     {
-        Cast(id, AID.GluttonysAugur, delay, 5);
+        Cast(id, (uint)AID.GluttonysAugur, delay, 5);
         ComponentCondition<GluttonysAugur>(id + 2, 0.5f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<GluttonysAugur>()
             .DeactivateOnExit<GluttonysAugur>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
-    private void Ravening(uint id, float delay, AID aid, bool withUplift, bool shortCast)
+    private void Ravening(uint id, float delay, uint aid, bool withUplift, bool shortCast)
     {
         Cast(id, aid, delay, shortCast ? 3 : 4)
             .ActivateOnEnter<Uplift>(withUplift);
@@ -69,7 +69,7 @@ class P9SKokytosStates : StateMachineBuilder
 
     private void DualityOfDeath(uint id, float delay)
     {
-        CastStart(id, AID.DualityOfDeath, delay)
+        CastStart(id, (uint)AID.DualityOfDeath, delay)
             .ActivateOnEnter<DualityOfDeath>(); // icons appear 0.1s before cast start
         CastEnd(id + 1, 5);
         ComponentCondition<DualityOfDeath>(id + 2, 0.8f, comp => comp.NumCasts >= 1, "Tankbuster 1")
@@ -81,7 +81,7 @@ class P9SKokytosStates : StateMachineBuilder
 
     private State Dualspell(uint id, float delay, bool isTwoMinds = false)
     {
-        CastMulti(id, [isTwoMinds ? AID.TwoMindsIceFire : AID.DualspellIceFire, isTwoMinds ? AID.TwoMindsIceLightning : AID.DualspellIceLightning], delay, isTwoMinds ? 7 : 5)
+        CastMulti(id, [isTwoMinds ? (uint)AID.TwoMindsIceFire : (uint)AID.DualspellIceFire, isTwoMinds ? (uint)AID.TwoMindsIceLightning : (uint)AID.DualspellIceLightning], delay, isTwoMinds ? 7 : 5)
             .ActivateOnEnter<DualspellFire>()
             .ActivateOnEnter<DualspellLightning>()
             .ActivateOnEnter<DualspellIce>();
@@ -102,14 +102,14 @@ class P9SKokytosStates : StateMachineBuilder
     // TODO: tankswap component
     private void AscendantFist(uint id, float delay)
     {
-        Cast(id, AID.AscendantFist, delay, 5, "Tankbuster swap")
+        Cast(id, (uint)AID.AscendantFist, delay, 5, "Tankbuster swap")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     // keeps lines component active
     private void ArchaicRockbreaker(uint id, float delay)
     {
-        Cast(id, AID.ArchaicRockbreakerCenter, delay, 5)
+        Cast(id, (uint)AID.ArchaicRockbreakerCenter, delay, 5)
             .ActivateOnEnter<ArchaicRockbreakerCenter>()
             .ActivateOnEnter<ArchaicRockbreakerShockwave>()
             .ActivateOnEnter<ArchaicRockbreakerPairs>()
@@ -126,7 +126,7 @@ class P9SKokytosStates : StateMachineBuilder
     {
         ArchaicRockbreaker(id, delay);
 
-        CastMulti(id + 0x100, [AID.FrontCombinationOut, AID.FrontCombinationIn, AID.RearCombinationOut, AID.RearCombinationIn], 0.3f, 6) // note: second set of lines start casting ~4.4s into cast, overlapping with first
+        CastMulti(id + 0x100, [(uint)AID.FrontCombinationOut, (uint)AID.FrontCombinationIn, (uint)AID.RearCombinationOut, (uint)AID.RearCombinationIn], 0.3f, 6) // note: second set of lines start casting ~4.4s into cast, overlapping with first
             .ActivateOnEnter<ArchaicRockbreakerCombination>();
         ComponentCondition<ArchaicRockbreakerLine>(id + 0x110, 0.4f, comp => comp.NumCasts > 0)
             .DeactivateOnExit<ArchaicRockbreakerLine>(); // hide second set for a time
@@ -137,7 +137,7 @@ class P9SKokytosStates : StateMachineBuilder
             .DeactivateOnExit<ArchaicRockbreakerLine>() // lines end ~0.6s before
             .DeactivateOnExit<ArchaicRockbreakerCombination>();
 
-        Cast(id + 0x200, AID.ArchaicDemolish, 2.4f, 4)
+        Cast(id + 0x200, (uint)AID.ArchaicDemolish, 2.4f, 4)
             .ActivateOnEnter<ArchaicDemolish>();
         ComponentCondition<ArchaicDemolish>(id + 0x210, 1.2f, comp => !comp.Active, "Party stacks")
             .DeactivateOnExit<ArchaicDemolish>()
@@ -155,11 +155,11 @@ class P9SKokytosStates : StateMachineBuilder
 
     private void LevinstrikeSummoning(uint id, float delay)
     {
-        Cast(id, AID.LevinstrikeSummoning, delay, 4)
+        Cast(id, (uint)AID.LevinstrikeSummoning, delay, 4)
             .ActivateOnEnter<LevinstrikeSummoningIcemeld>()
             .ActivateOnEnter<LevinstrikeSummoningFiremeld>()
             .ActivateOnEnter<LevinstrikeSummoningShock>();
-        Cast(id + 0x10, AID.ScrambledSuccession, 2.1f, 10);
+        Cast(id + 0x10, (uint)AID.ScrambledSuccession, 2.1f, 10);
         Targetable(id + 0x20, false, 0.1f, "Disappear");
         ComponentCondition<LevinstrikeSummoningShock>(id + 0x30, 2.5f, comp => comp.NumCasts >= 1);
         ComponentCondition<LevinstrikeSummoningFiremeld>(id + 0x31, 2.3f, comp => comp.NumCasts >= 1);
@@ -188,15 +188,15 @@ class P9SKokytosStates : StateMachineBuilder
 
     private void ChimericSuccession(uint id, float delay)
     {
-        Cast(id, AID.ChimericSuccession, delay, 5);
-        CastStartMulti(id + 0x10, [AID.FrontFirestrikes, AID.RearFirestrikes], 7.5f)
+        Cast(id, (uint)AID.ChimericSuccession, delay, 5);
+        CastStartMulti(id + 0x10, [(uint)AID.FrontFirestrikes, (uint)AID.RearFirestrikes], 7.5f)
             .ActivateOnEnter<ChimericSuccession>();
         ComponentCondition<ChimericSuccession>(id + 0x20, 3.3f, comp => comp.NumCasts >= 1, "Defamation 1");
         ComponentCondition<ChimericSuccession>(id + 0x21, 3.0f, comp => comp.NumCasts >= 2, "Defamation 2");
         CastEnd(id + 0x30, 1.7f);
         ComponentCondition<ChimericSuccession>(id + 0x31, 0.4f, comp => !comp.JumpActive, "Baited jump");
         ComponentCondition<ChimericSuccession>(id + 0x40, 0.9f, comp => comp.NumCasts >= 3, "Defamation 3");
-        CastStartMulti(id + 0x50, [AID.SwingingKickFront, AID.SwingingKickRear], 1.2f);
+        CastStartMulti(id + 0x50, [(uint)AID.SwingingKickFront, (uint)AID.SwingingKickRear], 1.2f);
         ComponentCondition<ChimericSuccession>(id + 0x60, 1.8f, comp => comp.NumCasts >= 4, "Defamation 4")
             .ActivateOnEnter<SwingingKickFront>()
             .ActivateOnEnter<SwingingKickRear>()
@@ -208,38 +208,38 @@ class P9SKokytosStates : StateMachineBuilder
 
     private void Charibdys(uint id, float delay)
     {
-        Cast(id, AID.Charybdis, delay, 3)
+        Cast(id, (uint)AID.Charybdis, delay, 3)
             .ActivateOnEnter<Charibdys>();
-        Cast(id + 0x10, AID.Comet, 2.1f, 5)
+        Cast(id + 0x10, (uint)AID.Comet, 2.1f, 5)
             .ActivateOnEnter<CometImpact>();
         ComponentCondition<CometImpact>(id + 0x20, 1.1f, comp => comp.NumCasts > 0, "Proximity")
             .DeactivateOnExit<CometImpact>();
 
-        CastStart(id + 0x100, AID.BeastlyBile, 3.1f)
+        CastStart(id + 0x100, (uint)AID.BeastlyBile, 3.1f)
             .ActivateOnEnter<Comet>()
             .ActivateOnEnter<CometBurst>()
             .ActivateOnEnter<BeastlyBile>()
             .ActivateOnEnter<Thunderbolt>();
         CastEnd(id + 0x101, 5);
-        Cast(id + 0x110, AID.Thunderbolt, 2.1f, 3);
+        Cast(id + 0x110, (uint)AID.Thunderbolt, 2.1f, 3);
         ComponentCondition<Thunderbolt>(id + 0x120, 1.0f, comp => comp.NumCasts > 0, "Proteans 1");
         ComponentCondition<BeastlyBile>(id + 0x121, 0.9f, comp => comp.NumCasts >= 1, "Stack 1");
         // +0.8s: burst 1 should start
-        Cast(id + 0x130, AID.Thunderbolt, 1.3f, 3);
+        Cast(id + 0x130, (uint)AID.Thunderbolt, 1.3f, 3);
         ComponentCondition<Thunderbolt>(id + 0x140, 1.0f, comp => comp.NumCasts > 4, "Proteans 2")
             .DeactivateOnExit<Thunderbolt>();
         ComponentCondition<BeastlyBile>(id + 0x141, 0.9f, comp => comp.NumCasts >= 2, "Stack 2")
             .DeactivateOnExit<BeastlyBile>();
         // +0.8s: burst 1 should finish, burst 2 should start
 
-        CastStart(id + 0x200, AID.EclipticMeteor, 2.4f)
+        CastStart(id + 0x200, (uint)AID.EclipticMeteor, 2.4f)
             .ActivateOnEnter<EclipticMeteor>();
         // +4.4s: burst 2 should finish
         CastEnd(id + 0x201, 7);
         ComponentCondition<EclipticMeteor>(id + 0x210, 1.9f, comp => comp.NumCasts > 0, "LOS meteor")
             .DeactivateOnExit<EclipticMeteor>();
 
-        Cast(id + 0x300, AID.BeastlyFury, 6.7f, 5);
+        Cast(id + 0x300, (uint)AID.BeastlyFury, 6.7f, 5);
         ComponentCondition<BeastlyFury>(id + 0x310, 1.0f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<BeastlyFury>()
             .DeactivateOnExit<BeastlyFury>()

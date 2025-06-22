@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class SwordQuiverRaidwide(BossModule module) : Components.CastCounter(module, default)
+sealed class SwordQuiverRaidwide(BossModule module) : Components.CastCounter(module, default)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -9,7 +9,7 @@ class SwordQuiverRaidwide(BossModule module) : Components.CastCounter(module, de
     }
 }
 
-class SwordQuiverBurst(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.SwordQuiverBurst))
+sealed class SwordQuiverBurst(BossModule module) : Components.GenericAOEs(module, (uint)AID.SwordQuiverBurst)
 {
     private readonly List<AOEInstance> _aoes = new(4);
 
@@ -33,12 +33,12 @@ class SwordQuiverBurst(BossModule module) : Components.GenericAOEs(module, Actio
                 (uint)AID.SwordQuiverS => +10f,
                 _ => 0
             };
-            _aoes.Add(new(_shape, Arena.Center + new WDir(0, zOffset), 89.999f.Degrees(), activation));
+            _aoes.Add(new(_shape, Arena.Center + new WDir(default, zOffset), 89.999f.Degrees(), activation));
         }
     }
 }
 
-class SwordQuiverLaceration(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.SwordQuiverLaceration))
+sealed class SwordQuiverLaceration(BossModule module) : Components.CastCounter(module, (uint)AID.SwordQuiverLaceration)
 {
     private static readonly AOEShapeCone _shape = new(40f, 30f.Degrees()); // TODO: verify angle
 

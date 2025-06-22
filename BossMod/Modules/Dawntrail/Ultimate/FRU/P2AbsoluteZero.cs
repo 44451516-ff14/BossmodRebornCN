@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2AbsoluteZero(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.AbsoluteZeroAOE));
+class P2AbsoluteZero(BossModule module) : Components.CastCounter(module, (uint)AID.AbsoluteZeroAOE);
 
-class P2SwellingFrost(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.SwellingFrost), true)
+class P2SwellingFrost(BossModule module) : Components.GenericKnockback(module, (uint)AID.SwellingFrost, true)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(3.2d);
 
@@ -12,9 +12,9 @@ class P2SwellingFrost(BossModule module) : Components.GenericKnockback(module, A
     }
 }
 
-class P2SinboundBlizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SinboundBlizzardAOE), new AOEShapeCone(50f, 10f.Degrees()));
+class P2SinboundBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SinboundBlizzardAOE, new AOEShapeCone(50f, 10f.Degrees()));
 
-class P2HiemalStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HiemalStormAOE), 7f)
+class P2HiemalStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HiemalStormAOE, 7f)
 {
     private bool _slowDodges;
 
@@ -38,7 +38,7 @@ class P2HiemalStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.
     }
 }
 
-class P2HiemalRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, ActionID.MakeSpell(AID.HiemalRay), GetVoidzones, 0.7f)
+class P2HiemalRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.HiemalRay, GetVoidzones, 0.7f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

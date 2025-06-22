@@ -4,8 +4,9 @@ using System.Text.Json.Serialization;
 namespace BossMod;
 
 [JsonConverter(typeof(JsonColorConverter))]
-public record struct Color(uint ABGR)
+public readonly struct Color(uint abgr)
 {
+    public readonly uint ABGR = abgr;
     public readonly uint R => ABGR & 0xFF;
     public readonly uint G => (ABGR >> 8) & 0xFF;
     public readonly uint B => (ABGR >> 16) & 0xFF;
@@ -19,10 +20,10 @@ public record struct Color(uint ABGR)
 
     public static Color FromFloat4(Vector4 vec)
     {
-        var r = Math.Clamp((uint)(vec.X * 255), 0, 255);
-        var g = Math.Clamp((uint)(vec.Y * 255), 0, 255);
-        var b = Math.Clamp((uint)(vec.Z * 255), 0, 255);
-        var a = Math.Clamp((uint)(vec.W * 255), 0, 255);
+        var r = Math.Clamp((uint)(vec.X * 255f), default, 255u);
+        var g = Math.Clamp((uint)(vec.Y * 255f), default, 255u);
+        var b = Math.Clamp((uint)(vec.Z * 255f), default, 255u);
+        var a = Math.Clamp((uint)(vec.W * 255f), default, 255u);
         return FromComponents(r, g, b, a);
     }
 

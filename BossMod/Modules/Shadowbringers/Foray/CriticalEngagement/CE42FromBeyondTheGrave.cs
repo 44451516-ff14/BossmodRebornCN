@@ -2,16 +2,16 @@
 
 public enum OID : uint
 {
-    Boss = 0x2E35, // R8.250, x1
-    Deathwall = 0x2EE8, // R0.500, x1
-    ShockSphere = 0x3232, // R1.000, spawn during fight
-    WarWraith = 0x3233, // R1.800, spawn during fight
-    HernaisTheTenacious = 0x3234, // R0.500, spawn during fight
-    DyunbuTheAccursed = 0x3235, // R0.500, spawn during fight
-    LlofiiTheForthright = 0x3236, // R0.500, x1
-    Monoceros = 0x3237, // R1.800, x1
-    PurifyingLight = 0x1EB173, // R0.500, EventObj type, spawn during fight
-    LivingCorpseSpawn = 0x1EB07A, // R0.500, EventObj type, spawn during fight
+    Boss = 0x2E35, // R8.25
+    Deathwall = 0x1EB173, // R0.5
+    DeathwallHelper = 0x2EE8, // R0.50
+    ShockSphere = 0x3232, // R1.0
+    WarWraith = 0x3233, // R1.8
+    HernaisTheTenacious = 0x3234, // R0.5
+    DyunbuTheAccursed = 0x3235, // R0.5
+    LlofiiTheForthright = 0x3236, // R0.5
+    Monoceros = 0x3237, // R1.8
+    LivingCorpseSpawn = 0x1EB07A, // R0.5
     Helper = 0x233C
 }
 
@@ -43,7 +43,7 @@ public enum AID : uint
     DarkFlare = 24112, // WarWraith->location, 5.0s cast, range 8 circle
     SoulSacrifice = 24113, // WarWraith->Boss, 6.0s cast, interruptible, WarWraith sacrifices to give Dmg Up to Boss
 
-    DeadlyToxin = 24699, // Deathwall->self, no cast, range 25-30 donut, deathwall
+    DeadlyToxin = 24699, // DeathwallHelper->self, no cast, range 25-30 donut, deathwall
     Shock = 24114, // ShockSphere->self, no cast, range 7 circle aoe around sphere
 
     AutoAttackMonoceros = 871, // Monoceros->Boss, no cast, single-target
@@ -59,12 +59,35 @@ public enum SID : uint
     ForwardMarch = 2161, // Boss->player, extra=0x0
     AboutFace = 2162, // Boss->player, extra=0x0
     LeftFace = 2163, // Boss->player, extra=0x0
-    RightFace = 2164, // Boss->player, extra=0x0
-    ForcedMarch = 1257 // Boss->player, extra=0x2/0x1/0x8/0x4
+    RightFace = 2164 // Boss->player, extra=0x0
 }
 
-class DevourSoul(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DevourSoul));
-class Blight(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Blight));
+class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+{
+    private static readonly AOEShapeDonut donut = new(25f, 30f);
+    private AOEInstance? _aoe;
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.GallowsMarch && Arena.Bounds != CE42FromBeyondTheGrave.DefaultArena)
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.8f));
+    }
+
+    public override void OnActorCreated(Actor actor)
+    {
+        if (actor.OID == (uint)OID.Deathwall)
+        {
+            Arena.Bounds = CE42FromBeyondTheGrave.DefaultArena;
+            Arena.Center = WPos.ClampToGrid(Arena.Center);
+            _aoe = null;
+        }
+    }
+}
+
+class DevourSoul(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DevourSoul);
+class Blight(BossModule module) : Components.RaidwideCast(module, (uint)AID.Blight);
 
 class GallowsMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {
@@ -96,25 +119,29 @@ class ShockSphere(BossModule module) : Components.Voidzone(module, 7f, GetSphere
 
 class SoulPurge(BossModule module) : Components.GenericAOEs(module)
 {
-    private bool _dualcast;
+    private bool dualCast;
     private readonly List<AOEInstance> _aoes = new(2);
 
-    private static readonly AOEShapeCircle _shapeCircle = new(10);
-    private static readonly AOEShapeDonut _shapeDonut = new(10, 30);
+    private static readonly AOEShapeCircle circle = new(10f);
+    private static readonly AOEShapeDonut donut = new(10f, 30f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
+            {
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
             else
-                aoes[i] = aoe with { Risky = false };
+                aoe.Risky = false;
         }
         return aoes;
     }
@@ -124,23 +151,27 @@ class SoulPurge(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.ChainMagick:
-                _dualcast = true;
-                break;
-            case (uint)AID.SoulPurgeCircle:
-                AddAOEs(_shapeCircle, _shapeDonut);
+                dualCast = true;
                 break;
             case (uint)AID.SoulPurgeDonut:
-                AddAOEs(_shapeDonut, _shapeCircle);
+                if (!dualCast)
+                    AddAOE(donut);
+                else
+                    AddAOEs(donut, circle);
+                break;
+            case (uint)AID.SoulPurgeCircle:
+                if (!dualCast)
+                    AddAOE(circle);
+                else
+                    AddAOEs(circle, donut);
                 break;
         }
-        void AddAOEs(AOEShape main, AOEShape dual)
+        void AddAOE(AOEShape shape, float delay = default) => _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay)));
+        void AddAOEs(AOEShape shape1, AOEShape shape2)
         {
-            _aoes.Add(new(main, spell.LocXZ, default, Module.CastFinishAt(spell)));
-            if (_dualcast)
-            {
-                _aoes.Add(new(dual, spell.LocXZ, default, Module.CastFinishAt(spell, 2.1f)));
-                _dualcast = false;
-            }
+            AddAOE(shape1);
+            AddAOE(shape2, 2.1f);
+            dualCast = false;
         }
     }
 
@@ -151,18 +182,18 @@ class SoulPurge(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class CrimsonBlade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrimsonBlade), new AOEShapeCone(50f, 90f.Degrees()));
-class BloodCyclone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BloodCyclone), 5f);
-class Aethertide(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AethertideAOE), 8f);
-class MarchingBreath(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.MarchingBreath), showNameInHint: true); // heals all allies by 20% of max health (raidwide)
-class TacticalAero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TacticalAero), new AOEShapeRect(40f, 4f));
-class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EntropicFlame), new AOEShapeRect(60f, 4f));
-class DarkFlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkFlare), 8f);
-class SoulSacrifice(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.SoulSacrifice), showNameInHint: true); // WarWraith sacrifices itself to give boss a damage buff
+class CrimsonBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrimsonBlade, new AOEShapeCone(50f, 90f.Degrees()));
+class BloodCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BloodCyclone, 5f);
+class Aethertide(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AethertideAOE, 8f);
+class MarchingBreath(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MarchingBreath, showNameInHint: true); // heals all allies by 20% of max health (raidwide)
+class TacticalAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TacticalAero, new AOEShapeRect(40f, 4f));
+class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicFlame, new AOEShapeRect(60f, 4f));
+class DarkFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkFlare, 8f);
+class SoulSacrifice(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SoulSacrifice, showNameInHint: true); // WarWraith sacrifices itself to give boss a damage buff
 
 class PurifyingLight : Components.SimpleAOEs
 {
-    public PurifyingLight(BossModule module) : base(module, ActionID.MakeSpell(AID.PurifyingLight), 12)
+    public PurifyingLight(BossModule module) : base(module, (uint)AID.PurifyingLight, 12f)
     {
         Color = Colors.SafeFromAOE;
         Risky = false;
@@ -174,8 +205,10 @@ class CE42FromBeyondTheGraveStates : StateMachineBuilder
     public CE42FromBeyondTheGraveStates(BossModule module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<DevourSoul>()
             .ActivateOnEnter<Blight>()
+            .ActivateOnEnter<PurifyingLight>()
             .ActivateOnEnter<GallowsMarch>()
             .ActivateOnEnter<ShockSphere>()
             .ActivateOnEnter<SoulPurge>()
@@ -186,19 +219,23 @@ class CE42FromBeyondTheGraveStates : StateMachineBuilder
             .ActivateOnEnter<TacticalAero>()
             .ActivateOnEnter<EntropicFlame>()
             .ActivateOnEnter<DarkFlare>()
-            .ActivateOnEnter<SoulSacrifice>()
-            .ActivateOnEnter<PurifyingLight>();
+            .ActivateOnEnter<SoulSacrifice>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 778, NameID = 20)] // bnpcname=9931
-public class CE42FromBeyondTheGrave(WorldState ws, Actor primary) : BossModule(ws, primary, new(-60, 800), new ArenaBoundsCircle(30))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 20)] // bnpcname=9931
+public class CE42FromBeyondTheGrave(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
+    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(new(-60f, 800f), 29.5f, 32)]);
+    public static readonly ArenaBoundsCircle DefaultArena = new(25f); // default arena got no extra collision, just a donut aoe
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         base.DrawEnemies(pcSlot, pc);
-        Arena.Actors(Enemies(OID.WarWraith));
-        Arena.Actors(Enemies(OID.HernaisTheTenacious));
-        Arena.Actors(Enemies(OID.DyunbuTheAccursed));
+        Arena.Actors(Enemies((uint)OID.WarWraith));
+        Arena.Actors(Enemies((uint)OID.HernaisTheTenacious));
+        Arena.Actors(Enemies((uint)OID.DyunbuTheAccursed));
     }
+
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

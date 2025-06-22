@@ -72,7 +72,7 @@ class TargetSearch(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class LockOn(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.LockOn), GetVoidzones, 0.7f)
+class LockOn(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.LockOn, GetVoidzones, 0.7f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -93,7 +93,7 @@ class LockOn(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, Ac
     }
 }
 
-class ElectromagneticField(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElectromagneticField));
+class ElectromagneticField(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectromagneticField);
 
 class D061MagitekScorpionStates : StateMachineBuilder
 {

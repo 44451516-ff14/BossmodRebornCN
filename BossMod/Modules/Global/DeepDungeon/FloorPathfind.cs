@@ -17,7 +17,7 @@ internal sealed class FloorPathfind(ReadOnlySpan<RoomFlags> Map)
 
     private readonly bool[] Explored = new bool[25];
 
-    private readonly Queue<List<int>> Queue = new();
+    private readonly Queue<List<int>> Queue = [];
 
     public List<int> Pathfind(int startRoom, int destRoom)
     {

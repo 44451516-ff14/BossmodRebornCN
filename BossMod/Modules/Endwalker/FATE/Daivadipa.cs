@@ -60,16 +60,14 @@ class LitPath(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var max = count > 3 ? 3 : count;
-        var firstact = AOEs[0].Activation;
-        List<AOEInstance> aoes = new(max);
-        for (var i = 0; i < max; ++i) // either 2 or 3 AOEs in a wave, no need to iterate on all 5
-        {
-            var aoe = AOEs[i];
-            if ((aoe.Activation - firstact).TotalSeconds < 1d)
-                aoes.Add(aoe);
-        }
-        return CollectionsMarshal.AsSpan(aoes);
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
+
+        var index = 0;
+        while (index < count && aoes[index].Activation < deadline)
+            ++index;
+
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -145,29 +143,23 @@ class Burn(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Drumbeat(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Drumbeat));
+class Drumbeat(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Drumbeat);
 
-abstract class Cleave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(65f, 90f.Degrees()));
-class LeftwardTrisula(BossModule module) : Cleave(module, AID.LeftwardTrisula);
-class RightwardParasu(BossModule module) : Cleave(module, AID.RightwardParasu);
-
-class ErrantAkasa(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ErrantAkasa), new AOEShapeCone(60f, 45f.Degrees()));
-class CosmicWeave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CosmicWeave), 18f);
-class KarmicFlames(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KarmicFlames), 20f);
-class YawningHells(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.YawningHells), 8f);
-class InfernalRedemption(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.InfernalRedemptionVisual), ActionID.MakeSpell(AID.InfernalRedemption), 1f);
+class LeftwardTrisulaRightwardParasu(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftwardTrisula, (uint)AID.RightwardParasu], new AOEShapeCone(65f, 90f.Degrees()));
+class ErrantAkasa(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ErrantAkasa, new AOEShapeCone(60f, 45f.Degrees()));
+class CosmicWeave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CosmicWeave, 18f);
+class KarmicFlames(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KarmicFlames, 20f);
+class YawningHells(BossModule module) : Components.SimpleAOEs(module, (uint)AID.YawningHells, 8f);
+class InfernalRedemption(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.InfernalRedemptionVisual, (uint)AID.InfernalRedemption, 1f);
 
 class DivineCall(BossModule module) : Components.StatusDrivenForcedMarch(module, 2f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {
     private readonly LitPath _lit = module.FindComponent<LitPath>()!;
-    private readonly LeftwardTrisula _aoe1 = module.FindComponent<LeftwardTrisula>()!;
-    private readonly RightwardParasu _aoe2 = module.FindComponent<RightwardParasu>()!;
+    private readonly LeftwardTrisulaRightwardParasu _aoe = module.FindComponent<LeftwardTrisulaRightwardParasu>()!;
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (_aoe1.Casters.Count != 0 && _aoe1.Casters[0].Check(pos))
-            return true;
-        if (_aoe2.Casters.Count != 0 && _aoe2.Casters[0].Check(pos))
+        if (_aoe.Casters.Count != 0 && _aoe.Casters[0].Check(pos))
             return true;
         var count = _lit.AOEs.Count;
         for (var i = 0; i < count; ++i)
@@ -205,7 +197,7 @@ class DivineCall(BossModule module) : Components.StatusDrivenForcedMarch(module,
         if (count == 0)
             return;
 
-        if (_aoe1.Casters.Count != 0 || _aoe2.Casters.Count != 0)
+        if (_aoe.Casters.Count != 0)
             base.AddHints(slot, actor, hints);
         else if (_lit.AOEs.Count != 0)
             hints.Add("Aim into AOEs!", DestinationUnsafe(slot, actor, movements[count - 1].to));
@@ -218,8 +210,7 @@ class DaivadipaStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Drumbeat>()
-            .ActivateOnEnter<LeftwardTrisula>()
-            .ActivateOnEnter<RightwardParasu>()
+            .ActivateOnEnter<LeftwardTrisulaRightwardParasu>()
             .ActivateOnEnter<InfernalRedemption>()
             .ActivateOnEnter<CosmicWeave>()
             .ActivateOnEnter<YawningHells>()

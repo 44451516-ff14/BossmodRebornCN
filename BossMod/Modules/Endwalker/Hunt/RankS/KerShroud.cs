@@ -12,9 +12,9 @@ public enum AID : uint
     EntropicFlame = 27724, // Boss->self, 4.0s cast, range 60 width 8 rect
 }
 
-class AccursedPox(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AccursedPox), 8);
+class AccursedPox(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AccursedPox, 8);
 
-class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EntropicFlame), new AOEShapeRect(60, 4));
+class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicFlame, new AOEShapeRect(60, 4));
 
 class KerShroudStates : StateMachineBuilder
 {

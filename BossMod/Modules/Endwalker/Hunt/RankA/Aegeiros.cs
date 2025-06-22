@@ -43,13 +43,13 @@ class LeafstormRimestorm(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Rimestorm)
-            _rimestormExpected = new();
+            _rimestormExpected = default;
     }
 }
 
-class Snowball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Snowball), 8f);
-class Canopy(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Canopy), new AOEShapeCone(12f, 60f.Degrees()), activeWhileCasting: false);
-class BackhandBlow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BackhandBlow), new AOEShapeCone(12f, 60f.Degrees()));
+class Snowball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Snowball, 8f);
+class Canopy(BossModule module) : Components.Cleave(module, (uint)AID.Canopy, new AOEShapeCone(12f, 60f.Degrees()), activeWhileCasting: false);
+class BackhandBlow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BackhandBlow, new AOEShapeCone(12f, 60f.Degrees()));
 
 class AegeirosStates : StateMachineBuilder
 {

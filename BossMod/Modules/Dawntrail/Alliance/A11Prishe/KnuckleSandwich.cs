@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A11Prishe;
 
-class KnuckleSandwich(BossModule module) : Components.GenericAOEs(module)
+sealed class KnuckleSandwich(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(9f), new AOEShapeCircle(18f), new AOEShapeCircle(27f), new AOEShapeDonut(9f, 60f),
@@ -30,7 +30,7 @@ class KnuckleSandwich(BossModule module) : Components.GenericAOEs(module)
         if (shape != null)
         {
             _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell)));
-            _aoes.SortBy(aoe => aoe.Activation);
+            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

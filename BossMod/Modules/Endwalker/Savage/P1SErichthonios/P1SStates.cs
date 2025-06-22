@@ -32,16 +32,16 @@ class P1SStates : StateMachineBuilder
 
         ShiningCells(id + 0x300000, 11.2f);
 
-        Dictionary<AID, (uint seqID, Action<uint> buildState)> fork = new()
+        Dictionary<uint, (uint seqID, Action<uint> buildState)> fork = new()
         {
-            [AID.AetherialShackles] = (1, Fork1),
-            [AID.ShacklesOfTime] = (2, Fork2)
+            [(uint)AID.AetherialShackles] = (1, Fork1),
+            [(uint)AID.ShacklesOfTime] = (2, Fork2)
         };
         CastStartFork(id + 0x310000, fork, 6.2f, "Shackles+Aetherchains -or- ShacklesOfTime+Knockback"); // first branch delay = 7.8
     }
 
     // if delay is >0, build cast-start + cast-end states, otherwise build only cast-end state (used for first cast after fork)
-    private State CastMaybeOmitStart(uint id, AID aid, float delay, float castTime, string name)
+    private State CastMaybeOmitStart(uint id, uint aid, float delay, float castTime, string name)
     {
         if (delay > 0)
             return Cast(id, aid, delay, castTime, name);
@@ -51,19 +51,19 @@ class P1SStates : StateMachineBuilder
 
     private void HeavyHand(uint id, float delay)
     {
-        Cast(id, AID.HeavyHand, delay, 5, "Tankbuster")
+        Cast(id, (uint)AID.HeavyHand, delay, 5, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void WarderWrath(uint id, float delay)
     {
-        Cast(id, AID.WarderWrath, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.WarderWrath, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Aetherchain(uint id, float delay)
     {
-        Cast(id, AID.Aetherchain, delay, 5, "Aetherchain")
+        Cast(id, (uint)AID.Aetherchain, delay, 5, "Aetherchain")
             .ActivateOnEnter<AetherExplosion>()
             .DeactivateOnExit<AetherExplosion>();
     }
@@ -71,7 +71,7 @@ class P1SStates : StateMachineBuilder
     // aetherial shackles is paired either with wrath (first time) or two aetherchains (second time)
     private void AetherialShackles(uint id, float delay, bool withAetherchains)
     {
-        CastMaybeOmitStart(id, AID.AetherialShackles, delay, 3, "Shackles")
+        CastMaybeOmitStart(id, (uint)AID.AetherialShackles, delay, 3, "Shackles")
             .ActivateOnEnter<Shackles>()
             .SetHint(StateMachine.StateHint.PositioningStart);
 
@@ -94,7 +94,7 @@ class P1SStates : StateMachineBuilder
 
     private void FourfoldShackles(uint id, float delay)
     {
-        Cast(id, AID.FourShackles, delay, 3, "FourShackles")
+        Cast(id, (uint)AID.FourShackles, delay, 3, "FourShackles")
             .ActivateOnEnter<Shackles>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         // note that it takes almost a second for debuffs to be applied
@@ -109,7 +109,7 @@ class P1SStates : StateMachineBuilder
     // shackles of time is paired either with heavy hand or knockback mechanics; also cast-start sometimes is omitted if delay is 0, since it is used to determine fork path
     private void ShacklesOfTime(uint id, float delay, bool withKnockback)
     {
-        var cast = CastMaybeOmitStart(id, AID.ShacklesOfTime, delay, 4, "ShacklesOfTime")
+        var cast = CastMaybeOmitStart(id, (uint)AID.ShacklesOfTime, delay, 4, "ShacklesOfTime")
             .ActivateOnEnter<AetherExplosion>()
             .SetHint(StateMachine.StateHint.PositioningStart);
 
@@ -130,7 +130,7 @@ class P1SStates : StateMachineBuilder
 
     private void GaolerFlail(uint id, float delay)
     {
-        CastStartMulti(id, [AID.GaolerFlailRL, AID.GaolerFlailLR, AID.GaolerFlailIO1, AID.GaolerFlailIO2, AID.GaolerFlailOI1, AID.GaolerFlailOI2], delay)
+        CastStartMulti(id, [(uint)AID.GaolerFlailRL, (uint)AID.GaolerFlailLR, (uint)AID.GaolerFlailIO1, (uint)AID.GaolerFlailIO2, (uint)AID.GaolerFlailOI1, (uint)AID.GaolerFlailOI2], delay)
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 1, 11.5f)
             .ActivateOnEnter<Flails>();
@@ -141,7 +141,7 @@ class P1SStates : StateMachineBuilder
 
     private void Aetherflail(uint id, float delay)
     {
-        CastStartMulti(id, [AID.AetherflailRX, AID.AetherflailLX, AID.AetherflailIL, AID.AetherflailIR, AID.AetherflailOL, AID.AetherflailOR], delay)
+        CastStartMulti(id, [(uint)AID.AetherflailRX, (uint)AID.AetherflailLX, (uint)AID.AetherflailIL, (uint)AID.AetherflailIR, (uint)AID.AetherflailOL, (uint)AID.AetherflailOR], delay)
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 1, 11.5f)
             .ActivateOnEnter<Flails>()
@@ -154,7 +154,7 @@ class P1SStates : StateMachineBuilder
 
     private void Knockback(uint id, float delay, bool positioningHints = true)
     {
-        CastStartMulti(id, [AID.KnockbackGrace, AID.KnockbackPurge], delay)
+        CastStartMulti(id, [(uint)AID.KnockbackGrace, (uint)AID.KnockbackPurge], delay)
             .SetHint(StateMachine.StateHint.PositioningStart, positioningHints);
         CastEnd(id + 1, 5, "Knockback")
             .ActivateOnEnter<Knockback>()
@@ -167,8 +167,8 @@ class P1SStates : StateMachineBuilder
     // full intemperance phases (overlap either with 2 wraths or with flails)
     private void IntemperancePhase(uint id, float delay, bool withWraths)
     {
-        Cast(id, AID.Intemperance, delay, 2, "Intemperance");
-        CastStartMulti(id + 0x1000, [AID.IntemperateTormentUp, AID.IntemperateTormentDown], 5.9f)
+        Cast(id, (uint)AID.Intemperance, delay, 2, "Intemperance");
+        CastStartMulti(id + 0x1000, [(uint)AID.IntemperateTormentUp, (uint)AID.IntemperateTormentDown], 5.9f)
             .ActivateOnEnter<Intemperance>();
         CastEnd(id + 0x1001, 10);
         ComponentCondition<Intemperance>(id + 0x2000, 1.2f, comp => comp.NumExplosions > 0, "Cube1", 0.2f)
@@ -182,7 +182,7 @@ class P1SStates : StateMachineBuilder
         }
         else
         {
-            CastStartMulti(id + 0x3000, [AID.GaolerFlailRL, AID.GaolerFlailLR, AID.GaolerFlailIO1, AID.GaolerFlailIO2, AID.GaolerFlailOI1, AID.GaolerFlailOI2], 3);
+            CastStartMulti(id + 0x3000, [(uint)AID.GaolerFlailRL, (uint)AID.GaolerFlailLR, (uint)AID.GaolerFlailIO1, (uint)AID.GaolerFlailIO2, (uint)AID.GaolerFlailOI1, (uint)AID.GaolerFlailOI2], 3);
             ComponentCondition<Intemperance>(id + 0x4000, 8, comp => comp.NumExplosions > 1, "Cube2")
                 .ActivateOnEnter<Flails>();
             CastEnd(id + 0x5000, 3.5f);
@@ -197,14 +197,14 @@ class P1SStates : StateMachineBuilder
 
     private void ShiningCells(uint id, float delay)
     {
-        Cast(id, AID.ShiningCells, delay, 7, "Cells")
+        Cast(id, (uint)AID.ShiningCells, delay, 7, "Cells")
             .OnExit(() => Module.Arena.Bounds = new ArenaBoundsCircle(Module.Bounds.Radius))
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void SlamShut(uint id, float delay)
     {
-        Cast(id, AID.SlamShut, delay, 7, "SlamShut")
+        Cast(id, (uint)AID.SlamShut, delay, 7, "SlamShut")
             .OnExit(() => Module.Arena.Bounds = new ArenaBoundsSquare(Module.Bounds.Radius))
             .SetHint(StateMachine.StateHint.Raidwide);
     }
@@ -236,6 +236,6 @@ class P1SStates : StateMachineBuilder
         WarderWrath(id + 0x30000, 10.7f);
         WarderWrath(id + 0x40000, 4.2f);
         WarderWrath(id + 0x50000, 4.2f);
-        Cast(id + 0x60000, AID.Enrage, 8.2f, 12, "Enrage");
+        Cast(id + 0x60000, (uint)AID.Enrage, 8.2f, 12, "Enrage");
     }
 }

@@ -3,7 +3,7 @@ using ImGuiNET;
 
 namespace BossMod.Pathfinding;
 
-public class MapVisualizer
+public sealed class MapVisualizer
 {
     public Map Map;
     public WPos StartPos;

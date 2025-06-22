@@ -70,6 +70,6 @@ class ChimericSuccession(BossModule module) : Components.UniformStackSpread(modu
 }
 
 // TODO: think of a way to show baits before cast start to help aiming outside...
-abstract class SwingingKick(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 90.Degrees()));
-class SwingingKickFront(BossModule module) : SwingingKick(module, AID.SwingingKickFront);
-class SwingingKickRear(BossModule module) : SwingingKick(module, AID.SwingingKickRear);
+abstract class SwingingKick(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40, 90.Degrees()));
+class SwingingKickFront(BossModule module) : SwingingKick(module, (uint)AID.SwingingKickFront);
+class SwingingKickRear(BossModule module) : SwingingKick(module, (uint)AID.SwingingKickRear);

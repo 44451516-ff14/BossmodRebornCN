@@ -22,7 +22,7 @@ public enum SID : uint
     Seduced = 991 // Boss->player, extra=0x11
 }
 
-class SongOfTorment(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.SongOfTorment), hintExtra: "Raidwide + Bleed");
+class SongOfTorment(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SongOfTorment, hintExtra: "Raidwide + Bleed");
 
 class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
 {
@@ -63,12 +63,12 @@ class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DeathlyVerse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DeathlyVerse), 6f);
-class Tornado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tornado), 6f);
-class FourfoldSuffering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FourfoldSuffering), new AOEShapeDonut(5f, 50f));
-class AncientAero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AncientAero), new AOEShapeRect(42.4f, 3f));
-class AncientAeroIII(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AncientAeroIII));
-class AncientAeroIIIKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AncientAeroIII), 10f, shape: new AOEShapeCircle(30f));
+class DeathlyVerse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathlyVerse, 6f);
+class Tornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tornado, 6f);
+class FourfoldSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FourfoldSuffering, new AOEShapeDonut(5f, 50f));
+class AncientAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientAero, new AOEShapeRect(42.4f, 3f));
+class AncientAeroIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.AncientAeroIII);
+class AncientAeroIIIKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AncientAeroIII, 10f, shape: new AOEShapeCircle(30f));
 
 class AglaopeStates : StateMachineBuilder
 {

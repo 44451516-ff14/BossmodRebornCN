@@ -51,7 +51,7 @@ class Ex4IfritStates : StateMachineBuilder
             .DeactivateOnExit<AINails>()
             .SetHint(StateMachine.StateHint.DowntimeStart);
 
-        CastStart(id + 0x10, AID.Hellfire, 2.7f)
+        CastStart(id + 0x10, (uint)AID.Hellfire, 2.7f)
             .ActivateOnEnter<Hellfire>()
             .ActivateOnEnter<AIHellfire>();
         CastEnd(id + 0x11, 2, "Raidwide")
@@ -60,7 +60,7 @@ class Ex4IfritStates : StateMachineBuilder
         Condition(id + 0x20, 5.1f, () => Module.PrimaryActor.FindStatus(SID.Invincibility) == null, "Invincible end", 10)
             .DeactivateOnExit<AIHellfire>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        CastStart(id + 0x30, AID.RadiantPlume, 7.3f) // TODO: do we even need any AI here?..
+        CastStart(id + 0x30, (uint)AID.RadiantPlume, 7.3f) // TODO: do we even need any AI here?..
             .ActivateOnEnter<Incinerate>()
             .DeactivateOnExit<Incinerate>(); // allow dodging plumes near mt
         CastEnd(id + 0x31, 2.2f)

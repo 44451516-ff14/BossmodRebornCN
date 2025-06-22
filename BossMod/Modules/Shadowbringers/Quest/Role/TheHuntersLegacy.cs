@@ -1,6 +1,4 @@
-﻿using BossMod.QuestBattle;
-
-namespace BossMod.Shadowbringers.Quest.Role.TheHuntersLegacy;
+﻿namespace BossMod.Shadowbringers.Quest.Role.TheHuntersLegacy;
 
 public enum OID : uint
 {
@@ -21,39 +19,35 @@ public enum AID : uint
     StreakLightning1 = 17147, // Helper->location, 2.5s cast, range 3 circle
 }
 
-class Thunderbolt(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Thunderbolt1), 5);
+class Thunderbolt(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Thunderbolt1, 5f);
+class BalamBlaster(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BalamBlaster, (uint)AID.BalamBlasterRear], new AOEShapeCone(38.05f, 135f.Degrees()));
+class ElectricWhisker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectricWhisker, new AOEShapeCone(16.05f, 45f.Degrees()));
+class RoaringThunder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RoaringThunder, new AOEShapeDonut(8f, 30f));
+class StreakLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StreakLightning, 3f);
+class StreakLightning1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StreakLightning1, 3f);
+class AlternatingCurrent(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AlternatingCurrent1, new AOEShapeRect(60f, 2.5f));
+class RumblingThunder(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.RumblingThunderStack, 5f, 1);
 
-abstract class BB(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(38.05f, 135.Degrees()));
-class BalamBlaster(BossModule module) : BB(module, AID.BalamBlaster);
-class BalamBlasterRear(BossModule module) : BB(module, AID.BalamBlasterRear);
-
-class ElectricWhisker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElectricWhisker), new AOEShapeCone(16.05f, 45.Degrees()));
-class RoaringThunder(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RoaringThunder), new AOEShapeDonut(8, 30));
-class StreakLightning(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StreakLightning), 3);
-class StreakLightning1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StreakLightning1), 3);
-class AlternatingCurrent(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AlternatingCurrent1), new AOEShapeRect(60, 2.5f));
-class RumblingThunder(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.RumblingThunderStack), 5, 1);
-
-class RendaRae(WorldState ws) : UnmanagedRotation(ws, 20)
+class RendaRae(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 20f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
         var dot = StatusDetails(primaryTarget, Roleplay.SID.AcidicBite, Player.InstanceID);
         if (dot.Left < 2.5f)
-            UseAction(Roleplay.AID.AcidicBite, primaryTarget, 10);
+            UseAction(Roleplay.AID.AcidicBite, primaryTarget, 10f);
 
-        UseAction(Roleplay.AID.RadiantArrow, primaryTarget, -5);
+        UseAction(Roleplay.AID.RadiantArrow, primaryTarget, -5f);
         UseAction(Roleplay.AID.HeavyShot, primaryTarget);
 
         if (primaryTarget?.CastInfo?.Interruptible ?? false)
-            UseAction(Roleplay.AID.DullingArrow, primaryTarget, 5);
+            UseAction(Roleplay.AID.DullingArrow, primaryTarget, 5f);
 
         if (Player.HPMP.MaxHP * 0.8f > Player.HPMP.CurHP)
-            UseAction(Roleplay.AID.HuntersPrudence, Player, -15);
+            UseAction(Roleplay.AID.HuntersPrudence, Player, -15f);
     }
 }
 
-class RendaRaeAI(BossModule module) : RotationModule<RendaRae>(module);
+class RendaRaeAI(BossModule module) : QuestBattle.RotationModule<RendaRae>(module);
 
 class RonkanAura(BossModule module) : BossComponent(module)
 {
@@ -62,13 +56,13 @@ class RonkanAura(BossModule module) : BossComponent(module)
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (AuraCenter is Actor a)
-            Arena.ZoneCircle(a.Position, 10, Colors.SafeFromAOE);
+            Arena.ZoneCircle(a.Position, 10f, Colors.SafeFromAOE);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (AuraCenter is Actor a)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(a.Position, 10), activation: WorldState.FutureTime(5));
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(a.Position, 10f), activation: WorldState.FutureTime(5d));
     }
 }
 
@@ -79,7 +73,6 @@ class BalamQuitzStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<RendaRaeAI>()
             .ActivateOnEnter<BalamBlaster>()
-            .ActivateOnEnter<BalamBlasterRear>()
             .ActivateOnEnter<ElectricWhisker>()
             .ActivateOnEnter<RoaringThunder>()
             .ActivateOnEnter<StreakLightning>()

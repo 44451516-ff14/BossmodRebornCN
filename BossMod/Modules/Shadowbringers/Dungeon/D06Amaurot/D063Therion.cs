@@ -10,6 +10,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 15574, // Boss->player, no cast, single-target
+
     ShadowWreck = 15587, // Boss->self, 4.0s cast, range 100 circle
     ApokalypsisFirst = 15575, // Boss->self, 6.0s cast, range 76 width 20 rect
     ApokalypsisRest = 15577, // Helper->self, no cast, range 76 width 20 rect
@@ -25,39 +26,47 @@ public enum AID : uint
     DeathlyRayFacesRest = 15581, // Helper->self, no cast, range 60 width 6 rect
     DeathlyRayThereionFirst = 15583, // Helper->self, no cast, range 60 width 6 rect
     DeathlyRayThereionRest = 15585, // Helper->self, no cast, range 60 width 6 rect
-    Misfortune = 15586, // Helper->location, 3.0s cast, range 6 circle
+    Misfortune = 15586 // Helper->location, 3.0s cast, range 6 circle
 }
 
-class ShadowWreck(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ShadowWreck));
-class Misfortune(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Misfortune), 6f);
-class ThereionCharge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TherionCharge), 20f);
+sealed class ShadowWreck(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShadowWreck);
+sealed class Misfortune(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Misfortune, 6f);
+sealed class ThereionCharge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TherionCharge, 20f);
 
-class Border(BossModule module) : Components.GenericAOEs(module, warningText: "Platform will be removed during next Apokalypsis!")
+sealed class Border(BossModule module) : Components.GenericAOEs(module, warningText: "Platform will be removed during next Apokalypsis!")
 {
-    private const float SquareHalfWidth = 2f;
-    private const float RectangleHalfWidth = 10.1f;
     private const float MaxError = 5f;
     private static readonly AOEShapeRect _square = new(2f, 2f, 2f);
+    private Apokalypsis? _aoe = module.FindComponent<Apokalypsis>();
 
     public readonly List<AOEInstance> BreakingPlatforms = new(2);
 
-    public static readonly WPos[] positions = [new(-12f, -71f), new(12f, -71f), new(-12f, -51f),
+    private static readonly WPos[] positions = [new(-12f, -71f), new(12f, -71f), new(-12f, -51f),
     new(12f, -51f), new(-12f, -31f), new(12f, -31f), new(-12f, -17f), new(12f, -17f), new(default, -65f), new(default, -45f)];
 
-    private static readonly Square[] shapes = [new(positions[0], SquareHalfWidth), new(positions[1], SquareHalfWidth), new(positions[2], SquareHalfWidth),
-    new(positions[3], SquareHalfWidth), new(positions[4], SquareHalfWidth), new(positions[5], SquareHalfWidth), new(positions[6], SquareHalfWidth),
-    new(positions[7], SquareHalfWidth), new(positions[8], RectangleHalfWidth), new(positions[9], RectangleHalfWidth)];
+    private static readonly Rectangle[] alcoves = Squares();
+    private static readonly Square[] differences = [new(positions[8], 10.01f), new(positions[9], 10.01f)];
 
     private static readonly Rectangle[] rect = [new(new(default, -45f), 10f, 30f)];
     public readonly List<Shape> UnionRefresh = Union();
     private readonly List<Shape> difference = new(8);
-    public static readonly ArenaBoundsComplex DefaultArena = new([.. Union()]);
+    public static readonly ArenaBoundsComplex DefaultArena = new([.. Union()], Offset: -1f);
+
+    private static Rectangle[] Squares()
+    {
+        var squares = new Rectangle[8];
+        for (var i = 0; i < 8; ++i)
+        {
+            squares[i] = new Rectangle(positions[i], 2f, 2f);
+        }
+        return squares;
+    }
 
     private static List<Shape> Union()
     {
         var union = new List<Shape>(rect);
         for (var i = 0; i < 8; ++i)
-            union.Add(shapes[i]);
+            union.Add(alcoves[i]);
         return union;
     }
 
@@ -66,30 +75,31 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
         var count = BreakingPlatforms.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        _aoe ??= Module.FindComponent<Apokalypsis>();
+        var aoes = CollectionsMarshal.AsSpan(BreakingPlatforms);
         for (var i = 0; i < count; ++i)
         {
-            var p = BreakingPlatforms[i];
-            aoes[i] = p with { Risky = Module.FindComponent<Apokalypsis>()?.NumCasts == 0 };
+            ref var p = ref aoes[i];
+            aoes[i].Risky = _aoe!.NumCasts == 0;
         }
         return aoes;
     }
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008)
+        if (state == 0x00040008u)
         {
             for (var i = 0; i < 8; ++i)
             {
                 if (actor.Position.AlmostEqual(positions[i], MaxError))
                 {
-                    if (UnionRefresh.Remove(shapes[i]))
+                    if (UnionRefresh.Remove(alcoves[i]))
                     {
                         if (UnionRefresh.Count == 7)
-                            difference.Add(shapes[8]);
+                            difference.Add(differences[0]);
                         else if (UnionRefresh.Count == 5)
-                            difference.Add(shapes[9]);
-                        ArenaBoundsComplex arena = new([.. UnionRefresh], [.. difference]);
+                            difference.Add(differences[1]);
+                        ArenaBoundsComplex arena = new([.. UnionRefresh], [.. difference], Offset: -1f);
                         Arena.Bounds = arena;
                         Arena.Center = arena.Center;
                     }
@@ -97,7 +107,7 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
                 }
             }
         }
-        else if (state == 0x00100020)
+        else if (state == 0x00100020u)
         {
             for (var i = 0; i < 8; ++i)
             {
@@ -108,42 +118,34 @@ class Border(BossModule module) : Components.GenericAOEs(module, warningText: "P
     }
 }
 
-class Apokalypsis(BossModule module) : Components.GenericAOEs(module)
+sealed class Apokalypsis(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeRect _rect = new(76f, 10f);
     private readonly Border _arena = module.FindComponent<Border>()!;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (_aoe is AOEInstance aoe && (_arena.UnionRefresh.Count - _arena.BreakingPlatforms.Count) > 1)
-            return new AOEInstance[1] { aoe };
-        return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.ApokalypsisFirst)
+        if (spell.Action.ID == (uint)AID.ApokalypsisFirst && (_arena.UnionRefresh.Count - _arena.BreakingPlatforms.Count) > 1)
             _aoe = new(_rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch (spell.Action.ID)
+        if (spell.Action.ID == (uint)AID.ApokalypsisRest)
         {
-            case (uint)AID.ApokalypsisFirst:
-            case (uint)AID.ApokalypsisRest:
-                if (++NumCasts == 5)
-                {
-                    _aoe = null;
-                    NumCasts = 0;
-                }
-                break;
+            if (++NumCasts == 4)
+            {
+                _aoe = null;
+                NumCasts = 0;
+            }
         }
     }
 }
 
-class DeathlyRayThereion(BossModule module) : Components.GenericAOEs(module)
+sealed class DeathlyRayThereion(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeRect rect = new(60f, 3f);
@@ -158,76 +160,79 @@ class DeathlyRayThereion(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch (spell.Action.ID)
+        if (spell.Action.ID == (uint)AID.DeathlyRayThereionRest)
         {
-            case (uint)AID.DeathlyRayThereionFirst:
-            case (uint)AID.DeathlyRayThereionRest:
-                if (++NumCasts == 5)
-                {
-                    _aoe = null;
-                    NumCasts = 0;
-                }
-                break;
+            if (++NumCasts == 4)
+            {
+                _aoe = null;
+                NumCasts = 0;
+            }
         }
     }
 }
 
-class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
+sealed class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect _rect = new(60f, 3f);
-    private readonly List<AOEInstance> _aoesFirst = new(5), _aoesRest = new(5);
+    private readonly List<AOEInstance> _aoes = new(9);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var countFirst = _aoesFirst.Count;
-        var countRest = _aoesRest.Count;
-        var total = countFirst + countRest;
-        if (total == 0)
+        var count = _aoes.Count;
+        if (count == 0)
             return [];
-        var aoes = new AOEInstance[total];
-        var index = 0;
-        for (var i = 0; i < countFirst; ++i)
-            aoes[index++] = _aoesFirst[i];
-        for (var i = 0; i < countRest; ++i)
-            aoes[index++] = _aoesRest[i] with { Risky = countFirst == 0 };
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (!aoes[0].Risky)
+        {
+            var deadline = aoes[0].Activation.AddSeconds(1d);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                if (aoe.Activation < deadline)
+                {
+                    aoe.Risky = true;
+                }
+            }
+        }
         return aoes;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        var countFirst = _aoesFirst.Count;
-        var countRest = _aoesRest.Count;
-        if (spell.Action.ID == (uint)AID.DeathlyRayFacesFirst && countFirst == 0 && countRest == 0)
-        {
-            var faces = Module.Enemies((uint)OID.TheFaceOfTheBeast);
-            var count = faces.Count;
-            for (var i = 0; i < count; ++i)
-            {
-                var f = faces[i];
-                if (f.Rotation.AlmostEqual(caster.Rotation, Angle.DegToRad))
-                    _aoesFirst.Add(new(_rect, f.Position, f.Rotation, default, Colors.Danger));
-                else
-                    _aoesRest.Add(new(_rect, f.Position, f.Rotation, WorldState.FutureTime(8.5d)));
-            }
-        }
         if (spell.Action.ID is (uint)AID.DeathlyRayFacesFirst or (uint)AID.DeathlyRayFacesRest)
         {
-            ++NumCasts;
-            if (NumCasts == 5 * countFirst)
+            if (_aoes.Count == 0)
             {
-                _aoesFirst.Clear();
-                NumCasts = 0;
+                var faces = Module.Enemies((uint)OID.TheFaceOfTheBeast);
+                var countF = faces.Count;
+                for (var i = 0; i < countF; ++i)
+                {
+                    var f = faces[i];
+                    var isFirstSet = f.Rotation == caster.Rotation;
+                    _aoes.Add(new(_rect, WPos.ClampToGrid(f.Position), f.Rotation, !isFirstSet ? WorldState.FutureTime(8.5d) : default, isFirstSet ? Colors.Danger : default, isFirstSet));
+                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                }
             }
-            if (countFirst == 0 && NumCasts == 5 * countRest)
+            var pos = caster.Position;
+            var count = _aoes.Count;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            for (var i = 0; i < count; ++i)
             {
-                _aoesRest.Clear();
-                NumCasts = 0;
+                ref var aoe = ref aoes[i];
+                if (aoe.Origin.AlmostEqual(pos, 0.1f))
+                {
+                    if (++aoe.ActorID == 5u)
+                    {
+                        _aoes.RemoveAt(i);
+                    }
+                    return;
+                }
             }
         }
     }
 }
 
-class D063TherionStates : StateMachineBuilder
+sealed class D063TherionStates : StateMachineBuilder
 {
     public D063TherionStates(BossModule module) : base(module)
     {
@@ -243,4 +248,4 @@ class D063TherionStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 652, NameID = 8210)]
-public class D063Therion(WorldState ws, Actor primary) : BossModule(ws, primary, Border.DefaultArena.Center, Border.DefaultArena);
+public sealed class D063Therion(WorldState ws, Actor primary) : BossModule(ws, primary, Border.DefaultArena.Center, Border.DefaultArena);

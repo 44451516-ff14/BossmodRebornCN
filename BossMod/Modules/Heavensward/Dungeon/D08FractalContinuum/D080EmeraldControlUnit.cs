@@ -23,9 +23,9 @@ public enum AID : uint
     SelfDetonate = 3078 // ClockworkReservoir->player, no cast, single-target
 }
 
-class Exhaust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exhaust), new AOEShapeRect(33f, 6f));
-class AutoCannons(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AutoCannons), new AOEShapeRect(42f, 2.5f));
-class SpawnReservoir(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpawnReservoir), 3f);
+class Exhaust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exhaust, new AOEShapeRect(33f, 6f));
+class AutoCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AutoCannons, new AOEShapeRect(42f, 2.5f));
+class SpawnReservoir(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpawnReservoir, 3f);
 
 class ClockworkReservoir(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones)
 {
@@ -41,7 +41,7 @@ class ClockworkReservoir(BossModule module) : Components.Voidzone(module, 3f, Ge
         for (var i = 0; i < count; ++i)
         {
             var z = enemies[i];
-            if (z.EventState != 7)
+            if (z.EventState != 7u)
                 voidzones[index++] = z;
         }
         return voidzones[..index];
@@ -58,7 +58,7 @@ class D080EmeraldControlUnitStates : StateMachineBuilder
             .ActivateOnEnter<Exhaust>()
             .ActivateOnEnter<SpawnReservoir>()
             .ActivateOnEnter<ClockworkReservoir>()
-            .Raw.Update = () => module.PrimaryActor.EventState == 7;
+            .Raw.Update = () => module.PrimaryActor.EventState == 7u;
     }
 }
 
@@ -98,17 +98,7 @@ public class D080EmeraldControlUnit(WorldState ws, Actor primary) : BossModule(w
     new Circle(new(147.318f, -368.699f), 1.5f), new Circle(new(90.074f, -467.885f), 1.5f)]);
     private static readonly uint[] trash = [(uint)OID.ImmortalizedColossus, (uint)OID.ImmortalizedInterceptorDrone, (uint)OID.ClockworkPredator, (uint)OID.ClockworkReservoir];
 
-    public override bool CheckReset()
-    {
-        var enemies = Enemies(trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            if (enemies[i].IsTargetable)
-                return false;
-        }
-        return true;
-    }
+    public override bool CheckReset() => !Raid.Player()!.Position.InSquare(Arena.Center, 70f);
 
     protected override bool CheckPull()
     {

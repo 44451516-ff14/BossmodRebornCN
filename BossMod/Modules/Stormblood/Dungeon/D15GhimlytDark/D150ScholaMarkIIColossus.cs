@@ -21,10 +21,10 @@ public enum AID : uint
     SelfDetonate = 14574 // ScholaColossusRubricatus->self, 35.0s cast, range 30 circle, enrage
 }
 
-class MagitekMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekMissile), 15f);
-class Exhaust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exhaust), new AOEShapeRect(43.2f, 5f));
-class GrandSword(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrandSword), new AOEShapeCone(18.4f, 60f.Degrees()));
-class SelfDetonate(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SelfDetonate), "Enrage!", true);
+class MagitekMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekMissile, 15f);
+class Exhaust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exhaust, new AOEShapeRect(43.2f, 5f));
+class GrandSword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandSword, new AOEShapeCone(18.4f, 60f.Degrees()));
+class SelfDetonate(BossModule module) : Components.CastHint(module, (uint)AID.SelfDetonate, "Enrage!", true);
 
 class UnbreakableCermetBlade(BossModule module) : Components.GenericAOEs(module)
 {

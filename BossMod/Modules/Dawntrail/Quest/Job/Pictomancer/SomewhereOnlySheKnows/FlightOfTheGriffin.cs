@@ -17,11 +17,11 @@ public enum AID : uint
     FervidPulse = 37521, // Boss->self, 5.0s cast, range 50 width 14 cross
 }
 
-class SwoopingFrenzy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SwoopingFrenzy), 12);
-class Feathercut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Feathercut), new AOEShapeRect(10, 2.5f));
-class FrigidPulse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FrigidPulse), new AOEShapeDonut(12, 60));
-class FervidPulse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FervidPulse), new AOEShapeCross(50, 7));
-class EyeOfTheFierce(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.EyeOfTheFierce));
+class SwoopingFrenzy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwoopingFrenzy, 12);
+class Feathercut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Feathercut, new AOEShapeRect(10, 2.5f));
+class FrigidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidPulse, new AOEShapeDonut(12, 60));
+class FervidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FervidPulse, new AOEShapeCross(50, 7));
+class EyeOfTheFierce(BossModule module) : Components.CastGaze(module, (uint)AID.EyeOfTheFierce);
 
 class FlightOfTheGriffinStates : StateMachineBuilder
 {

@@ -17,8 +17,8 @@ public enum AID : uint
     HolyBladedance = 21096 // Lucia->self, 4.0s cast, range 5 width 3 rect
 }
 
-class FlamingTizona(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlamingTizona), 6f);
-class HolyBladedance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HolyBladedance), new AOEShapeRect(5f, 1.5f));
+class FlamingTizona(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlamingTizona, 6f);
+class HolyBladedance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HolyBladedance, new AOEShapeRect(5f, 1.5f));
 
 class FlameGeneralAldynnStates : StateMachineBuilder
 {

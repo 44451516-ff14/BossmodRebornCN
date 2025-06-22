@@ -22,11 +22,11 @@ public enum AID : uint
     Burst = 14904 // Boss->self, 20.0s cast, range 50 circle
 }
 
-class Sap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sap), 8f);
-class Sap2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sap2), 8f);
-class ScaldingScolding(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ScaldingScolding), new AOEShapeCone(11.75f, 60f.Degrees()));
-class Flashthoom(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Flashthoom), 7.2f);
-class Ignition(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Ignition), "Wipe if Grenade is not killed yet, otherwise Raidwide");
+class Sap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sap, 8f);
+class Sap2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sap2, 8f);
+class ScaldingScolding(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScaldingScolding, new AOEShapeCone(11.75f, 60f.Degrees()));
+class Flashthoom(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Flashthoom, 7.2f);
+class Ignition(BossModule module) : Components.RaidwideCast(module, (uint)AID.Ignition, "Wipe if Grenade is not killed yet, otherwise Raidwide");
 
 class Hints(BossModule module) : BossComponent(module)
 {

@@ -56,19 +56,19 @@ class Hole(BossModule module) : BossComponent(module)
     }
 }
 
-class Puncture(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Puncture), new AOEShapeRect(5.5f, 1.5f));
-class TailSlap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSlap), new AOEShapeCone(7f, 60f.Degrees()));
-class CalcifyingMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CalcifyingMist), new AOEShapeCone(6.9f, 45f.Degrees()));
-class EerieSoundwave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EerieSoundwave), 7.5f);
+class Puncture(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Puncture, new AOEShapeRect(5.5f, 1.5f));
+class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSlap, new AOEShapeCone(7f, 60f.Degrees()));
+class CalcifyingMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CalcifyingMist, new AOEShapeCone(6.9f, 45f.Degrees()));
+class EerieSoundwave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EerieSoundwave, 7.5f);
 
-abstract class MarrowDrain(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(9.7f, 60f.Degrees()));
-class MarrowDrain1(BossModule module) : MarrowDrain(module, AID.MarrowDrain1);
-class MarrowDrain2(BossModule module) : MarrowDrain(module, AID.MarrowDrain2);
-class MarrowDrain3(BossModule module) : MarrowDrain(module, AID.MarrowDrain3);
+abstract class MarrowDrain(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(9.7f, 60f.Degrees()));
+class MarrowDrain1(BossModule module) : MarrowDrain(module, (uint)AID.MarrowDrain1);
+class MarrowDrain2(BossModule module) : MarrowDrain(module, (uint)AID.MarrowDrain2);
+class MarrowDrain3(BossModule module) : MarrowDrain(module, (uint)AID.MarrowDrain3);
 
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsVoice), 9.7f);
-class Sideswipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sideswipe), new AOEShapeCone(9f, 45f.Degrees()));
-class Gust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Gust), 3f);
+class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9.7f);
+class Sideswipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sideswipe, new AOEShapeCone(9f, 45f.Degrees()));
+class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 3f);
 
 class D060BiocultureNodeStates : StateMachineBuilder
 {

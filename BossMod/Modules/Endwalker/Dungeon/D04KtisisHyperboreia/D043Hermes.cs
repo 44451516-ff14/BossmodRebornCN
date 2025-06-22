@@ -64,7 +64,7 @@ class TrismegistosArenaChange(BossModule module) : Components.GenericAOEs(module
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x08)
+        if (state == 0x00020001u && index == 0x08u)
         {
             Arena.Bounds = D043Hermes.DefaultBounds;
             _aoe = null;
@@ -72,12 +72,12 @@ class TrismegistosArenaChange(BossModule module) : Components.GenericAOEs(module
     }
 }
 
-class TrueBraveryInterruptHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TrueBravery));
-class Trismegistos(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Trismegistos));
+class TrueBraveryInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TrueBravery);
+class Trismegistos(BossModule module) : Components.RaidwideCast(module, (uint)AID.Trismegistos);
 
-class TrueTornadoTankbuster(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(4f), (uint)IconID.Tankbuster, ActionID.MakeSpell(AID.TrueTornado4), 5.1f, true, tankbuster: true);
+class TrueTornadoTankbuster(BossModule module) : Components.BaitAwayIcon(module, 4f, (uint)IconID.Tankbuster, (uint)AID.TrueTornado4, 5.1f, tankbuster: true);
 
-class TrueTornadoAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrueTornadoAOE), 4f);
+class TrueTornadoAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueTornadoAOE, 4f);
 
 class TrueAeroFirst(BossModule module) : Components.GenericBaitAway(module)
 {
@@ -91,17 +91,17 @@ class TrueAeroFirst(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class TrueAeroRepeat(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrueAeroRepeat), new AOEShapeRect(40f, 3f));
+class TrueAeroRepeat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroRepeat, new AOEShapeRect(40f, 3f));
 
-class TrueAeroII2(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.TrueAeroII2), 6f);
-class TrueAeroII3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrueAeroII3), 6f);
+class TrueAeroII2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TrueAeroII2, 6f);
+class TrueAeroII3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroII3, 6f);
 
-class TrueAeroIV1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrueAeroIV1), new AOEShapeRect(50f, 5f));
-class TrueAeroIV3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrueAeroIV3), new AOEShapeRect(50f, 5f), 4);
+class TrueAeroIV1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroIV1, new AOEShapeRect(50f, 5f));
+class TrueAeroIV3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroIV3, new AOEShapeRect(50f, 5f), 4);
 
-class CosmicKiss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CosmicKiss), 10f);
+class CosmicKiss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CosmicKiss, 10f);
 
-class TrueAeroIVLOS(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.TrueAeroIVLOS), 50f, false, true)
+class TrueAeroIVLOS(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.TrueAeroIVLOS, 50f, false, true)
 {
     private readonly CosmicKiss _aoe = module.FindComponent<CosmicKiss>()!;
 

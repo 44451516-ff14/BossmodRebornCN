@@ -1,6 +1,6 @@
 ﻿namespace BossMod;
 
-public class ColumnStateMachineBranch(Timeline timeline, StateMachineTree tree, List<int> phaseBranches) : ColumnStateMachine(timeline, tree)
+public sealed class ColumnStateMachineBranch(Timeline timeline, StateMachineTree tree, List<int> phaseBranches) : ColumnStateMachine(timeline, tree)
 {
     public override void Update()
     {

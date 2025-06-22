@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Savage.M01SBlackCat;
 
-class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
+sealed class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(12);
     private static readonly AOEShapeCircle circle = new(11);
@@ -10,14 +10,14 @@ class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        if (count >= 3)
         {
-            var aoe = AOEs[i];
-            if (i < 2)
-                aoes[i] = count > 2 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            for (var i = 0; i < 2; ++i)
+            {
+                aoes[i].Color = Colors.Danger;
+            }
         }
         return aoes;
     }
@@ -30,9 +30,10 @@ class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
             var count = AOEs.Count;
             if (count == 12)
             {
-                AOEs.SortBy(x => x.Activation);
+                AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                var aoes = CollectionsMarshal.AsSpan(AOEs);
                 for (var i = 0; i < count; ++i)
-                    AOEs[i] = AOEs[i] with { Activation = WorldState.FutureTime(13.5d + i * 0.5d) };
+                    aoes[i].Activation = WorldState.FutureTime(13.5d + i * 0.5d);
             }
         }
         switch (spell.Action.ID)

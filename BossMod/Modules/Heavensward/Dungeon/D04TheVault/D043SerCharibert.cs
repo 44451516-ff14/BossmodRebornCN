@@ -40,14 +40,14 @@ public enum TetherID : uint
     HolyChain = 9 // player->player
 }
 
-class KnightsTour(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 2f));
-class WhiteKnightsTour(BossModule module) : KnightsTour(module, AID.WhiteKnightsTour);
-class BlackKnightsTour(BossModule module) : KnightsTour(module, AID.BlackKnightsTour);
+class KnightsTour(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 2f));
+class WhiteKnightsTour(BossModule module) : KnightsTour(module, (uint)AID.WhiteKnightsTour);
+class BlackKnightsTour(BossModule module) : KnightsTour(module, (uint)AID.BlackKnightsTour);
 
-class AltarPyre(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AltarPyre));
+class AltarPyre(BossModule module) : Components.RaidwideCast(module, (uint)AID.AltarPyre);
 
-class HeavensflameAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavensflameAOE), 5f);
-class HolyChain(BossModule module) : Components.Chains(module, (uint)TetherID.HolyChain, ActionID.MakeSpell(AID.HolyChainPlayerTether));
+class HeavensflameAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavensflameAOE, 5f);
+class HolyChain(BossModule module) : Components.Chains(module, (uint)TetherID.HolyChain, (uint)AID.HolyChainPlayerTether);
 class TurretTour(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 10f)
 {
     private static Actor[] GetVoidzones(BossModule module)

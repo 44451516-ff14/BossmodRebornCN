@@ -3,7 +3,7 @@
 public enum OID : uint
 {
     Boss = 0x387C,
-    Helper = 0x233C, // x3
+    Helper = 0x233C // x3
 }
 
 public enum AID : uint
@@ -14,13 +14,13 @@ public enum AID : uint
     LumberingLeapAOE = 28544, // Helper->self, 9.0s cast, range 12 aoe
     LumberingLeapJumpRest = 28549, // Boss->location, no cast, teleport
     ColossalSlam = 28546, // Boss->self, 4.0s cast, range 30 60-degree cone aoe
-    Catapult = 28547, // Boss->player, 5.0s cast, single target damage at random target
+    Catapult = 28547 // Boss->player, 5.0s cast, single target damage at random target
 }
 
-class GrandSlam(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.GrandSlam));
-class LumberingLeap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LumberingLeapAOE), 12);
-class ColossalSlam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ColossalSlam), new AOEShapeCone(30, 30.Degrees()));
-class Catapult(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Catapult), "Single-target damage");
+class GrandSlam(BossModule module) : Components.SingleTargetCast(module, (uint)AID.GrandSlam);
+class LumberingLeap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LumberingLeapAOE, 12);
+class ColossalSlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColossalSlam, new AOEShapeCone(30, 30.Degrees()));
+class Catapult(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Catapult, "Single-target damage");
 
 class D031KottosStates : StateMachineBuilder
 {

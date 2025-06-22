@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex3QueenEternal;
 
-class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
+sealed class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(2);
     private static readonly AOEShapeRect rect = new(20f, 40f);
@@ -10,14 +10,10 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        if (count == 1)
         {
-            var aoe = AOEs[i];
-            if (i == 0)
-                aoes[i] = count != 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
+            aoes[0].Risky = true;
         }
         return aoes;
     }
@@ -35,8 +31,9 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
         }
         void AddAOEs(Actor caster, float first, float second)
         {
-            AOEs.Add(new(rect, caster.Position, spell.Rotation + first.Degrees(), Module.CastFinishAt(spell)));
-            AOEs.Add(new(rect, caster.Position, spell.Rotation + second.Degrees(), Module.CastFinishAt(spell, 3.1f)));
+            AddAOE(first);
+            AddAOE(second, 3.1f, false);
+            void AddAOE(float offset, float delay = default, bool first = true) => AOEs.Add(new(rect, caster.Position, spell.Rotation + offset.Degrees(), Module.CastFinishAt(spell, delay), first ? Colors.Danger : default, first));
         }
     }
 

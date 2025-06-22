@@ -21,15 +21,15 @@ public enum AID : uint
     ImpSong = 14744 // Ultros->self, 6.0s cast, range 50+R circle
 }
 
-class AquaBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AquaBreath), new AOEShapeCone(13.1f, 45f.Degrees()));
-class Megavolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Megavolt), 11.1f);
-class Tentacle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tentacle), 8f);
-class Wallop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wallop), new AOEShapeRect(57.2f, 5f));
-class WallopKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Wallop), 20f, kind: Kind.AwayFromOrigin); //knockback actually delayed by 0.8s
-class Fireball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Fireball), 8f);
-class ImpSong(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.ImpSong), showNameInHint: true);
-class Snort(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Snort), "Use Diamondback!");
-class SnortKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Snort), 30f, kind: Kind.AwayFromOrigin);  //knockback actually delayed by 0.7s
+class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13.1f, 45f.Degrees()));
+class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11.1f);
+class Tentacle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tentacle, 8f);
+class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, new AOEShapeRect(57.2f, 5f));
+class WallopKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Wallop, 20f, kind: Kind.AwayFromOrigin); //knockback actually delayed by 0.8s
+class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, 8f);
+class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong, showNameInHint: true);
+class Snort(BossModule module) : Components.CastHint(module, (uint)AID.Snort, "Use Diamondback!");
+class SnortKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Snort, 30f, kind: Kind.AwayFromOrigin);  //knockback actually delayed by 0.7s
 
 class Hints(BossModule module) : BossComponent(module)
 {

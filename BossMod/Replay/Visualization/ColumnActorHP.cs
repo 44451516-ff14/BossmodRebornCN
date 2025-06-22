@@ -1,6 +1,6 @@
 ﻿namespace BossMod.ReplayVisualization;
 
-public class ColumnActorHP : Timeline.ColumnGroup, IToggleableColumn
+public sealed class ColumnActorHP : Timeline.ColumnGroup, IToggleableColumn
 {
     private readonly ColumnGenericHistory _hpBase;
     private readonly ColumnGenericHistory _hpExtended;

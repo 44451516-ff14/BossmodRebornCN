@@ -61,14 +61,14 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void EnrageP2(uint id)
     {
-        Cast(id, AID.Enrage, 5, 10, "Enrage")
+        Cast(id, (uint)AID.Enrage, 5, 10, "Enrage")
             .ActivateOnEnter<BigBangPuddle>() // first puddle/spread starts at the same time, but the rest are slightly staggered
             .ActivateOnEnter<BigBangSpread>();
     }
 
     private void AbyssalNoxEchoesSableThread(uint id, float delay, bool second)
     {
-        Cast(id, AID.AbyssalNox, delay, 5);
+        Cast(id, (uint)AID.AbyssalNox, delay, 5);
         ComponentCondition<AbyssalEchoes>(id + 0x1000, 0.1f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<AbyssalEchoes>()
             .ExecOnEnter<AbyssalEchoes>(comp => comp.MaxCasts = 0); // don't show aoes before doom, this is misleading
@@ -79,7 +79,7 @@ class Ex7ZeromusStates : StateMachineBuilder
             .ActivateOnEnter<SableThread>() // second can very slightly overlap
             .DeactivateOnExit<AbyssalEchoes>();
 
-        Cast(id + 0x2000, AID.SableThread, second ? 0 : 5.1f, 5);
+        Cast(id + 0x2000, (uint)AID.SableThread, second ? 0 : 5.1f, 5);
         ComponentCondition<SableThread>(id + 0x2010, 0.7f, comp => comp.NumCasts > 0, "Wild charge start");
         ComponentCondition<SableThread>(id + 0x2020, second ? 8.9f : 7.5f, comp => comp.NumCasts >= (second ? 7 : 6), "Wild charge resolve")
             .DeactivateOnExit<SableThread>();
@@ -87,7 +87,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void AbyssalNoxEchoesEnrage(uint id, float delay)
     {
-        Cast(id, AID.AbyssalNox, delay, 5);
+        Cast(id, (uint)AID.AbyssalNox, delay, 5);
         ComponentCondition<AbyssalEchoes>(id + 0x1000, 0.1f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<AbyssalEchoes>()
             .ExecOnEnter<AbyssalEchoes>(comp => comp.MaxCasts = 0); // don't show aoes before doom, this is misleading
@@ -96,14 +96,14 @@ class Ex7ZeromusStates : StateMachineBuilder
             .ExecOnEnter<AbyssalEchoes>(comp => comp.MaxCasts = 5);
         ComponentCondition<AbyssalEchoes>(id + 0x1030, 5, comp => comp.Casters.Count == 0, "Circles 2")
             .DeactivateOnExit<AbyssalEchoes>();
-        Cast(id + 0x2000, AID.Enrage, 5, 10, "Enrage")
+        Cast(id + 0x2000, (uint)AID.Enrage, 5, 10, "Enrage")
             .ActivateOnEnter<BigBangPuddle>() // first puddle/spread starts at the same time, but the rest are slightly staggered
             .ActivateOnEnter<BigBangSpread>();
     }
 
     private void DarkMatterCast(uint id, float delay, bool withStackSpread)
     {
-        CastStart(id, AID.DarkMatter, delay)
+        CastStart(id, (uint)AID.DarkMatter, delay)
             .ActivateOnEnter<DarkMatter>()
             .ActivateOnEnter<ForkedLightningDarkBeckons>(withStackSpread);
         CastEnd(id + 1, 4);
@@ -136,7 +136,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private State VisceralWhirl(uint id, float delay)
     {
-        CastMulti(id, [AID.VisceralWhirlR, AID.VisceralWhirlL], delay, 8)
+        CastMulti(id, [(uint)AID.VisceralWhirlR, (uint)AID.VisceralWhirlL], delay, 8)
             .ActivateOnEnter<VisceralWhirl>();
         ComponentCondition<VisceralWhirl>(id + 2, 0.8f, comp => !comp.Active, "Lines")
             .DeactivateOnExit<VisceralWhirl>();
@@ -148,7 +148,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void VoidBioVisceralWhirl(uint id, float delay)
     {
-        Cast(id, AID.VoidBio, delay, 5, "Bubbles spawn")
+        Cast(id, (uint)AID.VoidBio, delay, 5, "Bubbles spawn")
             .ActivateOnEnter<VoidBio>();
         VisceralWhirl(id + 0x100, 6.1f)
             .DeactivateOnExit<VoidBio>();
@@ -156,7 +156,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void VisceralWhirlChainsBombs(uint id, float delay)
     {
-        CastStartMulti(id, [AID.VisceralWhirlR, AID.VisceralWhirlL], delay);
+        CastStartMulti(id, [(uint)AID.VisceralWhirlR, (uint)AID.VisceralWhirlL], delay);
         ComponentCondition<BondsOfDarkness>(id + 1, 1.9f, comp => comp.NumTethers > 0, "Chains appear")
             .ActivateOnEnter<VisceralWhirl>()
             .ActivateOnEnter<BondsOfDarkness>(); // tethers have ~5s to be broken
@@ -179,7 +179,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void Flare(uint id, float delay)
     {
-        Cast(id, AID.Flare, delay, 7)
+        Cast(id, (uint)AID.Flare, delay, 7)
             .ActivateOnEnter<FlareTowers>();
         ComponentCondition<FlareTowers>(id + 2, 1, comp => comp.NumCasts > 0, "Towers")
             .ActivateOnEnter<FlareScald>()
@@ -194,13 +194,13 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void SparklingBrandingFlare(uint id, float delay)
     {
-        CastMulti(id, [AID.SparkingFlare, AID.BrandingFlare], delay, 7)
+        CastMulti(id, [(uint)AID.SparkingFlare, (uint)AID.BrandingFlare], delay, 7)
             .ActivateOnEnter<FlareTowers>();
         ComponentCondition<FlareTowers>(id + 2, 1, comp => comp.NumCasts > 0, "Towers")
             .ActivateOnEnter<FlareScald>()
             .DeactivateOnExit<FlareTowers>();
 
-        CastStart(id + 0x10, AID.Nox, 1.1f)
+        CastStart(id + 0x10, (uint)AID.Nox, 1.1f)
             .ActivateOnEnter<SparklingBrandingFlare>() // note: individual casts start 5s into towers cast, but it makes no sense to show hints too early
             .ActivateOnEnter<Nox>();
         ComponentCondition<ProminenceSpine>(id + 0x11, 1, comp => comp.Casters.Count > 0, "AOEs at towers") // first scald happens at the same time
@@ -219,7 +219,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void BigBang(uint id, float delay)
     {
-        Cast(id, AID.BigBang, delay, 10, "Raidwide")
+        Cast(id, (uint)AID.BigBang, delay, 10, "Raidwide")
             .ActivateOnEnter<BigBangPuddle>() // first puddle/spread starts at the same time, but the rest are slightly staggered
             .ActivateOnEnter<BigBangSpread>()
             .DeactivateOnExit<BigBangPuddle>()
@@ -229,7 +229,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void BigCrunch(uint id, float delay)
     {
-        Cast(id, AID.BigCrunch, delay, 10, "Raidwide")
+        Cast(id, (uint)AID.BigCrunch, delay, 10, "Raidwide")
             .ActivateOnEnter<BigCrunchPuddle>() // first puddle/spread starts at the same time, but the rest are slightly staggered
             .ActivateOnEnter<BigCrunchSpread>()
             .DeactivateOnExit<BigCrunchPuddle>()
@@ -239,12 +239,12 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void VoidMeteor(uint id, float delay)
     {
-        Cast(id, AID.VoidMeteor, delay, 4.8f)
+        Cast(id, (uint)AID.VoidMeteor, delay, 4.8f)
             .ActivateOnEnter<MeteorImpactProximity>();
         ComponentCondition<MeteorImpactProximity>(id + 2, 1.2f, comp => comp.NumCasts > 0, "Proximity")
             .ActivateOnEnter<MeteorImpactCharge>()
             .DeactivateOnExit<MeteorImpactProximity>();
-        Cast(id + 0x10, AID.MeteorImpact, 0.9f, 11);
+        Cast(id + 0x10, (uint)AID.MeteorImpact, 0.9f, 11);
         // +0.9s: first set bound
         ComponentCondition<MeteorImpactCharge>(id + 0x20, 2.7f, comp => comp.NumCasts >= 4, "Charges 1");
         // +5.4s: second set bound
@@ -258,10 +258,10 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void BlackHole(uint id, float delay)
     {
-        Cast(id, AID.BlackHole, delay, 5);
+        Cast(id, (uint)AID.BlackHole, delay, 5);
         ComponentCondition<BlackHole>(id + 2, 0.8f, comp => comp.Baiter != null)
             .ActivateOnEnter<BlackHole>();
-        CastStartMulti(id + 0x10, [AID.FracturedEventideWE, AID.FracturedEventideEW], 1.4f);
+        CastStartMulti(id + 0x10, [(uint)AID.FracturedEventideWE, (uint)AID.FracturedEventideEW], 1.4f);
         ComponentCondition<BlackHole>(id + 0x11, 7.9f, comp => comp.Voidzone != null, "Black hole bait")
             .ActivateOnEnter<FracturedEventide>();
         CastEnd(id + 0x12, 2.1f);
@@ -274,7 +274,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void RendTheRift(uint id, float delay)
     {
-        Cast(id, AID.RendTheRift, delay, 6, "Raidwide")
+        Cast(id, (uint)AID.RendTheRift, delay, 6, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -282,7 +282,7 @@ class Ex7ZeromusStates : StateMachineBuilder
     {
         ComponentCondition<NostalgiaDimensionalSurge>(id, delay, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<NostalgiaDimensionalSurge>();
-        CastStart(id + 0x10, AID.Nostalgia, 4, "First puddles");
+        CastStart(id + 0x10, (uint)AID.Nostalgia, 4, "First puddles");
         ComponentCondition<NostalgiaDimensionalSurge>(id + 0x20, 4, comp => comp.Casters.Count == 0, "Last puddles")
             .DeactivateOnExit<NostalgiaDimensionalSurge>();
         CastEnd(id + 0x30, 1);
@@ -306,7 +306,7 @@ class Ex7ZeromusStates : StateMachineBuilder
 
     private void FlowOfTheAbyss(uint id, float delay, bool withPuddles)
     {
-        CastStart(id, AID.FlowOfTheAbyss, delay)
+        CastStart(id, (uint)AID.FlowOfTheAbyss, delay)
             .ActivateOnEnter<NostalgiaDimensionalSurge>(withPuddles);
         ComponentCondition<FlowOfTheAbyssSpreadStack>(id + 1, 3.1f, comp => comp.Active)
             .ActivateOnEnter<FlowOfTheAbyssDimensionalSurge>()
@@ -319,7 +319,7 @@ class Ex7ZeromusStates : StateMachineBuilder
         ComponentCondition<FlowOfTheAbyssDimensionalSurge>(id + 4, 0.9f, comp => comp.NumCasts > 0, "Line")
             .DeactivateOnExit<FlowOfTheAbyssDimensionalSurge>();
 
-        Cast(id + 0x10, AID.ChasmicNails, 4.2f, 7)
+        Cast(id + 0x10, (uint)AID.ChasmicNails, 4.2f, 7)
             .ActivateOnEnter<ChasmicNails>()
             .ActivateOnEnter<FlowOfTheAbyssDimensionalSurge>()
             .ActivateOnEnter<NostalgiaDimensionalSurge>() // first puddles start ~4s into cast

@@ -28,7 +28,7 @@ public enum IconID : uint
     Spreadmarker = 96 // player
 }
 
-class Shardstrike(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.Shardstrike), 5f, 5.8f);
+class Shardstrike(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.Shardstrike, 5f, 5.8f);
 class ShardstrikeCrystals(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Shardstrike _st = module.FindComponent<Shardstrike>()!;
@@ -132,8 +132,8 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class CrystalNeedle(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CrystalNeedle));
-class Shardfall(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.Shardfall), 40f)
+class CrystalNeedle(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CrystalNeedle);
+class Shardfall(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.Shardfall, 40f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {
@@ -151,9 +151,9 @@ class Shardfall(BossModule module) : Components.CastLineOfSightAOE(module, Actio
         return CollectionsMarshal.AsSpan(actors);
     }
 }
-class CrystallineFracture(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrystallineFracture), 3f);
-class ResonantFrequency(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ResonantFrequency), 6f);
-class Dissonance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Dissonance), new AOEShapeDonut(5f, 40f));
+class CrystallineFracture(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrystallineFracture, 3f);
+class ResonantFrequency(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ResonantFrequency, 6f);
+class Dissonance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dissonance, new AOEShapeDonut(5f, 40f));
 
 class D131HedetetStates : StateMachineBuilder
 {

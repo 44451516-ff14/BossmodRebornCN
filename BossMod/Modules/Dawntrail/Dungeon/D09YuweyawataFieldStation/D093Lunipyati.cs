@@ -37,7 +37,7 @@ public enum AID : uint
     Slabber = 40619 // Boss->player, 5.0s cast, single-target, tankbuster
 }
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(15f, 35f);
     private AOEInstance? _aoe;
@@ -52,9 +52,9 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x19 && state == 0x00020001)
+        if (index == 0x19u && state == 0x00020001u)
             SetArena(D093Lunipyati.DefaultBounds);
-        else if (index == 0x11 && state == 0x00800040)
+        else if (index == 0x11u && state == 0x00800040u)
             SetArena(D093Lunipyati.DonutBounds);
     }
 
@@ -66,9 +66,9 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class CraterCarve(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CraterCarve), 11f, riskyWithSecondsLeft: 2.5f);
+sealed class CraterCarve(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CraterCarve, 11f, riskyWithSecondsLeft: 2.5f);
 
-class RagingClaw(BossModule module) : Components.GenericAOEs(module)
+sealed class RagingClaw(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance? AOE;
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
@@ -97,7 +97,7 @@ class RagingClaw(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BoulderDance(BossModule module) : Components.GenericAOEs(module)
+sealed class BoulderDance(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(6);
     private static readonly AOEShapeCircle circle = new(7f);
@@ -127,7 +127,7 @@ class BoulderDance(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.JaggedEdge), 6f)
+sealed class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.JaggedEdge, 6f)
 {
     private readonly RagingClaw _aoe = module.FindComponent<RagingClaw>()!;
 
@@ -141,14 +141,15 @@ class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(module, A
         base.AddAIHints(slot, actor, assignment, hints);
     }
 }
-class TuraliStoneIV(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TuraliStoneIV), 6f, 4, 4);
-class LeporineLoaf(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.LeporineLoaf));
-class BeastlyRoarRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BeastlyRoar));
-class BeastlyRoar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BeastlyRoar), 25f);
-class SonicHowl(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SonicHowl));
-class Slabber(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Slabber));
 
-class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
+sealed class TuraliStoneIV(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TuraliStoneIV, 6f, 4, 4);
+sealed class LeporineLoaf(BossModule module) : Components.RaidwideCast(module, (uint)AID.LeporineLoaf);
+sealed class BeastlyRoarRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.BeastlyRoar);
+sealed class BeastlyRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BeastlyRoar, 25f);
+sealed class SonicHowl(BossModule module) : Components.RaidwideCast(module, (uint)AID.SonicHowl);
+sealed class Slabber(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Slabber);
+
+sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(16);
     private static readonly AOEShapeCircle circle = new(5f);
@@ -186,7 +187,7 @@ class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
                 GenerateAOEsForMixedPattern(-45f, -135f);
             else
                 GenerateAOEsForMixedPattern(45f, -45f);
-            _aoes.SortBy(x => x.Activation);
+            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
             angles.Clear();
             maxCasts = 16;
         }
@@ -235,7 +236,7 @@ class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class RockBlast(BossModule module) : Components.GenericAOEs(module)
+sealed class RockBlast(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(15);
     private static readonly AOEShapeCircle circle = new(5f);
@@ -248,10 +249,7 @@ class RockBlast(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 8 ? 8 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
-            aoes[i] = _aoes[i];
-        return aoes;
+        return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -282,7 +280,7 @@ class RockBlast(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D093LunipyatiStates : StateMachineBuilder
+sealed class D093LunipyatiStates : StateMachineBuilder
 {
     public D093LunipyatiStates(BossModule module) : base(module)
     {
@@ -304,7 +302,7 @@ class D093LunipyatiStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13610, SortOrder = 9)]
-public class D093Lunipyati(WorldState ws, Actor primary) : BossModule(ws, primary, startingBounds.Center, startingBounds)
+public sealed class D093Lunipyati(WorldState ws, Actor primary) : BossModule(ws, primary, startingBounds.Center, startingBounds)
 {
     private const int Edges = 64;
     public static readonly WPos ArenaCenter = new(34, -710);

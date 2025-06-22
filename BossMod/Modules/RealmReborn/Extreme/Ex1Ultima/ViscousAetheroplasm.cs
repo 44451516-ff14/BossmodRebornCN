@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class ViscousAetheroplasm(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ViscousAetheroplasm), new AOEShapeCircle(2), originAtTarget: true)
+class ViscousAetheroplasm(BossModule module) : Components.Cleave(module, (uint)AID.ViscousAetheroplasm, new AOEShapeCircle(2), originAtTarget: true)
 {
     public bool NeedTankSwap;
     private readonly int[] _stacks = new int[PartyState.MaxPartySize];

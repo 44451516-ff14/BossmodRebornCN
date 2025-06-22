@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C01ASS.C013Shadowcaster;
 
-class CrypticFlames(BossModule module) : BossComponent(module)
+sealed class CrypticFlames(BossModule module) : BossComponent(module)
 {
     public bool ReadyToBreak;
     private readonly int[] _playerOrder = new int[4];
@@ -25,7 +25,7 @@ class CrypticFlames(BossModule module) : BossComponent(module)
             var l = _lasers[i];
             var dir = l.laser.Rotation.ToDirection();
             var extent = 2f * dir * dir.Dot(Arena.Center - l.laser.Position);
-            var color = l.order != _playerOrder[pcSlot] ? Colors.Enemy : order == CurrentBreakOrder ? Colors.Safe : Colors.Danger;
+            var color = l.order != _playerOrder[pcSlot] ? Colors.Enemy : order == CurrentBreakOrder ? Colors.Safe : default;
             Arena.AddLine(l.laser.Position, l.laser.Position + extent, color, 2f);
         }
     }

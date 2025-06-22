@@ -46,9 +46,9 @@ public enum SID : uint
     Prey = 1253 // Boss->player, extra=0x0
 }
 
-class CleanCut(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.CleanCut), 4f);
-class DelayActionCharge(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.DelayActionCharge), 6f, 4);
-class ThermobaricCharge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ThermobaricCharge), 30f);
+class CleanCut(BossModule module) : Components.ChargeAOEs(module, (uint)AID.CleanCut, 4f);
+class DelayActionCharge(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.DelayActionCharge, 6f, 4);
+class ThermobaricCharge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThermobaricCharge, 30f);
 
 class Chainsaw(BossModule module) : Components.GenericAOEs(module)
 {

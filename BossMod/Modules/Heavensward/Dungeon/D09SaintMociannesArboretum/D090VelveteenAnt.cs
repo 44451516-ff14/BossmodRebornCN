@@ -67,10 +67,10 @@ class WallRemoval(BossModule module) : BossComponent(module)
     }
 }
 
-class PoisonBreathStickyThread(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.PoisonBreath), new AOEShapeCone(7.5f, 60f.Degrees()), [(uint)OID.ArboretumCrawler]);
-class TortoiseStomp(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TortoiseStomp), 11f);
-class UnfinalSting(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UnfinalSting), new AOEShapeRect(9.08f, 1.5f));
-class FinalSting(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.FinalSting));
+class PoisonBreathStickyThread(BossModule module) : Components.Cleave(module, (uint)AID.PoisonBreath, new AOEShapeCone(7.5f, 60f.Degrees()), [(uint)OID.ArboretumCrawler]);
+class TortoiseStomp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TortoiseStomp, 11f);
+class UnfinalSting(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnfinalSting, new AOEShapeRect(9.08f, 1.5f));
+class FinalSting(BossModule module) : Components.SingleTargetCast(module, (uint)AID.FinalSting);
 
 class D090VelveteenAntStates : StateMachineBuilder
 {

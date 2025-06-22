@@ -41,10 +41,10 @@ public enum IconID : uint
     Stack = 93 // player
 }
 
-class Paradox(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Paradox), 5f);
-class Petrifaction(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.Petrifaction));
-class Ka(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Ka), new AOEShapeCone(45f, 30f.Degrees()));
-class GaseousBomb(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stack, ActionID.MakeSpell(AID.GaseousBomb), 5f, 4.1f, 4, 4);
+class Paradox(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Paradox, 5f);
+class Petrifaction(BossModule module) : Components.CastGaze(module, (uint)AID.Petrifaction);
+class Ka(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ka, new AOEShapeCone(45f, 30f.Degrees()));
+class GaseousBomb(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stack, (uint)AID.GaseousBomb, 5f, 4.1f, 4, 4);
 class BallisticMissile(BossModule module) : Components.UniformStackSpread(module, 4f, default, 2, 2)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
@@ -60,7 +60,7 @@ class BallisticMissile(BossModule module) : Components.UniformStackSpread(module
     }
 }
 
-class ChthonicHush(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ChthonicHush), new AOEShapeCone(13.3f, 60f.Degrees()))
+class ChthonicHush(BossModule module) : Components.Cleave(module, (uint)AID.ChthonicHush, new AOEShapeCone(13.3f, 60f.Degrees()))
 {
     private readonly GaseousBomb _stack1 = module.FindComponent<GaseousBomb>()!;
     private readonly BallisticMissile _stack2 = module.FindComponent<BallisticMissile>()!;

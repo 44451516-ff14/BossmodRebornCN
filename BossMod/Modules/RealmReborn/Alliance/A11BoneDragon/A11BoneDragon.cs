@@ -1,9 +1,9 @@
 ﻿namespace BossMod.RealmReborn.Alliance.A11BoneDragon;
 
-class Apocalypse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Apocalypse), 6);
-class EvilEye(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EvilEye), new AOEShapeCone(105, 60.Degrees()));
-class Stone(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Stone));
-class Level5Petrify(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Level5Petrify), new AOEShapeCone(7.8f, 45.Degrees()));
+class Apocalypse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Apocalypse, 6);
+class EvilEye(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EvilEye, new AOEShapeCone(105, 60.Degrees()));
+class Stone(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Stone);
+class Level5Petrify(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Level5Petrify, new AOEShapeCone(7.8f, 45.Degrees()));
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 92, NameID = 706)]
 public class A11BoneDragon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)

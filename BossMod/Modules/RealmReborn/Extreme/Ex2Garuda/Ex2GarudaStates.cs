@@ -41,7 +41,7 @@ class Ex2GarudaStates : StateMachineBuilder
             .DeactivateOnExit<Ex2GarudaAI>();
         Targetable(id + 1, true, 6.8f, "Reappear")
             .ActivateOnEnter<Song>();
-        Cast(id + 0x10, AID.MistralSong, 0.6f, 1, "Hide behind pillars")
+        Cast(id + 0x10, (uint)AID.MistralSong, 0.6f, 1, "Hide behind pillars")
             .DeactivateOnExit<Song>();
     }
 
@@ -78,7 +78,7 @@ class Ex2GarudaStates : StateMachineBuilder
             .DeactivateOnExit<FrictionAdds>()
             .DeactivateOnExit<WickedWheel>();
         Targetable(id + 1, true, 6.8f, "Reappear");
-        Cast(id + 0x10, AID.AerialBlast, 0.6f, 4, "Raidwide");
+        Cast(id + 0x10, (uint)AID.AerialBlast, 0.6f, 4, "Raidwide");
     }
 
     private void Subphase3(uint id, float delay)
@@ -90,7 +90,7 @@ class Ex2GarudaStates : StateMachineBuilder
             .DeactivateOnExit<DownburstBoss>()
             .DeactivateOnExit<Slipstream>();
         Targetable(id + 1, true, 7.5f, "Reappear");
-        Cast(id + 0x10, AID.MistralShriek, 0.6f, 3, "Raidwide");
+        Cast(id + 0x10, (uint)AID.MistralShriek, 0.6f, 3, "Raidwide");
         Targetable(id + 0x20, false, 2.3f, "Disappear")
             .DeactivateOnExit<EyeOfTheStorm>();
         Targetable(id + 0x21, true, 6.8f, "Reappear");
@@ -114,6 +114,6 @@ class Ex2GarudaStates : StateMachineBuilder
             .DeactivateOnExit<WickedWheel>();
         Targetable(id + 1, true, 6.8f, "Reappear")
             .DeactivateOnExit<GreatWhirlwind>();
-        Cast(id + 0x10, AID.AerialBlast, 0.6f, 4, "Raidwide");
+        Cast(id + 0x10, (uint)AID.AerialBlast, 0.6f, 4, "Raidwide");
     }
 }

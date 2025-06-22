@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-class Fusefield(BossModule module) : BossComponent(module)
+sealed class Fusefield(BossModule module) : BossComponent(module)
 {
     private readonly List<(Actor spark, Actor target, int order)> _sparks = [];
     private readonly int[] _orders = new int[PartyState.MaxPartySize];
@@ -51,7 +51,7 @@ class Fusefield(BossModule module) : BossComponent(module)
     }
 }
 
-class FusefieldVoidzone(BossModule module) : Components.GenericAOEs(module)
+sealed class FusefieldVoidzone(BossModule module) : Components.GenericAOEs(module)
 {
     public bool Active;
     private static readonly AOEShapeCircle circle = new(5);
@@ -61,18 +61,18 @@ class FusefieldVoidzone(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x13)
+        if (index == 0x13u)
             switch (state)
             {
-                case 0x00020001:
+                case 0x00020001u:
                     _aoe = new(circle, Arena.Center, default, WorldState.FutureTime(9.1f));
                     break;
-                case 0x00200010:
+                case 0x00200010u:
                     Arena.Bounds = M03SBruteBomber.FuseFieldBounds;
                     _aoe = null;
                     Active = true;
                     break;
-                case 0x00080004:
+                case 0x00080004u:
                     Arena.Bounds = M03SBruteBomber.DefaultBounds;
                     Active = false;
                     break;

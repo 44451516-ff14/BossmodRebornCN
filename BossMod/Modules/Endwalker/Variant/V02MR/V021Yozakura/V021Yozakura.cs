@@ -1,12 +1,12 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V021Yozakura;
 
-class GloryNeverlasting(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.GloryNeverlasting));
-class ArtOfTheFireblossom(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArtOfTheFireblossom), 9f);
-class ArtOfTheWindblossom(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArtOfTheWindblossom), new AOEShapeDonut(5f, 60f));
-class KugeRantsui(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.KugeRantsui));
-class OkaRanman(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OkaRanman));
-class LevinblossomStrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LevinblossomStrike), 3f);
-class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.DriftingPetals), 15, ignoreImmunes: true)
+class GloryNeverlasting(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.GloryNeverlasting);
+class ArtOfTheFireblossom(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArtOfTheFireblossom, 9f);
+class ArtOfTheWindblossom(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArtOfTheWindblossom, new AOEShapeDonut(5f, 60f));
+class KugeRantsui(BossModule module) : Components.RaidwideCast(module, (uint)AID.KugeRantsui);
+class OkaRanman(BossModule module) : Components.RaidwideCast(module, (uint)AID.OkaRanman);
+class LevinblossomStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LevinblossomStrike, 3f);
+class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DriftingPetals, 15, ignoreImmunes: true)
 {
     private readonly Mudrain _aoe1 = module.FindComponent<Mudrain>()!;
     private readonly Witherwind _aoe2 = module.FindComponent<Witherwind>()!;
@@ -44,17 +44,17 @@ class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(module, Ac
     }
 }
 
-class Mudrain(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.Mudrain), module => module.Enemies((uint)OID.MudVoidzone).Where(z => z.EventState != 7), 0.7f);
-class Icebloom(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Icebloom), 6);
-class Shadowflight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shadowflight), new AOEShapeRect(10f, 3f));
-class MudPie(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MudPie), new AOEShapeRect(60f, 3f));
-class FireblossomFlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireblossomFlare), 6f);
-class ArtOfTheFluff1(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.ArtOfTheFluff1));
-class ArtOfTheFluff2(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.ArtOfTheFluff2));
-class TatamiGaeshi(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TatamiGaeshi), new AOEShapeRect(40f, 5f));
+class Mudrain(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Mudrain, module => module.Enemies((uint)OID.MudVoidzone).Where(z => z.EventState != 7), 0.7f);
+class Icebloom(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icebloom, 6);
+class Shadowflight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shadowflight, new AOEShapeRect(10f, 3f));
+class MudPie(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MudPie, new AOEShapeRect(60f, 3f));
+class FireblossomFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireblossomFlare, 6f);
+class ArtOfTheFluff1(BossModule module) : Components.CastGaze(module, (uint)AID.ArtOfTheFluff1);
+class ArtOfTheFluff2(BossModule module) : Components.CastGaze(module, (uint)AID.ArtOfTheFluff2);
+class TatamiGaeshi(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TatamiGaeshi, new AOEShapeRect(40f, 5f));
 class AccursedSeedling(BossModule module) : Components.Voidzone(module, 4f, m => m.Enemies((uint)OID.AccursedSeedling));
 
-class RootArrangement(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4f), ActionID.MakeSpell(AID.RockRootArrangementFirst), ActionID.MakeSpell(AID.RockRootArrangementRest), 4, 1, 4, true, (uint)IconID.ChasingAOE)
+class RootArrangement(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4f), (uint)AID.RockRootArrangementFirst, (uint)AID.RockRootArrangementRest, 4, 1, 4, true, (uint)IconID.ChasingAOE)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

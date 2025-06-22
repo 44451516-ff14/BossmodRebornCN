@@ -40,22 +40,22 @@ public enum SID : uint
     Heavy = 1107 // Helper->player, extra=0x50
 }
 
-class Charybdis(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Charybdis), 8);
+class Charybdis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Charybdis, 8);
 class Maelstrom(BossModule module) : Components.Voidzone(module, 8f, GetMaelstrom)
 {
     private static List<Actor> GetMaelstrom(BossModule module) => module.Enemies((uint)OID.Maelstrom);
 }
 
-class GogoFlare(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GogoFlare));
-class GogoHoly(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GogoHoly));
-class GogoMeteor1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GogoMeteor1), 5f);
-class GogoMeteor2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GogoMeteor2), 16f);
-class GogoMeteor3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GogoMeteor3), 8f);
-class GogoMeteor4(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GogoMeteor4), 8f);
-class GogoMeteor5(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GogoMeteor5), 16f);
-class GogoMeteorBig(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GogoMeteor6), "Use Diamondback!");
-class Icestorm(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.Icestorm), ActionID.MakeSpell(AID.Icestorm2), 0.9f, "Raidwide + Frostbite + Heavy");
-class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.GogoThunderIII), GetVoidzones, 0.8f)
+class GogoFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoFlare);
+class GogoHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoHoly);
+class GogoMeteor1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor1, 5f);
+class GogoMeteor2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor2, 16f);
+class GogoMeteor3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor3, 8f);
+class GogoMeteor4(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor4, 8f);
+class GogoMeteor5(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor5, 16f);
+class GogoMeteorBig(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoMeteor6, "Use Diamondback!");
+class Icestorm(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.Icestorm, (uint)AID.Icestorm2, 0.9f, "Raidwide + Frostbite + Heavy");
+class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.GogoThunderIII, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -101,7 +101,7 @@ class GogoBlizzardIII(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class GogoFireIIIHint(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.GogoFireIII), "Pyretic, dodge AOE then stop everything!");
+class GogoFireIIIHint(BossModule module) : Components.CastHint(module, (uint)AID.GogoFireIII, "Pyretic, dodge AOE then stop everything!");
 
 class Pyretic(BossModule module) : Components.StayMove(module)
 {

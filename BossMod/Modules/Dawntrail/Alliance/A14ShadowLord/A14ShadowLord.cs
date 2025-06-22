@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class Teleport(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Teleport));
-class TeraSlash(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.TeraSlash));
-class DoomArc(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DoomArc));
-class UnbridledRage(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(100, 4), (uint)IconID.UnbridledRage, ActionID.MakeSpell(AID.UnbridledRageAOE), 5.9f);
-class DarkNova(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.DarkNova), 6);
+sealed class Teleport(BossModule module) : Components.CastCounter(module, (uint)AID.Teleport);
+sealed class TeraSlash(BossModule module) : Components.CastCounter(module, (uint)AID.TeraSlash);
+sealed class DoomArc(BossModule module) : Components.RaidwideCast(module, (uint)AID.DoomArc);
+sealed class UnbridledRage(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(100f, 4f), (uint)IconID.UnbridledRage, (uint)AID.UnbridledRageAOE, 5.9f);
+sealed class DarkNova(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkNova, 6f);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13653, SortOrder = 8, PlanLevel = 100)]
-public class A14ShadowLord(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultBounds)
+public sealed class A14ShadowLord(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultBounds)
 {
     private const int RadiusSmall = 8;
     private const int HalfWidth = 2;

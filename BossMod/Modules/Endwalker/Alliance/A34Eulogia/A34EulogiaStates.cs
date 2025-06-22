@@ -73,18 +73,18 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void DawnOfTime(uint id, float delay)
     {
-        Cast(id, AID.DawnOfTime, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.DawnOfTime, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Quintessence(uint id, float delay)
     {
-        CastStartMulti(id, [AID.FirstFormRight, AID.FirstFormLeft, AID.FirstFormDonut], delay)
+        CastStartMulti(id, [(uint)AID.FirstFormRight, (uint)AID.FirstFormLeft, (uint)AID.FirstFormDonut], delay)
             .ActivateOnEnter<Quintessence>();
         CastEnd(id + 1, 7);
-        CastMulti(id + 0x10, [AID.SecondFormRight, AID.SecondFormLeft, AID.SecondFormDonut], 0.2f, 7);
-        CastMulti(id + 0x20, [AID.ThirdFormRight, AID.ThirdFormLeft, AID.ThirdFormDonut], 0.2f, 7);
-        Cast(id + 0x30, AID.Quintessence, 0.2f, 4);
+        CastMulti(id + 0x10, [(uint)AID.SecondFormRight, (uint)AID.SecondFormLeft, (uint)AID.SecondFormDonut], 0.2f, 7);
+        CastMulti(id + 0x20, [(uint)AID.ThirdFormRight, (uint)AID.ThirdFormLeft, (uint)AID.ThirdFormDonut], 0.2f, 7);
+        Cast(id + 0x30, (uint)AID.Quintessence, 0.2f, 4);
         ComponentCondition<Quintessence>(id + 0x40, 0.8f, comp => comp.NumCasts > 0, "Form 1");
         ComponentCondition<Quintessence>(id + 0x50, 3.5f, comp => comp.NumCasts > 1, "Form 2");
         ComponentCondition<Quintessence>(id + 0x60, 3.6f, comp => comp.NumCasts > 2, "Form 3")
@@ -93,7 +93,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void Sunbeam(uint id, float delay)
     {
-        Cast(id, AID.Sunbeam, delay, 5, "Tankbusters")
+        Cast(id, (uint)AID.Sunbeam, delay, 5, "Tankbusters")
             .ActivateOnEnter<Sunbeam>()
             .DeactivateOnExit<Sunbeam>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -101,14 +101,14 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void Whorl(uint id, float delay)
     {
-        Cast(id, AID.Whorl, delay, 7, "Raidwide")
+        Cast(id, (uint)AID.Whorl, delay, 7, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void LovesLight(uint id, float delay)
     {
-        Cast(id, AID.LovesLight, delay, 4);
-        Cast(id + 0x10, AID.FullBright, 5.1f, 3);
+        Cast(id, (uint)AID.LovesLight, delay, 4);
+        Cast(id + 0x10, (uint)AID.FullBright, 5.1f, 3);
         ComponentCondition<LovesLight>(id + 0x20, 0.9f, comp => comp.AOEs.Count > 0)
             .ActivateOnEnter<LovesLight>();
         ComponentCondition<LovesLight>(id + 0x30, 10.3f, comp => comp.NumCasts >= 1, "Line 1");
@@ -120,7 +120,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void SolarFans(uint id, float delay)
     {
-        Cast(id, AID.SolarFans, delay, 3)
+        Cast(id, (uint)AID.SolarFans, delay, 3)
             .ActivateOnEnter<SolarFans>()
             .ActivateOnEnter<RadiantRhythm>()
             .ActivateOnEnter<RadiantFlourish>();
@@ -131,14 +131,14 @@ class A34EulogiaStates : StateMachineBuilder
         ComponentCondition<RadiantRhythm>(id + 0x30, 2.1f, comp => comp.NumCasts > 4);
         ComponentCondition<RadiantRhythm>(id + 0x40, 2.1f, comp => comp.NumCasts > 6)
             .DeactivateOnExit<RadiantRhythm>();
-        Cast(id + 0x50, AID.RadiantFinish, 1.5f, 3, "Solar fans resolve")
+        Cast(id + 0x50, (uint)AID.RadiantFinish, 1.5f, 3, "Solar fans resolve")
             .DeactivateOnExit<RadiantFlourish>();
     }
 
     private void Hydrostasis(uint id, float delay)
     {
-        Cast(id, AID.Hydrostasis, delay, 4);
-        Cast(id + 0x10, AID.TimeAndTide, 2.1f, 6)
+        Cast(id, (uint)AID.Hydrostasis, delay, 4);
+        Cast(id + 0x10, (uint)AID.TimeAndTide, 2.1f, 6)
             .ActivateOnEnter<Hydrostasis>();
         ComponentCondition<Hydrostasis>(id + 0x20, 2.9f, comp => comp.NumCasts > 0, "Knockback 1")
             .SetHint(StateMachine.StateHint.Knockback);
@@ -149,7 +149,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void DestructiveBolt(uint id, float delay)
     {
-        Cast(id, AID.DestructiveBolt, delay, 6)
+        Cast(id, (uint)AID.DestructiveBolt, delay, 6)
             .ActivateOnEnter<DestructiveBolt>();
         ComponentCondition<DestructiveBolt>(id + 2, 1.1f, comp => comp.NumFinishedStacks > 0, "Stack")
             .DeactivateOnExit<DestructiveBolt>();
@@ -157,11 +157,11 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void HieroglyphikaHandOfTheDestroyer(uint id, float delay)
     {
-        Cast(id, AID.Hieroglyphika, delay, 5);
+        Cast(id, (uint)AID.Hieroglyphika, delay, 5);
         ComponentCondition<Hieroglyphika>(id + 0x10, 1, comp => comp.AOEs.Count > 0)
             .ActivateOnEnter<Hieroglyphika>();
         ComponentCondition<Hieroglyphika>(id + 0x20, 12.8f, comp => comp.BindsAssigned, "Binds");
-        CastStartMulti(id + 0x30, [AID.HandOfTheDestroyerWrath, AID.HandOfTheDestroyerJudgment], 0.5f);
+        CastStartMulti(id + 0x30, [(uint)AID.HandOfTheDestroyerWrath, (uint)AID.HandOfTheDestroyerJudgment], 0.5f);
         ComponentCondition<Hieroglyphika>(id + 0x31, 2.8f, comp => comp.NumCasts > 0, "Squares")
             .ActivateOnEnter<HandOfTheDestroyerWrath>()
             .ActivateOnEnter<HandOfTheDestroyerJudgment>()
@@ -174,7 +174,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void MatronsBreath(uint id, float delay)
     {
-        Cast(id, AID.MatronsBreath, delay, 3)
+        Cast(id, (uint)AID.MatronsBreath, delay, 3)
             .ActivateOnEnter<MatronsBreath>();
         ComponentCondition<MatronsBreath>(id + 0x10, 15.1f, comp => comp.NumCasts >= 1, "Flower 1");
         ComponentCondition<MatronsBreath>(id + 0x11, 3.5f, comp => comp.NumCasts >= 2, "Flower 2");
@@ -185,7 +185,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void TorrentialTridents(uint id, float delay)
     {
-        Cast(id, AID.TorrentialTridents, delay, 2);
+        Cast(id, (uint)AID.TorrentialTridents, delay, 2);
         ComponentCondition<TorrentialTrident>(id + 0x10, 0.9f, comp => comp.AOEs.Count > 0)
             .ActivateOnEnter<TorrentialTrident>();
         ComponentCondition<TorrentialTrident>(id + 0x20, 5.5f, comp => comp.AOEs.Count > 5, "Raidwide x6");
@@ -196,7 +196,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void ByregotsStrike(uint id, float delay)
     {
-        Cast(id, AID.ByregotStrike, delay, 6, "Jump")
+        Cast(id, (uint)AID.ByregotStrike, delay, 6, "Jump")
             .ActivateOnEnter<ByregotStrikeJump>()
             .ActivateOnEnter<ByregotStrikeKnockback>()
             .ActivateOnEnter<ByregotStrikeCone>()
@@ -208,7 +208,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void ThousandfoldThrust(uint id, float delay)
     {
-        CastMulti(id, [AID.ThousandfoldThrustR, AID.ThousandfoldThrustL], delay, 5)
+        CastMulti(id, [(uint)AID.ThousandfoldThrustR, (uint)AID.ThousandfoldThrustL], delay, 5)
             .ActivateOnEnter<ThousandfoldThrust>();
         ComponentCondition<ThousandfoldThrust>(id + 0x10, 1.3f, comp => comp.NumCasts > 0, "Half-room cleave start");
         ComponentCondition<ThousandfoldThrust>(id + 0x20, 4.3f, comp => comp.NumCasts > 4, "Half-room cleave resolve")
@@ -217,15 +217,15 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void AsAboveSoBelow(uint id, float delay)
     {
-        CastMulti(id, [AID.AsAboveSoBelowNald, AID.AsAboveSoBelowThal], delay, 5);
-        CastMulti(id + 0x10, [AID.ClimbingShotNald, AID.ClimbingShotThal], 4.1f, 8)
+        CastMulti(id, [(uint)AID.AsAboveSoBelowNald, (uint)AID.AsAboveSoBelowThal], delay, 5);
+        CastMulti(id + 0x10, [(uint)AID.ClimbingShotNald, (uint)AID.ClimbingShotThal], 4.1f, 8)
             .ActivateOnEnter<AsAboveSoBelow>()
             .ActivateOnEnter<ClimbingShot>();
         ComponentCondition<ClimbingShot>(id + 0x20, 0.2f, comp => comp.NumCasts > 0, "Knockback")
             .SetHint(StateMachine.StateHint.Knockback)
             .DeactivateOnExit<ClimbingShot>();
         ComponentCondition<AsAboveSoBelow>(id + 0x30, 0.8f, comp => comp.NumCasts > 0, "Exaflare start");
-        Cast(id + 0x40, AID.SoaringMinuet, 2.3f, 7, "Wide cleave")
+        Cast(id + 0x40, (uint)AID.SoaringMinuet, 2.3f, 7, "Wide cleave")
             .ActivateOnEnter<SoaringMinuet>()
             .DeactivateOnExit<SoaringMinuet>()
             .DeactivateOnExit<AsAboveSoBelow>();
@@ -233,7 +233,7 @@ class A34EulogiaStates : StateMachineBuilder
 
     private void EudaimonEorzea(uint id, float delay)
     {
-        Cast(id, AID.EudaimonEorzea, delay, 22.2f);
+        Cast(id, (uint)AID.EudaimonEorzea, delay, 22.2f);
         ComponentCondition<EudaimonEorzea>(id + 0x10, 2.7f, comp => comp.NumCasts > 0, "Raidwide x13")
             .ActivateOnEnter<EudaimonEorzea>()
             .DeactivateOnExit<EudaimonEorzea>()

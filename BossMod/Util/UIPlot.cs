@@ -3,7 +3,7 @@
 namespace BossMod;
 
 // utility for drawing 2d plots
-public class UIPlot
+public sealed class UIPlot
 {
     public float PointRadius = 2;
     public Vector2 Margin = new(40, 20);

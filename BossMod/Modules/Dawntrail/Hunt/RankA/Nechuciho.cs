@@ -31,11 +31,11 @@ public enum AID : uint
     WhisperOfTheWood3 = 39495 // Boss->self, 3.0s cast, single-target
 }
 
-class Level5DeathSentence(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Level5DeathSentence), true, false, "Applies Doom!");
-class SentinelRoar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SentinelRoar));
-class WordOfTheWood(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CastWordOfTheWood), new AOEShapeCone(30f, 90f.Degrees()));
+sealed class Level5DeathSentence(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Level5DeathSentence, true, false, "Applies Doom!");
+sealed class SentinelRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.SentinelRoar);
+sealed class WordOfTheWood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CastWordOfTheWood, new AOEShapeCone(30f, 90f.Degrees()));
 
-class WhispersOfTheWood(BossModule module) : Components.GenericAOEs(module)
+sealed class WhispersOfTheWood(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Angle a180 = 180f.Degrees(), a90 = 90f.Degrees();
     private static readonly AOEShapeCone cone = new(30, a90);
@@ -113,7 +113,7 @@ class WhispersOfTheWood(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class NechucihoStates : StateMachineBuilder
+sealed class NechucihoStates : StateMachineBuilder
 {
     public NechucihoStates(BossModule module) : base(module)
     {
@@ -126,4 +126,4 @@ class NechucihoStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13362)]
-public class Nechuciho(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Nechuciho(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

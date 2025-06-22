@@ -39,23 +39,19 @@ public enum AID : uint
     Telega = 9630 // Mandragoras/KeeperOfKeys->self, no cast, single-target, bonus adds disappear
 }
 
-class Hydrofan(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrofan), new AOEShapeCone(44f, 15f.Degrees()));
-class Hypnowave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hypnowave), new AOEShapeCone(30f, 60f.Degrees()));
-class Hydropins(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydropins), new AOEShapeRect(12f, 2f));
-class AquaGlobe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AquaGlobe), 8f);
-class Hydrowhirl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrowhirl), 8f);
-class Hydrotaph(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Hydrotaph));
+class Hydrofan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrofan, new AOEShapeCone(44f, 15f.Degrees()));
+class Hypnowave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hypnowave, new AOEShapeCone(30f, 60f.Degrees()));
+class Hydropins(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydropins, new AOEShapeRect(12f, 2f));
+class AquaGlobe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaGlobe, 8f);
+class Hydrowhirl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrowhirl, 8f);
+class Hydrotaph(BossModule module) : Components.RaidwideCast(module, (uint)AID.Hydrotaph);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretUndineStates : StateMachineBuilder
 {
@@ -71,11 +67,7 @@ class SecretUndineStates : StateMachineBuilder
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Mash>()
             .ActivateOnEnter<Scoop>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(SecretUndine.All);

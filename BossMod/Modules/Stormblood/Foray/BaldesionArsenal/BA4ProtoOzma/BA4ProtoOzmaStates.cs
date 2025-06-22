@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
-class BA4ProtoOzmaStates : StateMachineBuilder
+sealed class BA4ProtoOzmaStates : StateMachineBuilder
 {
     public BA4ProtoOzmaStates(BossModule module) : base(module)
     {

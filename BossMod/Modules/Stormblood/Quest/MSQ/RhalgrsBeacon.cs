@@ -21,9 +21,9 @@ public enum AID : uint
     ChoppingBlock1 = 8346, // 1A57->location, 3.0s cast, range 5 circle
 }
 
-class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DiffractiveLaser), new AOEShapeCone(18.6f, 30.Degrees()));
+class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DiffractiveLaser, new AOEShapeCone(18.6f, 30.Degrees()));
 
-class TerminusEst(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.TheOrder))
+class TerminusEst(BossModule module) : Components.GenericAOEs(module, (uint)AID.TheOrder)
 {
     private readonly List<Actor> Termini = [];
     private DateTime? CastFinish;
@@ -67,7 +67,7 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module, ActionID.M
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             CastFinish = Module.CastFinishAt(spell);
     }
 
@@ -78,7 +78,7 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module, ActionID.M
     }
 }
 
-class Gunblade(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.Gunblade), stopAtWall: true)
+class Gunblade(BossModule module) : Components.GenericKnockback(module, (uint)AID.Gunblade, stopAtWall: true)
 {
     private Actor? _caster;
     private readonly ChoppingBlock _aoe = module.FindComponent<ChoppingBlock>()!;
@@ -116,18 +116,18 @@ class Gunblade(BossModule module) : Components.GenericKnockback(module, ActionID
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _caster = caster;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _caster = null;
     }
 }
 
-class ChoppingBlock(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.ChoppingBlock1), GetVoidzones, 0f)
+class ChoppingBlock(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.ChoppingBlock1, GetVoidzones, 0f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

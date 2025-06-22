@@ -113,10 +113,10 @@ class PyricBreath(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PyricSphere(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PyricSphere), new AOEShapeCross(50f, 2f)); // we could draw this almost 5s earlier, but why bother with 10s cast time
-class PyricBlast(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.PyricBlast), 6f, 4, 4);
-class Scratch(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Scratch));
-class Intimidation(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Intimidation));
+class PyricSphere(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PyricSphere, new AOEShapeCross(50f, 2f)); // we could draw this almost 5s earlier, but why bother with 10s cast time
+class PyricBlast(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.PyricBlast, 6f, 4, 4);
+class Scratch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Scratch);
+class Intimidation(BossModule module) : Components.RaidwideCast(module, (uint)AID.Intimidation);
 
 class D042LadonLordStates : StateMachineBuilder
 {

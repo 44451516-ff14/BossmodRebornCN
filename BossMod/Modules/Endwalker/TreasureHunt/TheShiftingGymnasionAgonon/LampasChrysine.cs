@@ -22,15 +22,15 @@ public enum AID : uint
     Telega = 9630 // GymnasiouLampas->self, no cast, single-target, bonus loot add despawn
 }
 
-class Shine(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shine), 5f);
+class Shine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shine, 5f);
 
 class AetherialLight : Components.SimpleAOEs
 {
-    public AetherialLight(BossModule module) : base(module, ActionID.MakeSpell(AID.AetherialLight), new AOEShapeCone(40f, 30f.Degrees()), 4) { MaxDangerColor = 2; }
+    public AetherialLight(BossModule module) : base(module, (uint)AID.AetherialLight, new AOEShapeCone(40f, 30f.Degrees()), 4) { MaxDangerColor = 2; }
 }
 
-class Lightburst(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Lightburst));
-class Summon(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Summon), "Calls bonus adds");
+class Lightburst(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Lightburst);
+class Summon(BossModule module) : Components.CastHint(module, (uint)AID.Summon, "Calls bonus adds");
 
 class LampasChrysineStates : StateMachineBuilder
 {

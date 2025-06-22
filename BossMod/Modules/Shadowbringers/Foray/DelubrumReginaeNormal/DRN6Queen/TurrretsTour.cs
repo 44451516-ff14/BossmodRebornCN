@@ -1,81 +1,65 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN6Queen;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN6Queen;
 
-class TurretsTour : Components.GenericAOEs
+sealed class TurretsTour(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
-    private DateTime _activation;
-
-    private static readonly AOEShapeRect _defaultShape = new(50f, 3f);
-
-    public TurretsTour(BossModule module) : base(module)
-    {
-        var turrets = module.Enemies((uint)OID.AutomaticTurret);
-        var count = turrets.Count;
-
-        for (var i = 0; i < count; ++i)
-        {
-            var t = turrets[i];
-            var minDistance = float.MaxValue;
-            Actor? closestTarget = null;
-
-            for (var j = 0; j < count; ++j)
-            {
-                if (i == j)
-                    continue; // Exclude the current turret itself
-                var potentialTarget = turrets[j];
-
-                if (_defaultShape.Check(potentialTarget.Position, t.Position, t.Rotation))
-                {
-                    var distance = (potentialTarget.Position - t.Position).LengthSq();
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        closestTarget = potentialTarget;
-                    }
-                }
-            }
-
-            var shape = closestTarget != null ? _defaultShape with { LengthFront = minDistance } : _defaultShape;
-            _aoes.Add(new(shape, t.Position, t.Rotation, _activation, ActorID: t.InstanceID));
-        }
-    }
+    private readonly List<AOEInstance> _aoes = new(6);
+    private static readonly AOEShapeRect rect = new(50f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.TurretsTourAOE1)
+        if (spell.Action.ID == (uint)AID.TurretsTourFirst)
         {
             var toTarget = spell.LocXZ - caster.Position;
-            _aoes.Add(new(new AOEShapeRect(toTarget.Length(), 3f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(toTarget), Module.CastFinishAt(spell), ActorID: caster.InstanceID));
-            _activation = Module.CastFinishAt(spell);
-        }
-    }
+            var act = Module.CastFinishAt(spell);
+            _aoes.Add(new(new AOEShapeRect(toTarget.Length(), 3f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(toTarget), act, ActorID: caster.InstanceID));
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.TurretsTourAOE1)
-            RemoveAOE(caster.InstanceID);
+            var turrets = Module.Enemies((uint)OID.AutomaticTurret);
+            var count = turrets.Count;
+            if (_aoes.Count != count / 2)
+                return;
+            for (var i = 0; i < count; ++i)
+            {
+                var t = turrets[i];
+                var minDistance = float.MaxValue;
+                Actor? closestTarget = null;
+
+                for (var j = 0; j < count; ++j)
+                {
+                    if (i == j)
+                        continue; // Exclude the current turret itself
+                    var potentialTarget = turrets[j];
+
+                    if (potentialTarget.Position.InRect(t.Position, t.Rotation, 50f, default, 0.1f)) // full half width of 3 gives false positives
+                    {
+                        var distance = (potentialTarget.Position - t.Position).LengthSq();
+                        if (distance < minDistance)
+                        {
+                            minDistance = distance;
+                            closestTarget = potentialTarget;
+                        }
+                    }
+                }
+
+                var shape = closestTarget != null ? new AOEShapeRect(MathF.Sqrt(minDistance), 3f) : rect;
+                _aoes.Add(new(shape, t.Position, t.Rotation, act, ActorID: t.InstanceID));
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID is (uint)AID.TurretsTourAOE2 or (uint)AID.TurretsTourAOE3)
+        if (spell.Action.ID is (uint)AID.TurretsTourFirst or (uint)AID.TurretsTourRest1 or (uint)AID.TurretsTourRest2)
         {
-            ++NumCasts;
-            RemoveAOE(caster.InstanceID);
-        }
-    }
-
-    private void RemoveAOE(ulong instanceID)
-    {
-        var count = _aoes.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            if (_aoes[i].ActorID == instanceID)
+            var count = _aoes.Count;
+            for (var i = 0; i < count; ++i)
             {
-                _aoes.RemoveAt(i);
-                return;
+                if (_aoes[i].ActorID == caster.InstanceID)
+                {
+                    _aoes.RemoveAt(i);
+                    return;
+                }
             }
         }
     }

@@ -35,13 +35,18 @@ public sealed record class Minimap(DeepDungeonState State, Actor Player, int Cur
         var dest = -1;
 
         var chests = new RoomChest[25];
-        foreach (var c in State.Chests)
+        var lenC = State.Chests.Length;
+
+        for (var i = 0; i < lenC; ++i)
+        {
+            ref readonly var c = ref State.Chests[i];
             if (c.Room > 0)
                 chests[c.Room] |= (RoomChest)(1 << (c.Type - 1));
+        }
 
-        var len = State.Party.Length;
+        var lenP = State.Party.Length;
         DeepDungeonState.PartyMember player = default;
-        for (var i = 0; i < len; ++i)
+        for (var i = 0; i < lenP; ++i)
         {
             ref readonly var p = ref State.Party[i];
             if (p.EntityId == Player.InstanceID)
@@ -52,7 +57,7 @@ public sealed record class Minimap(DeepDungeonState State, Actor Player, int Cur
         }
         var playerCell = player.Room;
 
-        using var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2(0f, 0f));
+        using var _ = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, new Vector2());
 
         var roomsTex = Service.Texture.GetFromGame("ui/uld/DeepDungeonNaviMap_Rooms_hr1.tex").GetWrapOrEmpty();
         var mapTex = Service.Texture.GetFromGame("ui/uld/DeepDungeonNaviMap_hr1.tex").GetWrapOrEmpty();

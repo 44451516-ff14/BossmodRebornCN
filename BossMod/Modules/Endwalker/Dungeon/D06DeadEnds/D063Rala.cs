@@ -68,18 +68,18 @@ class Doom(BossModule module) : BossComponent(module)
     }
 }
 
-class LamellarLightCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LamellarLight1), 15f, 3);
-class Lifesbreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Lifesbreath), new AOEShapeRect(50f, 5f));
-class LamellarLightRect(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LamellarLight3), new AOEShapeRect(40f, 2f));
-class StillEmbrace(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.StillEmbrace), 6f);
-class Benevolence(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Benevolence), 6f, 4, 4);
+class LamellarLightCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LamellarLight1, 15f, 3);
+class Lifesbreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Lifesbreath, new AOEShapeRect(50f, 5f));
+class LamellarLightRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LamellarLight3, new AOEShapeRect(40f, 2f));
+class StillEmbrace(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.StillEmbrace, 6f);
+class Benevolence(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Benevolence, 6f, 4, 4);
 
-class LovingEmbrace(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(45f, 90f.Degrees()));
-class LovingEmbraceLeft(BossModule module) : LovingEmbrace(module, AID.LovingEmbraceLeft);
-class LovingEmbraceRight(BossModule module) : LovingEmbrace(module, AID.LovingEmbraceRight);
+class LovingEmbrace(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(45f, 90f.Degrees()));
+class LovingEmbraceLeft(BossModule module) : LovingEmbrace(module, (uint)AID.LovingEmbraceLeft);
+class LovingEmbraceRight(BossModule module) : LovingEmbrace(module, (uint)AID.LovingEmbraceRight);
 
-class Pity(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Pity));
-class WarmGlow(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WarmGlow));
+class Pity(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Pity);
+class WarmGlow(BossModule module) : Components.RaidwideCast(module, (uint)AID.WarmGlow);
 
 class D063RalaStates : StateMachineBuilder
 {

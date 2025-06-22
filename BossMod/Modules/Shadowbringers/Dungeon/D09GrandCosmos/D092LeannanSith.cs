@@ -37,12 +37,12 @@ public enum SID : uint
     Transporting = 404 // none->player, extra=0x15
 }
 
-class OdeToLostLove(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OdeToLostLove));
-class StormOfColor(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.StormOfColor));
-class FarWindSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FarWindSpread), 5f);
-class FarWind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FarWind), 8f);
-class OdeToFallenPetals(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OdeToFallenPetals), new AOEShapeDonut(5f, 60f));
-class IrefulWind(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.IrefulWind), 10f, kind: Kind.DirForward, stopAtWall: true);
+class OdeToLostLove(BossModule module) : Components.RaidwideCast(module, (uint)AID.OdeToLostLove);
+class StormOfColor(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StormOfColor);
+class FarWindSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FarWindSpread, 5f);
+class FarWind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FarWind, 8f);
+class OdeToFallenPetals(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OdeToFallenPetals, new AOEShapeDonut(5f, 60f));
+class IrefulWind(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.IrefulWind, 10f, kind: Kind.DirForward, stopAtWall: true);
 
 class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 {
@@ -75,15 +75,15 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x0B)
+        if (index != 0x0Bu)
             return;
 
         tiles = state switch
         {
-            0x00020001 => GenerateTiles(defaultGreenTiles),
-            0x00200010 => GenerateRotatedTiles(180f),
-            0x01000080 => GenerateRotatedTiles(-90f),
-            0x08000400 => GenerateRotatedTiles(90f),
+            0x00020001u => GenerateTiles(defaultGreenTiles),
+            0x00200010u => GenerateRotatedTiles(180f),
+            0x01000080u => GenerateRotatedTiles(-90f),
+            0x08000400u => GenerateRotatedTiles(90f),
             _ => [],
         };
     }
@@ -140,7 +140,7 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe == null || AI.AIManager.Instance?.Beh == null)
+        if (_aoe == null)
             return;
         base.AddAIHints(slot, actor, assignment, hints);
 

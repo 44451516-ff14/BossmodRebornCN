@@ -5,7 +5,7 @@
 // each wave is 5 subsequent lines, except for two horizontal ones that go towards edges - they only have 1 line - meaning there's a total 22 'rest' casts
 class UpwellFirst : Components.SimpleAOEs
 {
-    public UpwellFirst(BossModule module) : base(module, ActionID.MakeSpell(AID.UpwellFirst), new AOEShapeRect(60f, 5f)) { Color = Colors.Danger; }
+    public UpwellFirst(BossModule module) : base(module, (uint)AID.UpwellFirst, new AOEShapeRect(60f, 5f)) { Color = Colors.Danger; }
 }
 class UpwellRest(BossModule module) : Components.Exaflare(module, new AOEShapeRect(30f, 2.5f, 30f))
 {

@@ -10,8 +10,8 @@ class Hydrostasis(BossModule module) : Components.GenericKnockback(module)
     {
         if (spell.Action.ID is (uint)AID.HydrostasisAOE1 or (uint)AID.HydrostasisAOE2 or (uint)AID.HydrostasisAOE3)
         {
-            _sources.Add(new(caster.Position, 28, Module.CastFinishAt(spell)));
-            _sources.SortBy(x => x.Activation);
+            _sources.Add(new(caster.Position, 28f, Module.CastFinishAt(spell)));
+            _sources.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

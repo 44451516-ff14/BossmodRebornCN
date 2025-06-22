@@ -23,9 +23,9 @@ public enum AID : uint
     MagitekCannon = 28775 // Boss->location, 3.0s cast, range 6 circle aoe
 }
 
-class IncendiarySupport(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.IncendiarySupportVisual), ActionID.MakeSpell(AID.IncendiarySupport), 1f, "Raidwide x3");
-class HighPoweredMagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HighPoweredMagitekRay), new AOEShapeRect(50f, 2f));
-class MagitekCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekCannon), 6f);
+class IncendiarySupport(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.IncendiarySupportVisual, (uint)AID.IncendiarySupport, 1f, "Raidwide x3");
+class HighPoweredMagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HighPoweredMagitekRay, new AOEShapeRect(50f, 2f));
+class MagitekCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekCannon, 6f);
 
 class D131BlackEftStates : StateMachineBuilder
 {

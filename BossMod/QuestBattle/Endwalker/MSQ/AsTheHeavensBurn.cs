@@ -1,12 +1,11 @@
-﻿using BossMod.Autorotation;
-using BossMod.Autorotation.xan.AI;
+﻿using BossMod.Autorotation.xan;
 using RID = BossMod.Roleplay.AID;
 
 namespace BossMod.QuestBattle.Endwalker.MSQ;
 
 // single target shield is status 2844
 
-class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
+sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
 {
     private readonly TrackPartyHealth PartyHealth = new(ws);
 
@@ -31,12 +30,12 @@ class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
 
     private void AutoHeal()
     {
-        foreach (var h in Hints.PredictedDamage.Where(pd => pd.players.NumSetBits() == 1))
-            foreach (var (_, player) in World.Party.WithSlot(false, true, false).IncludedInMask(h.players))
+        foreach (var h in Hints.PredictedDamage.Where(pd => pd.Players.NumSetBits() == 1))
+            foreach (var (_, player) in World.Party.WithSlot(false, true, false).IncludedInMask(h.Players))
                 if (StatusDetails(player, 2844, Player.InstanceID).Left == 0)
                     UseAction(RID.LeveilleurDiagnosis, player);
 
-        if (PartyHealth.ShouldHealInArea(Player.Position, 15, 0.6f))
+        if (PartyHealth.PredictShouldHealInArea(Player.Position, 15, 0.6f))
             UseAction(RID.Prognosis, Player);
 
         if (PartyHealth.BestSTHealTarget is (Actor a, var st))
@@ -48,7 +47,7 @@ class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
     }
 }
 
-class AlisaieAI(WorldState ws) : UnmanagedRotation(ws, 25)
+sealed class AlisaieAI(WorldState ws) : UnmanagedRotation(ws, 25)
 {
     protected override void Exec(Actor? primaryTarget)
     {
@@ -112,7 +111,7 @@ class AlisaieAI(WorldState ws) : UnmanagedRotation(ws, 25)
 }
 
 [ZoneModuleInfo(BossModuleInfo.Maturity.Contributed, 804)]
-internal class AsTheHeavensBurn(WorldState ws) : QuestBattle(ws)
+internal sealed class AsTheHeavensBurn(WorldState ws) : QuestBattle(ws)
 {
     private readonly AlphinaudAI _alphi = new(ws);
     private readonly AlisaieAI _alisaie = new(ws);

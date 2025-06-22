@@ -30,12 +30,12 @@ public enum IconID : uint
     Spreadmarker = 43 // player->self
 }
 
-class AtropineSpore(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AtropineSpore), new AOEShapeDonut(9f, 40f));
-class SoulVacuum(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SoulVacuum));
-class FrondFatale(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.FrondFatale));
-class Petal(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.Petal), 8f, 3.1f);
+class AtropineSpore(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AtropineSpore, new AOEShapeDonut(9f, 40f));
+class SoulVacuum(BossModule module) : Components.RaidwideCast(module, (uint)AID.SoulVacuum);
+class FrondFatale(BossModule module) : Components.CastGaze(module, (uint)AID.FrondFatale);
+class Petal(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.Petal, 8f, 3.1f);
 
-class Deracinator(BossModule module) : Components.SingleTargetInstant(module, ActionID.MakeSpell(AID.Deracinator))
+class Deracinator(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.Deracinator)
 {
     private bool start = true;
 
@@ -68,7 +68,8 @@ class Deracinator(BossModule module) : Components.SingleTargetInstant(module, Ac
 
     private void AddTankbuster(double delay)
     {
-        Targets.Add((Raid.FindSlot(Module.PrimaryActor.TargetID), WorldState.FutureTime(delay)));
+        var id = Module.PrimaryActor.TargetID;
+        Targets.Add((Raid.FindSlot(id), WorldState.FutureTime(delay), id));
     }
 }
 

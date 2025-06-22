@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-class M03SBruteBomberStates : StateMachineBuilder
+sealed class M03SBruteBomberStates : StateMachineBuilder
 {
     public M03SBruteBomberStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase);
+        DeathPhase(default, SinglePhase);
     }
 
     private void SinglePhase(uint id)
@@ -43,7 +43,7 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void BrutalImpact(uint id, float delay, int count)
     {
-        Cast(id, AID.BrutalImpact, delay, 5, "Raidwide hit 1")
+        Cast(id, (uint)AID.BrutalImpact, delay, 5, "Raidwide hit 1")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<BrutalImpact>(id + 0x10, 1.1f * (count - 1) - 0.1f, comp => comp.NumCasts >= count - 1, $"Raidwide hit {count}")
             .ActivateOnEnter<BrutalImpact>()
@@ -53,7 +53,7 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void KnuckleSandwich(uint id, float delay, int count)
     {
-        Cast(id, AID.KnuckleSandwich, delay, 5, "Shared tankbuster hit 1")
+        Cast(id, (uint)AID.KnuckleSandwich, delay, 5, "Shared tankbuster hit 1")
             .ActivateOnEnter<KnuckleSandwich>()
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<KnuckleSandwich>(id + 0x10, 1.1f * (count - 1) - 0.1f, comp => comp.NumCasts >= count, $"Shared tankbuster hit {count}")
@@ -79,13 +79,13 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void Lariat(uint id, float delay, bool allowOut, bool allowIn)
     {
-        CastStartMulti(id, [AID.OctupleLariatOut, AID.OctupleLariatIn, AID.QuadrupleLariatOut, AID.QuadrupleLariatIn], delay);
+        CastStartMulti(id, [(uint)AID.OctupleLariatOut, (uint)AID.OctupleLariatIn, (uint)AID.QuadrupleLariatOut, (uint)AID.QuadrupleLariatIn], delay);
         LariatResolve(id + 1, 6.2f, allowOut, allowIn, true);
     }
 
     private void Diveboom(uint id, float delay, bool allowProximity, bool allowKnockback)
     {
-        CastMulti(id, [AID.OctoboomDiveProximity, AID.OctoboomDiveKnockback, AID.QuadroboomDiveProximity, AID.QuadroboomDiveKnockback], delay, 7.2f)
+        CastMulti(id, [(uint)AID.OctoboomDiveProximity, (uint)AID.OctoboomDiveKnockback, (uint)AID.QuadroboomDiveProximity, (uint)AID.QuadroboomDiveKnockback], delay, 7.2f)
             .ActivateOnEnter<OctoboomDiveProximity>(allowProximity)
             .ActivateOnEnter<OctoboomDiveKnockback>(allowKnockback)
             .ActivateOnEnter<QuadroboomDiveProximity>(allowProximity)
@@ -109,18 +109,18 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void DopingDraughtLariat(uint id, float delay)
     {
-        Cast(id, AID.DopingDraught1, delay, 4);
+        Cast(id, (uint)AID.DopingDraught1, delay, 4);
         Lariat(id + 0x1000, 27.2f, false, true);
     }
 
     private void BarbarousBarrage1(uint id, float delay)
     {
-        Cast(id, AID.BarbarousBarrage, delay, 4);
+        Cast(id, (uint)AID.BarbarousBarrage, delay, 4);
         ComponentCondition<BarbarousBarrageTowers>(id + 0x10, 1, comp => comp.CurState != BarbarousBarrageTowers.State.None)
             .ActivateOnEnter<BarbarousBarrageTowers>();
         ComponentCondition<BarbarousBarrageTowers>(id + 0x20, 10.1f, comp => comp.CurState >= BarbarousBarrageTowers.State.NextCorners, "Cardinal towers")
             .ActivateOnEnter<BarbarousBarrageKnockback>();
-        CastStart(id + 0x30, AID.BarbarousBarrageMurderousMist, 2.2f);
+        CastStart(id + 0x30, (uint)AID.BarbarousBarrageMurderousMist, 2.2f);
         ComponentCondition<BarbarousBarrageTowers>(id + 0x31, 0.8f, comp => comp.CurState >= BarbarousBarrageTowers.State.NextCenter, "Corner towers")
             .ActivateOnEnter<BarbarousBarrageMurderousMist>();
         ComponentCondition<BarbarousBarrageTowers>(id + 0x40, 3, comp => comp.CurState >= BarbarousBarrageTowers.State.Done, "Center tower")
@@ -132,8 +132,8 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void TagTeam(uint id, float delay)
     {
-        Cast(id, AID.TagTeam, delay, 4);
-        Cast(id + 0x10, AID.ChainDeathmatch, 2.2f, 7)
+        Cast(id, (uint)AID.TagTeam, delay, 4);
+        Cast(id + 0x10, (uint)AID.ChainDeathmatch, 2.2f, 7)
             .ActivateOnEnter<TagTeamLariatCombo>(); // tethers appear right before cast start
         ComponentCondition<TagTeamLariatCombo>(id + 0x20, 3.2f, comp => comp.AOEs.Count > 0);
         ComponentCondition<TagTeamLariatCombo>(id + 0x30, 6.1f, comp => comp.NumCasts > 0, "Chain cleaves 1");
@@ -143,7 +143,7 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void FinalFusedown(uint id, float delay)
     {
-        Cast(id, AID.FinalFusedown, delay, 4)
+        Cast(id, (uint)AID.FinalFusedown, delay, 4)
             .ActivateOnEnter<FinalFusedownSelfDestruct>()
             .ActivateOnEnter<FinalFusedownExplosion>()
             .ExecOnEnter<FinalFusedownExplosion>(comp => comp.Show());
@@ -155,10 +155,10 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void Fusefield(uint id, float delay)
     {
-        Cast(id, AID.Fusefield, delay, 4)
+        Cast(id, (uint)AID.Fusefield, delay, 4)
             .ActivateOnEnter<FusefieldVoidzone>()
             .ActivateOnEnter<Fusefield>();
-        Cast(id + 0x10, AID.BombarianFlame, 3.2f, 3);
+        Cast(id + 0x10, (uint)AID.BombarianFlame, 3.2f, 3);
         ComponentCondition<FusefieldVoidzone>(id + 0x20, 3.9f, comp => comp.Active, "Fuses start");
         ComponentCondition<FusefieldVoidzone>(id + 0x30, 40, comp => !comp.Active, "Fuses resolve")
             .DeactivateOnExit<FusefieldVoidzone>()
@@ -167,8 +167,8 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void BombarianSpecial(uint id, float delay)
     {
-        Cast(id, AID.DopingDraught2, delay, 4);
-        CastMulti(id + 0x10, [AID.OctoboomBombarianSpecial, AID.QuadroboomBombarianSpecial], 13.4f, 6)
+        Cast(id, (uint)AID.DopingDraught2, delay, 4);
+        CastMulti(id + 0x10, [(uint)AID.OctoboomBombarianSpecial, (uint)AID.QuadroboomBombarianSpecial], 13.4f, 6)
             .ActivateOnEnter<BombarianSpecial>();
         ComponentCondition<BombarianSpecialRaidwide>(id + 0x20, 1, comp => comp.NumCasts >= 1)
             .ActivateOnEnter<BombarianSpecialRaidwide>()
@@ -202,13 +202,13 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void FusesOfFury(uint id, float delay)
     {
-        Cast(id, AID.FusesOfFury, delay, 4)
+        Cast(id, (uint)AID.FusesOfFury, delay, 4)
             .ActivateOnEnter<FinalFusedownSelfDestruct>();
-        Cast(id + 0x10, AID.TagTeam, 2.1f, 4);
-        Cast(id + 0x20, AID.ChainDeathmatch, 3.2f, 7)
+        Cast(id + 0x10, (uint)AID.TagTeam, 2.1f, 4);
+        Cast(id + 0x20, (uint)AID.ChainDeathmatch, 3.2f, 7)
            .ActivateOnEnter<TagTeamLariatCombo>(); // tethers appear right before cast start
         ComponentCondition<FinalFusedownSelfDestruct>(id + 0x30, 2.8f, comp => comp.NumCasts > 0, "Bombs 1");
-        CastStart(id + 0x40, AID.FusesOfFuryMurderousMist, 4);
+        CastStart(id + 0x40, (uint)AID.FusesOfFuryMurderousMist, 4);
         ComponentCondition<FinalFusedownSelfDestruct>(id + 0x50, 1, comp => comp.NumCasts > 4, "Bombs 2")
             .DeactivateOnExit<FinalFusedownSelfDestruct>();
         CastEnd(id + 0x60, 7, "Cone + chain cleaves 1");
@@ -218,9 +218,9 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void FuseOrFoe(uint id, float delay)
     {
-        Cast(id, AID.FuseOrFoe, delay, 4)
+        Cast(id, (uint)AID.FuseOrFoe, delay, 4)
             .ActivateOnEnter<FinalFusedownExplosion>();
-        CastMulti(id + 0x10, [AID.InfernalSpinFirstCW, AID.InfernalSpinFirstCCW], 3.6f, 5.5f)
+        CastMulti(id + 0x10, [(uint)AID.InfernalSpinFirstCW, (uint)AID.InfernalSpinFirstCCW], 3.6f, 5.5f)
             .ActivateOnEnter<InfernalSpin>()
             .ActivateOnEnter<ExplosiveRain>();
         ComponentCondition<InfernalSpin>(id + 0x20, 0.5f, comp => comp.NumCasts > 0, "Rotation + circles start");
@@ -232,7 +232,7 @@ class M03SBruteBomberStates : StateMachineBuilder
             .ExecOnEnter<FinalFusedownExplosion>(comp => comp.Show());
         ComponentCondition<ExplosiveRain>(id + 0x51, 0.4f, comp => comp.NumCasts >= 10);
 
-        CastStartMulti(id + 0x100, [AID.OctupleLariatOut, AID.OctupleLariatIn, AID.QuadrupleLariatOut, AID.QuadrupleLariatIn], 3.2f);
+        CastStartMulti(id + 0x100, [(uint)AID.OctupleLariatOut, (uint)AID.OctupleLariatIn, (uint)AID.QuadrupleLariatOut, (uint)AID.QuadrupleLariatIn], 3.2f);
         ComponentCondition<ExplosiveRain>(id + 0x110, 0.8f, comp => comp.NumCasts >= 12)
             .ActivateOnEnter<OctupleLariatOut>()
             .ActivateOnEnter<OctupleLariatIn>()
@@ -247,28 +247,28 @@ class M03SBruteBomberStates : StateMachineBuilder
 
     private void BarbarousBarrage2(uint id, float delay)
     {
-        Cast(id, AID.BarbarousBarrage, delay, 4);
+        Cast(id, (uint)AID.BarbarousBarrage, delay, 4);
         ComponentCondition<BarbarousBarrageTowers>(id + 0x10, 1, comp => comp.CurState != BarbarousBarrageTowers.State.None)
             .ActivateOnEnter<BarbarousBarrageTowers>();
         ComponentCondition<BarbarousBarrageTowers>(id + 0x20, 10.1f, comp => comp.CurState >= BarbarousBarrageTowers.State.NextCorners, "Cardinal towers")
             .ActivateOnEnter<BarbarousBarrageKnockback>();
         ComponentCondition<BarbarousBarrageTowers>(id + 0x30, 3, comp => comp.CurState >= BarbarousBarrageTowers.State.NextCenter, "Corner towers");
-        CastStartMulti(id + 0x40, [AID.BarbarousBarrageLariatComboFirstRR, AID.BarbarousBarrageLariatComboFirstRL, AID.BarbarousBarrageLariatComboFirstLL, AID.BarbarousBarrageLariatComboFirstLR], 0.2f);
+        CastStartMulti(id + 0x40, [(uint)AID.BarbarousBarrageLariatComboFirstRR, (uint)AID.BarbarousBarrageLariatComboFirstRL, (uint)AID.BarbarousBarrageLariatComboFirstLL, (uint)AID.BarbarousBarrageLariatComboFirstLR], 0.2f);
         ComponentCondition<BarbarousBarrageTowers>(id + 0x41, 2.8f, comp => comp.CurState >= BarbarousBarrageTowers.State.Done, "Center tower")
             .ActivateOnEnter<BarbarousBarrageLariatCombo>()
             .DeactivateOnExit<BarbarousBarrageKnockback>()
             .DeactivateOnExit<BarbarousBarrageTowers>();
         CastEnd(id + 0x42, 2.1f);
         ComponentCondition<BarbarousBarrageLariatCombo>(id + 0x43, 1.2f, comp => comp.NumCasts >= 1, "Charge 1");
-        CastMulti(id + 0x50, [AID.BarbarousBarrageLariatComboSecondRR, AID.BarbarousBarrageLariatComboSecondRL, AID.BarbarousBarrageLariatComboSecondLL, AID.BarbarousBarrageLariatComboSecondLR], 1.3f, 3);
+        CastMulti(id + 0x50, [(uint)AID.BarbarousBarrageLariatComboSecondRR, (uint)AID.BarbarousBarrageLariatComboSecondRL, (uint)AID.BarbarousBarrageLariatComboSecondLL, (uint)AID.BarbarousBarrageLariatComboSecondLR], 1.3f, 3);
         ComponentCondition<BarbarousBarrageLariatCombo>(id + 0x52, 0.1f, comp => comp.NumCasts >= 2, "Charge 2")
             .DeactivateOnExit<BarbarousBarrageLariatCombo>();
     }
 
     private void SpecialBombarianSpecial(uint id, float delay)
     {
-        Cast(id, AID.DopingDraught3, delay, 4);
-        Cast(id + 0x10, AID.SpecialBombarianSpecial, 13.4f, 6);
+        Cast(id, (uint)AID.DopingDraught3, delay, 4);
+        Cast(id + 0x10, (uint)AID.SpecialBombarianSpecial, 13.4f, 6);
         ComponentCondition<BombarianSpecialRaidwide>(id + 0x20, 1, comp => comp.NumCasts >= 1)
             .ActivateOnEnter<BombarianSpecialRaidwide>()
             .ActivateOnEnter<SpecialBombarianSpecialOut>()

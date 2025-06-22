@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class DecisiveBattle(BossModule module) : BossComponent(module)
+sealed class DecisiveBattle(BossModule module) : BossComponent(module)
 {
     public readonly Actor?[] AssignedBoss = new Actor?[PartyState.MaxAllianceSize];
 

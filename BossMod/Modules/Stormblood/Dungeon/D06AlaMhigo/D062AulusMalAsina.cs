@@ -38,11 +38,11 @@ public enum TetherID : uint
     MindJack = 45 // EmptyVessel->player
 }
 
-class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherochemicalGrenado), 8f);
-class IntegratedAetheromodulator(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IntegratedAetheromodulator), new AOEShapeDonut(11.4f, 15.6f));
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), new AOEShapeRect(45.6f, 1f));
-class ManaBurst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ManaBurst));
-class Demimagicks(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Demimagicks), 5f);
+class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherochemicalGrenado, 8f);
+class IntegratedAetheromodulator(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IntegratedAetheromodulator, new AOEShapeDonut(11.4f, 15.6f));
+class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(45.6f, 1f));
+class ManaBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.ManaBurst);
+class Demimagicks(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Demimagicks, 5f);
 class MindJack(BossModule module) : BossComponent(module)
 {
     private readonly List<(WPos source, ulong target)> _tethers = [];

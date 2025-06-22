@@ -44,18 +44,18 @@ public enum AID : uint
     Metamorphosis3 = 36525, // RedClot->self, 2.0s cast, single-target
 
     FlagrantSpread1 = 36522, // Mimiclot5/Mimiclot2->player, 5.0s cast, range 6 circle
-    FlagrantSpread2 = 36485, // Mimiclot3/Mimiclot6->self, 5.0s cast, range 6 circle
+    FlagrantSpread2 = 36485 // Mimiclot3/Mimiclot6->self, 5.0s cast, range 6 circle
 }
 
-class Uppercut(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Uppercut));
-class Arise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Arise), 8);
-class Wallop1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wallop1), new AOEShapeRect(40, 5));
-class Wallop2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wallop2), new AOEShapeRect(40, 8));
-class SelfTargetSneezeedAOEs(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sneeze), new AOEShapeCone(60, 75.Degrees()));
-class FlagrantSpread1(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FlagrantSpread1), 6);
-class FlagrantSpread2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlagrantSpread2), 6);
+sealed class Uppercut(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Uppercut);
+sealed class Arise(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Arise, 8f);
+sealed class Wallop1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop1, new AOEShapeRect(40f, 5f));
+sealed class Wallop2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop2, new AOEShapeRect(40f, 8f));
+sealed class SelfTargetSneezeedAOEs(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sneeze, new AOEShapeCone(60f, 75f.Degrees()));
+sealed class FlagrantSpread1(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FlagrantSpread1, 6f);
+sealed class FlagrantSpread2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlagrantSpread2, 6f);
 
-class D012DrowsieStates : StateMachineBuilder
+sealed class D012DrowsieStates : StateMachineBuilder
 {
     public D012DrowsieStates(BossModule module) : base(module)
     {
@@ -71,10 +71,10 @@ class D012DrowsieStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 826, NameID = 12716)]
-public class D012Drowsie(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
+public sealed class D012Drowsie(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(80, 53), 19.5f, 32)], [new Rectangle(new(65.5f, 38), 20, 1.8f, -130.Degrees()),
-    new Rectangle(new(80, 74), 20, 2.15f)]);
+    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(80f, 53f), 19.5f, 32)], [new Rectangle(new(65.5f, 38f), 20f, 1.8f, -130f.Degrees()),
+    new Rectangle(new(80f, 74f), 20f, 2.15f)]);
     private static readonly uint[] adds = [(uint)OID.Mimiclot1, (uint)OID.Mimiclot2, (uint)OID.Mimiclot3, (uint)OID.Mimiclot4, (uint)OID.Mimiclot5, (uint)OID.Mimiclot6];
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

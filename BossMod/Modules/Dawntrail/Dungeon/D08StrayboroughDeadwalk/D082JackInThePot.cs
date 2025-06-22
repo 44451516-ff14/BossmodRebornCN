@@ -39,7 +39,7 @@ public enum SID : uint
     AreaOfInfluenceUp = 1909 // none->Helper, extra=0x1/0x2/0x3/0x4
 }
 
-class PipingPour(BossModule module) : Components.GenericAOEs(module)
+sealed class PipingPour(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
     private readonly List<AOEInstance> _aoes = [];
@@ -48,49 +48,49 @@ class PipingPour(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (_aoes.Count != 0 && id == 0x11DD && actor.OID == (uint)OID.SpectralSamovar)
+        if (_aoes.Count != 0 && id == 0x11DDu && actor.OID == (uint)OID.SpectralSamovar)
             _aoes.RemoveAt(0);
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if (status.ID == (uint)SID.AreaOfInfluenceUp && status.Extra == 0x1)
+        if (status.ID == (uint)SID.AreaOfInfluenceUp && status.Extra == 0x1u)
             _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position)));
     }
 }
 
-class TeaAwhirl : Components.GenericAOEs
+sealed class TeaAwhirl : Components.GenericAOEs
 {
     private static readonly AOEShapeCircle circle = new(19f);
-    private readonly List<Actor> _cups = [];
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<Actor> _cups = new(2);
+    private readonly List<AOEInstance> _aoes = new(2);
     private readonly Dictionary<uint, Action> cupPositions;
 
     public TeaAwhirl(BossModule module) : base(module)
     {
         cupPositions = new Dictionary<uint, Action>
         {
-            { 0x02000100, () => HandleActivation(11.5d,
+            { 0x02000100u, () => HandleActivation(11.5d,
                 [
-                    (new(17, -163), new(17, -177), [new(3.5f, -161.5f), new(30.5f, -178.5f)]),
-                    (new(17, -153), new(10, -170), [new(25.5f, -156.5f), new(20.5f, -178.5f)]),
-                    (new(17, -153), new(17, -177), [new(20.5f, -178.5f), new(3.5f, -161.5f)]),
-                    (new(34, -170), null, [new(8.5f, -173.5f)]),
-                    (new(0, -170), null, [new(25.5f, -166.5f)])
+                    (new(17f, -163), new(17f, -177f), [new(3.5f, -161.5f), new(30.5f, -178.5f)]),
+                    (new(17f, -153), new(10f, -170f), [new(25.5f, -156.5f), new(20.5f, -178.5f)]),
+                    (new(17f, -153), new(17f, -177f), [new(20.5f, -178.5f), new(3.5f, -161.5f)]),
+                    (new(34f, -170), null, [new(8.5f, -173.5f)]),
+                    (new(default, -170), null, [new(25.5f, -166.5f)])
                 ])
             },
-            { 0x10000800, () => HandleActivation(14.5d,
+            { 0x10000800u, () => HandleActivation(14.5d,
                 [
-                    (new(0, -170), new(34, -170), [new(8.5f, -156.5f), new(25.5f, -183.5f)]),
-                    (new(0, -170), new(17, -187), [new(3.5f, -178.5f), new(8.5f, -156.5f)]),
-                    (new(17, -187), new(17, -153), [new(30.5f, -161.5f), new(3.5f, -178.5f)])
+                    (new(default, -170f), new(34f, -170f), [new(8.5f, -156.5f), new(25.5f, -183.5f)]),
+                    (new(default, -170f), new(17f, -187f), [new(3.5f, -178.5f), new(8.5f, -156.5f)]),
+                    (new(17f, -187f), new(17f, -153f), [new(30.5f, -161.5f), new(3.5f, -178.5f)])
                 ])
             },
-            { 0x00100001, () => AddAOEs(WorldState.FutureTime(16d), _cups[0].Position, _cups[1].Position) },
-            { 0x00400020, () => HandleActivation(19f,
+            { 0x00100001u, () => AddAOEs(WorldState.FutureTime(16d), [_cups[0].Position, _cups[1].Position]) },
+            { 0x00400020u, () => HandleActivation(19f,
                 [
-                    (new(0, -170), new(17, -163), [new(5, -165), new(22, -182)]),
-                    (new(17, -177), new(17, -153), [new(5, -175), new(29, -175)])
+                    (new(default, -170f), new(17f, -163f), [new(5f, -165f), new(22f, -182f)]),
+                    (new(17f, -177f), new(17f, -153f), [new(5f, -175f), new(29f, -175f)])
                 ])
             }
         };
@@ -126,15 +126,16 @@ class TeaAwhirl : Components.GenericAOEs
 
     private bool CheckPositions(WPos pos1, WPos? pos2) => pos2 != null ? _cups.Any(x => x.Position == pos1) && _cups.Any(x => x.Position == pos2) : _cups.Any(x => x.Position == pos1);
 
-    private void AddAOEs(DateTime activation, params WPos[] positions)
+    private void AddAOEs(DateTime activation, WPos[] positions)
     {
-        foreach (var pos in positions)
-            _aoes.Add(new(circle, pos, default, activation));
+        var len = positions.Length;
+        for (var i = 0; i < len; ++i)
+            _aoes.Add(new(circle, positions[i], default, activation));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.TricksomeTreat)
+        if (spell.Action.ID == (uint)AID.TricksomeTreat)
         {
             _aoes.Clear();
             _cups.Clear();
@@ -142,8 +143,8 @@ class TeaAwhirl : Components.GenericAOEs
     }
 }
 
-class SordidSteam(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SordidSteam));
-class LastDrop(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.LastDrop));
+sealed class SordidSteam(BossModule module) : Components.RaidwideCast(module, (uint)AID.SordidSteam);
+sealed class LastDrop(BossModule module) : Components.SingleTargetCast(module, (uint)AID.LastDrop);
 
 class D082JackInThePotStates : StateMachineBuilder
 {
@@ -158,7 +159,7 @@ class D082JackInThePotStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 12760)]
-public class D082JackInThePot(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D082JackInThePot(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(17, -170), 19.5f)], [new Rectangle(new(17, -150.15f), 20, 1.25f), new Rectangle(new(17, -189.5f), 20, 1.25f)]);
+    private static readonly ArenaBoundsComplex arena = new([new Circle(new(17f, -170f), 19.5f)], [new Rectangle(new(17f, -150.15f), 20, 1.25f), new Rectangle(new(17f, -189.5f), 20f, 1.25f)]);
 }

@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Savage.M01SBlackCat;
 
 // same component covers normal, leaping and leaping clone versions
-class QuadrupleCrossingProtean(BossModule module) : Components.GenericBaitAway(module)
+sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBaitAway(module)
 {
     public Actor? Origin;
     private DateTime _activation;
@@ -110,7 +110,7 @@ class QuadrupleCrossingProtean(BossModule module) : Components.GenericBaitAway(m
     }
 }
 
-class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(8);
     private bool ready;
@@ -121,11 +121,18 @@ class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(module)
         if (!ready)
             return [];
         var count = _aoes.Count;
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
-            aoes[i] = i < 4 ? count > 4 ? aoe with { Color = Colors.Danger } : aoe : aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            if (i < 4)
+            {
+                if (count == 8)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
+            else
+                aoe.Risky = false;
         }
         return aoes;
     }
@@ -137,7 +144,7 @@ class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.QuadrupleCrossingProtean:
             case (uint)AID.LeapingQuadrupleCrossingBossProtean:
             case (uint)AID.LeapingQuadrupleCrossingShadeProtean:
-                _aoes.Add(new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(5.9f)));
+                _aoes.Add(new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(5.9d)));
                 break;
             case (uint)AID.QuadrupleCrossingAOE:
             case (uint)AID.LeapingQuadrupleCrossingBossAOE:

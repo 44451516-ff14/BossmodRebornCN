@@ -15,9 +15,9 @@ public enum AID : uint
     Mandrastorm = 31479 // Boss->self, 5.0s cast, range 60 circle, damage fall off AOE
 }
 
-class MandraStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mandrastorm), 20f);
-class Mandrashock1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mandrashock1), 10f);
-class Mandrashock2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mandrashock2), 10f, 6);
+class MandraStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mandrastorm, 20f);
+class Mandrashock1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mandrashock1, 10f);
+class Mandrashock2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mandrashock2, 10f, 6);
 
 class DD10GancanaghStates : StateMachineBuilder
 {

@@ -5,7 +5,7 @@ using ImGuiNET;
 
 namespace BossMod;
 
-class Camera
+sealed class Camera
 {
     public static Camera? Instance;
 
@@ -17,6 +17,7 @@ class Camera
     public float CameraAzimuth; // facing north = 0, facing west = pi/4, facing south = +-pi/2, facing east = -pi/4
     public float CameraAltitude; // facing horizontally = 0, facing down = pi/4, facing up = -pi/4
     public Vector2 ViewportSize;
+    private const float maxerror = 1 / 90f;
 
     private readonly List<(Vector2 from, Vector2 to, uint col)> _worldDrawLines = [];
 
@@ -84,7 +85,7 @@ class Camera
 
     public void DrawWorldCone(Vector3 center, float radius, Angle direction, Angle halfWidth, uint color)
     {
-        var numSegments = CurveApprox.CalculateCircleSegments(radius, halfWidth, 0.1f);
+        int numSegments = CurveApprox.CalculateCircleSegments(radius, halfWidth, maxerror);
         var delta = halfWidth / numSegments;
 
         var prev = center + radius * (direction - delta * numSegments).ToDirection().ToVec3();
@@ -100,7 +101,7 @@ class Camera
 
     public void DrawWorldCircle(Vector3 center, float radius, uint color)
     {
-        var numSegments = CurveApprox.CalculateCircleSegments(radius, 360.Degrees(), 0.1f);
+        int numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), maxerror);
         var prev = center + new Vector3(0, 0, radius);
         for (var i = 1; i <= numSegments; ++i)
         {
@@ -112,7 +113,7 @@ class Camera
 
     public void DrawWorldSphere(Vector3 center, float radius, uint color)
     {
-        var numSegments = CurveApprox.CalculateCircleSegments(radius, 360.Degrees(), 0.1f);
+        int numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), maxerror);
         var prev1 = center + new Vector3(0, 0, radius);
         var prev2 = center + new Vector3(0, radius, 0);
         var prev3 = center + new Vector3(radius, 0, 0);
@@ -133,7 +134,7 @@ class Camera
 
     public void DrawWorldUnitCylinder(SharpDX.Matrix transform, uint color)
     {
-        var numSegments = CurveApprox.CalculateCircleSegments(transform.Row1.Length(), 360.Degrees(), 0.1f);
+        int numSegments = CurveApprox.CalculateCircleSegments(transform.Row1.Length(), 360f.Degrees(), maxerror);
         var prev1 = SharpDX.Vector3.TransformCoordinate(new(0, +1, 1), transform).ToSystem();
         var prev2 = SharpDX.Vector3.TransformCoordinate(new(0, -1, 1), transform).ToSystem();
         for (var i = 1; i <= numSegments; ++i)

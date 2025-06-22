@@ -166,4 +166,4 @@ class CaloricTheory2Part2(BossModule module) : Components.UniformStackSpread(mod
     }
 }
 
-class EntropicExcess(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EntropicExcess), 7);
+class EntropicExcess(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicExcess, 7);

@@ -30,7 +30,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
         WickedStepEntanglingWeb(id + 0x110000, 10.7f);
         PartedPlumesPandaemoniacRay(id + 0x120000, 6.7f);
         Silkspit(id + 0x130000, 3.2f);
-        PandaemoniacPillarsTurrets(id + 0x140000, 2.4f, AID.PandaemoniacPillars);
+        PandaemoniacPillarsTurrets(id + 0x140000, 2.4f, (uint)AID.PandaemoniacPillars);
         CirclesHolyPillars(id + 0x150000, 1.5f);
         PandaemoniacMeltdown(id + 0x160000, 2.0f);
         HarrowingHell(id + 0x170000, 17.1f, true);
@@ -38,13 +38,13 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void Ultima(uint id, float delay)
     {
-        Cast(id, AID.Ultima, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.Ultima, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void SoulGrasp(uint id, float delay)
     {
-        CastStart(id, AID.SoulGrasp, delay)
+        CastStart(id, (uint)AID.SoulGrasp, delay)
             .ActivateOnEnter<SoulGrasp>(); // icon appears right before cast start
         CastEnd(id + 1, 5);
         ComponentCondition<SoulGrasp>(id + 0x10, 0.8f, comp => comp.NumCasts >= 1, "Tankbuster hit 1")
@@ -60,7 +60,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private State CirclesHoly(uint id, float delay)
     {
-        return CastMulti(id, [AID.PandaemonsHoly, AID.CirclesOfPandaemonium], delay, 4, "In/out")
+        return CastMulti(id, [(uint)AID.PandaemonsHoly, (uint)AID.CirclesOfPandaemonium], delay, 4, "In/out")
             .ActivateOnEnter<PandaemonsHoly>()
             .ActivateOnEnter<CirclesOfPandaemonium>()
             .DeactivateOnExit<PandaemonsHoly>()
@@ -81,7 +81,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void WickedStep(uint id, float delay)
     {
-        Cast(id, AID.WickedStep, delay, 6)
+        Cast(id, (uint)AID.WickedStep, delay, 6)
             .ActivateOnEnter<WickedStep>();
         ComponentCondition<WickedStep>(id + 0x10, 1.1f, comp => comp.NumCasts >= 1, "Tower L")
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -92,7 +92,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void EntanglingWeb(uint id, float delay)
     {
-        Cast(id, AID.EntanglingWeb, delay, 3);
+        Cast(id, (uint)AID.EntanglingWeb, delay, 3);
         ComponentCondition<EntanglingWebAOE>(id + 0x10, 8, comp => comp.Casters.Count > 0, "Web bait")
             .ActivateOnEnter<EntanglingWebHints>()
             .ActivateOnEnter<EntanglingWebAOE>()
@@ -101,7 +101,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
             .DeactivateOnExit<EntanglingWebAOE>();
     }
 
-    private void PandaemoniacPillarsTurrets(uint id, float delay, AID aid)
+    private void PandaemoniacPillarsTurrets(uint id, float delay, uint aid)
     {
         Cast(id, aid, delay, 5)
             .ActivateOnEnter<PandaemoniacPillars>();
@@ -111,7 +111,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private State PandaemoniacMeltdown(uint id, float delay)
     {
-        CastStart(id, AID.PandaemoniacMeltdown, delay)
+        CastStart(id, (uint)AID.PandaemoniacMeltdown, delay)
             .ActivateOnEnter<PandaemoniacMeltdown>(); // icons appear right before cast start
         CastEnd(id + 1, 5);
         return ComponentCondition<PandaemoniacMeltdown>(id + 2, 0.6f, comp => comp.NumCasts > 0, "Line stack/spread")
@@ -120,7 +120,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void Touchdown(uint id, float delay)
     {
-        Cast(id, AID.Touchdown, delay, 8)
+        Cast(id, (uint)AID.Touchdown, delay, 8)
             .ActivateOnEnter<Touchdown>();
         ComponentCondition<Touchdown>(id + 2, 1, comp => comp.NumCasts > 0)
             .DeactivateOnExit<Touchdown>();
@@ -128,7 +128,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void Silkspit(uint id, float delay)
     {
-        Cast(id, AID.Silkspit, delay, 3);
+        Cast(id, (uint)AID.Silkspit, delay, 3);
         ComponentCondition<Silkspit>(id + 0x10, 1.9f, comp => comp.Active)
             .ActivateOnEnter<Silkspit>();
         ComponentCondition<Silkspit>(id + 0x20, 8.1f, comp => !comp.Active, "Silkspit")
@@ -138,7 +138,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void DaemoniacBondsCast(uint id, float delay)
     {
-        Cast(id, AID.DaemoniacBonds, delay, 3)
+        Cast(id, (uint)AID.DaemoniacBonds, delay, 3)
             .ActivateOnEnter<DaemoniacBonds>(); // statuses appear ~0.7s after cast end
     }
 
@@ -151,7 +151,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void PandaemoniacRay(uint id, float delay)
     {
-        CastMulti(id, [AID.PandaemoniacRayL, AID.PandaemoniacRayR], delay, 5)
+        CastMulti(id, [(uint)AID.PandaemoniacRayL, (uint)AID.PandaemoniacRayR], delay, 5)
             .ActivateOnEnter<PandaemoniacRay>();
         ComponentCondition<PandaemoniacRay>(id + 2, 0.2f, comp => comp.NumCasts > 0, "Half-room cleave")
             .DeactivateOnExit<PandaemoniacRay>();
@@ -163,8 +163,8 @@ class P10SPandaemoniumStates : StateMachineBuilder
     private void PartedPlumesPandaemoniacRay(uint id, float delay)
     {
         // overlaps with ray & circle/holy
-        Cast(id, AID.PartedPlumes, delay, 3);
-        CastStartMulti(id + 0x10, [AID.PandaemoniacRayL, AID.PandaemoniacRayR], 7.3f)
+        Cast(id, (uint)AID.PartedPlumes, delay, 3);
+        CastStartMulti(id + 0x10, [(uint)AID.PandaemoniacRayL, (uint)AID.PandaemoniacRayR], 7.3f)
             .ActivateOnEnter<PartedPlumes>() // first aoe cast start 3.8s after previous cast end, individual aoes are 0.3s apart
             .ActivateOnEnter<PartedPlumesVoidzone>();
         ComponentCondition<PartedPlumes>(id + 0x20, 0.5f, comp => comp.NumCasts > 0, "Plumes start")
@@ -175,7 +175,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
         CastEnd(id + 0x40, 2.1f);
         ComponentCondition<PandaemoniacRay>(id + 0x41, 0.2f, comp => comp.NumCasts > 0, "Half-room cleave")
             .DeactivateOnExit<PandaemoniacRay>();
-        CastStartMulti(id + 0x50, [AID.PandaemonsHoly, AID.CirclesOfPandaemonium], 3)
+        CastStartMulti(id + 0x50, [(uint)AID.PandaemonsHoly, (uint)AID.CirclesOfPandaemonium], 3)
             .ActivateOnEnter<JadePassage>();
         ComponentCondition<JadePassage>(id + 0x60, 0.6f, comp => comp.NumCasts > 0, "Lines")
             .ActivateOnEnter<PandaemonsHoly>()
@@ -197,7 +197,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
         // these happen in quick succession, makes sense to group them together
         WickedStep(id, delay);
         EntanglingWeb(id + 0x1000, 4.7f);
-        PandaemoniacPillarsTurrets(id + 0x2000, 1.4f, AID.PandaemoniacPillars);
+        PandaemoniacPillarsTurrets(id + 0x2000, 1.4f, (uint)AID.PandaemoniacPillars);
         CirclesHolyPillars(id + 0x3000, 1.5f);
     }
 
@@ -206,8 +206,8 @@ class P10SPandaemoniumStates : StateMachineBuilder
         WickedStep(id, delay);
 
         // overlap of entangling web, silkspit and daemoniac bonds mechanics
-        Cast(id + 0x1000, AID.EntanglingWeb, 4.7f, 3);
-        CastStart(id + 0x1010, AID.Silkspit, 7.3f)
+        Cast(id + 0x1000, (uint)AID.EntanglingWeb, 4.7f, 3);
+        CastStart(id + 0x1010, (uint)AID.Silkspit, 7.3f)
             .ActivateOnEnter<EntanglingWebHints>()
             .ActivateOnEnter<EntanglingWebAOE>();
         ComponentCondition<EntanglingWebAOE>(id + 0x1011, 0.7f, comp => comp.Casters.Count > 0, "Web bait")
@@ -222,11 +222,11 @@ class P10SPandaemoniumStates : StateMachineBuilder
             .DeactivateOnExit<Silkspit>()
             .SetHint(StateMachine.StateHint.Raidwide);
 
-        PandaemoniacPillarsTurrets(id + 0x2000, 2.3f, AID.PandaemoniacPillars);
+        PandaemoniacPillarsTurrets(id + 0x2000, 2.3f, (uint)AID.PandaemoniacPillars);
         CirclesHolyPillars(id + 0x3000, 1.5f);
 
         // overlap of pandaemoniac ray and daemoniac bonds resolve
-        CastStartMulti(id + 0x4000, [AID.PandaemoniacRayL, AID.PandaemoniacRayR], 2.0f)
+        CastStartMulti(id + 0x4000, [(uint)AID.PandaemoniacRayL, (uint)AID.PandaemoniacRayR], 2.0f)
             .ExecOnEnter<DaemoniacBonds>(comp => comp.Show());
         ComponentCondition<DaemoniacBonds>(id + 0x4010, 4.4f, comp => comp.NumMechanics >= 1, "Stack/spread")
             .ActivateOnEnter<PandaemoniacRay>();
@@ -242,7 +242,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private State HarrowingHell(uint id, float delay, bool isEnrage)
     {
-        Cast(id, AID.HarrowingHell, delay, 5);
+        Cast(id, (uint)AID.HarrowingHell, delay, 5);
         ComponentCondition<HarrowingHell>(id + 0x11, 1.0f, comp => comp.NumCasts >= 1, "Hell start")
             .ActivateOnEnter<HarrowingHell>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -267,8 +267,8 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void DividingWings1(uint id, float delay)
     {
-        Cast(id, AID.DividingWings, delay, 3);
-        Cast(id + 0x10, AID.SteelWeb, 3.2f, 3);
+        Cast(id, (uint)AID.DividingWings, delay, 3);
+        Cast(id + 0x10, (uint)AID.SteelWeb, 3.2f, 3);
         ComponentCondition<DividingWings>(id + 0x20, 7.7f, comp => comp.NumCasts > 0, "Tethers")
             .ActivateOnEnter<DividingWings>()
             .ActivateOnEnter<SteelWebStack>()
@@ -282,11 +282,11 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void DividingWings2(uint id, float delay)
     {
-        Cast(id, AID.DividingWings, delay, 3)
+        Cast(id, (uint)AID.DividingWings, delay, 3)
             .ActivateOnEnter<DividingWings>();
-        Cast(id + 0x10, AID.SteelWeb, 3.2f, 3)
+        Cast(id + 0x10, (uint)AID.SteelWeb, 3.2f, 3)
             .ActivateOnEnter<SteelWebStack>();
-        Cast(id + 0x20, AID.Touchdown, 4.1f, 8)
+        Cast(id + 0x20, (uint)AID.Touchdown, 4.1f, 8)
             .ActivateOnEnter<Touchdown>();
         ComponentCondition<DividingWings>(id + 0x30, 0.6f, comp => comp.NumCasts > 0, "Tethers")
             .DeactivateOnExit<DividingWings>();
@@ -301,10 +301,10 @@ class P10SPandaemoniumStates : StateMachineBuilder
 
     private void DividingWings3(uint id, float delay)
     {
-        Cast(id, AID.DividingWings, delay, 3);
-        Cast(id + 0x10, AID.PandaemoniacWeb, 3.2f, 3);
+        Cast(id, (uint)AID.DividingWings, delay, 3);
+        Cast(id + 0x10, (uint)AID.PandaemoniacWeb, 3.2f, 3);
 
-        CastStart(id + 0x100, AID.PandaemonsHoly, 4.1f)
+        CastStart(id + 0x100, (uint)AID.PandaemonsHoly, 4.1f)
             .ActivateOnEnter<DividingWings>()
             .ActivateOnEnter<SteelWebStack>()
             .ActivateOnEnter<EntanglingWebHints>()
@@ -319,7 +319,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
             .DeactivateOnExit<PandaemonsHoly>();
         ComponentCondition<EntanglingWebAOE>(id + 0x140, 2.8f, comp => comp.NumCasts > 0);
 
-        CastStart(id + 0x200, AID.DaemoniacBonds, 1.3f);
+        CastStart(id + 0x200, (uint)AID.DaemoniacBonds, 1.3f);
         ComponentCondition<EntanglingWebAOE>(id + 0x210, 1.7f, comp => comp.Casters.Count > 0, "Web bait 2")
             .DeactivateOnExit<EntanglingWebHints>();
         CastEnd(id + 0x220, 1.3f);
@@ -346,7 +346,7 @@ class P10SPandaemoniumStates : StateMachineBuilder
     private void DaemoniacBondsPandaemoniacTurrets(uint id, float delay)
     {
         DaemoniacBondsCast(id, delay);
-        PandaemoniacPillarsTurrets(id + 0x100, 4.2f, AID.PandaemoniacTurrets);
+        PandaemoniacPillarsTurrets(id + 0x100, 4.2f, (uint)AID.PandaemoniacTurrets);
         ComponentCondition<Turrets>(id + 0x200, 10.7f, comp => comp.NumCasts > 0, "Knockback 1")
             .ActivateOnEnter<Turrets>();
         ComponentCondition<Turrets>(id + 0x201, 4.5f, comp => comp.NumCasts > 2, "Knockback 2");

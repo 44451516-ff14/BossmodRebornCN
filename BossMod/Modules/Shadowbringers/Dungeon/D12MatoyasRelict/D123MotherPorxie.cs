@@ -49,15 +49,15 @@ public enum IconID : uint
     Spreadmarker = 169 // player
 }
 
-class TenderLoin(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.TenderLoinVisual), ActionID.MakeSpell(AID.TenderLoin), 0.8f);
-class MincedMeat(BossModule module) : Components.SingleTargetCastDelay(module, ActionID.MakeSpell(AID.MincedMeatVisual), ActionID.MakeSpell(AID.MincedMeat), 0.9f);
-class OpenFlame(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.OpenFlame), 5f, 6.7f);
-class MeatMallet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MeatMallet), 30f);
-class BarbequeCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BarbequeCircle), 5f);
-class BarbequeRect(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BarbequeRect), new AOEShapeRect(50f, 2.5f));
-class Buffet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Buffet), new AOEShapeRect(40f, 3f));
+class TenderLoin(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.TenderLoinVisual, (uint)AID.TenderLoin, 0.8f);
+class MincedMeat(BossModule module) : Components.SingleTargetCastDelay(module, (uint)AID.MincedMeatVisual, (uint)AID.MincedMeat, 0.9f);
+class OpenFlame(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.OpenFlame, 5f, 6.7f);
+class MeatMallet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeatMallet, 30f);
+class BarbequeCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeCircle, 5f);
+class BarbequeRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeRect, new AOEShapeRect(50f, 2.5f));
+class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeRect(40f, 3f));
 
-abstract class MediumRear(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(5f, 40f))
+abstract class MediumRear(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(5f, 40f))
 {
     private readonly HuffAndPuff1 _kb1 = module.FindComponent<HuffAndPuff1>()!;
     private readonly HuffAndPuff2 _kb2 = module.FindComponent<HuffAndPuff2>()!;
@@ -68,11 +68,11 @@ abstract class MediumRear(BossModule module, AID aid) : Components.SimpleAOEs(mo
             base.AddAIHints(slot, actor, assignment, hints);
     }
 }
-class MediumRear1(BossModule module) : MediumRear(module, AID.MediumRear1);
-class MediumRear2(BossModule module) : MediumRear(module, AID.MediumRear2);
-class NeerDoneWell(BossModule module) : MediumRear(module, AID.NeerDoneWell);
+class MediumRear1(BossModule module) : MediumRear(module, (uint)AID.MediumRear1);
+class MediumRear2(BossModule module) : MediumRear(module, (uint)AID.MediumRear2);
+class NeerDoneWell(BossModule module) : MediumRear(module, (uint)AID.NeerDoneWell);
 
-class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.HuffAndPuff1), 15, true, stopAtWall: true, kind: Kind.DirForward)
+class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HuffAndPuff1, 15, true, stopAtWall: true, kind: Kind.DirForward)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA3AbsoluteVirtue;
 
-class BrightDarkAurora(BossModule module) : Components.GenericAOEs(module)
+sealed class BrightDarkAurora(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(30f, 50f);
     public readonly List<AOEInstance> _aoes = new(2);
@@ -19,7 +19,6 @@ class BrightDarkAurora(BossModule module) : Components.GenericAOEs(module)
                 break;
             case (uint)AID.BrightAurora1:
             case (uint)AID.BrightAurora2:
-
                 if (caster.FindStatus((uint)SID.AstralEssence) != null)
                     AddAOE();
                 break;
@@ -33,10 +32,10 @@ class BrightDarkAurora(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BrightDarkAuroraCounter(BossModule module) : Components.CastCounterMulti(module, [ActionID.MakeSpell(AID.DarkAurora1), ActionID.MakeSpell(AID.BrightAurora1),
-ActionID.MakeSpell(AID.DarkAurora2), ActionID.MakeSpell(AID.BrightAurora2)]);
+sealed class BrightDarkAuroraCounter(BossModule module) : Components.CastCounterMulti(module, [(uint)AID.DarkAurora1, (uint)AID.BrightAurora1,
+(uint)AID.DarkAurora2, (uint)AID.BrightAurora2]);
 
-class AstralUmbralRays(BossModule module) : Components.GenericAOEs(module)
+sealed class AstralUmbralRays(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(16f);
     public readonly List<AOEInstance> _aoes = new(9);

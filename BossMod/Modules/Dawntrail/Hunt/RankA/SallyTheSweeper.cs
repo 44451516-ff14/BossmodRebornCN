@@ -23,9 +23,9 @@ public enum AID : uint
     ReverseCodeCircleFirst = 38459 // Boss->self, 5.0s cast, range 10 circle
 }
 
-class TargetedAdvance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TargetedAdvance), 18f);
+sealed class TargetedAdvance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TargetedAdvance, 18f);
 
-class ExecutionModel(BossModule module) : Components.GenericAOEs(module)
+sealed class ExecutionModel(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(10f, 40f);
@@ -110,7 +110,7 @@ class ExecutionModel(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SallyTheSweeperStates : StateMachineBuilder
+sealed class SallyTheSweeperStates : StateMachineBuilder
 {
     public SallyTheSweeperStates(BossModule module) : base(module)
     {
@@ -121,4 +121,4 @@ class SallyTheSweeperStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13435)]
-public class SallyTheSweeper(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class SallyTheSweeper(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

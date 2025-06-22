@@ -20,16 +20,16 @@ public enum AID : uint
     SanctifiedHoly2 = 17604, // 2A0C->location, 4.0s cast, range 6 circle
 }
 
-class SanctifiedHoly1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedHoly1), 8);
-class SanctifiedHoly2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedHoly2), 6);
-class ForceOfRestraint(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ForceOfRestraint), new AOEShapeRect(60, 2));
-class HolyBlur(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HolyBlur));
-class Focus(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.Focus), 2);
-class TemperedVirtue(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TemperedVirtue), 15);
-class WaterAndWine(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WaterAndWine), new AOEShapeDonut(6, 12));
-class SanctifiedStone(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.SanctifiedStone), 5, 1);
+class SanctifiedHoly1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedHoly1, 8f);
+class SanctifiedHoly2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedHoly2, 6f);
+class ForceOfRestraint(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ForceOfRestraint, new AOEShapeRect(60f, 2f));
+class HolyBlur(BossModule module) : Components.RaidwideCast(module, (uint)AID.HolyBlur);
+class Focus(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.Focus, 2f);
+class TemperedVirtue(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TemperedVirtue, 15f);
+class WaterAndWine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaterAndWine, new AOEShapeDonut(6f, 12f));
+class SanctifiedStone(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.SanctifiedStone, 5f, 1);
 
-class SanctifiedAero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedAero1), new AOEShapeRect(40.5f, 3));
+class SanctifiedAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedAero1, new AOEShapeRect(40.5f, 3f));
 
 class Repose(BossModule module) : BossComponent(module)
 {
@@ -37,7 +37,7 @@ class Repose(BossModule module) : BossComponent(module)
     {
         static bool SleepProof(Actor a)
         {
-            if (a.Statuses.Any(x => x.ID is 1967 or 1968))
+            if (a.Statuses.Any(x => x.ID is 1967u or 1968u))
                 return true;
 
             return a.PendingStatuses.Any(s => s.StatusId == 3);
@@ -56,7 +56,7 @@ class SophrosyneStates : StateMachineBuilder
             .ActivateOnEnter<HolyBlur>()
             .ActivateOnEnter<Focus>()
             .ActivateOnEnter<Repose>()
-            .Raw.Update = () => module.Enemies(OID.BossP2).Any(x => x.IsTargetable) || module.WorldState.CurrentCFCID != 673;
+            .Raw.Update = () => module.Enemies((uint)OID.BossP2).Any(x => x.IsTargetable) || module.WorldState.CurrentCFCID != 673;
         TrivialPhase(1)
             .ActivateOnEnter<SanctifiedAero>()
             .ActivateOnEnter<SanctifiedStone>()
@@ -65,7 +65,7 @@ class SophrosyneStates : StateMachineBuilder
             .ActivateOnEnter<ForceOfRestraint>()
             .ActivateOnEnter<SanctifiedHoly1>()
             .ActivateOnEnter<SanctifiedHoly2>()
-            .Raw.Update = () => module.Enemies(OID.BossP2).All(x => x.IsDeadOrDestroyed) || module.WorldState.CurrentCFCID != 673;
+            .Raw.Update = () => module.Enemies((uint)OID.BossP2).All(x => x.IsDeadOrDestroyed) || module.WorldState.CurrentCFCID != 673;
     }
 }
 

@@ -28,16 +28,12 @@ public enum AID : uint
     Telega = 9630, // Mandragoras->self, no cast, single-target, bonus add disappear
 }
 
-class Ram(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Ram));
-class SaibaiMandragora(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SaibaiMandragora), "Calls adds");
-class LeafDagger(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LeafDagger), 3f);
+class Ram(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Ram);
+class SaibaiMandragora(BossModule module) : Components.CastHint(module, (uint)AID.SaibaiMandragora, "Calls adds");
+class LeafDagger(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LeafDagger, 3f);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
 class GymnasiouMandragorasStates : StateMachineBuilder
 {
@@ -47,11 +43,7 @@ class GymnasiouMandragorasStates : StateMachineBuilder
             .ActivateOnEnter<Ram>()
             .ActivateOnEnter<SaibaiMandragora>()
             .ActivateOnEnter<LeafDagger>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(GymnasiouMandragoras.All);

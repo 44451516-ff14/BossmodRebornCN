@@ -261,7 +261,7 @@ class P3ApocalypseSpiritTaker(BossModule module) : SpiritTaker(module)
     }
 }
 
-class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.DarkEruption, ActionID.MakeSpell(AID.DarkEruption), 6, 5.1f)
+class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.DarkEruption, (uint)AID.DarkEruption, 6, 5.1f)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P3Apocalypse? _apoc = module.FindComponent<P3Apocalypse>();
@@ -334,7 +334,7 @@ class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(mo
     }
 }
 
-class P3DarkestDanceBait(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.DarkestDanceBait), centerAtTarget: true)
+class P3DarkestDanceBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DarkestDanceBait, centerAtTarget: true)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -363,7 +363,7 @@ class P3DarkestDanceBait(BossModule module) : Components.GenericBaitAway(module,
     }
 }
 
-class P3DarkestDanceKnockback(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.DarkestDanceKnockback), true)
+class P3DarkestDanceKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DarkestDanceKnockback, true)
 {
     public Actor? Caster;
     public DateTime Activation;

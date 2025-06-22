@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C021Shishio;
 
-abstract class LightningBolt(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f);
-class NLightningBolt(BossModule module) : LightningBolt(module, AID.NLightningBoltAOE);
-class SLightningBolt(BossModule module) : LightningBolt(module, AID.SLightningBoltAOE);
+abstract class LightningBolt(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6f);
+class NLightningBolt(BossModule module) : LightningBolt(module, (uint)AID.NLightningBoltAOE);
+class SLightningBolt(BossModule module) : LightningBolt(module, (uint)AID.SLightningBoltAOE);
 
 class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
 {
@@ -19,14 +19,14 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1.4d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1.4d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

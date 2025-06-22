@@ -31,19 +31,19 @@ public enum IconID : uint
     Spreadmarker = 311 // player->self
 }
 
-abstract class HallowedWings(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50f, 11f));
-class HallowedWings1(BossModule module) : HallowedWings(module, AID.HallowedWings1);
-class HallowedWings2(BossModule module) : HallowedWings(module, AID.HallowedWings2);
+abstract class HallowedWings(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50f, 11f));
+class HallowedWings1(BossModule module) : HallowedWings(module, (uint)AID.HallowedWings1);
+class HallowedWings2(BossModule module) : HallowedWings(module, (uint)AID.HallowedWings2);
 
-class Wyrmclaw(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Wyrmclaw));
-class HolyStorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HolyStorm));
-class DiamondStorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DiamondStorm));
+class Wyrmclaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Wyrmclaw);
+class HolyStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.HolyStorm);
+class DiamondStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.DiamondStorm);
 
-abstract class Dive(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 10f));
-class HallowedDive(BossModule module) : Dive(module, AID.HallowedDive);
-class FrigidDive(BossModule module) : Dive(module, AID.FrigidDive);
+abstract class Dive(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 10f));
+class HallowedDive(BossModule module) : Dive(module, (uint)AID.HallowedDive);
+class FrigidDive(BossModule module) : Dive(module, (uint)AID.FrigidDive);
 
-class FrostedOrb(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FrostedOrb), 6f);
+class FrostedOrb(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrostedOrb, 6f);
 
 class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
@@ -100,7 +100,7 @@ class HolyOrb(BossModule module) : Components.Exaflare(module, 6f)
     }
 }
 
-class HolyBreath(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.HolyBreath), 6f, 6f);
+class HolyBreath(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.HolyBreath, 6f, 6f);
 
 class ThinIce(BossModule module) : Components.ThinIce(module, 11f, true, stopAtWall: true)
 {

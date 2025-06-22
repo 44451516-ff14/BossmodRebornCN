@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class Ex1ValigarmandaStates : StateMachineBuilder
+sealed class Ex1ValigarmandaStates : StateMachineBuilder
 {
     public Ex1ValigarmandaStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase);
+        DeathPhase(default, SinglePhase);
     }
 
     private void SinglePhase(uint id)
@@ -21,10 +21,10 @@ class Ex1ValigarmandaStates : StateMachineBuilder
         RuinForetold(id + 0x90000, 3.3f);
         Tulidisaster(id + 0xA0000, 7.7f);
 
-        Dictionary<AID, (uint seqID, Action<uint> buildState)> fork = new()
+        Dictionary<uint, (uint seqID, Action<uint> buildState)> fork = new()
         {
-            [AID.SkyruinIce] = ((id >> 24) + 1, ForkIceThunder),
-            [AID.SkyruinThunder] = ((id >> 24) + 2, ForkThunderIce)
+            [(uint)AID.SkyruinIce] = ((id >> 24) + 1, ForkIceThunder),
+            [(uint)AID.SkyruinThunder] = ((id >> 24) + 2, ForkThunderIce)
         };
         CastStartFork(id + 0xB0000, fork, 3.5f, "Ice -or- Thunder");
     }
@@ -80,7 +80,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private State FireSkyruin(uint id, float delay)
     {
-        Cast(id, AID.SkyruinFire, delay, 6);
+        Cast(id, (uint)AID.SkyruinFire, delay, 6);
         return ComponentCondition<SkyruinFire>(id + 0x10, 5.5f, comp => comp.NumCasts > 0, "Raidwide + Fire start")
             .ActivateOnEnter<SkyruinFire>()
             .DeactivateOnExit<SkyruinFire>()
@@ -89,7 +89,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void IceSkyruin(uint id, float delay)
     {
-        Cast(id, AID.SkyruinIce, delay, 6);
+        Cast(id, (uint)AID.SkyruinIce, delay, 6);
         ComponentCondition<SkyruinIce>(id + 0x10, 5.5f, comp => comp.NumCasts > 0, "Raidwide + Ice start")
             .ActivateOnEnter<SkyruinIce>()
             .DeactivateOnExit<SkyruinIce>()
@@ -98,7 +98,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void ThunderSkyruin(uint id, float delay)
     {
-        Cast(id, AID.SkyruinThunder, delay, 6);
+        Cast(id, (uint)AID.SkyruinThunder, delay, 6);
         ComponentCondition<SkyruinThunder>(id + 0x10, 5.5f, comp => comp.NumCasts > 0, "Raidwide + Thunder start")
             .ActivateOnEnter<SkyruinThunder>()
             .DeactivateOnExit<SkyruinThunder>()
@@ -107,7 +107,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void SpikesicleFireSkyruin(uint id, float delay)
     {
-        CastStart(id, AID.Spikesicle, delay)
+        CastStart(id, (uint)AID.Spikesicle, delay)
             .ActivateOnEnter<Spikesicle>(); // first envcontrol happens right before cast start
         CastEnd(id + 1, 10);
         ComponentCondition<Spikesicle>(id + 0x10, 1.3f, comp => comp.NumCasts > 0, "Curves start"); // every 1.2s after
@@ -122,7 +122,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void Triscourge(uint id, float delay)
     {
-        Cast(id, AID.Triscourge, delay, 3, "Raidwide")
+        Cast(id, (uint)AID.Triscourge, delay, 3, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -201,7 +201,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private State FireStance(uint id, float delay)
     {
-        CastMulti(id, [AID.SusurrantBreathFire, AID.SlitheringStrikeFire, AID.StranglingCoilFire], delay, 6.5f)
+        CastMulti(id, [(uint)AID.SusurrantBreathFire, (uint)AID.SlitheringStrikeFire, (uint)AID.StranglingCoilFire], delay, 6.5f)
             .ActivateOnEnter<Stance>()
             .ActivateOnEnter<CharringCataclysm>();
         ComponentCondition<Stance>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Cone/out/in")
@@ -212,7 +212,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private State IceStance(uint id, float delay, string castEndName = "")
     {
-        CastMulti(id, [AID.SusurrantBreathIce, AID.SlitheringStrikeIce, AID.StranglingCoilIce], delay, 6.5f, castEndName)
+        CastMulti(id, [(uint)AID.SusurrantBreathIce, (uint)AID.SlitheringStrikeIce, (uint)AID.StranglingCoilIce], delay, 6.5f, castEndName)
             .ActivateOnEnter<Stance>();
         ComponentCondition<Stance>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Cone/out/in")
             .DeactivateOnExit<Stance>();
@@ -223,7 +223,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void ThunderStance(uint id, float delay)
     {
-        CastMulti(id, [AID.SusurrantBreathThunder, AID.SlitheringStrikeThunder, AID.StranglingCoilThunder], delay, 6.5f)
+        CastMulti(id, [(uint)AID.SusurrantBreathThunder, (uint)AID.SlitheringStrikeThunder, (uint)AID.StranglingCoilThunder], delay, 6.5f)
             .ActivateOnEnter<Stance>();
         ComponentCondition<Stance>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Cone/out/in")
             .DeactivateOnExit<Stance>();
@@ -235,7 +235,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void MountainFire(uint id, float delay)
     {
-        Cast(id, AID.MountainFire, delay, 4);
+        Cast(id, (uint)AID.MountainFire, delay, 4);
         ComponentCondition<MountainFire>(id + 0x10, 5.6f, comp => comp.NumCasts >= 1, "Towers/cones 1")
             .ActivateOnEnter<MountainFire>()
             .ActivateOnEnter<MountainFireCone>();
@@ -267,7 +267,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void FireDisasterZone(uint id, float delay)
     {
-        Cast(id, AID.DisasterZoneFire, delay, 3);
+        Cast(id, (uint)AID.DisasterZoneFire, delay, 3);
         ComponentCondition<DisasterZoneFire>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<DisasterZoneFire>()
             .DeactivateOnExit<DisasterZoneFire>()
@@ -276,7 +276,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void IceDisasterZone(uint id, float delay)
     {
-        Cast(id, AID.DisasterZoneIce, delay, 3);
+        Cast(id, (uint)AID.DisasterZoneIce, delay, 3);
         ComponentCondition<DisasterZoneIce>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<DisasterZoneIce>()
             .DeactivateOnExit<DisasterZoneIce>()
@@ -285,7 +285,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void ThunderDisasterZone(uint id, float delay)
     {
-        Cast(id, AID.DisasterZoneThunder, delay, 3);
+        Cast(id, (uint)AID.DisasterZoneThunder, delay, 3);
         ComponentCondition<DisasterZoneThunder>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<DisasterZoneThunder>()
             .DeactivateOnExit<DisasterZoneThunder>()
@@ -303,7 +303,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void IceSpikesicleNorthernCross(uint id, float delay)
     {
-        CastStart(id, AID.Spikesicle, delay)
+        CastStart(id, (uint)AID.Spikesicle, delay)
             .ActivateOnEnter<Spikesicle>(); // first envcontrol happens right before cast start
         CastEnd(id + 1, 10);
         ComponentCondition<Spikesicle>(id + 0x10, 1.3f, comp => comp.NumCasts > 0, "Curves start"); // every 1.2s after
@@ -323,7 +323,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
     {
         IceStance(id, delay)
             .ActivateOnEnter<NorthernCross>(); // env control happens ~1.7s after stance resolve
-        CastStart(id + 0x10, AID.FreezingDust, 3.8f);
+        CastStart(id + 0x10, (uint)AID.FreezingDust, 3.8f);
         ComponentCondition<NorthernCross>(id + 0x11, 0.9f, comp => comp.NumCasts > 0, "Avalanche")
             .DeactivateOnExit<NorthernCross>();
         CastEnd(id + 0x12, 4.0f, "Start moving")
@@ -340,7 +340,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void IceTalon(uint id, float delay)
     {
-        CastStart(id, AID.IceTalon, delay)
+        CastStart(id, (uint)AID.IceTalon, delay)
             .ActivateOnEnter<IceTalon>(); // icons appear ~0.1s before cast start
         CastEnd(id + 1, 4);
         ComponentCondition<IceTalon>(id + 2, 1, comp => comp.NumCasts > 0, "Tankbusters")
@@ -350,7 +350,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void ThunderHailOfFeathers(uint id, float delay)
     {
-        Cast(id, AID.HailOfFeathers, delay, 4)
+        Cast(id, (uint)AID.HailOfFeathers, delay, 4)
             .ActivateOnEnter<HailOfFeathers>();
         ComponentCondition<HailOfFeathers>(id + 0x10, 2, comp => comp.NumCasts >= 1, "Feather 1");
         ComponentCondition<HailOfFeathers>(id + 0x20, 3, comp => comp.NumCasts >= 2, "Feather 2")
@@ -361,7 +361,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
         ComponentCondition<HailOfFeathers>(id + 0x60, 3, comp => comp.NumCasts >= 6, "Feather 6")
             .DeactivateOnExit<HailOfFeathers>();
 
-        Cast(id + 0x100, AID.BlightedBolt, 4.3f, 5)
+        Cast(id + 0x100, (uint)AID.BlightedBolt, 4.3f, 5)
             .ActivateOnEnter<ThunderPlatform>()
             .ActivateOnEnter<BlightedBolt>();
         ComponentCondition<BlightedBolt>(id + 0x110, 0.8f, comp => comp.NumCasts > 0, "Feathers explode")
@@ -375,7 +375,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
         ComponentCondition<ArcaneLighning>(id, delay, comp => comp.AOEs.Count > 0)
             .ActivateOnEnter<ThunderPlatform>()
             .ActivateOnEnter<ArcaneLighning>();
-        Cast(id + 0x10, AID.ThunderousBreath, 0.7f, 7)
+        Cast(id + 0x10, (uint)AID.ThunderousBreath, 0.7f, 7)
             .ActivateOnEnter<ThunderousBreath>();
         ComponentCondition<ThunderousBreath>(id + 0x20, 0.9f, comp => comp.NumCasts > 0)
             .DeactivateOnExit<ThunderousBreath>()
@@ -386,7 +386,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void ThunderRuinfall(uint id, float delay)
     {
-        Cast(id, AID.Ruinfall, delay, 4)
+        Cast(id, (uint)AID.Ruinfall, delay, 4)
             .ActivateOnEnter<RuinfallTower>()
             .ActivateOnEnter<RuinfallKnockback>()
             .ActivateOnEnter<RuinfallAOE>();
@@ -401,7 +401,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void RuinForetold(uint id, float delay)
     {
-        Cast(id, AID.RuinForetold, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.RuinForetold, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         Targetable(id + 0x10, false, 0.9f, "Boss disappears");
         ComponentCondition<Beacons>(id + 0x11, 1.0f, comp => comp.ActiveActors.Any(), "Adds appear")
@@ -417,7 +417,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void Tulidisaster(uint id, float delay)
     {
-        Cast(id, AID.Tulidisaster, delay, 7);
+        Cast(id, (uint)AID.Tulidisaster, delay, 7);
         ComponentCondition<Tulidisaster1>(id + 0x10, 3.2f, comp => comp.NumCasts > 0, "Raidwide 1")
             .ActivateOnEnter<Tulidisaster1>()
             .DeactivateOnExit<Tulidisaster1>()
@@ -434,7 +434,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void WrathUnfurled(uint id, float delay)
     {
-        Cast(id, AID.WrathUnfurled, delay, 4);
+        Cast(id, (uint)AID.WrathUnfurled, delay, 4);
         ComponentCondition<WrathUnfurled>(id + 2, 3.3f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<WrathUnfurled>()
             .DeactivateOnExit<WrathUnfurled>()
@@ -443,7 +443,7 @@ class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void Enrage(uint id, float delay)
     {
-        Cast(id, AID.TulidisasterEnrage, delay, 7);
+        Cast(id, (uint)AID.TulidisasterEnrage, delay, 7);
         ComponentCondition<TulidisasterEnrage1>(id + 0x10, 3.2f, comp => comp.NumCasts > 0, "Raidwide 1")
             .ActivateOnEnter<TulidisasterEnrage1>()
             .DeactivateOnExit<TulidisasterEnrage1>()

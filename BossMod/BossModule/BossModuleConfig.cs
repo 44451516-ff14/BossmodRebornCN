@@ -1,7 +1,9 @@
 ﻿namespace BossMod;
 
+
 [ConfigDisplay(Name = "BOSS模块和雷达", Order = 1)]
-public class BossModuleConfig : ConfigNode
+
+public sealed class BossModuleConfig : ConfigNode
 {
     // BOSS模块设置
     [PropertyDisplay("模块加载的最低完成度", tooltip: "部分模块带有\"WIP\"（开发中）状态，修改此设置可强制加载这些模块")]

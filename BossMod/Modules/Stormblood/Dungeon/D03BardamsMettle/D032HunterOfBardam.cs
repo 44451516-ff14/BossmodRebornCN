@@ -2,8 +2,8 @@ namespace BossMod.Stormblood.Dungeon.D03BardamsMettle.D032HunterOfBardam;
 
 public enum OID : uint
 {
-    Boss = 0x1AA5, // R2.200, x1
-    Bardam = 0x1AA3, // R15.000, x1
+    Boss = 0x1AA5, // R2.2
+    Bardam = 0x1AA3, // R15.0
     ThrowingSpear = 0x1F49, // R1.25
     StarShard = 0x1F4A, // R2.4
     LoomingShadow = 0x1F4D, // R1.0
@@ -50,11 +50,28 @@ public enum IconID : uint
     ChasingAOE = 197 // player
 }
 
-class Comet(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4f), ActionID.MakeSpell(AID.CometFirst), ActionID.MakeSpell(AID.CometRest), 10f, 1.5f, 9, true, (uint)IconID.ChasingAOE);
-class CometFirst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CometFirst), 4f);
-class CometRest(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CometRest), 4f);
+class CometChase(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.CometFirst, (uint)AID.CometRest, 10f, 1.5f, 9, true, (uint)IconID.ChasingAOE)
+{
+    public override void OnEventCast(Actor caster, ActorCastEvent spell) { }
 
-class MeteorImpact(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.MeteorImpact), 50f, safeInsideHitbox: false)
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        base.OnCastStarted(caster, spell);
+        if (spell.Action.ID is var id && id == ActionFirst || id == ActionRest)
+        {
+            Advance(spell.LocXZ, MoveDistance, WorldState.CurrentTime);
+            if (Chasers.Count == 0)
+            {
+                ExcludedTargets = default;
+                NumCasts = 0;
+            }
+        }
+    }
+}
+
+class CometAOE(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CometFirst, (uint)AID.CometRest], 4f);
+
+class MeteorImpact(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.MeteorImpact, 50f, safeInsideHitbox: false)
 {
     private DateTime activation;
 
@@ -76,7 +93,7 @@ class MeteorImpact(BossModule module) : Components.CastLineOfSightAOE(module, Ac
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             Casters.Add(caster);
             activation = Module.CastFinishAt(spell);
@@ -93,12 +110,12 @@ class MeteorImpact(BossModule module) : Components.CastLineOfSightAOE(module, Ac
     }
 }
 
-class Charge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Charge), new AOEShapeRect(46.25f, 2.5f));
-class EmptyGaze(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.EmptyGaze));
-class Sacrifice(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.Sacrifice), 3f);
-class Reconstruct(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Reconstruct), 5f);
-class CometImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CometImpact), 9f);
-class BardamsRing(BossModule module) : Components.DonutStack(module, ActionID.MakeSpell(AID.BardamsRing), (uint)IconID.BardamsRing, 10f, 20f, 3.5f, 4, 4);
+class Charge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Charge, new AOEShapeRect(46.25f, 2.5f));
+class EmptyGaze(BossModule module) : Components.CastGaze(module, (uint)AID.EmptyGaze);
+class Sacrifice(BossModule module) : Components.CastTowers(module, (uint)AID.Sacrifice, 3f);
+class Reconstruct(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Reconstruct, 5f);
+class CometImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CometImpact, 9f);
+class BardamsRing(BossModule module) : Components.DonutStack(module, (uint)AID.BardamsRing, (uint)IconID.BardamsRing, 10f, 20f, 3.5f, 4, 4);
 
 class Tremblor(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -125,7 +142,7 @@ class Tremblor(BossModule module) : Components.ConcentricAOEs(module, _shapes)
     }
 }
 
-class TremblorFinal(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tremblor2), new AOEShapeDonut(10f, 20f))
+class TremblorFinal(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tremblor2, new AOEShapeDonut(10f, 20f))
 {
     private readonly Tremblor _aoe = module.FindComponent<Tremblor>()!;
 
@@ -167,9 +184,8 @@ class D032HunterOfBardamStates : StateMachineBuilder
     public D032HunterOfBardamStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Comet>()
-            .ActivateOnEnter<CometFirst>()
-            .ActivateOnEnter<CometRest>()
+            .ActivateOnEnter<CometChase>()
+            .ActivateOnEnter<CometAOE>()
             .ActivateOnEnter<Tremblor>()
             .ActivateOnEnter<TremblorFinal>()
             .ActivateOnEnter<HeavyStrike>()

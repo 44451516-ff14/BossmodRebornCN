@@ -45,7 +45,7 @@ public enum AID : uint
     Telega = 9630 // Mandragoras->self, no cast, single-target, bonus adds disappear
 }
 
-class Earthquake(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.EarthquakeVisual), ActionID.MakeSpell(AID.Earthquake), 1.2f);
+class Earthquake(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.EarthquakeVisual, (uint)AID.Earthquake, 1.2f);
 
 class HeavyStrike(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -74,21 +74,21 @@ class HeavyStrike(BossModule module) : Components.ConcentricAOEs(module, _shapes
     }
 }
 
-class PollenCorona(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PollenCorona), 8f);
-class StraightPunch(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.StraightPunch));
-class Leafcutter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Leafcutter), new AOEShapeRect(15f, 2f));
-class EarthCrusher(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EarthCrusher2), new AOEShapeDonut(10f, 20f));
+class PollenCorona(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PollenCorona, 8f);
+class StraightPunch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StraightPunch);
+class Leafcutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Leafcutter, new AOEShapeRect(15f, 2f));
+class EarthCrusher(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthCrusher2, new AOEShapeDonut(10f, 20f));
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+abstract class Mandragoras(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6.84f);
+class PluckAndPrune(BossModule module) : Mandragoras(module, (uint)AID.PluckAndPrune);
+class TearyTwirl(BossModule module) : Mandragoras(module, (uint)AID.TearyTwirl);
+class HeirloomScream(BossModule module) : Mandragoras(module, (uint)AID.HeirloomScream);
+class PungentPirouette(BossModule module) : Mandragoras(module, (uint)AID.PungentPirouette);
+class Pollen(BossModule module) : Mandragoras(module, (uint)AID.Pollen);
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretBasketStates : StateMachineBuilder
 {

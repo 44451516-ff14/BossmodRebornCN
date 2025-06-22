@@ -99,6 +99,7 @@ public record struct WPos(float X, float Z)
     public readonly WPos Rounded() => new(MathF.Round(X), MathF.Round(Z));
     public readonly WPos Rounded(float precision) => Scaled(1f / precision).Rounded().Scaled(precision);
     public static WPos Lerp(WPos from, WPos to, float progress) => new(from.ToVec2() * (1f - progress) + to.ToVec2() * progress);
+
     public static WPos ClampToGrid(WPos coord) // AOEs are getting clamped to a grid, if spell.LocXZ can't be used, you can correct the position with this method
     {
         const float gridSize = (float)(2000.0d / 65535.0d);
@@ -144,8 +145,15 @@ public record struct WPos(float X, float Z)
     public readonly bool InRect(WPos origin, WDir startToEnd, float halfWidth)
     {
         var len = startToEnd.Length();
-        return InRect(origin, startToEnd / len, len, 0, halfWidth);
+        return InRect(origin, startToEnd / len, len, default, halfWidth);
     }
+    public readonly bool InRect(WPos origin, WPos end, float halfWidth)
+    {
+        return InRect(origin, end - origin, halfWidth);
+    }
+    public readonly bool InSquare(WPos origin, float halfWidth) => (this - origin).InRect(new(default, 1f), halfWidth, halfWidth, halfWidth);
+    public readonly bool InSquare(WPos origin, float halfWidth, Angle rotation) => (this - origin).InRect(rotation.ToDirection(), halfWidth, halfWidth, halfWidth);
+    public readonly bool InSquare(WPos origin, float halfWidth, WDir rotation) => (this - origin).InRect(rotation, halfWidth, halfWidth, halfWidth);
 
     public readonly bool InCross(WPos origin, Angle direction, float length, float halfWidth) => (this - origin).InCross(direction.ToDirection(), length, halfWidth);
     public readonly bool InCross(WPos origin, WDir direction, float length, float halfWidth) => (this - origin).InCross(direction, length, halfWidth);

@@ -17,11 +17,11 @@ public enum AID : uint
     FangedLunge = 27274 // Boss->player, no cast, single-target
 }
 
-class EnergyWave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EnergyWave), new AOEShapeRect(40, 7));
-class TailSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSwipe), new AOEShapeCone(25, 45.Degrees()));
-class HeavyStomp(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavyStomp), 17);
-class SonicHowl(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SonicHowl));
-class SteelFang(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SteelFang));
+class EnergyWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EnergyWave, new AOEShapeRect(40, 7));
+class TailSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSwipe, new AOEShapeCone(25, 45.Degrees()));
+class HeavyStomp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavyStomp, 17);
+class SonicHowl(BossModule module) : Components.RaidwideCast(module, (uint)AID.SonicHowl);
+class SteelFang(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SteelFang);
 
 class ArchEtaStates : StateMachineBuilder
 {

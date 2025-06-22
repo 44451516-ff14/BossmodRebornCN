@@ -39,7 +39,7 @@ public enum AID : uint
     Electray = 38320 // Helper->player, 8.0s cast, range 5 circle
 }
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private const float HalfWidth = 5.5f; // adjusted for 0.5 player hitbox
     public static readonly WPos ArenaCenter = new(-172f, -142f);
@@ -87,11 +87,11 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001)
+        if (state == 0x00020001u)
         {
             if (ArenaBoundsMap.TryGetValue(index, out var value))
                 Arena.Bounds = value;
-            else if (index == 0x12)
+            else if (index == 0x12u)
             {
                 Arena.Bounds = defaultBounds;
                 _aoe = null;
@@ -102,19 +102,19 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Electrowave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Electrowave));
-class BionicThrash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BionicThrash), new AOEShapeCone(30f, 45f.Degrees()));
-class Synchroshot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SynchroshotReal), new AOEShapeRect(40f, 2f));
-class InitializeTurrets(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InitializeTurretsReal), new AOEShapeRect(4f, 5f));
-class LaserLash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LaserLashReal), new AOEShapeRect(40f, 5f));
-class Electray(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Electray), 5f);
+sealed class Electrowave(BossModule module) : Components.RaidwideCast(module, (uint)AID.Electrowave);
+sealed class BionicThrash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BionicThrash, new AOEShapeCone(30f, 45f.Degrees()));
+sealed class Synchroshot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SynchroshotReal, new AOEShapeRect(40f, 2f));
+sealed class InitializeTurrets(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InitializeTurretsReal, new AOEShapeRect(4f, 5f));
+sealed class LaserLash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LaserLashReal, new AOEShapeRect(40f, 5f));
+sealed class Electray(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Electray, 5f);
 
-class Surge(BossModule module) : Components.GenericKnockback(module)
+sealed class Surge(BossModule module) : Components.GenericKnockback(module)
 {
     public readonly List<Knockback> SourcesList = new(2);
     private const float XWest = -187.5f, XEast = -156.5f;
     private const float ZRow1 = -122f, ZRow2 = -132f, ZRow3 = -142f, ZRow4 = -152f, ZRow5 = -162f;
-    private static readonly WDir offset = new(4f, 0f);
+    private static readonly WDir offset = new(4f, default);
     private static readonly SafeWall[] walls2A1B = [new(new(XWest, ZRow3), new(XWest, ZRow4)), new(new(XWest, ZRow1), new(XWest, ZRow2)),
     new(new(XEast, ZRow4), new(XEast, ZRow5)), new(new(XEast, ZRow2), new(XEast, ZRow3))];
     private static readonly SafeWall[] walls2C1E = [new(new(XWest, ZRow3), new(XWest, ZRow4)), new(new(XWest, ZRow2), new(XWest, ZRow3)),
@@ -182,9 +182,8 @@ class Surge(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class SurgeHint(BossModule module) : Components.GenericAOEs(module)
+sealed class SurgeHint(BossModule module) : Components.GenericAOEs(module)
 {
-    private const string Hint = "Wait inside safespot for knockback!";
     private static readonly AOEShapeRect rect = new(15.5f, 5);
     private readonly List<AOEInstance> _hints = new(4);
     private readonly Surge _kb = module.FindComponent<Surge>()!;
@@ -200,7 +199,7 @@ class SurgeHint(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < 4; ++i)
             {
                 var safewall = activeSafeWalls[i].Vertex1;
-                _hints.Add(new(rect, new(centerX, safewall.Z - 5f), safewall.X == -187.5f ? -90.Degrees() : 90.Degrees(), default, Colors.SafeFromAOE, false));
+                _hints.Add(new(rect, new(centerX, safewall.Z - 5f), (safewall.X == -187.5f ? -1f : 1f) * 90f.Degrees(), default, Colors.SafeFromAOE, false));
             }
         }
     }
@@ -225,12 +224,12 @@ class SurgeHint(BossModule module) : Components.GenericAOEs(module)
                     break;
                 }
             }
-            hints.Add(Hint, !isPositionSafe);
+            hints.Add("Wait inside safespot for knockback!", !isPositionSafe);
         }
     }
 }
 
-class D052DeceiverStates : StateMachineBuilder
+sealed class D052DeceiverStates : StateMachineBuilder
 {
     public D052DeceiverStates(BossModule module) : base(module)
     {
@@ -248,7 +247,7 @@ class D052DeceiverStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12693, SortOrder = 3)]
-public class D052Deceiver(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChanges.ArenaCenter, ArenaChanges.StartingBounds)
+public sealed class D052Deceiver(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChanges.ArenaCenter, ArenaChanges.StartingBounds)
 {
     private static readonly uint[] adds = [(uint)OID.OrigenicsSentryG92, (uint)OID.OrigenicsSentryG91];
 

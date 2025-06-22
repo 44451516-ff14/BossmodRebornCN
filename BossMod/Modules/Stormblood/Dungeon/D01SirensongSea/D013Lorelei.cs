@@ -51,7 +51,7 @@ class VirginTearsArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MorbidAdvance(BossModule module) : Components.ActionDrivenForcedMarch(module, ActionID.MakeSpell(AID.MorbidAdvance), 3f, default, 1f)
+class MorbidAdvance(BossModule module) : Components.ActionDrivenForcedMarch(module, (uint)AID.MorbidAdvance, 3f, default, 1f)
 {
     private readonly Voidzone _aoe = module.FindComponent<Voidzone>()!;
 
@@ -68,7 +68,7 @@ class MorbidAdvance(BossModule module) : Components.ActionDrivenForcedMarch(modu
     }
 }
 
-class MorbidRetreat(BossModule module) : Components.ActionDrivenForcedMarch(module, ActionID.MakeSpell(AID.MorbidRetreat), 3f, 180f.Degrees(), 1f)
+class MorbidRetreat(BossModule module) : Components.ActionDrivenForcedMarch(module, (uint)AID.MorbidRetreat, 3f, 180f.Degrees(), 1f)
 {
     private readonly Voidzone _aoe = module.FindComponent<Voidzone>()!;
 
@@ -85,8 +85,8 @@ class MorbidRetreat(BossModule module) : Components.ActionDrivenForcedMarch(modu
     }
 }
 
-class SomberMelody(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SomberMelody));
-class VoidWaterIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidWaterIII), 8f);
+class SomberMelody(BossModule module) : Components.RaidwideCast(module, (uint)AID.SomberMelody);
+class VoidWaterIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidWaterIII, 8f);
 class Voidzone(BossModule module) : Components.Voidzone(module, 7f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)

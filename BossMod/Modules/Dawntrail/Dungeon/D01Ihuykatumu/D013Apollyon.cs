@@ -51,19 +51,16 @@ public enum AID : uint
     BitingWind = 36761 // Helper->player, no cast, single-target
 }
 
-class Whirlwind(BossModule module) : Components.Voidzone(module, 4.5f, GetWhirlwind, 5f)
+sealed class Whirlwind(BossModule module) : Components.Voidzone(module, 4.5f, GetWhirlwind, 5f)
 {
     private static List<Actor> GetWhirlwind(BossModule module) => module.Enemies((uint)OID.Whirlwind);
 }
-class Blade(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Blade));
-class HighWind(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HighWind));
+sealed class Blade(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Blade);
+sealed class HighWind(BossModule module) : Components.RaidwideCast(module, (uint)AID.HighWind);
+sealed class RazorZephyrBladesOfFamine(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RazorZephyr, (uint)AID.BladesOfFamine], new AOEShapeRect(50f, 6f));
 
-abstract class Blades(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50f, 6f));
-class RazorZephyr(BossModule module) : Blades(module, AID.RazorZephyr);
-class BladesOfFamine(BossModule module) : Blades(module, AID.BladesOfFamine);
-
-class Levinsickle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Levinsickle), 4f);
-class LevinsickleSpark(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, ActionID.MakeSpell(AID.LevinsickleSpark), GetVoidzones, 0.7f)
+sealed class Levinsickle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Levinsickle, 4f);
+sealed class LevinsickleSpark(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.LevinsickleSpark, GetVoidzones, 0.7f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -83,15 +80,15 @@ class LevinsickleSpark(BossModule module) : Components.VoidzoneAtCastTarget(modu
         return voidzones[..index];
     }
 }
-class WingOfLightning(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingOfLightning), new AOEShapeCone(40f, 22.5f.Degrees()), 8);
+sealed class WingOfLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingOfLightning, new AOEShapeCone(40f, 22.5f.Degrees()), 8);
 
-class ThunderIII2(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ThunderIII), 6f);
-class BladeTB(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.BladeTB), new AOEShapeCircle(6f), true, tankbuster: true);
+sealed class ThunderIII2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderIII, 6f);
+sealed class BladeTB(BossModule module) : Components.BaitAwayCast(module, (uint)AID.BladeTB, 6f, tankbuster: true);
 
-class WindSickle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindSickle), new AOEShapeDonut(5f, 60f));
-class RazorStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RazorStorm), new AOEShapeRect(40f, 20f));
+sealed class WindSickle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindSickle, new AOEShapeDonut(5f, 60f));
+sealed class RazorStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RazorStorm, new AOEShapeRect(40f, 20f));
 
-class CuttingWind(BossModule module) : Components.GenericAOEs(module)
+sealed class CuttingWind(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(12);
     private static readonly AOEShapeRect rect = new(36f, 4f, 36f);
@@ -134,15 +131,14 @@ class CuttingWind(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D013ApollyonStates : StateMachineBuilder
+sealed class D013ApollyonStates : StateMachineBuilder
 {
     public D013ApollyonStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<RazorZephyr>()
+            .ActivateOnEnter<RazorZephyrBladesOfFamine>()
             .ActivateOnEnter<Blade>()
             .ActivateOnEnter<HighWind>()
-            .ActivateOnEnter<BladesOfFamine>()
             .ActivateOnEnter<Levinsickle>()
             .ActivateOnEnter<LevinsickleSpark>()
             .ActivateOnEnter<WingOfLightning>()
@@ -156,7 +152,7 @@ class D013ApollyonStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 826, NameID = 12711)]
-public class D013Apollyon(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
+public sealed class D013Apollyon(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
     public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(-107f, 265f), 19.5f, 32)], [new Rectangle(new(-107f, 285.75f), 20f, 2f)]);
 }

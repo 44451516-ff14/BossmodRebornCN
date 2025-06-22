@@ -66,7 +66,7 @@ class P3HeavensfallTrio(BossModule module) : BossComponent(module)
     }
 }
 
-class P3HeavensfallTowers(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.MegaflareTower), 3)
+class P3HeavensfallTowers(BossModule module) : Components.CastTowers(module, (uint)AID.MegaflareTower, 3)
 {
     private readonly UCOBConfig _config = Service.Config.Get<UCOBConfig>();
 
@@ -74,7 +74,7 @@ class P3HeavensfallTowers(BossModule module) : Components.CastTowers(module, Act
     {
         base.OnCastStarted(caster, spell);
 
-        if (spell.Action == WatchedAction && Towers.Count == 8)
+        if (spell.Action.ID == WatchedAction && Towers.Count == 8)
         {
             var nael = Module.Enemies(OID.NaelDeusDarnus).FirstOrDefault();
             if (nael != null)
@@ -100,4 +100,4 @@ class P3HeavensfallTowers(BossModule module) : Components.CastTowers(module, Act
     }
 }
 
-class P3HeavensfallFireball(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Fireball, ActionID.MakeSpell(AID.Fireball), 4f, 5.3f, 8, 8);
+class P3HeavensfallFireball(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Fireball, (uint)AID.Fireball, 4f, 5.3f, 8, 8);

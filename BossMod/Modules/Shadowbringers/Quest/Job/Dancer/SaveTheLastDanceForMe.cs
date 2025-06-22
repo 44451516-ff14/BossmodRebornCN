@@ -16,8 +16,8 @@ public enum AID : uint
     BitterLove = 15650, // 2AC9->self, 3.0s cast, range 12 120-degree cone
 }
 
-class Dread(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Dread), 5f);
-class BitterLove(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BitterLove), new AOEShapeCone(12f, 60f.Degrees()));
+class Dread(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dread, 5f);
+class BitterLove(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BitterLove, new AOEShapeCone(12f, 60f.Degrees()));
 class WhelmingLoss(BossModule module) : Components.Exaflare(module, 5f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -47,7 +47,7 @@ class WhelmingLoss(BossModule module) : Components.Exaflare(module, 5f)
     }
 }
 class Adds(BossModule module) : Components.Adds(module, (uint)OID.ShadowySpume);
-class Anguish(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Anguish), 6f);
+class Anguish(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Anguish, 6f);
 
 class ForebodingAura(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones)
 {

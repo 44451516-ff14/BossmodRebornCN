@@ -19,8 +19,8 @@ public enum AID : uint
     Overpower = 720 // ManikinMarauder->self, 2.5s cast, range 6+R 90-degree cone
 }
 
-class Overpower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Overpower), new AOEShapeCone(6.5f, 45f.Degrees()));
-class Rive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Rive), new AOEShapeRect(30.5f, 1f));
+class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(6.5f, 45f.Degrees()));
+class Rive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rive, new AOEShapeRect(30.5f, 1f));
 
 class D080ManikinConjurerStates : StateMachineBuilder
 {

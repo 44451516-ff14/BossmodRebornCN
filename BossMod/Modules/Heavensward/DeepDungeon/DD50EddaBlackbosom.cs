@@ -20,13 +20,13 @@ public enum AID : uint
     TerrorEye = 6405 // DemonButler->location, 4.0s cast, range 6 circle
 }
 
-class BlackHoneymoon(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BlackHoneymoon));
-class ColdFeet(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.ColdFeet));
-class DarkHarvest(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DarkHarvest));
-class Desolation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Desolation), new AOEShapeRect(57.3f, 3f));
-class InHeathCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InHealthCircle), 16f);
-class InHeathDonut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InHealthDonut), new AOEShapeDonut(4.5f, 50f));
-class TerrorEye(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TerrorEye), 6f);
+class BlackHoneymoon(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlackHoneymoon);
+class ColdFeet(BossModule module) : Components.CastGaze(module, (uint)AID.ColdFeet);
+class DarkHarvest(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DarkHarvest);
+class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(57.3f, 3f));
+class InHeathCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InHealthCircle, 16f);
+class InHeathDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InHealthDonut, new AOEShapeDonut(4.5f, 50f));
+class TerrorEye(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TerrorEye, 6f);
 
 class DD50EddaBlackbosomStates : StateMachineBuilder
 {

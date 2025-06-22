@@ -32,11 +32,11 @@ public enum AID : uint
     RavagingRootsRest = 37375 // Boss->self, no cast, range 30 width 6 cross
 }
 
-class Neurotoxify(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Neurotoxify));
-class NoxiousSap1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NoxiousSap1), new AOEShapeCone(40f, 60f.Degrees()));
-class Cocopult(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Cocopult), 5f, 8);
+sealed class Neurotoxify(BossModule module) : Components.RaidwideCast(module, (uint)AID.Neurotoxify);
+sealed class NoxiousSap1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NoxiousSap1, new AOEShapeCone(40f, 60f.Degrees()));
+sealed class Cocopult(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Cocopult, 5f, 8);
 
-class RavagingRoots(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class RavagingRoots(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCross cross = new(30f, 3f);
 
@@ -45,10 +45,10 @@ class RavagingRoots(BossModule module) : Components.GenericRotatingAOE(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.RavagingRootsCW:
-                AddSequence(45f.Degrees());
+                AddSequence(-45f.Degrees());
                 break;
             case (uint)AID.RavagingRootsCCW:
-                AddSequence(-45f.Degrees());
+                AddSequence(45f.Degrees());
                 break;
         }
         void AddSequence(Angle increment) => Sequences.Add(new(cross, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.4f, 8));
@@ -61,7 +61,7 @@ class RavagingRoots(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class SapSpiller(BossModule module) : Components.GenericAOEs(module)
+sealed class SapSpiller(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
     private static readonly Angle a180 = 180f.Degrees(), a90 = 90f.Degrees();
@@ -124,7 +124,7 @@ class SapSpiller(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class NeyoozoteelStates : StateMachineBuilder
+sealed class NeyoozoteelStates : StateMachineBuilder
 {
     public NeyoozoteelStates(BossModule module) : base(module)
     {
@@ -138,4 +138,4 @@ class NeyoozoteelStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 12754)]
-public class Neyoozoteel(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Neyoozoteel(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

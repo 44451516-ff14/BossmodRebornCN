@@ -145,12 +145,12 @@ class Ex3TitanStates : StateMachineBuilder
 
     private void Landslide(uint id, float delay)
     {
-        Cast(id, AID.LandslideBoss, delay, 2.2f, "Landslide");
+        Cast(id, (uint)AID.LandslideBoss, delay, 2.2f, "Landslide");
     }
 
     private void WeightOfTheLand(uint id, float delay, bool twice = false)
     {
-        Cast(id, AID.WeightOfTheLand, delay, 2);
+        Cast(id, (uint)AID.WeightOfTheLand, delay, 2);
         ComponentCondition<WeightOfTheLand>(id + 2, twice ? 3 : 0.5f, comp => comp.Casters.Count == 0, "Puddles", 1, twice ? 1 : 0);
     }
 
@@ -188,7 +188,7 @@ class Ex3TitanStates : StateMachineBuilder
     {
         Targetable(id, false, delay, "Disappear")
             .ActivateOnEnter<Crush>();
-        Cast(id + 0x10, AID.Geocrush, 3.3f, 3, "Geocrush")
+        Cast(id + 0x10, (uint)AID.Geocrush, 3.3f, 3, "Geocrush")
             .DeactivateOnExit<Crush>()
             .OnExit(() => Module.Arena.Bounds = new ArenaBoundsCircle(newRadius), newRadius > 0);
         Targetable(id + 0x20, true, 0.4f, "Reappear");
@@ -202,7 +202,7 @@ class Ex3TitanStates : StateMachineBuilder
         // +5.0s: gaols targetable
         // +6.5s: granite sepulchre cast start
         MountainBuster(id + 0x100, 4.1f);
-        Cast(id + 0x200, AID.Upheaval, 4.1f, 5, "Knockback");
+        Cast(id + 0x200, (uint)AID.Upheaval, 4.1f, 5, "Knockback");
         Landslide(id + 0x300, 2.8f); // note: this gets skipped entirely if there is no one alive and unfettered, e.g. when doing solo
         // granite sepulchre cast ends during next mechanic, but realistically they should be killed earlier
     }
@@ -215,7 +215,7 @@ class Ex3TitanStates : StateMachineBuilder
         // +5.0s: gaols targetable
         // +6.5s: granite sepulchre cast start
         RockBuster(id + 0x100, 5.5f);
-        Cast(id + 0x200, AID.Upheaval, 2.0f, 5, "Knockback");
+        Cast(id + 0x200, (uint)AID.Upheaval, 2.0f, 5, "Knockback");
         Landslide(id + 0x300, 2.8f); // note: this gets skipped entirely if there is no one alive and unfettered, e.g. when doing solo
         // granite sepulchre cast ends during next mechanic, but realistically they should be killed earlier
     }
@@ -228,7 +228,7 @@ class Ex3TitanStates : StateMachineBuilder
         MountainBuster(id, delay)
             .ExecOnEnter<LandslideBurst>(comp => comp.MaxBombs = 0) // don't show anything until TB resolves
             .ExecOnExit<LandslideBurst>(comp => comp.MaxBombs = even ? 5 : 8);
-        Cast(id + 0x100, AID.LandslideBoss, 8.1f, 2.2f, "Bombs & Landslide")
+        Cast(id + 0x100, (uint)AID.LandslideBoss, 8.1f, 2.2f, "Bombs & Landslide")
             .ExecOnExit<LandslideBurst>(comp => comp.MaxBombs = 9); // reset to default, show any remaining bombs
     }
 
@@ -236,7 +236,7 @@ class Ex3TitanStates : StateMachineBuilder
     {
         // note: first bomb is created ~5.5s before landslide start; first burst starts ~0.6s before landslide start
         // pattern: 6 staggered bombs in clockwise order followed by bomb in center, ~0.4s between successive explosions, landslide begins after second burst start and resolves ~2.2s before first burst => we show next 5 bombs
-        CastStart(id + 0x100, AID.LandslideBoss, delay)
+        CastStart(id + 0x100, (uint)AID.LandslideBoss, delay)
             .ExecOnEnter<LandslideBurst>(comp => comp.MaxBombs = 0) // don't show anything until landslide cast starts
             .ExecOnExit<LandslideBurst>(comp => comp.MaxBombs = 5); // show next 5 bombs
         CastEnd(id + 0x101, 2.2f, "Landslide + Bombs");
@@ -246,7 +246,7 @@ class Ex3TitanStates : StateMachineBuilder
     {
         // note: first set of bombs are created ~5.3s before landslide start; first burst starts ~0.6s before landslide start
         // pattern: 4 bombs on cardinals, ~2.5s later 5 bombs on intercardinals and in center; we show first set when landslide starts, then second set after first is done
-        CastStart(id + 0x100, AID.LandslideBoss, delay)
+        CastStart(id + 0x100, (uint)AID.LandslideBoss, delay)
             .ExecOnEnter<LandslideBurst>(comp => comp.MaxBombs = 0) // don't show anything until landslide cast starts
             .ExecOnExit<LandslideBurst>(comp => comp.MaxBombs = 4); // show first set
         CastEnd(id + 0x101, 2.2f, "Landslide");
@@ -258,7 +258,7 @@ class Ex3TitanStates : StateMachineBuilder
     {
         // note: first set of bombs are created ~5.3s before landslide start; first burst starts ~0.6s before landslide start
         // pattern: 3 staggered lines of 3 bombs, ~1.5s between explosions; we show next two sets after landslide is done
-        CastStart(id + 0x100, AID.LandslideBoss, delay)
+        CastStart(id + 0x100, (uint)AID.LandslideBoss, delay)
             .ExecOnEnter<LandslideBurst>(comp => comp.MaxBombs = 0); // don't show anything until landslide cast ends
         CastEnd(id + 0x101, 2.2f, "Landslide")
             .ExecOnExit<LandslideBurst>(comp => comp.MaxBombs = 6); // show two sets

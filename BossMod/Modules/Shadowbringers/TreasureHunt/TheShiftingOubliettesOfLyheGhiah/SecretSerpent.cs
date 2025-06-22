@@ -57,22 +57,18 @@ class DouseVoidzone(BossModule module) : Components.Voidzone(module, 7.5f, GetVo
         return voidzones[..index];
     }
 }
-class Douse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Douse), 8f);
-class FangsEnd(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.FangsEnd));
-class Drench1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Drench1), new AOEShapeCone(15.29f, 45f.Degrees()));
-class Drench2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Drench2), new AOEShapeCone(13.45f, 45f.Degrees()));
-class ScaleRipple(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ScaleRipple), 8f);
+class Douse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Douse, 8f);
+class FangsEnd(BossModule module) : Components.SingleTargetCast(module, (uint)AID.FangsEnd);
+class Drench1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Drench1, new AOEShapeCone(15.29f, 45f.Degrees()));
+class Drench2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Drench2, new AOEShapeCone(13.45f, 45f.Degrees()));
+class ScaleRipple(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScaleRipple, 8f);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretSerpentStates : StateMachineBuilder
 {
@@ -85,11 +81,7 @@ class SecretSerpentStates : StateMachineBuilder
             .ActivateOnEnter<Drench1>()
             .ActivateOnEnter<Drench2>()
             .ActivateOnEnter<ScaleRipple>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Mash>()
             .ActivateOnEnter<Scoop>()

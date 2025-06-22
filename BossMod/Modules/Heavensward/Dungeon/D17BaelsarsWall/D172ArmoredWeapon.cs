@@ -34,12 +34,10 @@ public enum SID : uint
     ExtremeCaution = 1132 // none->player, extra=0x0
 }
 
-class Launcher(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Launcher));
-class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AssaultCannon), new AOEShapeRect(40.94f, 1f));
+class Launcher(BossModule module) : Components.RaidwideCast(module, (uint)AID.Launcher);
+class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCannon, new AOEShapeRect(40.94f, 1f));
 
-abstract class DiffractiveLaser(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 5f);
-class DiffractiveLaser1(BossModule module) : DiffractiveLaser(module, AID.DiffractiveLaser1);
-class DiffractiveLaser2(BossModule module) : DiffractiveLaser(module, AID.DiffractiveLaser2);
+class DiffractiveLaser(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DiffractiveLaser1, (uint)AID.DiffractiveLaser2], 5f);
 
 class DynamicSensoryJammer(BossModule module) : Components.StayMove(module, 3f)
 {
@@ -62,8 +60,7 @@ class D172ArmoredWeaponStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<DynamicSensoryJammer>()
-            .ActivateOnEnter<DiffractiveLaser1>()
-            .ActivateOnEnter<DiffractiveLaser2>()
+            .ActivateOnEnter<DiffractiveLaser>()
             .ActivateOnEnter<Launcher>()
             .ActivateOnEnter<AssaultCannon>();
     }

@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Alliance.A13Azeyma;
 
-class SolarWings(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(30f, 75f.Degrees()));
-class SolarWingsL(BossModule module) : SolarWings(module, AID.SolarWingsL);
-class SolarWingsR(BossModule module) : SolarWings(module, AID.SolarWingsR);
+class SolarWings(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(30f, 75f.Degrees()));
+class SolarWingsL(BossModule module) : SolarWings(module, (uint)AID.SolarWingsL);
+class SolarWingsR(BossModule module) : SolarWings(module, (uint)AID.SolarWingsR);
 
 class SolarFlair(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<WPos> _sunstorms = [];
+    private readonly List<WPos> _sunstorms = new(6);
     private BitMask _adjusted;
 
     private const float _kickDistance = 18f;
@@ -19,7 +19,7 @@ class SolarFlair(BossModule module) : Components.GenericAOEs(module)
             return [];
         var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
-            aoes[i] = new(_shape, _sunstorms[i]);
+            aoes[i] = new(_shape, WPos.ClampToGrid(_sunstorms[i]));
         return aoes;
     }
 
@@ -34,13 +34,14 @@ class SolarFlair(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.TeleportHeat:
-                if (_sunstorms.Count != 0)
+                var count = _sunstorms.Count;
+                if (count != 0)
                 {
                     WPos? closestSunstorm = null;
                     var minDistance = float.MaxValue;
                     var closestIndex = -1;
 
-                    for (var i = 0; i < _sunstorms.Count; ++i)
+                    for (var i = 0; i < count; ++i)
                     {
                         if (_adjusted[i])
                             continue;
@@ -53,7 +54,10 @@ class SolarFlair(BossModule module) : Components.GenericAOEs(module)
                             closestIndex = i;
                         }
                     }
-
+                    if (closestIndex == -1)
+                    {
+                        break;
+                    }
                     // should teleport within range ~6
                     var pos = closestSunstorm!.Value;
                     if ((pos - spell.TargetXZ).LengthSq() < 50f)
@@ -66,15 +70,21 @@ class SolarFlair(BossModule module) : Components.GenericAOEs(module)
                         ReportError($"Unexpected teleport location: {spell.TargetXZ}, closest sunstorm at {pos}");
                     }
                 }
-                else
-                {
-                    ReportError("Unexpected teleport, no sunstorms active");
-                }
                 break;
             case (uint)AID.SolarFlair:
                 ++NumCasts;
-                if (_sunstorms.RemoveAll(p => p.AlmostEqual(caster.Position, 1f)) != 1)
-                    ReportError($"Unexpected solar flair position {caster.Position}");
+                _adjusted = default;
+                var countS = _sunstorms.Count;
+                var position = caster.Position;
+                for (var i = 0; i < countS; ++i)
+                {
+                    if (_sunstorms[i].AlmostEqual(position, 1f))
+                    {
+                        _sunstorms.RemoveAt(i);
+                        return;
+                    }
+                }
+                ReportError($"Unexpected solar flair position {position}");
                 break;
         }
     }

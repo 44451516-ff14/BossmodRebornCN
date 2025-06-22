@@ -1,16 +1,16 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A22FlightUnits;
 
-class IncendiaryBarrage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IncendiaryBarrage), 27);
-class StandardSurfaceMissile1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StandardSurfaceMissile1), 10);
-class StandardSurfaceMissile2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StandardSurfaceMissile2), 10);
-class LethalRevolution(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LethalRevolution), 15);
+class IncendiaryBarrage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IncendiaryBarrage, 27);
+class StandardSurfaceMissile1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StandardSurfaceMissile1, 10);
+class StandardSurfaceMissile2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StandardSurfaceMissile2, 10);
+class LethalRevolution(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LethalRevolution, 15);
 
-class GuidedMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GuidedMissile), 4);
-class IncendiaryBombing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IncendiaryBombing), 8);
-class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SurfaceMissile), 6);
-class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AntiPersonnelMissile), 6);
+class GuidedMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GuidedMissile, 4);
+class IncendiaryBombing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IncendiaryBombing, 8);
+class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile, 6);
+class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AntiPersonnelMissile, 6);
 
-class PrecisionGuidedMissile(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.PrecisionGuidedMissile), 6);
+class PrecisionGuidedMissile(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.PrecisionGuidedMissile, 6);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", PrimaryActorOID = (uint)OID.FlightUnitALpha, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 736, NameID = 9140)]
 public class A22FlightUnits(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)

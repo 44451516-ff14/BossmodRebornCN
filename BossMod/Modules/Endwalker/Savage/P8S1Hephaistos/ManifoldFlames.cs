@@ -8,7 +8,7 @@ class ManifoldFlames : Components.UniformStackSpread
     }
 }
 
-class NestOfFlamevipersCommon(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.NestOfFlamevipersAOE))
+class NestOfFlamevipersCommon(BossModule module) : Components.CastCounter(module, (uint)AID.NestOfFlamevipersAOE)
 {
     protected BitMask BaitingPlayers;
 
@@ -35,7 +35,7 @@ class NestOfFlamevipersBaited(BossModule module) : NestOfFlamevipersCommon(modul
 
     public override void Update()
     {
-        BaitingPlayers = Active ? Raid.WithSlot(false, true, true).SortedByRange(Module.PrimaryActor.Position).Take(4).Mask() : new();
+        BaitingPlayers = Active ? Raid.WithSlot(false, true, true).SortedByRange(Module.PrimaryActor.Position).Take(4).Mask() : default;
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

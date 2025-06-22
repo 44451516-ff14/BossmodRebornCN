@@ -62,10 +62,10 @@ class MagitekCompressor(BossModule module) : Components.GenericRotatingAOE(modul
     }
 }
 
-class AcceleratedLanding(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AcceleratedLanding), 6f);
-class CalculatedCombustion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CalculatedCombustion));
-class Pummel(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Pummel));
-class SoporificGas(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SoporificGas), 12f);
+class AcceleratedLanding(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AcceleratedLanding, 6f);
+class CalculatedCombustion(BossModule module) : Components.RaidwideCast(module, (uint)AID.CalculatedCombustion);
+class Pummel(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Pummel);
+class SoporificGas(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SoporificGas, 12f);
 
 class ArmstrongStates : StateMachineBuilder
 {

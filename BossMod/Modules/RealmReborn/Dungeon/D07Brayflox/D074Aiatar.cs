@@ -17,10 +17,10 @@ public enum AID : uint
     DragonBreath = 28660 // Boss->self, 3.0s cast, range 30 width 8 rect
 }
 
-class SalivousSnap(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SalivousSnap));
-class ToxicVomit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ToxicVomitAOE), 2);
-class Burst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burst), 10, 4);
-class DragonBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DragonBreath), new AOEShapeRect(30, 4));
+class SalivousSnap(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SalivousSnap);
+class ToxicVomit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ToxicVomitAOE, 2);
+class Burst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burst, 10, 4);
+class DragonBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DragonBreath, new AOEShapeRect(30, 4));
 
 class D074AiatarStates : StateMachineBuilder
 {

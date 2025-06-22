@@ -45,17 +45,17 @@ public enum SID : uint
     Stun = 149 // Boss->player, extra=0x0
 }
 
-class BigSplash(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BigSplashFirst), "Diamondback! (Multiple raidwides + knockbacks)");
-class BigSplashKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BigSplashFirst), 25f);
-class Cascade(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Cascade), "Raidwide + Tornados spawn");
-class WateryGrasp(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.WateryGrasp), "Spawns hands. Focus left hand first.");
-class Throttle(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Throttle), "Prepare to use Excuviation to remove debuff");
-class FluidSwing(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.FluidSwing));
-class FluidSwingKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.FluidSwing), 50f, kind: Kind.DirForward);
+class BigSplash(BossModule module) : Components.RaidwideCast(module, (uint)AID.BigSplashFirst, "Diamondback! (Multiple raidwides + knockbacks)");
+class BigSplashKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BigSplashFirst, 25f);
+class Cascade(BossModule module) : Components.RaidwideCast(module, (uint)AID.Cascade, "Raidwide + Tornados spawn");
+class WateryGrasp(BossModule module) : Components.CastHint(module, (uint)AID.WateryGrasp, "Spawns hands. Focus left hand first.");
+class Throttle(BossModule module) : Components.CastHint(module, (uint)AID.Throttle, "Prepare to use Excuviation to remove debuff");
+class FluidSwing(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FluidSwing);
+class FluidSwingKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FluidSwing, 50f, kind: Kind.DirForward);
 
-abstract class ProteanWave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(39f, 15f.Degrees()));
-class ProteanWave1(BossModule module) : ProteanWave(module, AID.ProteanWave1);
-class ProteanWave3(BossModule module) : ProteanWave(module, AID.ProteanWave3);
+abstract class ProteanWave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(39f, 15f.Degrees()));
+class ProteanWave1(BossModule module) : ProteanWave(module, (uint)AID.ProteanWave1);
+class ProteanWave3(BossModule module) : ProteanWave(module, (uint)AID.ProteanWave3);
 
 class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
 {
@@ -89,8 +89,8 @@ class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class Unwind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Unwind), 10f);
-class FluidBall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FluidBall), 5f);
+class Unwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Unwind, 10f);
+class FluidBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FluidBall, 5f);
 
 class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(module)
 {

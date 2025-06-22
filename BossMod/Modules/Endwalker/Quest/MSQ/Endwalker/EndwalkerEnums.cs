@@ -2,10 +2,10 @@
 
 public enum OID : uint
 {
-    ZenosP1 = 0x3364, // R2.001, x1
-    ZenosP2 = 0x3365, // R2.001, x1
-    AvatarVisual = 0x3366, // R0.920, x1
-    Puddles = 0x1E950D, // R0.500, EventObj type, spawn during fight
+    ZenosP1 = 0x3364, // R2.001
+    ZenosP2 = 0x3365, // R2.001
+    AvatarVisual = 0x3366, // R0.92
+    Puddles = 0x1E950D, // R0.5
     Helper = 0x233C
 }
 
@@ -61,20 +61,10 @@ public enum AID : uint
     ExtinguishmentVisual = 26952, // Helpers->self, 4.0s cast, range ?-30 donut
     UnmovingDvenadkatik = 26955, // ZenosP2->self, 5.0s cast, single-target
     UnmovingDvenadkatikVisual = 26956, // Helpers->self, 6.0s cast, range 50 30-degree cone
-    TheEdgeUnbound2 = 26957, // ZenosP2->self, 4.0s cast, range 10 circle
+    TheEdgeUnbound2 = 26957 // ZenosP2->self, 4.0s cast, range 10 circle
 }
 
 public enum SID : uint
 {
-    FireResistanceUp = 520, // none->player, extra=0x0
-    LightningResistanceDownII = 1260, // none->player, extra=0x0
-    ThinIce = 1579, // Helpers->player, extra=0xFA
-    Petrification = 610, // Helpers->player, extra=0x0
-    DownForTheCount = 2961, // Helpers->player, extra=0xEC7
-    Unlimited = 2781, // none->player, extra=0x0
-    SparkOfHope = 2786, // none->player, extra=0x5/0x4/0x3/0x2/0x1
-    //_Gen_Unk01 = 2785, // none->ZenosP2, extra=0x0
-    //_Gen_Unk02 = 2892, // ZenosP2->player, extra=0x2110
-    //_Gen_Unk03 = 2850, // none->player, extra=0x0
-    //_Gen_Unk04 = 2881, // none->player, extra=0x0
+    ThinIce = 1579 // Helpers->player, extra=0xFA
 }

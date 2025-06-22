@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.Duel.Duel5Menenius;
 
-class Duel5MeneniusStates : StateMachineBuilder
+sealed class Duel5MeneniusStates : StateMachineBuilder
 {
     public Duel5MeneniusStates(BossModule module) : base(module)
     {
@@ -70,73 +70,73 @@ class Duel5MeneniusStates : StateMachineBuilder
 
     private void CallousCrossfire(uint id, float delay)
     {
-        Cast(id, AID.CallousCrossfire, delay, 4, "Turret Crossfire")
+        Cast(id, (uint)AID.CallousCrossfire, delay, 4, "Turret Crossfire")
             .ActivateOnEnter<CallousCrossfire>()
             .DeactivateOnExit<CallousCrossfire>();
     }
 
     private void MagitekMinefield(uint id, float delay)
     {
-        Cast(id, AID.MagitekMinefield, delay, 3, "Place Mine");
+        Cast(id, (uint)AID.MagitekMinefield, delay, 3, "Place Mine");
     }
 
     private void IndiscriminateDetonation(uint id, float delay)
     {
-        Cast(id, AID.IndiscriminateDetonation, delay, 4, "Detonate Mines");
+        Cast(id, (uint)AID.IndiscriminateDetonation, delay, 4, "Detonate Mines");
     }
 
     private void GigaTempest(uint id, float delay)
     {
-        Cast(id, AID.GigaTempest, delay, 5, "Gigatempest");
+        Cast(id, (uint)AID.GigaTempest, delay, 5, "Gigatempest");
     }
 
     private void MagitekImpetus(uint id, float delay)
     {
-        Cast(id, AID.MagitekImpetus, delay, 3, "Place Forced March");
+        Cast(id, (uint)AID.MagitekImpetus, delay, 3, "Place Forced March");
     }
 
     private void ReadyShot(uint id, float delay)
     {
-        CastMulti(id, [AID.DarkShot, AID.WindslicerShot], delay, 4, "Load Dark/Windslicer Shot");
+        CastMulti(id, [(uint)AID.DarkShot, (uint)AID.WindslicerShot], delay, 4, "Load Dark/Windslicer Shot");
     }
 
     private void Gunberd(uint id, float delay)
     {
-        CastMulti(id, [AID.GunberdDark, AID.GunberdWindslicer], delay, 4, "Shoot Dark/Windslicer Shot");
+        CastMulti(id, [(uint)AID.GunberdDark, (uint)AID.GunberdWindslicer], delay, 4, "Shoot Dark/Windslicer Shot");
     }
 
     private void Ruination(uint id, float delay)
     {
-        Cast(id, AID.Ruination, delay, 4, "Ruination")
+        Cast(id, (uint)AID.Ruination, delay, 4, "Ruination")
             .ActivateOnEnter<RuinationCross>()
             .DeactivateOnExit<RuinationCross>();
     }
 
     private void SpiralScourge(uint id, float delay)
     {
-        Cast(id, AID.SpiralScourge, delay, 6, "Tankbuster")
+        Cast(id, (uint)AID.SpiralScourge, delay, 6, "Tankbuster")
             .ActivateOnEnter<SpiralScourge>()
             .DeactivateOnExit<SpiralScourge>();
     }
     private void ProactiveMunition(uint id, float delay)
     {
-        Cast(id, AID.ProactiveMunition, delay, 5, "Chasing AOE");
+        Cast(id, (uint)AID.ProactiveMunition, delay, 5, "Chasing AOE");
     }
 
     private void ReactiveMunition(uint id, float delay)
     {
-        Cast(id, AID.ReactiveMunition, delay, 3, "Place Acceleration Bomb");
+        Cast(id, (uint)AID.ReactiveMunition, delay, 3, "Place Acceleration Bomb");
     }
 
     private void SenseWeakness(uint id, float delay)
     {
-        Cast(id, AID.SenseWeakness, delay, 4.5f, "Move")
+        Cast(id, (uint)AID.SenseWeakness, delay, 4.5f, "Move")
             .ActivateOnEnter<SenseWeakness>()
             .DeactivateOnExit<SenseWeakness>();
     }
 
     private void TeraTempest(uint id, float delay)
     {
-        Cast(id, AID.TeraTempest, delay, 25, "Enrage");
+        Cast(id, (uint)AID.TeraTempest, delay, 25, "Enrage");
     }
 }

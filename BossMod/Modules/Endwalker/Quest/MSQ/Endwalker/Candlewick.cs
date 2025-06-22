@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
-class Candlewick(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class Candlewick(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 30f)];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.CandlewickPointBlank)
-            AddSequence(spell.LocXZ, Module.CastFinishAt(spell, 2));
+            AddSequence(spell.LocXZ, Module.CastFinishAt(spell, 2f));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -20,7 +20,7 @@ class Candlewick(BossModule module) : Components.ConcentricAOEs(module, _shapes)
                 (uint)AID.CandlewickDonut => 1,
                 _ => -1
             };
-            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2));
+            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2d));
         }
     }
 }

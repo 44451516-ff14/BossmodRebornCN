@@ -21,9 +21,9 @@ public enum SID : uint
     Windburn = 269, // Boss->player, extra=0x0
 }
 
-class Gust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Gust), 3f);
-class AlternatePlumage(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.AlternatePlumage), "Prepare to dispel buff");
-class CaberToss(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.CaberToss));
+class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 3f);
+class AlternatePlumage(BossModule module) : Components.CastHint(module, (uint)AID.AlternatePlumage, "Prepare to dispel buff");
+class CaberToss(BossModule module) : Components.CastInterruptHint(module, (uint)AID.CaberToss);
 
 class Hints(BossModule module) : BossComponent(module)
 {

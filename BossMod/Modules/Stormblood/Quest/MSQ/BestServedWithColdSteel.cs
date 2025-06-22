@@ -23,14 +23,14 @@ public enum TetherID : uint
     Mine = 54 // 1A56->player
 }
 
-class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AugmentedUprising), new AOEShapeCone(8.5f, 60.Degrees()));
-class AugmentedSuffering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AugmentedSuffering), 6.5f);
-class OpenFire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OpenFire1), 6);
+class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedUprising, new AOEShapeCone(8.5f, 60.Degrees()));
+class AugmentedSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedSuffering, 6.5f);
+class OpenFire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OpenFire1, 6);
 
-class CermetPile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CermetPile), new AOEShapeRect(42.1f, 3f));
-class Firebomb(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Firebomb), 4);
+class CermetPile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CermetPile, new AOEShapeRect(42.1f, 3f));
+class Firebomb(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firebomb, 4);
 
-class MagitekTurret(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.SelfDetonate))
+class MagitekTurret(BossModule module) : Components.GenericAOEs(module, (uint)AID.SelfDetonate)
 {
     private static readonly AOEShapeCircle circle = new(6f);
 
@@ -129,11 +129,11 @@ class MagitekTurret(BossModule module) : Components.GenericAOEs(module, ActionID
     }
 }
 
-class MagitekSelfDetonate(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.SelfDetonate1))
+class MagitekSelfDetonate(BossModule module) : Components.CastCounter(module, (uint)AID.SelfDetonate1)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             NumCasts++;
     }
 }

@@ -30,17 +30,13 @@ public enum AID : uint
     Telega = 9630 // Mandragoras->self, no cast, single-target, bonus add disappear
 }
 
-class OpticalIntrusion(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.OpticalIntrusion));
-class Hypnotize(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hypnotize), new AOEShapeCone(22.85f, 45f.Degrees()));
-class SaibaiMandragora(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SaibaiMandragora), "Calls adds");
-class LeafDagger(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LeafDagger), 3f);
+class OpticalIntrusion(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.OpticalIntrusion);
+class Hypnotize(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hypnotize, new AOEShapeCone(22.85f, 45f.Degrees()));
+class SaibaiMandragora(BossModule module) : Components.CastHint(module, (uint)AID.SaibaiMandragora, "Calls adds");
+class LeafDagger(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LeafDagger, 3f);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
 class AltarMandragoraStates : StateMachineBuilder
 {
@@ -51,11 +47,7 @@ class AltarMandragoraStates : StateMachineBuilder
             .ActivateOnEnter<SaibaiMandragora>()
             .ActivateOnEnter<LeafDagger>()
             .ActivateOnEnter<Hypnotize>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(AltarMandragora.All);

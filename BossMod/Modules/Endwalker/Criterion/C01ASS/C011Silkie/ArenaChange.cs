@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.VariantCriterion.C01ASS.C011Silkie;
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(C011Silkie.ArenaCenter, 30f)], [new Square(C011Silkie.ArenaCenter, 20f)]);
 
@@ -15,7 +15,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x01)
+        if (state == 0x00020001u && index == 0x01u)
         {
             Arena.Bounds = C011Silkie.DefaultBounds;
             _aoe = null;

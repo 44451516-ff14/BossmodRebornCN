@@ -2,9 +2,9 @@
 
 public enum OID : uint
 {
-    Boss = 0x31A0, // R3.640, x1
-    Escort1 = 0x31A1, // R2.800, x24
-    Escort2 = 0x32FD, // R2.800, spawn during fight
+    Boss = 0x31A0, // R3.64
+    Escort1 = 0x31A1, // R2.8
+    Escort2 = 0x32FD, // R2.8
     Helper = 0x233C
 }
 
@@ -35,17 +35,17 @@ public enum SID : uint
 {
     Tracking = 2056, // none->Escort2, extra=0x87
     FrontUnseen = 2644, // Boss->player, extra=0x120
-    BackUnseen = 1709, // Boss->player, extra=0xE8
+    BackUnseen = 1709 // Boss->player, extra=0xE8
 }
 
 public enum IconID : uint
 {
-    BallisticImpact = 261, // Helper
+    BallisticImpact = 261 // Helper
 }
 
-class DiveFormation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DiveFormation), new AOEShapeRect(60f, 3f));
+sealed class DiveFormation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DiveFormation, new AOEShapeRect(60f, 3f));
 
-class AntiPersonnelMissile(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.BallisticImpact))
+sealed class AntiPersonnelMissile(BossModule module) : Components.GenericAOEs(module, (uint)AID.BallisticImpact)
 {
     private readonly List<AOEInstance> _aoes = new(8);
     private static readonly AOEShapeRect _shape = new(12f, 12f, 12f);
@@ -68,98 +68,135 @@ class AntiPersonnelMissile(BossModule module) : Components.GenericAOEs(module, A
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0 && spell.Action == WatchedAction)
+        if (_aoes.Count != 0 && spell.Action.ID == WatchedAction)
             _aoes.RemoveAt(0);
     }
 }
 
-class ChainCannonEscort(BossModule module) : Components.GenericAOEs(module)
+sealed class ChainCannonEscort(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<(Actor caster, int numCasts, DateTime activation)> _casters = [];
-    private static readonly AOEShapeRect _shape = new(60f, 2.5f);
+    private readonly List<Actor> _casters = new(6);
+    public static readonly AOEShapeRect Rect = new(60f, 2.5f);
+    private readonly List<AOEInstance> _aoes = new(6);
+    private DateTime activation;
+    private readonly List<Actor> participants = [];
+    private bool trackingactive;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var countC = _casters.Count;
-        if (countC == 0)
-            return [];
-        var count = 0;
-        for (var i = 0; i < countC; ++i)
-        {
-            var c = _casters[i];
-            if (!IsTrackingPlayer(c, actor))
-                ++count;
-        }
-        if (count == 0)
-            return [];
-
-        var aoes = new AOEInstance[count];
-        var index = 0;
-
-        for (var i = 0; i < countC; ++i)
-        {
-            var c = _casters[i];
-            if (!IsTrackingPlayer(c, actor))
-                aoes[index++] = new(_shape, c.caster.Position, c.caster.Rotation, c.activation);
-        }
-        return aoes;
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         var count = _casters.Count;
-        if (count == 0)
-            return;
         for (var i = 0; i < count; ++i)
         {
-            var c = _casters[i];
-            if (IsTrackingPlayer(c, pc))
-                _shape.Outline(Arena, c.caster);
+            var caster = _casters[i];
+            if (IsTrackingPlayer(caster, pc))
+                Rect.Outline(Arena, _casters[i]);
+        }
+    }
+
+    public override void DrawArenaBackground(int pcSlot, Actor pc)
+    {
+        base.DrawArenaBackground(pcSlot, pc);
+        var count = _casters.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var caster = _casters[i];
+            if (!IsTrackingPlayer(caster, pc))
+                Rect.Draw(Arena, caster);
         }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Tracking)
-            _casters.Add((actor, 0, status.ExpireAt));
+        {
+            _casters.Add(actor);
+            trackingactive = true;
+            if (activation == default)
+            {
+                activation = status.ExpireAt;
+            }
+        }
+    }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.ChainCannonEscort)
+        {
+            _casters.Clear();
+            _aoes.Add(new(Rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
+        else if (spell.Action.ID == (uint)AID.SurfaceMissile)
+        {
+            trackingactive = false; // tracking stops 4-5 seconds before debuff disappears
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.ChainCannonEscortAOE)
         {
-            var count = _casters.Count;
+            var count = _aoes.Count;
             var pos = caster.Position;
-            for (var i = count - 1; i <= 0; ++i)
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            for (var i = 0; i < count; ++i)
             {
-                var c = _casters[i];
-                if (c.caster.Position.AlmostEqual(pos, 1f))
+                ref var aoe = ref aoes[i];
+                if (aoe.Origin.AlmostEqual(pos, 0.1f))
                 {
-                    var numCasts = c.numCasts + 1;
-                    if (numCasts >= 6)
-                        _casters.RemoveAt(i);
-                    else
-                        _casters[i] = (c.caster, numCasts, WorldState.FutureTime(1d));
-                    return;
+                    if (++aoe.ActorID == 6u)
+                    {
+                        _aoes.RemoveAt(i);
+                    }
+                    break;
                 }
             }
         }
     }
 
-    private bool IsTrackingPlayer((Actor caster, int numCasts, DateTime activation) c, Actor actor) => c.numCasts == 0 && c.caster.CastInfo == null && c.caster.TargetID == actor.InstanceID;
+    private static bool IsTrackingPlayer(Actor caster, Actor actor) => caster.TargetID == actor.InstanceID;
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+        var count = _casters.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var caster = _casters[i];
+            if (!IsTrackingPlayer(caster, actor) || !trackingactive)
+                hints.AddForbiddenZone(Rect.Distance(caster.Position, caster.Rotation), activation);
+            else
+            {
+                var countP = participants.Count;
+                if (countP == 0)
+                {
+                    foreach (var a in Module.WorldState.Actors.Actors.Values)
+                        if (a.OID == default && a.Position.InSquare(Arena.Center, 24f))
+                            participants.Add(a);
+                }
+                for (var j = 0; j < countP; ++j)
+                {
+                    var a = participants[j];
+                    if (a == actor)
+                        continue;
+                    hints.AddForbiddenZone(ShapeDistance.Cone(caster.Position, 60f, caster.AngleTo(a), Angle.Asin(Rect.HalfWidth / (a.Position - caster.Position).Length())), activation);
+                }
+            }
+        }
+    }
 }
 
-class ChainCannonBoss(BossModule module) : Components.GenericAOEs(module)
+sealed class ChainCannonBoss(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _instance;
-    private static readonly AOEShapeRect _shape = new(60f, 2.5f);
+    private AOEInstance? _aoe;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _instance);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ChainCannonBoss)
-            _instance = new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 1f));
+            _aoe = new(ChainCannonEscort.Rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 1f));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -168,23 +205,23 @@ class ChainCannonBoss(BossModule module) : Components.GenericAOEs(module)
         {
             if (++NumCasts >= 4)
             {
-                _instance = null;
+                _aoe = null;
                 NumCasts = 0;
             }
             else
             {
-                _instance = new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(1d));
+                _aoe = new(ChainCannonEscort.Rect, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(1d));
             }
         }
     }
 }
 
-class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SurfaceMissileAOE), 6f);
-class SuppressiveMagitekRays(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SuppressiveMagitekRays));
-class Analysis(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Analysis), "Face open weakpoint to charging adds");
-class PreciseStrike(BossModule module) : Components.CastWeakpoint(module, ActionID.MakeSpell(AID.PreciseStrike), new AOEShapeRect(60f, 3f), (uint)SID.FrontUnseen, (uint)SID.BackUnseen, 0, 0);
+sealed class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissileAOE, 6f);
+sealed class SuppressiveMagitekRays(BossModule module) : Components.RaidwideCast(module, (uint)AID.SuppressiveMagitekRays);
+sealed class Analysis(BossModule module) : Components.CastHint(module, (uint)AID.Analysis, "Face open weakpoint to charging adds");
+sealed class PreciseStrike(BossModule module) : Components.CastWeakpoint(module, (uint)AID.PreciseStrike, new AOEShapeRect(60f, 3f), (uint)SID.FrontUnseen, (uint)SID.BackUnseen, default, default);
 
-class CE64FeelingTheBurnStates : StateMachineBuilder
+sealed class CE64FeelingTheBurnStates : StateMachineBuilder
 {
     public CE64FeelingTheBurnStates(BossModule module) : base(module)
     {
@@ -200,12 +237,14 @@ class CE64FeelingTheBurnStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 778, NameID = 18)] // bnpcname=9945
-public class CE64FeelingTheBurn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-240f, -230f), new ArenaBoundsSquare(24f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 18)] // bnpcname=9945
+public sealed class CE64FeelingTheBurn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-240f, -230f), new ArenaBoundsSquare(24f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         base.DrawEnemies(pcSlot, pc);
         Arena.Actors(Enemies((uint)OID.Escort2));
     }
+
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 24f);
 }

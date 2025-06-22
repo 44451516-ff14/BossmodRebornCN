@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class Sabertail(BossModule module) : Components.Exaflare(module, new AOEShapeCircle(6))
+sealed class Sabertail(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

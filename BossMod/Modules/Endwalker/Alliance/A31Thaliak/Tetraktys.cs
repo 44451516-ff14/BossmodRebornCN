@@ -103,7 +103,7 @@ class Tetraktys(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TetraktuosKosmosCounter(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.TetraktuosKosmosAOETri)); // to handle tutorial of TetraktuosKosmos
+class TetraktuosKosmosCounter(BossModule module) : Components.CastCounter(module, (uint)AID.TetraktuosKosmosAOETri); // to handle tutorial of TetraktuosKosmos
 
 class TetraktuosKosmos(BossModule module) : Components.GenericAOEs(module)
 {

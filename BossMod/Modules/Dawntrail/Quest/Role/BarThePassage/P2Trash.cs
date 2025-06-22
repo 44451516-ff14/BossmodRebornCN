@@ -41,7 +41,6 @@ class ArenaChange(BossModule module) : BossComponent(module)
 class IceAegis(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
-    private const string Hint = "Go behind shield!";
 
     private static readonly AOEShapeCone cone = new(5f, 60f.Degrees(), InvertForbiddenZone: true);
 
@@ -60,18 +59,15 @@ class IceAegis(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe == null)
+        if (_aoe is not AOEInstance aoe)
             return;
-        if (!_aoe.Value.Check(actor.Position))
-            hints.Add(Hint);
-        else
-            hints.Add(Hint, false);
+        hints.Add("Go behind shield!", !aoe.Check(actor.Position));
     }
 }
 
-class SavageSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SavageSwipe), new AOEShapeCone(9f, 60f.Degrees()));
-class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OneOneOneTonzeSwing), 10f);
-class OneOneTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OneOneTonzeSwipe), new AOEShapeCone(10f, 60f.Degrees()));
+class SavageSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SavageSwipe, new AOEShapeCone(9f, 60f.Degrees()));
+class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 10f);
+class OneOneTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneTonzeSwipe, new AOEShapeCone(10f, 60f.Degrees()));
 
 class Trash2States : StateMachineBuilder
 {

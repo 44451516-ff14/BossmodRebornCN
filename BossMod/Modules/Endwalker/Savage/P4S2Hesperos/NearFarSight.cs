@@ -13,10 +13,10 @@ class NearFarSight : BossComponent
 
     public NearFarSight(BossModule module) : base(module)
     {
-        CurState = (AID)(Module.PrimaryActor.CastInfo?.Action.ID ?? 0) switch
+        CurState = (Module.PrimaryActor.CastInfo?.Action.ID ?? 0) switch
         {
-            AID.Nearsight => State.Near,
-            AID.Farsight => State.Far,
+            (uint)AID.Nearsight => State.Near,
+            (uint)AID.Farsight => State.Far,
             _ => State.Done
         };
         if (CurState == State.Done)
@@ -25,7 +25,7 @@ class NearFarSight : BossComponent
 
     public override void Update()
     {
-        _targets = _inAOE = new();
+        _targets = _inAOE = default;
         if (CurState == State.Done)
             return;
 
@@ -74,7 +74,7 @@ class NearFarSight : BossComponent
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.NearsightAOE or AID.FarsightAOE)
+        if (spell.Action.ID is (uint)AID.NearsightAOE or (uint)AID.FarsightAOE)
             CurState = State.Done;
     }
 }

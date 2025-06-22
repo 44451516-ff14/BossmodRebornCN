@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A33Oschon;
 
-class P2WanderingVolleyDownhill(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WanderingVolleyDownhillAOE), 8f);
+class P2WanderingVolleyDownhill(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WanderingVolleyDownhillAOE, 8f);
 
 class P2WanderingVolleyKnockback(BossModule module) : Components.GenericKnockback(module)
 {

@@ -13,8 +13,8 @@ public enum AID : uint
     GoldDust = 1033 // Boss->location, 3.5s cast, range 8 circle
 }
 
-class HundredLashings(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.HundredLashings), new AOEShapeCone(12f, 45f.Degrees())); // TODO: verify angle
-class GoldDust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldDust), 8f);
+class HundredLashings(BossModule module) : Components.Cleave(module, (uint)AID.HundredLashings, new AOEShapeCone(12f, 45f.Degrees())); // TODO: verify angle
+class GoldDust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldDust, 8f);
 
 class D121LocksmithStates : StateMachineBuilder
 {

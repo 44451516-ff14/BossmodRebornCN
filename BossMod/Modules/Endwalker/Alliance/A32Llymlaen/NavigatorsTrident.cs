@@ -11,18 +11,7 @@ class DireStraits(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < count; ++i)
-        {
-            ref var aoe = ref aoes[i];
-            if (i == 0)
-            {
-                if (count > 1)
-                    aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-            else
-                aoe.Risky = false;
-        }
+        aoes[0].Risky = true;
         return aoes;
     }
 
@@ -30,7 +19,7 @@ class DireStraits(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.DireStraitsVisualFirst or (uint)AID.DireStraitsVisualSecond)
         {
-            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 4.8f)));
+            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 4.8f), _aoes.Count == 0 ? Colors.Danger : default, false));
         }
     }
 
@@ -45,7 +34,7 @@ class DireStraits(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class NavigatorsTridentAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NavigatorsTridentAOE), new AOEShapeRect(40f, 5f));
+class NavigatorsTridentAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NavigatorsTridentAOE, new AOEShapeRect(40f, 5f));
 
 class NavigatorsTridentKnockback(BossModule module) : Components.GenericKnockback(module)
 {
@@ -74,7 +63,6 @@ class NavigatorsTridentKnockback(BossModule module) : Components.GenericKnockbac
     {
         if (spell.Action.ID == (uint)AID.NavigatorsTridentAOE)
         {
-            _sources.Clear();
             _sources.Add(new(spell.LocXZ, 20f, Module.CastFinishAt(spell), _shape, spell.Rotation + 90f.Degrees(), Kind.DirForward));
             _sources.Add(new(spell.LocXZ, 20f, Module.CastFinishAt(spell), _shape, spell.Rotation - 90f.Degrees(), Kind.DirForward));
         }

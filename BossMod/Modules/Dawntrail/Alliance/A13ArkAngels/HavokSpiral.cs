@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class HavokSpiral(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class HavokSpiral(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private Angle _increment;
     private DateTime _activation;
@@ -47,7 +47,7 @@ class HavokSpiral(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class SpiralFinish(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.SpiralFinishAOE), 16f)
+sealed class SpiralFinish(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.SpiralFinishAOE, 16f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

@@ -38,7 +38,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x06)
+        if (state == 0x00020001u && index == 0x06u)
         {
             Arena.Bounds = D032Wrecker.DefaultArena;
             Arena.Center = D032Wrecker.DefaultArena.Center;
@@ -46,6 +46,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         }
     }
 }
+
 class QueerBubble(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AetherSprayFire _aoe = module.FindComponent<AetherSprayFire>()!;
@@ -64,7 +65,7 @@ class QueerBubble(BossModule module) : Components.GenericAOEs(module)
         {
             var b = AOEs[i];
             if (!b.IsDead)
-                aoes[index++] = new(circle, b.Position, Color: _aoe.Active ? color : 0);
+                aoes[index++] = new(circle, b.Position, Color: _aoe.Active ? color : default);
         }
         return aoes.AsSpan()[..index];
     }
@@ -91,28 +92,29 @@ class QueerBubble(BossModule module) : Components.GenericAOEs(module)
     {
         if (_aoe.Active)
         {
-            var forbidden = new List<Func<WPos, float>>(6);
             var count = AOEs.Count;
+            if (count == 0)
+                return;
+            var forbidden = new Func<WPos, float>[count];
+
             for (var i = 0; i < count; ++i)
-                forbidden.Add(ShapeDistance.InvertedCircle(AOEs[i].Position, 2.5f));
-            if (forbidden.Count != 0)
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(_aoe.Casters[0].CastInfo));
+                forbidden[i] = ShapeDistance.InvertedCircle(AOEs[i].Position, 2.5f);
+            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(_aoe.Casters[0].CastInfo));
         }
         else
             base.AddAIHints(slot, actor, assignment, hints);
     }
 }
 
-class MeaninglessDestruction(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MeaninglessDestruction));
-class PoisonHeartStack(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.PoisonHeartStack), 6f, 4, 4);
-class TotalWreck(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.TotalWreck));
-class AetherSprayWater(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AetherSprayWater));
-class AetherSprayFire(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AetherSprayFire), "Go into a bubble! (Raidwide)");
+class MeaninglessDestruction(BossModule module) : Components.RaidwideCast(module, (uint)AID.MeaninglessDestruction);
+class PoisonHeartStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.PoisonHeartStack, 6f, 4, 4);
+class TotalWreck(BossModule module) : Components.SingleTargetCast(module, (uint)AID.TotalWreck);
+class AetherSprayWater(BossModule module) : Components.RaidwideCast(module, (uint)AID.AetherSprayWater);
+class AetherSprayFire(BossModule module) : Components.RaidwideCast(module, (uint)AID.AetherSprayFire, "Go into a bubble! (Raidwide)");
 
-class AetherSprayWaterKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AetherSprayWater), 13f)
+class AetherSprayWaterKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AetherSprayWater, 13f)
 {
     private readonly QueerBubble _aoe = module.FindComponent<QueerBubble>()!;
-    private static readonly Angle a60 = 60f.Degrees(), a10 = 10f.Degrees();
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
@@ -131,25 +133,21 @@ class AetherSprayWaterKB(BossModule module) : Components.SimpleKnockbacks(module
         if (Casters.Count != 0 && _aoe.AOEs.Count != 0)
         {
             var source = Casters[0];
-            var forbidden = new List<Func<WPos, float>>(7)
+            var act = Module.CastFinishAt(source.CastInfo);
+            if (IsImmune(slot, act))
+                return;
+            var pos = source.CastInfo!.LocXZ;
+            var bubbles = Module.Enemies((uint)OID.QueerBubble);
+            var count = bubbles.Count;
+            var forbidden = new Func<WPos, float>[count + 1];
+            forbidden[0] = ShapeDistance.InvertedCircle(pos, 7f);
+
+            for (var i = 0; i < count; ++i)
             {
-                ShapeDistance.InvertedCircle(Arena.Center, 7f)
-            };
-            var bubbles = Module.Enemies(OID.QueerBubble);
-            for (var i = 0; i < 6; ++i)
-            {
-                var bcount = bubbles.Count;
-                for (var j = 0; j < bcount; ++j)
-                {
-                    var b = bubbles[j];
-                    if (b.Position.AlmostEqual(WPos.RotateAroundOrigin(i * 60f, Arena.Center, b.Position), 1f) && _aoe.AOEs.Contains(b))
-                    {
-                        forbidden.Add(ShapeDistance.Cone(Arena.Center, 20f, i * a60, a10));
-                        break;
-                    }
-                }
+                var a = bubbles[i].Position;
+                forbidden[i + 1] = ShapeDistance.Cone(pos, 100f, Angle.FromDirection(a - pos), Angle.Asin(2.5f / (a - pos).Length()));
             }
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(source.CastInfo));
+            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), act);
         }
     }
 }

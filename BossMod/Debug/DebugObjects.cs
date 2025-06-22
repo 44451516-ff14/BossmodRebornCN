@@ -6,11 +6,10 @@ using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
-using System.Text;
 
 namespace BossMod;
 
-public class DebugObjects
+public sealed class DebugObjects
 {
     private readonly UITree _tree = new();
     private bool _showCrap;
@@ -153,7 +152,7 @@ public class DebugObjects
                 foreach (var status in chara!.StatusList)
                 {
                     var src = status.SourceObject != null ? Utils.ObjectString(status.SourceObject) : "none";
-                    res.Append($"\n  status {status.StatusId} '{status.GameData.Value.Name}': param={status.Param}, stacks={status.StackCount}, time={status.RemainingTime:f2}, source={src}");
+                    res.Append($"\n  status {status.StatusId} '{status.GameData.Value.Name}': param={status.Param}, stacks={status.Param}, time={status.RemainingTime:f2}, source={src}");
                 }
             }
         }

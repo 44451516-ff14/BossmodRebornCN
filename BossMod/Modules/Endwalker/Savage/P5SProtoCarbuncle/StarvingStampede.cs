@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class StarvingStampede(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.StarvingStampede))
+class StarvingStampede(BossModule module) : Components.GenericAOEs(module, (uint)AID.StarvingStampede)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShape _shape = new AOEShapeCircle(12f);
@@ -27,7 +27,7 @@ class StarvingStampede(BossModule module) : Components.GenericAOEs(module, Actio
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (_aoes.Count != 0 && spell.Action == WatchedAction)
+        if (_aoes.Count != 0 && spell.Action.ID == WatchedAction)
             _aoes.RemoveAt(0);
     }
 }

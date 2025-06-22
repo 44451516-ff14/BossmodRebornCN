@@ -58,14 +58,13 @@ public sealed class Plugin : IDalamudPlugin
         InteropGenerator.Runtime.Resolver.GetInstance.Resolve();
 
         dalamud.Create<Service>();
-        Service.LogHandlerDebug = (string msg) => Service.Logger.Debug(msg);
-        Service.LogHandlerVerbose = (string msg) => Service.Logger.Verbose(msg);
+        Service.LogHandlerDebug = msg => Service.Logger.Debug(msg);
+        Service.LogHandlerVerbose = msg => Service.Logger.Verbose(msg);
         Service.LuminaGameData = dataManager.GameData;
         Service.WindowSystem = new("bmr");
         //Service.Device = pluginInterface.UiBuilder.Device;
         Service.Condition.ConditionChange += OnConditionChanged;
         MultiboxUnlock.Exec();
-        Network.IDScramble.Initialize();
         Camera.Instance = new();
 
         Service.Config.Initialize();
@@ -74,7 +73,6 @@ public sealed class Plugin : IDalamudPlugin
 
         CommandManager = commandManager;
         CommandManager.AddHandler("/bmr", new CommandInfo(OnCommand) { HelpMessage = "Show boss mod settings UI" });
-        CommandManager.AddHandler("/vbm", new CommandInfo(OnCommand) { ShowInHelp = false });
 
         ActionDefinitions.Instance.UnlockCheck = QuestUnlocked; // ensure action definitions are initialized and set unlock check functor (we don't really store the quest progress in clientstate, for now at least)
 
@@ -133,7 +131,6 @@ public sealed class Plugin : IDalamudPlugin
         _bossmod.Dispose();
         ActionDefinitions.Instance.Dispose();
         CommandManager.RemoveHandler("/bmr");
-        CommandManager.RemoveHandler("/vbm");
         GarbageCollection();
     }
 
@@ -246,11 +243,11 @@ public sealed class Plugin : IDalamudPlugin
     private void DrawUI()
     {
         var tsStart = DateTime.Now;
-        var moveImminent = _movementOverride.IsMoveRequested() && (!_amex.Config.PreventMovingWhileCasting || _movementOverride.IsForceUnblocked());
+        var moveImminent = _movementOverride.IsMoveRequested() && (!ActionManagerEx.Config.PreventMovingWhileCasting || _movementOverride.IsForceUnblocked());
 
         _dtr.Update();
         Camera.Instance?.Update();
-        _wsSync.Update(ref _prevUpdateTime);
+        _wsSync.Update(_prevUpdateTime);
         _bossmod.Update();
         _zonemod.ActiveModule?.Update();
         _hintsBuilder.Update(_hints, PartyState.PlayerSlot, moveImminent);
@@ -302,10 +299,10 @@ public sealed class Plugin : IDalamudPlugin
         {
             //Service.Log($"[ExecHints] Jumping...");
             FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance()->UseAction(FFXIVClientStructs.FFXIV.Client.Game.ActionType.GeneralAction, 2);
-            _throttleJump = _ws.CurrentTime.AddMilliseconds(100);
+            _throttleJump = _ws.FutureTime(0.1d);
         }
 
-        if (CheckInteractRange(_ws.Party.Player(), _hints.InteractWithTarget))
+        if ((AI.AIManager.Instance?.Beh != null || Autorotation.MiscAI.NormalMovement.Instance != null) && CheckInteractRange(_ws.Party.Player(), _hints.InteractWithTarget))
         {
             // many eventobj interactions "immediately" start some cast animation (delayed by server roundtrip), and if we keep trying to move toward the target after sending the interact request, it will be canceled and force us to start over
             _movementOverride.DesiredDirection = default;
@@ -313,7 +310,7 @@ public sealed class Plugin : IDalamudPlugin
             if (_amex.EffectiveAnimationLock == 0 && _ws.CurrentTime >= _throttleInteract)
             {
                 FFXIVClientStructs.FFXIV.Client.Game.Control.TargetSystem.Instance()->InteractWithObject(GetActorObject(_hints.InteractWithTarget), false);
-                _throttleInteract = _ws.FutureTime(0.1f);
+                _throttleInteract = _ws.FutureTime(1.1d);
             }
         }
     }

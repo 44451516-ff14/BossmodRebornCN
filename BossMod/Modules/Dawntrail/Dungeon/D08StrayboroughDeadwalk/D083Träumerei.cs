@@ -44,17 +44,17 @@ public enum SID : uint
     GhostlyGuise = 3949 // none->player, extra=0x0
 }
 
-class ImpactArenaChange(BossModule module) : BossComponent(module)
+sealed class ImpactArenaChange(BossModule module) : BossComponent(module)
 {
     private bool active;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x0B)
+        if (index == 0x0Bu)
         {
-            if (state == 0x00800040)
+            if (state == 0x00800040u)
                 active = true;
-            else if (state == 0x00080004)
+            else if (state == 0x00080004u)
             {
                 active = false;
                 Arena.Bounds = D083Träumerei.DefaultBounds;
@@ -68,13 +68,13 @@ class ImpactArenaChange(BossModule module) : BossComponent(module)
     }
 }
 
-class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
+sealed class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Ghostduster _avoid = module.FindComponent<Ghostduster>()!;
     private readonly IllIntentMaliciousMist _seek = module.FindComponent<IllIntentMaliciousMist>()!;
 
     private static readonly WPos[] positions = [new(137.5f, -443.5f), new(158.5f, -443.5f), new(137.5f, -422.5f), new(158.5f, -422.5f)];
-    private static readonly Circle[] circles = [.. positions.Select(pos => new Circle(pos, 3))];
+    private static readonly Circle[] circles = GenerateCircles();
     private static readonly AOEShapeCustom circlesInverted = new(circles, InvertForbiddenZone: true);
     private static readonly AOEShapeCustom circlesAvoid = new(circles, []);
     private bool activated;
@@ -83,7 +83,17 @@ class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
     private const string GhostHint = "Turn into a ghost!";
     private const string FleshHint = "Turn into flesh!";
 
-    public static bool IsGhostly(Actor actor) => actor.FindStatus(SID.GhostlyGuise) != null;
+    private static Circle[] GenerateCircles()
+    {
+        var circles = new Circle[4];
+        for (var i = 0; i < 4; ++i)
+        {
+            circles[i] = new Circle(positions[i], 3f);
+        }
+        return circles;
+    }
+
+    public static bool IsGhostly(Actor actor) => actor.FindStatus((uint)SID.GhostlyGuise) != null;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -111,7 +121,7 @@ class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x0C) // 0x0C, 0x0D, 0x0E, 0xOF happen at the same time, one for each platform
+        if (state == 0x00020001u && index == 0x0Cu) // 0x0C, 0x0D, 0x0E, 0xOF happen at the same time, one for each platform
             activated = true;
     }
 
@@ -137,8 +147,8 @@ class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MaliciousMistRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MaliciousMistRaidwide));
-class IllIntentMaliciousMist(BossModule module) : Components.StretchTetherDuo(module, 20f, 10f)
+sealed class MaliciousMistRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.MaliciousMistRaidwide);
+sealed class IllIntentMaliciousMist(BossModule module) : Components.StretchTetherDuo(module, 20f, 10f)
 {
     // ill intent seems to break after 17, malicious mist after 20, not worth the effort to differentiate
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -148,12 +158,12 @@ class IllIntentMaliciousMist(BossModule module) : Components.StretchTetherDuo(mo
     }
 }
 
-class BitterRegret1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BitterRegret1), new AOEShapeRect(50f, 8f));
-class BitterRegret2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BitterRegret2), new AOEShapeRect(50f, 6f));
-class BitterRegret3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BitterRegret3), new AOEShapeRect(40f, 2f), 5);
-class Impact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Impact), new AOEShapeRect(40f, 2f));
-class Ghostcrusher(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.GhostcrusherMarker), ActionID.MakeSpell(AID.Ghostcrusher), 5f, 80f, maxStackSize: 4);
-class Ghostduster(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Ghostduster), 8f)
+sealed class BitterRegret1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BitterRegret1, new AOEShapeRect(50f, 8f));
+sealed class BitterRegret2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BitterRegret2, new AOEShapeRect(50f, 6f));
+sealed class BitterRegret3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BitterRegret3, new AOEShapeRect(40f, 2f), 5);
+sealed class Impact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Impact, new AOEShapeRect(40f, 2f));
+sealed class Ghostcrusher(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.GhostcrusherMarker, (uint)AID.Ghostcrusher, 5f, 80f, maxStackSize: 4);
+sealed class Ghostduster(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Ghostduster, 8f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -162,7 +172,7 @@ class Ghostduster(BossModule module) : Components.SpreadFromCastTargets(module, 
     }
 }
 
-class D083TräumereiStates : StateMachineBuilder
+sealed class D083TräumereiStates : StateMachineBuilder
 {
     public D083TräumereiStates(BossModule module) : base(module)
     {
@@ -181,7 +191,7 @@ class D083TräumereiStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 12763)]
-public class D083Träumerei(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(19.5f))
+public sealed class D083Träumerei(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(19.5f))
 {
     public static readonly WPos ArenaCenter = new(148f, -433f);
     public static readonly ArenaBoundsSquare DefaultBounds = new(19.5f);

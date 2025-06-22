@@ -2,10 +2,10 @@
 
 public enum OID : uint
 {
-    Boss = 0x31C8, // R9.000, x4
-    Clock = 0x1EB17A, // R0.500, x9, EventObj type
-    TimeBomb1 = 0x1EB17B, // R0.500, EventObj type, spawn during fight
-    TimeBomb2 = 0x1EB1D4, // R0.500, EventObj type, spawn during fight
+    Boss = 0x31C8, // R9.0
+    Clock = 0x1EB17A, // R0.5
+    TimeBomb1 = 0x1EB17B, // R0.5
+    TimeBomb2 = 0x1EB1D4, // R0.5
     Helper = 0x233C
 }
 
@@ -34,13 +34,13 @@ public enum AID : uint
 // - bombs only (x3 instead of x2)
 // - complex: eruption visual -> 9 eruption eobjanims -> pause cast -> bomb visual -> spawn bombs -> reproduce visual & bomb countdown -> cyclone cast start -> bomb resolve -> cyclone resolve -> start cast -> eruption resolve
 // => rules: show bombs if active (activate by visual, deactivate by resolve, show for each object); otherwise show cyclone cast if active; otherwise show eruptions
-class TimeEruptionBombReproduce(BossModule module) : Components.GenericAOEs(module)
+sealed class TimeEruptionBombReproduce(BossModule module) : Components.GenericAOEs(module)
 {
     private DateTime _bombsActivation;
     private DateTime _eruptionStart; // timestamp of StartTime cast start
     private readonly List<Actor> _bombs = module.Enemies((uint)OID.TimeBomb1); // either 1 or 2 works, dunno what's the difference
     private readonly List<AOEInstance> _cycloneAOEs = [];
-    private readonly List<(WPos pos, TimeSpan delay)> _clocks = [];
+    private readonly List<(WPos pos, double delay)> _clocks = [];
     private readonly List<WPos> _eruptionSafeSpots = [];
 
     private static readonly AOEShapeCone _shapeBomb = new(60f, 45f.Degrees());
@@ -52,7 +52,7 @@ class TimeEruptionBombReproduce(BossModule module) : Components.GenericAOEs(modu
         if (_bombsActivation != default)
         {
             var countB = _bombs.Count;
-            var aoesB = new AOEInstance[countB];
+            Span<AOEInstance> aoesB = new AOEInstance[countB];
             for (var i = 0; i < countB; ++i)
             {
                 var b = _bombs[i];
@@ -68,11 +68,11 @@ class TimeEruptionBombReproduce(BossModule module) : Components.GenericAOEs(modu
         {
             var countC = _clocks.Count;
             var max = countC > 2 ? countC - 2 : countC;
-            var aoesC = new AOEInstance[max];
+            Span<AOEInstance> aoesC = new AOEInstance[max];
             for (var i = 0; i < max; ++i)
             {
                 var e = _clocks[i];
-                aoesC[i] = new(_shapeEruption, e.pos, new(), _eruptionStart + e.delay);
+                aoesC[i] = new(_shapeEruption, e.pos, default, _eruptionStart.AddSeconds(e.delay));
             }
             return aoesC;
         }
@@ -138,17 +138,17 @@ class TimeEruptionBombReproduce(BossModule module) : Components.GenericAOEs(modu
 
         var delay = state switch
         {
-            0x00010002 => TimeSpan.FromSeconds(9.7),
-            0x00010020 => TimeSpan.FromSeconds(11.7),
-            _ => TimeSpan.Zero
+            0x00010002u => 9.7d,
+            0x00010020u => 11.7d,
+            _ => default
         };
-        if (delay == TimeSpan.Zero)
+        if (delay == default)
             return;
 
         _clocks.Add((actor.Position, delay));
         if (_clocks.Count == 9)
         {
-            _clocks.SortBy(x => x.delay);
+            _clocks.Sort((a, b) => a.delay.CompareTo(b.delay));
             var count = _clocks.Count;
             if (count >= 2)
             {
@@ -159,11 +159,11 @@ class TimeEruptionBombReproduce(BossModule module) : Components.GenericAOEs(modu
     }
 }
 
-class Eruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Eruption), 8f);
-class FireTankbuster(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.FireTankbuster));
-class FireRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FireRaidwide));
+sealed class Eruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Eruption, 8f);
+sealed class FireTankbuster(BossModule module) : Components.SingleTargetCast(module, (uint)AID.FireTankbuster);
+sealed class FireRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.FireRaidwide);
 
-class CE52TimeToBurnStates : StateMachineBuilder
+sealed class CE52TimeToBurnStates : StateMachineBuilder
 {
     public CE52TimeToBurnStates(BossModule module) : base(module)
     {
@@ -175,5 +175,8 @@ class CE52TimeToBurnStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 778, NameID = 26)] // bnpcname=9930
-public class CE52TimeToBurn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-550f, default), new ArenaBoundsSquare(30f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 26)] // bnpcname=9930
+public sealed class CE52TimeToBurn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-550f, default), new ArenaBoundsSquare(29.5f))
+{
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 30f);
+}

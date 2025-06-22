@@ -7,13 +7,13 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
     public record struct Chain(Actor Origin, Actor Moving, Shape Shape, DateTime Activation);
 
     public List<Chain> Chains = [];
-    public int NumCasts { get; private set; }
+    public int NumCasts;
     private readonly List<Actor> _pendingTethers = []; // unfortunately, sometimes tether targets are created after tether events - recheck such tethers every frame
 
-    private static readonly AOEShapeCircle _shapeCircle = new(7);
-    private static readonly AOEShapeDonut _shapeDonut = new(6, 70);
-    private static readonly AOEShapeCone _shapeSpread = new(100, 15.Degrees()); // TODO: verify angle
-    private static readonly AOEShapeCone _shapePair = new(100, 20.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCircle _shapeCircle = new(7f);
+    private static readonly AOEShapeDonut _shapeDonut = new(6f, 70f);
+    private static readonly AOEShapeCone _shapeSpread = new(100f, 15f.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shapePair = new(100f, 20f.Degrees()); // TODO: verify angle
 
     public IEnumerable<Chain> ImminentChains()
     {
@@ -25,15 +25,16 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        for (var i = 0; i < _pendingTethers.Count; ++i)
+        var count = _pendingTethers.Count;
+        for (var i = 0; i < count; ++i)
         {
             var source = _pendingTethers[i];
-            var shape = (TetherID)source.Tether.ID switch
+            var shape = source.Tether.ID switch
             {
-                TetherID.SuperchainCircle => Shape.Circle,
-                TetherID.SuperchainDonut => Shape.Donut,
-                TetherID.SuperchainSpread => Shape.Spread,
-                TetherID.SuperchainPairs => Shape.Pairs,
+                (uint)TetherID.SuperchainCircle => Shape.Circle,
+                (uint)TetherID.SuperchainDonut => Shape.Donut,
+                (uint)TetherID.SuperchainSpread => Shape.Spread,
+                (uint)TetherID.SuperchainPairs => Shape.Pairs,
                 _ => Shape.Unknown
             };
 
@@ -45,7 +46,7 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
             else if (WorldState.Actors.Find(source.Tether.Target) is var origin && origin != null)
             {
                 Chains.Add(new(origin, source, shape, WorldState.FutureTime(ActivationDelay((source.Position - origin.Position).Length()))));
-                Chains.SortBy(x => x.Activation);
+                Chains.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 _pendingTethers.RemoveAt(i--);
             }
         }

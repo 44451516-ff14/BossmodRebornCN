@@ -260,14 +260,14 @@ class Drains(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SeabedCeremony(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SeabedCeremony));
-class Seafoam(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Seafoam));
-class Bonebreaker(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Bonebreaker));
-class FallingWater(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FallingWater), 8f);
-class FlyingFount(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.FlyingFount), 6f);
-class CommandCurrent(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CommandCurrent), new AOEShapeCone(40f, 15f.Degrees()));
-class CoralTrident(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CoralTrident), new AOEShapeCone(6f, 45f.Degrees()));
-class RisingTide(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RisingTide), new AOEShapeCross(50f, 3f));
+class SeabedCeremony(BossModule module) : Components.RaidwideCast(module, (uint)AID.SeabedCeremony);
+class Seafoam(BossModule module) : Components.RaidwideCast(module, (uint)AID.Seafoam);
+class Bonebreaker(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Bonebreaker);
+class FallingWater(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FallingWater, 8f);
+class FlyingFount(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FlyingFount, 6f);
+class CommandCurrent(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CommandCurrent, new AOEShapeCone(40f, 15f.Degrees()));
+class CoralTrident(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CoralTrident, new AOEShapeCone(6f, 45f.Degrees()));
+class RisingTide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RisingTide, new AOEShapeCross(50f, 3f));
 
 class D103RukshsDheemStates : StateMachineBuilder
 {

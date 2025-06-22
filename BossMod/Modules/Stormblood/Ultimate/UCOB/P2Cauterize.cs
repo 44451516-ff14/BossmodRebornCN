@@ -38,13 +38,13 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID is (uint)OID.Firehorn or (uint)OID.Iceclaw or (uint)OID.Thunderwing or (uint)OID.TailOfDarkness or (uint)OID.FangOfLight)
         {
-            var dir = 180.Degrees() - Angle.FromDirection(actor.Position - Arena.Center);
+            var dir = 180f.Degrees() - Angle.FromDirection(actor.Position - Arena.Center);
             var pos = (int)MathF.Round(dir.Deg / 45f) & 7;
             _dragons.Add((actor, pos));
             if (_dragons.Count == 5)
             {
                 // sort by direction
-                _dragons.SortBy(x => x.position);
+                _dragons.Sort((a, b) => a.position.CompareTo(b.position));
             }
         }
     }
@@ -102,7 +102,7 @@ class P2Cauterize(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P2Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.Hypernova), GetVoidzones, 1.4f)
+class P2Hypernova(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Hypernova, GetVoidzones, 1.4f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

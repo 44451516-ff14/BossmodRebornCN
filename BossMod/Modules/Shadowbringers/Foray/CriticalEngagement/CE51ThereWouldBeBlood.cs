@@ -32,18 +32,18 @@ public enum AID : uint
     TragicalGaze = 23573, // EmbitteredSoul->self, 7.5s cast, range 55 circle
 }
 
-class CloudOfLocusts(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CloudOfLocusts), 15f);
-class PlagueOfLocusts(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PlagueOfLocusts), new AOEShapeDonut(6f, 40f));
-class DivestingGale(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DivestingGale), 5f);
-class Camisado(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Camisado));
-class DreadWind(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DreadWind));
-class GaleCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GaleCannon), new AOEShapeRect(30f, 6f));
-class FlightOfTheMaleficCone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlightOfTheMaleficAOECone), new AOEShapeCone(30f, 45f.Degrees()));
-class FlightOfTheMaleficCenter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlightOfTheMaleficAOECenter), 6f);
-class TempestOfAnguish(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TempestOfAnguish), new AOEShapeRect(55f, 5f));
-class TragicalGaze(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.TragicalGaze));
+sealed class CloudOfLocusts(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CloudOfLocusts, 15f);
+sealed class PlagueOfLocusts(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PlagueOfLocusts, new AOEShapeDonut(6f, 40f));
+sealed class DivestingGale(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DivestingGale, 5f);
+sealed class Camisado(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Camisado);
+sealed class DreadWind(BossModule module) : Components.RaidwideCast(module, (uint)AID.DreadWind);
+sealed class GaleCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GaleCannon, new AOEShapeRect(30f, 6f));
+sealed class FlightOfTheMaleficCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlightOfTheMaleficAOECone, new AOEShapeCone(30f, 45f.Degrees()));
+sealed class FlightOfTheMaleficCenter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlightOfTheMaleficAOECenter, 6f);
+sealed class TempestOfAnguish(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TempestOfAnguish, new AOEShapeRect(55f, 5f));
+sealed class TragicalGaze(BossModule module) : Components.CastGaze(module, (uint)AID.TragicalGaze);
 
-class CE51ThereWouldBeBloodStates : StateMachineBuilder
+sealed class CE51ThereWouldBeBloodStates : StateMachineBuilder
 {
     public CE51ThereWouldBeBloodStates(BossModule module) : base(module)
     {
@@ -61,5 +61,8 @@ class CE51ThereWouldBeBloodStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 778, NameID = 24)] // bnpcname=10064
-public class CE51ThereWouldBeBlood(WorldState ws, Actor primary) : BossModule(ws, primary, new(-390f, 230f), new ArenaBoundsCircle(25f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 24)] // bnpcname=10064
+public sealed class CE51ThereWouldBeBlood(WorldState ws, Actor primary) : BossModule(ws, primary, new(-390f, 230f), new ArenaBoundsCircle(25f))
+{
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
+}

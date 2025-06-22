@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P6CosmoMeteorPuddles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CosmoMeteorAOE), 10f);
+class P6CosmoMeteorPuddles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CosmoMeteorAOE, 10f);
 
 class P6CosmoMeteorAddComet(BossModule module) : Components.Adds(module, (uint)OID.CosmoComet);
 

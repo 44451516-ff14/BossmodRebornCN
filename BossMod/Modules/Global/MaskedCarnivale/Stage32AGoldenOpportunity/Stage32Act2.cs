@@ -46,9 +46,9 @@ public enum SID : uint
     MagicResistance = 3621 // none->Boss, extra=0x0
 }
 
-class GoldorFireIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldorFireIII), 8f);
-class GoldorBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldorBlast), new AOEShapeRect(60f, 5f));
-class GoldenCross(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldenCross), new AOEShapeCross(100f, 3.5f));
+class GoldorFireIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorFireIII, 8f);
+class GoldorBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorBlast, new AOEShapeRect(60f, 5f));
+class GoldenCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldenCross, new AOEShapeCross(100f, 3.5f));
 
 class GoldenBeam(BossModule module) : Components.GenericAOEs(module)
 {
@@ -103,7 +103,7 @@ class GoldenBeam(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TwentyFourCaratSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwentyFourCaratSwing), 12f);
+class TwentyFourCaratSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwentyFourCaratSwing, 12f);
 
 class GoldorQuake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -131,7 +131,7 @@ class GoldorQuake(BossModule module) : Components.ConcentricAOEs(module, _shapes
     }
 }
 
-class GoldorAeroIII(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.GoldorAeroIII), 10f)
+class GoldorAeroIII(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GoldorAeroIII, 10f)
 {
     private readonly GoldenCross _aoe = module.FindComponent<GoldenCross>()!;
 
@@ -148,14 +148,14 @@ class GoldorAeroIII(BossModule module) : Components.SimpleKnockbacks(module, Act
     }
 }
 
-class GoldorAeroIIIRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GoldorAeroIII));
-class GoldorRush(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.GoldorRush), 10f);
-class GoldorRushRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GoldorRush));
-class TwentyFourCaratInhale(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.TwentyFourCaratInhale), 30f, kind: Kind.TowardsOrigin);
-class GoldorGravity(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.GoldorGravity), ActionID.MakeSpell(AID.GoldorGravity2), 0.8f, "Dmg + Heavy debuff");
-class GoldorThunderIII(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.GoldorThunderIIIVisual), ActionID.MakeSpell(AID.GoldorThunderIII1), 0.8f, "Prepare to cleanse Electrocution");
-class GoldorThunderIII2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldorThunderIII2), 6f);
-class GoldorBlizzardIII(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.GoldorBlizzardIIIVisual));
+class GoldorAeroIIIRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.GoldorAeroIII);
+class GoldorRush(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GoldorRush, 10f);
+class GoldorRushRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.GoldorRush);
+class TwentyFourCaratInhale(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TwentyFourCaratInhale, 30f, kind: Kind.TowardsOrigin);
+class GoldorGravity(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.GoldorGravity, (uint)AID.GoldorGravity2, 0.8f, "Dmg + Heavy debuff");
+class GoldorThunderIII(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.GoldorThunderIIIVisual, (uint)AID.GoldorThunderIII1, 0.8f, "Prepare to cleanse Electrocution");
+class GoldorThunderIII2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorThunderIII2, 6f);
+class GoldorBlizzardIII(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldorBlizzardIIIVisual);
 
 class Hints(BossModule module) : BossComponent(module)
 {

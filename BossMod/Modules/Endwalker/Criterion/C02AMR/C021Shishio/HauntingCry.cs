@@ -90,10 +90,10 @@ class HauntingCryReisho(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-abstract class HauntingCryVermilionAura(BossModule module, AID aid) : Components.CastTowers(module, ActionID.MakeSpell(aid), 4f);
-class NHauntingCryVermilionAura(BossModule module) : HauntingCryVermilionAura(module, AID.NVermilionAura);
-class SHauntingCryVermilionAura(BossModule module) : HauntingCryVermilionAura(module, AID.SVermilionAura);
+abstract class HauntingCryVermilionAura(BossModule module, uint aid) : Components.CastTowers(module, aid, 4f);
+class NHauntingCryVermilionAura(BossModule module) : HauntingCryVermilionAura(module, (uint)AID.NVermilionAura);
+class SHauntingCryVermilionAura(BossModule module) : HauntingCryVermilionAura(module, (uint)AID.SVermilionAura);
 
-abstract class HauntingCryStygianAura(BossModule module, AID aid) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(aid), 15f, true);
-class NHauntingCryStygianAura(BossModule module) : HauntingCryStygianAura(module, AID.NStygianAura);
-class SHauntingCryStygianAura(BossModule module) : HauntingCryStygianAura(module, AID.SStygianAura);
+abstract class HauntingCryStygianAura(BossModule module, uint aid) : Components.SpreadFromCastTargets(module, aid, 15f, true);
+class NHauntingCryStygianAura(BossModule module) : HauntingCryStygianAura(module, (uint)AID.NStygianAura);
+class SHauntingCryStygianAura(BossModule module) : HauntingCryStygianAura(module, (uint)AID.SStygianAura);

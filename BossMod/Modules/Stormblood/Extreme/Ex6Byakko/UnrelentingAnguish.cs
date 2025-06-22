@@ -77,7 +77,7 @@ class OminousWind(BossModule module) : BossComponent(module)
     }
 }
 
-class GaleForce(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6f), (uint)IconID.Bombogenesis, ActionID.MakeSpell(AID.GaleForce), 8.1f, true);
+class GaleForce(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Bombogenesis, (uint)AID.GaleForce, 8.1f);
 
 class VacuumClaw(BossModule module) : Components.Voidzone(module, 12f, GetVoidzones)
 {

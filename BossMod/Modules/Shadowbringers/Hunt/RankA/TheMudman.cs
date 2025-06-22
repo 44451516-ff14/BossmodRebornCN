@@ -15,11 +15,11 @@ public enum AID : uint
     GravityForce = 16829 // Boss->player, 5.0s cast, range 6 circle, interruptible, applies heavy
 }
 
-class BogBequest(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BogBequest), new AOEShapeDonut(5f, 20f));
-class FeculentFlood(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FeculentFlood), new AOEShapeCone(40f, 30f.Degrees()));
-class RoyalFlush(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RoyalFlush), 8f);
+class BogBequest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BogBequest, new AOEShapeDonut(5f, 20f));
+class FeculentFlood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FeculentFlood, new AOEShapeCone(40f, 30f.Degrees()));
+class RoyalFlush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RoyalFlush, 8f);
 
-class GravityForce(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.GravityForce), new AOEShapeCircle(6f), true)
+class GravityForce(BossModule module) : Components.BaitAwayCast(module, (uint)AID.GravityForce, 6f)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -29,7 +29,7 @@ class GravityForce(BossModule module) : Components.BaitAwayCast(module, ActionID
     }
 }
 
-class GravityForceHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.GravityForce));
+class GravityForceHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GravityForce);
 
 class TheMudmanStates : StateMachineBuilder
 {

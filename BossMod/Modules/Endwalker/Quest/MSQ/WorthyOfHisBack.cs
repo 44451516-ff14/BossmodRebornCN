@@ -101,9 +101,9 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Kleos(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Kleos));
-class TrueHolyRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TrueHoly));
-class TrueAeroIV(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TrueAeroIV));
+class Kleos(BossModule module) : Components.RaidwideCast(module, (uint)AID.Kleos);
+class TrueHolyRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.TrueHoly);
+class TrueAeroIV(BossModule module) : Components.RaidwideCast(module, (uint)AID.TrueAeroIV);
 
 class ParhelionCone(BossModule module) : Components.GenericRotatingAOE(module)
 {
@@ -209,11 +209,11 @@ class EpeaPteroenta(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class CrepuscularRay(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.CrepuscularRay), 4f);
+class CrepuscularRay(BossModule module) : Components.ChargeAOEs(module, (uint)AID.CrepuscularRay, 4f);
 
-abstract class CircumzenithalArc(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 90f.Degrees()));
-class CircumzenithalArcFirst(BossModule module) : CircumzenithalArc(module, AID.CircumzenithalArcFirst);
-class CircumzenithalArcSecond(BossModule module) : CircumzenithalArc(module, AID.CircumzenithalArcSecond)
+abstract class CircumzenithalArc(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 90f.Degrees()));
+class CircumzenithalArcFirst(BossModule module) : CircumzenithalArc(module, (uint)AID.CircumzenithalArcFirst);
+class CircumzenithalArcSecond(BossModule module) : CircumzenithalArc(module, (uint)AID.CircumzenithalArcSecond)
 {
     private readonly CrepuscularRay _aoe = module.FindComponent<CrepuscularRay>()!;
 
@@ -224,13 +224,13 @@ class CircumzenithalArcSecond(BossModule module) : CircumzenithalArc(module, AID
     }
 }
 
-class CircleOfBrilliance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CircleOfBrilliance), 5f);
+class CircleOfBrilliance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleOfBrilliance, 5f);
 
-class Enomotos(BossModule module) : Components.Exaflare(module, 6f, ActionID.MakeSpell(AID.EnomotosFirst))
+class Enomotos(BossModule module) : Components.Exaflare(module, 6f, (uint)AID.EnomotosFirst)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             Lines.Add(new() { Next = caster.Position, Advance = 5f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1f, ExplosionsLeft = 9, MaxShownExplosions = 3 });
         }
@@ -257,10 +257,10 @@ class Enomotos(BossModule module) : Components.Exaflare(module, 6f, ActionID.Mak
     }
 }
 
-class Windage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Windage), 5f);
-class AfflatusAzem(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(5f), ActionID.MakeSpell(AID.AfflatusAzemFirst), ActionID.MakeSpell(AID.AfflatusAzemChase), 5f, 2.1f, 5, true);
-class WindageSlow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindageSlow), 5f);
-class TrueHoly(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.TrueHoly), 20f)
+class Windage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Windage, 5f);
+class AfflatusAzem(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(5f), (uint)AID.AfflatusAzemFirst, (uint)AID.AfflatusAzemChase, 5f, 2.1f, 5, true);
+class WindageSlow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindageSlow, 5f);
+class TrueHoly(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TrueHoly, 20f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -272,8 +272,8 @@ class TrueHoly(BossModule module) : Components.SimpleKnockbacks(module, ActionID
     }
 }
 
-class TrueStoneIV(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrueStoneIV), 10f, maxCasts: 7);
-class EnomotosSmall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EnomotosSmall), 4f);
+class TrueStoneIV(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueStoneIV, 10f, maxCasts: 7);
+class EnomotosSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EnomotosSmall, 4f);
 
 class Adds(BossModule module) : Components.AddsMulti(module, [(uint)OID.Thelema, (uint)OID.ThelemaAgape], 1);
 

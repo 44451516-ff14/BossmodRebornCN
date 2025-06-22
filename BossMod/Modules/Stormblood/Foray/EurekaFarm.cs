@@ -122,8 +122,8 @@ public abstract class EurekaZone<NM> : ZoneModule where NM : struct, Enum
         return caster.CastInfo != null
             && caster.CastInfo.Action.ID switch
             {
-                15415 or 15416 => true,
-                15449 or 15295 => caster.CastInfo.TargetID == player.InstanceID,
+                15415u or 15416u => true,
+                15449u or 15295u => caster.CastInfo.TargetID == player.InstanceID,
                 _ => false,
             };
     }

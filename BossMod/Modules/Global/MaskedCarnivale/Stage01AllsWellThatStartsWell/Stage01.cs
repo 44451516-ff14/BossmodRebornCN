@@ -15,7 +15,7 @@ public enum AID : uint
     IronJustice = 14199 // Boss->self, 2.5s cast, range 8+R 120-degree cone
 }
 
-class IronJustice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronJustice), new AOEShapeCone(9.5f, 60f.Degrees()));
+class IronJustice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice, new AOEShapeCone(9.5f, 60f.Degrees()));
 
 class Hints(BossModule module) : BossComponent(module)
 {

@@ -28,13 +28,13 @@ public enum AID : uint
     LifeSurge = 83 // SerPaulecrainColdfire->self, no cast, single-target
 }
 
-class LightningBolt(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.LightningBolt), 2);
-class IronTempest(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronTempest), 5.5f);
-class Overpower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Overpower), new AOEShapeCone(6.5f, 45.Degrees()));
-class RingOfFrost(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RingOfFrost), 6.5f);
-class Rive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Rive), new AOEShapeRect(30.5f, 1));
-class Heartstopper(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Heartstopper), new AOEShapeRect(3.5f, 1.5f));
-class ThunderThrust(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ThunderThrust));
+class LightningBolt(BossModule module) : Components.ChargeAOEs(module, (uint)AID.LightningBolt, 2);
+class IronTempest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronTempest, 5.5f);
+class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(6.5f, 45.Degrees()));
+class RingOfFrost(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RingOfFrost, 6.5f);
+class Rive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rive, new AOEShapeRect(30.5f, 1));
+class Heartstopper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Heartstopper, new AOEShapeRect(3.5f, 1.5f));
+class ThunderThrust(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThunderThrust);
 
 class SerGrinnauxStates : StateMachineBuilder
 {

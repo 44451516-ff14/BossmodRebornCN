@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class ActivePivotParticleBeam(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class ActivePivotParticleBeam(BossModule module) : Components.GenericRotatingAOE(module)
 {
-    private static readonly AOEShapeRect _shape = new(40, 9, 40);
+    private static readonly AOEShapeRect _shape = new(40f, 9f, 40f);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

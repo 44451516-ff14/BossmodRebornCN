@@ -41,11 +41,11 @@ public enum AID : uint
     Telega = 9630 // Mandragoras/Lyssa/Lampas->self, no cast, single-target, bonus add disappear
 }
 
-class SludgeBomb(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SludgeBomb2), 8f);
-class RustlingWind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RustlingWind), new AOEShapeRect(15f, 2f));
-class AcidMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AcidMist), 6f);
-class OdiousAir(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OdiousAir), new AOEShapeCone(12f, 60f.Degrees()));
-class VineWhip(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.VineWhip));
+class SludgeBomb(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SludgeBomb2, 8f);
+class RustlingWind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RustlingWind, new AOEShapeRect(15f, 2f));
+class AcidMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AcidMist, 6f);
+class OdiousAir(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OdiousAir, new AOEShapeCone(12f, 60f.Degrees()));
+class VineWhip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.VineWhip);
 
 class OdiousAtmosphere(BossModule module) : Components.GenericAOEs(module)
 {
@@ -77,14 +77,10 @@ class OdiousAtmosphere(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
-class HeavySmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySmash), 6f);
+class HeavySmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySmash, 6f);
 
 class GymnasiouMegakanthaStates : StateMachineBuilder
 {
@@ -98,11 +94,7 @@ class GymnasiouMegakanthaStates : StateMachineBuilder
             .ActivateOnEnter<OdiousAtmosphere>()
             .ActivateOnEnter<AcidMist>()
             .ActivateOnEnter<HeavySmash>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(GymnasiouMegakantha.All);

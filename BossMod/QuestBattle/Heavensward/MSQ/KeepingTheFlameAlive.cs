@@ -25,7 +25,7 @@ public class KeepingTheFlameAlive(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Named("Open cell")
-            .Hints((act, hints) => hints.PrioritizeTargetsByOID(OID.IronCell))
+            .Hints((act, hints) => hints.PrioritizeTargetsByOID((uint)OID.IronCell))
             .CompleteOnKilled((uint)OID.IronCell),
 
         new QuestObjective(ws)
@@ -34,7 +34,7 @@ public class KeepingTheFlameAlive(WorldState ws) : QuestBattle(ws)
             .Hints((player, hints) =>
             {
                 if (player.PosRot.Y >= 6)
-                    hints.PrioritizeTargetsByOID(OID.HummingAtomizer);
+                    hints.PrioritizeTargetsByOID((uint)OID.HummingAtomizer);
             })
             .CompleteOnKilled((uint)OID.HummingAtomizer),
 

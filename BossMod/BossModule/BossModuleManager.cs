@@ -8,7 +8,7 @@ public sealed class BossModuleManager : IDisposable
     public static readonly BossModuleConfig Config = Service.Config.Get<BossModuleConfig>();
     private readonly EventSubscriptions _subsciptions;
 
-    public List<BossModule> LoadedModules { get; } = [];
+    public readonly List<BossModule> LoadedModules = [];
     public Event<BossModule> ModuleLoaded = new();
     public Event<BossModule> ModuleUnloaded = new();
     public Event<BossModule> ModuleActivated = new();

@@ -17,10 +17,10 @@ public enum AID : uint
     TheRamsVoice = 16962 // Boss->self, 4.0s cast, range 9 circle
 }
 
-abstract class Breath(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(30f, 60f.Degrees()));
-class TheDragonsBreath(BossModule module) : Breath(module, AID.TheDragonsBreath);
-class TheRamsBreath(BossModule module) : Breath(module, AID.TheRamsBreath);
-class TheLionsBreath(BossModule module) : Breath(module, AID.TheLionsBreath);
+abstract class Breath(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(30f, 60f.Degrees()));
+class TheDragonsBreath(BossModule module) : Breath(module, (uint)AID.TheDragonsBreath);
+class TheRamsBreath(BossModule module) : Breath(module, (uint)AID.TheRamsBreath);
+class TheLionsBreath(BossModule module) : Breath(module, (uint)AID.TheLionsBreath);
 
 class TheScorpionsSting(BossModule module) : Components.GenericAOEs(module)
 {
@@ -42,11 +42,11 @@ class TheScorpionsSting(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TheRamsEmbrace(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsEmbrace), 9f);
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsVoice), 9f);
-class TheRamsVoiceHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TheRamsVoice));
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheDragonsVoice), new AOEShapeDonut(8f, 30f));
-class TheDragonsVoiceHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TheDragonsVoice), hintExtra: "Donut Raidwide");
+class TheRamsEmbrace(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsEmbrace, 9f);
+class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9f);
+class TheRamsVoiceHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheRamsVoice);
+class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(8f, 30f));
+class TheDragonsVoiceHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheDragonsVoice, hintExtra: "Donut Raidwide");
 
 class TygerStates : StateMachineBuilder
 {

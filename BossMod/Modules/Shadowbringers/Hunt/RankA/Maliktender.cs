@@ -20,8 +20,8 @@ public enum SID : uint
     Stun = 149,
 }
 
-class Sabotendance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sabotendance), 8f);
-class TwentyKNeedles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwentyKNeedles), new AOEShapeRect(20f, 4f));
+class Sabotendance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sabotendance, 8f);
+class TwentyKNeedles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwentyKNeedles, new AOEShapeRect(20f, 4f));
 
 class Haste(BossModule module) : BossComponent(module)
 {
@@ -40,7 +40,7 @@ class Haste(BossModule module) : BossComponent(module)
     }
 }
 
-class NineNineNineKNeedles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NineNineNineKNeedles), new AOEShapeRect(20f, 4f));
+class NineNineNineKNeedles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NineNineNineKNeedles, new AOEShapeRect(20f, 4f));
 
 class MaliktenderStates : StateMachineBuilder
 {

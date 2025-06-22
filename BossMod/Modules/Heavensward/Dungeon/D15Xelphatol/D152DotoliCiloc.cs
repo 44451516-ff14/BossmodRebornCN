@@ -1,5 +1,3 @@
-using BossMod.Endwalker.Quest.MSQ.AsTheHeavensBurn.P1TerminusIdolizer;
-
 namespace BossMod.Heavensward.Dungeon.D11Antitower.D152DotoliCiloc;
 
 public enum OID : uint
@@ -51,15 +49,15 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DarkWings(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.DarkWings), 6f, 5.1f);
+class DarkWings(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.DarkWings, 6f, 5.1f);
 class Whirlwind(BossModule module) : Components.Voidzone(module, 6f, GetWhirlwinds)
 {
     private static List<Actor> GetWhirlwinds(BossModule module) => module.Enemies((uint)OID.Whirlwind);
 }
-class Stormcoming(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Stormcoming), 6f);
-class OnLow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OnLow), new AOEShapeCone(10.98f, 60f.Degrees()));
+class Stormcoming(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Stormcoming, 6f);
+class OnLow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OnLow, new AOEShapeCone(10.98f, 60f.Degrees()));
 
-class OnLowHaste(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Swiftfeather), new AOEShapeCone(10.98f, 60f.Degrees()))
+class OnLowHaste(BossModule module) : Components.Cleave(module, (uint)AID.Swiftfeather, new AOEShapeCone(10.98f, 60f.Degrees()))
 {
     private bool active;
 

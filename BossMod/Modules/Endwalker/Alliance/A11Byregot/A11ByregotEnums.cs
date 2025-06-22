@@ -40,6 +40,5 @@ public enum AID : uint
 
 public enum SID : uint
 {
-    None = 0,
     Glow = 2056 // 0x017F extra, used by boss and glowing avatars
 }

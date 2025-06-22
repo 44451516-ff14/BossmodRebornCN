@@ -1,47 +1,43 @@
 ﻿namespace BossMod;
 
-[ConfigDisplay(Name = "动作调整", Order = 4)]
+[ConfigDisplay(Name = "Action tweaks", Order = 4)]
 public sealed class ActionTweaksConfig : ConfigNode
 {
-    // TODO: 考虑将最大延迟暴露给配置；0表示'移除所有延迟'，最大值表示'禁用'
-    [PropertyDisplay("移除瞬发技能因延迟引起的额外动画锁定延迟（请阅读提示！）", tooltip: "请不要与XivAlexander或NoClippy一起使用——如果检测到这些工具，它应会自动禁用，但请务必先检查！")]
+    // TODO: consider exposing max-delay to config; 0 would mean 'remove all delay', max-value would mean 'disable'
+    [PropertyDisplay("Remove extra lag-induced animation lock delay from instant casts (read tooltip!)", tooltip: "Do NOT use with XivAlexander or NoClippy - this should automatically disable itself if they are detected, but double check first!")]
     public bool RemoveAnimationLockDelay = false;
 
-    [PropertyDisplay("动画锁定最大模拟延迟（请阅读工具提示！）", tooltip: "配置使用动画锁定移除时的最大模拟延迟（以毫秒为单位）——这是必需的，且不能减少到零。将此设置为20毫秒时，在使用自动旋转时将启用三重编织。移除三重编织的最小设置为26毫秒。20毫秒的最小值已被FFLogs接受，不应对你的日志造成问题。")]
+    [PropertyDisplay("Animation lock max. simulated delay (read tooltip!)", tooltip: "Configures the maximum simulated delay in milliseconds when using animation lock removal - this is required and cannot be reduced to zero. Setting this to 20ms will enable triple-weaving when using autorotation. The minimum setting to remove triple-weaving is 26ms. The minimum of 20ms has been accepted by FFLogs and should not cause issues with your logs.")]
     [PropertySlider(20, 50, Speed = 0.1f)]
     public int AnimationLockDelayMax = 20;
 
-    [PropertyDisplay("移除因帧率引起的额外冷却延迟", tooltip: "动态调整冷却和动画锁定，以确保无论帧率限制如何，队列中的动作都能立即执行")]
+    [PropertyDisplay("Remove extra framerate-induced cooldown delay", tooltip: "Dynamically adjusts cooldown and animation locks to ensure queued actions resolve immediately regardless of framerate limitations")]
     public bool RemoveCooldownDelay = false;
 
-    [PropertyDisplay("防止施法时移动")]
+    [PropertyDisplay("Prevent movement while casting")]
     public bool PreventMovingWhileCasting = false;
 
     public enum ModifierKey
     {
         [PropertyDisplay("None")]
         None,
-
         [PropertyDisplay("Control")]
         Ctrl,
-
         [PropertyDisplay("Alt")]
         Alt,
-
         [PropertyDisplay("Shift")]
         Shift,
-
         [PropertyDisplay("LMB + RMB")]
         M12
     }
 
-    [PropertyDisplay("按住此键可在施法时允许移动", tooltip: "需要同时启用上面的设置")]
+    [PropertyDisplay("Key to hold to allow movement while casting", tooltip: "Requires the above setting checked as well")]
     public ModifierKey MoveEscapeHatch = ModifierKey.None;
 
-    [PropertyDisplay("当目标死亡时自动取消施法")]
+    [PropertyDisplay("Automatically cancel a cast when target is dead")]
     public bool CancelCastOnDeadTarget = false;
 
-    [PropertyDisplay("在即将出现类似灼热效果的机制时，防止移动和动作执行（设置为0以禁用，否则根据你的延迟增加阈值）。")]
+    [PropertyDisplay("Prevent movement and action execution when pyretic-like mechanics are imminent (set to 0 to disable, otherwise increase threshold depending on your ping).")]
     [PropertySlider(0, 10, Speed = 0.01f)]
     public float PyreticThreshold = 1.0f;
 
@@ -49,42 +45,43 @@ public sealed class ActionTweaksConfig : ConfigNode
     [PropertySlider(0, 180)]
     public float MisdirectionThreshold = 180;
 
-    [PropertyDisplay("在使用动作后恢复角色方向（已弃用）", tooltip: "注意：此功能已被智能角色方向取代，并将在未来移除。")]
+    [PropertyDisplay("Restore character orientation after action use")]
     public bool RestoreRotation = false;
 
-    
-    [PropertyDisplay("对鼠标悬停的目标使用技能")]
+    [PropertyDisplay("Use actions on mouseover target")]
     public bool PreferMouseover = false;
 
-    [PropertyDisplay("智能技能目标选择", tooltip: "如果通常的目标（鼠标悬停/主要目标）不适合使用某个技能，则自动选择下一个最佳目标（例如为副坦使用Shirk）")]
+    [PropertyDisplay("Smart ability targeting", tooltip: "If the usual (mouseover/primary) target is not valid for an action, select the next best target automatically (e.g. co-tank for Shirk)")]
     public bool SmartTargets = true;
 
-    [PropertyDisplay("为手动按下的技能使用自定义队列", tooltip: "此设置可以更好地与自动循环结合，并防止在自动循环过程中按下治疗技能时出现三次编织或GCD漂移的情况")]
+    [PropertyDisplay("Use custom queueing for manually pressed actions", tooltip: "This setting allows better integration with autorotations and will prevent you from triple-weaving or drifting GCDs if you press a healing ability while autorotation is going on")]
     public bool UseManualQueue = false;
-    
-    [PropertyDisplay("自动管理自动攻击", tooltip: "此设置可防止在倒计时期间提前启动自动攻击，并在拉扯、切换目标和使用任何未明确取消自动攻击的操作时自动启动自动攻击。")]
+
+    [PropertyDisplay("Try to prevent dashing into AOEs", tooltip: "Prevent automatic use of targeted dashes (like WAR Onslaught) if they would move you into a dangerous area. May not work as expected in instances that do not have modules.\n\nThis option will also apply to manually pressed dashes if you have \"Use custom queueing for manually pressed actions\" enabled.")]
+    public bool DashSafety = true;
+
+    [PropertyDisplay("Apply the previous option to all dashes, not just gap closers", tooltip: "Includes backdashes (e.g. SAM Yaten), teleports (e.g. NIN Shukuchi), and fixed-length dashes (e.g. DRG Elusive Jump)")]
+    public bool DashSafetyExtra = true;
+
+    [PropertyDisplay("Automatically manage auto attacks", tooltip: "This setting prevents starting autos early during countdown, starts them automatically at pull, when switching targets and when using any actions that don't explicitly cancel autos.")]
     public bool AutoAutos = false;
 
-    [PropertyDisplay("自动下坐骑以执行技能")]
+    [PropertyDisplay("Automatically dismount to execute actions")]
     public bool AutoDismount = true;
 
     public enum GroundTargetingMode
     {
-        [PropertyDisplay("通过额外点击手动选择位置（正常游戏行为）")]
+        [PropertyDisplay("Manually select position by extra click (normal game behaviour)")]
         Manual,
 
-        [PropertyDisplay("在当前鼠标位置施放")]
+        [PropertyDisplay("Cast at current mouse position")]
         AtCursor,
 
-        [PropertyDisplay("在选定目标的位置施放")]
+        [PropertyDisplay("Cast at selected target's position")]
         AtTarget
     }
-
-    [PropertyDisplay("地面目标技能的自动目标选择")]
+    [PropertyDisplay("Automatic target selection for ground-targeted abilities")]
     public GroundTargetingMode GTMode = GroundTargetingMode.Manual;
-
-    [PropertyDisplay("Try to prevent dashing into AOEs", tooltip: "Prevent automatic use of damaging gap closers (like WAR Onslaught) if they would move you into a dangerous area. May not work as expected in instances that do not have modules.")]
-    public bool PreventDangerousDash = false;
 
     public bool ActivateAnticheat = true;
 }

@@ -23,16 +23,16 @@ public enum AID : uint
     TenTonzeWaveDonut = 15268 // Helper->self, 4.6s cast, range 10-20 donut
 }
 
-class OneOneOneOneTonzeSwing(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OneOneOneOneTonzeSwing), "Use Diamondback!");
-class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OneOneOneTonzeSwing), 12f);
-class CryOfRage(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.CryOfRage));
+class OneOneOneOneTonzeSwing(BossModule module) : Components.RaidwideCast(module, (uint)AID.OneOneOneOneTonzeSwing, "Use Diamondback!");
+class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 12f);
+class CryOfRage(BossModule module) : Components.CastGaze(module, (uint)AID.CryOfRage);
 
-abstract class TenTonzeCone(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(44f, 30f.Degrees()));
-class TenTonzeSlash(BossModule module) : TenTonzeCone(module, AID.TenTonzeSlash);
-class TenTonzeWaveCone(BossModule module) : TenTonzeCone(module, AID.TenTonzeWaveCone);
+abstract class TenTonzeCone(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(44f, 30f.Degrees()));
+class TenTonzeSlash(BossModule module) : TenTonzeCone(module, (uint)AID.TenTonzeSlash);
+class TenTonzeWaveCone(BossModule module) : TenTonzeCone(module, (uint)AID.TenTonzeWaveCone);
 
-class TenTonzeWaveDonut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TenTonzeWaveDonut), new AOEShapeDonut(10f, 20f));
-class ZoomIn(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.ZoomIn), 4f);
+class TenTonzeWaveDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTonzeWaveDonut, new AOEShapeDonut(10f, 20f));
+class ZoomIn(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.ZoomIn, 4f);
 
 class ZoomInKB(BossModule module) : Components.GenericKnockback(module) // actual knockback happens ~0.7s after snapshot
 {

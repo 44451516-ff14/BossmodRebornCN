@@ -1,6 +1,6 @@
 ﻿namespace BossMod.ReplayVisualization;
 
-public class ColumnEnemyCasts : ColumnGenericHistory, IToggleableColumn
+public sealed class ColumnEnemyCasts : ColumnGenericHistory, IToggleableColumn
 {
     public bool Visible
     {

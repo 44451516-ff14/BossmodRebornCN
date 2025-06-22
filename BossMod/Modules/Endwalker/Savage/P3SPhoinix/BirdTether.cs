@@ -13,7 +13,6 @@ class BirdTether(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        Service.Log($"{NumFinishedChains}");
         _playersInAOE.Reset();
         var birdsLarge = Module.Enemies(OID.SunbirdLarge);
         for (var i = 0; i < Math.Min(birdsLarge.Count, _chains.Length); ++i)

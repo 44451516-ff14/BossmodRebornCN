@@ -26,12 +26,12 @@ public enum SID : uint
     Invincibility = 325 // none->Boss, extra=0x0
 }
 
-abstract class Gaze(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(8.7f, 45.Degrees()));
-class CursedGaze(BossModule module) : Gaze(module, AID.CursedGaze);
-class DreadGaze(BossModule module) : Gaze(module, AID.DreadGaze);
+abstract class Gaze(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(8.7f, 45.Degrees()));
+class CursedGaze(BossModule module) : Gaze(module, (uint)AID.CursedGaze);
+class DreadGaze(BossModule module) : Gaze(module, (uint)AID.DreadGaze);
 
-class Thunderstrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Thunderstrike), new AOEShapeRect(11.2f, 1.5f));
-class Condemnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Condemnation), new AOEShapeCone(7.3f, 45.Degrees()));
+class Thunderstrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Thunderstrike, new AOEShapeRect(11.2f, 1.5f));
+class Condemnation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Condemnation, new AOEShapeCone(7.3f, 45.Degrees()));
 
 // try to always stay in active crystal closest to boss
 class Positioning(BossModule module) : BossComponent(module)

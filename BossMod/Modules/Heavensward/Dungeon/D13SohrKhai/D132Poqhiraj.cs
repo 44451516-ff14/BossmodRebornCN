@@ -85,7 +85,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
     }
 }
 
-class GallopAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GallopAOE), new AOEShapeRect(40.5f, 1f));
+class GallopAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GallopAOE, new AOEShapeRect(40.5f, 1f));
 
 class GallopKB(BossModule module) : Components.GenericKnockback(module)
 {
@@ -170,9 +170,9 @@ class GallopKBHint(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Touchdown(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TouchdownVisual), 25f);
+class Touchdown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TouchdownVisual, 25f);
 
-class BurningBright(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.BurningBright), new AOEShapeRect(28.5f, 3f), endsOnCastEvent: true)
+class BurningBright(BossModule module) : Components.BaitAwayCast(module, (uint)AID.BurningBright, new AOEShapeRect(28.5f, 3f), endsOnCastEvent: true)
 {
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -221,7 +221,7 @@ class BurningBright(BossModule module) : Components.BaitAwayCast(module, ActionI
     }
 }
 
-class RearHoof(BossModule module) : Components.SingleTargetInstant(module, ActionID.MakeSpell(AID.RearHoof))
+class RearHoof(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.RearHoof)
 {
     private bool start = true, firstKB;
 
@@ -257,7 +257,8 @@ class RearHoof(BossModule module) : Components.SingleTargetInstant(module, Actio
 
     private void AddTankbuster(double delay)
     {
-        Targets.Add((Raid.FindSlot(Module.PrimaryActor.TargetID), WorldState.FutureTime(delay)));
+        var id = Module.PrimaryActor.TargetID;
+        Targets.Add((Raid.FindSlot(id), WorldState.FutureTime(delay), id));
     }
 }
 

@@ -47,7 +47,7 @@ class P5AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4, 0,
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AkhMornPandora)
+        if (spell.Action.ID == (uint)AID.AkhMornPandora)
         {
             Source = caster;
             _activation = Module.CastFinishAt(spell, 0.1f);
@@ -58,7 +58,7 @@ class P5AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4, 0,
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.AkhMornPandoraAOE1 or AID.AkhMornPandoraAOE2)
+        if (spell.Action.ID is (uint)AID.AkhMornPandoraAOE1 or (uint)AID.AkhMornPandoraAOE2)
             Source = null;
     }
 }

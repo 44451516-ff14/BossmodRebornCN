@@ -27,9 +27,9 @@ public enum AID : uint
     VoidVortex = 30025 // Helper->39BE, 5.0s cast, range 6 circle
 }
 
-class Nox(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Nox), 10, 5);
-class VoidGravity(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.VoidGravity), 6);
-class VoidVortex(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.VoidVortex), 6);
+class Nox(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Nox, 10, 5);
+class VoidGravity(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.VoidGravity, 6);
+class VoidVortex(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.VoidVortex, 6);
 
 class ScarmiglioneP1States : StateMachineBuilder
 {

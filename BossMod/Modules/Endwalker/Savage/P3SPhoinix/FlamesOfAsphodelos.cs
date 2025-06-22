@@ -12,15 +12,14 @@ class FlamesOfAsphodelos(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 4 ? 4 : count;
-        var aoes = new AOEInstance[max];
-
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
+        var min = count > 2 ? 2 : count;
+        for (var i = 0; i < min; ++i)
         {
-            var aoe = _aoes[i];
-            if (i < 2)
-                aoes[i] = count > 2 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            if (max > 2)
+                aoe.Color = Colors.Danger;
+            aoe.Risky = true;
         }
         return aoes;
     }
@@ -29,9 +28,9 @@ class FlamesOfAsphodelos(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.FlamesOfAsphodelosAOE1 or (uint)AID.FlamesOfAsphodelosAOE2 or (uint)AID.FlamesOfAsphodelosAOE3)
         {
-            _aoes.Add(new(cone, caster.Position, spell.Rotation, Module.CastFinishAt(spell)));
+            _aoes.Add(new(cone, caster.Position, spell.Rotation, Module.CastFinishAt(spell), Risky: false));
             if (_aoes.Count == 6)
-                _aoes.SortBy(x => x.Activation);
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A11Prishe;
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Thornbite))
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module, (uint)AID.Thornbite)
 {
     public bool Active => _aoe != null || Arena.Bounds != A11Prishe.DefaultBounds;
     private AOEInstance? _aoe;
@@ -20,23 +20,23 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module, ActionID.
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01)
+        if (index != 0x01u)
             return;
         switch (state)
         {
-            case 0x00020001:
+            case 0x00020001u:
                 SetAOE(arenaChangeENVC00020001);
                 break;
-            case 0x02000100:
+            case 0x02000100u:
                 SetAOE(arenaChangeENVC02000100);
                 break;
-            case 0x00200010:
+            case 0x00200010u:
                 SetArena(ArenaENVC00020001);
                 break;
-            case 0x08000400:
+            case 0x08000400u:
                 SetArena(ArenaENVC02000100);
                 break;
-            case 0x00080004 or 0x00800004:
+            case 0x00080004u or 0x00800004u:
                 Arena.Bounds = A11Prishe.DefaultBounds;
                 Arena.Center = A11Prishe.ArenaCenter;
                 break;
@@ -59,7 +59,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module, ActionID.
     public override void AddHints(int slot, Actor actor, TextHints hints) { }
 }
 
-class CrystallineThornsHint(BossModule module) : Components.GenericAOEs(module)
+sealed class CrystallineThornsHint(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeCustom hintENVC00020001 = new(ArenaChanges.MiddleENVC00020001, InvertForbiddenZone: true);
@@ -69,18 +69,18 @@ class CrystallineThornsHint(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01)
+        if (index != 0x01u)
             return;
         switch (state)
         {
-            case 0x00020001:
+            case 0x00020001u:
                 SetAOE(hintENVC00020001);
                 break;
-            case 0x02000100:
+            case 0x02000100u:
                 SetAOE(hintENVC02000100);
                 break;
-            case 0x00200010:
-            case 0x08000400:
+            case 0x00200010u:
+            case 0x08000400u:
                 _aoe = null;
                 break;
         }

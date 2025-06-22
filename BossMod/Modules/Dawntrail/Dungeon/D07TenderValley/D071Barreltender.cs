@@ -30,7 +30,7 @@ public enum AID : uint
     TenderFury = 39242 // Boss->player, 5.0s cast, single-target, tankbuster
 }
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D071Barreltender.ArenaCenter, 25f)], [new Square(D071Barreltender.ArenaCenter, 20f)]);
     private AOEInstance? _aoe;
@@ -44,7 +44,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x03)
+        if (state == 0x00020001u && index == 0x03u)
         {
             Arena.Bounds = D071Barreltender.DefaultBounds;
             _aoe = null;
@@ -52,7 +52,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class HeavyweightNeedles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavyweightNeedles), new AOEShapeCone(36f, 25f.Degrees()))
+sealed class HeavyweightNeedles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavyweightNeedles, new AOEShapeCone(36f, 25f.Degrees()))
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -68,7 +68,7 @@ class HeavyweightNeedles(BossModule module) : Components.SimpleAOEs(module, Acti
     }
 }
 
-class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(module)
+sealed class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(16);
     private static readonly AOEShapeCircle circleBig = new(11f), circleSmall = new(6f);
@@ -137,12 +137,9 @@ class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Prickly(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(36f, 165f.Degrees()));
-class PricklyRight(BossModule module) : Prickly(module, AID.PricklyRight);
-class PricklyLeft(BossModule module) : Prickly(module, AID.PricklyLeft);
-
-class SucculentStomp(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.SucculentStomp), 6f, 4, 4);
-class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BarrelBreaker), 20f)
+sealed class Prickly(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PricklyRight, (uint)AID.PricklyLeft], new AOEShapeCone(36f, 165f.Degrees()));
+sealed class SucculentStomp(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.SucculentStomp, 6f, 4, 4);
+sealed class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BarrelBreaker, 20f)
 {
     private static readonly Angle a10 = 10f.Degrees(), a135 = 135f.Degrees(), a45 = 45f.Degrees();
     private enum Pattern { None, NESW, NWSE }
@@ -150,7 +147,7 @@ class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(module, Act
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.CactusSmall && state == 0x00010002)
+        if (actor.OID == (uint)OID.CactusSmall && state == 0x00010002u)
         {
             var add = actor.Position.X + actor.Position.Z;
             if (add == 400f) // new WPos(-55f, 455f)
@@ -202,10 +199,10 @@ class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(module, Act
     }
 }
 
-class TenderFury(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.TenderFury));
-class BarbedBellow(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BarbedBellow));
+sealed class TenderFury(BossModule module) : Components.SingleTargetCast(module, (uint)AID.TenderFury);
+sealed class BarbedBellow(BossModule module) : Components.RaidwideCast(module, (uint)AID.BarbedBellow);
 
-class D071BarreltenderStates : StateMachineBuilder
+sealed class D071BarreltenderStates : StateMachineBuilder
 {
     public D071BarreltenderStates(BossModule module) : base(module)
     {
@@ -214,8 +211,7 @@ class D071BarreltenderStates : StateMachineBuilder
             .ActivateOnEnter<BarrelBreaker>()
             .ActivateOnEnter<HeavyweightNeedles>()
             .ActivateOnEnter<NeedleStormSuperstorm>()
-            .ActivateOnEnter<PricklyRight>()
-            .ActivateOnEnter<PricklyLeft>()
+            .ActivateOnEnter<Prickly>()
             .ActivateOnEnter<TenderFury>()
             .ActivateOnEnter<SucculentStomp>()
             .ActivateOnEnter<BarbedBellow>();
@@ -223,7 +219,7 @@ class D071BarreltenderStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12889)]
-public class D071Barreltender(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D071Barreltender(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-65f, 470f);
     public static readonly ArenaBoundsSquare StartingBounds = new(24.5f);

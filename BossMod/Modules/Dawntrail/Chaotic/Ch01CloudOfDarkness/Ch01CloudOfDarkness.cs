@@ -1,20 +1,21 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class Flare(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Flare, ActionID.MakeSpell(AID.FlareAOE), 25f, 8.1f);
-class StygianShadow(BossModule module) : Components.Adds(module, (uint)OID.StygianShadow);
-class Atomos(BossModule module) : Components.Adds(module, (uint)OID.Atomos);
-class GhastlyGloomCross(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GhastlyGloomCrossAOE), new AOEShapeCross(40f, 15f));
-class GhastlyGloomDonut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GhastlyGloomDonutAOE), new AOEShapeDonut(21f, 40f));
-class FloodOfDarknessAdd(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.FloodOfDarknessAdd)); // TODO: only if add is player's?..
-class Excruciate(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.Excruciate), new AOEShapeCircle(4f), true);
-class LoomingChaos(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.LoomingChaosAOE));
+sealed class Flare(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Flare, (uint)AID.FlareAOE, 25f, 8.1f);
+sealed class StygianShadow(BossModule module) : Components.Adds(module, (uint)OID.StygianShadow);
+sealed class Atomos(BossModule module) : Components.Adds(module, (uint)OID.Atomos);
+sealed class GhastlyGloomCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GhastlyGloomCrossAOE, new AOEShapeCross(40f, 15f));
+sealed class GhastlyGloomDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GhastlyGloomDonutAOE, new AOEShapeDonut(21f, 40f));
+sealed class FloodOfDarknessAdd(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FloodOfDarknessAdd); // TODO: only if add is player's?..
+sealed class Excruciate(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Excruciate, 4f, tankbuster: true);
+sealed class LoomingChaos(BossModule module) : Components.CastCounter(module, (uint)AID.LoomingChaosAOE);
+sealed class Phaser(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.Phaser], new AOEShapeCone(23f, 30f.Degrees()));
 
 // TODO: tankswap hints component for phase1
 // TODO: phase 2 teleport zones?
 // TODO: grim embrace / curse of darkness prevent turning
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1010, NameID = 13624, PlanLevel = 100)]
-public class Ch01CloudOfDarkness(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultCenter, DefaultArena)
+public sealed class Ch01CloudOfDarkness(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultCenter, DefaultArena)
 {
     public static readonly WPos DefaultCenter = new(100f, 100f);
     public static readonly WPos Phase1BoundsCenter = new(100f, 76.28427f);

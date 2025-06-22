@@ -70,7 +70,7 @@ class Slammer(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class BoneShaker(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BoneShaker));
+class BoneShaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BoneShaker);
 
 class GurangatchStates : StateMachineBuilder
 {

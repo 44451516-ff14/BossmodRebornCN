@@ -17,9 +17,9 @@ public enum AID : uint
     Telega = 9630 // GoldWhisker->self, no cast, single-target
 }
 
-class TripleTrident(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.TripleTrident));
-class FishOutOfWater(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.FishOutOfWater), "Spawns adds");
-class Tingle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tingle), 12.4f);
+class TripleTrident(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.TripleTrident);
+class FishOutOfWater(BossModule module) : Components.CastHint(module, (uint)AID.FishOutOfWater, "Spawns adds");
+class Tingle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tingle, 12.4f);
 
 class TheGreatGoldWhiskerStates : StateMachineBuilder
 {

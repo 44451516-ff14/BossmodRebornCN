@@ -18,14 +18,14 @@ public enum AID : uint
     EclipticMeteor = 15257 // Boss->location, 10.0s cast, range 50 circle
 }
 
-class Charybdis(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Charybdis), 6f);
+class Charybdis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Charybdis, 6f);
 class Maelstrom(BossModule module) : Components.Voidzone(module, 8f, GetMaelstrom)
 {
     private static List<Actor> GetMaelstrom(BossModule module) => module.Enemies((uint)OID.Maelstrom);
 }
-class Trounce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Trounce), new AOEShapeCone(55.8f, 30f.Degrees()));
-class Comet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Comet2), 10f);
-class EclipticMeteor(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.EclipticMeteor), "Use Diamondback!");
+class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trounce, new AOEShapeCone(55.8f, 30f.Degrees()));
+class Comet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Comet2, 10f);
+class EclipticMeteor(BossModule module) : Components.RaidwideCast(module, (uint)AID.EclipticMeteor, "Use Diamondback!");
 
 class Hints(BossModule module) : BossComponent(module)
 {

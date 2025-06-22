@@ -22,9 +22,9 @@ public enum AID : uint
     Darkblight = 21122 // DimensionalTear->self, no cast, range 100 circle
 }
 
-class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EntropicFlame), new AOEShapeRect(50f, 4f));
-class VeinSplitter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VeinSplitter), 10f);
-class TheFinalArt(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TheFinalArt));
+class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicFlame, new AOEShapeRect(50f, 4f));
+class VeinSplitter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VeinSplitter, 10f);
+class TheFinalArt(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheFinalArt);
 
 class ZenosYaeGalvusStates : StateMachineBuilder
 {

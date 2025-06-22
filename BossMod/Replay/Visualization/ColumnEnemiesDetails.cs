@@ -3,7 +3,7 @@
 namespace BossMod.ReplayVisualization;
 
 // per-enemy details columns
-public class ColumnEnemiesDetails : Timeline.ColumnGroup
+public sealed class ColumnEnemiesDetails : Timeline.ColumnGroup
 {
     class PerOID
     {

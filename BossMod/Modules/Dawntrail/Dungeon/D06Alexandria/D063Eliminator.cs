@@ -70,7 +70,7 @@ public enum AID : uint
     Explosion = 39239 // Helper->self, 8.5s cast, range 50 width 8 rect
 }
 
-class DisruptionArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class DisruptionArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D063Eliminator.ArenaCenter, 16f)], [new Square(D063Eliminator.ArenaCenter, 15f)]);
     private AOEInstance? _aoe;
@@ -84,7 +84,7 @@ class DisruptionArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x28)
+        if (state == 0x00020001u && index == 0x28u)
         {
             Arena.Bounds = D063Eliminator.DefaultBounds;
             _aoe = null;
@@ -92,20 +92,16 @@ class DisruptionArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Disruption(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Disruption));
+sealed class Disruption(BossModule module) : Components.RaidwideCast(module, (uint)AID.Disruption);
 
-abstract class Partition(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 90f.Degrees()));
-class Partition1(BossModule module) : Partition(module, AID.Partition1);
-class Partition2(BossModule module) : Partition(module, AID.Partition2);
-class Partition3(BossModule module) : Partition(module, AID.Partition3);
+sealed class Partition(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Partition1, (uint)AID.Partition2, (uint)AID.Partition3], new AOEShapeCone(40f, 90f.Degrees()));
+sealed class Terminate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Terminate, new AOEShapeRect(40f, 5f));
+sealed class HaloOfDestruction(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HaloOfDestruction, new AOEShapeDonut(6f, 40f));
 
-class Terminate(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Terminate), new AOEShapeRect(40f, 5f));
-class HaloOfDestruction(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HaloOfDestruction), new AOEShapeDonut(6f, 40f));
-
-class Electray(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Electray), 6f)
+sealed class Electray(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Electray, 6f)
 {
     private readonly HaloOfDestruction _aoe1 = module.FindComponent<HaloOfDestruction>()!;
-    private readonly Partition2 _aoe2 = module.FindComponent<Partition2>()!;
+    private readonly Partition _aoe2 = module.FindComponent<Partition>()!;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -120,16 +116,16 @@ class Electray(BossModule module) : Components.SpreadFromCastTargets(module, Act
     }
 }
 
-class Explosion : Components.SimpleAOEs
+sealed class Explosion : Components.SimpleAOEs
 {
-    public Explosion(BossModule module) : base(module, ActionID.MakeSpell(AID.Explosion), new AOEShapeRect(50f, 4f))
+    public Explosion(BossModule module) : base(module, (uint)AID.Explosion, new AOEShapeRect(50f, 4f))
     {
         MaxDangerColor = 2;
         MaxRisky = 4;
     }
 }
 
-class Impact(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Impact), 15f)
+sealed class Impact(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Impact, 15f)
 {
     private static readonly Angle halfAngle = 45f.Degrees();
 
@@ -143,19 +139,19 @@ class Impact(BossModule module) : Components.SimpleKnockbacks(module, ActionID.M
     }
 }
 
-class Compression(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Compression), 6f);
+sealed class Compression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Compression, 6f);
 
-class Overexposure(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.OverexposureMarker), ActionID.MakeSpell(AID.Overexposure), 5f, 40f, 3f);
-class LightOfDevotion(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.LightOfDevotionMarker), ActionID.MakeSpell(AID.LightOfDevotion), 5.5f, 40f, 3f)
+sealed class Overexposure(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.OverexposureMarker, (uint)AID.Overexposure, 5f, 40f, 3f);
+sealed class LightOfDevotion(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.LightOfDevotionMarker, (uint)AID.LightOfDevotion, 5.5f, 40f, 3f)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x2F && state == 0x00080004) // as soon as limit break phase ends the line stack gets cancelled
+        if (index == 0x2Fu && state == 0x00080004u) // as soon as limit break phase ends the line stack gets cancelled
             CurrentBaits.Clear();
     }
 }
 
-class LightOfSalvation(BossModule module) : Components.GenericBaitAway(module)
+sealed class LightOfSalvation(BossModule module) : Components.GenericBaitAway(module)
 {
     private readonly Impact _kb = module.FindComponent<Impact>()!;
     private static readonly AOEShapeRect rect = new(40f, 3f);
@@ -187,16 +183,14 @@ class LightOfSalvation(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class D063EliminatorStates : StateMachineBuilder
+sealed class D063EliminatorStates : StateMachineBuilder
 {
     public D063EliminatorStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<DisruptionArenaChange>()
             .ActivateOnEnter<Disruption>()
-            .ActivateOnEnter<Partition1>()
-            .ActivateOnEnter<Partition2>()
-            .ActivateOnEnter<Partition3>()
+            .ActivateOnEnter<Partition>()
             .ActivateOnEnter<Terminate>()
             .ActivateOnEnter<HaloOfDestruction>()
             .ActivateOnEnter<Electray>()
@@ -210,7 +204,7 @@ class D063EliminatorStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12729)]
-public class D063Eliminator(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D063Eliminator(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-759f, -648f);
     public static readonly ArenaBoundsSquare StartingBounds = new(15.5f);

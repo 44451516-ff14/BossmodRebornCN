@@ -13,8 +13,7 @@ class T07ByakkoStates : StateMachineBuilder
             .ActivateOnEnter<TheRoarOfThunder>()
             .ActivateOnEnter<ImperialGuard>()
             //.ActivateOnEnter<HighestStakes>() stack marker not being removed properly
-            .ActivateOnEnter<FireAndLightning1>()
-            .ActivateOnEnter<FireAndLightning2>()
+            .ActivateOnEnter<FireAndLightning>()
             .ActivateOnEnter<DistantClap>()
             //.ActivateOnEnter<HundredfoldHavoc>() just not appearing, unsure why
             .ActivateOnEnter<AratamaForce>();

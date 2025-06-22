@@ -2,7 +2,7 @@
 
 class DestructiveCharge(BossModule module) : Components.GenericAOEs(module)
 {
-    public List<AOEInstance> AOEs = [];
+    public List<AOEInstance> AOEs = new(2);
 
     private static readonly AOEShapeCone _shape = new(25f, 45f.Degrees());
 
@@ -23,7 +23,7 @@ class DestructiveCharge(BossModule module) : Components.GenericAOEs(module)
         };
         if (dir != default)
         {
-            var pos = WPos.ClampToGrid(Arena.Center);
+            var pos = WPos.ClampToGrid(Module.PrimaryActor.Position);
             var act = WorldState.FutureTime(16.1d);
             AOEs.Add(new(_shape, pos, dir, act));
             AOEs.Add(new(_shape, pos, dir + 180f.Degrees(), act));

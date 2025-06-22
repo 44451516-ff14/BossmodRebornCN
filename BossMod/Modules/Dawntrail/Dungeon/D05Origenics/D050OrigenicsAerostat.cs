@@ -20,10 +20,10 @@ public enum AID : uint
     GrenadoShot = 35428, // OrigenicsSentryG10->location, 3.0s cast, range 5 circle
 }
 
-class IncendiaryCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IncendiaryCircle), new AOEShapeDonut(3f, 12f));
-class GrenadoShot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrenadoShot), 5f);
+sealed class IncendiaryCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IncendiaryCircle, new AOEShapeDonut(3f, 12f));
+sealed class GrenadoShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrenadoShot, 5f);
 
-class D050OrigenicsAerostatStates : StateMachineBuilder
+sealed class D050OrigenicsAerostatStates : StateMachineBuilder
 {
     public D050OrigenicsAerostatStates(D050OrigenicsAerostat module) : base(module)
     {
@@ -45,7 +45,7 @@ class D050OrigenicsAerostatStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12895, SortOrder = 2)]
-public class D050OrigenicsAerostat(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D050OrigenicsAerostat(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly Angle a30 = 30f.Degrees();
     private static readonly WPos node1Center = new(-60f, -80f), node2Center = new(-116f, -80f), node3Center = new(-172f, -80f);

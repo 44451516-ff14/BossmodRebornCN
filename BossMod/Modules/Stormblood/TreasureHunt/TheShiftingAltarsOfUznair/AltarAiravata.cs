@@ -31,12 +31,12 @@ public enum IconID : uint
     BuffetTarget = 23 // player
 }
 
-class HurlBoss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HurlBoss), 6f);
-class SpinBoss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpinBoss), new AOEShapeCone(30f, 60f.Degrees()));
-class BarbarousScream(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BarbarousScream), 13f);
-class Huff(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Huff));
+sealed class HurlBoss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HurlBoss, 6f);
+sealed class SpinBoss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinBoss, new AOEShapeCone(30f, 60f.Degrees()));
+sealed class BarbarousScream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbarousScream, 14f);
+sealed class Huff(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Huff);
 
-class Buffet(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Buffet), 20f, kind: Kind.DirForward, stopAtWall: true)
+sealed class Buffet(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Buffet, 20f, kind: Kind.DirForward, stopAtWall: true)
 {
     private bool targeted;
     private Actor? target;
@@ -74,32 +74,44 @@ class Buffet(BossModule module) : Components.SimpleKnockbacks(module, ActionID.M
     }
 }
 
-class Buffet2(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.Buffet), new AOEShapeCone(30f, 60f.Degrees()), true)
+sealed class Buffet2(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Buffet, new AOEShapeCone(30f, 60f.Degrees()), true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var b in ActiveBaitsNotOn(actor))
+        var baits = ActiveBaitsNotOn(actor);
+        if (baits.Count != 0)
+        {
+            var b = baits[0];
             hints.AddForbiddenZone(b.Shape, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var b in ActiveBaitsOn(pc))
+        var baits = ActiveBaitsOn(pc);
+        if (baits.Count != 0)
+        {
+            var b = baits[0];
             b.Shape.Outline(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
+        }
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
-        foreach (var b in ActiveBaitsNotOn(pc))
+        var baits = ActiveBaitsNotOn(pc);
+        if (baits.Count != 0)
+        {
+            var b = baits[0];
             b.Shape.Draw(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
+        }
     }
 }
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+sealed class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+sealed class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+sealed class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
-class AltarAiravataStates : StateMachineBuilder
+sealed class AltarAiravataStates : StateMachineBuilder
 {
     public AltarAiravataStates(BossModule module) : base(module)
     {
@@ -128,7 +140,7 @@ class AltarAiravataStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 586, NameID = 7601)]
-public class AltarAiravata(WorldState ws, Actor primary) : THTemplate(ws, primary)
+public sealed class AltarAiravata(WorldState ws, Actor primary) : THTemplate(ws, primary)
 {
     private static readonly uint[] bonusAdds = [(uint)OID.GoldWhisker, (uint)OID.AltarMatanga];
     public static readonly uint[] All = [(uint)OID.Boss, .. bonusAdds];

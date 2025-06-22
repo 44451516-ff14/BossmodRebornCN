@@ -40,6 +40,7 @@ public enum AID : uint
 
     Inhale = 38280, // UolonOfFortune->self, 0.5s cast, range 27 120-degree cone
     Spin = 38279, // UolonOfFortune->self, 3.0s cast, range 11 circle
+    Scoop = 38278, // UolonOfFortune->self, 4.0s cast, range 15 120-degree cone
     RottenSpores = 38277, // UolonOfFortune->location, 3.0s cast, range 6 circle
     TearyTwirl = 32301, // TuraliOnion->self, 3.5s cast, range 7 circle
     HeirloomScream = 32304, // TuraliTomato->self, 3.5s cast, range 7 circle
@@ -49,56 +50,38 @@ public enum AID : uint
     Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
-class Blade(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Blade));
-class Pyreburst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Pyreburst));
+sealed class Blade(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Blade);
+sealed class Pyreburst(BossModule module) : Components.RaidwideCast(module, (uint)AID.Pyreburst);
 
-abstract class RectWide(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 5f));
-class FlameBlade1(BossModule module) : RectWide(module, AID.FlameBlade1);
-class FlameBlade2(BossModule module) : RectWide(module, AID.FlameBlade2);
+sealed class FlameBlade1and2(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FlameBlade1, (uint)AID.FlameBlade2], new AOEShapeRect(40f, 5f));
+sealed class CrossfireBlade3FlameBlade3(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CrossfireBlade3, (uint)AID.FlameBlade3], new AOEShapeRect(40f, 2.5f));
+sealed class CrossfireBlade1and2(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CrossfireBlade1, (uint)AID.CrossfireBlade2], new AOEShapeCross(20f, 5f));
 
-abstract class RectNarrow(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 2.5f));
-class CrossfireBlade3(BossModule module) : RectNarrow(module, AID.CrossfireBlade3);
-class FlameBlade3(BossModule module) : RectNarrow(module, AID.FlameBlade3);
+sealed class BlazingBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlazingBreath, new AOEShapeRect(44f, 5f));
+sealed class BlazingBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlazingBlast, 6f);
 
-abstract class Crosses(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCross(20f, 5f));
-class CrossfireBlade1(BossModule module) : Crosses(module, AID.CrossfireBlade1);
-class CrossfireBlade2(BossModule module) : Crosses(module, AID.CrossfireBlade2);
+sealed class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+sealed class RottenSpores(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottenSpores, 6f);
+sealed class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
+sealed class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
-class BlazingBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlazingBreath), new AOEShapeRect(44f, 5f));
-class BlazingBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlazingBlast), 6f);
-
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class RottenSpores(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RottenSpores), 6f);
-
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
-
-class BullApollyonStates : StateMachineBuilder
+sealed class BullApollyonStates : StateMachineBuilder
 {
     public BullApollyonStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<Blade>()
             .ActivateOnEnter<Pyreburst>()
-            .ActivateOnEnter<FlameBlade1>()
-            .ActivateOnEnter<FlameBlade2>()
-            .ActivateOnEnter<FlameBlade3>()
+            .ActivateOnEnter<FlameBlade1and2>()
+            .ActivateOnEnter<CrossfireBlade3FlameBlade3>()
+            .ActivateOnEnter<CrossfireBlade1and2>()
             .ActivateOnEnter<BlazingBreath>()
-            .ActivateOnEnter<CrossfireBlade1>()
-            .ActivateOnEnter<CrossfireBlade2>()
-            .ActivateOnEnter<CrossfireBlade3>()
             .ActivateOnEnter<BlazingBlast>()
             .ActivateOnEnter<Spin>()
+            .ActivateOnEnter<Scoop>()
             .ActivateOnEnter<RottenSpores>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(BullApollyon.All);
@@ -114,7 +97,7 @@ class BullApollyonStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Kismet, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 993, NameID = 13247)]
-public class BullApollyon(WorldState ws, Actor primary) : SharedBoundsBoss(ws, primary)
+public sealed class BullApollyon(WorldState ws, Actor primary) : SharedBoundsBoss(ws, primary)
 {
     private static readonly uint[] bonusAdds = [(uint)OID.TuraliEggplant, (uint)OID.TuraliTomato, (uint)OID.TuligoraQueen, (uint)OID.TuraliGarlic,
     (uint)OID.TuraliOnion, (uint)OID.UolonOfFortune, (uint)OID.AlpacaOfFortune];

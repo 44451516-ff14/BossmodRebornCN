@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A11Prishe;
 
-class Explosion(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Explosion))
+sealed class Explosion(BossModule module) : Components.GenericAOEs(module, (uint)AID.Explosion)
 {
     private static readonly AOEShapeCircle circle = new(8f);
     private readonly List<AOEInstance> _aoes = new(28);

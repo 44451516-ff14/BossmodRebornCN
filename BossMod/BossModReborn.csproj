@@ -3,18 +3,18 @@
   <PropertyGroup>
     <Authors></Authors>
     <Company></Company>
-    <Version>7.2.0.349</Version>
+    <Version>7.2.5.41</Version>
     <Description>Boss mod.</Description>
     <Copyright></Copyright>
     <PackageProjectUrl></PackageProjectUrl>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyName>BossModReborn</AssemblyName>
-  </PropertyGroup>
+<PropertyGroup>
+  <AssemblyName>BossModReborn</AssemblyName>
+</PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
@@ -23,15 +23,6 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-    <ReportAnalyzer>true</ReportAnalyzer>
-  </PropertyGroup>
-
-  <!-- run analyzers only for release builds, since they are too expensive to run every build when iterating (1-2 mins) -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-    <OutputPath>..\release</OutputPath>
-<!--    <AnalysisMode>All</AnalysisMode>-->
-<!--    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>-->
-<!--    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,7 +40,7 @@
 
   <PropertyGroup>
 <!--    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>-->
-    <DalamudLibPath>E:\Games\FFVIX\Dalamud6.0\XIVLauncher\addon\Hooks\11.0.0.5\</DalamudLibPath>
+    <DalamudLibPath>F:\FFXIV\dalamud\12.0.1.4-2-g13306e24\</DalamudLibPath>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
@@ -57,17 +48,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="11.0.0" />
+    <PackageReference Include="DalamudPackager" Version="12.0.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-    <ProjectReference Include="..\CodeAnalysis\CodeAnalysis.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>Analyzer</OutputItemType>
-    </ProjectReference>
-    <ProjectReference Include="..\FFXIVClientStructs\InteropGenerator.Runtime\InteropGenerator.Runtime.csproj" />
-    <!--<Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>false</Private>
-    </Reference>-->
+    <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj" />
+
     <Reference Include="Dalamud">
       <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
       <Private>false</Private>
@@ -99,11 +83,6 @@
     <Reference Include="PInvoke.User32">
       <HintPath>$(DalamudLibPath)PInvoke.User32.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>true</Private>
     </Reference>
   </ItemGroup>
 

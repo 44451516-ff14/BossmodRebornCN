@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex6Golbez;
 
-class DragonsDescent(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.DragonsDescent), ignoreImmunes: true)
+class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (uint)AID.DragonsDescent, ignoreImmunes: true)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -98,7 +98,7 @@ class Explosion(BossModule module) : BossComponent(module)
     }
 }
 
-class Cauterize(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.Cauterize))
+class Cauterize(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Cauterize)
 {
     private static readonly AOEShapeRect rect = new(50f, 6f);
 

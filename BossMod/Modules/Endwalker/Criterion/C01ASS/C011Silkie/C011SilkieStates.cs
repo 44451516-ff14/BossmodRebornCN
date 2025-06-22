@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C01ASS.C011Silkie;
 
-class C011SilkieStates : StateMachineBuilder
+abstract class C011SilkieStates : StateMachineBuilder
 {
     private readonly bool _savage;
 
@@ -29,24 +29,24 @@ class C011SilkieStates : StateMachineBuilder
         TotalWash(id + 0xC0000, 2.1f);
         SudsSlipperySoap(id + 0xD0000, 6.2f);
         SudsSlipperySoap(id + 0xE0000, 2.5f);
-        Cast(id + 0xF0000, AID.Enrage, 3.2f, 10, "Enrage");
+        Cast(id + 0xF0000, (uint)AID.Enrage, 3.2f, 10, "Enrage");
     }
 
     private void CarpetBeater(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SCarpetBeater : AID.NCarpetBeater, delay, 5, "Tankbuster")
+        Cast(id, _savage ? (uint)AID.SCarpetBeater : (uint)AID.NCarpetBeater, delay, 5, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void TotalWash(uint id, float delay)
     {
-        Cast(id, _savage ? AID.STotalWash : AID.NTotalWash, delay, 5, "Raidwide")
+        Cast(id, _savage ? (uint)AID.STotalWash : (uint)AID.NTotalWash, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private State SoapingSpree(uint id, float delay, string name = "Puffs")
     {
-        return Cast(id, _savage ? AID.SSoapingSpreeBoss : AID.NSoapingSpreeBoss, delay, 5, name)
+        return Cast(id, _savage ? (uint)AID.SSoapingSpreeBoss : (uint)AID.NSoapingSpreeBoss, delay, 5, name)
             .ActivateOnEnter<NChillingDusterPuff>(!_savage)
             .ActivateOnEnter<NBracingDusterPuff>(!_savage)
             .ActivateOnEnter<NFizzlingDusterPuff>(!_savage)
@@ -60,8 +60,8 @@ class C011SilkieStates : StateMachineBuilder
 
     private void FizzlingSuds(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SFizzlingSuds : AID.NFizzlingSuds, delay, 3);
-        Cast(id + 0x10, _savage ? AID.SSoapsUp : AID.NSoapsUp, 2.1f, 4)
+        Cast(id, _savage ? (uint)AID.SFizzlingSuds : (uint)AID.NFizzlingSuds, delay, 3);
+        Cast(id + 0x10, _savage ? (uint)AID.SSoapsUp : (uint)AID.NSoapsUp, 2.1f, 4)
             .ActivateOnEnter<NFizzlingDuster>(!_savage)
             .ActivateOnEnter<SFizzlingDuster>(_savage);
         ComponentCondition<FizzlingDuster>(id + 0x20, 1, comp => comp.NumCasts > 0, "Cones")
@@ -70,7 +70,7 @@ class C011SilkieStates : StateMachineBuilder
 
     private void DustBluster(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SDustBluster : AID.NDustBluster, delay, 5, "Knockback")
+        Cast(id, _savage ? (uint)AID.SDustBluster : (uint)AID.NDustBluster, delay, 5, "Knockback")
             .ActivateOnEnter<NDustBluster>(!_savage)
             .ActivateOnEnter<SDustBluster>(_savage)
             .DeactivateOnExit<DustBluster>();
@@ -78,7 +78,7 @@ class C011SilkieStates : StateMachineBuilder
 
     private void SqueakyClean(uint id, float delay)
     {
-        CastMulti(id, [_savage ? AID.SSqueakyCleanE : AID.NSqueakyCleanE, _savage ? AID.SSqueakyCleanW : AID.NSqueakyCleanW], delay, 4.5f)
+        CastMulti(id, [_savage ? (uint)AID.SSqueakyCleanE : (uint)AID.NSqueakyCleanE, _savage ? (uint)AID.SSqueakyCleanW : (uint)AID.NSqueakyCleanW], delay, 4.5f)
             .ActivateOnEnter<NSqueakyCleanE>(!_savage)
             .ActivateOnEnter<NSqueakyCleanW>(!_savage)
             .ActivateOnEnter<SSqueakyCleanE>(_savage)
@@ -90,7 +90,7 @@ class C011SilkieStates : StateMachineBuilder
 
     private void SlipperySoap(uint id, float delay, bool longCharge = false)
     {
-        CastStart(id, _savage ? AID.SSlipperySoap : AID.NSlipperySoap, delay)
+        CastStart(id, _savage ? (uint)AID.SSlipperySoap : (uint)AID.NSlipperySoap, delay)
             .ActivateOnEnter<SlipperySoapCharge>(); // target selection and cast start happen at the same time
         CastEnd(id + 1, 5);
         ComponentCondition<SlipperySoapCharge>(id + 2, longCharge ? 0.5f : 0.3f, comp => !comp.ChargeImminent, "Charge")
@@ -105,22 +105,22 @@ class C011SilkieStates : StateMachineBuilder
 
     private void SudsSlipperySoap(uint id, float delay, bool longCharge = false)
     {
-        CastMulti(id, [_savage ? AID.SBracingSuds : AID.NBracingSuds, _savage ? AID.SChillingSuds : AID.NChillingSuds, _savage ? AID.SFizzlingSuds : AID.NFizzlingSuds], delay, 3);
+        CastMulti(id, [_savage ? (uint)AID.SBracingSuds : (uint)AID.NBracingSuds, _savage ? (uint)AID.SChillingSuds : (uint)AID.NChillingSuds, _savage ? (uint)AID.SFizzlingSuds : (uint)AID.NFizzlingSuds], delay, 3);
         SlipperySoap(id + 0x100, 2.1f, longCharge);
     }
 
     private void ChillingSudsCarpetBeaterSlipperySoap(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SChillingSuds : AID.NChillingSuds, delay, 3);
+        Cast(id, _savage ? (uint)AID.SChillingSuds : (uint)AID.NChillingSuds, delay, 3);
         CarpetBeater(id + 0x100, 2.2f);
         SlipperySoap(id + 0x200, 2.1f);
     }
 
     private void SqueakyCleanSlipperySoap(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SFreshPuff : AID.NFreshPuff, delay, 4);
+        Cast(id, _savage ? (uint)AID.SFreshPuff : (uint)AID.NFreshPuff, delay, 4);
         // +1.1s: debuffs on 3 puffs with offsets (0, -10), (12.5, 7), (-12.5, 7); no point showing anything for them, since they will be recolored
-        Cast(id + 0x10, _savage ? AID.SBracingSuds : AID.NBracingSuds, 2.1f, 3);
+        Cast(id + 0x10, _savage ? (uint)AID.SBracingSuds : (uint)AID.NBracingSuds, 2.1f, 3);
 
         // TODO: as soon as next cast starts, we can determine desired position for bait: N if remaining puff is yellow, recolored side if remaining puff is blue
         SqueakyClean(id + 0x20, 2.1f);
@@ -134,8 +134,8 @@ class C011SilkieStates : StateMachineBuilder
 
     private void EasternEwers(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SFreshPuff : AID.NFreshPuff, delay, 4);
-        Cast(id + 0x10, _savage ? AID.SEasternEwers : AID.NEasternEwers, 2.1f, 4);
+        Cast(id, _savage ? (uint)AID.SFreshPuff : (uint)AID.NFreshPuff, delay, 4);
+        Cast(id + 0x10, _savage ? (uint)AID.SEasternEwers : (uint)AID.NEasternEwers, 2.1f, 4);
         ComponentCondition<EasternEwers>(id + 0x20, 1.2f, comp => comp.Active)
             .ActivateOnEnter<EasternEwers>();
         // TODO: consider showing puff aoes early, as soon as exaflares start...
@@ -146,15 +146,15 @@ class C011SilkieStates : StateMachineBuilder
     // TODO: consider grouping with prev and showing early blue puff hints
     private void BracingSudsSoapingSpree(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SBracingSuds : AID.NBracingSuds, delay, 3);
+        Cast(id, _savage ? (uint)AID.SBracingSuds : (uint)AID.NBracingSuds, delay, 3);
         SoapingSpree(id + 0x100, 2.2f);
     }
 
     private void Tethers1(uint id, float delay)
     {
-        CastMulti(id, [_savage ? AID.SBracingSuds : AID.NBracingSuds, _savage ? AID.SChillingSuds : AID.NChillingSuds], delay, 3)
+        CastMulti(id, [_savage ? (uint)AID.SBracingSuds : (uint)AID.NBracingSuds, _savage ? (uint)AID.SChillingSuds : (uint)AID.NChillingSuds], delay, 3)
             .ActivateOnEnter<PuffTethers1>();
-        Cast(id + 0x10, _savage ? AID.SFreshPuff : AID.NFreshPuff, 2.1f, 4);
+        Cast(id + 0x10, _savage ? (uint)AID.SFreshPuff : (uint)AID.NFreshPuff, 2.1f, 4);
         // +1.1s: puffs appear
         // +3.2s: tethers appear
         // +9.4s/+10.1s: puff and tumble start
@@ -166,9 +166,9 @@ class C011SilkieStates : StateMachineBuilder
 
     private void Tethers2(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SBracingSuds : AID.NBracingSuds, delay, 3)
+        Cast(id, _savage ? (uint)AID.SBracingSuds : (uint)AID.NBracingSuds, delay, 3)
             .ActivateOnEnter<PuffTethers2>();
-        Cast(id + 0x10, _savage ? AID.SFreshPuff : AID.NFreshPuff, 2.1f, 4);
+        Cast(id + 0x10, _savage ? (uint)AID.SFreshPuff : (uint)AID.NFreshPuff, 2.1f, 4);
         // +1.1s: puffs appear
         // +3.2s: tethers appear
         // +10.0s: puff and tumble start
@@ -180,5 +180,5 @@ class C011SilkieStates : StateMachineBuilder
     }
 }
 
-class C011NSilkieStates(BossModule module) : C011SilkieStates(module, false);
-class C011SSilkieStates(BossModule module) : C011SilkieStates(module, true);
+sealed class C011NSilkieStates(BossModule module) : C011SilkieStates(module, false);
+sealed class C011SSilkieStates(BossModule module) : C011SilkieStates(module, true);

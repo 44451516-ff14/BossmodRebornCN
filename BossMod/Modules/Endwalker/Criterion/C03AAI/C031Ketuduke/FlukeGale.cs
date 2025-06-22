@@ -52,8 +52,8 @@ class FlukeGale(BossModule module) : Components.GenericKnockback(module)
         {
             case (uint)AID.FlukeGaleAOE1:
             case (uint)AID.FlukeGaleAOE2:
-                Gales.Add(new(caster.Position, 20, Module.CastFinishAt(spell), _shape, spell.Rotation, Kind.DirForward));
-                Gales.SortBy(x => x.Activation);
+                Gales.Add(new(caster.Position, 20f, Module.CastFinishAt(spell), _shape, spell.Rotation, Kind.DirForward));
+                Gales.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
             case (uint)AID.Hydrofall:
                 _resolution = Resolve.Stack;

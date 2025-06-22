@@ -81,55 +81,12 @@ class HexingStaves(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class StaffSmite(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.StaffSmite));
-class VoidDarkII(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.VoidDarkII2), 6f);
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), new AOEShapeRect(8f, 4f));
-class AbyssalOutburst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AbyssalOutburst));
+class StaffSmite(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StaffSmite);
+class VoidDarkII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.VoidDarkII2, 6f);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeRect(8f, 4f));
+class AbyssalOutburst(BossModule module) : Components.RaidwideCast(module, (uint)AID.AbyssalOutburst);
 
-class Doom(BossModule module) : BossComponent(module)
-{
-    private readonly List<Actor> _doomed = [];
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Doom)
-            _doomed.Add(actor);
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Doom)
-            _doomed.Remove(actor);
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        var count = _doomed.Count;
-        if (count != 0)
-            if (_doomed.Contains(actor))
-                if (!(actor.Role == Role.Healer || actor.Class == Class.BRD))
-                    hints.Add("You were doomed! Get cleansed fast.");
-                else
-                    hints.Add("Cleanse yourself! (Doom).");
-            else if (actor.Role == Role.Healer || actor.Class == Class.BRD)
-                for (var i = 0; i < count; ++i)
-                    hints.Add($"Cleanse {_doomed[i].Name}! (Doom)");
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = _doomed.Count;
-        if (count != 0)
-            for (var i = 0; i < count; ++i)
-            {
-                var c = _doomed[i];
-                if (actor.Role == Role.Healer)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), c, ActionQueue.Priority.High);
-                else if (actor.Class == Class.BRD)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), c, ActionQueue.Priority.High);
-            }
-    }
-}
+class Doom(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Doom);
 
 class D131DarkElfStates : StateMachineBuilder
 {

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S2PallasAthena;
 
-class Gaiaochos(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GaiaochosTransition), new AOEShapeDonut(7f, 30f));
+class Gaiaochos(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GaiaochosTransition, new AOEShapeDonut(7f, 30f));
 
 // TODO: we could show it earlier, casters do PATE 11D2 ~4s before starting cast
-class UltimaRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UltimaRay), new AOEShapeRect(20f, 3f));
+class UltimaRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UltimaRay, new AOEShapeRect(20f, 3f));
 
-class MissingLink(BossModule module) : Components.Chains(module, (uint)TetherID.MissingLink, ActionID.MakeSpell(AID.MissingLink));
+class MissingLink(BossModule module) : Components.Chains(module, (uint)TetherID.MissingLink, (uint)AID.MissingLink);
 
-class DemiParhelion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DemiParhelionAOE), new AOEShapeCircle(2f));
+class DemiParhelion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DemiParhelionAOE, new AOEShapeCircle(2f));
 
 class Geocentrism(BossModule module) : Components.GenericAOEs(module)
 {
@@ -83,7 +83,7 @@ class GaiaochosEnd(BossModule module) : BossComponent(module)
 }
 
 // TODO: assign pairs, draw wrong pairs as aoes
-class UltimaBlow(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.UltimaBlow))
+class UltimaBlow(BossModule module) : Components.CastCounter(module, (uint)AID.UltimaBlow)
 {
     private readonly List<(Actor source, Actor target)> _tethers = [];
     private BitMask _vulnerable;

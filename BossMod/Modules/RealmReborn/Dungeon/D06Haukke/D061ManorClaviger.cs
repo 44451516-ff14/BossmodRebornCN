@@ -8,14 +8,14 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 870, // Boss->player, no cast
-    SweetSteel = 489, // Boss->self, no cast, range 7.4 ?-degree cone cleave
+    SweetSteel = 489, // Boss->self, no cast, range 7.4 ?-degree cone cleave (120-degree)
     VoidFire2 = 855, // Boss->location, 3.0s cast, range 5 aoe
     DarkMist = 705 // Boss->self, 4.0s cast, range 9.4 aoe
 }
 
-class SweetSteel(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.SweetSteel), new AOEShapeCone(7.4f, 45.Degrees())); // TODO: verify angle
-class VoidFire2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFire2), 5);
-class DarkMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkMist), 9.4f);
+class SweetSteel(BossModule module) : Components.Cleave(module, (uint)AID.SweetSteel, new AOEShapeCone(7.4f, 60.Degrees()));
+class VoidFire2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFire2, 5);
+class DarkMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkMist, 9.4f);
 
 class D061ManorClavigerStates : StateMachineBuilder
 {

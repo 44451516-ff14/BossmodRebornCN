@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un4Zurvan;
 
-class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.DemonsClaw), true)
+class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DemonsClaw, true)
 {
     private Actor? _caster;
 
@@ -13,24 +13,24 @@ class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(mod
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _caster = caster;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _caster = null;
     }
 }
 
-class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(module, 5, ActionID.MakeSpell(AID.WaveCannonShared))
+class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(module, 5, (uint)AID.WaveCannonShared)
 {
     public Actor? Target;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             Source = caster;
             foreach (var (slot, player) in Raid.WithSlot(false, true, true))
@@ -46,7 +46,7 @@ class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(m
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Source = null;
     }
 }

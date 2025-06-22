@@ -19,7 +19,7 @@ public enum SID : uint
     Blind = 571 // Mandragora->player, extra=0x0
 }
 
-class DemonEye(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.DemonEye))
+class DemonEye(BossModule module) : Components.CastGaze(module, (uint)AID.DemonEye)
 {
     private BitMask _blinded;
 
@@ -41,7 +41,7 @@ class DemonEye(BossModule module) : Components.CastGaze(module, ActionID.MakeSpe
     }
 }
 
-class ColdStare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ColdStare), new AOEShapeCone(42.53f, 45f.Degrees())) // TODO: cone based gaze
+class ColdStare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColdStare, new AOEShapeCone(42.53f, 45f.Degrees())) // TODO: cone based gaze
 {
     private BitMask _blinded;
 
@@ -63,7 +63,7 @@ class ColdStare(BossModule module) : Components.SimpleAOEs(module, ActionID.Make
     }
 }
 
-class TearyTwirl(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TearyTwirl), 6.3f)
+class TearyTwirl(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TearyTwirl, 6.3f)
 {
     private BitMask _blinded;
 

@@ -38,24 +38,25 @@ public enum AID : uint
 }
 
 class AutoZero(BossModule module) : QuestBattle.RotationModule<ZeroAI>(module);
-class Explosion(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.Explosion), 5);
-class VoidSlash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidSlash), new AOEShapeCone(9.7f, 45.Degrees()));
-class JongleursX(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.JongleursX));
-class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StraightSpindle), new AOEShapeRect(51.08f, 2.5f));
-class VoidTorch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidTorch), 6);
-class HellishScythe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HellishScythe), 10);
-class FlameBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlameBlast), new AOEShapeRect(80.6f, 2));
-class JestersReward(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.JestersReward), new AOEShapeCone(28, 90.Degrees()));
+class Explosion(BossModule module) : Components.CastTowers(module, (uint)AID.Explosion, 5f);
+class VoidSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidSlash, new AOEShapeCone(9.7f, 45f.Degrees()));
+class JongleursX(BossModule module) : Components.SingleTargetCast(module, (uint)AID.JongleursX);
+class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StraightSpindle, new AOEShapeRect(51.08f, 2.5f));
+class VoidTorch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidTorch, 6f);
+class HellishScythe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HellishScythe, 10f);
+class FlameBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlameBlast, new AOEShapeRect(80.6f, 2f));
+class JestersReward(BossModule module) : Components.SimpleAOEs(module, (uint)AID.JestersReward, new AOEShapeCone(28f, 90f.Degrees()));
 
-class Blackout1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Blackout1));
-class Blackout2(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Blackout2), "Kill the Voidskipper!", true)
+class Blackout1(BossModule module) : Components.RaidwideCast(module, (uint)AID.Blackout1);
+class Blackout2(BossModule module) : Components.CastHint(module, (uint)AID.Blackout2, "Kill the Voidskipper!", true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            if (e.Actor.CastInfo?.Action == WatchedAction)
+            if (e.Actor.CastInfo?.Action.ID == WatchedAction)
                 e.Priority = 5;
         }
     }

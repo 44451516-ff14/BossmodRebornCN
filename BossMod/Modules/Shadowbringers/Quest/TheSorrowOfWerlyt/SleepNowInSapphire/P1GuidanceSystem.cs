@@ -14,7 +14,7 @@ public enum AID : uint
     AerialBombardment = 21492, // Helper->location, 2.5s cast, range 12 circle
 }
 
-class AerialBombardment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AerialBombardment), 12);
+class AerialBombardment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AerialBombardment, 12);
 
 class GWarrior(BossModule module) : QuestBattle.RotationModule<SapphireWeapon>(module);
 
@@ -33,7 +33,7 @@ public class GuidanceSystem(WorldState ws, Actor primary) : SleepNowInSapphireSh
 {
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (actor.FindStatus(Roleplay.SID.PyreticBooster) == null)
+        if (actor.FindStatus((uint)Roleplay.SID.PyreticBooster) == null)
             hints.ActionsToExecute.Push(ActionID.MakeSpell(Roleplay.AID.PyreticBooster), actor, ActionQueue.Priority.Medium);
     }
 }

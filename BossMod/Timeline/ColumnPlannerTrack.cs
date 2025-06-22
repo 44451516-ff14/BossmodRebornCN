@@ -1,6 +1,5 @@
 ﻿using BossMod.Autorotation;
 using ImGuiNET;
-using System.Runtime.CompilerServices;
 
 namespace BossMod;
 

@@ -6,7 +6,7 @@ public enum OID : uint
     FleshyPod = 0x23C, // spawn during fight
     Comesmite = 0x104, // spawn during fight
     GraffiasTail = 0x10A, // spawn during fight
-    PollenZone = 0x1E8614, // spawn during fight
+    PollenZone = 0x1E8614 // spawn during fight
 }
 
 public enum AID : uint
@@ -17,13 +17,13 @@ public enum AID : uint
     StickyWeb = 698, // Boss->player, 1.5s cast, visual (spawns fleshy pod at target)
     PodBurst = 730, // FleshyPod->self, 3.0s cast, range 7.050 aoe
     TailMolt = 704, // Boss->self, no cast, visual (spawns tail)
-    DeadlyThrust = 702, // Boss->self, 2.0s cast, visual (spawns pollen zone)
+    DeadlyThrust = 702 // Boss->self, 2.0s cast, visual (spawns pollen zone)
 }
 
-class Silkscreen(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Silkscreen), new AOEShapeRect(18, 2));
-class StickyWeb(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.StickyWeb), "Delayed AOE at target");
-class PodBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PodBurst), 7.05f);
-class DeadlyThrust(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.DeadlyThrust), "Persistent voidzone at target");
+class Silkscreen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Silkscreen, new AOEShapeRect(18, 2));
+class StickyWeb(BossModule module) : Components.CastHint(module, (uint)AID.StickyWeb, "Delayed AOE at target");
+class PodBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PodBurst, 7.05f);
+class DeadlyThrust(BossModule module) : Components.CastHint(module, (uint)AID.DeadlyThrust, "Persistent voidzone at target");
 class PollenZone(BossModule module) : Components.Voidzone(module, 10, m => m.Enemies(OID.PollenZone));
 
 class D053GraffiasStates : StateMachineBuilder

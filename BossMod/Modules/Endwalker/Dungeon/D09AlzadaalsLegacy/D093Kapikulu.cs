@@ -105,7 +105,7 @@ class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BastingBlade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BastingBlade), new AOEShapeRect(60f, 7.5f));
+class BastingBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BastingBlade, new AOEShapeRect(60f, 7.5f));
 
 class SpikeTraps(BossModule module) : Components.GenericAOEs(module)
 {
@@ -127,11 +127,11 @@ class SpikeTraps(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BorderChange(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BorderChange), new AOEShapeRect(5f, 20f));
-class MagnitudeOpus(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.MagnitudeOpus), 6f, 4, 4);
-class RotaryGale(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.RotaryGale), 5f);
-class CrewelSlice(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.CrewelSlice));
-class BillowingBolts(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BillowingBolts));
+class BorderChange(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BorderChange, new AOEShapeRect(5f, 20f));
+class MagnitudeOpus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MagnitudeOpus, 6f, 4, 4);
+class RotaryGale(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RotaryGale, 5f);
+class CrewelSlice(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CrewelSlice);
+class BillowingBolts(BossModule module) : Components.RaidwideCast(module, (uint)AID.BillowingBolts);
 
 class D093KapikuluStates : StateMachineBuilder
 {

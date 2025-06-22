@@ -1,10 +1,9 @@
 ﻿using ImGuiNET;
 using Lumina.Excel.Sheets;
-using System.Text;
 
 namespace BossMod.ReplayAnalysis;
 
-class TetherInfo : CommonEnumInfo
+sealed class TetherInfo : CommonEnumInfo
 {
     public readonly record struct Instance(Replay Replay, Replay.Encounter Enc, Replay.Tether Tether)
     {
@@ -125,7 +124,9 @@ class TetherInfo : CommonEnumInfo
 
     private string EnumMemberString(uint tid, TetherData data)
     {
-        var name = _tidType?.GetEnumName(tid) ?? $"_Gen_Tether_{tid}";
+        string generateTetherName() => Service.LuminaRow<Channeling>(tid)?.File.ToString() ?? tid.ToString();
+
+        var name = _tidType?.GetEnumName(tid) ?? $"_Gen_Tether_{generateTetherName()}";
         return $"{name} = {tid}, // {OIDListString(data.SourceOIDs)}->{OIDListString(data.TargetOIDs)}";
     }
 }

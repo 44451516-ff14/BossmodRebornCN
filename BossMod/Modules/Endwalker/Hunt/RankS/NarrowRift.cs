@@ -43,7 +43,7 @@ class EmptyPromise(BossModule module) : Components.GenericAOEs(module)
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_pendingShapes.Count > 0)
-            return new AOEInstance[1] { new(_pendingShapes[0], Module.PrimaryActor.Position, new(), Module.CastFinishAt(Module.PrimaryActor.CastInfo)) };
+            return new AOEInstance[1] { new(_pendingShapes[0], Module.PrimaryActor.Position, default, Module.CastFinishAt(Module.PrimaryActor.CastInfo)) };
         return [];
     }
 
@@ -99,7 +99,7 @@ class VanishingRay(BossModule module) : Components.GenericAOEs(module)
                 _activation = WorldState.FutureTime(4d);
                 break;
             case (uint)AID.VanishingRay:
-                _activation = new();
+                _activation = default;
                 break;
         }
     }

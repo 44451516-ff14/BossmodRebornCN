@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Heavensward.Extreme.Ex3Thordan;
 
-abstract class SpiralThrust(BossModule module, float predictionDelay) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.SpiralThrust))
+abstract class SpiralThrust(BossModule module, float predictionDelay) : Components.GenericAOEs(module, (uint)AID.SpiralThrust)
 {
     private float _predictionDelay = predictionDelay;
     private readonly List<AOEInstance> _aoes = [];
@@ -11,7 +11,7 @@ abstract class SpiralThrust(BossModule module, float predictionDelay) : Componen
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             if (_predictionDelay > 0)
             {

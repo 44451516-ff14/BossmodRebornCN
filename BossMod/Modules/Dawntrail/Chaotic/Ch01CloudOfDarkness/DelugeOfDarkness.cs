@@ -5,7 +5,7 @@
 // - 00200010 - phase 1
 // - 00020001 - phase 2
 // - 00040004 - remove telegraph (note that actual bounds are controlled by something else!)
-class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module)
+sealed class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Ch01CloudOfDarknessConfig _config = Service.Config.Get<Ch01CloudOfDarknessConfig>();
     private readonly DateTime[] _breakTime = new DateTime[28];
@@ -71,9 +71,9 @@ class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module)
             return;
         _breakTime[index - 3] = state switch
         {
-            0x00200010 => WorldState.FutureTime(44d),
-            0x00800040 => WorldState.FutureTime(6d),
-            0x00080004 => WorldState.CurrentTime,
+            0x00200010u => WorldState.FutureTime(44d),
+            0x00800040u => WorldState.FutureTime(6d),
+            0x00080004u => WorldState.CurrentTime,
             _ => default,
         };
     }
@@ -139,5 +139,50 @@ class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module)
         }
         else
             return default;
+    }
+}
+
+sealed class Phase2AIHints(BossModule module) : BossComponent(module)
+{
+    private BitMask isInside;
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var e = hints.PotentialTargets[i];
+            switch (e.Actor.OID)
+            {
+                case (uint)OID.Atomos:
+                    if (isInside[slot])
+                        e.Priority = AIHints.Enemy.PriorityInvincible;
+                    else if (actor.Class.GetRole() == Role.Ranged)
+                        e.Priority = 5;
+                    break;
+                case (uint)OID.StygianShadow:
+                    if (isInside[slot])
+                        e.Priority = AIHints.Enemy.PriorityInvincible;
+                    break;
+                case (uint)OID.Boss:
+                    if (!isInside[slot])
+                        e.Priority = AIHints.Enemy.PriorityInvincible;
+                    break;
+
+            }
+        }
+    }
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        switch (status.ID)
+        {
+            case (uint)SID.InnerDarkness:
+                isInside[Raid.FindSlot(actor.InstanceID)] = true;
+                break;
+            case (uint)SID.OuterDarkness:
+                isInside[Raid.FindSlot(actor.InstanceID)] = false;
+                break;
+        }
     }
 }

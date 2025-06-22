@@ -96,27 +96,27 @@ class DualCastTartareanFlameThunder(BossModule module) : Components.GenericAOEs(
     }
 }
 
-class TartareanTwister(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TartareanTwister));
-class TartareanBlizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TartareanBlizzard), new AOEShapeCone(40f, 22.5f.Degrees()));
-class TartareanQuake(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TartareanQuake));
+class TartareanTwister(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TartareanTwister);
+class TartareanBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TartareanBlizzard, new AOEShapeCone(40f, 22.5f.Degrees()));
+class TartareanQuake(BossModule module) : Components.RaidwideCast(module, (uint)AID.TartareanQuake);
 
-class TartareanAbyss(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.TartareanAbyss), new AOEShapeCircle(6f), true, tankbuster: true);
+class TartareanAbyss(BossModule module) : Components.BaitAwayCast(module, (uint)AID.TartareanAbyss, 6f, tankbuster: true);
 
-class TartareanFlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TartareanFlare), 18f);
-class TartareanMeteor(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TartareanMeteor), 10f, 8);
-class ArchaicDualcast(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.ArchaicDualcast), "Preparing In/Out or Out/In AOE");
+class TartareanFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TartareanFlare, 18f);
+class TartareanMeteor(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TartareanMeteor, 10f, 8);
+class ArchaicDualcast(BossModule module) : Components.CastHint(module, (uint)AID.ArchaicDualcast, "Preparing In/Out or Out/In AOE");
 
-class Cryptcall(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.Cryptcall), new AOEShapeCone(38.24f, 60f.Degrees()))
+class Cryptcall(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Cryptcall, new AOEShapeCone(38.24f, 60f.Degrees()))
 {
     public override void OnCastFinished(Actor caster, ActorCastInfo spell) { }
     public override void OnEventCast(Actor caster, ActorCastEvent spell) // bait resolves on cast event instead of cast finish
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             CurrentBaits.Clear();
     }
 }
 
-class CryptcallHint(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Cryptcall), "Cone reduces health to 1 + applies Doom");
+class CryptcallHint(BossModule module) : Components.CastHint(module, (uint)AID.Cryptcall, "Cone reduces health to 1 + applies Doom");
 
 class Doom(BossModule module) : BossComponent(module)
 {

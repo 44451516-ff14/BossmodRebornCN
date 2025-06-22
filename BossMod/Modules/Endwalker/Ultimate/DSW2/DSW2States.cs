@@ -42,7 +42,7 @@ class DSW2States : StateMachineBuilder
         P2UltimateEnd(id + 0x50000, 13.5f);
         P2BroadSwing(id + 0x60000, 6.0f);
         P2BroadSwing(id + 0x70000, 2.8f);
-        Cast(id + 0x80000, AID.AethericBurstP2, 2.4f, 6, "Enrage");
+        Cast(id + 0x80000, (uint)AID.AethericBurstP2, 2.4f, 6, "Enrage");
     }
 
     private void Phase3Nidhogg(uint id)
@@ -52,7 +52,7 @@ class DSW2States : StateMachineBuilder
         P3Drachenlance(id + 0x20000, 2.1f);
         P3SoulTether(id + 0x30000, 1.5f);
         P3Drachenlance(id + 0x40000, 21.1f);
-        ActorCast(id + 0x50000, _module.BossP3, AID.RevengeOfTheHordeP3, 1.5f, 11, true, "Enrage");
+        ActorCast(id + 0x50000, _module.BossP3, (uint)AID.RevengeOfTheHordeP3, 1.5f, 11, true, "Enrage");
     }
 
     private void Phase4Eyes(uint id)
@@ -65,7 +65,7 @@ class DSW2States : StateMachineBuilder
     private void Phase4Intermission(uint id)
     {
         P4IntermissionCharibert(id);
-        ActorCast(id + 0x10000, _module.Spear, AID.Pierce, 2.7f, 11, true, "Enrage");
+        ActorCast(id + 0x10000, _module.Spear, (uint)AID.Pierce, 2.7f, 11, true, "Enrage");
     }
 
     private void Phase5KingThordan(uint id)
@@ -76,7 +76,7 @@ class DSW2States : StateMachineBuilder
         P5DeathOfTheHeavens(id + 0x30000, 7.1f);
         P5AncientQuaga(id + 0x40000, 2.1f);
         P5HeavenlyHeelAscalonMight(id + 0x50000, 6.2f);
-        ActorCast(id + 0x60000, _module.BossP5, AID.AethericBurstP5, 4.8f, 6, true, "Enrage");
+        ActorCast(id + 0x60000, _module.BossP5, (uint)AID.AethericBurstP5, 4.8f, 6, true, "Enrage");
     }
 
     private void Phase6Dragons(uint id)
@@ -109,7 +109,7 @@ class DSW2States : StateMachineBuilder
 
     private void P2AscalonsMercyConcealedMight(uint id, float delay)
     {
-        Cast(id, AID.AscalonsMercyConcealed, delay, 3)
+        Cast(id, (uint)AID.AscalonsMercyConcealed, delay, 3)
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<P2AscalonsMercyConcealed>(id + 2, 1.6f, comp => comp.NumCasts > 0, "Baited cones")
             .ActivateOnEnter<P2AscalonsMercyConcealed>()
@@ -123,9 +123,9 @@ class DSW2States : StateMachineBuilder
 
     private void P2StrengthOfTheWard(uint id, float delay)
     {
-        Cast(id, AID.StrengthOfTheWard, delay, 4);
+        Cast(id, (uint)AID.StrengthOfTheWard, delay, 4);
         Targetable(id + 0x10, false, 3.1f, "Trio 1");
-        CastStart(id + 0x20, AID.LightningStorm, 3.6f)
+        CastStart(id + 0x20, (uint)AID.LightningStorm, 3.6f)
             .ActivateOnEnter<P2StrengthOfTheWard1LightningStorm>()
             .ActivateOnEnter<P2StrengthOfTheWard1SpiralThrust>()
             .ActivateOnEnter<P2StrengthOfTheWard1HeavyImpact>();
@@ -157,13 +157,13 @@ class DSW2States : StateMachineBuilder
 
     private void P2AncientQuaga(uint id, float delay)
     {
-        Cast(id, AID.AncientQuaga, delay, 6, "Raidwide")
+        Cast(id, (uint)AID.AncientQuaga, delay, 6, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P2HeavenlyHeelAscalonMight(uint id, float delay)
     {
-        Cast(id, AID.HeavenlyHeel, delay, 4, "Tankbuster")
+        Cast(id, (uint)AID.HeavenlyHeel, delay, 4, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<P2AscalonMight>(id + 0x1000, 6.5f, comp => comp.NumCasts > 2, "3x tankbuster cones")
             .ActivateOnEnter<P2AscalonMight>()
@@ -172,9 +172,9 @@ class DSW2States : StateMachineBuilder
 
     private void P2SanctityOfTheWard(uint id, float delay)
     {
-        Cast(id, AID.SanctityofTheWard, delay, 4);
+        Cast(id, (uint)AID.SanctityofTheWard, delay, 4);
         Targetable(id + 0x10, false, 3.1f, "Trio 2");
-        CastStart(id + 0x20, AID.DragonsGaze, 5.6f)
+        CastStart(id + 0x20, (uint)AID.DragonsGaze, 5.6f)
             .ActivateOnEnter<P2SanctityOfTheWard1Gaze>()
             .ActivateOnEnter<P2SanctityOfTheWard1Sever>()
             .ActivateOnEnter<P2SanctityOfTheWard1Flares>()
@@ -225,7 +225,7 @@ class DSW2States : StateMachineBuilder
 
     private void P2BroadSwing(uint id, float delay)
     {
-        CastMulti(id, [AID.BroadSwingLR, AID.BroadSwingRL], delay, 3)
+        CastMulti(id, [(uint)AID.BroadSwingLR, (uint)AID.BroadSwingRL], delay, 3)
             .ActivateOnEnter<P2BroadSwing>();
         ComponentCondition<P2BroadSwing>(id + 2, 2.8f, comp => comp.NumCasts >= 3, "Swings")
             .DeactivateOnExit<P2BroadSwing>();
@@ -241,11 +241,11 @@ class DSW2States : StateMachineBuilder
 
     private void P3Dives(uint id, float delay)
     {
-        ActorCast(id, _module.BossP3, AID.DiveFromGrace, delay, 5, true, "Dive start")
+        ActorCast(id, _module.BossP3, (uint)AID.DiveFromGrace, delay, 5, true, "Dive start")
             .ActivateOnEnter<P3DiveFromGrace>()
             .ActivateOnEnter<P3Geirskogul>();
 
-        ActorCastMulti(id + 0x10, _module.BossP3, [AID.GnashAndLash, AID.LashAndGnash], 2.1f, 7.6f, true, "Stack + Jump 1")
+        ActorCastMulti(id + 0x10, _module.BossP3, [(uint)AID.GnashAndLash, (uint)AID.LashAndGnash], 2.1f, 7.6f, true, "Stack + Jump 1")
             .ActivateOnEnter<P3GnashAndLash>()
             .SetHint(StateMachine.StateHint.Raidwide);
         // TODO: consider adding a state 0.3s later when stack happens; first jumps happen +/- 0.1s around it
@@ -254,7 +254,7 @@ class DSW2States : StateMachineBuilder
         ComponentCondition<P3GnashAndLash>(id + 0x30, 3.1f, comp => comp.NumCasts >= 2, "Towers 1 + In/out 2"); // note: towers happen ~0.1s earlier
         ComponentCondition<P3Geirskogul>(id + 0x40, 2.5f, comp => comp.Casters.Count > 0);
         ComponentCondition<P3DiveFromGrace>(id + 0x50, 0.8f, comp => comp.NumJumps > 3, "Jump 2");
-        ActorCastStartMulti(id + 0x58, _module.BossP3, [AID.GnashAndLash, AID.LashAndGnash], 3.8f, true);
+        ActorCastStartMulti(id + 0x58, _module.BossP3, [(uint)AID.GnashAndLash, (uint)AID.LashAndGnash], 3.8f, true);
         ComponentCondition<P3DiveFromGrace>(id + 0x60, 2.8f, comp => comp.NumCasts > 3, "Towers 2");
         ComponentCondition<P3Geirskogul>(id + 0x70, 2.6f, comp => comp.Casters.Count > 0);
         ComponentCondition<P3DiveFromGrace>(id + 0x80, 1.8f, comp => comp.NumJumps > 5, "Stack + Jump 3");
@@ -271,7 +271,7 @@ class DSW2States : StateMachineBuilder
 
     private void P3Drachenlance(uint id, float delay)
     {
-        ActorCast(id, _module.BossP3, AID.Drachenlance, delay, 2.9f, true)
+        ActorCast(id, _module.BossP3, (uint)AID.Drachenlance, delay, 2.9f, true)
             .ActivateOnEnter<P3Drachenlance>();
         ComponentCondition<P3Drachenlance>(id + 2, 0.7f, comp => comp.NumCasts > 0, "Cleave")
             .DeactivateOnExit<P3Drachenlance>();
@@ -305,13 +305,13 @@ class DSW2States : StateMachineBuilder
 
     private void P4Hatebound(uint id, float delay)
     {
-        ActorCast(id, _module.LeftEyeP4, AID.Hatebound, delay, 3); // both eyes cast it at the same time
+        ActorCast(id, _module.LeftEyeP4, (uint)AID.Hatebound, delay, 3); // both eyes cast it at the same time
         ComponentCondition<P4Hatebound>(id + 2, 0.8f, comp => comp.ColorsAssigned, "Colors")
             .ActivateOnEnter<P4Hatebound>();
         ComponentCondition<P4Hatebound>(id + 0x10, 6.1f, comp => comp.YellowReady, "Pop yellow orbs");
         ComponentCondition<P4Hatebound>(id + 0x20, 6.0f, comp => comp.BlueReady, "Pop blue orbs");
 
-        ActorCast(id + 0x1000, _module.LeftEyeP4, AID.MirageDive, 10.3f, 3) // both eyes cast it at the same time
+        ActorCast(id + 0x1000, _module.LeftEyeP4, (uint)AID.MirageDive, 10.3f, 3) // both eyes cast it at the same time
             .ActivateOnEnter<P4MirageDive>();
         ComponentCondition<P4MirageDive>(id + 0x1010, 0.8f, comp => comp.NumCasts >= 2, "Dive 1");
         ComponentCondition<P4MirageDive>(id + 0x1020, 5.1f, comp => comp.NumCasts >= 4, "Dive 2");
@@ -335,7 +335,7 @@ class DSW2States : StateMachineBuilder
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ActorTargetable(id + 1, _module.SerCharibert, true, 19.9f, "Boss appears")
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ActorCastStart(id + 2, _module.SerCharibert, AID.PureOfHeart, 0.1f, true)
+        ActorCastStart(id + 2, _module.SerCharibert, (uint)AID.PureOfHeart, 0.1f, true)
             .ActivateOnEnter<P4IntermissionBrightwing>()
             .ActivateOnEnter<P4IntermissionSkyblindBait>()
             .ActivateOnEnter<P4IntermissionSkyblind>();
@@ -361,13 +361,13 @@ class DSW2States : StateMachineBuilder
 
     private State P5AncientQuaga(uint id, float delay)
     {
-        return ActorCast(id, _module.BossP5, AID.AncientQuaga, delay, 6, true, "Raidwide")
+        return ActorCast(id, _module.BossP5, (uint)AID.AncientQuaga, delay, 6, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P5HeavenlyHeelAscalonMight(uint id, float delay)
     {
-        ActorCast(id, _module.BossP5, AID.HeavenlyHeel, delay, 4, true, "Tankbuster")
+        ActorCast(id, _module.BossP5, (uint)AID.HeavenlyHeel, delay, 4, true, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<P5AscalonMight>(id + 0x1000, 6.5f, comp => comp.NumCasts > 2, "3x tankbuster cones")
             .ActivateOnEnter<P5AscalonMight>()
@@ -376,9 +376,9 @@ class DSW2States : StateMachineBuilder
 
     private void P5WrathOfHeavens(uint id, float delay)
     {
-        ActorCast(id, _module.BossP5, AID.Incarnation, delay, 4, true);
-        ActorCast(id + 0x10, _module.BossP5, AID.DragonsEye, 3.2f, 3, true);
-        ActorCast(id + 0x20, _module.BossP5, AID.WrathOfTheHeavens, 14.7f, 4, true);
+        ActorCast(id, _module.BossP5, (uint)AID.Incarnation, delay, 4, true);
+        ActorCast(id + 0x10, _module.BossP5, (uint)AID.DragonsEye, 3.2f, 3, true);
+        ActorCast(id + 0x20, _module.BossP5, (uint)AID.WrathOfTheHeavens, 14.7f, 4, true);
         ActorTargetable(id + 0x30, _module.BossP5, false, 3.1f, "Trio 1")
             .SetHint(StateMachine.StateHint.DowntimeStart);
 
@@ -398,7 +398,7 @@ class DSW2States : StateMachineBuilder
         ComponentCondition<P5WrathOfTheHeavensTwister>(id + 0x140, 1.2f, comp => comp.Active, "Twisters")
             .ActivateOnEnter<P5WrathOfTheHeavensTwister>(); // note: positions are determined slightly later, but regardless this is a good activation point
 
-        ActorCast(id + 0x200, _module.BossP5, AID.AscalonsMercyRevealed, 1.0f, 3.3f, true)
+        ActorCast(id + 0x200, _module.BossP5, (uint)AID.AscalonsMercyRevealed, 1.0f, 3.3f, true)
             .ActivateOnEnter<P5WrathOfTheHeavensAscalonsMercyRevealed>();
         ComponentCondition<P5WrathOfTheHeavensAscalonsMercyRevealed>(id + 0x202, 0.8f, comp => comp.NumCasts > 0, "Proteans")
             .DeactivateOnExit<P5WrathOfTheHeavensAscalonsMercyRevealed>()
@@ -426,7 +426,7 @@ class DSW2States : StateMachineBuilder
 
     private void P5DeathOfTheHeavens(uint id, float delay)
     {
-        ActorCast(id, _module.BossP5, AID.DeathOfTheHeavens, delay, 4, true);
+        ActorCast(id, _module.BossP5, (uint)AID.DeathOfTheHeavens, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BossP5, false, 3.1f, "Trio 2")
             .SetHint(StateMachine.StateHint.DowntimeStart);
 
@@ -436,7 +436,7 @@ class DSW2States : StateMachineBuilder
             .ActivateOnEnter<P5DeathOfTheHeavensGaze>()
             .ActivateOnEnter<P5DeathOfTheHeavensDooms>();
         ComponentCondition<P5DeathOfTheHeavensDooms>(id + 0x111, 0.1f, comp => comp.Dooms.Any());
-        ActorCastStart(id + 0x120, _module.BossP5, AID.LightningStorm, 4.1f, true);
+        ActorCastStart(id + 0x120, _module.BossP5, (uint)AID.LightningStorm, 4.1f, true);
         ComponentCondition<P5DeathOfTheHeavensHeavyImpact>(id + 0x130, 4.1f, comp => comp.NumCasts >= 1)
             .ActivateOnEnter<P5TwistingDive>() // TODO: consider activating earlier, when PATE's happen
             .ActivateOnEnter<P5Cauterize1>()
@@ -459,7 +459,7 @@ class DSW2States : StateMachineBuilder
         ComponentCondition<P5WrathOfTheHeavensTwister>(id + 0x1A0, 0.6f, comp => !comp.Active)
             .DeactivateOnExit<P5WrathOfTheHeavensTwister>();
 
-        ActorCastStart(id + 0x200, _module.BossP5, AID.DragonsGaze, 1.9f, true)
+        ActorCastStart(id + 0x200, _module.BossP5, (uint)AID.DragonsGaze, 1.9f, true)
             .ActivateOnEnter<P5DeathOfTheHeavensHeavensflame>(); // heavensflame cast starts at the same time, icons appear ~0.1s before cast start
         // +1.1s: faith unmoving and holy meteor casts start
         // +1.9s: wings of salvation aoes end
@@ -497,7 +497,7 @@ class DSW2States : StateMachineBuilder
 
     private void P6AkhAfah(uint id, float delay)
     {
-        ActorCast(id, _module.NidhoggP6, AID.AkhAfahN, delay, 8, true)
+        ActorCast(id, _module.NidhoggP6, (uint)AID.AkhAfahN, delay, 8, true)
             .ActivateOnEnter<P6AkhAfah>();
         ComponentCondition<P6AkhAfah>(id + 0x10, 0.2f, comp => comp.Done, "Party stacks + HP check")
             .DeactivateOnExit<P6AkhAfah>();
@@ -505,7 +505,7 @@ class DSW2States : StateMachineBuilder
 
     private void P6Wyrmsbreath1(uint id, float delay)
     {
-        ActorCastMulti(id, _module.NidhoggP6, [AID.DreadWyrmsbreathNormal, AID.DreadWyrmsbreathGlow], delay, 6.3f, true)
+        ActorCastMulti(id, _module.NidhoggP6, [(uint)AID.DreadWyrmsbreathNormal, (uint)AID.DreadWyrmsbreathGlow], delay, 6.3f, true)
             .ActivateOnEnter<P6HPCheck>()
             .ActivateOnEnter<P6Wyrmsbreath1>()
             .ActivateOnEnter<P6WyrmsbreathTankbusterShared>()
@@ -523,7 +523,7 @@ class DSW2States : StateMachineBuilder
 
     private void P6Wyrmsbreath2(uint id, float delay)
     {
-        ActorCastMulti(id, _module.NidhoggP6, [AID.DreadWyrmsbreathNormal, AID.DreadWyrmsbreathGlow], delay, 6.3f, true)
+        ActorCastMulti(id, _module.NidhoggP6, [(uint)AID.DreadWyrmsbreathNormal, (uint)AID.DreadWyrmsbreathGlow], delay, 6.3f, true)
             .ActivateOnEnter<P6Wyrmsbreath2>()
             .ActivateOnEnter<P6WyrmsbreathTankbusterShared>()
             .ActivateOnEnter<P6WyrmsbreathTankbusterSolo>()
@@ -541,7 +541,7 @@ class DSW2States : StateMachineBuilder
     private void P6HallowedWingsPlume1(uint id, float delay)
     {
         ActorTargetable(id, _module.NidhoggP6, false, delay, "Nidhogg disappears");
-        ActorCastMulti(id + 0x10, _module.HraesvelgrP6, [AID.HallowedWingsLN, AID.HallowedWingsLF, AID.HallowedWingsRN, AID.HallowedWingsRF], 1.8f, 7.5f, true)
+        ActorCastMulti(id + 0x10, _module.HraesvelgrP6, [(uint)AID.HallowedWingsLN, (uint)AID.HallowedWingsLF, (uint)AID.HallowedWingsRN, (uint)AID.HallowedWingsRF], 1.8f, 7.5f, true)
             .ActivateOnEnter<P6HallowedWings>()
             .ActivateOnEnter<P6CauterizeN>() // cauterize cast starts later, but nidhogg is already in position, so we start showing hints immediately
             .ActivateOnEnter<P6HallowedPlume1>();
@@ -557,7 +557,7 @@ class DSW2States : StateMachineBuilder
 
     private void P6HallowedWingsPlume2(uint id, float delay)
     {
-        ActorCastMulti(id, _module.HraesvelgrP6, [AID.HallowedWingsLN, AID.HallowedWingsLF, AID.HallowedWingsRN, AID.HallowedWingsRF], delay, 7.5f, true)
+        ActorCastMulti(id, _module.HraesvelgrP6, [(uint)AID.HallowedWingsLN, (uint)AID.HallowedWingsLF, (uint)AID.HallowedWingsRN, (uint)AID.HallowedWingsRF], delay, 7.5f, true)
             .ActivateOnEnter<P6HallowedWings>()
             .ActivateOnEnter<P6HotWingTail>() // this cast starts ~2s later
             .ActivateOnEnter<P6HallowedPlume2>();
@@ -572,11 +572,11 @@ class DSW2States : StateMachineBuilder
 
     private void P6WrothFlames(uint id, float delay)
     {
-        ActorCast(id, _module.NidhoggP6, AID.WrothFlames, delay, 2.5f, true);
+        ActorCast(id, _module.NidhoggP6, (uint)AID.WrothFlames, delay, 2.5f, true);
         ActorTargetable(id + 0x10, _module.HraesvelgrP6, false, 0.5f, "Hraesvelgr disappears");
         // +1.0s: 4x spreading flames, 2x entangling flames
         ActorTargetable(id + 0x20, _module.HraesvelgrP6, true, 1.3f);
-        ActorCastStart(id + 0x30, _module.NidhoggP6, AID.AkhMornFirst, 1.0f, true)
+        ActorCastStart(id + 0x30, _module.NidhoggP6, (uint)AID.AkhMornFirst, 1.0f, true)
             .ActivateOnEnter<P6WrothFlames>(); // first set spawns soon after hraesvelgr reappears, then next set spawns in 2s, then in 3s
         // +3.1s: hraesvelgr starts cauterize
         ActorCastEnd(id + 0x31, _module.NidhoggP6, 8, true, "Stack start") // stacks repeat every 1.6s
@@ -591,7 +591,7 @@ class DSW2States : StateMachineBuilder
         ComponentCondition<P6WrothFlames>(id + 0x50, 0.5f, comp => comp.NumCasts > 4, "Cross 2")
             .ActivateOnEnter<P6HotWingTail>() // note: activating early, so that spreading/entangled flames can use it
             .ActivateOnEnter<P6SpreadingEntangledFlames>();
-        ActorCastStartMulti(id + 0x60, _module.NidhoggP6, [AID.HotWing, AID.HotTail], 1.1f);
+        ActorCastStartMulti(id + 0x60, _module.NidhoggP6, [(uint)AID.HotWing, (uint)AID.HotTail], 1.1f);
         ComponentCondition<P6WrothFlames>(id + 0x70, 1.9f, comp => comp.NumCasts > 7, "Cross 3")
             .DeactivateOnExit<P6WrothFlames>();
         ActorCastEnd(id + 0x80, _module.NidhoggP6, 3.6f);
@@ -609,14 +609,16 @@ class DSW2States : StateMachineBuilder
     {
         ActorTargetable(id, _module.NidhoggP6, false, delay, "Bosses disappear"); // both
         ActorTargetable(id + 1, _module.NidhoggP6, true, 1.3f); // both
-        ActorCast(id + 0x10, _module.NidhoggP6, AID.CauterizeN, 1.2f, 5, true, "Wild charges")
+        ActorCast(id + 0x10, _module.NidhoggP6, (uint)AID.CauterizeN, 1.2f, 5, true, "Wild charges")
             .ActivateOnEnter<P6TouchdownCauterize>()
+            .ActivateOnEnter<P6TouchdownPyretic>()
             .DeactivateOnExit<P6TouchdownCauterize>();
         ComponentCondition<P6Touchdown>(id + 0x20, 7.0f, comp => comp.NumCasts > 0, "Proximity")
             .ActivateOnEnter<P6Touchdown>()
+            .DeactivateOnExit<P6TouchdownPyretic>()
             .DeactivateOnExit<P6Touchdown>();
 
-        ActorCastStart(id + 0x100, _module.NidhoggP6, AID.RevengeOfTheHordeP6, 1.2f, true)
+        ActorCastStart(id + 0x100, _module.NidhoggP6, (uint)AID.RevengeOfTheHordeP6, 1.2f, true)
             .ExecOnEnter<P6MortalVow>(comp => comp.ShowNextPass());
         ComponentCondition<P6MortalVow>(id + 0x101, 2.3f, comp => comp.Progress > 4, "Mortal vow pass 4")
             .DeactivateOnExit<P6MortalVow>();
@@ -653,7 +655,7 @@ class DSW2States : StateMachineBuilder
 
     private void P7ExaflareEdge(uint id, float delay)
     {
-        ActorCast(id, _module.BossP7, AID.ExaflaresEdge, delay, 6, true)
+        ActorCast(id, _module.BossP7, (uint)AID.ExaflaresEdge, delay, 6, true)
             .ActivateOnEnter<P7ExaflaresEdge>()
             .ActivateOnEnter<P7FlamesIceOfAscalon>();
         ComponentCondition<P7ExaflaresEdge>(id + 0x10, 0.9f, comp => comp.NumCasts > 0, "Exaflares 1");
@@ -668,7 +670,7 @@ class DSW2States : StateMachineBuilder
 
     private void P7AkhMornsEdge(uint id, float delay, int count)
     {
-        ActorCast(id, _module.BossP7, AID.AkhMornsEdge, delay, 6, true)
+        ActorCast(id, _module.BossP7, (uint)AID.AkhMornsEdge, delay, 6, true)
             .ActivateOnEnter<P7AkhMornsEdge>()
             .ActivateOnEnter<P7FlamesIceOfAscalon>();
         ComponentCondition<P7AkhMornsEdge>(id + 0x10, 0.7f, comp => comp.NumCasts >= 1, "Towers 1");
@@ -682,7 +684,7 @@ class DSW2States : StateMachineBuilder
 
     private void P7GigaflaresEdge(uint id, float delay)
     {
-        ActorCast(id, _module.BossP7, AID.GigaflaresEdge, delay, 8, true)
+        ActorCast(id, _module.BossP7, (uint)AID.GigaflaresEdge, delay, 8, true)
             .ActivateOnEnter<P7GigaflaresEdge>()
             .ActivateOnEnter<P7FlamesIceOfAscalon>();
         ComponentCondition<P7GigaflaresEdge>(id + 0x10, 1.0f, comp => comp.NumCasts >= 1, "Gigaflare 1");
@@ -696,7 +698,7 @@ class DSW2States : StateMachineBuilder
 
     private void P7MornAfahsEdge(uint id, float delay)
     {
-        ActorCast(id, _module.BossP7, AID.MornAfahsEdge, delay, 10, true)
+        ActorCast(id, _module.BossP7, (uint)AID.MornAfahsEdge, delay, 10, true)
             .ActivateOnEnter<P7MornAfahsEdge>();
         ComponentCondition<P7MornAfahsEdge>(id + 0x10, 0.7f, comp => comp.NumCasts > 0, "Enrage 1");
         ComponentCondition<P7MornAfahsEdge>(id + 0x20, 3.2f, comp => comp.NumCasts > 3, "Enrage 2");

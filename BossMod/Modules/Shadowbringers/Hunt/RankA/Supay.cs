@@ -14,7 +14,7 @@ public enum AID : uint
     Beakaxe = 17857 // Boss->player, no cast, single-target, instantlyy kills petrified players
 }
 
-class BlasphemousHowl(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.BlasphemousHowl), new AOEShapeCircle(8f), true)
+class BlasphemousHowl(BossModule module) : Components.BaitAwayCast(module, (uint)AID.BlasphemousHowl, 8f)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -24,7 +24,7 @@ class BlasphemousHowl(BossModule module) : Components.BaitAwayCast(module, Actio
     }
 }
 
-class PetroEyes(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.PetroEyes));
+class PetroEyes(BossModule module) : Components.CastGaze(module, (uint)AID.PetroEyes);
 
 class SupayStates : StateMachineBuilder
 {

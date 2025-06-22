@@ -2,11 +2,11 @@
 
 class Rokujos : Components.SimpleAOEs
 {
-    public Rokujos(BossModule module, AID aid) : base(module, ActionID.MakeSpell(aid), new AOEShapeRect(60f, 7f)) { MaxDangerColor = 1; }
+    public Rokujos(BossModule module, uint aid) : base(module, aid, new AOEShapeRect(60f, 7f)) { MaxDangerColor = 1; }
 }
-class OnceOnRokujo(BossModule module) : Rokujos(module, AID.OnceOnRokujo);
-class TwiceOnRokujo(BossModule module) : Rokujos(module, AID.TwiceOnRokujo);
-class ThriceOnRokujo(BossModule module) : Rokujos(module, AID.ThriceOnRokujo);
+class OnceOnRokujo(BossModule module) : Rokujos(module, (uint)AID.OnceOnRokujo);
+class TwiceOnRokujo(BossModule module) : Rokujos(module, (uint)AID.TwiceOnRokujo);
+class ThriceOnRokujo(BossModule module) : Rokujos(module, (uint)AID.ThriceOnRokujo);
 
 class Rokujo(BossModule module) : Components.GenericAOEs(module)
 {

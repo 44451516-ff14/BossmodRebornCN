@@ -17,8 +17,8 @@ public enum AID : uint
     Burst = 14680 // Boss->self, 6.0s cast, range 50 circle
 }
 
-class Sap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sap), 8);
-class Burst(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Burst));
+class Sap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sap, 8);
+class Burst(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Burst);
 
 class Selfdetonations(BossModule module) : BossComponent(module)
 {

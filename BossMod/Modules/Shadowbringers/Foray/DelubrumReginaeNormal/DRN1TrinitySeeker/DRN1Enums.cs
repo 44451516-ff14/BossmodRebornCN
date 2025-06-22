@@ -1,8 +1,8 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN1TrinitySeeker;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN1TrinitySeeker;
 
 public enum OID : uint
 {
-    Boss = 0x3131, // R4.000, x1
+    Boss = 0x3131, // R4.0
     AetherialOrb = 0x3132, // R2.0
     Helper = 0x233C
 }
@@ -31,21 +31,24 @@ public enum AID : uint
     MercifulBreeze = 23211, // Helper->self, 2.5s cast, range 50 width 5 rect aoe (crisscross)
     MercifulMoon = 23212, // AetherialOrb->self, no cast, range 50 circle gaze
     MercifulBlooms = 23213, // Helper->self, 9.0s cast, range 4 circle aoe (real radius is 20 due to influence up)
-    MercifulArc = 23223, // Boss->self, no cast, range 12 ?-degree cone cleave
+    MercifulArc = 23223, // Boss->self, no cast, range 12 90-degree cone cleave
 
     VerdantPathSword = 23192, // Boss->self, 3.0s cast, single-target, visual (switch to sword, side aoes)
-    BalefulSwathe = 23219, // Boss->self, no cast, single-target, visual (side aoes)
-    BalefulSwatheAOE = 23220, // Helper->self, no cast, range 50 ?-degree cone (doesn't really look like cone...)
+    BalefulSwatheVisual = 23219, // Boss->self, no cast, single-target, visual (side aoes)
+    BalefulSwathe = 23220, // Helper->self, 3.0s cast, range 50 180-degree cone
     PhantomEdge = 23200, // Boss->self, 4.0s cast, single-target, visual (applies status changing some effects)
     ScorchingShackle = 23214, // Helper->self, no cast, ??? (happens if chains aren't broken in time)
-    BalefulBlade1 = 23336, // Boss->self, 8.0s cast, range 30 circle, visual (knockback, 'blockable' variant)
-    BalefulBlade2 = 23337, // Boss->self, 8.0s cast, range 30 circle, visual (knockback, 'unblockable' variant)
-    BalefulBladeAOE1 = 23201, // Helper->self, no cast, ???, LOSable knockback 30
-    BalefulBladeAOE2 = 23202, // Helper->self, no cast, ???, knockback 30
+    BalefulBladeVisual1 = 23201, // Boss->self, 8.0s cast, range 30 circle, visual (knockback, 'blockable' variant)
+    BalefulBladeVisual2 = 23202, // Boss->self, 8.0s cast, range 30 circle, visual (knockback, 'unblockable' variant)
+    BalefulBlade1 = 23336, // Helper->self, no cast, range 30 circle, LOSable knockback 30
+    BalefulBlade2 = 23337, // Helper->self, no cast, range 30 circle, knockback 30
 
     VerdantPathFist = 23193, // Boss->self, 3.0s cast, single-target, visual (switch to fists, line stack)
-    IronImpact = 23259, // Boss->self, no cast, range 50 width 8 rect line stack
-    IronRose = 23221, // SeekerAvatar->self, 3.5s cast, range 50 width 8 rect aoe
+
+    IronImpactMarker = 14588, // Helper->player, no cast, single-target
+    IronImpactVisual = 23259, // Boss->self, 5.0s cast, single-target, line stack
+    IronImpact = 23221, // SeekerAvatar->self, 3.5s cast, range 50 width 8 rect
+
     IronSplitter = 23203, // Boss/SeekerAvatar->self, 5.0s cast, single-target, visual (tiles/sands)
     IronSplitterTile1 = 23204, // Helper->self, no cast, range 4 circle
     IronSplitterTile2 = 23205, // Helper->self, no cast, range 8-12 donut
@@ -55,30 +58,21 @@ public enum AID : uint
     IronSplitterSand3 = 23209, // Helper->self, no cast, range 20-25 donut
     DeadIron = 23215, // SeekerAvatar->self, 4.0s cast, single-target, visual (earthshakers)
     DeadIronAOE = 23216, // Helper->self, no cast, range 50 30-degree cone earthshaker
-    DeadIronSecond = 23364, // SeekerAvatar->self, no cast, single-target, visual (second earthshakers, without cast)
-
-    AbilityUnknown = 14588, // Helper->player, no cast, single-target
+    DeadIronSecond = 23364 // SeekerAvatar->self, no cast, single-target, visual (second earthshakers, without cast)
 }
 
 public enum SID : uint
 {
-    Mercy = 2056, // none->Boss, extra=0xFA/0xF8/0xF9/0xF7
-    BalefulAir = 2490, // Boss->Boss, extra=0x195
-    PhantomEdge = 2488, // Boss->Boss, extra=0x0
-    IronAir = 2491, // Boss->Boss, extra=0x196
-    BurningChains = 769, // none->player, extra=0x0
-    MercifulAir = 2489, // Boss->Boss, extra=0x194
+    Mercy = 2056 // none->Boss, extra=0xFA/0xF8/0xF9/0xF7
 }
 
 public enum IconID : uint
 {
     MercifulArc = 243, // player
-    BurningChains = 238, // player
     DeadIron = 237, // player
 }
 
 public enum TetherID : uint
 {
-    BurningChains = 128, // player->player
-    DeadIron = 138, // player->Boss
+    BurningChains = 128 // player->player
 }

@@ -67,7 +67,7 @@ public enum AID : uint
     Ashlayer = 36712 // Helper->self, no cast, range 60 circle
 }
 
-class Stonecarver(BossModule module) : Components.GenericAOEs(module)
+sealed class Stonecarver(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(2);
     private static readonly AOEShapeRect rect = new(40f, 10f);
@@ -104,7 +104,7 @@ class Stonecarver(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.Stonecarver4:
                 AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
                 if (AOEs.Count == 2)
-                    AOEs.SortBy(x => x.Activation);
+                    AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
         }
     }
@@ -131,7 +131,7 @@ class Stonecarver(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Shatter(BossModule module) : Components.GenericAOEs(module)
+sealed class Shatter(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeRect rectCenter = new(40f, 10f), rectSides = new(42f, 11f, 4f);
@@ -141,7 +141,7 @@ class Shatter(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var a = _aoes[i];
@@ -173,9 +173,9 @@ class Shatter(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-abstract class Impact(BossModule module, AID aid, float distance) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(aid), distance, stopAfterWall: true);
+abstract class Impact(BossModule module, uint aid, float distance) : Components.SimpleKnockbacks(module, aid, distance, stopAfterWall: true);
 
-class Impact1(BossModule module) : Impact(module, AID.Impact1, 18f)
+sealed class Impact1(BossModule module) : Impact(module, (uint)AID.Impact1, 18f)
 {
     private static readonly Angle halfAngle = 30f.Degrees();
 
@@ -189,7 +189,7 @@ class Impact1(BossModule module) : Impact(module, AID.Impact1, 18f)
     }
 }
 
-class Impact2(BossModule module) : Impact(module, AID.Impact2, 18f)
+sealed class Impact2(BossModule module) : Impact(module, (uint)AID.Impact2, 18f)
 {
     private static readonly Angle halfAngle = 20f.Degrees();
     private readonly Stonecarver _aoe = module.FindComponent<Stonecarver>()!;
@@ -206,7 +206,7 @@ class Impact2(BossModule module) : Impact(module, AID.Impact2, 18f)
     }
 }
 
-class Impact3(BossModule module) : Impact(module, AID.Impact3, 20f)
+sealed class Impact3(BossModule module) : Impact(module, (uint)AID.Impact3, 20f)
 {
     private static readonly Angle halfAngle = 10f.Degrees(), direction = 135f.Degrees();
 
@@ -220,12 +220,9 @@ class Impact3(BossModule module) : Impact(module, AID.Impact3, 20f)
     }
 }
 
-abstract class Crush(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10f);
-class ColossalImpact(BossModule module) : Crush(module, AID.ColossalImpact);
-class Skullcrush1(BossModule module) : Crush(module, AID.Skullcrush1);
-class Skullcrush2(BossModule module) : Crush(module, AID.Skullcrush2);
+sealed class ColossalImpactSkullcrush(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ColossalImpact, (uint)AID.Skullcrush1, (uint)AID.Skullcrush2], 10f);
 
-class DestructiveHeat(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.DestructiveHeat), 6f)
+sealed class DestructiveHeat(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DestructiveHeat, 6f)
 {
     private WPos origin;
     private readonly Impact1 _kb1 = module.FindComponent<Impact1>()!;
@@ -257,17 +254,17 @@ class DestructiveHeat(BossModule module) : Components.SpreadFromCastTargets(modu
     }
 }
 
-class Landing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Landing), 8f);
+sealed class Landing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Landing, 8f);
 
-abstract class DeepThunder(BossModule module, AID aid) : Components.CastTowers(module, ActionID.MakeSpell(aid), 6f, 4, 4);
-class DeepThunder1(BossModule module) : DeepThunder(module, AID.DeepThunderTower1);
-class DeepThunder2(BossModule module) : DeepThunder(module, AID.DeepThunderTower2);
+abstract class DeepThunder(BossModule module, uint aid) : Components.CastTowers(module, aid, 6f, 4, 4);
+sealed class DeepThunder1(BossModule module) : DeepThunder(module, (uint)AID.DeepThunderTower1);
+sealed class DeepThunder2(BossModule module) : DeepThunder(module, (uint)AID.DeepThunderTower2);
 
-class WroughtFire(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.WroughtFire), new AOEShapeCircle(6f), true, tankbuster: true);
-class BuildingHeat(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.BuildingHeat), 6f, 4, 4);
-class Ashlayer(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Ashlayer));
+sealed class WroughtFire(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WroughtFire, 6f, tankbuster: true);
+sealed class BuildingHeat(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.BuildingHeat, 6f, 4, 4);
+sealed class Ashlayer(BossModule module) : Components.RaidwideCast(module, (uint)AID.Ashlayer);
 
-class D033MaulskullStates : StateMachineBuilder
+sealed class D033MaulskullStates : StateMachineBuilder
 {
     public D033MaulskullStates(BossModule module) : base(module)
     {
@@ -276,9 +273,7 @@ class D033MaulskullStates : StateMachineBuilder
             .ActivateOnEnter<Impact1>()
             .ActivateOnEnter<Impact2>()
             .ActivateOnEnter<Impact3>()
-            .ActivateOnEnter<ColossalImpact>()
-            .ActivateOnEnter<Skullcrush1>()
-            .ActivateOnEnter<Skullcrush2>()
+            .ActivateOnEnter<ColossalImpactSkullcrush>()
             .ActivateOnEnter<DestructiveHeat>()
             .ActivateOnEnter<Landing>()
             .ActivateOnEnter<Shatter>()
@@ -291,4 +286,4 @@ class D033MaulskullStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12728)]
-public class D033Maulskull(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, -430f), new ArenaBoundsSquare(20f));
+public sealed class D033Maulskull(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, -430f), new ArenaBoundsSquare(20f));

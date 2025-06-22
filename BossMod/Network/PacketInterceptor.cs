@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace BossMod.Network;
+﻿namespace BossMod.Network;
 
 [StructLayout(LayoutKind.Explicit, Pack = 1)]
 unsafe struct ReceivedIPCPacket

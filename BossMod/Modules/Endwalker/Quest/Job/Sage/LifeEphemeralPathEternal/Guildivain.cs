@@ -45,18 +45,18 @@ public enum SID : uint
     Craniotomy = 2968 // none->player/Lalah/Mahaud/Ancel/Loifa, extra=0x0
 }
 
-class AetherstreamTether(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50, 2), (uint)TetherID.Noulith)
+class AetherstreamTether(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 2f), (uint)TetherID.Noulith)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.AetherstreamPlayer or AID.AetherstreamTank)
+        if (spell.Action.ID is (uint)AID.AetherstreamPlayer or (uint)AID.AetherstreamTank)
             CurrentBaits.RemoveAll(x => x.Target.InstanceID == spell.MainTargetID);
     }
 }
 
 class Tracheostomy : Components.SimpleAOEs
 {
-    public Tracheostomy(BossModule module) : base(module, ActionID.MakeSpell(AID.Tracheostomy), new AOEShapeDonut(10, 20))
+    public Tracheostomy(BossModule module) : base(module, (uint)AID.Tracheostomy, new AOEShapeDonut(10f, 20f))
     {
         WorldState.Actors.EventStateChanged.Subscribe((act) =>
         {
@@ -68,27 +68,22 @@ class Tracheostomy : Components.SimpleAOEs
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Arena.Bounds = Guildivain.SmallBounds;
     }
 }
 
-abstract class Scalpel(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(15, 105.Degrees()));
-class RightScalpel(BossModule module) : Scalpel(module, AID.RightScalpel);
-class LeftScalpel(BossModule module) : Scalpel(module, AID.LeftScalpel);
-class RightLeftScalpel1(BossModule module) : Scalpel(module, AID.RightLeftScalpel1);
-class RightLeftScalpel2(BossModule module) : Scalpel(module, AID.RightLeftScalpel2);
-class LeftRightScalpel1(BossModule module) : Scalpel(module, AID.LeftRightScalpel1);
-class LeftRightScalpel2(BossModule module) : Scalpel(module, AID.LeftRightScalpel2);
+class Scalpel(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightScalpel, (uint)AID.LeftScalpel,
+(uint)AID.RightLeftScalpel1, (uint)AID.RightLeftScalpel2, (uint)AID.LeftRightScalpel1, (uint)AID.LeftRightScalpel2], new AOEShapeCone(15f, 105f.Degrees()));
 
-class Laparotomy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Laparotomy), new AOEShapeCone(15, 60.Degrees()));
-class Amputation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Amputation), new AOEShapeCone(20, 60.Degrees()));
+class Laparotomy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Laparotomy, new AOEShapeCone(15f, 60f.Degrees()));
+class Amputation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Amputation, new AOEShapeCone(20f, 60f.Degrees()));
 
-class Hypothermia(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Hypothermia));
-class Cryonics(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Cryonics), 6);
-class Craniotomy(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Craniotomy));
+class Hypothermia(BossModule module) : Components.RaidwideCast(module, (uint)AID.Hypothermia);
+class Cryonics(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Cryonics, 6f);
+class Craniotomy(BossModule module) : Components.RaidwideCast(module, (uint)AID.Craniotomy);
 
-class Frigotherapy(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Frigotherapy), 5);
+class Frigotherapy(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Frigotherapy, 5f);
 
 class GuildivainStates : StateMachineBuilder
 {
@@ -97,17 +92,12 @@ class GuildivainStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<AetherstreamTether>()
             .ActivateOnEnter<Tracheostomy>()
-            .ActivateOnEnter<RightScalpel>()
-            .ActivateOnEnter<LeftScalpel>()
+            .ActivateOnEnter<Scalpel>()
             .ActivateOnEnter<Laparotomy>()
             .ActivateOnEnter<Amputation>()
             .ActivateOnEnter<Hypothermia>()
             .ActivateOnEnter<Cryonics>()
             .ActivateOnEnter<Craniotomy>()
-            .ActivateOnEnter<RightLeftScalpel1>()
-            .ActivateOnEnter<RightLeftScalpel2>()
-            .ActivateOnEnter<LeftRightScalpel1>()
-            .ActivateOnEnter<LeftRightScalpel2>()
             .ActivateOnEnter<Frigotherapy>();
     }
 }

@@ -43,23 +43,19 @@ public enum AID : uint
     Telega = 9630, // AltarMatanga/Mandragoras/GoldWhisker->self, no cast, single-target, bonus add disappear
 }
 
-class MysticLight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MysticLight), new AOEShapeCone(45.06f, 30.Degrees()));
-class MysticFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MysticFlame2), 7);
-class MysticHeat(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MysticHeat), new AOEShapeRect(41.72f, 1.5f));
-class SelfDetonate(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SelfDetonate), 10.72f);
-class MysticLevin(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MysticLevin));
-class MysticFlash(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.MysticFlash));
+class MysticLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticLight, new AOEShapeCone(45.06f, 30.Degrees()));
+class MysticFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticFlame2, 7);
+class MysticHeat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticHeat, new AOEShapeRect(41.72f, 1.5f));
+class SelfDetonate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDetonate, 10.72f);
+class MysticLevin(BossModule module) : Components.RaidwideCast(module, (uint)AID.MysticLevin);
+class MysticFlash(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.MysticFlash);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60.Degrees()), [(uint)OID.AltarMatanga]);
 
 class TheOlderOneStates : StateMachineBuilder
 {
@@ -72,11 +68,7 @@ class TheOlderOneStates : StateMachineBuilder
             .ActivateOnEnter<MysticLevin>()
             .ActivateOnEnter<MysticFlash>()
             .ActivateOnEnter<SelfDetonate>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()

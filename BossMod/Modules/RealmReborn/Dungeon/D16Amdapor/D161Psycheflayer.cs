@@ -27,14 +27,14 @@ public enum AID : uint
     Plaincracker = 1087 // MegalithMarionette->self, 7.0s cast, range 25+R circle
 }
 
-class VoidFireCleave(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.VoidFireCleave), new AOEShapeCircle(5), originAtTarget: true);
-class VoidFireAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFireAOE), 5);
-class VoidThunder(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.VoidThunder), "Interruptible tankbuster");
-class MindMelt(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MindMelt), "Interruptible raidwide");
-class Canker(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Canker), "Interruptible debuff");
-class Rockslide(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Rockslide), new AOEShapeRect(12.76f, 4));
-class Obliterate(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Obliterate));
-class Plaincracker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plaincracker), 30.5f);
+class VoidFireCleave(BossModule module) : Components.Cleave(module, (uint)AID.VoidFireCleave, new AOEShapeCircle(5), originAtTarget: true);
+class VoidFireAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFireAOE, 5);
+class VoidThunder(BossModule module) : Components.SingleTargetCast(module, (uint)AID.VoidThunder, "Interruptible tankbuster");
+class MindMelt(BossModule module) : Components.RaidwideCast(module, (uint)AID.MindMelt, "Interruptible raidwide");
+class Canker(BossModule module) : Components.CastHint(module, (uint)AID.Canker, "Interruptible debuff");
+class Rockslide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rockslide, new AOEShapeRect(12.76f, 4));
+class Obliterate(BossModule module) : Components.RaidwideCast(module, (uint)AID.Obliterate);
+class Plaincracker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plaincracker, 30.5f);
 
 class D161PsycheflayerStates : StateMachineBuilder
 {

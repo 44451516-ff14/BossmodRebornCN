@@ -27,9 +27,6 @@ public enum AID : uint
 
 public enum IconID : uint
 {
-    Tankbuster = 198, // player
-    Spreadmarker = 139, // player
-    Stackmarker = 62, // player
     RotateCCW = 168, // Boss
     RotateCW = 167 // Boss
 }
@@ -94,9 +91,9 @@ class MagitektSlashVoidzone(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID != (uint)OID.FireVoidzone)
             return;
-        if (state == 0x001)
+        if (state == 0x001u)
             _aoes.Add(new(MagitektSlashRotation.Cone, D151MarkIIIBMagitekColossus.ArenaCenter, actor.Rotation));
-        else if (state == 0x004)
+        else if (state == 0x004u)
         {
             var count = _aoes.Count;
             var rot = actor.Rotation;
@@ -112,11 +109,11 @@ class MagitektSlashVoidzone(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class JarringBlow(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.JarringBlow));
-class Exhaust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exhaust), new AOEShapeRect(43.5f, 5f));
-class WildFireBeam(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.WildFireBeam), 6f);
-class MagitekRay(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.MagitekRay), 6f, 4, 4);
-class CeruleumVent(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CeruleumVent));
+class JarringBlow(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.JarringBlow);
+class Exhaust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exhaust, new AOEShapeRect(43.5f, 5f));
+class WildFireBeam(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.WildFireBeam, 6f);
+class MagitekRay(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MagitekRay, 6f, 4, 4);
+class CeruleumVent(BossModule module) : Components.RaidwideCast(module, (uint)AID.CeruleumVent);
 
 class D151MarkIIIBMagitekColossusStates : StateMachineBuilder
 {

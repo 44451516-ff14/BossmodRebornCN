@@ -1,5 +1,4 @@
 ﻿using Dalamud.Game.ClientState.Keys;
-using System.Runtime.InteropServices;
 
 namespace BossMod.AI;
 

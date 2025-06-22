@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
-class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true, stopAfterWall: true)
+sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true, stopAfterWall: true)
 {
     public DateTime Activation;
     public (Actor source, Actor target) Tether;
@@ -62,7 +62,7 @@ class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(modu
     }
 }
 
-class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(module)
+sealed class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ElevateAndEviscerate _kb = module.FindComponent<ElevateAndEviscerate>()!;
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;
@@ -88,7 +88,7 @@ class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-class ElevateAndEviscerateImpact(BossModule module) : Components.GenericAOEs(module, default, "GTFO from impact!")
+sealed class ElevateAndEviscerateImpact(BossModule module) : Components.GenericAOEs(module, default, "GTFO from impact!")
 {
     private readonly ElevateAndEviscerate _kb = module.FindComponent<ElevateAndEviscerate>()!;
     private AOEInstance? aoe;

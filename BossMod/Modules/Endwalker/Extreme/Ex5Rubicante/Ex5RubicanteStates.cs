@@ -38,18 +38,18 @@ class Ex5RubicanteStates : StateMachineBuilder
         Dualfire(id + 0xB0000, 8.8f);
         OrdealOfPurgation(id + 0xC0000, 32.0f);
         OrdealOfPurgation(id + 0xD0000, 6.7f);
-        Cast(id + 0xE0000, AID.Enrage, 11.6f, 10, "Enrage");
+        Cast(id + 0xE0000, (uint)AID.Enrage, 11.6f, 10, "Enrage");
     }
 
     private void InfernoRaidwide(uint id, float delay)
     {
-        Cast(id, AID.InfernoRaidwide, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.InfernoRaidwide, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void ShatteringHeatBoss(uint id, float delay)
     {
-        Cast(id, AID.ShatteringHeatBoss, delay, 5, "Tankbuster")
+        Cast(id, (uint)AID.ShatteringHeatBoss, delay, 5, "Tankbuster")
             .ActivateOnEnter<ShatteringHeatBoss>()
             .DeactivateOnExit<ShatteringHeatBoss>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -57,7 +57,7 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void OrdealOfPurgation(uint id, float delay)
     {
-        CastStart(id, AID.OrdealOfPurgation, delay)
+        CastStart(id, (uint)AID.OrdealOfPurgation, delay)
             .ActivateOnEnter<OrdealOfPurgation>();
         CastEnd(id + 1, 12, "Shackle");
         ComponentCondition<OrdealOfPurgation>(id + 0x10, 8.1f, comp => comp.NumCasts > 0, "Ordeal resolve")
@@ -78,18 +78,18 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void ArchInferno(uint id, float delay)
     {
-        Cast(id, AID.ArchInferno, delay, 6, "Rotating aoes start")
+        Cast(id, (uint)AID.ArchInferno, delay, 6, "Rotating aoes start")
             .ActivateOnEnter<ArchInferno>()
             .ActivateOnEnter<InfernoDevilFirst>()
             .ActivateOnEnter<InfernoDevilRest>()
             .DeactivateOnExit<InfernoDevilFirst>();
         ArchInfernoSpreadStack(id + 0x10, 4);
-        Cast(id + 0x20, AID.Conflagration, 1.4f, 3, "Line AOE")
+        Cast(id + 0x20, (uint)AID.Conflagration, 1.4f, 3, "Line AOE")
             .ActivateOnEnter<Conflagration>()
             .DeactivateOnExit<Conflagration>();
         ArchInfernoSpreadStack(id + 0x30, 4.1f)
             .DeactivateOnExit<ArchInferno>(); // last tick happens ~1.3s before mechanic end
-        Cast(id + 0x40, AID.RadialFlagration, 0.2f, 7)
+        Cast(id + 0x40, (uint)AID.RadialFlagration, 0.2f, 7)
             .ActivateOnEnter<RadialFlagration>()
             .DeactivateOnExit<InfernoDevilRest>();
         ComponentCondition<RadialFlagration>(id + 0x50, 0.9f, comp => comp.NumCasts > 0, "Protean")
@@ -116,7 +116,7 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void BlazingRapture(uint id, float delay)
     {
-        Cast(id, AID.BlazingRapture, delay, 4, "DOT");
+        Cast(id, (uint)AID.BlazingRapture, delay, 4, "DOT");
         ComponentCondition<BlazingRapture>(id + 0x10, 9.7f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<BlazingRapture>()
             .DeactivateOnExit<BlazingRapture>()
@@ -125,10 +125,10 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void FlamespireBrand(uint id, float delay)
     {
-        Cast(id, AID.FlamespireBrand, delay, 4)
+        Cast(id, (uint)AID.FlamespireBrand, delay, 4)
             .ActivateOnEnter<Welts>() // statuses appear ~1s after cast end
             .ActivateOnEnter<Flamerake>(); // env controls happen right before next cast start
-        Cast(id + 0x10, AID.Flamerake, 2.1f, 6);
+        Cast(id + 0x10, (uint)AID.Flamerake, 2.1f, 6);
         ComponentCondition<Flamerake>(id + 0x20, 2.5f, comp => comp.NumCasts >= 1, "Cross 1");
         ComponentCondition<Flamerake>(id + 0x21, 2.0f, comp => comp.NumCasts >= 2, "Cross 2");
         ComponentCondition<Welts>(id + 0x30, 0.5f, comp => comp.NextMechanic == Welts.Mechanic.Spreads, "Stack/flares");
@@ -140,7 +140,7 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void InfernoSpread(uint id, float delay)
     {
-        Cast(id, AID.InfernoSpread, delay, 4)
+        Cast(id, (uint)AID.InfernoSpread, delay, 4)
             .ActivateOnEnter<InfernoSpread>();
         ComponentCondition<InfernoSpread>(id + 0x10, 1, comp => !comp.Active, "Spread")
             .DeactivateOnExit<InfernoSpread>();
@@ -148,7 +148,7 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void ScaldingSignalRingSweepingImmolation(uint id, float delay)
     {
-        CastMulti(id, [AID.ScaldingSignal, AID.ScaldingRing], delay, 5, "Circle/donut")
+        CastMulti(id, [(uint)AID.ScaldingSignal, (uint)AID.ScaldingRing], delay, 5, "Circle/donut")
             .ActivateOnEnter<ScaldingSignal>()
             .ActivateOnEnter<ScaldingRing>()
             .ActivateOnEnter<ScaldingFleetFirst>()
@@ -157,13 +157,11 @@ class Ex5RubicanteStates : StateMachineBuilder
         ComponentCondition<ScaldingFleetFirst>(id + 0x10, 1.1f, comp => comp.NumCasts > 0, "Baited lines")
             .DeactivateOnExit<ScaldingFleetFirst>();
 
-        CastMulti(id + 0x20, [AID.SweepingImmolationSpread, AID.SweepingImmolationStack], 2.5f, 7)
-            .ActivateOnEnter<SweepingImmolationSpread>()
-            .ActivateOnEnter<SweepingImmolationStack>()
+        CastMulti(id + 0x20, [(uint)AID.SweepingImmolationSpread, (uint)AID.SweepingImmolationStack], 2.5f, 7)
+            .ActivateOnEnter<SweepingImmolation>()
             .ActivateOnEnter<PartialTotalImmolation>()
             .ActivateOnEnter<ScaldingFleetSecond>() // casts start ~0.3s or ~1s into cast
-            .DeactivateOnExit<SweepingImmolationSpread>()
-            .DeactivateOnExit<SweepingImmolationStack>();
+            .DeactivateOnExit<SweepingImmolation>();
         ComponentCondition<PartialTotalImmolation>(id + 0x30, 0.5f, comp => comp.NumFinishedSpreads + comp.NumFinishedStacks > 0, "Spread/stack")
             .DeactivateOnExit<PartialTotalImmolation>()
             .DeactivateOnExit<ScaldingFleetSecond>(); // can resolve either slightly before sweeping or together with stack/spread
@@ -171,7 +169,7 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void Dualfire(uint id, float delay)
     {
-        CastStart(id, AID.Dualfire, delay)
+        CastStart(id, (uint)AID.Dualfire, delay)
             .ActivateOnEnter<Dualfire>(); // icons appear slightly before cast start
         CastEnd(id + 1, 5);
         ComponentCondition<Dualfire>(id + 2, 0.9f, comp => comp.NumCasts > 0, "Tankbusters")
@@ -181,7 +179,7 @@ class Ex5RubicanteStates : StateMachineBuilder
 
     private void FlamespireClaw(uint id, float delay)
     {
-        CastStart(id, AID.FlamespireClaw, delay)
+        CastStart(id, (uint)AID.FlamespireClaw, delay)
             .ActivateOnEnter<FlamespireClaw>(); // icons appear slightly before cast start
         CastEnd(id + 1, 6, "Limit cut start");
         ComponentCondition<FlamespireClaw>(id + 0x10, 19.5f, comp => comp.NumCasts >= 8, "Limit cut resolve")

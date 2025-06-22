@@ -34,13 +34,13 @@ public enum SID : uint
     DamageUp = 1766 // Boss->Boss, extra=0x1
 }
 
-class PullOfTheVoid(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.PullOfTheVoid), 30f, kind: Kind.TowardsOrigin, minDistanceBetweenHitboxes: true);
-class Megastorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Megastorm), new AOEShapeDonut(5f, 40f));
-class ConcussiveOscillation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ConcussiveOscillation), 24f);
-class VitriolicBarrage(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.VitriolicBarrage));
-class RockHard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RockHard), 8);
-class TorrentialTorment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TorrentialTorment), new AOEShapeCone(56f, 22.5f.Degrees()));
-class Fluorescence(BossModule module) : DispelComponent(module, (uint)SID.DamageUp);
+class PullOfTheVoid(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.PullOfTheVoid, 30f, shape: new AOEShapeCircle(30f), kind: Kind.TowardsOrigin, minDistanceBetweenHitboxes: true);
+class Megastorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megastorm, new AOEShapeDonut(5f, 40f));
+class ConcussiveOscillation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ConcussiveOscillation, 24f);
+class VitriolicBarrage(BossModule module) : Components.RaidwideCast(module, (uint)AID.VitriolicBarrage);
+class RockHard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RockHard, 8);
+class TorrentialTorment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TorrentialTorment, new AOEShapeCone(56f, 22.5f.Degrees()));
+class Fluorescence(BossModule module) : Components.Dispel(module, (uint)SID.DamageUp);
 class IonShower(BossModule module) : Components.GenericStackSpread(module, alwaysShowSpreads: true, raidwideOnResolve: false)
 {
     private int _numCasts;
@@ -79,7 +79,7 @@ class IonShower(BossModule module) : Components.GenericStackSpread(module, alway
     }
 }
 
-class PlainPound(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PlainPound), 6);
+class PlainPound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PlainPound, 6);
 
 class OvniStates : StateMachineBuilder
 {
@@ -99,7 +99,7 @@ class OvniStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "xan, Malediktus", GroupType = BossModuleInfo.GroupType.EurekaNM, GroupID = 639, NameID = 1424, SortOrder = 11)]
-public class Ovni(WorldState ws, Actor primary) : BossModule(ws, primary, new(266.1068f, -97.09414f), SharedBounds.Circle)
+public class Ovni(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

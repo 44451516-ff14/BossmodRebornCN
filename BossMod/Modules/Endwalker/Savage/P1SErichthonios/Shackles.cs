@@ -21,7 +21,7 @@ class Shackles(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        _blueTetherMatrix = _redTetherMatrix = _blueExplosionMatrix = _redExplosionMatrix = new();
+        _blueTetherMatrix = _redTetherMatrix = _blueExplosionMatrix = _redExplosionMatrix = default;
         var blueDebuffs = _debuffsBlueImminent | _debuffsBlueFuture;
         var redDebuffs = _debuffsRedImminent | _debuffsRedFuture;
         _active = (blueDebuffs | redDebuffs).Any();

@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class PowerfulGustKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.PowerfulGust), 20f, kind: Kind.DirForward, stopAfterWall: true)
+class PowerfulGustKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.PowerfulGust, 20f, kind: Kind.DirForward, stopAfterWall: true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -14,7 +14,7 @@ class PowerfulGustKB(BossModule module) : Components.SimpleKnockbacks(module, Ac
     }
 }
 
-class DownburstKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Downburst), 10f, stopAfterWall: true)
+class DownburstKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Downburst, 10f, stopAfterWall: true)
 {
     private Angle offset;
     private static readonly WPos botLeft = new(92.5f, 100f), botRight = new(107.5f, 100f), topRight = new(107.5f, 85f);
@@ -44,5 +44,5 @@ class DownburstKB(BossModule module) : Components.SimpleKnockbacks(module, Actio
     }
 }
 
-class PowerfulGustRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PowerfulGust));
-class DownburstRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Downburst));
+class PowerfulGustRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.PowerfulGust);
+class DownburstRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.Downburst);

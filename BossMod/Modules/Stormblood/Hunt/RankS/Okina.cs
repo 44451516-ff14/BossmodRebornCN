@@ -17,15 +17,15 @@ public enum AID : uint
     RubyTide = 7992, // Boss->self, 2.0s cast, single-target, boss gives itself Dmg up buff
 }
 
-class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrocannon), new AOEShapeRect(30, 3));
-class ElectricWhorl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElectricWhorl), new AOEShapeDonut(8, 60));
-class Expulsion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Expulsion), 14);
-class ExpulsionKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Expulsion), 30, shape: new AOEShapeCircle(14));
-class ElectricSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElectricSwipe), new AOEShapeCone(25, 30.Degrees()));
-class BodySlam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BodySlam), 10);
-class BodySlamKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BodySlam), 20, shape: new AOEShapeCircle(10));
-class Immersion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Immersion));
-class RubyTide(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.RubyTide), "Applies damage buff to self");
+class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrocannon, new AOEShapeRect(30, 3));
+class ElectricWhorl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectricWhorl, new AOEShapeDonut(8, 60));
+class Expulsion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Expulsion, 14);
+class ExpulsionKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Expulsion, 30, shape: new AOEShapeCircle(14));
+class ElectricSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectricSwipe, new AOEShapeCone(25, 30.Degrees()));
+class BodySlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BodySlam, 10);
+class BodySlamKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodySlam, 20, shape: new AOEShapeCircle(10));
+class Immersion(BossModule module) : Components.RaidwideCast(module, (uint)AID.Immersion);
+class RubyTide(BossModule module) : Components.CastHint(module, (uint)AID.RubyTide, "Applies damage buff to self");
 
 class OkinaStates : StateMachineBuilder
 {

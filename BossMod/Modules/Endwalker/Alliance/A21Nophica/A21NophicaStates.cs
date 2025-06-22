@@ -28,13 +28,13 @@ class A21NophicaStates : StateMachineBuilder
 
     private void Abundance(uint id, float delay)
     {
-        Cast(id, AID.Abundance, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.Abundance, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void ReapersGale(uint id, float delay)
     {
-        Cast(id, AID.ReapersGale1, delay, 4)
+        Cast(id, (uint)AID.ReapersGale1, delay, 4)
             .ActivateOnEnter<ReapersGale>();
         ComponentCondition<ReapersGale>(id + 0x10, 0.5f, comp => comp.NumCasts > 0, "Criss-cross 1");
         ComponentCondition<ReapersGale>(id + 0x20, 2.5f, comp => comp.Casters.Count == 0, "Criss-cross 2")
@@ -50,7 +50,7 @@ class A21NophicaStates : StateMachineBuilder
 
     private void GivingLand(uint id, float delay, bool withFloralHaze = false)
     {
-        CastStartMulti(id, [AID.GivingLandDonut, AID.GivingLandCircle], delay)
+        CastStartMulti(id, [(uint)AID.GivingLandDonut, (uint)AID.GivingLandCircle], delay)
             .ActivateOnEnter<FloralHaze>(withFloralHaze);
         CastEnd(id + 1, 5)
             .ActivateOnEnter<SummerShade>()
@@ -61,13 +61,13 @@ class A21NophicaStates : StateMachineBuilder
 
     private State MatronsHarvest(uint id, float delay)
     {
-        return CastMulti(id, [AID.MatronsHarvestDonut, AID.MatronsHarvestCircle], delay, 8, "Raidwide")
+        return CastMulti(id, [(uint)AID.MatronsHarvestDonut, (uint)AID.MatronsHarvestCircle], delay, 8, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void MatronsPlenty(uint id, float delay)
     {
-        Cast(id, AID.MatronsPlenty, delay, 2.5f);
+        Cast(id, (uint)AID.MatronsPlenty, delay, 2.5f);
         // +3.3s: env control for arena transition (800375AD.39 = 00200010 spring)
         GivingLand(id + 0x10, 6.2f);
         // +2.9s: seasons passing
@@ -79,9 +79,9 @@ class A21NophicaStates : StateMachineBuilder
 
     private void MatronsPlentyFloralHaze(uint id, float delay)
     {
-        Cast(id, AID.MatronsPlenty, delay, 2.5f);
+        Cast(id, (uint)AID.MatronsPlenty, delay, 2.5f);
         // +3.3s: env control for arena transition (800375AD.39 = 00020001 summer)
-        Cast(id + 0x10, AID.FloralHaze, 5.2f, 3);
+        Cast(id + 0x10, (uint)AID.FloralHaze, 5.2f, 3);
         // +0.6s: direction statuses appear
         GivingLand(id + 0x20, 3.2f);
         // +1.9s: seasons passing
@@ -93,17 +93,17 @@ class A21NophicaStates : StateMachineBuilder
 
     private void MatronsPlentyFloralHazeReapersGaleLandwaker(uint id, float delay)
     {
-        Cast(id, AID.MatronsPlenty, delay, 2.5f);
+        Cast(id, (uint)AID.MatronsPlenty, delay, 2.5f);
         // +3.3s: env control for arena transition (800375AD.39 = 00020001 summer)
-        Cast(id + 0x10, AID.FloralHaze, 6.2f, 3);
+        Cast(id + 0x10, (uint)AID.FloralHaze, 6.2f, 3);
         // +0.6s: direction statuses appear
-        Cast(id + 0x20, AID.Landwaker, 2.1f, 4, "Raidwide");
+        Cast(id + 0x20, (uint)AID.Landwaker, 2.1f, 4, "Raidwide");
         ComponentCondition<Landwaker>(id + 0x30, 1.6f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<Landwaker>(); // TODO: consider activating it later, after first criss-cross
-        CastMulti(id + 0x40, [AID.ReapersGale2, AID.ReapersGale3], 1.5f, 4) // TODO: what is the difference between these casts?
+        CastMulti(id + 0x40, [(uint)AID.ReapersGale2, (uint)AID.ReapersGale3], 1.5f, 4) // TODO: what is the difference between these casts?
             .ActivateOnEnter<ReapersGale>();
         ComponentCondition<ReapersGale>(id + 0x50, 0.5f, comp => comp.NumCasts > 0, "Criss-cross 1");
-        CastStartMulti(id + 0x60, [AID.GivingLandDonut, AID.GivingLandCircle], 1.6f);
+        CastStartMulti(id + 0x60, [(uint)AID.GivingLandDonut, (uint)AID.GivingLandCircle], 1.6f);
         ComponentCondition<ReapersGale>(id + 0x70, 0.9f, comp => comp.Casters.Count == 0, "Puddles + Criss-cross 2")
             .DeactivateOnExit<Landwaker>() // usually completes slightly before
             .DeactivateOnExit<ReapersGale>();
@@ -113,7 +113,7 @@ class A21NophicaStates : StateMachineBuilder
             .ActivateOnEnter<FloralHaze>();
         GivingLandResolve(id + 0x81, 0.3f);
 
-        Cast(id + 0x100, AID.SowingCircle, 2.9f, 4)
+        Cast(id + 0x100, (uint)AID.SowingCircle, 2.9f, 4)
             .ActivateOnEnter<SowingCircle>();
         ComponentCondition<SowingCircle>(id + 0x110, 1, comp => comp.NumCasts > 0, "Exaflare start");
         // +1.2s: seasons passing
@@ -128,7 +128,7 @@ class A21NophicaStates : StateMachineBuilder
 
     private void MatronsBreath1(uint id, float delay)
     {
-        Cast(id, AID.MatronsBreath, delay, 2.5f)
+        Cast(id, (uint)AID.MatronsBreath, delay, 2.5f)
             .ActivateOnEnter<MatronsBreath>();
         ComponentCondition<MatronsBreath>(id + 0x10, 15.5f, comp => comp.NumCasts >= 1, "Tower 1");
         ComponentCondition<MatronsBreath>(id + 0x11, 6, comp => comp.NumCasts >= 2, "Tower 2");
@@ -138,7 +138,7 @@ class A21NophicaStates : StateMachineBuilder
 
     private void MatronsBreath2(uint id, float delay)
     {
-        Cast(id, AID.MatronsBreath, delay, 2.5f)
+        Cast(id, (uint)AID.MatronsBreath, delay, 2.5f)
             .ActivateOnEnter<MatronsBreath>();
         ComponentCondition<MatronsBreath>(id + 0x10, 15.5f, comp => comp.NumCasts >= 1, "Tower 1");
         ComponentCondition<MatronsBreath>(id + 0x11, 3.5f, comp => comp.NumCasts >= 2, "Tower 2");
@@ -151,7 +151,7 @@ class A21NophicaStates : StateMachineBuilder
 
     private void Furrow(uint id, float delay)
     {
-        Cast(id, AID.Furrow, delay, 6, "Stack")
+        Cast(id, (uint)AID.Furrow, delay, 6, "Stack")
             .ActivateOnEnter<Furrow>()
             .DeactivateOnExit<Furrow>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -159,7 +159,7 @@ class A21NophicaStates : StateMachineBuilder
 
     private void HeavensEarth(uint id, float delay)
     {
-        Cast(id, AID.HeavensEarth, delay, 5, "Tankbusters")
+        Cast(id, (uint)AID.HeavensEarth, delay, 5, "Tankbusters")
             .ActivateOnEnter<HeavensEarth>()
             .DeactivateOnExit<HeavensEarth>()
             .SetHint(StateMachine.StateHint.Tankbuster);

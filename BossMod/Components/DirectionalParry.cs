@@ -4,7 +4,6 @@
 // uses common status + custom prediction
 public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(module, actorOID)
 {
-    [Flags]
     public enum Side
     {
         None = 0x0,
@@ -15,28 +14,55 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
         All = 0xF
     }
 
-    public const uint ParrySID = 680; // common 'directional parry' status
+    public const uint ParrySID = 680u; // common 'directional parry' status
 
     public readonly Dictionary<ulong, int> ActorStates = []; // value == active-side | (imminent-side << 4)
-    public bool Active => ActorStates.Values.Any(s => ActiveSides(s) != Side.None);
+    public bool Active
+    {
+        get
+        {
+            foreach (var state in ActorStates.Values)
+                if ((Side)(state & 0xF) != Side.None)
+                    return true;
+            return false;
+        }
+    }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var target = Actors.FirstOrDefault(w => w.InstanceID == actor.TargetID);
-        if (target != null && ActorStates.TryGetValue(actor.TargetID, out var targetState))
+        if (ActorStates.Count == 0)
+            return;
+        var actors = ActiveActors;
+        Actor? target = null;
+        var count = ActiveActors.Count;
+        for (var i = 0; i < count; ++i)
         {
-            var forbiddenSides = ActiveSides(targetState) | ImminentSides(targetState);
-            var attackDir = (actor.Position - target.Position).Normalized();
-            var facing = target.Rotation.ToDirection();
-            var attackingFromForbidden = attackDir.Dot(facing) switch
+            var a = actors[i];
+            if (a.InstanceID == actor.TargetID)
             {
-                > 0.7071067f => forbiddenSides.HasFlag(Side.Front),
-                < -0.7071067f => forbiddenSides.HasFlag(Side.Back),
-                _ => forbiddenSides.HasFlag(attackDir.Dot(facing.OrthoL()) > 0 ? Side.Left : Side.Right)
-            };
-            if (attackingFromForbidden)
-                hints.Add("Attack target from unshielded side!");
+                target = a;
+                break;
+            }
         }
+
+        if (target == null || !ActorStates.TryGetValue(actor.TargetID, out var targetState))
+            return;
+
+        var active = (Side)(targetState & 0xF);
+        var imminent = (Side)((targetState >> 4) & 0xF);
+        var forbiddenSides = active | imminent;
+
+        var attackDir = (actor.Position - target.Position).Normalized();
+        var facing = target.Rotation.ToDirection();
+        var forwardDot = attackDir.Dot(facing);
+
+        var attackSide =
+            forwardDot > 0.7071067f ? Side.Front :
+            forwardDot < -0.7071067f ? Side.Back :
+            (attackDir.Dot(facing.OrthoL()) > 0f ? Side.Left : Side.Right);
+
+        if ((forbiddenSides & attackSide) != default)
+            hints.Add("Attack target from unshielded side!");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -47,32 +73,37 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
             if (target == null)
                 continue;
 
-            void forbidDirection(Angle offset) => hints.AddForbiddenZone(new AOEShapeCone(100f, 45f.Degrees()), target.Position, target.Rotation + offset, DateTime.MaxValue, target.InstanceID);
+            void forbidDirection(Angle offset)
+                => hints.AddForbiddenZone(ShapeDistance.Cone(target.Position, 100f, target.Rotation + offset, 45f.Degrees()), DateTime.MaxValue);
 
-            var forbiddenSides = ActiveSides(targetState);
+            var active = (Side)(targetState & 0xF);
+            var imminent = (Side)((targetState >> 4) & 0xF);
+            var forbiddenSides = active | imminent;
             var attackDir = (actor.Position - target.Position).Normalized();
             var facing = target.Rotation.ToDirection();
-            var attackingFromForbidden = attackDir.Dot(facing) switch
-            {
-                > 0.7071067f => forbiddenSides.HasFlag(Side.Front),
-                < -0.7071067f => forbiddenSides.HasFlag(Side.Back),
-                _ => forbiddenSides.HasFlag(attackDir.Dot(facing.OrthoL()) > 0 ? Side.Left : Side.Right)
-            };
 
-            if (attackingFromForbidden)
-            {
-                hints.SetPriority(target, AIHints.Enemy.PriorityForbidden);
+            var forwardDot = attackDir.Dot(facing);
+            var orthoDot = attackDir.Dot(facing.OrthoL());
 
-                // make AI move to an area where it can attack target safely
+            var attackSide =
+                forwardDot > 0.7071067f ? Side.Front :
+                forwardDot < -0.7071067f ? Side.Back :
+                (orthoDot > 0f ? Side.Left : Side.Right);
+
+            if ((forbiddenSides & attackSide) != default)
+            {
+                if (active != default)
+                    hints.SetPriority(target, AIHints.Enemy.PriorityForbidden);
+
                 if (actor.TargetID == id)
                 {
-                    if (forbiddenSides.HasFlag(Side.Front))
+                    if ((forbiddenSides & Side.Front) != default)
                         forbidDirection(default);
-                    if (forbiddenSides.HasFlag(Side.Left))
+                    if ((forbiddenSides & Side.Left) != default)
                         forbidDirection(90f.Degrees());
-                    if (forbiddenSides.HasFlag(Side.Back))
+                    if ((forbiddenSides & Side.Back) != default)
                         forbidDirection(180f.Degrees());
-                    if (forbiddenSides.HasFlag(Side.Right))
+                    if ((forbiddenSides & Side.Right) != default)
                         forbidDirection(270f.Degrees());
                 }
             }
@@ -81,16 +112,17 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
+        base.DrawArenaForeground(pcSlot, pc);
         foreach (var a in ActiveActors)
         {
             if (ActorStates.TryGetValue(a.InstanceID, out var aState))
             {
                 var active = ActiveSides(aState);
                 var imminent = ImminentSides(aState);
-                DrawParry(a, 0.Degrees(), active, imminent, Side.Front);
-                DrawParry(a, 180.Degrees(), active, imminent, Side.Back);
-                DrawParry(a, 90.Degrees(), active, imminent, Side.Left);
-                DrawParry(a, 270.Degrees(), active, imminent, Side.Right);
+                DrawParry(a, default, active, imminent, Side.Front);
+                DrawParry(a, 180f.Degrees(), active, imminent, Side.Back);
+                DrawParry(a, 90f.Degrees(), active, imminent, Side.Left);
+                DrawParry(a, 270f.Degrees(), active, imminent, Side.Right);
             }
         }
     }
@@ -120,16 +152,16 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
 
     private void DrawParry(Actor actor, Angle offset, Side active, Side imminent, Side check)
     {
-        if (active.HasFlag(check))
+        if ((active & check) != default)
             DrawParry(actor, offset, Colors.Enemy);
-        else if (imminent.HasFlag(check))
+        else if ((imminent & check) != default)
             DrawParry(actor, offset);
     }
 
-    private void DrawParry(Actor actor, Angle offset, uint color = 0)
+    private void DrawParry(Actor actor, Angle offset, uint color = default)
     {
         var dir = actor.Rotation + offset;
-        Arena.PathArcTo(actor.Position, 1.5f, (dir - 45.Degrees()).Rad, (dir + 45.Degrees()).Rad);
+        Arena.PathArcTo(actor.Position, 1.5f, (dir - 45f.Degrees()).Rad, (dir + 45f.Degrees()).Rad);
         MiniArena.PathStroke(false, color);
     }
 

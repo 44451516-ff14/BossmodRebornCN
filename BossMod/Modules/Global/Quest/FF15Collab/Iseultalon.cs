@@ -74,7 +74,7 @@ class Electrocution(BossModule module) : Components.GenericTowers(module)
     private WPos DeterminePosition(Actor caster, ActorCastInfo spell) => spell.TargetID == caster.InstanceID ? caster.Position : WorldState.Actors.Find(spell.TargetID)?.Position ?? spell.LocXZ;
 }
 
-class Electrocution2(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.Electrocution2), 3f)
+class Electrocution2(BossModule module) : Components.CastTowers(module, (uint)AID.Electrocution2, 3f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -83,17 +83,17 @@ class Electrocution2(BossModule module) : Components.CastTowers(module, ActionID
     }
 }
 
-class Stomp(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Stomp));
+class Stomp(BossModule module) : Components.RaidwideCast(module, (uint)AID.Stomp);
 
 class DeathRay : Components.SimpleAOEs
 {
-    public DeathRay(BossModule module) : base(module, ActionID.MakeSpell(AID.DeathRay2), new AOEShapeRect(40f, 1f))
+    public DeathRay(BossModule module) : base(module, (uint)AID.DeathRay2, new AOEShapeRect(40f, 1f))
     {
         Color = Colors.Danger;
     }
 }
 
-class TailWhip(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailWhip), new AOEShapeCone(12f, 135f.Degrees()));
+class TailWhip(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailWhip, new AOEShapeCone(12f, 135f.Degrees()));
 
 class DeathRay2(BossModule module) : Components.GenericAOEs(module)
 {
@@ -120,7 +120,7 @@ class DeathRay2(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class NeedleShot(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.NeedleShot), 5f);
+class NeedleShot(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.NeedleShot, 5f);
 
 class IseultalonStates : StateMachineBuilder
 {

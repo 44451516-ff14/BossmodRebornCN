@@ -1,6 +1,6 @@
 ﻿namespace BossMod;
 
-public class ColumnStateMachineTree(Timeline timeline, StateMachineTree tree, StateMachine? controlledSM) : ColumnStateMachine(timeline, tree)
+public sealed class ColumnStateMachineTree(Timeline timeline, StateMachineTree tree, StateMachine? controlledSM) : ColumnStateMachine(timeline, tree)
 {
     public StateMachine? ControlledSM = controlledSM;
 

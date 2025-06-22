@@ -5,7 +5,7 @@
 public static class CurveApprox
 {
     public const float ScreenError = 0.05f;
-    private static readonly Angle a0 = 0.Degrees(), a90 = 90.Degrees(), a270 = 270.Degrees(), a360 = 360.Degrees();
+    private static readonly Angle a0 = 0f.Degrees(), a90 = 90f.Degrees(), a270 = 270f.Degrees(), a360 = 360f.Degrees();
 
     public static int CalculateCircleSegments(float radius, Angle angularLength, float maxError)
     {

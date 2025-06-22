@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V024Shishio;
 
-class Reisho1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ReishoFirst), 6f);
+class Reisho1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ReishoFirst, 6f);
 class Reisho2(BossModule module) : Components.Voidzone(module, 6f, GetGhosts, 10f)
 {
     private static List<Actor> GetGhosts(BossModule module) => module.Enemies((uint)OID.HauntingThrall);

@@ -31,7 +31,7 @@ public enum SID : uint
     NumbingCurrent = 3980, // Boss->player, extra=0x0
 }
 
-class SpinShock(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class SpinShock(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCone cone = new(50f, 45f.Degrees());
     public int Spins;
@@ -70,7 +70,7 @@ class SpinShock(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class ShockingCrossXMarksTheShock(BossModule module) : Components.GenericAOEs(module)
+sealed class ShockingCrossXMarksTheShock(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly SpinShock _rotation = module.FindComponent<SpinShock>()!;
     private bool currentShape; // false = intercards, true cardinal
@@ -118,10 +118,10 @@ class ShockingCrossXMarksTheShock(BossModule module) : Components.GenericAOEs(mo
     }
 }
 
-class LightningBolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightningBolt), 5f);
-class ElectricalOverload(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElectricalOverload));
+sealed class LightningBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBolt, 5f);
+sealed class ElectricalOverload(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectricalOverload);
 
-class HeshualaStates : StateMachineBuilder
+sealed class HeshualaStates : StateMachineBuilder
 {
     public HeshualaStates(BossModule module) : base(module)
     {
@@ -134,4 +134,4 @@ class HeshualaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13157)]
-public class Heshuala(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Heshuala(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

@@ -2,7 +2,7 @@
 
 class P2IntermissionLimitCut(BossModule module) : LimitCut(module, 3.2f);
 
-class P2IntermissionHawkBlaster(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.HawkBlasterIntermission))
+class P2IntermissionHawkBlaster(BossModule module) : Components.GenericAOEs(module, (uint)AID.HawkBlasterIntermission)
 {
     private Angle _blasterStartingDirection;
     private readonly TEAConfig _config = Service.Config.Get<TEAConfig>();
@@ -43,7 +43,7 @@ class P2IntermissionHawkBlaster(BossModule module) : Components.GenericAOEs(modu
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             if (NumCasts == 0)
             {

@@ -19,14 +19,14 @@ public enum AID : uint
     AwayWithYouInverted = 27371 // Boss->self, 7.0s cast, range 6-40 donut
 }
 
-class AvertYourEyes(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.AvertYourEyes));
-class YouMayApproach(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.YouMayApproach), new AOEShapeDonut(6, 40));
-class AwayWithYou(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AwayWithYou), 15);
-class Needles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Needles), 6);
-class WickedWhim(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.WickedWhim), "Invert next cast");
-class AvertYourEyesInverted(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.AvertYourEyesInverted), true);
-class YouMayApproachInverted(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.YouMayApproachInverted), 15);
-class AwayWithYouInverted(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AwayWithYouInverted), new AOEShapeDonut(6, 40));
+class AvertYourEyes(BossModule module) : Components.CastGaze(module, (uint)AID.AvertYourEyes);
+class YouMayApproach(BossModule module) : Components.SimpleAOEs(module, (uint)AID.YouMayApproach, new AOEShapeDonut(6, 40));
+class AwayWithYou(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AwayWithYou, 15);
+class Needles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Needles, 6);
+class WickedWhim(BossModule module) : Components.CastHint(module, (uint)AID.WickedWhim, "Invert next cast");
+class AvertYourEyesInverted(BossModule module) : Components.CastGaze(module, (uint)AID.AvertYourEyesInverted, true);
+class YouMayApproachInverted(BossModule module) : Components.SimpleAOEs(module, (uint)AID.YouMayApproachInverted, 15);
+class AwayWithYouInverted(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AwayWithYouInverted, new AOEShapeDonut(6, 40));
 
 class LunatenderQueenStates : StateMachineBuilder
 {

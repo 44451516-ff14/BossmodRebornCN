@@ -24,13 +24,13 @@ public enum SID : uint
     Doom = 910 // Boss->player, extra=0x0
 }
 
-class ApocalypticBolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ApocalypticBolt), new AOEShapeRect(51.2f, 45f));
-class ApocalypticRoar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ApocalypticRoar), new AOEShapeCone(36.2f, 60f.Degrees()));
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsVoice), 8f);
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheDragonsVoice), new AOEShapeDonut(6f, 30f));
-class Plaincracker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plaincracker), 7.2f);
-class TremblingEarth1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TremblingEarth1), new AOEShapeDonut(10f, 20f));
-class TremblingEarth2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TremblingEarth2), new AOEShapeDonut(20f, 30f));
+class ApocalypticBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ApocalypticBolt, new AOEShapeRect(51.2f, 45f));
+class ApocalypticRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ApocalypticRoar, new AOEShapeCone(36.2f, 60f.Degrees()));
+class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 8f);
+class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(6f, 30f));
+class Plaincracker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plaincracker, 7.2f);
+class TremblingEarth1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TremblingEarth1, new AOEShapeDonut(10f, 20f));
+class TremblingEarth2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TremblingEarth2, new AOEShapeDonut(20f, 30f));
 
 class Hints(BossModule module) : BossComponent(module)
 {

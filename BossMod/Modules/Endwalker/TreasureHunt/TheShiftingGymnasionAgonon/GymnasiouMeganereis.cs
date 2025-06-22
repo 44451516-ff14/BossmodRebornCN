@@ -41,9 +41,9 @@ public enum AID : uint
     Telega = 9630 // Mandragoras/Lyssa->self, no cast, single-target, bonus add disappear
 }
 
-class Ceras(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Ceras));
+class Ceras(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Ceras);
 
-class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.WaveOfTurmoil), 20f, stopAtWall: true)
+class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.WaveOfTurmoil, 20f, stopAtWall: true)
 {
     private readonly Hydrobomb _aoe = module.FindComponent<Hydrobomb>()!;
     private static readonly Angle cone = 30f.Degrees();
@@ -77,21 +77,17 @@ class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, Act
     }
 }
 
-class Hydrobomb(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrobomb), 10f);
-class Waterspout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Waterspout), 8f);
-class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrocannon), new AOEShapeRect(17f, 1.5f));
-class Hydrocannon2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrocannon2), new AOEShapeRect(27f, 3f));
-class FallingWater(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FallingWater), 8f);
-class Immersion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Immersion));
+class Hydrobomb(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrobomb, 10f);
+class Waterspout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Waterspout, 8f);
+class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrocannon, new AOEShapeRect(17f, 1.5f));
+class Hydrocannon2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrocannon2, new AOEShapeRect(27f, 3f));
+class FallingWater(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FallingWater, 8f);
+class Immersion(BossModule module) : Components.RaidwideCast(module, (uint)AID.Immersion);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
-class HeavySmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySmash), 6f);
+class HeavySmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySmash, 6f);
 
 class GymnasiouMeganereisStates : StateMachineBuilder
 {
@@ -106,11 +102,7 @@ class GymnasiouMeganereisStates : StateMachineBuilder
             .ActivateOnEnter<Hydrocannon2>()
             .ActivateOnEnter<FallingWater>()
             .ActivateOnEnter<Immersion>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<HeavySmash>()
             .Raw.Update = () =>
             {

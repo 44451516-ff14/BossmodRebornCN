@@ -26,12 +26,12 @@ class C022GoraiStates : StateMachineBuilder
         MalformedReincarnation(id + 0xA0000, 8.1f);
         SealOfScurryingSparksFlameAndSulphur(id + 0xB0000, 10.6f);
         Unenlightenment(id + 0xC0000, 4.4f);
-        Cast(id + 0xD0000, AID.LivingHell, 6.3f, 10, "Enrage");
+        Cast(id + 0xD0000, (uint)AID.LivingHell, 6.3f, 10, "Enrage");
     }
 
     private void Unenlightenment(uint id, float delay)
     {
-        Cast(id, AID.Unenlightenment, delay, 5)
+        Cast(id, (uint)AID.Unenlightenment, delay, 5)
             .ActivateOnEnter<NUnenlightenment>(!_savage)
             .ActivateOnEnter<SUnenlightenment>(_savage);
         ComponentCondition<Unenlightenment>(id + 0x10, 0.6f, comp => comp.NumCasts > 0, "Raidwide")
@@ -41,7 +41,7 @@ class C022GoraiStates : StateMachineBuilder
 
     private void TorchingTorment(uint id, float delay)
     {
-        Cast(id, AID.TorchingTorment, delay, 5)
+        Cast(id, (uint)AID.TorchingTorment, delay, 5)
             .ActivateOnEnter<TorchingTorment>();
         ComponentCondition<TorchingTorment>(id + 0x10, 0.6f, comp => comp.NumCasts > 0, "Tankbuster")
             .DeactivateOnExit<TorchingTorment>()
@@ -50,11 +50,11 @@ class C022GoraiStates : StateMachineBuilder
 
     private void SealOfScurryingSparksFlameAndSulphur(uint id, float delay)
     {
-        Cast(id, AID.SealOfScurryingSparks, delay, 4)
+        Cast(id, (uint)AID.SealOfScurryingSparks, delay, 4)
             .ActivateOnEnter<SealOfScurryingSparks>();
-        Cast(id + 0x10, AID.FlameAndSulphur, 2.4f, 3);
+        Cast(id + 0x10, (uint)AID.FlameAndSulphur, 2.4f, 3);
         // +0.8s: spawn rocks/flames
-        CastMulti(id + 0x20, [AID.BrazenBalladExpanding, AID.BrazenBalladSplitting], 6.4f, 5)
+        CastMulti(id + 0x20, [(uint)AID.BrazenBalladExpanding, (uint)AID.BrazenBalladSplitting], 6.4f, 5)
             .ActivateOnEnter<FlameAndSulphur>();
         ComponentCondition<FlameAndSulphur>(id + 0x30, 3.1f, comp => comp.NumCasts > 0, "Expanding/splitting aoes")
             .DeactivateOnExit<FlameAndSulphur>();
@@ -64,9 +64,9 @@ class C022GoraiStates : StateMachineBuilder
 
     private void SealOfScurryingSparksCloudToGround(uint id, float delay)
     {
-        Cast(id, AID.SealOfScurryingSparks, delay, 4)
+        Cast(id, (uint)AID.SealOfScurryingSparks, delay, 4)
             .ActivateOnEnter<SealOfScurryingSparks>();
-        Cast(id + 0x10, AID.CloudToGround, 2.4f, 6.2f)
+        Cast(id + 0x10, (uint)AID.CloudToGround, 2.4f, 6.2f)
             .ActivateOnEnter<CloudToGround>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<CloudToGround>(id + 0x20, 0.8f, comp => comp.NumCasts > 0, "Exaflares start");
@@ -79,7 +79,7 @@ class C022GoraiStates : StateMachineBuilder
 
     private void ImpurePurgation(uint id, float delay)
     {
-        Cast(id, AID.ImpurePurgation, delay, 3.6f)
+        Cast(id, (uint)AID.ImpurePurgation, delay, 3.6f)
             .ActivateOnEnter<ImpurePurgationBait>();
         ComponentCondition<ImpurePurgationBait>(id + 0x10, 0.6f, comp => comp.NumCasts > 0, "Proteans bait")
             .DeactivateOnExit<ImpurePurgationBait>();
@@ -91,9 +91,9 @@ class C022GoraiStates : StateMachineBuilder
 
     private void Thundercall(uint id, float delay)
     {
-        Cast(id, AID.Thundercall, delay, 3);
+        Cast(id, (uint)AID.Thundercall, delay, 3);
         // +3.1s: spawn 6 lightning orbs
-        Cast(id + 0x10, AID.HumbleHammer, 5.9f, 5, "Reduce aoe size")
+        Cast(id + 0x10, (uint)AID.HumbleHammer, 5.9f, 5, "Reduce aoe size")
             .ActivateOnEnter<Thundercall>()
             .ActivateOnEnter<Flintlock>()
             .SetHint(StateMachine.StateHint.PositioningStart);
@@ -106,14 +106,14 @@ class C022GoraiStates : StateMachineBuilder
 
     private void RousingReincarnation(uint id, float delay)
     {
-        Cast(id, AID.RousingReincarnation, delay, 5)
+        Cast(id, (uint)AID.RousingReincarnation, delay, 5)
             .ActivateOnEnter<NRousingReincarnation>(!_savage)
             .ActivateOnEnter<SRousingReincarnation>(_savage);
         ComponentCondition<RousingReincarnation>(id + 0x10, 0.6f, comp => comp.NumCasts > 0, "Towers/proteans start")
             .DeactivateOnExit<RousingReincarnation>();
-        Cast(id + 0x20, AID.MalformedPrayer, 1.8f, 4)
+        Cast(id + 0x20, (uint)AID.MalformedPrayer, 1.8f, 4)
             .ActivateOnEnter<MalformedPrayer1>(); // env controls are 2s after cast end, then every 6s; bursts are 10s after corresponding envcontrol
-        Cast(id + 0x30, AID.PointedPurgation, 3.4f, 8)
+        Cast(id + 0x30, (uint)AID.PointedPurgation, 3.4f, 8)
             .ActivateOnEnter<PointedPurgation>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<MalformedPrayer1>(id + 0x40, 0.7f, comp => comp.NumCasts > 0, "Towers/proteans 1");
@@ -127,7 +127,7 @@ class C022GoraiStates : StateMachineBuilder
 
     private void FightingSpirits(uint id, float delay)
     {
-        CastStart(id, AID.FightingSpirits, delay)
+        CastStart(id, (uint)AID.FightingSpirits, delay)
             .ActivateOnEnter<WorldlyPursuitBait>(); // icons appear right before cast start
         CastEnd(id + 1, 5)
             .ActivateOnEnter<NFightingSpirits>(!_savage)
@@ -148,14 +148,14 @@ class C022GoraiStates : StateMachineBuilder
 
     private void MalformedReincarnation(uint id, float delay)
     {
-        Cast(id, AID.MalformedReincarnation, delay, 5)
+        Cast(id, (uint)AID.MalformedReincarnation, delay, 5)
             .ActivateOnEnter<NMalformedReincarnation>(!_savage)
             .ActivateOnEnter<SMalformedReincarnation>(_savage);
         ComponentCondition<MalformedReincarnation>(id + 0x10, 0.6f, comp => comp.NumCasts > 0, "Towers start")
             .DeactivateOnExit<MalformedReincarnation>();
-        Cast(id + 0x20, AID.MalformedPrayer, 1.8f, 4)
+        Cast(id + 0x20, (uint)AID.MalformedPrayer, 1.8f, 4)
             .ActivateOnEnter<MalformedPrayer2>(); // first env controls are 2s after cast end
-        CastStart(id + 0x30, AID.FlickeringFlame, 10.2f, "Towers drop")
+        CastStart(id + 0x30, (uint)AID.FlickeringFlame, 10.2f, "Towers drop")
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 0x31, 3)
             .ActivateOnEnter<NFlickeringFlame>(!_savage)

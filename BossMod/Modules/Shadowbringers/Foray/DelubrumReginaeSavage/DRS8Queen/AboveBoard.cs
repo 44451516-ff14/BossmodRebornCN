@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS8Queen;
 
 // note: this is exactly the same as queen's guard component
-class AboveBoard(BossModule module) : Components.GenericAOEs(module)
+sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
 {
     public enum State { Initial, ThrowUpDone, ShortExplosionsDone, LongExplosionsDone }
 
-    public State CurState { get; private set; }
-    private readonly List<Actor> _smallBombs = module.Enemies(OID.AetherialBolt);
-    private readonly List<Actor> _bigBombs = module.Enemies(OID.AetherialBurst);
+    public State CurState;
+    private readonly List<Actor> _smallBombs = module.Enemies((uint)OID.AetherialBolt);
+    private readonly List<Actor> _bigBombs = module.Enemies((uint)OID.AetherialBurst);
     private bool _invertedBombs; // bombs are always either all normal (big=short) or all inverted
     private BitMask _invertedPlayers; // default for player is 'long', short is considered inverted (has visible status)
     private DateTime _activation = module.WorldState.FutureTime(14.4f);
@@ -20,7 +20,7 @@ class AboveBoard(BossModule module) : Components.GenericAOEs(module)
         var count = imminentBombs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             aoes[i] = new(_shape, imminentBombs[i].Position, default, _activation);
@@ -36,7 +36,7 @@ class AboveBoard(BossModule module) : Components.GenericAOEs(module)
                 if (actor.OID is (uint)OID.AetherialBolt or (uint)OID.AetherialBurst)
                     _invertedBombs = true;
                 else
-                    _invertedPlayers.Set(Raid.FindSlot(actor.InstanceID));
+                    _invertedPlayers[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
             case (uint)SID.AboveBoardPlayerLong:
             case (uint)SID.AboveBoardPlayerShort:

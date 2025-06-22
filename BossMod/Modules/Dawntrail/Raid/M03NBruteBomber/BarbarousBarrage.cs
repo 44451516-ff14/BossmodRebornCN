@@ -1,14 +1,12 @@
-using BossMod.Shadowbringers.Foray.CriticalEngagement.CE14VigilForLost;
-
 namespace BossMod.Dawntrail.Raid.M03NBruteBomber;
 
-class BarbarousBarrageTower(BossModule module) : Components.GenericTowers(module)
+sealed class BarbarousBarrageTower(BossModule module) : Components.GenericTowers(module)
 {
-    private static readonly WPos[] positions = [new(106, 94), new(94, 106), new(106, 106), new(94, 94)];
+    private static readonly WPos[] positions = [new(106f, 94f), new(94f, 106f), new(106f, 106f), new(94f, 94f)];
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x01 && state == 0x00020004)
+        if (index == 0x01u && state == 0x00020004u)
             for (var i = 0; i < 4; ++i)
                 Towers.Add(new(positions[i], 4f, 1, 1, default, WorldState.FutureTime(10d)));
     }
@@ -20,7 +18,7 @@ class BarbarousBarrageTower(BossModule module) : Components.GenericTowers(module
     }
 }
 
-class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback(module)
+sealed class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private static readonly AOEShapeCircle circle = new(4f);
     private readonly BarbarousBarrageTower _tower = module.FindComponent<BarbarousBarrageTower>()!;
@@ -31,7 +29,7 @@ class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback
         var count = towers.Count;
         if (count == 0)
             return [];
-        var sources = new Knockback[count];
+        Span<Knockback> sources = new Knockback[count];
         for (var i = 0; i < count; ++i)
         {
             var t = towers[i];
@@ -47,20 +45,17 @@ class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback
         var count = towers.Count;
         if (count == 0)
             return;
-        var isDelayDeltaLow = (towers[0].Activation - WorldState.CurrentTime).TotalSeconds < 5d;
-        var isActorInsideTower = false;
-        for (var i = 0; i < count; ++i)
+        if ((towers[0].Activation - WorldState.CurrentTime).TotalSeconds < 5d)
         {
-            if (towers[i].IsInside(actor))
+            for (var i = 0; i < count; ++i)
             {
-                isActorInsideTower = true;
-                break;
+                if (towers[i].IsInside(actor))
+                {
+                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.ArmsLength), actor, ActionQueue.Priority.High);
+                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Surecast), actor, ActionQueue.Priority.High);
+                    return;
+                }
             }
-        }
-        if (isDelayDeltaLow && isActorInsideTower)
-        {
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.ArmsLength), actor, ActionQueue.Priority.High);
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Surecast), actor, ActionQueue.Priority.High);
         }
     }
 }

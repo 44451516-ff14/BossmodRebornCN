@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS6TrinityAvowed;
 
 // note: instead of trying to figure out cone intersections and shit, we use the fact that clones are always positioned on grid and just check each cell
-class BladeOfEntropy(BossModule module) : TemperatureAOE(module)
+sealed class BladeOfEntropy(BossModule module) : TemperatureAOE(module)
 {
     private readonly List<(Actor caster, WDir dir, int temperature)> _casters = [];
 
@@ -33,9 +33,9 @@ class BladeOfEntropy(BossModule module) : TemperatureAOE(module)
                 }
 
                 if (numClips > 1)
-                    aoes.Add(new(_shapeCell, cellCenter, new(), activation));
+                    aoes.Add(new(_shapeCell, cellCenter, default, activation));
                 else if (activation != default && temperature == -playerTemp)
-                    aoes.Add(new(_shapeCell, cellCenter, new(), activation, Colors.SafeFromAOE, false));
+                    aoes.Add(new(_shapeCell, cellCenter, default, activation, Colors.SafeFromAOE, false));
             }
         }
         return CollectionsMarshal.AsSpan(aoes);

@@ -14,8 +14,6 @@ public sealed record class Tileset<T>
         _rooms = rooms;
     }
 
-    public IReadOnlyList<RoomData<T>> Rooms => _rooms;
-
     public Tileset<M> Map<M>(Func<T, M> Mapping)
     {
         var len = _rooms.Length;

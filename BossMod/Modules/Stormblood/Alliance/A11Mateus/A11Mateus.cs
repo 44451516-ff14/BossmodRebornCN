@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Stormblood.Alliance.A11Mateus;
 
-class HypothermalCombustion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HypothermalCombustion), 9.04f);
-class DarkBlizzardIII(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.DarkBlizzardIII), 5f);
-class Chill(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Chill), new AOEShapeCone(41f, 10f.Degrees()));
-class BlizzardIV(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlizzardIV), 15f);
+class HypothermalCombustion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HypothermalCombustion, 9.04f);
+class DarkBlizzardIII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkBlizzardIII, 5f);
+class Chill(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Chill, new AOEShapeCone(41f, 10f.Degrees()));
+class BlizzardIV(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlizzardIV, 15f);
 
-class FlashFreeze(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.FlashFreeze), new AOEShapeCone(16.5f, 60f.Degrees()), activeWhileCasting: false)
+class FlashFreeze(BossModule module) : Components.Cleave(module, (uint)AID.FlashFreeze, new AOEShapeCone(16.5f, 60f.Degrees()), activeWhileCasting: false)
 {
     private bool active = true;
 

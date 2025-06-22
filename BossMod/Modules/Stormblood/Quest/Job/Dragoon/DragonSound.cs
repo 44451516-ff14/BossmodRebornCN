@@ -18,9 +18,9 @@ public enum SID : uint
     Enervation = 1401, // Boss->1CDE/player, extra=0x0
 }
 
-class AbyssicBuster(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssicBuster), new AOEShapeCone(31.84f, 45.Degrees()));
-class Heavensfall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Heavensfall1), 5);
-class DarkStar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DarkStar));
+class AbyssicBuster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssicBuster, new AOEShapeCone(31.84f, 45.Degrees()));
+class Heavensfall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Heavensfall1, 5);
+class DarkStar(BossModule module) : Components.RaidwideCast(module, (uint)AID.DarkStar);
 
 // scripted interaction, no idea if it's required to complete the duty but might as well do it
 class Enervation(BossModule module) : BossComponent(module)

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.ReplayAnalysis;
 
-class ClientActions
+sealed class ClientActions
 {
     private readonly List<(Replay r, DateTime ts, string warning)> _warnings = [];
 

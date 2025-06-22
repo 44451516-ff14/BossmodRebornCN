@@ -45,10 +45,10 @@ public enum IconID : uint
     Spreadmarker = 32 // player
 }
 
-class Bloodstain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bloodstain), 5f);
-class HeavenlySlash(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.HeavenlySlash), new AOEShapeCone(10.2f, 45f.Degrees()));
-class HoliestOfHoly(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HoliestOfHoly));
-class HolyShieldBash(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.HolyShieldBash), "Stun + single target damage x2");
+class Bloodstain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bloodstain, 5f);
+class HeavenlySlash(BossModule module) : Components.Cleave(module, (uint)AID.HeavenlySlash, new AOEShapeCone(10.2f, 45f.Degrees()));
+class HoliestOfHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.HoliestOfHoly);
+class HolyShieldBash(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HolyShieldBash, "Stun + single target damage x2");
 
 class BrightSphere(BossModule module) : Components.GenericAOEs(module)
 {
@@ -85,7 +85,7 @@ class BrightSphere(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Execution(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(5), (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.Execution), 4.8f, true);
+class Execution(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.Spreadmarker, (uint)AID.Execution, 4.8f);
 
 class ShiningBlade(BossModule module) : Components.GenericAOEs(module)
 {
@@ -122,14 +122,14 @@ class ShiningBlade(BossModule module) : Components.GenericAOEs(module)
 
         var primary = Module.PrimaryActor.Position;
         var activationTimes = GetActivationTimes(WorldState.FutureTime(0.08f));
-
-        if (primary.InCone(Arena.Center, a90, a60))
+        var center = Arena.Center;
+        if (primary.InCone(center, a90, a60))
             AddAOEs(primary, west, south, north, east, activationTimes);
-        else if (primary.InCone(Arena.Center, am90, a60))
+        else if (primary.InCone(center, am90, a60))
             AddAOEs(primary, east, north, south, west, activationTimes);
-        else if (primary.InCone(Arena.Center, a180, a60))
+        else if (primary.InCone(center, a180, a60))
             AddAOEs(primary, south, east, west, north, activationTimes);
-        else if (primary.InCone(Arena.Center, new Angle(), a60))
+        else if (primary.InCone(center, (Angle)default, a60))
             AddAOEs(primary, north, west, east, south, activationTimes);
     }
 

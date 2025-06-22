@@ -22,11 +22,11 @@ public enum AID : uint
     Telega = 9630 // FuathTrickster->self, no cast, single-target, bonus adds disappear
 }
 
-class CroakingChorus(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.CroakingChorus), "Calls adds");
-class FrigidNeedle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FrigidNeedle), new AOEShapeCross(40f, 2.5f));
-class Spittle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spittle), 8f);
-class ToyHammer(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ToyHammer));
-class Hydrocannon(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Hydrocannon), 6f, 8, 8);
+class CroakingChorus(BossModule module) : Components.CastHint(module, (uint)AID.CroakingChorus, "Calls adds");
+class FrigidNeedle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidNeedle, new AOEShapeCross(40f, 2.5f));
+class Spittle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spittle, 8f);
+class ToyHammer(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ToyHammer);
+class Hydrocannon(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Hydrocannon, 6f, 8, 8);
 
 class FuathTroublemakerStates : StateMachineBuilder
 {

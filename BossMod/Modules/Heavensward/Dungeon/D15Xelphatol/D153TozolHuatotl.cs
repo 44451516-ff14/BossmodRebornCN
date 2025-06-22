@@ -33,14 +33,14 @@ public enum IconID : uint
     Stackmarker = 62 // player
 }
 
-class AerialBlast(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AerialBlast));
-class IxaliAeroII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IxaliAeroII), new AOEShapeRect(43f, 3f));
-class IxaliAeroIII(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.IxaliAeroIII));
-class Bill(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Bill), 5f);
-class Ingurgitate(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.Ingurgitate), 5f, 5.5f, 4, 4);
-class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EyeOfTheStorm), new AOEShapeDonut(10f, 20f));
-class WickedWheel(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WickedWheel), 7f);
-class MistralSong(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MistralSong), new AOEShapeCone(32.89f, 60f.Degrees()));
+class AerialBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.AerialBlast);
+class IxaliAeroII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IxaliAeroII, new AOEShapeRect(43f, 3f));
+class IxaliAeroIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.IxaliAeroIII);
+class Bill(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Bill, 5f);
+class Ingurgitate(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.Ingurgitate, 5f, 5.5f, 4, 4);
+class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheStorm, new AOEShapeDonut(10f, 20f));
+class WickedWheel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WickedWheel, 7f);
+class MistralSong(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralSong, new AOEShapeCone(32.89f, 60f.Degrees()));
 
 class D153TozolHuatotlStates : StateMachineBuilder
 {

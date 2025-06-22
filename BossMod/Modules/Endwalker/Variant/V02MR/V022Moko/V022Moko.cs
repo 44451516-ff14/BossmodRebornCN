@@ -1,19 +1,19 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V022Moko;
 
-class AzureAuspice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AzureAuspice), new AOEShapeDonut(6f, 60f));
-class KenkiRelease(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.KenkiRelease));
-class IronRain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronRain), 10f);
-class Unsheathing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Unsheathing), 3f);
-class VeilSever(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VeilSever), new AOEShapeRect(40f, 2.5f));
-class ScarletAuspice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ScarletAuspice), 6f);
-class MoonlessNight(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MoonlessNight));
-class Clearout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Clearout), new AOEShapeCone(22f, 90f.Degrees()));
+class AzureAuspice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AzureAuspice, new AOEShapeDonut(6f, 60f));
+class KenkiRelease(BossModule module) : Components.RaidwideCast(module, (uint)AID.KenkiRelease);
+class IronRain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronRain, 10f);
+class Unsheathing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Unsheathing, 3f);
+class VeilSever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VeilSever, new AOEShapeRect(40f, 2.5f));
+class ScarletAuspice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScarletAuspice, 6f);
+class MoonlessNight(BossModule module) : Components.RaidwideCast(module, (uint)AID.MoonlessNight);
+class Clearout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Clearout, new AOEShapeCone(22f, 90f.Degrees()));
 
-abstract class Boundless(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(60f, 5f));
-class BoundlessScarlet(BossModule module) : Boundless(module, AID.BoundlessScarlet);
-class BoundlessAzure(BossModule module) : Boundless(module, AID.BoundlessAzure);
+abstract class Boundless(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 5f));
+class BoundlessScarlet(BossModule module) : Boundless(module, (uint)AID.BoundlessScarlet);
+class BoundlessAzure(BossModule module) : Boundless(module, (uint)AID.BoundlessAzure);
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), new AOEShapeRect(60f, 15f), 2)
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeRect(60f, 15f), 2)
 {
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -32,7 +32,7 @@ class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.Make
     }
 }
 
-class GhastlyGrasp(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GhastlyGrasp), 5);
+class GhastlyGrasp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GhastlyGrasp, 5);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 945, NameID = 12357, SortOrder = 2)]
 public class V022MokoOtherPaths(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChange.ArenaCenter, ArenaChange.StartingBounds);

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class MistralSongVulcanBurst(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.MistralSong))
+class MistralSongVulcanBurst(BossModule module) : Components.GenericAOEs(module, (uint)AID.MistralSong)
 {
     public bool Active;
     private Actor? _garuda; // non-null while mechanic is active
@@ -52,7 +52,7 @@ class MistralSongVulcanBurst(BossModule module) : Components.GenericAOEs(module,
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _garuda = caster;
             _resolve = Module.CastFinishAt(spell);
@@ -62,7 +62,7 @@ class MistralSongVulcanBurst(BossModule module) : Components.GenericAOEs(module,
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _garuda = null;
     }
 

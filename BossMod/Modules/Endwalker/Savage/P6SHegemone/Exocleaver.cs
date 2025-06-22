@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P6SHegemone;
 
-class Exocleaver(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.ExocleaverAOE2))
+class Exocleaver(BossModule module) : Components.GenericAOEs(module, (uint)AID.ExocleaverAOE2)
 {
     public bool FirstDone;
     private readonly AOEShapeCone _cone = new(30f, 15f.Degrees());

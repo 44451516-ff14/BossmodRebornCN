@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(module, 6, 15)
+class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(module, 6f, 15f)
 {
     public struct Mechanic
     {
@@ -9,7 +9,7 @@ class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(mo
         public DateTime Activation;
     }
 
-    public int ActiveMechanic { get; private set; } = -1;
+    public int ActiveMechanic = -1;
     public List<Mechanic> Mechanics = [];
 
     public void Activate(int index)
@@ -38,10 +38,10 @@ class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(mo
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID is SID.HydrofallTarget or SID.HydrobulletTarget && Mechanics.Count > 0)
+        if (status.ID is (uint)SID.HydrofallTarget or (uint)SID.HydrobulletTarget && Mechanics.Count > 0)
         {
             ref var m = ref Mechanics.AsSpan()[Mechanics.Count - 1];
-            if (m.Spread != ((SID)status.ID == SID.HydrobulletTarget))
+            if (m.Spread != (status.ID == (uint)SID.HydrobulletTarget))
             {
                 ReportError($"Unexpected SID: {status.ID}");
                 return;
@@ -60,12 +60,12 @@ class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(mo
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Hydrofall:
+            case (uint)AID.Hydrofall:
                 Mechanics.Add(new() { Spread = false });
                 break;
-            case AID.Hydrobullet:
+            case (uint)AID.Hydrobullet:
                 Mechanics.Add(new() { Spread = true });
                 break;
         }
@@ -73,21 +73,21 @@ class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(mo
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.HydrofallSecond:
+            case (uint)AID.HydrofallSecond:
                 Mechanics.Add(new() { Spread = false });
                 break;
-            case AID.HydrobulletSecond:
+            case (uint)AID.HydrobulletSecond:
                 Mechanics.Add(new() { Spread = true });
                 break;
-            case AID.NHydrofallAOE:
-            case AID.SHydrofallAOE:
+            case (uint)AID.NHydrofallAOE:
+            case (uint)AID.SHydrofallAOE:
                 if (ActiveMechanic >= 0 && ActiveMechanic < Mechanics.Count && !Mechanics[ActiveMechanic].Spread)
                     Activate(ActiveMechanic + 1);
                 break;
-            case AID.NHydrobulletAOE:
-            case AID.SHydrobulletAOE:
+            case (uint)AID.NHydrobulletAOE:
+            case (uint)AID.SHydrobulletAOE:
                 if (ActiveMechanic >= 0 && ActiveMechanic < Mechanics.Count && Mechanics[ActiveMechanic].Spread)
                     Activate(ActiveMechanic + 1);
                 break;

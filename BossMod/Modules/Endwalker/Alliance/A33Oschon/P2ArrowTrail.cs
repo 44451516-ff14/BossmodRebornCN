@@ -30,4 +30,4 @@ class P2ArrowTrail(BossModule module) : Components.Exaflare(module, new AOEShape
     }
 }
 
-class P2DownhillArrowTrailDownhill(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArrowTrailDownhill), 6f);
+class P2DownhillArrowTrailDownhill(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArrowTrailDownhill, 6f);

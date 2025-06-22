@@ -51,15 +51,15 @@ class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00)
+        if (index == 0x00u)
         {
-            if (state == 0x00020001)
+            if (state == 0x00020001u)
             {
                 Arena.Bounds = D122Arkas.SmallerBounds;
                 Arena.Center = D122Arkas.SmallerBounds.Center;
                 _aoe = null;
             }
-            else if (state == 0x00080004)
+            else if (state == 0x00080004u)
             {
                 Arena.Bounds = D122Arkas.DefaultBounds;
                 Arena.Center = D122Arkas.DefaultBounds.Center;
@@ -74,8 +74,8 @@ class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SpunLightning(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpunLightning), new AOEShapeRect(30f, 4f));
-class LightningClaw(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.LightningClaw2), 6, 5.2f, 4, 4);
+class SpunLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpunLightning, new AOEShapeRect(30f, 4f));
+class LightningClaw(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.LightningClaw2, 6, 5.2f, 4, 4);
 
 class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
 {
@@ -145,7 +145,7 @@ class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state is 0x00200010 or 0x00020001)
+        if (state is 0x00200010u or 0x00020001u)
         {
             var pattern = index switch
             {
@@ -155,13 +155,16 @@ class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
                 0x04 => pattern0x04,
                 _ => default
             };
-            var starts = pattern.Start;
-            var ends = pattern.End;
-            for (var i = 15; i >= 0; --i)
+            if (pattern != default)
             {
-                ref readonly var start = ref starts[i];
-                ref readonly var end = ref ends[i];
-                _aoes.Add(new(new AOEShapeRect((start - end).Length(), 2f), start, Angle.FromDirection(end - start), WorldState.FutureTime(6d)));
+                var starts = pattern.Start;
+                var ends = pattern.End;
+                for (var i = 15; i >= 0; --i)
+                {
+                    ref readonly var start = ref starts[i];
+                    ref readonly var end = ref ends[i];
+                    _aoes.Add(new(new AOEShapeRect((start - end).Length(), 2f), start, Angle.FromDirection(end - start), WorldState.FutureTime(6d)));
+                }
             }
         }
     }
@@ -173,20 +176,20 @@ class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ElectricEruption(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElectricEruption));
+class ElectricEruption(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectricEruption);
 
-class Leaps(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10f);
-class Electrify(BossModule module) : Leaps(module, AID.Electrify);
-class LightningLeap1(BossModule module) : Leaps(module, AID.LightningLeap1);
-class LightningLeap2(BossModule module) : Leaps(module, AID.LightningLeap2);
-class LightningRampage1(BossModule module) : Leaps(module, AID.LightningRampage1);
-class LightningRampage2(BossModule module) : Leaps(module, AID.LightningRampage2);
+class Leaps(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f);
+class Electrify(BossModule module) : Leaps(module, (uint)AID.Electrify);
+class LightningLeap1(BossModule module) : Leaps(module, (uint)AID.LightningLeap1);
+class LightningLeap2(BossModule module) : Leaps(module, (uint)AID.LightningLeap2);
+class LightningRampage1(BossModule module) : Leaps(module, (uint)AID.LightningRampage1);
+class LightningRampage2(BossModule module) : Leaps(module, (uint)AID.LightningRampage2);
 
-class RipperClaw(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.RipperClaw));
-class Shock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shock), 6f);
-class SpinningClaw(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpinningClaw), 10f);
-class BattleCry1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BattleCry1));
-class BattleCry2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BattleCry2));
+class RipperClaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RipperClaw);
+class Shock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shock, 6f);
+class SpinningClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningClaw, 10f);
+class BattleCry1(BossModule module) : Components.RaidwideCast(module, (uint)AID.BattleCry1);
+class BattleCry2(BossModule module) : Components.RaidwideCast(module, (uint)AID.BattleCry2);
 
 class D122ArkasStates : StateMachineBuilder
 {

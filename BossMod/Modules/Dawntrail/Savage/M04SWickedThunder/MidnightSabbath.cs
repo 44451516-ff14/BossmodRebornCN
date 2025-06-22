@@ -1,11 +1,11 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class MidnightSabbath(BossModule module) : Components.GenericAOEs(module)
+sealed class MidnightSabbath(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
 
-    private static readonly AOEShape _shapeCannon = new AOEShapeRect(40, 5);
-    private static readonly AOEShape _shapeBird = new AOEShapeDonut(5, 15);
+    private static readonly AOEShape _shapeCannon = new AOEShapeRect(40f, 5f);
+    private static readonly AOEShape _shapeBird = new AOEShapeDonut(5f, 15f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -31,7 +31,7 @@ class MidnightSabbath(BossModule module) : Components.GenericAOEs(module)
         if (shape != default)
         {
             AOEs.Add(new(shape, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(delay)));
-            AOEs.SortBy(aoe => aoe.Activation);
+            AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

@@ -36,13 +36,13 @@ public enum IconID : uint
     Baitaway = 23 // player
 }
 
-class DeadlyHold(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.DeadlyHold));
-class HeatBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeatBreath), new AOEShapeCone(14.6f, 45f.Degrees()));
-class TailSmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSmash), new AOEShapeCone(26.6f, 45f.Degrees()));
-class RagingInferno(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RagingInferno));
-class Comet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Comet), 4f);
-class HardStomp(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HardStomp), 10f);
-class Fireball(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.Fireball), GetVoidzones, 0.7f)
+class DeadlyHold(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.DeadlyHold);
+class HeatBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeatBreath, new AOEShapeCone(14.6f, 45f.Degrees()));
+class TailSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSmash, new AOEShapeCone(26.6f, 45f.Degrees()));
+class RagingInferno(BossModule module) : Components.RaidwideCast(module, (uint)AID.RagingInferno);
+class Comet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Comet, 4f);
+class HardStomp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HardStomp, 10f);
+class Fireball(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.Fireball, GetVoidzones, 0.7f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -102,9 +102,9 @@ class FireballBait(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
 class AltarDiresaurStates : StateMachineBuilder
 {

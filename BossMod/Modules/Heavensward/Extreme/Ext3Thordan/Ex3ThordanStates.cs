@@ -48,7 +48,7 @@ class Ex3ThordanStates : StateMachineBuilder
         HeavenlyHeel(id + 0x2B0000, 5.2f);
         AscalonsMightEnrage(id + 0x2C0000, 2.1f);
         for (var i = 0; i < 100; ++i)
-            Cast(id + 0x2D0000 + 2 * (uint)i, AID.Enrage, 2.1f, 10, "Enrage"); // enrage only does 99999 damage and can potentiall repeat until duty timer runs out
+            Cast(id + 0x2D0000 + 2 * (uint)i, (uint)AID.Enrage, 2.1f, 10, "Enrage"); // enrage only does 99999 damage and can potentiall repeat until duty timer runs out
     }
 
     private void AscalonsMight(uint id, float delay, bool arena = false)
@@ -81,7 +81,7 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void Meteorain(uint id, float delay)
     {
-        CastStart(id, AID.Meteorain, delay, "Puddles bait");
+        CastStart(id, (uint)AID.Meteorain, delay, "Puddles bait");
         CastEnd(id + 1, 2.7f)
             .ActivateOnEnter<Meteorain>();
         ComponentCondition<Meteorain>(id + 2, 0.3f, comp => comp.NumCasts > 0, "Puddles resolve")
@@ -90,7 +90,7 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private State AscalonsMercy(uint id, float delay)
     {
-        return Cast(id, AID.AscalonsMercy, delay, 3, "Cones fan")
+        return Cast(id, (uint)AID.AscalonsMercy, delay, 3, "Cones fan")
             .ActivateOnEnter<AscalonsMercy>()
             .ActivateOnEnter<AscalonsMercyHelper>()
             .DeactivateOnExit<AscalonsMercy>()
@@ -99,15 +99,15 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void DragonsEyeGaze(uint id, float delay)
     {
-        Cast(id, AID.DragonsEye, delay, 3);
-        Cast(id + 0x10, AID.DragonsGaze, 7.2f, 3, "Gaze")
+        Cast(id, (uint)AID.DragonsEye, delay, 3);
+        Cast(id + 0x10, (uint)AID.DragonsGaze, 7.2f, 3, "Gaze")
             .ActivateOnEnter<DragonsGaze>()
             .DeactivateOnExit<DragonsGaze>();
     }
 
     private void LightningStorm(uint id, float delay)
     {
-        CastStart(id, AID.LightningStorm, delay)
+        CastStart(id, (uint)AID.LightningStorm, delay)
             .ActivateOnEnter<LightningStorm>();
         CastEnd(id + 1, 3.5f);
         ComponentCondition<LightningStorm>(id + 2, 0.7f, comp => !comp.Active, "Spread")
@@ -116,20 +116,20 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void DragonsRage(uint id, float delay)
     {
-        Cast(id, AID.DragonsRage, delay, 5, "Stack")
+        Cast(id, (uint)AID.DragonsRage, delay, 5, "Stack")
             .ActivateOnEnter<DragonsRage>()
             .DeactivateOnExit<DragonsRage>();
     }
 
     private State AncientQuaga(uint id, float delay)
     {
-        return Cast(id, AID.AncientQuaga, delay, 3, "Raidwide")
+        return Cast(id, (uint)AID.AncientQuaga, delay, 3, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void HeavenlyHeel(uint id, float delay)
     {
-        Cast(id, AID.HeavenlyHeel, delay, 4, "Tankbuster")
+        Cast(id, (uint)AID.HeavenlyHeel, delay, 4, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
@@ -263,30 +263,30 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void KnightsOfTheRound1(uint id, float delay)
     {
-        Cast(id, AID.DragonsEye, delay, 3, "Trio 1 start (eye N)")
+        Cast(id, (uint)AID.DragonsEye, delay, 3, "Trio 1 start (eye N)")
             .ActivateOnEnter<DragonsGaze>(); // objanim happens ~0.8s after cast end
-        Cast(id + 0x10, AID.KnightsOfTheRound, 7.2f, 3);
+        Cast(id + 0x10, (uint)AID.KnightsOfTheRound, 7.2f, 3);
         AscalonsMight(id + 0x20, 5.2f);
         ComponentCondition<HolyShieldBash>(id + 0x30, 6.0f, comp => comp.NumCasts > 0, "Stun healer")
             .ActivateOnEnter<HolyShieldBash>();
         ComponentCondition<HolyShieldBash>(id + 0x40, 3.1f, comp => comp.Source != null);
-        CastStart(id + 0x41, AID.HeavenlyHeel, 5);
+        CastStart(id + 0x41, (uint)AID.HeavenlyHeel, 5);
         ComponentCondition<HolyShieldBash>(id + 0x42, 1, comp => comp.NumCasts > 1, "Wild charge")
             .DeactivateOnExit<HolyShieldBash>();
         CastEnd(id + 0x43, 3, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
-        Cast(id + 0x50, AID.DragonsGaze, 2.1f, 3, "Gaze")
+        Cast(id + 0x50, (uint)AID.DragonsGaze, 2.1f, 3, "Gaze")
             .DeactivateOnExit<DragonsGaze>();
     }
 
     private void KnightsOfTheRound2(uint id, float delay)
     {
-        Cast(id, AID.DragonsEye, delay, 3, "Trio 2 start")
+        Cast(id, (uint)AID.DragonsEye, delay, 3, "Trio 2 start")
             .ActivateOnEnter<DragonsGaze>(); // objanim happens ~0.8s after cast end
-        Cast(id + 0x10, AID.KnightsOfTheRound, 7.2f, 3);
+        Cast(id + 0x10, (uint)AID.KnightsOfTheRound, 7.2f, 3);
         ComponentCondition<Conviction>(id + 0x20, 7.2f, comp => comp.Towers.Count > 0)
             .ActivateOnEnter<Conviction>();
-        Cast(id + 0x30, AID.DragonsGaze, 1, 3, "Gaze")
+        Cast(id + 0x30, (uint)AID.DragonsGaze, 1, 3, "Gaze")
             .ActivateOnEnter<HeavyImpact>() // starts ~1s into cast
             .DeactivateOnExit<DragonsGaze>();
         ComponentCondition<HeavyImpact>(id + 0x40, 1.1f, comp => comp.NumCasts > 0, "Ring 1");
@@ -301,7 +301,7 @@ class Ex3ThordanStates : StateMachineBuilder
         ComponentCondition<DimensionalCollapse>(id + 0x90, 3, comp => comp.NumCasts > 0, "Puddles")
             .DeactivateOnExit<DimensionalCollapse>();
 
-        CastStart(id + 0xA0, AID.DragonsRage, 0.2f)
+        CastStart(id + 0xA0, (uint)AID.DragonsRage, 0.2f)
             .ActivateOnEnter<DragonsRage>();
         ComponentCondition<FaithUnmoving>(id + 0xA1, 3, comp => comp.NumCasts > 0, "Knockback")
             .DeactivateOnExit<FaithUnmoving>();
@@ -311,14 +311,14 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void KnightsOfTheRound3(uint id, float delay)
     {
-        Cast(id, AID.DragonsEye, delay, 3, "Trio 3 start (eye ignore)");
-        Cast(id + 0x10, AID.KnightsOfTheRound, 7.2f, 3)
+        Cast(id, (uint)AID.DragonsEye, delay, 3, "Trio 3 start (eye ignore)");
+        Cast(id + 0x10, (uint)AID.KnightsOfTheRound, 7.2f, 3)
             .ActivateOnEnter<SpiralThrust2>();
         LightningStorm(id + 0x20, 3.2f);
         ComponentCondition<SpiralPierce>(id + 0x30, 1.9f, comp => comp.CurrentBaits.Count > 0) // pierce & thrust start at the same time
             .ActivateOnEnter<SpiralPierce>()
             .ActivateOnEnter<SkywardLeap>(); // starts slightly later than pierce
-        CastStart(id + 0x31, AID.DragonsRage, 2.9f);
+        CastStart(id + 0x31, (uint)AID.DragonsRage, 2.9f);
         ComponentCondition<SpiralPierce>(id + 0x32, 3.1f, comp => comp.NumCasts > 0, "Baits")
             .ActivateOnEnter<DragonsRage>()
             .DeactivateOnExit<SpiralThrust2>()
@@ -330,11 +330,11 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void KnightsOfTheRound4(uint id, float delay)
     {
-        Cast(id, AID.DragonsEye, delay, 3, "Trio 4 start")
+        Cast(id, (uint)AID.DragonsEye, delay, 3, "Trio 4 start")
             .ActivateOnEnter<DragonsGaze>(); // objanim happens ~0.8s after cast end
-        Cast(id + 0x10, AID.KnightsOfTheRound, 7.2f, 3);
+        Cast(id + 0x10, (uint)AID.KnightsOfTheRound, 7.2f, 3);
         AscalonsMight(id + 0x20, 6.2f);
-        CastStart(id + 0x30, AID.DragonsGaze, 2.1f);
+        CastStart(id + 0x30, (uint)AID.DragonsGaze, 2.1f);
         ComponentCondition<Heavensflame>(id + 0x31, 1, comp => comp.Casters.Count > 0, "Puddles bait")
             .ActivateOnEnter<Heavensflame>();
         CastEnd(id + 0x32, 2, "Gaze")
@@ -357,9 +357,9 @@ class Ex3ThordanStates : StateMachineBuilder
 
     private void KnightsOfTheRound5(uint id, float delay)
     {
-        Cast(id, AID.DragonsEye, delay, 3, "Trio 5 start")
+        Cast(id, (uint)AID.DragonsEye, delay, 3, "Trio 5 start")
             .ActivateOnEnter<DragonsGaze>(); // objanim happens ~0.8s after cast end
-        Cast(id + 0x10, AID.KnightsOfTheRound, 7.2f, 3);
+        Cast(id + 0x10, (uint)AID.KnightsOfTheRound, 7.2f, 3);
         AscalonsMight(id + 0x20, 5.2f);
         ComponentCondition<HoliestOfHoly>(id + 0x30, 5, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<HoliestOfHoly>()
@@ -386,7 +386,7 @@ class Ex3ThordanStates : StateMachineBuilder
             .ActivateOnEnter<AbsoluteConviction>()
             .DeactivateOnExit<AbsoluteConviction>()
             .SetHint(StateMachine.StateHint.Raidwide);
-        Cast(id + 0x1030, AID.DragonsGaze, 2.3f, 3, "Gaze")
+        Cast(id + 0x1030, (uint)AID.DragonsGaze, 2.3f, 3, "Gaze")
             .DeactivateOnExit<DragonsGaze>();
         ComponentCondition<SerZephirin>(id + 0x1040, 2.8f, comp => comp.ActiveActors.Count == 0, "Add enrage")
             .DeactivateOnExit<SerZephirin>();

@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1ExplosionBurntStrikeFire(BossModule module) : BurntStrike(module, AID.ExplosionBurntStrikeFire);
-class P1ExplosionBurntStrikeLightning(BossModule module) : BurntStrike(module, AID.ExplosionBurntStrikeLightning);
-class P1ExplosionBurnout(BossModule module) : BurntOut(module, AID.ExplosionBurnout);
+class P1ExplosionBurntStrikeFire(BossModule module) : BurntStrike(module, (uint)AID.ExplosionBurntStrikeFire);
+class P1ExplosionBurntStrikeLightning(BossModule module) : BurntStrike(module, (uint)AID.ExplosionBurntStrikeLightning);
+class P1ExplosionBurnout(BossModule module) : BurntOut(module, (uint)AID.ExplosionBurnout);
 
 // TODO: non-fixed conga?
 class P1Explosion(BossModule module) : Components.GenericTowers(module)
@@ -25,14 +25,14 @@ class P1Explosion(BossModule module) : Components.GenericTowers(module)
             // tweak for WAR: if PR is up, assume player will want to maintain full uptime on wide line by using it right before resolve - we want to stay far to increase travel time
             // if doing tankbuster cheese, after line resolves, stay on maxmelee far from towers to give more space for melees
             var horizOffset = !_lineDone
-                ? (_isWideLine && actor.Class == Class.WAR && actor.FindStatus(WAR.SID.PrimalRend) != null ? 17 : 0)
-                : (_config.P1ExplosionsTankbusterCheese ? 7 : 0);
+                ? (_isWideLine && actor.Class == Class.WAR && actor.FindStatus((uint)WAR.SID.PrimalRend) != null ? 17 : default)
+                : (_config.P1ExplosionsTankbusterCheese ? 7 : default);
             hints.AddForbiddenZone(ShapeDistance.HalfPlane(Arena.Center - horizOffset * TowerDir, -TowerDir), Activation);
 
             if (!_config.P1ExplosionsTankbusterCheese)
             {
-                var vertDir = new WDir(0, role == 0 ? -1 : +1);
-                hints.AddForbiddenZone(ShapeDistance.HalfPlane(Arena.Center + 5 * vertDir, vertDir), Activation);
+                var vertDir = new WDir(default, role == default ? -1 : +1);
+                hints.AddForbiddenZone(ShapeDistance.HalfPlane(Arena.Center + 5f * vertDir, vertDir), Activation);
             }
         }
         else
@@ -44,34 +44,34 @@ class P1Explosion(BossModule module) : Components.GenericTowers(module)
                 var needSoak = _lineDone || _isWideLine && actor.Role is Role.Healer or Role.Ranged;
                 ref var t = ref Towers.Ref(index);
                 if (needSoak)
-                    hints.AddForbiddenZone(ShapeDistance.InvertedCircle(t.Position, t.Radius), t.Activation);
+                    hints.AddForbiddenZone(t.Shape.InvertedDistance(t.Position, default), t.Activation);
                 else
-                    hints.AddForbiddenZone(ShapeDistance.InvertedRect(new(Arena.Center.X, t.Position.Z), TowerDir, 20, 0, t.Radius), t.Activation);
+                    hints.AddForbiddenZone(ShapeDistance.InvertedRect(new WPos(Arena.Center.X, t.Position.Z), TowerDir, 20f, default, 4f), t.Activation);
             }
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Explosion11:
-            case AID.Explosion12:
+            case (uint)AID.Explosion11:
+            case (uint)AID.Explosion12:
                 AddTower(caster.Position, 1, spell);
                 break;
-            case AID.Explosion21:
-            case AID.Explosion22:
+            case (uint)AID.Explosion21:
+            case (uint)AID.Explosion22:
                 AddTower(caster.Position, 2, spell);
                 break;
-            case AID.Explosion31:
-            case AID.Explosion32:
+            case (uint)AID.Explosion31:
+            case (uint)AID.Explosion32:
                 AddTower(caster.Position, 3, spell);
                 break;
-            case AID.Explosion41:
-            case AID.Explosion42:
+            case (uint)AID.Explosion41:
+            case (uint)AID.Explosion42:
                 AddTower(caster.Position, 4, spell);
                 break;
-            case AID.ExplosionBurnout:
+            case (uint)AID.ExplosionBurnout:
                 _isWideLine = true;
                 break;
         }
@@ -79,21 +79,21 @@ class P1Explosion(BossModule module) : Components.GenericTowers(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Explosion11:
-            case AID.Explosion12:
-            case AID.Explosion21:
-            case AID.Explosion22:
-            case AID.Explosion31:
-            case AID.Explosion32:
-            case AID.Explosion41:
-            case AID.Explosion42:
+            case (uint)AID.Explosion11:
+            case (uint)AID.Explosion12:
+            case (uint)AID.Explosion21:
+            case (uint)AID.Explosion22:
+            case (uint)AID.Explosion31:
+            case (uint)AID.Explosion32:
+            case (uint)AID.Explosion41:
+            case (uint)AID.Explosion42:
                 ++NumCasts;
                 Towers.RemoveAll(t => t.Position == caster.Position);
                 break;
-            case AID.ExplosionBurnout:
-            case AID.ExplosionBlastburn:
+            case (uint)AID.ExplosionBurnout:
+            case (uint)AID.ExplosionBlastburn:
                 _lineDone = true;
                 break;
         }
@@ -102,7 +102,7 @@ class P1Explosion(BossModule module) : Components.GenericTowers(module)
     private void AddTower(WPos pos, int numSoakers, ActorCastInfo spell)
     {
         Activation = Module.CastFinishAt(spell);
-        Towers.Add(new(pos, 4, numSoakers, numSoakers, default, Activation));
+        Towers.Add(new(pos, 4f, numSoakers, numSoakers, default, Activation));
         if (Towers.Count != 3)
             return;
 
@@ -112,7 +112,7 @@ class P1Explosion(BossModule module) : Components.GenericTowers(module)
             ReportError($"Unexpected tower state");
             return;
         }
-        Towers.SortBy(t => t.Position.Z);
+        Towers.Sort((a, b) => a.Position.Z.CompareTo(b.Position.Z));
         TowerDir.X = Towers.Sum(t => t.Position.X - Arena.Center.X) > 0 ? 1 : -1;
 
         Span<int> slotByGroup = [-1, -1, -1, -1, -1, -1, -1, -1];

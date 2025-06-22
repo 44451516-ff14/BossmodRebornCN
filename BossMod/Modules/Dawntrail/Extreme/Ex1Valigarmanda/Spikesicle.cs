@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class Spikesicle(BossModule module) : Components.GenericAOEs(module)
+sealed class Spikesicle(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(5);
 
@@ -56,7 +56,7 @@ class Spikesicle(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SphereShatter(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.SphereShatter))
+sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module, (uint)AID.SphereShatter)
 {
     private readonly List<AOEInstance> _aoes = [];
 

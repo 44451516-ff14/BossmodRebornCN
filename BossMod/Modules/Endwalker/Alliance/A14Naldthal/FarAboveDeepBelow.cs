@@ -35,8 +35,15 @@ class FarFlungFire(BossModule module) : Components.GenericWildCharge(module, 3f,
     private void InitIfReal()
     {
         if (_real && _targetID != 0)
-            foreach (var (i, p) in Raid.WithSlot(true, false, true))
-                PlayerRoles[i] = p.InstanceID == _targetID ? PlayerRole.Target : PlayerRole.Share;
+        {
+            var party = Raid.WithSlot(true, false, true);
+            var len = party.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var p = ref party[i];
+                PlayerRoles[p.Item1] = p.Item2.InstanceID == _targetID ? PlayerRole.Target : PlayerRole.Share;
+            }
+        }
     }
 }
 

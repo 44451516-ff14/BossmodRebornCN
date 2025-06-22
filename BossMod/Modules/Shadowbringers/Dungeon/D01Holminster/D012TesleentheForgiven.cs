@@ -29,8 +29,8 @@ public enum IconID : uint
     Icon4 = 82 // player
 }
 
-class TheTickler(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.TheTickler));
-class ScoldsBridle(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ScoldsBridle));
+class TheTickler(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.TheTickler);
+class ScoldsBridle(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScoldsBridle);
 
 class FeveredFlagellation(BossModule module) : Components.GenericBaitAway(module)
 {
@@ -61,8 +61,8 @@ class FeveredFlagellation(BossModule module) : Components.GenericBaitAway(module
     }
 }
 
-class Exorcise(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ExorciseA), 6f, 4, 4);
-class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.HolyWater), GetVoidzones, 0.8f)
+class Exorcise(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ExorciseA, 6f, 4, 4);
+class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.HolyWater, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

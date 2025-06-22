@@ -4,7 +4,7 @@ namespace BossMod;
 // when there is no active bossmodule (eg in outdoor or on trash), we try to guess things based on world state (eg actor casts)
 public sealed class AIHintsBuilder : IDisposable
 {
-    private const float RaidwideSize = 30;
+    private const float RaidwideSize = 30f;
     private const float HalfWidth = 0.5f;
     public readonly Pathfinding.ObstacleMapManager Obstacles;
     private readonly WorldState _ws;
@@ -13,7 +13,18 @@ public sealed class AIHintsBuilder : IDisposable
     private readonly EventSubscriptions _subscriptions;
     private readonly Dictionary<ulong, (Actor Caster, Actor? Target, AOEShape Shape, bool IsCharge)> _activeAOEs = [];
     private readonly Dictionary<ulong, (Actor Caster, Actor? Target, AOEShape Shape)> _activeGazes = [];
+    private readonly List<Actor> _invincible = [];
     private ArenaBoundsCircle? _activeFateBounds;
+
+    private static readonly uint[] invincibleStatuses =
+    [
+        151u, 198u, 325u, 328u, 385u, 394u,
+        469u, 529u, 592u, 656u, 671u, 775u,
+        776u, 895u, 969u, 981u, 1240u, 1302u,
+        1303u, 1567u, 1570u, 1697u, 1829u, 1936u,
+        2413u, 2654u, 3012u, 3039u, 3052u, 3054u,
+        4410u, 4175u
+    ];
     private static readonly HashSet<uint> ignore = [27503, 33626]; // action IDs that the AI should ignore
     private static readonly PartyRolesConfig _config = Service.Config.Get<PartyRolesConfig>();
     private static readonly Dictionary<uint, (byte, byte, byte, uint, string, string, string, int, bool, uint)> _spellCache = [];
@@ -28,6 +39,8 @@ public sealed class AIHintsBuilder : IDisposable
         (
             ws.Actors.CastStarted.Subscribe(OnCastStarted),
             ws.Actors.CastFinished.Subscribe(OnCastFinished),
+            ws.Actors.StatusGain.Subscribe(OnStatusGain),
+            ws.Actors.StatusLose.Subscribe(OnStatusLose),
             ws.Client.ActiveFateChanged.Subscribe(_ => _activeFateBounds = null)
         );
     }
@@ -49,7 +62,8 @@ public sealed class AIHintsBuilder : IDisposable
         {
             var playerAssignment = _config[_ws.Party.Members[playerSlot].ContentId];
             var activeModule = _bmm.ActiveModule?.StateMachine.ActivePhase != null ? _bmm.ActiveModule : null;
-            FillEnemies(hints, playerAssignment == PartyRolesConfig.Assignment.MT || playerAssignment == PartyRolesConfig.Assignment.OT && !_ws.Party.WithoutSlot(false, false, true).Any(p => p != player && p.Role == Role.Tank));
+            var outOfCombatPriority = activeModule?.ShouldPrioritizeAllEnemies == true ? 0 : AIHints.Enemy.PriorityUndesirable;
+            FillEnemies(hints, playerAssignment == PartyRolesConfig.Assignment.MT || playerAssignment == PartyRolesConfig.Assignment.OT && !_ws.Party.WithoutSlot(false, false, true).Any(p => p != player && p.Role == Role.Tank), outOfCombatPriority);
             if (activeModule != null)
             {
                 activeModule.CalculateAIHints(playerSlot, ref player, ref playerAssignment, ref hints);
@@ -64,7 +78,7 @@ public sealed class AIHintsBuilder : IDisposable
     }
 
     // Fill list of potential targets from world state
-    private void FillEnemies(AIHints hints, bool playerIsDefaultTank)
+    private void FillEnemies(AIHints hints, bool playerIsDefaultTank, int priorityPassive = AIHints.Enemy.PriorityUndesirable)
     {
         var allowedFateID = Utils.IsPlayerSyncedToFate(_ws) ? _ws.Client.ActiveFate.ID : 0;
 
@@ -80,18 +94,18 @@ public sealed class AIHintsBuilder : IDisposable
             if (actor.FateID != 0)
             {
                 if (actor.FateID != allowedFateID)
-                    priority = AIHints.Enemy.PriorityInvincible; // Fate mob in an irrelevant fate
+                    priority = AIHints.Enemy.PriorityInvincible;  // fate mob in fate we are NOT a part of can't be damaged at all
                 else
                     priority = 0; // Relevant fate mob
             }
-            else if (actor.PredictedDead)
+            else if (actor.PendingDead)
                 priority = AIHints.Enemy.PriorityPointless; // Mob is about to die
             else if (actor.AggroPlayer)
                 priority = 0; // Aggroed player
             else if (actor.InCombat && _ws.Party.FindSlot(actor.TargetID) >= 0)
                 priority = 0; // Assisting party members
             else
-                priority = AIHints.Enemy.PriorityUndesirable; // Default undesirable
+                priority = priorityPassive; // Default undesirable
 
             var enemy = hints.Enemies[index] = new(actor, priority, playerIsDefaultTank);
             hints.PotentialTargets.Add(enemy);
@@ -155,7 +169,7 @@ public sealed class AIHintsBuilder : IDisposable
             var rot = caster.Rotation;
             var finishAt = _ws.FutureTime(caster.NPCRemainingTime);
             if (aoe.IsCharge)
-                hints.AddForbiddenZone(aoe.Shape, WPos.ClampToGrid(aoe.Caster.Position), rot, finishAt);
+                hints.AddForbiddenZone(ShapeDistance.Rect(WPos.ClampToGrid(aoe.Caster.Position), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
             else
                 hints.AddForbiddenZone(aoe.Shape, target, rot, finishAt);
         }
@@ -167,6 +181,12 @@ public sealed class AIHintsBuilder : IDisposable
             var finishAt = _ws.FutureTime(gaze.Caster.CastInfo.NPCRemainingTime);
             if (gaze.Shape.Check(player.Position, target, rot))
                 hints.ForbiddenDirections.Add((Angle.FromDirection(target - player.Position), 45.Degrees(), finishAt));
+        }
+
+        var count = _invincible.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            hints.SetPriority(_invincible[i], AIHints.Enemy.PriorityInvincible);
         }
     }
 
@@ -210,12 +230,38 @@ public sealed class AIHintsBuilder : IDisposable
         _activeGazes.Remove(actor.InstanceID);
     }
 
+    private void OnStatusGain(Actor actor, int index)
+    {
+        var statusID = actor.Statuses[index].ID;
+        for (var i = 0; i < 32; ++i)
+        {
+            if (statusID == invincibleStatuses[i])
+            {
+                _invincible.Add(actor);
+                return;
+            }
+        }
+    }
+
+    private void OnStatusLose(Actor actor, int index)
+    {
+        var statusID = actor.Statuses[index].ID;
+        for (var i = 0; i < 32; ++i)
+        {
+            if (statusID == invincibleStatuses[i])
+            {
+                _invincible.Remove(actor);
+                return;
+            }
+        }
+    }
+
     private static Angle DetermineConeAngle(ref (byte, byte, byte, uint RowId, string Name, string PathAlly, string Path, int Pos, bool Omen, uint) data)
     {
         if (!data.Omen)
         {
             Service.Log($"[AutoHints] No omen data for {data.RowId} '{data.Name}'...");
-            return 180.Degrees();
+            return 180f.Degrees();
         }
         var path = data.Path;
         var pos = data.Pos;
@@ -235,7 +281,7 @@ public sealed class AIHintsBuilder : IDisposable
         5 => new AOEShapeCircle(data.EffectRange + actor.HitboxRadius),
         //6 => custom shapes
         //7 => new AOEShapeCircle(data.EffectRange), - used for player ground-targeted circles a-la asylum
-        8 => new AOEShapeRect((actor.CastInfo!.LocXZ - actor.Position).Length(), data.XAxisModifier * HalfWidth),
+        8 => new AOEShapeRect(default, data.XAxisModifier * HalfWidth), // charges
         10 => new AOEShapeDonut(3, data.EffectRange),
         11 => new AOEShapeCross(data.EffectRange, data.XAxisModifier * HalfWidth),
         12 => new AOEShapeRect(data.EffectRange, data.XAxisModifier * HalfWidth),

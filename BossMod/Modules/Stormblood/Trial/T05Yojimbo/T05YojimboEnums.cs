@@ -9,7 +9,7 @@ public enum OID : uint
     Inoshikacho = 0x25FE, // R0.600, x0 (spawn during fight)
     DragonsHead = 0x2601, // R3.000, x0 (spawn during fight)
     ElectrogeneticForce = 0x2603, // R1.000, x0 (spawn during fight)
-    IronChain = 0x2602, // R1.000, x0 (spawn during fight)
+    IronChain = 0x2602 // R1.000, x0 (spawn during fight)
 }
 
 public enum AID : uint
@@ -65,13 +65,13 @@ public enum AID : uint
     Seasplitter2 = 14406, // Helper->self, no cast, range 7+R width 40 rect
     Seasplitter3 = 14407, // Helper->self, no cast, range 7+R width 40 rect
     Seasplitter4 = 14408, // Helper->self, no cast, range 7+R width 40 rect
-    MightyBlow = 14393, // Helper->player, no cast, single-target
+    MightyBlow = 14393 // Helper->player, no cast, single-target
 }
 
 public enum SID : uint
 {
     Unveiled = 1620, // none->Boss, extra=0xC4
-    Fetters = 668, // Boss->player, extra=0xEC4
+    Fetters = 668 // Boss->player, extra=0xEC4
 }
 
 public enum IconID : uint
@@ -79,12 +79,12 @@ public enum IconID : uint
     Icon144 = 144, // player
     DoritoStack = 55, // player
     Icon87 = 87, // player
-    Icon5 = 5, // player
+    Icon5 = 5 // player
 }
 
 public enum TetherID : uint
 {
     Tether57 = 57, // player->Boss
     Tether1 = 1, // player->Boss
-    Tether81 = 81, // player->Boss
+    Tether81 = 81 // player->Boss
 }

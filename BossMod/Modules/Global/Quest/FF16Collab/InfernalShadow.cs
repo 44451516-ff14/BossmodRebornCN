@@ -1,8 +1,8 @@
 namespace BossMod.Global.Quest.FF16Collab.InfernalShadow;
 
-class VulcanBurst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.VulcanBurstReal), "Time your dodge correctly");
-class Hellfire(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.HellfireVisual), ActionID.MakeSpell(AID.HellfireRaidwide), 0.6f);
-class Incinerate(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.IncinerateReal), 5f);
+class VulcanBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.VulcanBurstReal, "Time your dodge correctly");
+class Hellfire(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.HellfireVisual, (uint)AID.HellfireRaidwide, 0.6f);
+class Incinerate(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.IncinerateReal, 5f);
 
 class SpreadingFire(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -31,9 +31,9 @@ class SpreadingFire(BossModule module) : Components.ConcentricAOEs(module, _shap
     }
 }
 
-abstract class Cone75(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 75f.Degrees()));
-class SmolderingClaw(BossModule module) : Cone75(module, AID.SmolderingClawReal);
-class TailStrike(BossModule module) : Cone75(module, AID.TailStrikeReal);
+abstract class Cone75(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 75f.Degrees()));
+class SmolderingClaw(BossModule module) : Cone75(module, (uint)AID.SmolderingClawReal);
+class TailStrike(BossModule module) : Cone75(module, (uint)AID.TailStrikeReal);
 
 class FireRampageCleave(BossModule module) : Components.GenericAOEs(module)
 {
@@ -47,8 +47,8 @@ class FireRampageCleave(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID is (uint)AID.FieryRampageCleaveReal or (uint)AID.FieryRampageCleaveReal2)
         {
             _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            if (_aoes.Count != 0)
-                _aoes.SortBy(aoe => aoe.Activation);
+            if (_aoes.Count > 1)
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
@@ -61,11 +61,11 @@ class FireRampageCleave(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FieryRampageCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FieryRampageCircleReal), 16f);
-class FieryRampageRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FieryRampageRaidwideReal), "Time your dodge correctly");
-class Pyrosault(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PyrosaultReal), 10f);
-class Fireball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireballReal), 6f);
-class CrimsonRush(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.CrimsonRushReal), 10f);
+class FieryRampageCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FieryRampageCircleReal, 16f);
+class FieryRampageRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.FieryRampageRaidwideReal, "Time your dodge correctly");
+class Pyrosault(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PyrosaultReal, 10f);
+class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireballReal, 6f);
+class CrimsonRush(BossModule module) : Components.ChargeAOEs(module, (uint)AID.CrimsonRushReal, 10f);
 
 class CrimsonStreak(BossModule module) : Components.GenericAOEs(module)
 {
@@ -104,7 +104,7 @@ class CrimsonStreak(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Eruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EruptionReal), 8f);
+class Eruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EruptionReal, 8f);
 
 class Eruption2(BossModule module) : Components.GenericAOEs(module)
 {
@@ -133,8 +133,8 @@ class Eruption2(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID is (uint)AID.EruptionReal2 or (uint)AID.EruptionReal3 or (uint)AID.EruptionReal4)
         {
             _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell)));
-            if (_aoes.Count != 0)
-                _aoes.SortBy(aoe => aoe.Activation);
+            if (_aoes.Count > 1)
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

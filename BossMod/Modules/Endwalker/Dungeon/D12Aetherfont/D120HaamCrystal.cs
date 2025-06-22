@@ -16,8 +16,8 @@ public enum AID : uint
     HardHead = 33995, // Boss->self, 3.0s cast, range 12 120-degree cone
 }
 
-class HardHead(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HardHead), new AOEShapeCone(12, 60.Degrees()));
-class EarthenHeart(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EarthenHeart), 6);
+class HardHead(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HardHead, new AOEShapeCone(12, 60.Degrees()));
+class EarthenHeart(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthenHeart, 6);
 
 class D120HaamCrystalStates : StateMachineBuilder
 {

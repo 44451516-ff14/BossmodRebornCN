@@ -21,7 +21,7 @@ public enum SID : uint
     Heavy = 14
 }
 
-class Douse(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, ActionID.MakeSpell(AID.Douse), GetVoidzones, 0.8f)
+class Douse(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, (uint)AID.Douse, GetVoidzones, 0.8f)
 {
     public static Actor[] GetVoidzones(BossModule module)
     {
@@ -92,7 +92,7 @@ class DousePuddle(BossModule module) : BossComponent(module)
     }
 }
 
-class Electrogenesis(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Electrogenesis), 8f);
+class Electrogenesis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrogenesis, 8f);
 
 class FangsEnd(BossModule module) : BossComponent(module)
 {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.BlastingZoneAOE))
+class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(module, (uint)AID.BlastingZoneAOE)
 {
     public readonly List<AOEInstance> AOEs = [];
     public BitMask DangerousSpots; // 0 = N, then CCW
@@ -29,7 +29,7 @@ class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(modul
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             AOEs.Clear();

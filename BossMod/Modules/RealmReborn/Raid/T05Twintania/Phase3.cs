@@ -57,7 +57,7 @@ class P3Adds(BossModule module) : BossComponent(module)
             switch (e.Actor.OID)
             {
                 case (uint)OID.Hygieia:
-                    var predictedHP = e.Actor.PredictedHPRaw;
+                    var predictedHP = e.Actor.PendingHPRaw;
                     e.Priority = e.Actor.HPMP.CurHP == 1 ? 0
                         : killHygieia && e.Actor == nextHygieia ? 2
                         : predictedHP < 0.3f * e.Actor.HPMP.MaxHP ? -1
@@ -93,7 +93,7 @@ class P3Adds(BossModule module) : BossComponent(module)
     }
 }
 
-class P3AethericProfusion(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.AethericProfusion))
+class P3AethericProfusion(BossModule module) : Components.CastCounter(module, (uint)AID.AethericProfusion)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(6.7f);
 
@@ -116,7 +116,7 @@ class P3AethericProfusion(BossModule module) : Components.CastCounter(module, Ac
             boss.PreferProvoking = true;
 
         // mitigate heavy raidwide
-        hints.PredictedDamage.Add((Raid.WithSlot(false, true, true).Mask(), _activation));
+        hints.AddPredictedDamage(Raid.WithSlot(false, true, true).Mask(), _activation);
         if (actor.Role == Role.Ranged)
             hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Addle), Module.PrimaryActor, ActionQueue.Priority.High, (float)(_activation - WorldState.CurrentTime).TotalSeconds);
     }

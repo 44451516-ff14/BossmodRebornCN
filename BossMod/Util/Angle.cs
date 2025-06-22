@@ -10,7 +10,7 @@ public record struct Angle(float Rad)
     public const float DoublePI = (float)(2 * Math.PI);
 
     public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
-    public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180.Degrees(), 89.999f.Degrees()];
+    public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
 
     public readonly float Deg => Rad * RadToDeg;
 
@@ -92,4 +92,5 @@ public static class CosPI
     public const float Pi48th = 1.0021457f; // 1 / Math.Cos(Math.PI / 48)
     public const float Pi60th = 1.0013723f; // 1 / Math.Cos(Math.PI / 60)
     public const float Pi64th = 1.001206f; // 1 / Math.Cos(Math.PI / 64)
+    public const float Pi148th = 1.000225f; // 1 / Math.Cos(Math.PI / 148)
 }

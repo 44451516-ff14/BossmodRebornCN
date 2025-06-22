@@ -22,17 +22,17 @@ public enum AID : uint
     Wheel = 25525 // Boss->player, 5.0s cast, single-target //Tankbuster
 }
 
-class Tread1(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Tread1), 4);
-class Tread2(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Tread2), 4);
-class Unknown2(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Unknown2), 4);
+class Tread1(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Tread1, 4);
+class Tread2(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Tread2, 4);
+class Unknown2(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Unknown2, 4);
 
-class AutoMobileSniperCannon2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AutoMobileSniperCannon2), new AOEShapeRect(40, 3));
-class Entrench(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Entrench), new AOEShapeRect(41, 4));
+class AutoMobileSniperCannon2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AutoMobileSniperCannon2, new AOEShapeRect(40, 3));
+class Entrench(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Entrench, new AOEShapeRect(41, 4));
 
-class WaveCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WaveCannon), new AOEShapeCone(40, 90.Degrees()));
+class WaveCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaveCannon, new AOEShapeCone(40, 90.Degrees()));
 
-class AtomicFlame(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AtomicFlame));
-class Wheel(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Wheel));
+class AtomicFlame(BossModule module) : Components.RaidwideCast(module, (uint)AID.AtomicFlame);
+class Wheel(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Wheel);
 
 class D082ArchLambdaStates : StateMachineBuilder
 {

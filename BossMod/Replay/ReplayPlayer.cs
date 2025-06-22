@@ -1,7 +1,7 @@
 ﻿namespace BossMod;
 
 // utility for applying replay operations to world state, accurate scrolling, etc.
-public class ReplayPlayer(Replay r)
+public sealed class ReplayPlayer(Replay r)
 {
     public Replay Replay = r;
     public WorldState WorldState = new(r.QPF, r.GameVersion);

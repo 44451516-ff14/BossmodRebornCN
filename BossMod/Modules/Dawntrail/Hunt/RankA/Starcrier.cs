@@ -15,13 +15,13 @@ public enum AID : uint
     SwiftwindSerenade = 37305 // Boss->self, 4.0s cast, range 40 width 8 rect
 }
 
-class WingsbreadthWinds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingsbreadthWinds), 8f);
-class StormwallWinds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StormwallWinds), new AOEShapeDonut(8f, 25f));
-class DirgeOfTheLost(BossModule module) : Components.TemporaryMisdirection(module, ActionID.MakeSpell(AID.DirgeOfTheLost));
-class AeroIV(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AeroIV));
-class SwiftwindSerenade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SwiftwindSerenade), new AOEShapeRect(40f, 4f));
+sealed class WingsbreadthWinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingsbreadthWinds, 8f);
+sealed class StormwallWinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StormwallWinds, new AOEShapeDonut(8f, 25f));
+sealed class DirgeOfTheLost(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.DirgeOfTheLost);
+sealed class AeroIV(BossModule module) : Components.RaidwideCast(module, (uint)AID.AeroIV);
+sealed class SwiftwindSerenade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwiftwindSerenade, new AOEShapeRect(40f, 4f));
 
-class StarcrierStates : StateMachineBuilder
+sealed class StarcrierStates : StateMachineBuilder
 {
     public StarcrierStates(BossModule module) : base(module)
     {
@@ -35,4 +35,4 @@ class StarcrierStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 12692)]
-public class Starcrier(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Starcrier(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

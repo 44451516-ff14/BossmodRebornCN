@@ -47,24 +47,24 @@ public enum IconID : uint
 }
 
 class ClawTether(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.Claw, 10f, needToKite: true);
-class RahuRay(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.RahuRay), 10f, 4.1f);
-class KetuSlash1(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.KetuSlash1));
-class KetuSlash2(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.KetuSlash2));
-class KetuSlash3(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.KetuSlash3));
-class KetuCutter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KetuCutter), new AOEShapeCone(20.5f, 10f.Degrees()));
-class KetuWave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KetuWave), 10f);
+class RahuRay(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.RahuRay, 10f, 4.1f);
+class KetuSlash1(BossModule module) : Components.SingleTargetCast(module, (uint)AID.KetuSlash1);
+class KetuSlash2(BossModule module) : Components.SingleTargetCast(module, (uint)AID.KetuSlash2);
+class KetuSlash3(BossModule module) : Components.SingleTargetCast(module, (uint)AID.KetuSlash3);
+class KetuCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KetuCutter, new AOEShapeCone(20.5f, 10f.Degrees()));
+class KetuWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KetuWave, 10f);
 
-class RahuBlaster(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(44.5f, 3f));
-class RahuBlaster1(BossModule module) : RahuBlaster(module, AID.RahuBlaster1);
-class RahuBlaster2(BossModule module) : RahuBlaster(module, AID.RahuBlaster2);
-class RahuBlaster3(BossModule module) : RahuBlaster(module, AID.RahuBlaster3);
+class RahuBlaster(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(44.5f, 3f));
+class RahuBlaster1(BossModule module) : RahuBlaster(module, (uint)AID.RahuBlaster1);
+class RahuBlaster2(BossModule module) : RahuBlaster(module, (uint)AID.RahuBlaster2);
+class RahuBlaster3(BossModule module) : RahuBlaster(module, (uint)AID.RahuBlaster3);
 
-class RahuComet(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 15f);
-class RahuComet1(BossModule module) : RahuComet(module, AID.RahuComet1);
-class RahuComet2(BossModule module) : RahuComet(module, AID.RahuComet2);
-class RahuComet3(BossModule module) : RahuComet(module, AID.RahuComet3);
+class RahuComet(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 15f);
+class RahuComet1(BossModule module) : RahuComet(module, (uint)AID.RahuComet1);
+class RahuComet2(BossModule module) : RahuComet(module, (uint)AID.RahuComet2);
+class RahuComet3(BossModule module) : RahuComet(module, (uint)AID.RahuComet3);
 
-class RahuCometKB(BossModule module, AID aid, float distance) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(aid), distance, stopAtWall: true)
+class RahuCometKB(BossModule module, uint aid, float distance) : Components.SimpleKnockbacks(module, aid, distance, stopAtWall: true)
 {
     private readonly KetuWave _aoe1 = module.FindComponent<KetuWave>()!;
     private readonly KetuCutter _aoe2 = module.FindComponent<KetuCutter>()!;
@@ -97,8 +97,8 @@ class RahuCometKB(BossModule module, AID aid, float distance) : Components.Simpl
         return false;
     }
 }
-class RahuComet2KB(BossModule module) : RahuCometKB(module, AID.RahuComet2, 5f);
-class RahuComet3KB(BossModule module) : RahuCometKB(module, AID.RahuComet3, 10f);
+class RahuComet2KB(BossModule module) : RahuCometKB(module, (uint)AID.RahuComet2, 5f);
+class RahuComet3KB(BossModule module) : RahuCometKB(module, (uint)AID.RahuComet3, 10f);
 
 class D053InfernoStates : StateMachineBuilder
 {

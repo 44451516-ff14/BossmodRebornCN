@@ -27,11 +27,12 @@ public enum AID : uint
     Exhaust = 23705 // MarkIITelotekColossus->self, 4.0s cast, range 40 width 7 rect
 }
 
-class TwoTonzeMagitekMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwoTonzeMagitekMissile), 12f);
-class Aethershot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Aethershot), 6f);
-class DefensiveReaction(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DefensiveReaction));
-class Exhaust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exhaust), new AOEShapeRect(40f, 3.5f));
-class GroundToGroundBallistic(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.GroundToGroundBallistic), 10f)
+class TwoTonzeMagitekMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwoTonzeMagitekMissile, 12f);
+class Aethershot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Aethershot, 6f);
+class DefensiveReaction(BossModule module) : Components.RaidwideCast(module, (uint)AID.DefensiveReaction);
+class Exhaust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exhaust, new AOEShapeRect(40f, 3.5f));
+
+class GroundToGroundBallistic(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GroundToGroundBallistic, 10f)
 {
     private static readonly Angle a180 = 180f.Degrees(), a18 = 18f.Degrees();
 
@@ -56,9 +57,9 @@ class StableCannon(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00200010 && index is >= 0x08 and <= 0x0A)
-            _aoes.Add(new(rect, WPos.ClampToGrid(new(-185f + (index - 0x08), 28.3f)), Angle.AnglesCardinals[1], WorldState.FutureTime(12.1d)));
-        else if (index == 0x0D && state == 0x00020001)
+        if (state == 0x00200010u && index is >= 0x08 and <= 0x0A)
+            _aoes.Add(new(rect, WPos.ClampToGrid(new(-185f + 10f * (index - 0x08u), 28.3f)), Angle.AnglesCardinals[1], WorldState.FutureTime(12.1d)));
+        else if (index == 0x0Du && state == 0x00020001u)
             _aoes.Clear();
     }
 
@@ -139,11 +140,11 @@ class CorePlatform(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x0D)
+        if (index == 0x0Du)
         {
-            if (state == 0x00020001)
+            if (state == 0x00020001u)
                 _aoe = new(circle, new(-175f, 30f), default, DateTime.MaxValue, Colors.SafeFromAOE);
-            else if (state == 0x00080004)
+            else if (state == 0x00080004u)
                 _aoe = null;
         }
     }

@@ -16,12 +16,12 @@ public enum AID : uint
     BoneShaker = 15053 // Boss->self, no cast, range 50 circle, harmless raidwide
 }
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 10f);
-class Fireball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Fireball), 6f);
-class RipperClaw(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RipperClaw), new AOEShapeCone(8f, 45f.Degrees()));
-class TailSmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSmash), new AOEShapeCone(15f, 45f.Degrees()));
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 10f);
+class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, 6f);
+class RipperClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RipperClaw, new AOEShapeCone(8f, 45f.Degrees()));
+class TailSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSmash, new AOEShapeCone(15f, 45f.Degrees()));
 
-class WildCharge(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.WildCharge), 4f)
+class WildCharge(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.WildCharge, 4f)
 {
     public static List<Actor> GetKegs(BossModule module)
     {

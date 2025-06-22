@@ -1,20 +1,20 @@
 namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS1TrinitySeeker;
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(25, 30);
+    private static readonly AOEShapeDonut donut = new(25f, 30f);
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.VerdantTempest && Arena.Bounds == TrinitySeeker.StartingArena)
+        if (spell.Action.ID == (uint)AID.VerdantTempest && Arena.Bounds == TrinitySeeker.StartingArena)
             _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 3.8f));
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x1B)
+        if (state == 0x00020001u && index == 0x1Bu)
         {
             Arena.Bounds = TrinitySeeker.DefaultArena;
             Arena.Center = TrinitySeeker.DefaultArena.Center;

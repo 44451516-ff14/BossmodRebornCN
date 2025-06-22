@@ -41,18 +41,18 @@ public enum AID : uint
     Ultima = 29024 // Boss->self, 71.0s cast, enrage
 }
 
-class TankPurge(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TankPurge));
-class HomingLasers(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.HomingLasers));
+class TankPurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.TankPurge);
+class HomingLasers(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HomingLasers);
 
-abstract class MagitekRay(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 3f));
-class MagitekRayF(BossModule module) : MagitekRay(module, AID.MagitekRayAOEForward);
-class MagitekRayR(BossModule module) : MagitekRay(module, AID.MagitekRayAOERight);
-class MagitekRayL(BossModule module) : MagitekRay(module, AID.MagitekRayAOELeft);
+abstract class MagitekRay(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 3f));
+class MagitekRayF(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayAOEForward);
+class MagitekRayR(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayAOERight);
+class MagitekRayL(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayAOELeft);
 
-class HomingRay(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HomingRayAOE), 6f);
-class LaserFocus(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.LaserFocusAOE), 6f, 4, 4);
+class HomingRay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HomingRayAOE, 6f);
+class LaserFocus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.LaserFocusAOE, 6f, 4, 4);
 
-class AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AethericBoom), 30f, stopAtWall: true)
+class AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AethericBoom, 30f, stopAtWall: true)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -122,10 +122,10 @@ class Aetheroplasm(BossModule module) : BossComponent(module)
     }
 }
 
-class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AssaultCannon), new AOEShapeRect(40f, 2f));
-class CitadelBuster(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CitadelBuster), new AOEShapeRect(40f, 6f));
+class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCannon, new AOEShapeRect(40f, 2f));
+class CitadelBuster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CitadelBuster, new AOEShapeRect(40f, 6f));
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 16f) // TODO: verify falloff
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 16f) // TODO: verify falloff
 {
     private readonly AssaultCannon _aoe = module.FindComponent<AssaultCannon>()!;
 
@@ -137,7 +137,7 @@ class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.Make
     }
 }
 
-class Ultima(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Ultima), "Enrage!", true);
+class Ultima(BossModule module) : Components.CastHint(module, (uint)AID.Ultima, "Enrage!", true);
 
 class T04PortaDecumana2States : StateMachineBuilder
 {

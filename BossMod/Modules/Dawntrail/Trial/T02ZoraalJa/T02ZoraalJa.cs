@@ -1,14 +1,12 @@
 ﻿namespace BossMod.Dawntrail.Trial.T02ZoraalJa;
 
-class SoulOverflow1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SoulOverflow1));
-class SoulOverflow2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SoulOverflow2));
-class PatricidalPique(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.PatricidalPique));
-class CalamitysEdge(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CalamitysEdge));
-class Burst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burst), 8);
+class SoulOverflow1(BossModule module) : Components.RaidwideCast(module, (uint)AID.SoulOverflow1);
+class SoulOverflow2(BossModule module) : Components.RaidwideCast(module, (uint)AID.SoulOverflow2);
+class PatricidalPique(BossModule module) : Components.SingleTargetCast(module, (uint)AID.PatricidalPique);
+class CalamitysEdge(BossModule module) : Components.RaidwideCast(module, (uint)AID.CalamitysEdge);
+class Burst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burst, 8f);
 
-abstract class VorpalTrail(BossModule module, AID aid) : Components.ChargeAOEs(module, ActionID.MakeSpell(aid), 2);
-class VorpalTrail1(BossModule module) : VorpalTrail(module, AID.VorpalTrail1);
-class VorpalTrail2(BossModule module) : VorpalTrail(module, AID.VorpalTrail2);
+class VorpalTrail(BossModule module) : Components.SimpleChargeAOEGroups(module, [(uint)AID.VorpalTrail1, (uint)AID.VorpalTrail2], 2f);
 
 class T02ZoraalJaStates : StateMachineBuilder
 {
@@ -21,8 +19,7 @@ class T02ZoraalJaStates : StateMachineBuilder
             .ActivateOnEnter<PatricidalPique>()
             .ActivateOnEnter<CalamitysEdge>()
             .ActivateOnEnter<Burst>()
-            .ActivateOnEnter<VorpalTrail1>()
-            .ActivateOnEnter<VorpalTrail2>()
+            .ActivateOnEnter<VorpalTrail>()
             .Raw.Update = () => Module.PrimaryActor.IsDeadOrDestroyed || !Module.PrimaryActor.IsTargetable;
     }
 }

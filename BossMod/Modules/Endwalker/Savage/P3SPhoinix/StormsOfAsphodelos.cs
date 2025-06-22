@@ -3,7 +3,7 @@
 // state related to storms of asphodelos mechanics
 class StormsOfAsphodelos(BossModule module) : BossComponent(module)
 {
-    private readonly AOEShapeCone _windsAOE = new(50, 30.Degrees());
+    private readonly AOEShapeCone _windsAOE = new(50f, 30f.Degrees());
     private readonly AOEShapeCircle _beaconAOE = new(6);
     private readonly List<Actor> _twisterTargets = [];
     private BitMask _tetherTargets;
@@ -14,7 +14,7 @@ class StormsOfAsphodelos(BossModule module) : BossComponent(module)
     public override void Update()
     {
         _twisterTargets.Clear();
-        _tetherTargets = _bossTargets = _closeToTetherTarget = _hitByMultipleAOEs = new();
+        _tetherTargets = _bossTargets = _closeToTetherTarget = _hitByMultipleAOEs = default;
 
         // we determine failing players, trying to take two reasonable tactics in account:
         // either two tanks immune and soak everything, or each player is hit by one mechanic

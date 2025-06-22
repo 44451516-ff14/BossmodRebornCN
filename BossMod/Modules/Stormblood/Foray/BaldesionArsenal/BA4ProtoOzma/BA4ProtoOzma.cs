@@ -1,7 +1,7 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
-class Tornado(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.Tornado), new AOEShapeCircle(6f), true);
-class MeteorStack(BossModule module) : Components.StackWithIcon(module, (uint)IconID.MeteorStack, ActionID.MakeSpell(AID.Meteor), 10f, 5.1f, 4, 24)
+sealed class Tornado(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Tornado, 6f);
+sealed class MeteorStack(BossModule module) : Components.StackWithIcon(module, (uint)IconID.MeteorStack, (uint)AID.Meteor, 10f, 5.1f, 4, 24)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -10,7 +10,7 @@ class MeteorStack(BossModule module) : Components.StackWithIcon(module, (uint)Ic
     }
 }
 
-class MeteorBait(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.MeteorBaitaway, ActionID.MakeSpell(AID.MeteorImpact), 18f, 8.9f)
+sealed class MeteorBait(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.MeteorBaitaway, (uint)AID.MeteorImpact, 18f, 8.9f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -18,9 +18,9 @@ class MeteorBait(BossModule module) : Components.SpreadFromIcon(module, (uint)Ic
             Spreads.Clear();
     }
 }
-class MeteorImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MeteorImpact), 18f);
+sealed class MeteorImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeteorImpact, 18f);
 
-class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
+sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -36,8 +36,9 @@ class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7981, SortOrder = 5)]
-public class BA4ProtoOzma(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class BA4ProtoOzma(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
+    public static readonly WDir[] Directions = [new(default, 1f), 120f.Degrees().ToDirection(), (-120f.Degrees()).ToDirection()];
     private static readonly WPos arenaCenter = new(-17.043f, 29.01f);
     private static readonly WPos[] vertices = [new(-41.461f, 23.856f), new(-35.261f, 25.114f), new(-35.017f, 24.387f), new(-30.37f, 27.089f), new(-25.37f, 18.429f),
     new(-30.154f, 15.639f), new(-26.262f, 12.808f), new(-22.582f, 11.188f), new(-18.653f, 10.418f), new(-15.122f, 10.418f),

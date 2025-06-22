@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P1FiendishRage(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.FiendishRage))
+class P1FiendishRage(BossModule module) : Components.CastCounter(module, (uint)AID.FiendishRage)
 {
     private BitMask _targets;
 

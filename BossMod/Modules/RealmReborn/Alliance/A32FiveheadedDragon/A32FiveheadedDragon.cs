@@ -1,13 +1,13 @@
 ﻿namespace BossMod.RealmReborn.Alliance.A32FiveheadedDragon;
 
-class WhiteBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WhiteBreath), new AOEShapeCone(30, 60.Degrees()));
-class BreathOfFire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BreathOfFire), 6);
-class BreathOfLight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BreathOfLight), 6);
-class BreathOfPoison(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BreathOfPoison), 6);
-class BreathOfIce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BreathOfIce), 6);
+class WhiteBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WhiteBreath, new AOEShapeCone(30, 60.Degrees()));
+class BreathOfFire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreathOfFire, 6);
+class BreathOfLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreathOfLight, 6);
+class BreathOfPoison(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreathOfPoison, 6);
+class BreathOfIce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreathOfIce, 6);
 
-class Radiance(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Radiance));
-class HeatWave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HeatWave));
+class Radiance(BossModule module) : Components.RaidwideCast(module, (uint)AID.Radiance);
+class HeatWave(BossModule module) : Components.RaidwideCast(module, (uint)AID.HeatWave);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 111, NameID = 3227)]
 public class A32FiveheadedDragon(WorldState ws, Actor primary) : BossModule(ws, primary, new(200, 180), new ArenaBoundsCircle(30))

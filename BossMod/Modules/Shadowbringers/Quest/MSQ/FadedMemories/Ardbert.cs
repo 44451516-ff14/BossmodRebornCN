@@ -59,9 +59,9 @@ public enum IconID : uint
     RotateCW = 167 // Boss
 }
 
-class Overcome(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Overcome), new AOEShapeCone(8f, 60f.Degrees()), 2);
-class Skydrive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Skydrive), 5f);
-class LandsOfOld(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.LandsOfOld));
+class Overcome(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overcome, new AOEShapeCone(8f, 60f.Degrees()), 2);
+class Skydrive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skydrive, 5f);
+class LandsOfOld(BossModule module) : Components.RaidwideCast(module, (uint)AID.LandsOfOld);
 
 class SkyHighDrive(BossModule module) : Components.GenericRotatingAOE(module)
 {
@@ -110,10 +110,10 @@ class SkyHighDrive(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class AvalancheAxe1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AvalanceAxe1), 10f);
-class AvalancheAxe2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AvalanceAxe2), 10f);
-class AvalancheAxe3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AvalanceAxe3), 10f);
-class OvercomeAllOdds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OvercomeAllOdds), new AOEShapeCone(60f, 15f.Degrees()), 1)
+class AvalancheAxe1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AvalanceAxe1, 10f);
+class AvalancheAxe2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AvalanceAxe2, 10f);
+class AvalancheAxe3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AvalanceAxe3, 10f);
+class OvercomeAllOdds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OvercomeAllOdds, new AOEShapeCone(60f, 15f.Degrees()), 1)
 {
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
@@ -122,9 +122,9 @@ class OvercomeAllOdds(BossModule module) : Components.SimpleAOEs(module, ActionI
             MaxCasts = 2;
     }
 }
-class Soulflash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Soulflash1), 4f);
-class EtesianAxe(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.EtesianAxe), 15f, kind: Kind.DirForward);
-class Soulflash2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Soulflash2), 8f);
+class Soulflash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Soulflash1, 4f);
+class EtesianAxe(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.EtesianAxe, 15f, kind: Kind.DirForward);
+class Soulflash2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Soulflash2, 8f);
 
 class GroundbreakerExaflares(BossModule module) : Components.Exaflare(module, 6f)
 {
@@ -157,9 +157,9 @@ class GroundbreakerExaflares(BossModule module) : Components.Exaflare(module, 6f
     }
 }
 
-class GroundbreakerCone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GroundbreakerCone), new AOEShapeCone(40f, 45f.Degrees()));
-class GroundbreakerDonut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GroundbreakerDonut), new AOEShapeDonut(5f, 20f));
-class GroundbreakerCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GroundbreakerCircle), 15f);
+class GroundbreakerCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GroundbreakerCone, new AOEShapeCone(40f, 45f.Degrees()));
+class GroundbreakerDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GroundbreakerDonut, new AOEShapeDonut(5f, 20f));
+class GroundbreakerCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GroundbreakerCircle, 15f);
 
 class ArdbertStates : StateMachineBuilder
 {

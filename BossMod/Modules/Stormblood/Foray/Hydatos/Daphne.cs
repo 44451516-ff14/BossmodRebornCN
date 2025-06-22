@@ -35,13 +35,13 @@ public enum IconID : uint
     Stackmarker = 62 // player->self
 }
 
-class Spellwind(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SpellwindCast));
-class Upburst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Upburst), 8f);
-class RoilingReach(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RoilingReach), new AOEShapeCross(32f, 3.5f));
-class Wallop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wallop), new AOEShapeRect(50f, 3.5f));
-class ChillingGlare(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.ChillingGlare));
-class Netherwater(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.Netherwater), 6, 4.9f, 4, 24);
-class Spiritus(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spiritus), new AOEShapeCone(5, 30f.Degrees()));
+class Spellwind(BossModule module) : Components.RaidwideCast(module, (uint)AID.SpellwindCast);
+class Upburst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Upburst, 8f);
+class RoilingReach(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RoilingReach, new AOEShapeCross(32f, 3.5f));
+class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, new AOEShapeRect(50f, 3.5f));
+class ChillingGlare(BossModule module) : Components.CastGaze(module, (uint)AID.ChillingGlare);
+class Netherwater(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.Netherwater, 6, 4.9f, 4, 24);
+class Spiritus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spiritus, new AOEShapeCone(5, 30f.Degrees()));
 
 class DaphneStates : StateMachineBuilder
 {
@@ -59,7 +59,7 @@ class DaphneStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "xan, Malediktus", GroupType = BossModuleInfo.GroupType.EurekaNM, GroupID = 639, NameID = 1417, SortOrder = 5)]
-public class Daphne(WorldState ws, Actor primary) : BossModule(ws, primary, new(207.8475f, -736.8179f), SharedBounds.Circle)
+public class Daphne(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

@@ -11,8 +11,8 @@ class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
     private int _numFetters;
     private DateTime _minHelpMove; // we want conga members to start moving with a slight delay
 
-    private static readonly AOEShapeCone _shapeFire = new(60, 45.Degrees());
-    private static readonly AOEShapeCone _shapeLightning = new(60, 60.Degrees());
+    private static readonly AOEShapeCone _shapeFire = new(60f, 45f.Degrees());
+    private static readonly AOEShapeCone _shapeLightning = new(60f, 60f.Degrees());
 
     public override void Update()
     {
@@ -83,16 +83,17 @@ class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
             {
                 var offset = BaitOffset(_playerOrder[pcSlot], _fireTethers[baitOrder - 1]);
                 if (offset != default)
-                    Arena.AddCircle(tetherSpot + offset, 1, Colors.Safe);
+                    Arena.AddCircle(tetherSpot + offset, 1f, Colors.Safe);
             }
         }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID is TetherID.Fire or TetherID.Lightning)
+        var id = tether.ID;
+        if (id is (uint)TetherID.Fire or (uint)TetherID.Lightning)
         {
-            _fireTethers[_tetherTargets.Count] = tether.ID == (uint)TetherID.Fire;
+            _fireTethers[_tetherTargets.Count] = id == (uint)TetherID.Fire;
 
             var target = WorldState.Actors.Find(tether.Target);
             if (target != null)
@@ -109,13 +110,13 @@ class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.FloatingFetters:
+            case (uint)AID.FloatingFetters:
                 ++_numFetters;
                 break;
-            case AID.FallOfFaithSinsmite:
-            case AID.FallOfFaithSinblaze:
+            case (uint)AID.FallOfFaithSinsmite:
+            case (uint)AID.FallOfFaithSinblaze:
                 ++NumCasts;
                 break;
         }
@@ -129,10 +130,11 @@ class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
                 conga.Add((slot, group));
         if (conga.Count != 4)
             return; // no assignments
-        conga.SortBy(c => c.prio);
-        for (int i = 0; i < conga.Count; ++i)
+        conga.Sort((a, b) => a.prio.CompareTo(b.prio));
+        var count = conga.Count;
+        for (var i = 0; i < count; ++i)
             _playerOrder[conga[i].slot] = i + 5;
-        _minHelpMove = WorldState.FutureTime(1);
+        _minHelpMove = WorldState.FutureTime(1d);
     }
 
     private static bool IsGroupEven(int order) => order is 2 or 4 or 7 or 8;
@@ -158,9 +160,9 @@ class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
     {
         if (order == 0)
             return default;
-        var dir = _config.P1FallOfFaithEW ? 90.Degrees() : 0.Degrees();
+        var dir = _config.P1FallOfFaithEW ? 90f.Degrees() : default;
         if (!IsGroupEven(order))
-            dir -= 180.Degrees();
+            dir -= 180f.Degrees();
         return dir.ToDirection();
     }
 

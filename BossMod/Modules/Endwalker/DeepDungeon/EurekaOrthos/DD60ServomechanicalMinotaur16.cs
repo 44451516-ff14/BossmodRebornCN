@@ -70,10 +70,10 @@ class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BullishSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BullishSwing), 13f);
-class BullishSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BullishSwipe), new AOEShapeCone(40f, 45f.Degrees()));
+class BullishSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BullishSwing, 13f);
+class BullishSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BullishSwipe, new AOEShapeCone(40f, 45f.Degrees()));
 
-class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.DisorientingGroan), 15f)
+class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DisorientingGroan, 15f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

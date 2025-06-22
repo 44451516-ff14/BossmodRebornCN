@@ -4,7 +4,7 @@ using ImGuiNET;
 
 namespace BossMod.ReplayVisualization;
 
-class ReplayTimelineWindow : UIWindow
+sealed class ReplayTimelineWindow : UIWindow
 {
     private readonly Replay.Encounter _encounter;
     private readonly ReplayDetailsWindow _timelineSync;

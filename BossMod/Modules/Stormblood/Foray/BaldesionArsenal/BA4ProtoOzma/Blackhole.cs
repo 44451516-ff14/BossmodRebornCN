@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
-class BlackHole(BossModule module) : Components.GenericTowersOpenWorld(module, prioritizeEmpty: true)
+sealed class BlackHole(BossModule module) : Components.GenericTowersOpenWorld(module, prioritizeEmpty: true)
 {
     private const string Hint1 = "Stand inside a black hole buffer!";
     private const string Hint2 = "There are uncovered black hole buffers!";
@@ -14,13 +14,13 @@ class BlackHole(BossModule module) : Components.GenericTowersOpenWorld(module, p
             case (uint)AID.TransfigurationSphere3:
                 var buffers = Module.Enemies((uint)OID.BlackHoleBuffer); // for some reason the buffers have slightly different coordinates than their collision data, not sure which is correct
                 var count = buffers.Count;
-                var soakers = Tower.Soakers(Module);
+                var soakers = Soakers(Module);
                 for (var i = 0; i < count; ++i)
                 {
                     var buffer = buffers[i].Position;
                     if (Module.InBounds(buffer) && (int)buffer.Z != 44) // filter out irrelevant actors, unfortunately OID is also used for other stuff on this map
                     {
-                        Towers.Add(new(buffer, 2f, 1, 99, soakers, WorldState.FutureTime(9.1d)));
+                        Towers.Add(new(buffer, 2f, 1, 99, soakers, activation: WorldState.FutureTime(9.1d)));
                     }
                 }
                 break;

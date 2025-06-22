@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Global.DeepDungeon;
 
 [ConfigDisplay(Name = "Auto-DeepDungeon (Experimental)", Parent = typeof(ModuleConfig))]
-public class AutoDDConfig : ConfigNode
+public sealed class AutoDDConfig : ConfigNode
 {
     public enum ClearBehavior
     {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS7StygimolochLord;
 
-class Border(BossModule module) : Components.GenericAOEs(module)
+sealed class Border(BossModule module) : Components.GenericAOEs(module)
 {
     private bool Active;
     private static readonly WPos ArenaCenter = new(-416f, -184f);

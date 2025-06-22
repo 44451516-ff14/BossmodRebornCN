@@ -16,7 +16,7 @@ public enum AID : uint
     Uppercut = 33994 // Boss->self, 3.0s cast, range 11 120-degree cone
 }
 
-class Uppercut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Uppercut), new AOEShapeCone(11, 60.Degrees()));
+class Uppercut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Uppercut, new AOEShapeCone(11, 60.Degrees()));
 
 class D120HaamTrollStates : StateMachineBuilder
 {

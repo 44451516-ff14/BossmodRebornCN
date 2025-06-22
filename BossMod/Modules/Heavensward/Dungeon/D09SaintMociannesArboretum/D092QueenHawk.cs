@@ -30,7 +30,7 @@ public enum SID : uint
     StoneskinPhysical = 152 // none->Boss, extra=0x0
 }
 
-class StingerCell(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.StingerCell), new AOEShapeRect(8.4f, 2.5f), activeWhileCasting: false)
+class StingerCell(BossModule module) : Components.Cleave(module, (uint)AID.StingerCell, new AOEShapeRect(8.4f, 2.5f), activeWhileCasting: false)
 {
     private bool Stoneskin => Module.PrimaryActor.FindStatus((uint)SID.StoneskinPhysical) == null;
 
@@ -53,7 +53,7 @@ class StingerCell(BossModule module) : Components.Cleave(module, ActionID.MakeSp
     }
 }
 
-class Apitoxin(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.Apitoxin), GetVoidzones, 0.7f)
+class Apitoxin(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.Apitoxin, GetVoidzones, 0.7f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -74,8 +74,8 @@ class Apitoxin(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, 
     }
 }
 
-class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StraightSpindle), new AOEShapeRect(51.08f, 1.5f));
-class Crossfire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Crossfire), new AOEShapeRect(50.5f, 7f));
+class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StraightSpindle, new AOEShapeRect(51.08f, 1.5f));
+class Crossfire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Crossfire, new AOEShapeRect(50.5f, 7f));
 
 class D092QueenHawkStates : StateMachineBuilder
 {

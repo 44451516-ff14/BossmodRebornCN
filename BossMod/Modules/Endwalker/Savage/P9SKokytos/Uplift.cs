@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P9SKokytos;
 
-class Uplift(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Uplift), new AOEShapeRect(4, 8));
+class Uplift(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Uplift, new AOEShapeRect(4, 8));
 
 class ArenaChanges(BossModule module) : BossComponent(module)
 {

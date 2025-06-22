@@ -76,17 +76,17 @@ public enum IconID : uint
     Bait = 101 // player/Kuiyki
 }
 
-class ScathingSunshot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ScathingSunshot), new AOEShapeCone(70f, 60f.Degrees()));
-class Foxflare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Foxflare), new AOEShapeRect(50f, 5f));
-class NinefoldCurse(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.NinefoldCurseVisual), ActionID.MakeSpell(AID.NinefoldCurse), 2f);
-class NinetyNinefoldCurse(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.NinetyNinefoldCurse));
-class Roar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Roar));
-class SonicStorm(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SonicStorm), 6f);
-class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4f, 8.3f, ActionID.MakeSpell(AID.RushBait), ActionID.MakeSpell(AID.RushBaitFail), (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30f);
-class RushLineStack(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.RushLineStackMarker), ActionID.MakeSpell(AID.RushLineStack), 4.9f, markerIsFinalTarget: false);
-class Trample(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Trample), 15f);
+class ScathingSunshot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScathingSunshot, new AOEShapeCone(70f, 60f.Degrees()));
+class Foxflare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Foxflare, new AOEShapeRect(50f, 5f));
+class NinefoldCurse(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.NinefoldCurseVisual, (uint)AID.NinefoldCurse, 2f);
+class NinetyNinefoldCurse(BossModule module) : Components.RaidwideCast(module, (uint)AID.NinetyNinefoldCurse);
+class Roar(BossModule module) : Components.RaidwideCast(module, (uint)AID.Roar);
+class SonicStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SonicStorm, 6f);
+class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4f, 8.3f, (uint)AID.RushBait, (uint)AID.RushBaitFail, (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30f);
+class RushLineStack(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.RushLineStackMarker, (uint)AID.RushLineStack, 4.9f, markerIsFinalTarget: false);
+class Trample(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trample, 15f);
 
-class FallingDusk(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FallingDusk), 15f)
+class FallingDusk(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingDusk, 15f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -96,7 +96,7 @@ class FallingDusk(BossModule module) : Components.SimpleAOEs(module, ActionID.Ma
     }
 }
 
-class DancingWind(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.DancingWind), 8f, kind: Kind.TowardsOrigin)
+class DancingWind(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DancingWind, 8f, kind: Kind.TowardsOrigin)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

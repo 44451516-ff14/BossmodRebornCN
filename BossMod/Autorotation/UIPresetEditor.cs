@@ -66,7 +66,7 @@ public sealed class UIPresetEditor
         {
             var md = Preset.Modules[index].Definition;
             _orderedTrackList.AddRange(Enumerable.Range(0, md.Configs.Count));
-            _orderedTrackList.SortByReverse(i => md.Configs[i].UIPriority);
+            _orderedTrackList.Sort((b, a) => md.Configs[a].UIPriority.CompareTo(md.Configs[b].UIPriority));
         }
         RebuildSettingGuids();
     }
@@ -386,7 +386,7 @@ public sealed class UIPresetEditor
             cat = sub;
         }
         cat.Leafs.Add((type, def, builder));
-        cat.Leafs.SortBy(e => e.def.DisplayName);
+        cat.Leafs.Sort((a, b) => a.def.DisplayName.CompareTo(b.def.DisplayName));
     }
 
     private void RemoveAvailableModule(ModuleCategory cat, Type type)

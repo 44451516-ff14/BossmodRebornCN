@@ -2,7 +2,7 @@
 
 namespace BossMod;
 
-public class ColumnSeparator : Timeline.Column
+public sealed class ColumnSeparator : Timeline.Column
 {
     public uint Color;
 

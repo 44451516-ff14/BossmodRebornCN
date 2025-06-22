@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class A13ArkAngelsStates : StateMachineBuilder
+sealed class A13ArkAngelsStates : StateMachineBuilder
 {
     private readonly A13ArkAngels _module;
 
     public A13ArkAngelsStates(A13ArkAngels module) : base(module)
     {
         _module = module;
-        DeathPhase(0, SinglePhase)
+        DeathPhase(default, SinglePhase)
             .ActivateOnEnter<DecisiveBattle>()
             .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<Cloudsplitter>()
@@ -78,12 +78,12 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void DecisiveBattle(uint id, float delay)
     {
-        ActorCast(id, _module.BossMR, AID.DecisiveBattleMR, delay, 4, true, "Assign target");
+        ActorCast(id, _module.BossMR, (uint)AID.DecisiveBattleMR, delay, 4, true, "Assign target");
     }
 
     private void Cloudsplitter(uint id, float delay)
     {
-        ActorCast(id, _module.BossMR, AID.Cloudsplitter, delay, 5, true);
+        ActorCast(id, _module.BossMR, (uint)AID.Cloudsplitter, delay, 5, true);
         ComponentCondition<Cloudsplitter>(id + 2, 0.5f, comp => comp.NumCasts > 0, "Tankbusters")
             .ResetComp<Cloudsplitter>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -91,7 +91,7 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void MeikyoShisuiStart(uint id, float delay)
     {
-        ActorCast(id, _module.BossGK, AID.MeikyoShisui, delay, 4, true);
+        ActorCast(id, _module.BossGK, (uint)AID.MeikyoShisui, delay, 4, true);
         ComponentCondition<TachiYukikaze>(id + 0x10, 1.1f, comp => comp.Casters.Count > 0);
         ComponentCondition<TachiYukikaze>(id + 0x11, 3, comp => comp.Casters.Count == 0, "Criss-cross 1");
         ComponentCondition<TachiYukikaze>(id + 0x12, 1.6f, comp => comp.Casters.Count > 0);
@@ -115,16 +115,16 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void Meteor(uint id, float delay)
     {
-        ActorCast(id, _module.BossTT, AID.Meteor, delay, 11, true, "Interrupt", true)
+        ActorCast(id, _module.BossTT, (uint)AID.Meteor, delay, 11, true, "Interrupt", true)
             .OnExit(() => _module.Arena.Bounds = A13ArkAngels.DefaultBounds); // fall back for people who joined fight late
     }
 
     private State HavocSpiral(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossMR, AID.HavocSpiral, delay, true);
+        ActorCastStart(id, _module.BossMR, (uint)AID.HavocSpiral, delay, true);
         ActorCastEnd(id + 1, _module.BossMR, 5);
         ComponentCondition<HavokSpiral>(id + 2, 0.5f, comp => comp.NumCasts > 0, "Rotation start");
-        ActorCast(id + 0x10, _module.BossMR, AID.SpiralFinish, 0.6f, 11, true)
+        ActorCast(id + 0x10, _module.BossMR, (uint)AID.SpiralFinish, 0.6f, 11, true)
             .ResetComp<HavokSpiral>();
         return ComponentCondition<SpiralFinish>(id + 0x12, 0.5f, comp => comp.NumCasts > 0, "Knockback")
             .ResetComp<SpiralFinish>();
@@ -132,7 +132,7 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void Dragonfall(uint id, float delay)
     {
-        ActorCast(id, _module.BossGK, AID.Dragonfall, delay, 9, true);
+        ActorCast(id, _module.BossGK, (uint)AID.Dragonfall, delay, 9, true);
         ComponentCondition<Dragonfall>(id + 2, 0.3f, comp => comp.NumCasts > 0, "Stack 1");
         ComponentCondition<Dragonfall>(id + 3, 2.4f, comp => comp.NumCasts > 1, "Stack 2");
         ComponentCondition<Dragonfall>(id + 4, 2.4f, comp => comp.NumCasts > 2, "Stack 3")
@@ -141,7 +141,7 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void Guillotine(uint id, float delay)
     {
-        ActorCast(id, _module.BossTT, AID.Guillotine, delay, 10.5f, true);
+        ActorCast(id, _module.BossTT, (uint)AID.Guillotine, delay, 10.5f, true);
         ComponentCondition<Guillotine>(id + 2, 0.6f, comp => comp.NumCasts > 0, "Cone start");
         ComponentCondition<Guillotine>(id + 0x10, 3.4f, comp => comp.NumCasts >= 4, "Cone resolve")
             .ResetComp<Guillotine>();
@@ -158,12 +158,12 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void UtsusemiDominionSlash(uint id, float delay)
     {
-        ActorCast(id, _module.BossHM, AID.Utsusemi, delay, 3);
+        ActorCast(id, _module.BossHM, (uint)AID.Utsusemi, delay, 3);
         ActorCastEnd(id + 2, _module.BossEV, 2, false, "Raidwide") // dominion slash starts at the same time
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<DominionSlash>(id + 3, 0.7f, comp => comp.AOEs.Count > 0);
-        ActorCast(id + 0x10, _module.BossHM, AID.MightyStrikesClones, 0.5f, 5);
-        ActorCast(id + 0x20, _module.BossHM, AID.CrossReaver, 6.3f, 3);
+        ActorCast(id + 0x10, _module.BossHM, (uint)AID.MightyStrikesClones, 0.5f, 5);
+        ActorCast(id + 0x20, _module.BossHM, (uint)AID.CrossReaver, 6.3f, 3);
         ComponentCondition<CrossReaver>(id + 0x22, 1, comp => comp.Casters.Count > 0);
         ComponentCondition<DominionSlash>(id + 0x23, 2.3f, comp => comp.AOEs.Count == 0)
             .ResetComp<DominionSlash>();
@@ -173,19 +173,19 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void Holy(uint id, float delay)
     {
-        ActorCast(id, _module.BossEV, AID.Holy, delay, 5, true, "Raidwide")
+        ActorCast(id, _module.BossEV, (uint)AID.Holy, delay, 5, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void MijinGakure(uint id, float delay)
     {
         ActorTargetable(id, _module.BossEV, false, delay, "Shield");
-        ActorCast(id + 0x10, _module.BossHM, AID.MijinGakure, 1, 30, true, "Interrupt", true);
+        ActorCast(id + 0x10, _module.BossHM, (uint)AID.MijinGakure, 1, 30, true, "Interrupt", true);
     }
 
     private void Rampage(uint id, float delay)
     {
-        ActorCast(id, _module.BossMR, AID.Rampage, delay, 8, true);
+        ActorCast(id, _module.BossMR, (uint)AID.Rampage, delay, 8, true);
         ComponentCondition<Rampage>(id + 0x10, 0.2f, comp => comp.NumCasts > 0, "Charges start");
         ComponentCondition<Rampage>(id + 0x20, 5.2f, comp => comp.NumCasts > 4, "Charges resolve")
             .ResetComp<Rampage>();
@@ -195,7 +195,7 @@ class A13ArkAngelsStates : StateMachineBuilder
     {
         MeikyoShisuiStart(id, delay);
 
-        ActorCastStart(id + 0x100, _module.BossHM, AID.CrossReaver, 1.9f, true);
+        ActorCastStart(id + 0x100, _module.BossHM, (uint)AID.CrossReaver, 1.9f, true);
         ComponentCondition<ConcertedDissolution>(id + 0x101, 0.6f, comp => comp.NumCasts == 6, "Cones")
             .ResetComp<ConcertedDissolution>();
         ActorCastEnd(id + 0x102, _module.BossHM, 2.4f, true);
@@ -215,7 +215,7 @@ class A13ArkAngelsStates : StateMachineBuilder
     {
         MeikyoShisuiCrossReaverStart(id, delay);
 
-        ActorCastStart(id + 0x200, _module.BossTT, AID.Meteor, 1.1f, true);
+        ActorCastStart(id + 0x200, _module.BossTT, (uint)AID.Meteor, 1.1f, true);
         ComponentCondition<CrossReaver>(id + 0x201, 2.8f, comp => comp.NumCasts > 0, "Cross")
             .ResetComp<CrossReaver>();
         ActorCastEnd(id + 0x202, _module.BossTT, 8.2f, true, "Interrupt", true);
@@ -223,7 +223,7 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void ArroganceIncarnate(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossEV, AID.ArroganceIncarnate, delay, true);
+        ActorCastStart(id, _module.BossEV, (uint)AID.ArroganceIncarnate, delay, true);
         ActorCastEnd(id + 1, _module.BossEV, 5, true);
         ComponentCondition<ArroganceIncarnate>(id + 2, 0.7f, comp => comp.NumFinishedStacks > 0, "Stack 1");
         ComponentCondition<ArroganceIncarnate>(id + 0x10, 4.3f, comp => comp.NumFinishedStacks >= 5, "Stack 5")
@@ -232,7 +232,7 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void CriticalReaver(uint id, float delay)
     {
-        ActorCast(id, _module.BossHM, AID.MightyStrikesBoss, delay, 5, true);
+        ActorCast(id, _module.BossHM, (uint)AID.MightyStrikesBoss, delay, 5, true);
         ComponentCondition<CriticalReaverRaidwide>(id + 0x10, 2.1f, comp => comp.NumCasts >= 1, "Raidwide 1")
             .ActivateOnEnter<CriticalReaverRaidwide>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -243,14 +243,14 @@ class A13ArkAngelsStates : StateMachineBuilder
         ComponentCondition<CriticalReaverRaidwide>(id + 0x13, 2.1f, comp => comp.NumCasts >= 4, "Raidwide 4")
             .DeactivateOnExit<CriticalReaverRaidwide>()
             .SetHint(StateMachine.StateHint.Raidwide);
-        ActorCast(id + 0x20, _module.BossHM, AID.CriticalReaverEnrage, 2.1f, 10, true, "Interrupt", true)
+        ActorCast(id + 0x20, _module.BossHM, (uint)AID.CriticalReaverEnrage, 2.1f, 10, true, "Interrupt", true)
             .ActivateOnEnter<CriticalReaverEnrage>()
             .DeactivateOnExit<CriticalReaverEnrage>();
     }
 
     private void DominionSlashHavokSpiral(uint id, float delay)
     {
-        ActorCast(id, _module.BossEV, AID.DominionSlash, delay, 5, true, "Raidwide")
+        ActorCast(id, _module.BossEV, (uint)AID.DominionSlash, delay, 5, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<DominionSlash>(id + 2, 0.7f, comp => comp.AOEs.Count > 0);
         HavocSpiral(id + 0x100, 2.6f);
@@ -258,16 +258,16 @@ class A13ArkAngelsStates : StateMachineBuilder
 
     private void Raiton(uint id, float delay)
     {
-        ActorCast(id, _module.BossHM, AID.Raiton, delay, 5, true, "Raidwide")
+        ActorCast(id, _module.BossHM, (uint)AID.Raiton, delay, 5, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void DominionSlashCrossReaver(uint id, float delay)
     {
-        ActorCast(id, _module.BossEV, AID.DominionSlash, delay, 5, true, "Raidwide")
+        ActorCast(id, _module.BossEV, (uint)AID.DominionSlash, delay, 5, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<DominionSlash>(id + 2, 0.7f, comp => comp.AOEs.Count > 0);
-        ActorCast(id + 0x10, _module.BossHM, AID.CrossReaver, 8.8f, 3, true);
+        ActorCast(id + 0x10, _module.BossHM, (uint)AID.CrossReaver, 8.8f, 3, true);
         ComponentCondition<CrossReaver>(id + 0x20, 1, comp => comp.Casters.Count > 0);
         ComponentCondition<CrossReaver>(id + 0x30, 6, comp => comp.NumCasts > 0, "Cross")
             .ResetComp<DominionSlash>()

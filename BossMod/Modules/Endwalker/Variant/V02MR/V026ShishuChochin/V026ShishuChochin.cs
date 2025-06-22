@@ -102,7 +102,7 @@ class Lanterns(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Illume(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Illume), new AOEShapeCone(6f, 45f.Degrees()));
+class Illume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Illume, new AOEShapeCone(6f, 45f.Degrees()));
 
 class V026ShishuChochinStates : StateMachineBuilder
 {

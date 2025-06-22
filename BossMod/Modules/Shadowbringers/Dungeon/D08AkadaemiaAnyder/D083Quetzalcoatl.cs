@@ -30,12 +30,12 @@ public enum AID : uint
     WindingCurrent = 15903 // Boss->self, 15.0s cast, range 5-40 donut
 }
 
-class Thunderbolt(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Thunderbolt));
-class Shockbolt(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Shockbolt));
-class ShockingPlumage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ShockingPlumage), new AOEShapeCone(40f, 30f.Degrees()));
-class WindingCurrent(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindingCurrent), new AOEShapeDonut(5f, 40f));
-class ThunderstormAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ThunderstormAOE), 5f);
-class ThunderstormSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ThunderstormSpread), 5f);
+class Thunderbolt(BossModule module) : Components.RaidwideCast(module, (uint)AID.Thunderbolt);
+class Shockbolt(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Shockbolt);
+class ShockingPlumage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ShockingPlumage, new AOEShapeCone(40f, 30f.Degrees()));
+class WindingCurrent(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindingCurrent, new AOEShapeDonut(5f, 40f));
+class ThunderstormAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderstormAOE, 5f);
+class ThunderstormSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderstormSpread, 5f);
 
 class OrbCollecting(BossModule module) : BossComponent(module)
 {

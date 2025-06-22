@@ -1,23 +1,23 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN6Queen;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN6Queen;
 
-class DRN6QueenStates : StateMachineBuilder
+sealed class DRN6QueenStates : StateMachineBuilder
 {
     public DRN6QueenStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<NorthswainsGlow>()
+            .ActivateOnEnter<ArenaChange>()
+            .ActivateOnEnter<Doom>()
+            .ActivateOnEnter<NorthswainsGlowPawnOff>()
             .ActivateOnEnter<GodsSaveTheQueen>()
             .ActivateOnEnter<OptimalPlaySword>()
             .ActivateOnEnter<OptimalPlayShield>()
-            //.ActivateOnEnter<OptimalPlayCone>()
             .ActivateOnEnter<JudgmentBlade>()
             .ActivateOnEnter<HeavensWrathAOE>()
             .ActivateOnEnter<HeavensWrathKnockback>()
-            //.ActivateOnEnter<Chess>()
-            //.ActivateOnEnter<QueensWill>()
-            //.ActivateOnEnter<QueensEdict>()
+            .ActivateOnEnter<Chess>()
+            .ActivateOnEnter<MeansEnds>()
             .ActivateOnEnter<TurretsTour>()
             .ActivateOnEnter<AboveBoard>()
-            .ActivateOnEnter<PawnOff>();
+            .ActivateOnEnter<CleansingSlash>();
     }
 }

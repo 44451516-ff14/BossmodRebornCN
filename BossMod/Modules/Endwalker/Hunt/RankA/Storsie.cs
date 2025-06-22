@@ -58,7 +58,7 @@ class Aspect(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FangsEnd(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.FangsEnd));
+class FangsEnd(BossModule module) : Components.SingleTargetCast(module, (uint)AID.FangsEnd);
 
 class StorsieStates : StateMachineBuilder
 {

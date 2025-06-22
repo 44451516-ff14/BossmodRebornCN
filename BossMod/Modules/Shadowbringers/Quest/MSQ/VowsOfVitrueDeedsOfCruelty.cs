@@ -1,5 +1,3 @@
-using BossMod.QuestBattle;
-
 namespace BossMod.Shadowbringers.Quest.MSQ.VowsOfVirtueDeedsOfCruelty;
 
 public enum OID : uint
@@ -35,11 +33,8 @@ public enum AID : uint
     SelfDetonate = 18792, // MagitekBit->self, 7.0s cast, range 40+R circle, enrage if bits are not killed before cast
 }
 
-abstract class MagitekRay(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(45f, 4f));
-class MagitekRayRightArm(BossModule module) : MagitekRay(module, AID.MagitekRayRightArm);
-class MagitekRayLeftArm(BossModule module) : MagitekRay(module, AID.MagitekRayLeftArm);
-
-class AngrySalamander(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AngrySalamander), new AOEShapeRect(40f, 3f));
+class MagitekRay(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MagitekRayRightArm, (uint)AID.MagitekRayLeftArm], new AOEShapeRect(45f, 4f));
+class AngrySalamander(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AngrySalamander, new AOEShapeRect(40f, 3f));
 class TerminusEstRects(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -69,15 +64,15 @@ class TerminusEstRects(BossModule module) : Components.GenericAOEs(module)
         }
     }
 }
-class TerminusEstCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TerminusEstLocationHelper), 3f);
-class FireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireII), 5f);
-class GarleanFire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GarleanFire), 5f);
-class MetalCutter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MetalCutter), new AOEShapeCone(30f, 10f.Degrees()));
-class MagitekRayBits(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRayBit), new AOEShapeRect(50f, 1f));
-class AtomicRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AtomicRay), 10f);
-class SelfDetonate(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SelfDetonate), "Enrage if bits are not killed before cast");
+class TerminusEstCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TerminusEstLocationHelper, 3f);
+class FireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireII, 5f);
+class GarleanFire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GarleanFire, 5f);
+class MetalCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MetalCutter, new AOEShapeCone(30f, 10f.Degrees()));
+class MagitekRayBits(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRayBit, new AOEShapeRect(50f, 1f));
+class AtomicRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AtomicRay, 10f);
+class SelfDetonate(BossModule module) : Components.CastHint(module, (uint)AID.SelfDetonate, "Enrage if bits are not killed before cast");
 
-class EstinienAI(WorldState ws) : UnmanagedRotation(ws, 3f)
+class EstinienAI(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 3f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
@@ -109,15 +104,31 @@ class EstinienAI(WorldState ws) : UnmanagedRotation(ws, 3f)
     }
 }
 
-class AutoEstinien(BossModule module) : RotationModule<EstinienAI>(module);
+class AutoEstinien(BossModule module) : QuestBattle.RotationModule<EstinienAI>(module)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var h = hints.PotentialTargets[i];
+            h.Priority = h.Actor.OID switch
+            {
+                (uint)OID.MagitekBit => 2,
+                (uint)OID.LembusPraetorianus => 1,
+                _ => 0
+            };
+        }
+        base.AddAIHints(slot, actor, assignment, hints);
+    }
+}
 
 class ArchUltimaStates : StateMachineBuilder
 {
     public ArchUltimaStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<MagitekRayRightArm>()
-            .ActivateOnEnter<MagitekRayLeftArm>()
+            .ActivateOnEnter<MagitekRay>()
             .ActivateOnEnter<AngrySalamander>()
             .ActivateOnEnter<TerminusEstCircle>()
             .ActivateOnEnter<TerminusEstRects>()
@@ -134,20 +145,5 @@ class ArchUltimaStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "croizat", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69218, NameID = 9189)]
 public class ArchUltima(WorldState ws, Actor primary) : BossModule(ws, primary, new(240f, 230f), new ArenaBoundsSquare(19.5f))
 {
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var h = hints.PotentialTargets[i];
-            h.Priority = h.Actor.OID switch
-            {
-                (uint)OID.MagitekBit => 2,
-                (uint)OID.LembusPraetorianus => 1,
-                _ => 0
-            };
-        }
-    }
-
     protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(WorldState.Actors.Where(x => !x.IsAlly));
 }

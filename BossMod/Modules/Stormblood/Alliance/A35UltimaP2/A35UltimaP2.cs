@@ -1,15 +1,15 @@
 ﻿namespace BossMod.Stormblood.Alliance.A35UltimaP2;
 
-class Redemption(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Redemption));
-class Auralight1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Auralight1), new AOEShapeRect(50, 5));
-class Auralight2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Auralight2), new AOEShapeRect(25, 5));
-class Bombardment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bombardment), 6);
-class Embrace2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Embrace2), 3);
-class GrandCrossAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrandCrossAOE), new AOEShapeCross(60, 7.5f));
-class Holy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Holy), 2);
-class HolyIVBait(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HolyIVBait), 6);
-class HolyIVSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HolyIVSpread), 6);
-class Plummet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plummet), new AOEShapeRect(15, 7.5f));
+class Redemption(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Redemption);
+class Auralight1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Auralight1, new AOEShapeRect(50, 5));
+class Auralight2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Auralight2, new AOEShapeRect(25, 5));
+class Bombardment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bombardment, 6);
+class Embrace2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Embrace2, 3);
+class GrandCrossAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandCrossAOE, new AOEShapeCross(60, 7.5f));
+class Holy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Holy, 2);
+class HolyIVBait(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HolyIVBait, 6);
+class HolyIVSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HolyIVSpread, 6);
+class Plummet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plummet, new AOEShapeRect(15, 7.5f));
 
 class Cataclysm(BossModule module) : Components.StayMove(module)
 {

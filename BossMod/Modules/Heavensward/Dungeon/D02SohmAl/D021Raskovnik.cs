@@ -27,12 +27,12 @@ public enum IconID : uint
     FloralTap = 46 // player
 }
 
-class Leafstorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Leafstorm));
-class Phytobeam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Phytobeam), new AOEShapeRect(48.68f, 6f));
-class AcidRain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AcidRain), 6f);
-class FloralTap(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(48.68f, 22.5f.Degrees()), (uint)IconID.FloralTap, ActionID.MakeSpell(AID.FloralTrap), 8.5f);
-class FlowerDevour(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlowerDevour), 8f);
-class BloodyCaress(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.BloodyCaress), new AOEShapeCone(11.68f, 60f.Degrees()));
+class Leafstorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.Leafstorm);
+class Phytobeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Phytobeam, new AOEShapeRect(48.68f, 6f));
+class AcidRain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AcidRain, 6f);
+class FloralTap(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(48.68f, 22.5f.Degrees()), (uint)IconID.FloralTap, (uint)AID.FloralTrap, 8.5f);
+class FlowerDevour(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlowerDevour, 8f);
+class BloodyCaress(BossModule module) : Components.Cleave(module, (uint)AID.BloodyCaress, new AOEShapeCone(11.68f, 60f.Degrees()));
 
 class D021RaskovnikStates : StateMachineBuilder
 {

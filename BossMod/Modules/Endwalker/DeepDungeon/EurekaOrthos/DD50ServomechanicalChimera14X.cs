@@ -128,13 +128,13 @@ class RamsDragonVoice(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TC(BossModule module, AID aid) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(aid), 4f);
-class ThunderousCold(BossModule module) : TC(module, AID.ThunderousCold);
-class ColdThunder(BossModule module) : TC(module, AID.ColdThunder);
+class TC(BossModule module, uint aid) : Components.BaitAwayChargeCast(module, aid, 4f);
+class ThunderousCold(BossModule module) : TC(module, (uint)AID.ThunderousCold);
+class ColdThunder(BossModule module) : TC(module, (uint)AID.ColdThunder);
 
-class Breath(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 90f.Degrees()));
-class RightbreathedCold(BossModule module) : Breath(module, AID.RightbreathedCold);
-class LeftbreathedThunder(BossModule module) : Breath(module, AID.LeftbreathedThunder);
+class Breath(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 90f.Degrees()));
+class RightbreathedCold(BossModule module) : Breath(module, (uint)AID.RightbreathedCold);
+class LeftbreathedThunder(BossModule module) : Breath(module, (uint)AID.LeftbreathedThunder);
 
 class ChargeTether(BossModule module) : Components.StretchTetherDuo(module, 15f, 5.1f);
 

@@ -55,7 +55,7 @@ class DecimationArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ElectromagneticRepellant(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, ActionID.MakeSpell(AID.ElectromagneticRepellant), GetVoidzone, 0.7f)
+class ElectromagneticRepellant(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, (uint)AID.ElectromagneticRepellant, GetVoidzone, 0.7f)
 {
     private static Actor[] GetVoidzone(BossModule module)
     {
@@ -65,19 +65,19 @@ class ElectromagneticRepellant(BossModule module) : Components.VoidzoneAtCastTar
         return [];
     }
 }
-class InfantryDeterrent(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.InfantryDeterrent), 6f);
-class NoFutureSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.NoFutureSpread), 6f);
+class InfantryDeterrent(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.InfantryDeterrent, 6f);
+class NoFutureSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.NoFutureSpread, 6f);
 
-class NoFutureAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NoFutureAOE), 6f);
-class Peacefire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Peacefire), 10f);
-class SmallBoreLaser(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SmallBoreLaser), new AOEShapeRect(20f, 2f));
+class NoFutureAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NoFutureAOE, 6f);
+class Peacefire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Peacefire, 10f);
+class SmallBoreLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SmallBoreLaser, new AOEShapeRect(20f, 2f));
 
-class Elimination(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.Elimination), new AOEShapeRect(46f, 5f), endsOnCastEvent: true, tankbuster: true);
+class Elimination(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Elimination, new AOEShapeRect(46f, 5f), endsOnCastEvent: true, tankbuster: true);
 
-class Decimation(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Decimation));
-class EclipsingExhaust(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.EclipsingExhaust));
+class Decimation(BossModule module) : Components.RaidwideCast(module, (uint)AID.Decimation);
+class EclipsingExhaust(BossModule module) : Components.RaidwideCast(module, (uint)AID.EclipsingExhaust);
 
-class EclipsingExhaustKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.EclipsingExhaust), 11f)
+class EclipsingExhaustKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.EclipsingExhaust, 11f)
 {
     private static readonly Angle a36 = 36f.Degrees();
     private readonly Peacefire _aoe = module.FindComponent<Peacefire>()!;

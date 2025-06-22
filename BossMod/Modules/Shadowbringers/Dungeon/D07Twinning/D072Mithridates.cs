@@ -22,11 +22,11 @@ public enum AID : uint
     AllaganThunder = 15855, // Helper->player, 5.0s cast, range 5 circle
 }
 
-class ThunderBeam(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ThunderBeam));
-class Laserblade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Laserblade), new AOEShapeRect(50f, 4f));
-class AllaganThunder(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AllaganThunder), 5f);
+sealed class ThunderBeam(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ThunderBeam);
+sealed class Laserblade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Laserblade, new AOEShapeRect(50f, 4f));
+sealed class AllaganThunder(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AllaganThunder, 5f);
 
-class Shock(BossModule module) : Components.GenericAOEs(module)
+sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
     private readonly List<AOEInstance> _aoes = new(8);
@@ -46,7 +46,7 @@ class Shock(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D072MithridatesStates : StateMachineBuilder
+sealed class D072MithridatesStates : StateMachineBuilder
 {
     public D072MithridatesStates(BossModule module) : base(module)
     {
@@ -59,7 +59,7 @@ class D072MithridatesStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 655, NameID = 8165)]
-public class D072Mithridates(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D072Mithridates(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(200f, 68f), 19.5f * CosPI.Pi36th, 36)],
     [new Rectangle(new(200f, 88f), 20f, 1.25f), new Rectangle(new(200, 48), 20f, 1.25f)]);

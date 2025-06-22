@@ -23,10 +23,10 @@ public enum AID : uint
     BetweenTheLines = 3926, // Boss->player, no cast, single-target, didn't switch sides in time, 25k dmg per hit
 }
 
-class Repel(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Repel), 20, true, kind: Kind.DirForward, stopAtWall: true);
-class LiquefyCenter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LiquefyCenter), new AOEShapeRect(57.84f, 4));
-class LiquefySides(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LiquefySides), new AOEShapeRect(57.84f, 3.5f));
-class Disclosure(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Disclosure), new AOEShapeRect(20.5f, 11f));
+class Repel(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Repel, 20, true, kind: Kind.DirForward, stopAtWall: true);
+class LiquefyCenter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LiquefyCenter, new AOEShapeRect(57.84f, 4));
+class LiquefySides(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LiquefySides, new AOEShapeRect(57.84f, 3.5f));
+class Disclosure(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Disclosure, new AOEShapeRect(20.5f, 11f));
 
 class DisclosureSpin(BossModule module) : Components.GenericAOEs(module)
 {

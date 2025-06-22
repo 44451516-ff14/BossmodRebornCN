@@ -7,7 +7,7 @@ class Roar(BossModule module) : Components.GenericBaitAway(module)
     private readonly List<(Actor actor, bool bubble)> _snakes = [];
     private bool _highlightSnakes;
 
-    private static readonly AOEShapeCone _shape = new(60, 90.Degrees());
+    private static readonly AOEShapeCone _shape = new(60f, 90f.Degrees());
 
     public override void Update()
     {
@@ -30,27 +30,27 @@ class Roar(BossModule module) : Components.GenericBaitAway(module)
         {
             Arena.Actor(s.actor, Colors.Object, true);
             if (_highlightSnakes && s.bubble != _playerBubbles[pcSlot])
-                Arena.AddCircle(s.actor.Position, 1, Colors.Safe);
+                Arena.AddCircle(s.actor.Position, 1f, Colors.Safe);
         }
     }
 
     public override void OnActorCreated(Actor actor)
     {
-        if ((OID)actor.OID is OID.NZaratan or OID.SZaratan)
+        if (actor.OID is (uint)OID.NZaratan or (uint)OID.SZaratan)
             _snakes.Add((actor, false));
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.Bubble:
+            case (uint)SID.Bubble:
                 var index = _snakes.FindIndex(s => s.actor == actor);
                 if (index >= 0)
                     _snakes[index] = (actor, true);
                 _highlightSnakes = true;
                 break;
-            case SID.BubbleWeave:
+            case (uint)SID.BubbleWeave:
                 _playerBubbles.Set(Raid.FindSlot(actor.InstanceID));
                 _highlightSnakes = true;
                 break;
@@ -59,7 +59,7 @@ class Roar(BossModule module) : Components.GenericBaitAway(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.NHundredLashingsNormal or AID.NHundredLashingsBubble or AID.SHundredLashingsNormal or AID.SHundredLashingsBubble)
+        if (spell.Action.ID is (uint)AID.NHundredLashingsNormal or (uint)AID.NHundredLashingsBubble or (uint)AID.SHundredLashingsNormal or (uint)AID.SHundredLashingsBubble)
         {
             ++NumCasts;
             _snakes.Clear();

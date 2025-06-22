@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex3QueenEternal;
 
-class ProsecutionOfWar(BossModule module) : Components.TankSwap(module, ActionID.MakeSpell(AID.ProsecutionOfWar), ActionID.MakeSpell(AID.ProsecutionOfWar), ActionID.MakeSpell(AID.ProsecutionOfWarAOE), 3.1f, null, true);
-class DyingMemory(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.DyingMemory));
-class DyingMemoryLast(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.DyingMemoryLast));
+sealed class ProsecutionOfWar(BossModule module) : Components.TankSwap(module, (uint)AID.ProsecutionOfWar, (uint)AID.ProsecutionOfWar, (uint)AID.ProsecutionOfWarAOE, 3.1f, null, true);
+sealed class DyingMemory(BossModule module) : Components.CastCounter(module, (uint)AID.DyingMemory);
+sealed class DyingMemoryLast(BossModule module) : Components.CastCounter(module, (uint)AID.DyingMemoryLast);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1017, NameID = 13029, PlanLevel = 100)]
-public class Ex3QueenEternal(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, NormalBounds)
+public sealed class Ex3QueenEternal(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, NormalBounds)
 {
     public static readonly WPos ArenaCenter = Trial.T03QueenEternal.T03QueenEternal.ArenaCenter, HalfBoundsCenter = new(100, 110);
     public static readonly ArenaBoundsSquare NormalBounds = Trial.T03QueenEternal.T03QueenEternal.DefaultBounds;

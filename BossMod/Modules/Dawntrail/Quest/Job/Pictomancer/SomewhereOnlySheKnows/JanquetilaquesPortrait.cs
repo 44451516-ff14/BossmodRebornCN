@@ -39,11 +39,11 @@ public enum AID : uint
     FreezeInCyan = 37540 // Boss->self, 5.0s cast, range 40 45-degree cone
 }
 
-class FreezeInCyan(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FreezeInCyan), new AOEShapeCone(40f, 22.5f.Degrees()));
-class NineIvies(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NineIvies), new AOEShapeCone(50f, 10f.Degrees()), 9);
-class TornadoInGreen(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TornadoInGreen), new AOEShapeDonut(10f, 40f));
-class SculptureCast(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.SculptureCast));
-class BlazeInRed(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BlazeInRed));
+class FreezeInCyan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FreezeInCyan, new AOEShapeCone(40f, 22.5f.Degrees()));
+class NineIvies(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NineIvies, new AOEShapeCone(50f, 10f.Degrees()), 9);
+class TornadoInGreen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TornadoInGreen, new AOEShapeDonut(10f, 40f));
+class SculptureCast(BossModule module) : Components.CastGaze(module, (uint)AID.SculptureCast);
+class BlazeInRed(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlazeInRed);
 
 class BloodyCaress(BossModule module) : Components.GenericAOEs(module)
 {
@@ -93,7 +93,7 @@ class Earthquake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 
 class FloodInBlueFirst : Components.SimpleAOEs
 {
-    public FloodInBlueFirst(BossModule module) : base(module, ActionID.MakeSpell(AID.FloodInBlueFirst), new AOEShapeRect(50f, 5f)) { Color = Colors.Danger; }
+    public FloodInBlueFirst(BossModule module) : base(module, (uint)AID.FloodInBlueFirst, new AOEShapeRect(50f, 5f)) { Color = Colors.Danger; }
 }
 
 class FloodInBlueRest(BossModule module) : Components.Exaflare(module, new AOEShapeRect(25f, 2.5f, 25f))

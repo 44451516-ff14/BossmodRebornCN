@@ -44,6 +44,12 @@ public sealed class PropertySliderAttribute(float min, float max) : Attribute
     public bool Logarithmic { get; set; }
 }
 
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class PropertyStringOrderAttribute(string[] values) : Attribute
+{
+    public string[] Values { get; } = values;
+}
+
 // base class for configuration nodes
 public abstract class ConfigNode
 {
@@ -57,7 +63,7 @@ public abstract class ConfigNode
 
     private static readonly ConcurrentDictionary<Type, FieldInfo[]> _fieldsCache = [];
 
-    private static FieldInfo[] GetSerializableFields(Type t)
+    protected static FieldInfo[] GetSerializableFields(Type t)
     {
         if (_fieldsCache.TryGetValue(t, out var cachedFields))
             return cachedFields;
@@ -68,7 +74,7 @@ public abstract class ConfigNode
         var index = 0;
         for (var i = 0; i < len; ++i)
         {
-            var field = fields[i];
+            ref readonly var field = ref fields[i];
             if (!field.IsStatic && !field.IsDefined(typeof(JsonIgnoreAttribute), false))
             {
                 discoveredFields[index++] = field;
@@ -110,7 +116,7 @@ public abstract class ConfigNode
         var len = fields.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref var field = ref fields[i];
+            ref readonly var field = ref fields[i];
             var fieldValue = field.GetValue(this);
 
             writer.WritePropertyName(field.Name);

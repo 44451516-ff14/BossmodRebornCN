@@ -19,10 +19,10 @@ public enum AID : uint
     Upwell = 11515, // 233B->self, 3.0s cast, range 37+R ?-degree cone
 }
 
-class Whitewater(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Whitewater1), new AOEShapeRect(40.5f, 3.5f));
-class Upwell(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Upwell), new AOEShapeCone(41, 15.Degrees()));
-class SpiritBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpiritBurst), 6);
-class WaterDrop(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.WaterDrop), 6);
+class Whitewater(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Whitewater1, new AOEShapeRect(40.5f, 3.5f));
+class Upwell(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Upwell, new AOEShapeCone(41, 15.Degrees()));
+class SpiritBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpiritBurst, 6);
+class WaterDrop(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.WaterDrop, 6);
 
 class ExplosiveTataru(BossModule module) : BossComponent(module)
 {
@@ -67,7 +67,7 @@ class ExplosiveTataru(BossModule module) : BossComponent(module)
     }
 }
 
-class Eddy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Eddy1), 6);
+class Eddy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Eddy1, 6);
 
 class ShieldHint(BossModule module) : BossComponent(module)
 {

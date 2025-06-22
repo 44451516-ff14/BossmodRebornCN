@@ -50,18 +50,18 @@ class P2SStates : StateMachineBuilder
         MurkyDepths(id + 0x550000, 7.2f);
         MurkyDepths(id + 0x560000, 6.2f);
 
-        Cast(id + 0x600000, AID.Enrage, 5.3f, 10, "Enrage");
+        Cast(id + 0x600000, (uint)AID.Enrage, 5.3f, 10, "Enrage");
     }
 
     private void MurkyDepths(uint id, float delay)
     {
-        Cast(id, AID.MurkyDepths, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.MurkyDepths, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void DoubledImpact(uint id, float delay)
     {
-        Cast(id, AID.DoubledImpact, delay, 5, "Shared Tankbuster")
+        Cast(id, (uint)AID.DoubledImpact, delay, 5, "Shared Tankbuster")
             .ActivateOnEnter<DoubledImpact>()
             .DeactivateOnExit<DoubledImpact>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -69,13 +69,13 @@ class P2SStates : StateMachineBuilder
 
     private void SewageDeluge(uint id, float delay)
     {
-        Cast(id, AID.SewageDeluge, delay, 5, "Deluge")
+        Cast(id, (uint)AID.SewageDeluge, delay, 5, "Deluge")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private State Cataract(uint id, float delay)
     {
-        CastStartMulti(id, [AID.SpokenCataract, AID.WingedCataract], delay)
+        CastStartMulti(id, [(uint)AID.SpokenCataract, (uint)AID.WingedCataract], delay)
             .SetHint(StateMachine.StateHint.PositioningStart);
         return CastEnd(id + 1, 8, "Cataract")
             .ActivateOnEnter<Cataract>()
@@ -85,7 +85,7 @@ class P2SStates : StateMachineBuilder
 
     private State Coherence(uint id, float delay)
     {
-        Cast(id, AID.Coherence, delay, 12)
+        Cast(id, (uint)AID.Coherence, delay, 12)
             .ActivateOnEnter<Coherence>();
         return ComponentCondition<Coherence>(id + 2, 3.2f, comp => comp.NumCasts > 0, "Coherence")
             .DeactivateOnExit<Coherence>()
@@ -95,35 +95,35 @@ class P2SStates : StateMachineBuilder
     private void Shockwave(uint id, float delay)
     {
         // TODO: some component (knockback distance=16? or just make sure autorot uses arms length?)
-        Cast(id, AID.Shockwave, delay, 8, "Shockwave")
+        Cast(id, (uint)AID.Shockwave, delay, 8, "Shockwave")
             .SetHint(StateMachine.StateHint.Knockback);
     }
 
     // note: this activates component, which has to be deactivated later manually
     private void PredatoryAvarice(uint id, float delay)
     {
-        Cast(id, AID.PredatoryAvarice, delay, 4, "Avarice")
+        Cast(id, (uint)AID.PredatoryAvarice, delay, 4, "Avarice")
             .ActivateOnEnter<PredatoryAvarice>();
     }
 
     // note: this activates component, which has to be deactivated later manually
     private void Dissociation(uint id, float delay)
     {
-        Cast(id, AID.Dissociation, delay, 4, "Dissociation")
+        Cast(id, (uint)AID.Dissociation, delay, 4, "Dissociation")
             .ActivateOnEnter<Dissociation>();
     }
 
     // note: this activates component, which has to be deactivated later manually
     private State TaintedFlood(uint id, float delay)
     {
-        return Cast(id, AID.TaintedFlood, delay, 3, "Flood")
+        return Cast(id, (uint)AID.TaintedFlood, delay, 3, "Flood")
             .ActivateOnEnter<TaintedFlood>();
     }
 
     // note: this activates component, which has to be deactivated later manually
     private State SewageEruption(uint id, float delay)
     {
-        return Cast(id, AID.SewageEruption, delay, 5, "Eruption")
+        return Cast(id, (uint)AID.SewageEruption, delay, 5, "Eruption")
             .ActivateOnEnter<SewageEruption>();
     }
 
@@ -174,7 +174,7 @@ class P2SStates : StateMachineBuilder
 
     private void Flow1(uint id, float delay)
     {
-        Cast(id, AID.ChannelingFlow, delay, 5, "Flow 1")
+        Cast(id, (uint)AID.ChannelingFlow, delay, 5, "Flow 1")
             .ActivateOnEnter<ChannelingFlow>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<ChannelingFlow>(id + 0x1000, 14, comp => comp.NumStunned > 0)
@@ -187,7 +187,7 @@ class P2SStates : StateMachineBuilder
     private void Flow2(uint id, float delay)
     {
         // flow 2: same statuses as first flow, different durations
-        Cast(id, AID.ChannelingOverflow, delay, 5, "Flow 2")
+        Cast(id, (uint)AID.ChannelingOverflow, delay, 5, "Flow 2")
             .ActivateOnEnter<ChannelingFlow>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         TaintedFlood(id + 0x1000, 4.2f);
@@ -208,7 +208,7 @@ class P2SStates : StateMachineBuilder
     private void Flow3(uint id, float delay)
     {
         // flow 3: same as flow 2, but with coherence instead of floods
-        Cast(id, AID.ChannelingOverflow, delay, 5, "Flow 3")
+        Cast(id, (uint)AID.ChannelingOverflow, delay, 5, "Flow 3")
             .ActivateOnEnter<ChannelingFlow>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         Coherence(id + 0x1000, 5.5f); // first hit is around coherence cast end
@@ -220,7 +220,7 @@ class P2SStates : StateMachineBuilder
 
     private void OminousBubblingShockwave(uint id, float delay)
     {
-        Cast(id, AID.OminousBubbling, delay, 3, "TwoStacks")
+        Cast(id, (uint)AID.OminousBubbling, delay, 3, "TwoStacks")
             .ActivateOnEnter<OminousBubbling>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         Shockwave(id + 0x1000, 2.8f);
@@ -231,7 +231,7 @@ class P2SStates : StateMachineBuilder
 
     private void KampeosHarma(uint id, float delay)
     {
-        CastStart(id, AID.KampeosHarma, delay)
+        CastStart(id, (uint)AID.KampeosHarma, delay)
             .ActivateOnEnter<KampeosHarma>() // note: icons appear right before harma cast start...
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 1, 8.5f, "Harma");

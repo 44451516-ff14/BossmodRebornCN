@@ -48,12 +48,12 @@ class Hints(BossModule module) : BossComponent(module)
 }
 
 // also handles rockbuster, which is just a smaller cleave...
-class MountainBuster(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.MountainBuster), new AOEShapeCone(21.25f, 60f.Degrees())); // TODO: verify angle
+class MountainBuster(BossModule module) : Components.Cleave(module, (uint)AID.MountainBuster, new AOEShapeCone(21.25f, 60f.Degrees())); // TODO: verify angle
 
-class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WeightOfTheLandAOE), 6f);
-class Landslide(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Landslide), new AOEShapeRect(40.25f, 3f));
+class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLandAOE, 6f);
+class Landslide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Landslide, new AOEShapeRect(40.25f, 3f));
 
-class Geocrush(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Geocrush))
+class Geocrush(BossModule module) : Components.GenericAOEs(module, (uint)AID.Geocrush)
 {
     private int _currentCast;
     private AOEShapeDonut? _outer;
@@ -65,57 +65,41 @@ class Geocrush(BossModule module) : Components.GenericAOEs(module, ActionID.Make
         if (_outer != null)
             return new AOEInstance[1] { new(_outer, Arena.Center) };
         if (_inner != null)
-            return new AOEInstance[1] { new(_inner, Arena.Center, new(), _innerFinish) };
+            return new AOEInstance[1] { new(_inner, Arena.Center, default, _innerFinish) };
         return [];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             var outerRadius = ++_currentCast switch
             {
-                1 => 23,
-                2 => 20,
-                3 => 15,
+                1 => 23f,
+                2 => 20f,
+                3 => 15f,
                 _ => Arena.Bounds.Radius
             };
             _outer = new AOEShapeDonut(outerRadius, Arena.Bounds.Radius);
-            _inner = new AOEShapeCircle(outerRadius - 2); // TODO: check falloff...
+            _inner = new AOEShapeCircle(outerRadius - 2f); // TODO: check falloff...
             _innerFinish = Module.CastFinishAt(spell);
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _inner = null;
         }
     }
 }
 
-class Burst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burst), new AOEShapeCircle(6.3f))
-{
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        // pattern 1: one-by-one explosions every ~0.4-0.5s, 8 clockwise then center
-        // pattern 2: center -> 4 cardinals at small offset ~1s later -> 4 intercardinals at bigger offset ~1s later
-        // pattern 3: 3 in center line -> 3 in side line ~1.5s later -> 3 in other side line ~1.5s later
-        // showing casts that end within 2.25s seems to deal with all patterns reasonably well
-        var count = Casters.Count;
-        if (count == 0)
-            return [];
-
-        var deadline = Casters[0].Activation.AddSeconds(2.25d);
-
-        var index = 0;
-        while (index < count && Casters[index].Activation < deadline)
-            ++index;
-
-        return CollectionsMarshal.AsSpan(Casters)[..index];
-    }
-}
+// pattern 1: one-by-one explosions every ~0.4-0.5s, 8 clockwise then center
+// pattern 2: center -> 4 cardinals at small offset ~1s later -> 4 intercardinals at bigger offset ~1s later
+// pattern 3: 3 in center line -> 3 in side line ~1.5s later -> 3 in other side line ~1.5s later
+// showing casts that end within 2.25s seems to deal with all patterns reasonably well
+class Burst(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.Burst], 6.3f, 2.25d);
 
 class T07TitanHStates : StateMachineBuilder
 {

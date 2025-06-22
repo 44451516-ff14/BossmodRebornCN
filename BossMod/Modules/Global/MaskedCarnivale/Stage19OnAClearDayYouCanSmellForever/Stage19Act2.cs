@@ -23,7 +23,7 @@ public enum SID : uint
     Blind = 15 // Boss->player, extra=0x0
 }
 
-class ExplosiveDehiscence(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.ExplosiveDehiscence))
+class ExplosiveDehiscence(BossModule module) : Components.CastGaze(module, (uint)AID.ExplosiveDehiscence)
 {
     public bool casting;
     public BitMask _blinded;
@@ -93,10 +93,10 @@ class Reflect(BossModule module) : BossComponent(module)
     }
 }
 
-class BadBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BadBreath), new AOEShapeCone(17.775f, 60f.Degrees()));
-class VineProbe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VineProbe), new AOEShapeRect(11.775f, 4f));
-class OffalBreath(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.OffalBreath));
-class OffalBreathVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.OffalBreath), GetVoidzones, 1.6f)
+class BadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BadBreath, new AOEShapeCone(17.775f, 60f.Degrees()));
+class VineProbe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VineProbe, new AOEShapeRect(11.775f, 4f));
+class OffalBreath(BossModule module) : Components.CastInterruptHint(module, (uint)AID.OffalBreath);
+class OffalBreathVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.OffalBreath, GetVoidzones, 1.6f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

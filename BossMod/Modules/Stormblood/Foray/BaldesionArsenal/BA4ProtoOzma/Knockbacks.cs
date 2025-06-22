@@ -1,23 +1,32 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
-class Holy(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Holy), 3f)
+sealed class Holy(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Holy, 3f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 9f), Module.CastFinishAt(Casters[0].CastInfo));
+        {
+            var act = Module.CastFinishAt(Casters[0].CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Module.PrimaryActor.Position, 21.5f), act);
+        }
     }
 }
 
-class ShootingStar(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ShootingStar), 8f, shape: new AOEShapeCircle(26f))
+sealed class ShootingStar(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ShootingStar, 8f, shape: new AOEShapeCircle(26f))
 {
     private readonly TransitionAttacks _aoe = module.FindComponent<TransitionAttacks>()!;
-    private static readonly Angle a60 = 60f.Degrees(), am60 = -60.Degrees(), a180 = 180.Degrees(), a120 = 120f.Degrees(), am120 = -120f.Degrees(), a30 = 30f.Degrees();
+    private static readonly Angle a60 = 60f.Degrees(), am60 = -60f.Degrees(), a180 = 180f.Degrees(), a120 = 120f.Degrees(), am120 = -120f.Degrees(), a30 = 30f.Degrees();
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = Casters.Count;
         if (count == 0)
             return;
+        var act = Module.CastFinishAt(Casters[0].CastInfo);
+        if (IsImmune(slot, act))
+            return;
+
         var transitionAOE = _aoe.AOEs.Count != 0 ? _aoe.AOEs[0].Shape : null;
         var forbidden = new Func<WPos, float>[transitionAOE != null ? count : 2 * count];
         var index = 0;
@@ -49,6 +58,6 @@ class ShootingStar(BossModule module) : Components.SimpleKnockbacks(module, Acti
                     break;
             }
         }
-        hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(Casters[0].CastInfo));
+        hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
     }
 }

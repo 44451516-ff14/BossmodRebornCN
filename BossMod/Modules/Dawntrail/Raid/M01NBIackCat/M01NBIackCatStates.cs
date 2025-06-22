@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
-class M01NBlackCatStates : StateMachineBuilder
+sealed class M01NBlackCatStates : StateMachineBuilder
 {
     public M01NBlackCatStates(BossModule module) : base(module)
     {

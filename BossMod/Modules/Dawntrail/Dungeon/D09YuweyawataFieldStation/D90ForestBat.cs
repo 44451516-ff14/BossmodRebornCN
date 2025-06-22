@@ -16,10 +16,10 @@ public enum AID : uint
     LineVoltage = 40665 // Electrogolem2->self, 4.0s cast, range 14 width 4 rect
 }
 
-class FlashFlood(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SweepingGouge), new AOEShapeCone(9f, 45f.Degrees()));
-class LineVoltage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LineVoltage), new AOEShapeRect(14f, 2f));
+sealed class FlashFlood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SweepingGouge, new AOEShapeCone(9f, 45f.Degrees()));
+sealed class LineVoltage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LineVoltage, new AOEShapeRect(14f, 2f));
 
-class D90ForestBatStates : StateMachineBuilder
+sealed class D90ForestBatStates : StateMachineBuilder
 {
     public D90ForestBatStates(BossModule module) : base(module)
     {
@@ -44,7 +44,7 @@ class D90ForestBatStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13572, SortOrder = 1)]
-public class D90ForestBat(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D90ForestBat(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-16.78f, 468.11f), new(-15.92f, 468.13f), new(-17.46f, 472.46f), new(-17.41f, 473.1f), new(-16.79f, 476),
     new(-16.78f, 476.7f), new(-16.99f, 480.51f), new(-16.28f, 481.71f), new(-15.96f, 482.38f), new(-15.41f, 484.5f),

@@ -5,15 +5,15 @@ class DivideAndConquer(BossModule module) : Components.GenericBaitAway(module)
     // line baits can be staggered so we can't use BaitAwayIcon which clears all at the same time
     // staggered waves always got 8 casts even if some players are dead, simultan waves got line baits on all alive players
     // drawing all 8 baits at the same time to make it easier to preposition for the 8 simultan casts
-    private static readonly AOEShapeRect rect = new(100, 2.5f);
+    private static readonly AOEShapeRect rect = new(100f, 2.5f);
     private int counter;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if ((IconID)iconID == IconID.LineBaits && CurrentBaits.Count == 0)
+        if (iconID == (uint)IconID.LineBaits && CurrentBaits.Count == 0)
         {
             foreach (var p in Raid.WithoutSlot(true, true, true))
-                CurrentBaits.Add(new(Module.PrimaryActor, p, rect, WorldState.FutureTime(3)));
+                CurrentBaits.Add(new(Module.PrimaryActor, p, rect, WorldState.FutureTime(3d)));
             counter = 8;
         }
     }
@@ -22,7 +22,7 @@ class DivideAndConquer(BossModule module) : Components.GenericBaitAway(module)
     {
         if (CurrentBaits.Count == 0)
             return;
-        if ((AID)spell.Action.ID == AID.DivideAndConquer)
+        if (spell.Action.ID == (uint)AID.DivideAndConquer)
         {
             if (--counter == 0)
                 CurrentBaits.Clear();

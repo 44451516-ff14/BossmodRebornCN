@@ -45,7 +45,7 @@ public enum IconID : uint
     WindShot = 511 // player
 }
 
-class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
+sealed class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
 {
     private const string Hint = "Be inside a crystal line!";
     private static readonly AOEShapeDonut donut = new(8f, 50f);
@@ -53,7 +53,6 @@ class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
     private static readonly Angle[] angles = [119.997f.Degrees(), 29.996f.Degrees(), -80.001f.Degrees(), 99.996f.Degrees()];
     private static readonly WPos[] positions = [new(-43, -57), new(-63, -57), new(-53, -47), new(-53, -67)];
     private const float Length = 50f;
-    private const uint State = 0x00800040;
     private static readonly AOEShapeCustom ENVC21Inverted = CreateShape(positions[1], positions[2], positions[3], angles[1], angles[0], angles[2], 1, true);
     private static readonly AOEShapeCustom ENVC21 = CreateShape(positions[1], positions[2], positions[3], angles[1], angles[0], angles[2], 7);
     private static readonly AOEShapeCustom ENVC20Inverted = CreateShape(positions[0], positions[2], positions[3], angles[1], angles[3], angles[0], 1, true);
@@ -65,22 +64,22 @@ class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state is State or 0x00200010)
-            AddAOE(index, state, state == State ? donut : circle);
-        else if (state is 0x02000001 or 0x04000004 or State or 0x08000004 or 0x01000001)
+        if (state is 0x00800040u or 0x00200010u)
+            AddAOE(index, state, state == 0x00800040u ? donut : circle);
+        else if (state is 0x02000001u or 0x04000004u or 0x08000004u or 0x01000001u)
             AOE = null;
     }
 
     private void AddAOE(byte index, uint state, AOEShape shape)
     {
         var activation = WorldState.FutureTime(5.9d);
-        var color = state == State ? Colors.SafeFromAOE : 0;
+        var color = state == 0x00800040u ? Colors.SafeFromAOE : default;
         AOE = index switch
         {
             0x1E => new(shape, positions[0], default, activation),
             0x1F => new(shape, positions[1], default, activation),
-            0x20 => new(state == State ? ENVC20Inverted : ENVC20, Arena.Center, default, activation, color),
-            0x21 => new(state == State ? ENVC21Inverted : ENVC21, Arena.Center, default, activation, color),
+            0x20 => new(state == 0x00800040u ? ENVC20Inverted : ENVC20, Arena.Center, default, activation, color),
+            0x21 => new(state == 0x00800040u ? ENVC21Inverted : ENVC21, Arena.Center, default, activation, color),
             _ => AOE
         };
     }
@@ -123,7 +122,7 @@ class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
         InvertForbiddenZone: inverted);
 }
 
-class WindShotStack(BossModule module) : Components.DonutStack(module, ActionID.MakeSpell(AID.WindShot), (uint)IconID.WindShot, 5f, 10f, 6f, 4, 4)
+sealed class WindShotStack(BossModule module) : Components.DonutStack(module, (uint)AID.WindShot, (uint)IconID.WindShot, 5f, 10f, 6f, 4, 4)
 {
     private readonly WindEarthShot _aoe = module.FindComponent<WindEarthShot>()!;
 
@@ -154,16 +153,16 @@ class WindShotStack(BossModule module) : Components.DonutStack(module, ActionID.
     }
 }
 
-class WindUnbound(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WindUnbound));
-class CrystallineCrush(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.CrystallineCrush), 6f, 4, 4);
-class EarthenShot(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.EarthenShot), 6f);
-class StalagmiteCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StalagmiteCircle), 15f);
-class CrystallineStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrystallineStorm), new AOEShapeRect(50f, 1f));
-class CyclonicRing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CyclonicRing), new AOEShapeDonut(8f, 40f));
-class EyeOfTheFierce(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.EyeOfTheFierce));
-class SeedCrystals(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SeedCrystals), 6f);
+sealed class WindUnbound(BossModule module) : Components.RaidwideCast(module, (uint)AID.WindUnbound);
+sealed class CrystallineCrush(BossModule module) : Components.CastTowers(module, (uint)AID.CrystallineCrush, 6f, 4, 4);
+sealed class EarthenShot(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.EarthenShot, 6f);
+sealed class StalagmiteCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StalagmiteCircle, 15f);
+sealed class CrystallineStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrystallineStorm, new AOEShapeRect(50f, 1f));
+sealed class CyclonicRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CyclonicRing, new AOEShapeDonut(8f, 40f));
+sealed class EyeOfTheFierce(BossModule module) : Components.CastGaze(module, (uint)AID.EyeOfTheFierce);
+sealed class SeedCrystals(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SeedCrystals, 6f);
 
-class D022KahderyorStates : StateMachineBuilder
+sealed class D022KahderyorStates : StateMachineBuilder
 {
     public D022KahderyorStates(BossModule module) : base(module)
     {
@@ -182,24 +181,25 @@ class D022KahderyorStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12703)]
-public class D022Kahderyor(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
+public sealed class D022Kahderyor(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
     public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(-53f, -57f), 19.5f, 40)], [new Rectangle(new(-72.5f, -57f), 0.75f, 20), new Rectangle(new(-53f, -37f), 20f, 1.5f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.CrystallineDebris), Colors.Object);
+        Arena.Actors(Enemies((uint)OID.CrystallineDebris), Colors.Object);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            e.Priority = (OID)e.Actor.OID switch
+            e.Priority = e.Actor.OID switch
             {
-                OID.CrystallineDebris => 1,
+                (uint)OID.CrystallineDebris => 1,
                 _ => 0
             };
         }

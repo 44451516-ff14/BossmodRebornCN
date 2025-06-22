@@ -29,13 +29,13 @@ public enum AID : uint
     WanderersPyre = 19295 // Helper->player, 5.0s cast, range 5 circle
 }
 
-class TheFinalVerse(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TheFinalVerse));
-class WanderersPyre(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.WanderersPyre), 5f);
-class OpenHearth(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.OpenHearth), 6f);
-class EyeOfTheCyclone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EyeOfTheCyclone), new AOEShapeDonut(8f, 25f));
-class RagingGlower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RagingGlower), new AOEShapeRect(45f, 3f));
-class MinaSwipe2000(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MinaSwipe2000), new AOEShapeCone(12f, 60f.Degrees()));
-class MinaSwing2000(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MinaSwing2000), 12f);
+class TheFinalVerse(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheFinalVerse);
+class WanderersPyre(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.WanderersPyre, 5f);
+class OpenHearth(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.OpenHearth, 6f);
+class EyeOfTheCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheCyclone, new AOEShapeDonut(8f, 25f));
+class RagingGlower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RagingGlower, new AOEShapeRect(45f, 3f));
+class MinaSwipe2000(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MinaSwipe2000, new AOEShapeCone(12f, 60f.Degrees()));
+class MinaSwing2000(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MinaSwing2000, 12f);
 
 class TerribleBladeHammer(BossModule module) : Components.GenericAOEs(module)
 {
@@ -50,14 +50,14 @@ class TerribleBladeHammer(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnEventEnvControl(byte index, uint state)

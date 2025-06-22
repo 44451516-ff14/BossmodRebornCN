@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
-class EmptyDimension(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EmptyDimension), new AOEShapeDonut(6f, 70f));
-class FullDimension(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FullDimension), 6f);
-class HoliestHallowing(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.HoliestHallowing), "Interrupt!");
+class EmptyDimension(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EmptyDimension, new AOEShapeDonut(6f, 70f));
+class FullDimension(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FullDimension, 6f);
+class HoliestHallowing(BossModule module) : Components.CastHint(module, (uint)AID.HoliestHallowing, "Interrupt!");
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.SerAdelphel, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 788, PlanLevel = 90)]
 public class DSW1(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(22f))

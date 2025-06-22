@@ -21,8 +21,8 @@ public enum AID : uint
     SelfDetonate = 15329 // ArenaMagus->player, 3.0s cast, single-target
 }
 
-class MagicHammer(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagicHammer), 8f);
-class PageTear(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PageTear), new AOEShapeCone(8f, 45f.Degrees()));
+class MagicHammer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagicHammer, 8f);
+class PageTear(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PageTear, new AOEShapeCone(8f, 45f.Degrees()));
 class VacuumBlade(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
@@ -44,9 +44,9 @@ class VacuumBlade(BossModule module) : Components.Voidzone(module, 3f, GetVoidzo
     }
 }
 
-class HeadDown(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.HeadDown), 4f);
+class HeadDown(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.HeadDown, 4f);
 
-class HeadDownKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.HeadDown), 10f, kind: Kind.DirForward)
+class HeadDownKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HeadDown, 10f, kind: Kind.DirForward)
 {
     private readonly VacuumBlade _aoe = module.FindComponent<VacuumBlade>()!;
 
@@ -63,7 +63,7 @@ class HeadDownKB(BossModule module) : Components.SimpleKnockbacks(module, Action
     }
 }
 
-class BoneShaker(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BoneShaker), "Adds + Raidwide");
+class BoneShaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BoneShaker, "Adds + Raidwide");
 
 class Hints2(BossModule module) : BossComponent(module)
 {

@@ -35,9 +35,9 @@ public enum AID : uint
     VoidMortar1 = 27605 // Helper->self, 5.0s cast, range 13 circle
 }
 
-class VoidMortar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidMortar1), 13);
-class FocusInferi(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, ActionID.MakeSpell(AID.FocusInferi), m => m.Enemies(OID.Voidzone).Where(x => x.EventState != 7), 0);
-class CarnemLevareCross(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CarnemLevare1), new AOEShapeCross(40, 4));
+class VoidMortar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidMortar1, 13);
+class FocusInferi(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.FocusInferi, m => m.Enemies(OID.Voidzone).Where(x => x.EventState != 7), 0);
+class CarnemLevareCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CarnemLevare1, new AOEShapeCross(40, 4));
 
 class CarnemLevareDonut(BossModule module) : Components.GenericAOEs(module)
 {
@@ -78,11 +78,11 @@ class CarnemLevareDonut(BossModule module) : Components.GenericAOEs(module)
             _aoes.RemoveAt(0);
     }
 }
-class MeatySlice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MeatySlice), new AOEShapeRect(50, 6));
+class MeatySlice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeatySlice, new AOEShapeRect(50, 6));
 
-abstract class Cleave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 60.Degrees()));
-class Cleaver(BossModule module) : Cleave(module, AID.Cleaver);
-class FlankCleaver(BossModule module) : Cleave(module, AID.FlankCleaver);
+abstract class Cleave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40, 60.Degrees()));
+class Cleaver(BossModule module) : Cleave(module, (uint)AID.Cleaver);
+class FlankCleaver(BossModule module) : Cleave(module, (uint)AID.FlankCleaver);
 
 class Adds(BossModule module) : Components.AddsMulti(module, [(uint)OID.VoidHecteyes, (uint)OID.VoidPersona], 1);
 

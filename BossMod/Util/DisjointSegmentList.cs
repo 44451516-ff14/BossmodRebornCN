@@ -1,9 +1,9 @@
 ﻿namespace BossMod;
 
 // list of disjoint segments (defined by min/max values)
-public class DisjointSegmentList
+public sealed class DisjointSegmentList
 {
-    public List<(float Min, float Max)> Segments { get; } = [];
+    public readonly List<(float Min, float Max)> Segments = [];
 
     public (float Min, float Max) this[Index index] => Segments[index];
     public int Count => Segments.Count;

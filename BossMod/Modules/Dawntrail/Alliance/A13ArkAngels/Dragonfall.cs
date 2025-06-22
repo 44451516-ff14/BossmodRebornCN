@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class Dragonfall(BossModule module) : Components.UniformStackSpread(module, 6f, 0, 8, 8)
+sealed class Dragonfall(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8)
 {
     public int NumCasts;
 

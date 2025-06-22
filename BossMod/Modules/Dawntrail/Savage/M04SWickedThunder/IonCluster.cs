@@ -1,11 +1,11 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
+sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance? AOE;
     public bool SmallArena;
 
-    private static readonly AOEShapeRect _shape = new(40, 15);
+    private static readonly AOEShapeRect _shape = new(40f, 15f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
 
@@ -14,10 +14,10 @@ class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.IonClusterVisualR:
-                AOE = new(_shape, caster.Position - new WDir(5, 0), caster.Rotation, WorldState.FutureTime(2.4f));
+                AOE = new(_shape, caster.Position - new WDir(5f, default), caster.Rotation, WorldState.FutureTime(2.4d));
                 break;
             case (uint)AID.IonClusterVisualL:
-                AOE = new(_shape, caster.Position + new WDir(5, 0), caster.Rotation, WorldState.FutureTime(2.4f));
+                AOE = new(_shape, caster.Position + new WDir(5f, default), caster.Rotation, WorldState.FutureTime(2.4d));
                 break;
             case (uint)AID.StampedingThunderAOE:
                 ++NumCasts;
@@ -34,7 +34,7 @@ class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0 && state is 0x00400004 or 0x00800004)
+        if (index == 0x00u && state is 0x00400004u or 0x00800004u)
         {
             Arena.Bounds = M04SWickedThunder.P1DefaultBounds;
             Arena.Center = M04SWickedThunder.P1DefaultCenter;
@@ -43,7 +43,7 @@ class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ElectronStream(BossModule module) : Components.GenericAOEs(module)
+sealed class ElectronStream(BossModule module) : Components.GenericAOEs(module)
 {
     private Actor? _posCaster;
     private Actor? _negCaster;
@@ -56,9 +56,9 @@ class ElectronStream(BossModule module) : Components.GenericAOEs(module)
     {
         var aoes = new List<AOEInstance>();
         if (_posCaster?.CastInfo != null)
-            aoes.Add(new(_shape, _posCaster.Position, _posCaster.CastInfo.Rotation, Module.CastFinishAt(_posCaster.CastInfo), _positron[slot] ? 0 : Colors.SafeFromAOE, _positron[slot]));
+            aoes.Add(new(_shape, _posCaster.Position, _posCaster.CastInfo.Rotation, Module.CastFinishAt(_posCaster.CastInfo), _positron[slot] ? default : Colors.SafeFromAOE, _positron[slot]));
         if (_negCaster?.CastInfo != null)
-            aoes.Add(new(_shape, _negCaster.Position, _negCaster.CastInfo.Rotation, Module.CastFinishAt(_negCaster.CastInfo), _negatron[slot] ? 0 : Colors.SafeFromAOE, _negatron[slot]));
+            aoes.Add(new(_shape, _negCaster.Position, _negCaster.CastInfo.Rotation, Module.CastFinishAt(_negCaster.CastInfo), _negatron[slot] ? default : Colors.SafeFromAOE, _negatron[slot]));
         return CollectionsMarshal.AsSpan(aoes);
     }
 
@@ -121,7 +121,7 @@ class ElectronStream(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.AxeCurrent))
+sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(module, (uint)AID.AxeCurrent)
 {
     private readonly uint[] _status = new uint[PartyState.MaxPartySize];
     private DateTime _activation;
@@ -247,13 +247,13 @@ class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(module, 
 
     private List<WPos> SafeSpots(int slot, Actor actor)
     {
-        var dirZ = actor.Position.Z - Module.PrimaryActor.Position.Z > 0 ? 1 : -1;
+        var dirZ = actor.Position.Z - Module.PrimaryActor.Position.Z > 0f ? 1f : -1f;
         var positions = new List<WPos>(2);
         switch (_status[slot])
         {
             case (uint)SID.RemoteCurrent:
             case (uint)SID.ProximateCurrent:
-                positions.Add(Module.PrimaryActor.Position + new WDir(0, 5 * dirZ));
+                positions.Add(Module.PrimaryActor.Position + new WDir(default, 5f * dirZ));
                 break;
             case (uint)SID.SpinningConductor:
             case (uint)SID.RoundhouseConductor:
@@ -261,7 +261,7 @@ class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(module, 
                 positions.Add(Module.PrimaryActor.Position + new WDir(+2.5f, 2.5f * dirZ));
                 break;
             case (uint)SID.ColliderConductor:
-                positions.Add(Module.PrimaryActor.Position + new WDir(0, 6 * dirZ));
+                positions.Add(Module.PrimaryActor.Position + new WDir(default, 6f * dirZ));
                 break;
         }
         return positions;

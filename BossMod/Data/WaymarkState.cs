@@ -39,7 +39,7 @@ public sealed class WaymarkState
     public Event<OpWaymarkChange> Changed = new();
     public sealed record class OpWaymarkChange(Waymark ID, Vector3? Pos) : WorldState.Operation
     {
-        protected override void Exec(ref WorldState ws)
+        protected override void Exec(WorldState ws)
         {
             ws.Waymarks[ID] = Pos;
             ws.Waymarks.Changed.Fire(this);

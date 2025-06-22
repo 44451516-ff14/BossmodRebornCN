@@ -32,8 +32,8 @@ public enum AID : uint
     Telega = 9630 // GymnasiouLyssa/Lampas->self, no cast, single-target, bonus add disappear
 }
 
-class HeavySmash2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySmash2), 6f);
-class FrigidStone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FrigidStone), 5f);
+class HeavySmash2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySmash2, 6f);
+class FrigidStone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidStone, 5f);
 
 class FrigidNeedle(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -85,9 +85,9 @@ class CircleOfIce(BossModule module) : Components.ConcentricAOEs(module, _shapes
     }
 }
 
-class PillarPierce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarPierce), new AOEShapeRect(80f, 2f));
-class SkullDasher(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SkullDasher));
-class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.HeavySmash), 6f, 8, 8);
+class PillarPierce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarPierce, new AOEShapeRect(80f, 2f));
+class SkullDasher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SkullDasher);
+class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeavySmash, 6f, 8, 8);
 
 class IcePillar(BossModule module) : Components.GenericAOEs(module)
 {
@@ -108,7 +108,7 @@ class IcePillar(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Howl(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Howl), "Calls adds");
+class Howl(BossModule module) : Components.CastHint(module, (uint)AID.Howl, "Calls adds");
 
 class LyssaChrysineStates : StateMachineBuilder
 {

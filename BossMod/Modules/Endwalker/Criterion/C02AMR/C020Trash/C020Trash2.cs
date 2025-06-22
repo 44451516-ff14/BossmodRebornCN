@@ -72,31 +72,31 @@ class BladeOfTheTengu(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-abstract class WrathOfTheTengu(BossModule module, AID aid) : Components.RaidwideCast(module, ActionID.MakeSpell(aid), "Raidwide with bleed");
-class NWrathOfTheTengu(BossModule module) : WrathOfTheTengu(module, AID.NWrathOfTheTengu);
-class SWrathOfTheTengu(BossModule module) : WrathOfTheTengu(module, AID.SWrathOfTheTengu);
+abstract class WrathOfTheTengu(BossModule module, uint aid) : Components.RaidwideCast(module, aid, "Raidwide with bleed");
+class NWrathOfTheTengu(BossModule module) : WrathOfTheTengu(module, (uint)AID.NWrathOfTheTengu);
+class SWrathOfTheTengu(BossModule module) : WrathOfTheTengu(module, (uint)AID.SWrathOfTheTengu);
 
-abstract class GazeOfTheTengu(BossModule module, AID aid) : Components.CastGaze(module, ActionID.MakeSpell(aid));
-class NGazeOfTheTengu(BossModule module) : GazeOfTheTengu(module, AID.NGazeOfTheTengu);
-class SGazeOfTheTengu(BossModule module) : GazeOfTheTengu(module, AID.SGazeOfTheTengu);
+abstract class GazeOfTheTengu(BossModule module, uint aid) : Components.CastGaze(module, aid);
+class NGazeOfTheTengu(BossModule module) : GazeOfTheTengu(module, (uint)AID.NGazeOfTheTengu);
+class SGazeOfTheTengu(BossModule module) : GazeOfTheTengu(module, (uint)AID.SGazeOfTheTengu);
 
-abstract class MountainBreeze(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 4f));
-class NMountainBreeze(BossModule module) : MountainBreeze(module, AID.NMountainBreeze);
-class SMountainBreeze(BossModule module) : MountainBreeze(module, AID.SMountainBreeze);
+abstract class MountainBreeze(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 4f));
+class NMountainBreeze(BossModule module) : MountainBreeze(module, (uint)AID.NMountainBreeze);
+class SMountainBreeze(BossModule module) : MountainBreeze(module, (uint)AID.SMountainBreeze);
 
-abstract class Issen(BossModule module, AID aid) : Components.SingleTargetCast(module, ActionID.MakeSpell(aid));
-class NIssen(BossModule module) : Issen(module, AID.NIssen);
-class SIssen(BossModule module) : Issen(module, AID.SIssen);
+abstract class Issen(BossModule module, uint aid) : Components.SingleTargetCast(module, aid);
+class NIssen(BossModule module) : Issen(module, (uint)AID.NIssen);
+class SIssen(BossModule module) : Issen(module, (uint)AID.SIssen);
 
-abstract class Huton(BossModule module, AID aid) : Components.SingleTargetCast(module, ActionID.MakeSpell(aid), "Cast speed buff");
-class NHuton(BossModule module) : Huton(module, AID.NHuton);
-class SHuton(BossModule module) : Huton(module, AID.SHuton);
+abstract class Huton(BossModule module, uint aid) : Components.SingleTargetCast(module, aid, "Cast speed buff");
+class NHuton(BossModule module) : Huton(module, (uint)AID.NHuton);
+class SHuton(BossModule module) : Huton(module, (uint)AID.SHuton);
 
-abstract class JujiShuriken(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40, 1.5f));
-class NJujiShuriken(BossModule module) : JujiShuriken(module, AID.NJujiShuriken);
-class SJujiShuriken(BossModule module) : JujiShuriken(module, AID.SJujiShuriken);
-class NJujiShurikenFast(BossModule module) : JujiShuriken(module, AID.NJujiShurikenFast);
-class SJujiShurikenFast(BossModule module) : JujiShuriken(module, AID.SJujiShurikenFast);
+abstract class JujiShuriken(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40, 1.5f));
+class NJujiShuriken(BossModule module) : JujiShuriken(module, (uint)AID.NJujiShuriken);
+class SJujiShuriken(BossModule module) : JujiShuriken(module, (uint)AID.SJujiShuriken);
+class NJujiShurikenFast(BossModule module) : JujiShuriken(module, (uint)AID.NJujiShurikenFast);
+class SJujiShurikenFast(BossModule module) : JujiShuriken(module, (uint)AID.SJujiShurikenFast);
 
 class C020Trash2States : StateMachineBuilder
 {

@@ -8,7 +8,7 @@ using System.IO;
 
 namespace BossMod;
 
-public class ReplayManagementWindow : UIWindow
+public sealed class ReplayManagementWindow : UIWindow
 {
     private readonly WorldState _ws;
     private DirectoryInfo _logDir;
@@ -135,9 +135,11 @@ public class ReplayManagementWindow : UIWindow
 
     private void UpdateTitle() => WindowName = $"Replay recording: {(_recorder != null ? "in progress..." : "idle")}{_windowID}";
 
+    public bool ShouldAutoRecord => _config.AutoRecord && (_config.AutoARR || !Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.DutyRecorderPlayback]);
+
     private bool OnZoneChange(uint cfcId)
     {
-        if (!_config.AutoRecord || _recordingManual)
+        if (!ShouldAutoRecord || _recordingManual)
             return false; // don't care
 
         var isDuty = cfcId != 0;
@@ -162,7 +164,7 @@ public class ReplayManagementWindow : UIWindow
 
     private void OnModuleActivation(BossModule m)
     {
-        if (!_config.AutoRecord || _recordingManual)
+        if (!ShouldAutoRecord || _recordingManual)
             return; // don't care
 
         ++_recordingActiveModules;
@@ -172,7 +174,7 @@ public class ReplayManagementWindow : UIWindow
 
     private void OnModuleDeactivation(BossModule m)
     {
-        if (!_config.AutoRecord || _recordingManual || _recordingActiveModules <= 0)
+        if (!ShouldAutoRecord || _recordingManual || _recordingActiveModules <= 0)
             return; // don't care
 
         --_recordingActiveModules;
@@ -192,7 +194,7 @@ public class ReplayManagementWindow : UIWindow
             {
                 var replayFolder = new DirectoryInfo(_config.ReplayFolder);
                 var replays = replayFolder.GetFiles();
-                replays.SortBy(f => f.LastWriteTime);
+                replays.Sort((a, b) => a.LastWriteTime.CompareTo(b.LastWriteTime));
                 foreach (var f in replays.Take(replays.Length - _config.MaxReplays))
                     f.Delete();
             }

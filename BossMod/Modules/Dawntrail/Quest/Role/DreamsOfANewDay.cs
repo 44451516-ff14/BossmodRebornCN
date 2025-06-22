@@ -51,28 +51,12 @@ public enum AID : uint
     PoisonDaggers = 39046 // Helper->player/TentoawaTheWideEye/LoazenikweTheShutEye, no cast, single-target
 }
 
-class Bladestorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bladestorm), new AOEShapeCone(20f, 45f.Degrees()));
-class KeenTempest(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KeenTempest), 8f)
-{
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = Casters.Count;
-        if (count == 0)
-            return [];
+class Bladestorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bladestorm, new AOEShapeCone(20f, 45f.Degrees()));
+class KeenTempest(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.KeenTempest], 8f);
 
-        var deadline = Casters[0].Activation.AddSeconds(1d);
-
-        var index = 0;
-        while (index < count && Casters[index].Activation < deadline)
-            ++index;
-
-        return CollectionsMarshal.AsSpan(Casters)[..index];
-    }
-}
-
-class AethericBurst(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.AethericBurstVisual), ActionID.MakeSpell(AID.AethericBurst), 0.9f);
-class AetherialExposure(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.AetherialExposure), 6f, 3, 3);
-class Conviction(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.Conviction), 4f)
+class AethericBurst(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.AethericBurstVisual, (uint)AID.AethericBurst, 0.9f);
+class AetherialExposure(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AetherialExposure, 6f, 3, 3);
+class Conviction(BossModule module) : Components.CastTowers(module, (uint)AID.Conviction, 4f)
 {
     private readonly AetherialExposure _stack = module.FindComponent<AetherialExposure>()!;
 
@@ -90,11 +74,11 @@ class Conviction(BossModule module) : Components.CastTowers(module, ActionID.Mak
     }
 }
 
-class AetherialRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherialRay), new AOEShapeRect(40f, 2f), 10);
-class Aethershot(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Aethershot), 5f);
-class BloodyTrinity(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.BloodyTrinity));
-class PoisonDaggers(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.PoisonDaggersVisual));
-class Daggerflight(BossModule module) : Components.InterceptTether(module, ActionID.MakeSpell(AID.DaggerflightVisual))
+class AetherialRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialRay, new AOEShapeRect(40f, 2f), 10);
+class Aethershot(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Aethershot, 5f);
+class BloodyTrinity(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.BloodyTrinity);
+class PoisonDaggers(BossModule module) : Components.CastInterruptHint(module, (uint)AID.PoisonDaggersVisual);
+class Daggerflight(BossModule module) : Components.InterceptTether(module, (uint)AID.DaggerflightVisual)
 {
     private DateTime _activation;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -118,7 +102,6 @@ class Daggerflight(BossModule module) : Components.InterceptTether(module, Actio
 class CradleOfTheSleepless(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
-    private const string Hint = "Go behind shield or duty fails!";
 
     private static readonly AOEShapeCone cone = new(8f, 60f.Degrees(), InvertForbiddenZone: true);
 
@@ -134,9 +117,9 @@ class CradleOfTheSleepless(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe == null)
+        if (_aoe is not AOEInstance aoe)
             return;
-        hints.Add(Hint, !_aoe.Value.Check(actor.Position));
+        hints.Add("Go behind shield or duty fails!", !aoe.Check(actor.Position));
     }
 }
 

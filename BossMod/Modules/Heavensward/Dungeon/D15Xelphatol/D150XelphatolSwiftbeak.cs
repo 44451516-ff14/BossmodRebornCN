@@ -31,8 +31,8 @@ public enum AID : uint
     Breakbeak = 6626 // AbalathianHornbill->player, no cast, single-target
 }
 
-class Overpower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Overpower), new AOEShapeCone(7.08f, 45.Degrees()));
-class Gust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Gust), 5);
+class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(7.08f, 45.Degrees()));
+class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 5);
 
 class D150XelphatolSwiftbeakStates : StateMachineBuilder
 {

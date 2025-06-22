@@ -48,8 +48,8 @@ class PelagicCleaverRotation(BossModule module) : Components.GenericRotatingAOE(
     {
         _increment = iconID switch
         {
-            (uint)IconID.RotateCW => -60.Degrees(),
-            (uint)IconID.RotateCCW => 60.Degrees(),
+            (uint)IconID.RotateCW => -60f.Degrees(),
+            (uint)IconID.RotateCCW => 60f.Degrees(),
             _ => default
         };
         InitIfReady(actor);
@@ -82,15 +82,15 @@ class PelagicCleaverRotation(BossModule module) : Components.GenericRotatingAOE(
     }
 }
 
-class PelagicCleaver(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PelagicCleaver), new AOEShapeCone(40f, 30f.Degrees()));
-class TidalGuillotine(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TidalGuillotine), 13f);
-class ProtolithicPuncture(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ProtolithicPuncture));
-class BiteAndRun(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.BiteAndRun), 2.5f);
-class AquaticLance(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AquaticLance), 8f);
+class PelagicCleaver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PelagicCleaver, new AOEShapeCone(40f, 30f.Degrees()));
+class TidalGuillotine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TidalGuillotine, 13f);
+class ProtolithicPuncture(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ProtolithicPuncture);
+class BiteAndRun(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.BiteAndRun, 2.5f);
+class AquaticLance(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AquaticLance, 8f);
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretCladoselacheStates : StateMachineBuilder
 {

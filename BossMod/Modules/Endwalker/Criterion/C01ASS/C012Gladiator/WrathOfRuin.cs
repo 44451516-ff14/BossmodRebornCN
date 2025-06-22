@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C01ASS.C012Gladiator;
 
-class GoldenSilverFlame(BossModule module) : BossComponent(module)
+sealed class GoldenSilverFlame(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _goldenFlames = [];
     private readonly List<Actor> _silverFlames = [];
@@ -69,11 +69,10 @@ class GoldenSilverFlame(BossModule module) : BossComponent(module)
 
     private IEnumerable<WPos> SafeCenters(int debuff)
     {
-        var limit = Arena.Center + new WDir(Arena.Bounds.Radius, Arena.Bounds.Radius);
-        var first = Arena.Center - new WDir(Arena.Bounds.Radius - _shape.HalfWidth, Arena.Bounds.Radius - _shape.HalfWidth);
-        var advance = 2 * _shape.HalfWidth;
-        for (var x = first.X; x < limit.X; x += advance)
-            for (var z = first.Z; z < limit.Z; z += advance)
+        var limit = Arena.Center + new WDir(20f, 20f);
+        var first = Arena.Center - new WDir(15f, 15f);
+        for (var x = first.X; x < limit.X; x += 10f)
+            for (var z = first.Z; z < limit.Z; z += 10f)
                 if (DebuffsAtPosition(new WPos(x, z)) == debuff)
                     yield return new(x, z);
     }
@@ -81,10 +80,10 @@ class GoldenSilverFlame(BossModule module) : BossComponent(module)
 
 // note: actual spell targets location, but it seems to be incorrect...
 // note: we can predict cast start during Regret actor spawn...
-abstract class RackAndRuin(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 2.5f), 8);
-class NRackAndRuin(BossModule module) : RackAndRuin(module, AID.NRackAndRuin);
-class SRackAndRuin(BossModule module) : RackAndRuin(module, AID.SRackAndRuin);
+abstract class RackAndRuin(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 2.5f), 8);
+sealed class NRackAndRuin(BossModule module) : RackAndRuin(module, (uint)AID.NRackAndRuin);
+sealed class SRackAndRuin(BossModule module) : RackAndRuin(module, (uint)AID.SRackAndRuin);
 
-abstract class NothingBesideRemains(BossModule module, AID aid) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(aid), 8f);
-class NNothingBesideRemains(BossModule module) : NothingBesideRemains(module, AID.NNothingBesideRemainsAOE);
-class SNothingBesideRemains(BossModule module) : NothingBesideRemains(module, AID.SNothingBesideRemainsAOE);
+abstract class NothingBesideRemains(BossModule module, uint aid) : Components.SpreadFromCastTargets(module, aid, 8f);
+sealed class NNothingBesideRemains(BossModule module) : NothingBesideRemains(module, (uint)AID.NNothingBesideRemainsAOE);
+sealed class SNothingBesideRemains(BossModule module) : NothingBesideRemains(module, (uint)AID.SNothingBesideRemainsAOE);

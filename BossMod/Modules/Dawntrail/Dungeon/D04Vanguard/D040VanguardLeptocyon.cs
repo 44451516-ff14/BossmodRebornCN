@@ -18,9 +18,9 @@ public enum AID : uint
     SpreadShot = 39017, // VanguardSentryG7->self, 4.0s cast, range 12 90-degree cone
 }
 
-class SpreadShot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpreadShot), new AOEShapeCone(12, 45.Degrees()));
+sealed class SpreadShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpreadShot, new AOEShapeCone(12f, 45f.Degrees()));
 
-class D040VanguardLeptocyonStates : StateMachineBuilder
+sealed class D040VanguardLeptocyonStates : StateMachineBuilder
 {
     public D040VanguardLeptocyonStates(BossModule module) : base(module)
     {
@@ -42,7 +42,7 @@ class D040VanguardLeptocyonStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12778, SortOrder = 1)]
-public class D040VanguardLeptocyon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D040VanguardLeptocyon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(0.34f, 358), new(2.53f, 358.04f), new(2.56f, 358.59f), new(2.29f, 359.02f), new(1.51f, 359.94f),
     new(1.27f, 360.52f), new(1.13f, 361.2f), new(0.91f, 361.83f), new(0.65f, 362.44f), new(-0.01f, 363.53f),

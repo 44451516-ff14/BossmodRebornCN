@@ -36,23 +36,23 @@ public enum AID : uint
     Electrowhirl1 = 37160, // Helper->self, 3.0s cast, range 6 circle
     Electrowhirl2 = 37350, // Helper->self, 5.0s cast, range 6 circle
 
-    TrackingBolt1 = 37348, // Boss->self, 8.0s cast, single-target
-    TrackingBolt2 = 37349, // Helper->player, 8.0s cast, range 8 circle // Spread marker
+    TrackingBoltVisual = 37348, // Boss->self, 8.0s cast, single-target
+    TrackingBolt = 37349, // Helper->player, 8.0s cast, range 8 circle, spread
 
     ApplyAccelerationBomb = 37343, // Helper->player, no cast, single-target
 
     HeavyBlastCannonMarker = 37347, // Helper->player, no cast, single-target
-    HeavyBlastCannon = 37345, // Boss->self/players, 8.0s cast, range 36 width 8 rect, line stack
+    HeavyBlastCannon = 37345 // Boss->self/players, 8.0s cast, range 36 width 8 rect, line stack
 }
 
 public enum SID : uint
 {
     LaserTurretsVisual = 2056, // Boss->Boss, extra=0x2CE
     AccelerationBomb = 3802, // Helper->player, extra=0x0
-    AccelerationBombNPCs = 4144, // Helper->NPCs, extra=0x0
+    AccelerationBombNPCs = 4144 // Helper->NPCs, extra=0x0
 }
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 0.51f; // small cushion since fences don't seem to be positioned perfectly
     public static readonly WPos ArenaCenter = new(0f, -100f);
@@ -169,7 +169,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x0C)
+        if (state == 0x00020001u && index == 0x0Cu)
         {
             Arena.Bounds = defaultBounds;
             _aoe = null;
@@ -179,19 +179,19 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             void AddAOE(AOEShapeCustom shape) => _aoe = new(shape, Arena.Center, default, WorldState.FutureTime(3d));
             switch (state)
             {
-                case 0x08000400:
+                case 0x08000400u:
                     AddAOE(electricFences08000400AOE);
                     break;
-                case 0x01000080:
+                case 0x01000080u:
                     AddAOE(electricFences01000080AOE);
                     break;
-                case 0x00020001:
+                case 0x00020001u:
                     AddAOE(electricFences00020001AOE);
                     break;
-                case 0x00200010:
+                case 0x00200010u:
                     AddAOE(electricFences00200010AOE);
                     break;
-                case 0x02000004 or 0x10000004 or 0x00080004 or 0x00400004:
+                case 0x02000004u or 0x10000004u or 0x00080004u or 0x00400004u:
                     Arena.Bounds = defaultBounds;
                     break;
             }
@@ -199,7 +199,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BatteryCircuit(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class BatteryCircuit(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly Angle _increment = -11f.Degrees();
     private static readonly AOEShapeCone _shape = new(30f, 15f.Degrees());
@@ -217,37 +217,34 @@ class BatteryCircuit(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class HeavyBlastCannon(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.HeavyBlastCannonMarker), ActionID.MakeSpell(AID.HeavyBlastCannon), 8f, 36f);
-class RapidThunder(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.RapidThunder));
-class Electrowave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Electrowave));
+sealed class HeavyBlastCannon(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.HeavyBlastCannonMarker, (uint)AID.HeavyBlastCannon, 8f, 36f);
+sealed class RapidThunder(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RapidThunder);
+sealed class Electrowave(BossModule module) : Components.RaidwideCast(module, (uint)AID.Electrowave);
 
-class BlastCannon : Components.SimpleAOEs
+sealed class BlastCannon : Components.SimpleAOEs
 {
-    public BlastCannon(BossModule module) : base(module, ActionID.MakeSpell(AID.BlastCannon), new AOEShapeRect(26f, 2f), 4)
+    public BlastCannon(BossModule module) : base(module, (uint)AID.BlastCannon, new AOEShapeRect(26f, 2f), 4)
     {
         MaxDangerColor = 2;
         MaxRisky = 2;
     }
 }
-class Shock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shock), 3f);
+sealed class Shock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shock, 3f);
 
-class HomingCannon : Components.SimpleAOEs
+sealed class HomingCannon : Components.SimpleAOEs
 {
-    public HomingCannon(BossModule module) : base(module, ActionID.MakeSpell(AID.HomingCannon), new AOEShapeRect(50f, 1f))
+    public HomingCannon(BossModule module) : base(module, (uint)AID.HomingCannon, new AOEShapeRect(50f, 1f))
     {
         MaxDangerColor = 4;
     }
 }
 
-class Bombardment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bombardment), 5f);
+sealed class Bombardment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bombardment, 5f);
+sealed class Electrowhirl(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Electrowhirl1, (uint)AID.Electrowhirl2], 6f);
 
-abstract class Electrowhirl(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f);
-class Electrowhirl1(BossModule module) : Electrowhirl(module, AID.Electrowhirl1);
-class Electrowhirl2(BossModule module) : Electrowhirl(module, AID.Electrowhirl2);
+sealed class TrackingBolt(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TrackingBolt, 8f);
 
-class TrackingBolt2(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.TrackingBolt2), 8f);
-
-class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
+sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -262,7 +259,7 @@ class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
     }
 }
 
-class D042ProtectorStates : StateMachineBuilder
+sealed class D042ProtectorStates : StateMachineBuilder
 {
     public D042ProtectorStates(BossModule module) : base(module)
     {
@@ -277,11 +274,10 @@ class D042ProtectorStates : StateMachineBuilder
             .ActivateOnEnter<HomingCannon>()
             .ActivateOnEnter<BatteryCircuit>()
             .ActivateOnEnter<Bombardment>()
-            .ActivateOnEnter<Electrowhirl1>()
-            .ActivateOnEnter<Electrowhirl2>()
-            .ActivateOnEnter<TrackingBolt2>();
+            .ActivateOnEnter<Electrowhirl>()
+            .ActivateOnEnter<TrackingBolt>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12757, SortOrder = 5)]
-public class D042Protector(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChanges.ArenaCenter, ArenaChanges.StartingBounds);
+public sealed class D042Protector(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChanges.ArenaCenter, ArenaChanges.StartingBounds);

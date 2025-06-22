@@ -29,7 +29,7 @@ class P2LightRampant(BossModule module) : BossComponent(module)
     }
 }
 
-class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6f), (uint)IconID.LuminousHammer, ActionID.MakeSpell(AID.LuminousHammer), 7.1f, true)
+class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.LuminousHammer, (uint)AID.LuminousHammer, 7.1f)
 {
     public readonly int[] BaitsPerPlayer = new int[PartyState.MaxPartySize];
     public readonly WDir[] PrevBaitOffset = new WDir[PartyState.MaxPartySize];
@@ -41,12 +41,12 @@ class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, new 
         foreach (var b in CurrentBaits)
             predictedDamage[Raid.FindSlot(b.Target.InstanceID)] = true;
         if (predictedDamage.Any())
-            hints.PredictedDamage.Add((predictedDamage, CurrentBaits[0].Activation));
+            hints.AddPredictedDamage(predictedDamage, CurrentBaits[0].Activation, AIHints.PredictedDamageType.Raidwide);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction && Raid.FindSlot(spell.MainTargetID) is var slot && slot >= 0)
+        if (spell.Action.ID == WatchedAction && Raid.FindSlot(spell.MainTargetID) is var slot && slot >= 0)
         {
             ++NumCasts;
             PrevBaitOffset[slot] = (Raid[slot]?.Position ?? Arena.Center) - Arena.Center;
@@ -56,7 +56,7 @@ class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, new 
     }
 }
 
-class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, ActionID.MakeSpell(AID.BrightHunger))
+class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private BitMask _forbidden;
@@ -78,7 +78,7 @@ class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, Acti
         foreach (var (slot, group) in _config.P2LightRampantAssignment.Resolve(Raid))
             if (!_forbidden[slot])
                 conga.Add((slot, group));
-        conga.SortBy(kv => kv.prio);
+        conga.Sort((a, b) => a.prio.CompareTo(b.prio));
         if (conga.Count == 6)
         {
             var firstSouth = conga.FindIndex(kv => kv.prio >= 4);
@@ -107,39 +107,39 @@ class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, Acti
         }
 
         Towers.Clear();
-        for (int i = 0; i < 6; ++i)
+        for (var i = 0; i < 6; ++i)
         {
-            var dir = (240 - i * 60).Degrees();
+            var dir = (240f - i * 60f).Degrees();
             var forbidden = conga.Count == 6 ? BitMask.Build(conga[i].slot) ^ new BitMask(0xFF) : _forbidden;
-            Towers.Add(new(Arena.Center + 16 * dir.ToDirection(), 4, 1, 1, forbidden, WorldState.FutureTime(10.3f)));
+            Towers.Add(new(Arena.Center + 16f * dir.ToDirection(), 4, 1, 1, forbidden, WorldState.FutureTime(10.3d)));
         }
     }
 }
 
 // note: we can start showing aoes ~3s earlier if we check spawns, but it's not really needed
-class P2HolyLightBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HolyLightBurst), 11, 3)
+class P2HolyLightBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HolyLightBurst, 11f, 3)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // there are dedicated components for hints
 }
 
-class P2PowerfulLight(BossModule module) : Components.UniformStackSpread(module, 5, 0, 4, 4)
+class P2PowerfulLight(BossModule module) : Components.UniformStackSpread(module, 5f, default, 4, 4)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // there are dedicated components for hints
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.WeightOfLight)
+        if (status.ID == (uint)SID.WeightOfLight)
             AddStack(actor, status.ExpireAt);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.PowerfulLight)
+        if (spell.Action.ID == (uint)AID.PowerfulLight)
             Stacks.Clear();
     }
 }
 
-class P2BrightHunger2(BossModule module) : Components.GenericTowers(module, ActionID.MakeSpell(AID.BrightHunger))
+class P2BrightHunger2(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
 {
     private BitMask _forbidden;
 
@@ -147,20 +147,20 @@ class P2BrightHunger2(BossModule module) : Components.GenericTowers(module, Acti
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Lightsteeped && status.Extra >= 3)
-            _forbidden.Set(Raid.FindSlot(actor.InstanceID));
+        if (status.ID == (uint)SID.Lightsteeped && status.Extra >= 3)
+            _forbidden[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
     // TODO: better criteria for activating a tower...
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (Towers.Count == 0 && (AID)spell.Action.ID == AID.HolyLightBurst)
-            Towers.Add(new(Arena.Center, 4, 1, 8, _forbidden, WorldState.FutureTime(6.5f)));
+        if (Towers.Count == 0 && spell.Action.ID == (uint)AID.HolyLightBurst)
+            Towers.Add(new(Arena.Center, 4f, 1, 8, _forbidden, WorldState.FutureTime(6.5d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             Towers.Clear();
             ++NumCasts;
@@ -183,29 +183,29 @@ class P2LightRampantBanish(BossModule module) : P2Banish(module)
             if (t.ForbiddenSoakers[slot])
             {
                 // we should not be soaking a tower
-                hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, t.Radius), t.Activation);
-                hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, t.Radius + 2), WorldState.FutureTime(30));
+                hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, 4f), t.Activation);
+                hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, 6f), WorldState.FutureTime(30));
 
                 var prepos = PrepositionLocation(assignment);
                 if (prepos != null)
                 {
                     // we know the mechanic, so preposition immediately
                     // there might be puddles covering prepos spot, so add extra rougher hint
-                    hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1), DateTime.MaxValue);
-                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 50, Angle.FromDirection(prepos.Value - Arena.Center), 15.Degrees()), WorldState.FutureTime(60));
+                    hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1f), DateTime.MaxValue);
+                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 50f, Angle.FromDirection(prepos.Value - Arena.Center), 15f.Degrees()), WorldState.FutureTime(60));
                 }
             }
             else
             {
                 // go soak the tower, somewhat offset to the assigned direction
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(t.Position, t.Radius), t.Activation);
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(t.Position, t.Radius - 2), DateTime.MaxValue);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(t.Position, 4f), t.Activation);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(t.Position, 2f), DateTime.MaxValue);
 
                 var clockspot = _config.P2Banish2SpreadSpots[assignment];
                 if (clockspot >= 0)
                 {
-                    var assignedDirection = (180 - 45 * clockspot).Degrees();
-                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(t.Position, 50, assignedDirection, 30.Degrees()), DateTime.MaxValue);
+                    var assignedDirection = (180f - 45f * clockspot).Degrees();
+                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(t.Position, 50f, assignedDirection, 30f.Degrees()), DateTime.MaxValue);
                 }
             }
         }
@@ -214,7 +214,7 @@ class P2LightRampantBanish(BossModule module) : P2Banish(module)
             // now that towers are done, resolve the spread/stack
             var prepos = PrepositionLocation(assignment);
             if (prepos != null)
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1), DateTime.MaxValue);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1f), DateTime.MaxValue);
             else
                 base.AddAIHints(slot, actor, assignment, hints);
         }
@@ -226,29 +226,29 @@ class P2LightRampantBanish(BossModule module) : P2Banish(module)
         if (clockspot < 0)
             return null; // no assignment
 
-        var assignedDirection = (180 - 45 * clockspot).Degrees();
-        if (Stacks.Count > 0 && Stacks[0].Activation > WorldState.FutureTime(1))
+        var assignedDirection = (180f - 45f * clockspot).Degrees();
+        if (Stacks.Count > 0 && Stacks[0].Activation > WorldState.FutureTime(1d))
         {
             var isSupport = assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT or PartyRolesConfig.Assignment.H1 or PartyRolesConfig.Assignment.H2;
             if (_config.P2Banish2SupportsMoveToStack == isSupport)
-                assignedDirection += (_config.P2Banish2MoveCCWToStack ? 45 : -45).Degrees();
-            return Arena.Center + 10 * assignedDirection.ToDirection();
+                assignedDirection += (_config.P2Banish2MoveCCWToStack ? 45f : -45f).Degrees();
+            return Arena.Center + 10f * assignedDirection.ToDirection();
         }
-        else if (Spreads.Count > 0 && Spreads[0].Activation > WorldState.FutureTime(1))
+        else if (Spreads.Count > 0 && Spreads[0].Activation > WorldState.FutureTime(1d))
         {
-            return Arena.Center + 13 * assignedDirection.ToDirection();
+            return Arena.Center + 13f * assignedDirection.ToDirection();
         }
         return null;
     }
 }
 
-class P2HouseOfLightBoss(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.HouseOfLightBossAOE), false)
+class P2HouseOfLightBoss(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLightBossAOE, false)
 {
-    private static readonly AOEShapeCone _shape = new(60, 30.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shape = new(60f, 30f.Degrees()); // TODO: verify angle
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.HouseOfLightBoss)
+        if (spell.Action.ID == (uint)AID.HouseOfLightBoss)
             foreach (var p in Raid.WithoutSlot(true, true, true))
                 CurrentBaits.Add(new(caster, p, _shape, Module.CastFinishAt(spell, 0.9f)));
     }
@@ -290,7 +290,7 @@ class P2LightRampantAITowers(BossModule module) : BossComponent(module)
                     north ^= moreCW;
                 }
 
-                var preposSpot = Arena.Center + new WDir(0, north ? -BaitOffset : BaitOffset);
+                var preposSpot = Arena.Center + new WDir(default, north ? -BaitOffset : BaitOffset);
                 hints.AddForbiddenZone(ShapeDistance.InvertedCircle(preposSpot, 1), bait.Activation);
             }
             else
@@ -310,7 +310,7 @@ class P2LightRampantAITowers(BossModule module) : BossComponent(module)
             if (assignedTowerIndex >= 0 && _towers.Towers.FindIndex(assignedTowerIndex + 1, t => !t.ForbiddenSoakers[slot]) < 0)
             {
                 ref var t = ref _towers.Towers.Ref(assignedTowerIndex);
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center + (t.Position - Arena.Center) * 1.125f, 2), t.Activation); // center is at R16, x1.125 == R18
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center + (t.Position - Arena.Center) * 1.125f, 2f), t.Activation); // center is at R16, x1.125 == R18
             }
             // else: we either have no towers assigned (== doing puddles), or have multiple assigned (== assignments failed), so do nothing
         }
@@ -326,14 +326,14 @@ class P2LightRampantAIStackPrepos(BossModule module) : BossComponent(module)
     {
         var isPuddleBaiter = _puddles?.ActiveBaitsOn(actor).Count != 0;
         var northCamp = isPuddleBaiter ? actor.Position.X < Arena.Center.X : actor.Position.Z < Arena.Center.Z; // this assumes CW movement for baiter
-        var dest = Arena.Center + new WDir(0, northCamp ? -18 : 18);
+        var dest = Arena.Center + new WDir(default, northCamp ? -18f : 18f);
         if (isPuddleBaiter)
         {
-            var maxDist = _puddles?.BaitsPerPlayer[slot] == 4 ? 7 : 13;
+            var maxDist = _puddles?.BaitsPerPlayer[slot] == 4 ? 7f : 13f;
             if (dest.InCircle(actor.Position, maxDist))
                 return; // don't move _too_ fast as a baiter
         }
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(dest, 1), DateTime.MaxValue);
+        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(dest, 1f), DateTime.MaxValue);
     }
 }
 
@@ -377,17 +377,17 @@ class P2LightRampantAIStackResolve(BossModule module) : BossComponent(module)
                     return false; // this is not our partner, we don't need to wait for him
                 var toPartner = partner.Position - actor.Position;
                 var distSq = toPartner.LengthSq();
-                return distSq > 9 && toDest.Dot(toPartner) < 0; // partner is far enough away, and moving towards destination will not bring us closer
+                return distSq > 9f && toDest.Dot(toPartner) < 0f; // partner is far enough away, and moving towards destination will not bring us closer
             }
             if (!Raid.WithoutSlot(false, true, true).Any(needToWaitFor))
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(destPos, 1), DateTime.MaxValue);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(destPos, 1f), DateTime.MaxValue);
             // else: we still have someone we need to wait for, just stay where we are...
         }
         else if (_stack.Stacks.FirstOrDefault(s => IsNorthCamp(s.Target) == northCamp).Target is var stackTarget && stackTarget != null)
         {
             // we just want to stay close to the stack target, slightly offset to the destination
             var dirToDest = destPos - stackTarget.Position;
-            var dest = dirToDest.LengthSq() <= 4 ? destPos : stackTarget.Position + 2 * dirToDest.Normalized();
+            var dest = dirToDest.LengthSq() <= 4f ? destPos : stackTarget.Position + 2f * dirToDest.Normalized();
             hints.AddForbiddenZone(ShapeDistance.InvertedCircle(dest, 1), DateTime.MaxValue);
         }
     }

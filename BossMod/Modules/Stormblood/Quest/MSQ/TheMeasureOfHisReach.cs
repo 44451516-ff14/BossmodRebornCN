@@ -15,19 +15,19 @@ public enum AID : uint
     HowlingBloomshower = 8399, // 1C4F->self, 2.5s cast, range 8+R ?-degree cone
 }
 
-class Moonlight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HowlingMoonlight), 10)
+class Moonlight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HowlingMoonlight, 10)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         // hits everyone (proximity damage)
         foreach (var c in Casters)
-            hints.PredictedDamage.Add((Raid.WithSlot(false, false).Mask(), c.Activation));
+            hints.AddPredictedDamage(Raid.WithSlot(false, true, false).Mask(), c.Activation);
     }
 }
-class Icewind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HowlingIcewind), new AOEShapeRect(44, 2));
-class Dragonspirit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Dragonspirit), 7.5f);
-class Bloomshower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HowlingBloomshower), new AOEShapeDonutSector(4, 8, 45.Degrees()));
+class Icewind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HowlingIcewind, new AOEShapeRect(44, 2));
+class Dragonspirit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dragonspirit, 7.5f);
+class Bloomshower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HowlingBloomshower, new AOEShapeDonutSector(4, 8, 45.Degrees()));
 
 class HakuroWhitefangStates : StateMachineBuilder
 {

@@ -23,7 +23,7 @@ public enum AID : uint
     GripOfNight = 29337, // Boss->self, 6.0s cast, range 40 150-degree cone
 }
 
-class BurstFlare(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BurstFlare), 10f)
+class BurstFlare(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BurstFlare, 10f)
 {
     private readonly FireSphere _aoe = module.FindComponent<FireSphere>()!;
 
@@ -37,12 +37,12 @@ class BurstFlare(BossModule module) : Components.SimpleKnockbacks(module, Action
     }
 }
 
-class GripOfNight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GripOfNight), new AOEShapeCone(40, 75f.Degrees()));
-class AncientCross(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AncientCross), 6f, 8);
-class AncientEruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AncientEruption), 6f);
-class FluidFlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FluidFlare), new AOEShapeCone(40f, 30f.Degrees()));
+class GripOfNight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GripOfNight, new AOEShapeCone(40, 75f.Degrees()));
+class AncientCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientCross, 6f, 8);
+class AncientEruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientEruption, 6f);
+class FluidFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FluidFlare, new AOEShapeCone(40f, 30f.Degrees()));
 
-class FireSphere(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Burst))
+class FireSphere(BossModule module) : Components.GenericAOEs(module, (uint)AID.Burst)
 {
     private DateTime? _predictedCast;
     private static readonly AOEShapeCircle circle = new(8f);
@@ -74,8 +74,8 @@ class FireSphere(BossModule module) : Components.GenericAOEs(module, ActionID.Ma
     }
 }
 
-class Nightburn(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Nightburn));
-class AncientFire(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AncientFireIII));
+class Nightburn(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Nightburn);
+class AncientFire(BossModule module) : Components.RaidwideCast(module, (uint)AID.AncientFireIII);
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
@@ -101,7 +101,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DarkThunder(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkThunder), 1f);
+class DarkThunder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkThunder, 1f);
 class SeaOfPitch(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
@@ -123,9 +123,9 @@ class SeaOfPitch(BossModule module) : Components.Voidzone(module, 4f, GetVoidzon
     }
 }
 
-abstract class EoD(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(60f, 4f));
-class EndOfDays(BossModule module) : EoD(module, AID.EndOfDays);
-class EndOfDaysAdds(BossModule module) : EoD(module, AID.EndOfDaysAdds);
+abstract class EoD(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 4f));
+class EndOfDays(BossModule module) : EoD(module, (uint)AID.EndOfDays);
+class EndOfDaysAdds(BossModule module) : EoD(module, (uint)AID.EndOfDaysAdds);
 
 class LahabreaStates : StateMachineBuilder
 {

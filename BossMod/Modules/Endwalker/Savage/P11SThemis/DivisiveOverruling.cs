@@ -12,14 +12,14 @@ class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-
-        var deadline = AOEs[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && AOEs[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(AOEs)[..index];
+        return aoes[..index];
     }
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -45,7 +45,7 @@ class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
         void AddAOE(AOEShapeRect shape)
         {
             AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            AOEs.SortBy(x => x.Activation);
+            AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V022Moko;
 
-class Spiritflame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spiritflame), 6);
+class Spiritflame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spiritflame, 6);
 class Spiritflames(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 2.4f;

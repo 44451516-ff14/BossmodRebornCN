@@ -37,7 +37,7 @@ class Airstone(BossModule module) : BossComponent(module)
     }
 }
 
-class WindBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindBlast), new AOEShapeRect(61.5f, 4f));
+class WindBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindBlast, new AOEShapeRect(61.5f, 4f));
 
 class HotBlast(BossModule module) : Components.GenericAOEs(module)
 {

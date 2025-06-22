@@ -103,14 +103,16 @@ public abstract class BossModule : IDisposable
                 if (castinfo?.IsSpell() ?? false)
                     comp.OnCastStarted(actor, castinfo);
             }
+            if (actor.IsTargetable)
+                comp.OnActorTargetable(actor);
             ref var tether = ref actor.Tether;
-            if (tether.ID != 0)
+            if (tether.ID != default)
                 comp.OnTethered(actor, tether);
             var len = actor.Statuses.Length;
             for (var i = 0; i < len; ++i)
             {
                 ref var status = ref actor.Statuses[i];
-                if (status.ID != 0)
+                if (status.ID != default)
                     comp.OnStatusGain(actor, status);
             }
         }
@@ -154,6 +156,7 @@ public abstract class BossModule : IDisposable
             WorldState.Actors.Removed.Subscribe(OnActorDestroyed),
             WorldState.Actors.CastStarted.Subscribe(OnActorCastStarted),
             WorldState.Actors.CastFinished.Subscribe(OnActorCastFinished),
+            WorldState.Actors.IsTargetableChanged.Subscribe(OnIsTargetableChanged),
             WorldState.Actors.Tethered.Subscribe(OnActorTethered),
             WorldState.Actors.Untethered.Subscribe(OnActorUntethered),
             WorldState.Actors.StatusGain.Subscribe(OnActorStatusGain),
@@ -225,7 +228,17 @@ public abstract class BossModule : IDisposable
         if (includeArena)
         {
             Arena.Begin(cameraAzimuth);
-            DrawArena(pcSlot, ref pc, pcHints.Any(h => h.Item2));
+            var haveRisks = false;
+            var count = pcHints.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                if (pcHints[i].Item2)
+                {
+                    haveRisks = true;
+                    break;
+                }
+            }
+            DrawArena(pcSlot, ref pc, haveRisks);
             MiniArena.End();
         }
     }
@@ -256,9 +269,14 @@ public abstract class BossModule : IDisposable
             Components[i].DrawArenaForeground(pcSlot, pc);
         if (WindowConfig.ShowMeleeRangeIndicator)
         {
-            var enemy = WorldState.Actors.FirstOrDefault(a => !a.IsAlly && a.IsTargetable && !a.IsDead && a.InCombat);
-            if (enemy != null)
-                Arena.ZoneDonut(enemy.Position, enemy.HitboxRadius + 2.6f, enemy.HitboxRadius + 2.9f, Colors.MeleeRangeIndicator);
+            foreach (var a in WorldState.Actors)
+            {
+                if (!a.IsAlly && a.IsTargetable && !a.IsDead && a.InCombat)
+                {
+                    Arena.ZoneDonut(a.Position, a.HitboxRadius + 2.6f, a.HitboxRadius + 2.9f, Colors.MeleeRangeIndicator);
+                    break;
+                }
+            }
         }
         // draw enemies & player
         DrawEnemies(pcSlot, pc);
@@ -313,7 +331,7 @@ public abstract class BossModule : IDisposable
         for (var i = 0; i < count; ++i)
             Components[i].AddAIHints(slot, actor, assignment, hints);
         CalculateModuleAIHints(slot, actor, assignment, hints);
-        if (!WindowConfig.AllowAutomaticActions && AI.AIManager.Instance?.Beh == null)
+        if (!WindowConfig.AllowAutomaticActions && AI.AIManager.Instance?.Beh == null && Autorotation.MiscAI.NormalMovement.Instance == null)
             hints.ActionsToExecute.Clear();
     }
 
@@ -325,7 +343,7 @@ public abstract class BossModule : IDisposable
 
     // utility to calculate expected time when cast finishes (plus an optional delay); returns fallback value if argument is null
     // for whatever reason, npc spells have reported remaining cast time consistently 0.3s smaller than reality - this delta is added automatically, in addition to optional delay
-    public DateTime CastFinishAt(ActorCastInfo? cast, float extraDelay = 0f, DateTime fallback = default) => cast != null ? WorldState.FutureTime(cast.NPCRemainingTime + extraDelay) : fallback;
+    public DateTime CastFinishAt(ActorCastInfo? cast, double extraDelay = default, DateTime fallback = default) => cast != null ? WorldState.FutureTime(cast.NPCRemainingTime + extraDelay) : fallback;
 
     // called during update if module is not yet active, should return true if it is to be activated
     // default implementation activates if primary target is both targetable and in combat
@@ -334,6 +352,9 @@ public abstract class BossModule : IDisposable
     // called during update if module is active; should return true if module is to be reset (i.e. deleted and new instance recreated for same actor)
     // default implementation never resets, but it's useful for outdoor bosses that can be leashed
     public virtual bool CheckReset() => false;
+
+    // return true if out-of-combat enemies should be set to priority 0 - useful for multi-phase encounters when player wants to use automatic targeting via cdplan
+    public virtual bool ShouldPrioritizeAllEnemies => false;
 
     protected virtual void UpdateModule() { }
     protected virtual void DrawArenaBackground(int pcSlot, Actor pc) { } // before modules background
@@ -349,9 +370,10 @@ public abstract class BossModule : IDisposable
     private void DrawGlobalHints(BossComponent.GlobalHints hints)
     {
         using var color = ImRaii.PushColor(ImGuiCol.Text, Colors.TextColor11);
-        foreach (var hint in hints)
+        var count = hints.Count;
+        for (var i = 0; i < count; ++i)
         {
-            ImGui.TextUnformatted(hint);
+            ImGui.TextUnformatted(hints[i]);
             ImGui.SameLine();
         }
         ImGui.NewLine();
@@ -359,10 +381,12 @@ public abstract class BossModule : IDisposable
 
     private void DrawPlayerHints(ref BossComponent.TextHints hints)
     {
-        foreach ((var hint, var risk) in hints)
+        var count = hints.Count;
+        for (var i = 0; i < count; ++i)
         {
-            using var color = ImRaii.PushColor(ImGuiCol.Text, risk ? Colors.Danger : Colors.Safe);
-            ImGui.TextUnformatted(hint);
+            var hint = hints[i];
+            using var color = ImRaii.PushColor(ImGuiCol.Text, hint.Item2 ? Colors.Danger : Colors.Safe);
+            ImGui.TextUnformatted(hint.Item1);
             ImGui.SameLine();
         }
         ImGui.NewLine();
@@ -393,14 +417,13 @@ public abstract class BossModule : IDisposable
     private void DrawPartyMembers(int pcSlot, ref Actor pc)
     {
         var raid = Raid.WithSlot();
-        var count = raid.Length;
-        for (var i = 0; i < count; ++i)
+        var len = raid.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if (i == pcSlot)
+            var (slot, player) = raid[i];
+            if (slot == pcSlot)
                 continue;
-
-            var player = raid[i].Item2;
-            var (prio, color) = CalculateHighestPriority(pcSlot, ref pc, i, player);
+            var (prio, color) = CalculateHighestPriority(pcSlot, ref pc, slot, player);
 
             var isFocus = WorldState.Client.FocusTargetId == player.InstanceID;
             if (prio == BossComponent.PlayerPriority.Irrelevant && !WindowConfig.ShowIrrelevantPlayers && !(isFocus && WindowConfig.ShowFocusTargetPlayer))
@@ -502,6 +525,22 @@ public abstract class BossModule : IDisposable
         }
     }
 
+    private void OnIsTargetableChanged(Actor actor)
+    {
+        if (actor.IsTargetable)
+        {
+            var count = Components.Count;
+            for (var i = 0; i < count; ++i)
+                Components[i].OnActorTargetable(actor);
+        }
+        else
+        {
+            var count = Components.Count;
+            for (var i = 0; i < count; ++i)
+                Components[i].OnActorUntargetable(actor);
+        }
+    }
+
     private void OnActorTethered(Actor actor)
     {
         var count = Components.Count;
@@ -518,16 +557,22 @@ public abstract class BossModule : IDisposable
 
     private void OnActorStatusGain(Actor actor, int index)
     {
-        var count = Components.Count;
-        for (var i = 0; i < count; ++i)
-            Components[i].OnStatusGain(actor, actor.Statuses[index]);
+        if (actor.Type != ActorType.Pet)
+        {
+            var count = Components.Count;
+            for (var i = 0; i < count; ++i)
+                Components[i].OnStatusGain(actor, actor.Statuses[index]);
+        }
     }
 
     private void OnActorStatusLose(Actor actor, int index)
     {
-        var count = Components.Count;
-        for (var i = 0; i < count; ++i)
-            Components[i].OnStatusLose(actor, actor.Statuses[index]);
+        if (actor.Type != ActorType.Pet)
+        {
+            var count = Components.Count;
+            for (var i = 0; i < count; ++i)
+                Components[i].OnStatusLose(actor, actor.Statuses[index]);
+        }
     }
 
     private void OnActorIcon(Actor actor, uint iconID, ulong targetID)

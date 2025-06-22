@@ -1,6 +1,6 @@
 namespace BossMod.Shadowbringers.Foray.Duel.Duel6Lyon;
 
-class Duel6LyonStates : StateMachineBuilder
+sealed class Duel6LyonStates : StateMachineBuilder
 {
     public Duel6LyonStates(BossModule module) : base(module)
     {
@@ -8,6 +8,7 @@ class Duel6LyonStates : StateMachineBuilder
             .ActivateOnEnter<OnFire>()
             .ActivateOnEnter<WildfiresFury>()
             .ActivateOnEnter<HeavenAndEarth>()
+            .ActivateOnEnter<CagedHeartOfNature>()
             .ActivateOnEnter<HeartOfNatureConcentric>()
             .ActivateOnEnter<TasteOfBloodAndDuelOrDie>()
             .ActivateOnEnter<FlamesMeet>()
@@ -20,13 +21,16 @@ class Duel6LyonStates : StateMachineBuilder
     }
 }
 
-class FlamesMeet : Components.SimpleAOEs
+sealed class FlamesMeet : Components.SimpleAOEs
 {
-    public FlamesMeet(BossModule module) : base(module, ActionID.MakeSpell(AID.FlamesMeet), new AOEShapeCross(40f, 7f), 2)
+    public FlamesMeet(BossModule module) : base(module, (uint)AID.FlamesMeet, new AOEShapeCross(40f, 7f), 2)
     {
         MaxDangerColor = 1;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "SourP", GroupType = BossModuleInfo.GroupType.BozjaDuel, GroupID = 778, NameID = 31)]
-public class Duel6Lyon(WorldState ws, Actor primary) : BossModule(ws, primary, new(50f, -410f), new ArenaBoundsCircle(20f));
+public sealed class Duel6Lyon(WorldState ws, Actor primary) : BossModule(ws, primary, new(50f, -410f), new ArenaBoundsCircle(20f))
+{
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 20f);
+}

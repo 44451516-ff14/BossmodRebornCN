@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class Gorgospit(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Gorgospit))
+class Gorgospit(BossModule module) : Components.GenericAOEs(module, (uint)AID.Gorgospit)
 {
     public List<(Actor caster, DateTime finish)> Casters = [];
 
@@ -31,7 +31,7 @@ class Gorgospit(BossModule module) : Components.GenericAOEs(module, ActionID.Mak
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Casters.RemoveAll(c => c.caster == caster);
     }
 }

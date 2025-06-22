@@ -65,13 +65,13 @@ class FreedomOfBozja : TemperatureAOE
     }
 }
 
-class FreedomOfBozja1(BossModule module) : FreedomOfBozja(module, false);
+sealed class FreedomOfBozja1(BossModule module) : FreedomOfBozja(module, false);
 
-class QuickMarchStaff1(BossModule module) : QuickMarch(module)
+sealed class QuickMarchStaff1(BossModule module) : QuickMarch(module)
 {
     private readonly FreedomOfBozja1? _freedom = module.FindComponent<FreedomOfBozja1>();
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => !Module.InBounds(pos) || (_freedom?.ActorUnsafeAt(actor, pos) ?? false);
 }
 
-class FreedomOfBozja2(BossModule module) : FreedomOfBozja(module, true);
+sealed class FreedomOfBozja2(BossModule module) : FreedomOfBozja(module, true);

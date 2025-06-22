@@ -1,11 +1,12 @@
 namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
-class Hotspot(BossModule module) : Components.GenericAOEs(module)
+sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(21f, 45f.Degrees());
     public readonly List<AOEInstance> AOEs = new(16);
-
+    private readonly PayThePiper _kb = module.FindComponent<PayThePiper>()!;
     private static readonly uint[] _songs = [(uint)OID.SongOfDurance, (uint)OID.SongOfOblivion, (uint)OID.SongOfSorrow, (uint)OID.SongOfFire];
+    private Angle startrotation;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -28,29 +29,33 @@ class Hotspot(BossModule module) : Components.GenericAOEs(module)
                 aoe.Risky = true;
             }
             else
-                aoe.Risky = false;
+            {
+                aoe.Risky = _kb != null && _kb.State.Count != 0;
+            }
         }
         return aoes.Slice(NumCasts, maxC);
     }
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x1E43 && actor.OID == (uint)OID.Helper2)
-            GetAOES(actor.Rotation + 180f.Degrees(), 6.7d);
+        if (id == 0x1E43u && actor.OID == (uint)OID.Helper2)
+        {
+            startrotation = actor.Rotation + 180f.Degrees();
+            GetAOES(startrotation, 6.7d);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Hotspot)
+        {
             ++NumCasts;
+        }
         else if (AOEs.Count != 16 && spell.Action.ID is (uint)AID.RuthlessRefrain or (uint)AID.MesmerizingMelody)
         {
             AOEs.Clear();
             NumCasts = 0;
-            var helper = Module.Enemies((uint)OID.Helper2);
-            var rot = helper.Count != 0 ? Angle.FromDirection(helper[0].Position - Ex7Suzaku.ArenaCenter) : default;
-            var roundedrot = (MathF.Round(rot.Deg / 12f) * 12f).Degrees();
-            GetAOES(roundedrot, 5.2d);
+            GetAOES(startrotation, -2.2d);
         }
     }
 
@@ -64,7 +69,7 @@ class Hotspot(BossModule module) : Components.GenericAOEs(module)
         {
             var song = songs[i];
             var relativeAngle = Angle.FromDirection(song.Position - Ex7Suzaku.ArenaCenter);
-            var index = ((int)MathF.Round((startrot - relativeAngle).Deg / 12) + 30) % 30;
+            var index = ((int)MathF.Round((startrot - relativeAngle).Deg / 12f) + 30) % 30;
             var rot = song.OID switch
             {
                 (uint)OID.SongOfDurance => Angle.AnglesIntercardinals[3],
@@ -83,7 +88,7 @@ class Hotspot(BossModule module) : Components.GenericAOEs(module)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         var count = AOEs.Count;
-        if (count == 16 && NumCasts >= 15 || count == 8 && NumCasts >= 7)
+        if (count == 0 || count == 16 && NumCasts >= 15 || count == 8 && NumCasts >= 7 || _kb != null && _kb.State.Count != 0)
             return;
         // force ai to stay close to the borders of the 4 panels since there is usually just 1.2s between hits
         hints.AddForbiddenZone(ShapeDistance.InvertedCross(Ex7Suzaku.ArenaCenter, default, 20f, 1f), DateTime.MaxValue);

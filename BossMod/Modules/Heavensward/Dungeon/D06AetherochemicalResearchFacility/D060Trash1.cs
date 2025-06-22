@@ -27,9 +27,9 @@ public enum AID : uint
     DefensiveManeuvers = 607 // ScrambledIronClaw->self, 3.0s cast, single-target, apply stoneskin
 }
 
-class PassiveInfraredGuidanceSystem(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.PassiveInfraredGuidanceSystem), new AOEShapeCircle(6f), [(uint)OID.Boss], originAtTarget: true);
+class PassiveInfraredGuidanceSystem(BossModule module) : Components.Cleave(module, (uint)AID.PassiveInfraredGuidanceSystem, new AOEShapeCircle(6f), [(uint)OID.Boss], originAtTarget: true);
 
-abstract class HeadSpin(BossModule module, AID aid, OID oid) : Components.Cleave(module, ActionID.MakeSpell(aid), new AOEShapeCircle(5.225f), [(uint)oid])
+abstract class HeadSpin(BossModule module, uint aid, OID oid) : Components.Cleave(module, aid, new AOEShapeCircle(5.225f), [(uint)oid])
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -49,11 +49,11 @@ abstract class HeadSpin(BossModule module, AID aid, OID oid) : Components.Cleave
             base.DrawArenaForeground(pcSlot, pc);
     }
 }
-class Headspin1(BossModule module) : HeadSpin(module, AID.Headspin1, OID.ScrambledPaladin);
-class Headspin2(BossModule module) : HeadSpin(module, AID.Headspin2, OID.ScrambledEngineer);
+class Headspin1(BossModule module) : HeadSpin(module, (uint)AID.Headspin1, OID.ScrambledPaladin);
+class Headspin2(BossModule module) : HeadSpin(module, (uint)AID.Headspin2, OID.ScrambledEngineer);
 
-class GrandSword(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrandSword), new AOEShapeCone(16f, 60f.Degrees()));
-class TheHand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheHand), new AOEShapeCone(7.5f, 60f.Degrees()));
+class GrandSword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandSword, new AOEShapeCone(16f, 60f.Degrees()));
+class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(7.5f, 60f.Degrees()));
 
 class D060EnforcementDroid210States : StateMachineBuilder
 {

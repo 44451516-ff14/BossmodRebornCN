@@ -92,13 +92,13 @@ public enum AID : uint
     FallOfMan = 30187, // Helper->self, 20.0s cast, range 90 width 20 rect
 }
 
-class RipperClaw(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RipperClaw), new AOEShapeCone(9f, 45f.Degrees()));
-class Levinshower(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Levinshower), new AOEShapeCone(6f, 60f.Degrees()),
+class RipperClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RipperClaw, new AOEShapeCone(9f, 45f.Degrees()));
+class Levinshower(BossModule module) : Components.Cleave(module, (uint)AID.Levinshower, new AOEShapeCone(6f, 60f.Degrees()),
 [(uint)OID.HordeBiast2, (uint)OID.HordeBiast4, (uint)OID.HordeBiast5, (uint)OID.HordeBiast6, (uint)OID.HordeBiast7]);
-class EarthShakerAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EarthshakerAOE), 31f);
-class Earthshaker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Earthshaker), new AOEShapeCone(80f, 15f.Degrees()), 2);
+class EarthShakerAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthshakerAOE, 31f);
+class Earthshaker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthshaker, new AOEShapeCone(80f, 15f.Degrees()), 2);
 
-class EarthrisingAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EarthrisingAOE), 31f);
+class EarthrisingAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthrisingAOE, 31f);
 class Earthrising(BossModule module) : Components.Exaflare(module, 8f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -130,15 +130,15 @@ class Earthrising(BossModule module) : Components.Exaflare(module, 8f)
     }
 }
 
-class SidewiseSlice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SidewiseSlice), new AOEShapeCone(50f, 60f.Degrees()));
+class SidewiseSlice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SidewiseSlice, new AOEShapeCone(50f, 60f.Degrees()));
 
-class FireballSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FireballSpread), 6f);
-class FireballAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireballAOE), 6f);
-class Flamisphere(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Flamisphere), 10f);
+class FireballSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FireballSpread, 6f);
+class FireballAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireballAOE, 6f);
+class Flamisphere(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Flamisphere, 10f);
 
-class BodySlam(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BodySlam), 20f, kind: Kind.DirForward, stopAtWall: true);
+class BodySlam(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodySlam, 20f, kind: Kind.DirForward, stopAtWall: true);
 
-class FlameBreath(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.FlameBreathChannel))
+class FlameBreath(BossModule module) : Components.GenericAOEs(module, (uint)AID.FlameBreathChannel)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeRect rect = new(500f, 10f);
@@ -162,7 +162,7 @@ class FlameBreath(BossModule module) : Components.GenericAOEs(module, ActionID.M
     }
 }
 
-class FlameBreath2(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.FlameBreathChannel))
+class FlameBreath2(BossModule module) : Components.GenericAOEs(module, (uint)AID.FlameBreathChannel)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeRect rect = new(60f, 10f);
@@ -188,7 +188,7 @@ class FlameBreath2(BossModule module) : Components.GenericAOEs(module, ActionID.
     }
 }
 
-class Cauterize(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Cauterize))
+class Cauterize(BossModule module) : Components.GenericAOEs(module, (uint)AID.Cauterize)
 {
     private Actor? Source;
     private static readonly AOEShapeRect rect = new(160f, 22f);
@@ -207,18 +207,18 @@ class Cauterize(BossModule module) : Components.GenericAOEs(module, ActionID.Mak
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Source = Module.PrimaryActor;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Source = null;
     }
 }
 
-class Touchdown(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Touchdown), 10f, stopAtWall: true);
+class Touchdown(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Touchdown, 10f, stopAtWall: true);
 
 class ScorchingBreath(BossModule module) : Components.GenericAOEs(module)
 {

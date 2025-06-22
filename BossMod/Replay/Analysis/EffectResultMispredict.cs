@@ -7,7 +7,7 @@
 // - damage which does not affect HP (e.g. holmgang at 1 hp) has no ER
 // - 0 damage has no ER
 // - stuff like actor disappearing right after cast event will have no ER
-class EffectResultMispredict
+sealed class EffectResultMispredict
 {
     private readonly List<(Replay r, Replay.Action a)> _unexpected = [];
 

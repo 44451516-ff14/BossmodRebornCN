@@ -17,12 +17,12 @@ public enum AID : uint
     IxaliAeroII = 6628 // Boss->self, 3.0s cast, range 40+R width 8 rect
 }
 
-class Tornado(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Tornado), 6f);
-class TornadoHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Tornado), true, true, showNameInHint: true);
-class IxaliAeroIII(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.IxaliAeroIII));
-class IxaliAeroIIIHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.IxaliAeroIII), true, true, showNameInHint: true);
-class IxaliAeroII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IxaliAeroII), new AOEShapeRect(41.8f, 4f));
-class Gust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Gust), 5f);
+class Tornado(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Tornado, 6f);
+class TornadoHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Tornado, true, true, showNameInHint: true);
+class IxaliAeroIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.IxaliAeroIII);
+class IxaliAeroIIIHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.IxaliAeroIII, true, true, showNameInHint: true);
+class IxaliAeroII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IxaliAeroII, new AOEShapeRect(41.8f, 4f));
+class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 5f);
 
 class D150XelphatolSkycallerStates : StateMachineBuilder
 {

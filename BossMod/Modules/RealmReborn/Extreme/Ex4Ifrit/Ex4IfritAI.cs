@@ -43,7 +43,7 @@ class Ex4IfritAICommon(BossModule module) : BossComponent(module)
 
     protected void AddPositionHint(AIHints hints, WPos target, bool asap = true, float radius = 2)
     {
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(target, radius), asap ? new() : DateTime.MaxValue);
+        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(target, radius), asap ? default : DateTime.MaxValue);
     }
 
     protected void AddDefaultEruptionBaiterHints(AIHints hints)
@@ -69,7 +69,7 @@ class Ex4IfritAICommon(BossModule module) : BossComponent(module)
         {
             Class.WAR => ActionID.MakeSpell(WAR.AID.Vengeance),
             Class.PLD => ActionID.MakeSpell(PLD.AID.Sentinel),
-            _ => new()
+            _ => default
         };
         PlanAction(hints, player, aid, phaseTime, minPhaseTime, maxPhaseTime);
     }
@@ -278,7 +278,7 @@ class Ex4IfritAINails : Ex4IfritAINormal
 
             // heavy raidwide on large nail death
             if ((OID)nextNail.OID == OID.InfernalNailLarge && nextNail.HPMP.CurHP < 0.5f * nextNail.HPMP.MaxHP)
-                hints.PredictedDamage.Add((Raid.WithSlot().Mask(), new()));
+                hints.AddPredictedDamage(Raid.WithSlot().Mask(), default);
         }
     }
 

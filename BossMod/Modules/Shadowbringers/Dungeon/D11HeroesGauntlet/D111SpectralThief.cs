@@ -40,10 +40,10 @@ public enum SID : uint
     Dash = 2193 // none->Boss/SpectralThief, extra=0xB0/0xB1/0xB4/0xB3/0xB2/0xB5
 }
 
-class SpectralWhirlwind(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SpectralWhirlwind));
-class SpectralDream(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.SpectralDream));
-class SpectralGust(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SpectralGust), 5f);
-class CowardsCunning(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CowardsCunning), new AOEShapeRect(60f, 1f));
+class SpectralWhirlwind(BossModule module) : Components.RaidwideCast(module, (uint)AID.SpectralWhirlwind);
+class SpectralDream(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.SpectralDream);
+class SpectralGust(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SpectralGust, 5f);
+class CowardsCunning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CowardsCunning, new AOEShapeRect(60f, 1f));
 
 class VacuumBladePapercutter(BossModule module) : Components.GenericAOEs(module)
 {

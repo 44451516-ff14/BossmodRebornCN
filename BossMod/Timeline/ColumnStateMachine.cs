@@ -24,13 +24,13 @@ public abstract class ColumnStateMachine(Timeline timeline, StateMachineTree tre
 
     public float PixelsPerBranch => TextDisplay switch
     {
-        NodeTextDisplay.ID => 80,
-        NodeTextDisplay.IDName => 250,
-        _ => 20,
+        NodeTextDisplay.ID => 80f,
+        NodeTextDisplay.IDName => 250f,
+        _ => 20f,
     };
 
-    private readonly float _nodeHOffset = 10;
-    private readonly float _nodeRadius = 5;
+    private readonly float _nodeHOffset = 10f;
+    private readonly float _nodeRadius = 5f;
 
     protected void DrawNode(StateMachineTree.Node node, bool singleColumn, float? progress = null)
     {

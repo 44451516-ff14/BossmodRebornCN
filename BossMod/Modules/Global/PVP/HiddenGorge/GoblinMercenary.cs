@@ -123,7 +123,7 @@ class GobfireShootypops(BossModule module) : Components.GenericRotatingAOE(modul
     }
 }
 
-class IronKiss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronKiss), 7);
+class IronKiss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronKiss, 7);
 
 class GoblinMercenaryStates : StateMachineBuilder
 {

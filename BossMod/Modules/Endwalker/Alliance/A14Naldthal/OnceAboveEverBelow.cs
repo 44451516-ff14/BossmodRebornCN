@@ -7,14 +7,18 @@ class OnceAboveEverBelow(BossModule module) : Components.Exaflare(module, 6f)
         if (spell.Action.ID is (uint)AID.EverfireFirst or (uint)AID.OnceBurnedFirst)
         {
             var pos = caster.Position;
-            var advance = 6f * spell.Rotation.ToDirection();
+            var dir = spell.Rotation.ToDirection();
+            var advance = 6f * dir;
             // lines are offset by 6/18/30; outer have 1 explosion only, mid have 4 or 5, inner 5
-            var numExplosions = (pos - Arena.Center).LengthSq() > 500f ? 1 : 5;
-            AddLine(advance);
-            AddLine(-advance);
 
-            void AddLine(WDir dir)
-            => Lines.Add(new() { Next = pos, Advance = dir, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.5f, ExplosionsLeft = numExplosions, MaxShownExplosions = 5 });
+            var offset = pos - Arena.Center;
+            var distSq = offset.LengthSq() > 500f;
+
+            AddLine(advance, dir);
+            AddLine(-advance, -dir);
+
+            void AddLine(WDir dir, WDir dirRay)
+            => Lines.Add(new() { Next = pos, Advance = dir, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.5f, ExplosionsLeft = distSq ? 1 : (int)Intersect.RayCircle(offset, dirRay, 34.98f) / 6, MaxShownExplosions = 5 });
         }
     }
 

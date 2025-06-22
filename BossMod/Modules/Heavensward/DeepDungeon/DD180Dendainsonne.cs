@@ -18,14 +18,14 @@ public enum AID : uint
     Trounce = 7165 // Boss->self, 2.5s cast, range 40+R 60-degree cone
 }
 
-class Charybdis(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CharybdisCast), 6f);
+class Charybdis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CharybdisCast, 6f);
 class Maelstrom(BossModule module) : Components.Voidzone(module, 10f, GetVoidzones)
 {
     public static List<Actor> GetVoidzones(BossModule module) => module.Enemies((uint)OID.Tornado);
 }
-class Trounce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Trounce), new AOEShapeCone(51.6f, 30f.Degrees()));
-class EclipticMeteor(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.EclipticMeteor), "Kill him before he kills you! 80% max HP damage incoming!");
-class Thunderbolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Thunderbolt), new AOEShapeCone(16.6f, 60f.Degrees()));
+class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trounce, new AOEShapeCone(51.6f, 30f.Degrees()));
+class EclipticMeteor(BossModule module) : Components.RaidwideCast(module, (uint)AID.EclipticMeteor, "Kill him before he kills you! 80% max HP damage incoming!");
+class Thunderbolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Thunderbolt, new AOEShapeCone(16.6f, 60f.Degrees()));
 
 class EncounterHints : BossComponent
 {

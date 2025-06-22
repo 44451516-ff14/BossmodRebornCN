@@ -15,7 +15,7 @@ class SewageDeluge(BossModule module) : BossComponent(module)
     private const float _connectInner = _offsetCorner - _connectHalfWidth;
     private const float _connectOuter = _offsetCorner + _connectHalfWidth;
 
-    private static readonly WDir[] _corners = [new(), new(-1, -1), new(1, -1), new(-1, 1), new(1, 1)];
+    private static readonly WDir[] _corners = [default, new(-1f, -1f), new(1f, -1f), new(-1f, 1f), new(1f, 1f)];
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {

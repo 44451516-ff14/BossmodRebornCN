@@ -34,14 +34,14 @@ public enum IconID : uint
     Baitaway = 23 // player
 }
 
-class TheScorpionsSting(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheScorpionsSting), new AOEShapeCone(11.92f, 45f.Degrees()));
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsVoice), 9.92f);
-class TheRamsVoiceHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TheRamsVoice));
-class TheLionsBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheLionsBreath), new AOEShapeCone(11.92f, 60f.Degrees()));
-class LanguorousGaze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LanguorousGaze), new AOEShapeCone(8.07f, 45f.Degrees()));
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheDragonsVoice), new AOEShapeDonut(8f, 30f));
-class TheDragonsVoiceHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TheDragonsVoice));
-class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.TheRamsKeeper), GetVoidzones, 0.9f)
+class TheScorpionsSting(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheScorpionsSting, new AOEShapeCone(11.92f, 45f.Degrees()));
+class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9.92f);
+class TheRamsVoiceHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheRamsVoice);
+class TheLionsBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheLionsBreath, new AOEShapeCone(11.92f, 60f.Degrees()));
+class LanguorousGaze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LanguorousGaze, new AOEShapeCone(8.07f, 45f.Degrees()));
+class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(8f, 30f));
+class TheDragonsVoiceHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheDragonsVoice);
+class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.TheRamsKeeper, GetVoidzones, 0.9f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -96,9 +96,9 @@ class TheRamsKeeperBait(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
 class AltarChimeraStates : StateMachineBuilder
 {

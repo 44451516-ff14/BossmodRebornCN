@@ -65,23 +65,23 @@ public enum TetherID : uint
     CrawlingNecrobombs = 79 // Necrobomb7/Necrobomb8/Necrobomb5/Necrobomb6->player/2753/2757/2752
 }
 
-class AbsoluteDarkII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbsoluteDarkII), new AOEShapeCone(40f, 60f.Degrees()));
-class PainMire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PainMire), 9f)
+class AbsoluteDarkII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbsoluteDarkII, new AOEShapeCone(40f, 60f.Degrees()));
+class PainMire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PainMire, 9f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Module.Enemies(OID.BleedVoidzone).Any(x => x.EventState != 7))
+        if (Module.Enemies((uint)OID.BleedVoidzone).Any(x => x.EventState != 7))
         { }
         else
             base.AddAIHints(slot, actor, assignment, hints);
     }
 }
 
-class BleedVoidzone(BossModule module) : Components.Voidzone(module, 8f, m => m.Enemies(OID.BleedVoidzone).Where(x => x.EventState != 7));
-class TwistedTouch(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.TwistedTouch));
-class ChaosStorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ChaosStorm));
-class DarkDeluge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkDeluge), 5f);
-class NecrobombBaitAway(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(9.25f), (uint)IconID.Baitaway, ActionID.MakeSpell(AID.DeathThroes), centerAtTarget: true); // note: explosion is not always exactly the position of player, if zombie teleports to player it is player + zombie hitboxradius = 1.25 away
+class BleedVoidzone(BossModule module) : Components.Voidzone(module, 8f, m => m.Enemies((uint)OID.BleedVoidzone).Where(x => x.EventState != 7));
+class TwistedTouch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.TwistedTouch);
+class ChaosStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.ChaosStorm);
+class DarkDeluge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkDeluge, 5f);
+class NecrobombBaitAway(BossModule module) : Components.BaitAwayIcon(module, 9.25f, (uint)IconID.Baitaway, (uint)AID.DeathThroes); // note: explosion is not always exactly the position of player, if zombie teleports to player it is player + zombie hitboxradius = 1.25 away
 
 class Necrobombs(BossModule module) : BossComponent(module)
 {
@@ -110,7 +110,7 @@ class Burst(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
-        if (modelState == 54)
+        if (modelState == 54u)
             _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(6d))); // activation time can be vastly different, even twice as high so we take a conservative delay
     }
 
@@ -133,59 +133,7 @@ class Burst(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Doom(BossModule module) : BossComponent(module)
-{
-    private readonly List<Actor> _doomed = [];
-
-    public static bool CanActorCureDoom(Actor actor) => actor.Role == Role.Healer || actor.Class == Class.BRD;
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Doom)
-            _doomed.Add(actor);
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Doom)
-            _doomed.Remove(actor);
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        if (_doomed.Contains(actor))
-        {
-            if (!CanActorCureDoom(actor))
-                hints.Add("You were doomed! Get cleansed fast.");
-            else
-                hints.Add("Cleanse yourself! (Doom).");
-        }
-        if (CanActorCureDoom(actor))
-        {
-            var count = _doomed.Count;
-            for (var i = 0; i < count; ++i)
-            {
-                var doomed = _doomed[i];
-                if (doomed != actor)
-                    hints.Add($"Cleanse {doomed.Name}! (Doom)");
-            }
-        }
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = _doomed.Count;
-        if (count != 0 && CanActorCureDoom(actor))
-            for (var i = 0; i < count; ++i)
-            {
-                var doomed = _doomed[i];
-                if (actor.Role == Role.Healer)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), doomed, ActionQueue.Priority.High);
-                else if (actor.Class == Class.BRD)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), doomed, ActionQueue.Priority.High);
-            }
-    }
-}
+class Doom(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Doom);
 
 class D112SpectralNecromancerStates : StateMachineBuilder
 {

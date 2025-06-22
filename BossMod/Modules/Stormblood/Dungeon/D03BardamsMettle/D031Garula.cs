@@ -25,10 +25,10 @@ public enum AID : uint
     WideBlaster = 9395, // SteppeCoeurl->self, 5.5s cast, range 26+R 120-degree cone
 }
 
-class CrumblingCrust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrumblingCrust), 3);
-class Heave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Heave), new AOEShapeCone(13, 60.Degrees()));
-class WideBlaster(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WideBlaster), new AOEShapeCone(29.15f, 60.Degrees()));
-class Rush(BossModule module) : Components.BaitAwayChargeTether(module, 4, 10.1f, ActionID.MakeSpell(AID.Rush), minimumDistance: 23)
+class CrumblingCrust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrumblingCrust, 3f);
+class Heave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Heave, new AOEShapeCone(13f, 60f.Degrees()));
+class WideBlaster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WideBlaster, new AOEShapeCone(29.15f, 60f.Degrees()));
+class Rush(BossModule module) : Components.BaitAwayChargeTether(module, 4, 10.1f, (uint)AID.Rush, minimumDistance: 23f)
 {
     public override void Update()
     {
@@ -38,8 +38,8 @@ class Rush(BossModule module) : Components.BaitAwayChargeTether(module, 4, 10.1f
     }
 }
 
-class RushYamaa(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.RushYamaa), 4);
-class Lullaby(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Lullaby), 3.7f);
+class RushYamaa(BossModule module) : Components.ChargeAOEs(module, (uint)AID.RushYamaa, 4f);
+class Lullaby(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Lullaby, 3.7f);
 
 class D031GarulaStates : StateMachineBuilder
 {

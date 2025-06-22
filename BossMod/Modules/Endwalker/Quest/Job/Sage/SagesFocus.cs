@@ -39,17 +39,17 @@ public enum AID : uint
     DosisIII = 26551, // Loifa->Lalah, 8.0s cast, single-target
 }
 
-class DosisIII(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DosisIII));
-class DemifireSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.DemifireIISpread), 5);
-class DemifireIIAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DemifireIIAOE), 14);
-class DemifireIII(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DemifireIII1));
-class Noubelea(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Noubelea1), new AOEShapeRect(50, 2));
-class Demigravity1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Demigravity1), 6);
-class Demigravity2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Demigravity2), 6);
-class Demiblizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DemiblizzardIII1), new AOEShapeDonut(10, 40));
-class TripleThreat(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.TripleThreat));
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 6);
-class ArmOfTheScholar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArmOfTheScholar), 5);
+class DosisIII(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DosisIII);
+class DemifireSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DemifireIISpread, 5);
+class DemifireIIAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DemifireIIAOE, 14);
+class DemifireIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.DemifireIII1);
+class Noubelea(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Noubelea1, new AOEShapeRect(50, 2));
+class Demigravity1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Demigravity1, 6);
+class Demigravity2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Demigravity2, 6);
+class Demiblizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DemiblizzardIII1, new AOEShapeDonut(10, 40));
+class TripleThreat(BossModule module) : Components.SingleTargetCast(module, (uint)AID.TripleThreat);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6);
+class ArmOfTheScholar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArmOfTheScholar, 5);
 
 class AncelRockfistStates : StateMachineBuilder
 {

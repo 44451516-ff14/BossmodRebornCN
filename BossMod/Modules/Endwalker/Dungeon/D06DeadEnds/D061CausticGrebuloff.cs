@@ -56,66 +56,23 @@ class CertainSolitude(BossModule module) : Components.GenericStackSpread(module)
     }
 }
 
-class Necrosis(BossModule module) : BossComponent(module)
-{
-    private readonly List<Actor> _doomed = [];
+class Necrosis(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Necrosis);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Necrosis)
-            _doomed.Add(actor);
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Necrosis)
-            _doomed.Remove(actor);
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        var count = _doomed.Count;
-        if (count != 0)
-            if (_doomed.Contains(actor))
-                if (!(actor.Role == Role.Healer || actor.Class == Class.BRD))
-                    hints.Add("You were doomed! Get cleansed fast.");
-                else
-                    hints.Add("Cleanse yourself! (Doom).");
-            else if (actor.Role == Role.Healer || actor.Class == Class.BRD)
-                for (var i = 0; i < count; ++i)
-                    hints.Add($"Cleanse {_doomed[i].Name}! (Doom)");
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = _doomed.Count;
-        if (count != 0)
-            for (var i = 0; i < count; ++i)
-            {
-                var c = _doomed[i];
-                if (actor.Role == Role.Healer)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), c, ActionQueue.Priority.High);
-                else if (actor.Class == Class.BRD)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), c, ActionQueue.Priority.High);
-            }
-    }
-}
-
-class NecroticFluidMist(BossModule module) : Components.Exaflare(module, 6)
+class NecroticFluidMist(BossModule module) : Components.Exaflare(module, 6f)
 {
     public enum Pattern { None, Southward, Northward }
     public Pattern CurrentWind = Pattern.None;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x2B)
+        if (index == 0x2Bu)
         {
             switch (state)
             {
-                case 0x00020080:
+                case 0x00020080u:
                     CurrentWind = Pattern.Southward;
                     break;
-                case 0x00200040:
+                case 0x00200040u:
                     CurrentWind = Pattern.Northward;
                     break;
             }
@@ -194,9 +151,9 @@ class NecroticFluidMist(BossModule module) : Components.Exaflare(module, 6)
     }
 }
 
-class Befoulment(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Befoulment), 6f);
-class BlightedWater(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.BlightedWater), 6f, 4, 4);
-class CoughUpAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CoughUpAOE), 6f);
+class Befoulment(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Befoulment, 6f);
+class BlightedWater(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.BlightedWater, 6f, 4, 4);
+class CoughUpAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CoughUpAOE, 6f);
 
 class WaveOfNausea(BossModule module) : Components.GenericAOEs(module)
 {
@@ -234,8 +191,8 @@ class WaveOfNausea(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PoxFlail(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.PoxFlail));
-class Miasmata(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Miasmata));
+class PoxFlail(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.PoxFlail);
+class Miasmata(BossModule module) : Components.RaidwideCast(module, (uint)AID.Miasmata);
 
 class D061CausticGrebuloffStates : StateMachineBuilder
 {

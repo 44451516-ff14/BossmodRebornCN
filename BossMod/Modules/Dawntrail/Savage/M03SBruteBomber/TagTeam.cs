@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(module)
+sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(2);
     private readonly Actor?[] _tetherSource = new Actor?[PartyState.MaxPartySize];

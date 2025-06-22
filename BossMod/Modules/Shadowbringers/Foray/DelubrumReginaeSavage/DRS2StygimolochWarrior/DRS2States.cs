@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS2StygimolochWarrior;
 
-class DRS2States : StateMachineBuilder
+sealed class DRS2StygimolochWarriorStates : StateMachineBuilder
 {
-    public DRS2States(BossModule module) : base(module)
+    public DRS2StygimolochWarriorStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase)
+        DeathPhase(default, SinglePhase)
             .ActivateOnEnter<Devour>(); // TODO: reconsider...
     }
 
@@ -36,7 +36,7 @@ class DRS2States : StateMachineBuilder
 
     private void UnrelentingCharge(uint id, float delay)
     {
-        Cast(id, AID.UnrelentingCharge, delay, 3)
+        Cast(id, (uint)AID.UnrelentingCharge, delay, 3)
             .ActivateOnEnter<UnrelentingCharge>();
         ComponentCondition<UnrelentingCharge>(id + 0x10, 0.3f, comp => comp.NumCasts >= 1, "Knockback 1");
         ComponentCondition<UnrelentingCharge>(id + 0x11, 1.6f, comp => comp.NumCasts >= 2, "Knockback 2");
@@ -46,12 +46,12 @@ class DRS2States : StateMachineBuilder
 
     private void Entrapment(uint id, float delay)
     {
-        Cast(id, AID.Entrapment, delay, 3)
+        Cast(id, (uint)AID.Entrapment, delay, 3)
             .ActivateOnEnter<EntrapmentAttract>();
         ComponentCondition<EntrapmentAttract>(id + 0x10, 0.8f, comp => comp.NumCasts > 0, "Traps")
             .DeactivateOnExit<EntrapmentAttract>();
 
-        Cast(id + 0x20, AID.LethalBlow, 1.3f, 20, "Traps deadline")
+        Cast(id + 0x20, (uint)AID.LethalBlow, 1.3f, 20, "Traps deadline")
             .ActivateOnEnter<LethalBlow>()
             .ActivateOnEnter<EntrapmentNormal>()
             .DeactivateOnExit<LethalBlow>();
@@ -61,24 +61,24 @@ class DRS2States : StateMachineBuilder
 
     private void InescapableEntrapment1(uint id, float delay)
     {
-        Cast(id, AID.InescapableEntrapment, delay, 3, "Traps")
+        Cast(id, (uint)AID.InescapableEntrapment, delay, 3, "Traps")
             .ActivateOnEnter<EntrapmentInescapable>();
-        CastMulti(id + 0x10, [AID.SurgingFlames, AID.WitheringCurse], 8.2f, 13, "Traps resolve (ice/mini)") // note: different start delay depending on cast
+        CastMulti(id + 0x10, [(uint)AID.SurgingFlames, (uint)AID.WitheringCurse], 8.2f, 13, "Traps resolve (ice/mini)") // note: different start delay depending on cast
             .DeactivateOnExit<EntrapmentInescapable>();
         // note: withering curse is followed by devour here
     }
 
     private void InescapableEntrapment2(uint id, float delay)
     {
-        Cast(id, AID.InescapableEntrapment, delay, 3, "Traps")
+        Cast(id, (uint)AID.InescapableEntrapment, delay, 3, "Traps")
             .ActivateOnEnter<EntrapmentInescapable>();
-        CastMulti(id + 0x10, [AID.SurgingFlames, AID.WitheringCurse], 3.2f, 13, "Traps resolve (ice/mini)"); // note: different start delay depending on cast
+        CastMulti(id + 0x10, [(uint)AID.SurgingFlames, (uint)AID.WitheringCurse], 3.2f, 13, "Traps resolve (ice/mini)"); // note: different start delay depending on cast
         // note: withering curse is followed by devour here
 
         Condition(id + 0x100, 6.6f, () => Module.PrimaryActor.CastInfo?.IsSpell(AID.SurgingFlood) ?? false, maxOverdue: 100) // 4.2 if previous was surging flames
             .SetHint(StateMachine.StateHint.BossCastStart);
         CastEnd(id + 0x101, 10, "Traps resolve (toad)");
-        Cast(id + 0x110, AID.LeapingSpark, 0.3f, 8, "Remove toad")
+        Cast(id + 0x110, (uint)AID.LeapingSpark, 0.3f, 8, "Remove toad")
             .DeactivateOnExit<EntrapmentInescapable>();
         ComponentCondition<LeapingSpark>(id + 0x120, 0.5f, comp => comp.NumCasts >= 1)
             .ActivateOnEnter<LeapingSpark>()
@@ -92,7 +92,7 @@ class DRS2States : StateMachineBuilder
 
     private void ViciousSwipeCrazedRampage(uint id, float delay)
     {
-        Cast(id, AID.ViciousSwipe, delay, 4, "Out")
+        Cast(id, (uint)AID.ViciousSwipe, delay, 4, "Out")
             .ActivateOnEnter<ViciousSwipe>()
             .ActivateOnEnter<CrazedRampage>() // starts at the same time
             .DeactivateOnExit<ViciousSwipe>();
@@ -102,11 +102,11 @@ class DRS2States : StateMachineBuilder
 
     private State FocusedTremorForcefulStrike(uint id, float delay)
     {
-        Cast(id, AID.FocusedTremor, delay, 3);
+        Cast(id, (uint)AID.FocusedTremor, delay, 3);
         ComponentCondition<FocusedTremorLarge>(id + 0x10, 0.8f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<FocusedTremorLarge>();
 
-        CastStart(id + 0x20, AID.ForcefulStrike, 2.7f);
+        CastStart(id + 0x20, (uint)AID.ForcefulStrike, 2.7f);
         ComponentCondition<FocusedTremorLarge>(id + 0x30, 5.2f, comp => comp.NumCasts >= 1, "Tile 1");
         ComponentCondition<FocusedTremorLarge>(id + 0x31, 2.0f, comp => comp.NumCasts >= 2, "Tile 2");
         ComponentCondition<FocusedTremorLarge>(id + 0x32, 2.0f, comp => comp.NumCasts >= 3, "Tile 3");
@@ -119,13 +119,13 @@ class DRS2States : StateMachineBuilder
 
     private void FocusedTremorFlailingStrike(uint id, float delay)
     {
-        Cast(id, AID.FocusedTremor, delay, 3);
+        Cast(id, (uint)AID.FocusedTremor, delay, 3);
         ComponentCondition<FocusedTremorSmall>(id + 0x10, 0.8f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<FocusedTremorSmall>();
 
         ComponentCondition<FlailingStrikeBait>(id + 0x20, 4.7f, comp => comp.CurrentBaits.Count > 0)
             .ActivateOnEnter<FlailingStrikeBait>();
-        CastStart(id + 0x30, AID.FlailingStrikeFirst, 6.1f, "Cone bait")
+        CastStart(id + 0x30, (uint)AID.FlailingStrikeFirst, 6.1f, "Cone bait")
             .DeactivateOnExit<FlailingStrikeBait>();
         CastEnd(id + 0x31, 3, "Cone 1")
             .ActivateOnEnter<FlailingStrike>()
@@ -141,15 +141,15 @@ class DRS2States : StateMachineBuilder
 
     private void FocusedTremorCoerceForcefulStrike(uint id, float delay)
     {
-        Cast(id, AID.Coerce, delay, 3)
+        Cast(id, (uint)AID.Coerce, delay, 3)
             .ActivateOnEnter<Coerce>(); // face debuff appears ~0.7s after cast end
         SurgeOfVigor(id + 0x10, 3.2f);
 
-        Cast(id + 0x100, AID.FocusedTremor, 9.2f, 3);
+        Cast(id + 0x100, (uint)AID.FocusedTremor, 9.2f, 3);
         ComponentCondition<FocusedTremorLarge>(id + 0x110, 0.8f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<FocusedTremorLarge>();
 
-        CastStart(id + 0x120, AID.ForcefulStrike, 2.7f);
+        CastStart(id + 0x120, (uint)AID.ForcefulStrike, 2.7f);
         ComponentCondition<FocusedTremorLarge>(id + 0x130, 5.2f, comp => comp.NumCasts >= 1, "Tile 1");
         ComponentCondition<Coerce>(id + 0x131, 1.6f, comp => comp.NumActiveForcedMarches > 0, "Forced march");
         ComponentCondition<FocusedTremorLarge>(id + 0x132, 0.4f, comp => comp.NumCasts >= 2, "Tile 2");
@@ -164,7 +164,7 @@ class DRS2States : StateMachineBuilder
 
     private void SunsIre(uint id, float delay)
     {
-        Cast(id, AID.SunsIre, delay, 12);
+        Cast(id, (uint)AID.SunsIre, delay, 12);
         SimpleState(id + 0x10, 0.7f, "Enrage");
     }
 }

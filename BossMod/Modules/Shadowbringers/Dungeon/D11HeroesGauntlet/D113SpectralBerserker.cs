@@ -58,7 +58,7 @@ class BeastlyFuryArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FallingRock(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.WildAnguish2), 8.5f, 6) // 8.5 instead of 6 to prevent aoe from intersecting additional rubble hitboxes
+class FallingRock(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.WildAnguish2, 8.5f, 6) // 8.5 instead of 6 to prevent aoe from intersecting additional rubble hitboxes
 {
     public override void Update()
     {
@@ -94,7 +94,7 @@ class FallingRock(BossModule module) : Components.SpreadFromIcon(module, (uint)I
     }
 }
 
-class WildAnguish1(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.WildAnguish1), 6f, 4, 4)
+class WildAnguish1(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.WildAnguish1, 6f, 4, 4)
 {
     public static bool IsQuadrupleStack(BossModule module)
     {
@@ -180,7 +180,7 @@ class WildAnguish2(BossModule module) : Components.GenericTowers(module)
     public override void AddHints(int slot, Actor actor, TextHints hints) { }
 }
 
-class WildRageKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.WildRageKnockback), 15)
+class WildRageKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.WildRageKnockback, 15)
 {
     private static readonly Angle a10 = 10f.Degrees(), a45 = 45f.Degrees();
 
@@ -199,9 +199,9 @@ class WildRageKnockback(BossModule module) : Components.SimpleKnockbacks(module,
     }
 }
 
-class WildRageRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WildRageKnockback));
-class WildRage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WildRage), 8f);
-class BeastlyFury(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BeastlyFury));
+class WildRageRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.WildRageKnockback);
+class WildRage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildRage, 8f);
+class BeastlyFury(BossModule module) : Components.RaidwideCast(module, (uint)AID.BeastlyFury);
 
 class CratersWildRampage(BossModule module) : Components.GenericAOEs(module)
 {
@@ -270,9 +270,9 @@ class CratersWildRampage(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-abstract class RagingSlice(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50f, 3f));
-class RagingSliceFirst(BossModule module) : RagingSlice(module, AID.RagingSliceFirst);
-class RagingSliceRest(BossModule module) : RagingSlice(module, AID.RagingSliceRest);
+abstract class RagingSlice(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50f, 3f));
+class RagingSliceFirst(BossModule module) : RagingSlice(module, (uint)AID.RagingSliceFirst);
+class RagingSliceRest(BossModule module) : RagingSlice(module, (uint)AID.RagingSliceRest);
 
 class D113SpectralBerserkerStates : StateMachineBuilder
 {

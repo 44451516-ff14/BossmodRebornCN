@@ -55,9 +55,9 @@ class Brainstorm(BossModule module) : Components.StatusDrivenForcedMarch(module,
     }
 }
 
-class FetchingFulgence(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.FetchingFulgence));
-class Lash(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Lash));
-class PotentPerfume(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PotentPerfume), 8f);
+class FetchingFulgence(BossModule module) : Components.CastGaze(module, (uint)AID.FetchingFulgence);
+class Lash(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Lash);
+class PotentPerfume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PotentPerfume, 8f);
 
 class SapShowerTendrilsHint(BossModule module) : BossComponent(module)
 {
@@ -93,19 +93,19 @@ class SapShowerTendrilsHint(BossModule module) : BossComponent(module)
 
 class SapShower : Components.SimpleAOEs
 {
-    public SapShower(BossModule module) : base(module, ActionID.MakeSpell(AID.SapShower), 8f)
+    public SapShower(BossModule module) : base(module, (uint)AID.SapShower, 8f)
     {
         Color = Colors.Danger;
     }
 }
 
-class ExtensibleTendrils(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ExtensibleTendrils), new AOEShapeCross(25f, 3f));
-class PutridBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PutridBreath), new AOEShapeCone(25f, 45f.Degrees()));
-class RockHard(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.RockHard), 6f);
-class BeguilingGasTM(BossModule module) : Components.TemporaryMisdirection(module, ActionID.MakeSpell(AID.BeguilingGas));
-class BeguilingGas(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BeguilingGas));
+class ExtensibleTendrils(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ExtensibleTendrils, new AOEShapeCross(25f, 3f));
+class PutridBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PutridBreath, new AOEShapeCone(25f, 45f.Degrees()));
+class RockHard(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RockHard, 6f);
+class BeguilingGasTM(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.BeguilingGas);
+class BeguilingGas(BossModule module) : Components.RaidwideCast(module, (uint)AID.BeguilingGas);
 
-class HeavySmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySmash), 6f);
+class HeavySmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySmash, 6f);
 
 class NarkissosStates : StateMachineBuilder
 {

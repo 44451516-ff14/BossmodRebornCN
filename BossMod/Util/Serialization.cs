@@ -34,7 +34,7 @@ public static class Serialization
     public static unsafe T ReadStruct<T>(this Stream stream) where T : unmanaged
     {
         T res = default;
-        stream.Read(new(&res, sizeof(T)));
+        stream.ReadExactly(new(&res, sizeof(T)));
         return res;
     }
 

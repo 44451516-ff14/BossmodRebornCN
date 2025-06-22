@@ -14,10 +14,10 @@ class P8S1States : StateMachineBuilder
         VolcanicTorchesSunforge(id + 0x10000, 3.2f);
         Flameviper(id + 0x20000, 2);
 
-        Dictionary<AID, (uint seqID, Action<uint> buildState)> fork = new()
+        Dictionary<uint, (uint seqID, Action<uint> buildState)> fork = new()
         {
-            [AID.ReforgedReflectionCentaur] = (1, ForkCentaur),
-            [AID.ReforgedReflectionSnake] = (2, ForkSnake)
+            [(uint)AID.ReforgedReflectionCentaur] = (1, ForkCentaur),
+            [(uint)AID.ReforgedReflectionSnake] = (2, ForkSnake)
         };
         CastStartFork(id + 0x30000, fork, 9.4f, "Centaur -or- Snake");
     }
@@ -52,17 +52,17 @@ class P8S1States : StateMachineBuilder
 
     private void GenesisOfFlame(uint id, float delay)
     {
-        Cast(id, AID.GenesisOfFlame, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.GenesisOfFlame, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void VolcanicTorchesSunforge(uint id, float delay)
     {
-        CastMulti(id, [AID.ConceptualOctaflare, AID.ConceptualTetraflare], delay, 3)
+        CastMulti(id, [(uint)AID.ConceptualOctaflare, (uint)AID.ConceptualTetraflare], delay, 3)
             .ActivateOnEnter<TetraOctaFlareConceptual>();
-        Cast(id + 0x10, AID.VolcanicTorches, 3.2f, 3)
+        Cast(id + 0x10, (uint)AID.VolcanicTorches, 3.2f, 3)
             .ActivateOnEnter<VolcanicTorches>(); // casts start ~4s later
-        CastStartMulti(id + 0x20, [AID.SunforgeCenter, AID.SunforgeSides], 8.5f);
+        CastStartMulti(id + 0x20, [(uint)AID.SunforgeCenter, (uint)AID.SunforgeSides], 8.5f);
         ComponentCondition<VolcanicTorches>(id + 0x30, 5.5f, comp => comp.NumCasts > 0, "Torches")
             .ActivateOnEnter<SunforgeCenterHint>()
             .ActivateOnEnter<SunforgeSidesHint>()
@@ -83,7 +83,7 @@ class P8S1States : StateMachineBuilder
 
     private void Flameviper(uint id, float delay)
     {
-        Cast(id, AID.Flameviper, delay, 5, "Tankbuster hit 1")
+        Cast(id, (uint)AID.Flameviper, delay, 5, "Tankbuster hit 1")
             .ActivateOnEnter<Flameviper>()
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<Flameviper>(id + 2, 3.4f, comp => comp.NumCasts > 0, "Tankbuster hit 2")
@@ -93,11 +93,11 @@ class P8S1States : StateMachineBuilder
 
     private void Intermission(uint id, float delay)
     {
-        Cast(id, AID.IllusoryCreation, delay, 3);
-        Cast(id + 0x10, AID.CreationOnCommand, 3.2f, 3)
+        Cast(id, (uint)AID.IllusoryCreation, delay, 3);
+        Cast(id + 0x10, (uint)AID.CreationOnCommand, 3.2f, 3)
             .ActivateOnEnter<SunforgeCenterIntermission>() // note that sunforges start ~0.8s after cast ends
             .ActivateOnEnter<SunforgeSidesIntermission>();
-        Cast(id + 0x20, AID.ManifoldFlames, 3.2f, 5)
+        Cast(id + 0x20, (uint)AID.ManifoldFlames, 3.2f, 5)
             .ActivateOnEnter<ManifoldFlames>();
         // note: sunforges resolves ~0.1s before flares
         ComponentCondition<NestOfFlamevipersBaited>(id + 0x30, 0.8f, comp => comp.Active, "Spread in safe cells")
@@ -109,7 +109,7 @@ class P8S1States : StateMachineBuilder
         ComponentCondition<NestOfFlamevipersBaited>(id + 0x40, 4.2f, comp => !comp.Active, "Baits")
             .DeactivateOnExit<NestOfFlamevipersBaited>();
 
-        CastStartMulti(id + 0x50, [AID.NestOfFlamevipers, AID.Tetraflare], 2.3f)
+        CastStartMulti(id + 0x50, [(uint)AID.NestOfFlamevipers, (uint)AID.Tetraflare], 2.3f)
             .ActivateOnEnter<SunforgeCenterIntermission>() // note that sunforges start ~0.3s before baits
             .ActivateOnEnter<SunforgeSidesIntermission>()
             .ActivateOnEnter<TetraOctaFlareImmediate>()
@@ -124,7 +124,7 @@ class P8S1States : StateMachineBuilder
 
         ComponentCondition<VolcanicTorches>(id + 0x70, 2.3f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<VolcanicTorches>();
-        CastStart(id + 0x71, AID.GenesisOfFlame, 9.2f);
+        CastStart(id + 0x71, (uint)AID.GenesisOfFlame, 9.2f);
         ComponentCondition<VolcanicTorches>(id + 0x72, 0.8f, comp => comp.Casters.Count == 0, "Torches")
             .DeactivateOnExit<VolcanicTorches>();
         CastEnd(id + 0x73, 4.2f, "Raidwide")
@@ -133,24 +133,24 @@ class P8S1States : StateMachineBuilder
 
     private void FourfoldFires(uint id, float delay)
     {
-        CastMulti(id, [AID.ConceptualOctaflare, AID.ConceptualTetraflare], delay, 3)
+        CastMulti(id, [(uint)AID.ConceptualOctaflare, (uint)AID.ConceptualTetraflare], delay, 3)
             .ActivateOnEnter<TetraOctaFlareConceptual>();
-        Cast(id + 0x10, AID.FourfoldFires, 3.2f, 3);
+        Cast(id + 0x10, (uint)AID.FourfoldFires, 3.2f, 3);
         ComponentCondition<AbyssalFires>(id + 0x12, 5.8f, comp => comp.NumCasts > 0, "Proximity aoes")
             .ActivateOnEnter<AbyssalFires>()
             .DeactivateOnExit<AbyssalFires>();
 
-        Cast(id + 0x20, AID.CthonicVent, 0.4f, 3);
+        Cast(id + 0x20, (uint)AID.CthonicVent, 0.4f, 3);
         // +0.8f: vents cast start
         ComponentCondition<CthonicVent>(id + 0x30, 5.8f, comp => comp.NumTotalCasts > 0, "Vent 1")
             .ActivateOnEnter<CthonicVent>();
-        CastStartMulti(id + 0x40, [AID.Tetraflare, AID.Octaflare], 4.4f);
+        CastStartMulti(id + 0x40, [(uint)AID.Tetraflare, (uint)AID.Octaflare], 4.4f);
         ComponentCondition<CthonicVent>(id + 0x50, 4.7f, comp => comp.NumTotalCasts > 2, "Vent 2")
             .ActivateOnEnter<TetraOctaFlareImmediate>();
         CastEnd(id + 0x60, 0.3f);
         ComponentCondition<TetraOctaFlareImmediate>(id + 0x61, 0.8f, comp => !comp.Active, "Spread/stack in pairs")
             .DeactivateOnExit<TetraOctaFlareImmediate>();
-        CastStartMulti(id + 0x70, [AID.SunforgeCenter, AID.SunforgeSides], 5.7f);
+        CastStartMulti(id + 0x70, [(uint)AID.SunforgeCenter, (uint)AID.SunforgeSides], 5.7f);
         ComponentCondition<CthonicVent>(id + 0x80, 2.2f, comp => comp.NumTotalCasts > 4, "Vent 3")
             .ActivateOnEnter<SunforgeCenterHint>()
             .ActivateOnEnter<SunforgeSidesHint>()
@@ -172,7 +172,7 @@ class P8S1States : StateMachineBuilder
     private void CentaurStart(uint id, float delay)
     {
         if (delay >= 0)
-            CastStart(id, AID.ReforgedReflectionCentaur, delay);
+            CastStart(id, (uint)AID.ReforgedReflectionCentaur, delay);
         CastEnd(id + 1, 3)
             .ActivateOnEnter<Footprint>();
         ComponentCondition<Footprint>(id + 2, 6.5f, comp => comp.NumCasts > 0, "Centaur knockback")
@@ -184,7 +184,7 @@ class P8S1States : StateMachineBuilder
     {
         CentaurStart(id, delay);
 
-        Cast(id + 0x100, AID.RearingRampage, 0.9f, 5, "First raidwide")
+        Cast(id + 0x100, (uint)AID.RearingRampage, 0.9f, 5, "First raidwide")
             .ActivateOnEnter<UpliftStompDead>()
             .SetHint(StateMachine.StateHint.Raidwide);
         // +1s: first set of uplifts
@@ -202,7 +202,7 @@ class P8S1States : StateMachineBuilder
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<UpliftStompDead>(id + 0x140, 1, comp => comp.NumUplifts >= 8, "Last uplift");
 
-        Cast(id + 0x150, AID.StompDead, 1.2f, 5);
+        Cast(id + 0x150, (uint)AID.StompDead, 1.2f, 5);
         ComponentCondition<UpliftStompDead>(id + 0x152, 0.3f, comp => comp.NumStomps > 0, "First stomp");
         ComponentCondition<UpliftStompDead>(id + 0x153, 2.3f, comp => comp.NumStomps > 1);
         ComponentCondition<UpliftStompDead>(id + 0x154, 2.3f, comp => comp.NumStomps > 2);
@@ -214,18 +214,18 @@ class P8S1States : StateMachineBuilder
     {
         CentaurStart(id, delay);
 
-        CastMulti(id + 0x100, [AID.QuadrupedalImpact, AID.QuadrupedalCrush], 1.1f, 5)
+        CastMulti(id + 0x100, [(uint)AID.QuadrupedalImpact, (uint)AID.QuadrupedalCrush], 1.1f, 5)
             .ActivateOnEnter<QuadrupedalImpact>()
             .ActivateOnEnter<QuadrupedalCrush>();
         Condition(id + 0x102, 0.9f, () => Module.FindComponent<QuadrupedalImpact>()!.NumCasts + Module.FindComponent<QuadrupedalCrush>()!.NumCasts > 0, "Knockback or aoe")
             .DeactivateOnExit<QuadrupedalImpact>()
             .DeactivateOnExit<QuadrupedalCrush>();
 
-        CastMulti(id + 0x110, [AID.ConceptualTetraflareCentaur, AID.ConceptualDiflare], 2.7f, 3)
+        CastMulti(id + 0x110, [(uint)AID.ConceptualTetraflareCentaur, (uint)AID.ConceptualDiflare], 2.7f, 3)
             .ActivateOnEnter<CentaurTetraflare>()
             .ActivateOnEnter<CentaurDiflare>();
 
-        Cast(id + 0x120, AID.BlazingFootfalls, 3.2f, 12, "Boss disappear")
+        Cast(id + 0x120, (uint)AID.BlazingFootfalls, 3.2f, 12, "Boss disappear")
             .ActivateOnEnter<BlazingFootfalls>()
             .SetHint(StateMachine.StateHint.DowntimeStart); // boss becomes untargetable right at cast end
         ComponentCondition<BlazingFootfalls>(id + 0x130, 0.7f, comp => comp.NumMechanicsDone > 0);
@@ -244,15 +244,15 @@ class P8S1States : StateMachineBuilder
     private State SnakeStart(uint id, float delay)
     {
         if (delay >= 0)
-            CastStart(id, AID.ReforgedReflectionSnake, delay);
+            CastStart(id, (uint)AID.ReforgedReflectionSnake, delay);
         CastEnd(id + 1, 3)
             .ActivateOnEnter<SnakingKick>();
         ComponentCondition<SnakingKick>(id + 2, 7.3f, comp => comp.NumCasts > 0, "Snake aoe")
             .DeactivateOnExit<SnakingKick>();
 
-        Cast(id + 0x10, AID.Gorgomanteia, 3.2f, 3);
+        Cast(id + 0x10, (uint)AID.Gorgomanteia, 3.2f, 3);
         // +0.7s: debuffs are applied
-        var s = CastStart(id + 0x20, AID.IntoTheShadows, 3.2f);
+        var s = CastStart(id + 0x20, (uint)AID.IntoTheShadows, 3.2f);
         CastEnd(id + 0x21, 3);
         return s;
     }
@@ -270,7 +270,7 @@ class P8S1States : StateMachineBuilder
         ComponentCondition<Snake1>(id + 0x141, 3.0f, comp => comp.NumBloodCasts > 2, "Second order explode")
             .DeactivateOnExit<Snake1>();
 
-        Cast(id + 0x150, AID.Ektothermos, 4.6f, 5, "Raidwide")
+        Cast(id + 0x150, (uint)AID.Ektothermos, 4.6f, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -286,7 +286,7 @@ class P8S1States : StateMachineBuilder
             .ActivateOnEnter<Gorgospit>();
         // +1.0s: gorgospit casts end
         ComponentCondition<Snake2>(id + 0x120, 2.5f, comp => comp.NumEyeCasts > 0, "First order petrify/explode");
-        Cast(id + 0x130, AID.IllusoryCreationSnakes, 1.6f, 3);
+        Cast(id + 0x130, (uint)AID.IllusoryCreationSnakes, 1.6f, 3);
         // +0.8s: gorgospit animations
         ComponentCondition<Snake2>(id + 0x140, 1.4f, comp => comp.NumEyeCasts > 4, "Second order petrify/explode");
         // +1.5s: gorgospit cast start
@@ -300,6 +300,6 @@ class P8S1States : StateMachineBuilder
     private void Enrage(uint id, float delay)
     {
         Targetable(id, false, delay, "Enrage");
-        Cast(id + 0x10, AID.Enrage, 0.1f, 5, "Finish");
+        Cast(id + 0x10, (uint)AID.Enrage, 0.1f, 5, "Finish");
     }
 }

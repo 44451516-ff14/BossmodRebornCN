@@ -2,7 +2,7 @@
 
 namespace BossMod.ReplayAnalysis;
 
-class StatusInfo : CommonEnumInfo
+sealed class StatusInfo : CommonEnumInfo
 {
     public record struct Instance(Replay Replay, Replay.Status Status);
 

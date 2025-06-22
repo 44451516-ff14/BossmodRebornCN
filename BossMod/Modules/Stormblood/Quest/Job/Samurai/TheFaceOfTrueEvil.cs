@@ -22,14 +22,14 @@ public enum AID : uint
     ArashiNoMaiogi = 8642, // Boss->self, 3.0s cast, single-target
 }
 
-class Musojin(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Musojin));
+class Musojin(BossModule module) : Components.RaidwideCast(module, (uint)AID.Musojin);
 
-abstract class Hissatsu(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(44.5f, 2f));
-class HissatsuKiku(BossModule module) : Hissatsu(module, AID.HissatsuKiku1);
-class HissatsuTo(BossModule module) : Hissatsu(module, AID.HissatsuTo);
+abstract class Hissatsu(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(44.5f, 2f));
+class HissatsuKiku(BossModule module) : Hissatsu(module, (uint)AID.HissatsuKiku1);
+class HissatsuTo(BossModule module) : Hissatsu(module, (uint)AID.HissatsuTo);
 
-class Maiogi(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Maiogi), new AOEShapeCone(80f, 25f.Degrees()));
-class HissatsuKyuten(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HissatsuKyuten), 5.5f);
+class Maiogi(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Maiogi, new AOEShapeCone(80f, 25f.Degrees()));
+class HissatsuKyuten(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HissatsuKyuten, 5.5f);
 class Arashi(BossModule module) : Components.GenericAOEs(module)
 {
     private DateTime? Activation;

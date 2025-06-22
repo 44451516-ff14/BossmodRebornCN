@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P2OptimizedSagittariusArrow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OptimizedSagittariusArrow), new AOEShapeRect(100f, 5f));
+class P2OptimizedSagittariusArrow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OptimizedSagittariusArrow, new AOEShapeRect(100f, 5f));
 
 class P2OptimizedBladedance : Components.BaitAwayTethers
 {
-    public P2OptimizedBladedance(BossModule module) : base(module, new AOEShapeCone(100f, 45f.Degrees()), (uint)TetherID.OptimizedBladedance, ActionID.MakeSpell(AID.OptimizedBladedanceAOE))
+    public P2OptimizedBladedance(BossModule module) : base(module, new AOEShapeCone(100f, 45f.Degrees()), (uint)TetherID.OptimizedBladedance, (uint)AID.OptimizedBladedanceAOE)
     {
         ForbiddenPlayers = Raid.WithSlot(true, true, true).WhereActor(p => p.Role != Role.Tank).Mask();
     }
@@ -76,7 +76,7 @@ class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module,
     }
 }
 
-class P2CosmoMemory(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.CosmoMemoryAOE));
+class P2CosmoMemory(BossModule module) : Components.CastCounter(module, (uint)AID.CosmoMemoryAOE);
 
 class P2OptimizedPassageOfArms(BossModule module) : BossComponent(module)
 {

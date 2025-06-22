@@ -26,14 +26,14 @@ public enum AID : uint
     Telega = 963 // AltarMatanga->self, no cast, single-target, bonus adds disappear
 }
 
-class Chirp(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Chirp), 12.48f);
-class Tornado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tornado), 6f);
-class VoidCall(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.VoidCall), "Calls adds");
-class RecklessAbandon(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.RecklessAbandon));
+class Chirp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Chirp, 12.48f);
+class Tornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tornado, 6f);
+class VoidCall(BossModule module) : Components.CastHint(module, (uint)AID.VoidCall, "Calls adds");
+class RecklessAbandon(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.RecklessAbandon);
 
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
 
 class AltarSkateneStates : StateMachineBuilder
 {

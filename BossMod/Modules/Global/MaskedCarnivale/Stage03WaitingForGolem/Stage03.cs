@@ -15,8 +15,8 @@ public enum AID : uint
     Obliterate = 14365 // Boss->self, 6.0s cast, range 60 circle
 }
 
-class BoulderClap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BoulderClap), new AOEShapeCone(14f, 60f.Degrees()));
-class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, ActionID.MakeSpell(AID.EarthenHeart), GetVoidzones, 1.2f)
+class BoulderClap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BoulderClap, new AOEShapeCone(14f, 60f.Degrees()));
+class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.EarthenHeart, GetVoidzones, 1.2f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -36,7 +36,7 @@ class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(module, 
         return voidzones[..index];
     }
 }
-class Obliterate(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Obliterate));
+class Obliterate(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Obliterate);
 
 class Hints(BossModule module) : BossComponent(module)
 {

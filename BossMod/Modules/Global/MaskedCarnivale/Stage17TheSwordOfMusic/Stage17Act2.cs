@@ -19,9 +19,9 @@ public enum AID : uint
     MagitekRay = 15048 // Boss->location, 3.0s cast, range 6 circle, voidzone, interruptible
 }
 
-class GrandStrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrandStrike), new AOEShapeRect(77.5f, 2f));
-class MagitekField(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.MagitekField));
-class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.MagitekRay), GetVoidzones, 1.1f)
+class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandStrike, new AOEShapeRect(77.5f, 2f));
+class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
+class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.MagitekRay, GetVoidzones, 1.1f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -41,8 +41,8 @@ class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f
         return voidzones[..index];
     }
 }
-class TheHand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheHand), new AOEShapeCone(8f, 60f.Degrees()));
-class Shred(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shred), new AOEShapeRect(6f, 2f));
+class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
+class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
 
 class Hints2(BossModule module) : BossComponent(module)
 {

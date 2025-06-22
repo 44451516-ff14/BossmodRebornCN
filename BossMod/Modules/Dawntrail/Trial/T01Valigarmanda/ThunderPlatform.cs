@@ -17,7 +17,7 @@ class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
         var highlightLevitate = requireLevitating[slot];
         var aoes = new AOEInstance[12];
         var index = 0;
-
+        var center = Arena.Center;
         for (var x = 0; x < 2; ++x)
         {
             for (var z = 0; z < 3; ++z)
@@ -25,8 +25,8 @@ class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
                 var cellLevitating = ((x ^ z) & 1) != 0;
                 if (cellLevitating != highlightLevitate)
                 {
-                    aoes[index++] = new(rect, Arena.Center + new WDir(-5f - 10f * x, -10f + 10f * z), default, activation);
-                    aoes[index++] = new(rect, Arena.Center + new WDir(+5f + 10f * x, -10f + 10f * z), default, activation);
+                    aoes[index++] = new(rect, center + new WDir(-5f - 10f * x, -10f + 10f * z), default, activation);
+                    aoes[index++] = new(rect, center + new WDir(+5f + 10f * x, -10f + 10f * z), default, activation);
                 }
             }
         }
@@ -41,7 +41,10 @@ class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
             var party = Module.Raid.WithSlot(true, true, true);
             var len = party.Length;
             for (var i = 0; i < len; ++i)
-                requireHint[i] = requireLevitating[i] = true;
+            {
+                var slot = party[i].Item1;
+                requireHint[slot] = requireLevitating[slot] = true;
+            }
             activation = Module.CastFinishAt(spell);
         }
         else if (spell.Action.ID == (uint)AID.BlightedBoltVisual)
@@ -50,8 +53,9 @@ class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
             var len = party.Length;
             for (var i = 0; i < len; ++i)
             {
-                requireHint[i] = true;
-                requireLevitating[i] = false;
+                var slot = party[i].Item1;
+                requireHint[slot] = true;
+                requireLevitating[slot] = false;
             }
             activation = Module.CastFinishAt(spell);
         }
@@ -136,4 +140,4 @@ class BlightedBolt1(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BlightedBolt2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlightedBolt2), 7f);
+class BlightedBolt2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlightedBolt2, 7f);

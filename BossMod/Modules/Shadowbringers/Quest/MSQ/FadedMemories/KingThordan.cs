@@ -26,8 +26,8 @@ public enum SID : uint
     Invincibility = 671
 }
 
-class DragonsGaze(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.TheDragonsGaze));
-class HyperdimensionalSlash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HyperdimensionalSlash), new AOEShapeRect(45f, 4f));
+class DragonsGaze(BossModule module) : Components.CastGaze(module, (uint)AID.TheDragonsGaze);
+class HyperdimensionalSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HyperdimensionalSlash, new AOEShapeRect(45f, 4f));
 
 class KingThordanStates : StateMachineBuilder
 {

@@ -45,11 +45,11 @@ public enum IconID : uint
     Hailfire4 = 82 // player
 }
 
-class CrystallineFracture(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrystallineFracture), 4f);
-class ResonantFrequencyDim(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ResonantFrequencyDim), 6f);
-class ResonantFrequencyCorrupted(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ResonantFrequencyCorrupted), 6f);
+class CrystallineFracture(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrystallineFracture, 4f);
+class ResonantFrequencyDim(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ResonantFrequencyDim, 6f);
+class ResonantFrequencyCorrupted(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ResonantFrequencyCorrupted, 6f);
 
-class CrystallineStingers(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.CrystallineStingers), 60f)
+class CrystallineStingers(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.CrystallineStingers, 60f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {
@@ -68,7 +68,7 @@ class CrystallineStingers(BossModule module) : Components.CastLineOfSightAOE(mod
     }
 }
 
-class AetherialStingers(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.AetherialStingers), 60f)
+class AetherialStingers(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.AetherialStingers, 60f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {
@@ -87,7 +87,7 @@ class AetherialStingers(BossModule module) : Components.CastLineOfSightAOE(modul
     }
 }
 
-class Subduction(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Subduction), 8f);
+class Subduction(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Subduction, 8f);
 
 class Earthbreaker(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -115,8 +115,8 @@ class Earthbreaker(BossModule module) : Components.ConcentricAOEs(module, _shape
     }
 }
 
-class CrystalNeedle(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CrystalNeedle));
-class Shardstrike(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ShardstrikeAOE), 5f)
+class CrystalNeedle(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CrystalNeedle);
+class Shardstrike(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ShardstrikeAOE, 5f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -169,7 +169,10 @@ class Hailfire(BossModule module) : Components.GenericBaitAway(module)
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID is >= (uint)IconID.Hailfire1 and <= (uint)IconID.Hailfire4)
-            CurrentBaits.Add(new(Module.PrimaryActor, actor, rect, WorldState.FutureTime(8.2d)));
+        {
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, rect, WorldState.FutureTime(8.2d + (iconID - (uint)IconID.Hailfire1) * 2.1d)));
+            CurrentBaits.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+        }
     }
 }
 
@@ -191,10 +194,12 @@ class CE41WithDiremiteAndMainStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 778, NameID = 21)] // bnpcname=9969
-public class CE41WithDiremiteAndMain(WorldState ws, Actor primary) : BossModule(ws, primary, new(-220, 530), new ArenaBoundsCircle(30))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 21)] // bnpcname=9969
+public class CE41WithDiremiteAndMain(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly uint[] Crystals = [(uint)OID.DimCrystal, (uint)OID.CorruptedCrystal];
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-220f, 530f), 29.5f, 32)]);
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         base.DrawEnemies(pcSlot, pc);
@@ -211,4 +216,6 @@ public class CE41WithDiremiteAndMain(WorldState ws, Actor primary) : BossModule(
         }
         Arena.Actors(filteredcrystals, Colors.Object, true);
     }
+
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

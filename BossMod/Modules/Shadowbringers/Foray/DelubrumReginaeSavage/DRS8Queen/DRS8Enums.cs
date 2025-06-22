@@ -83,9 +83,9 @@ public enum AID : uint
     OptimalPlayShield = 23040, // QueensKnight->self, 5.0s cast, range 5-60 donut
     OptimalPlayCone = 23041, // Helper->self, 5.0s cast, range 60 270-degree cone
     TurretsTour = 23079, // QueensGunner->self, 5.0s cast, single-target, visual (turret aoes)
-    TurretsTourAOE1 = 23080, // Helper->location, 5.0s cast, width 6 rect charge aoe
-    TurretsTourAOE2 = 23082, // AutomaticTurret->self, no cast, range 50 width 6 rect
-    TurretsTourAOE3 = 23081, // AutomaticTurret->location, no cast, width 6 rect charge
+    TurretsTourFirst = 23080, // Helper->location, 5.0s cast, width 6 rect charge aoe
+    TurretsTourRest1 = 23081, // AutomaticTurret->location, no cast, width 6 rect charge
+    TurretsTourRest2 = 23082, // AutomaticTurret->self, no cast, range 50 width 6 rect
 
     Bombslinger = 23359, // QueensWarrior->self, 3.0s cast, single-target, visual (spawn bombs)
     HeavensWrath = 23030, // Boss->self, 3.0s cast, single-target, visual (preparation for knockback)
@@ -109,6 +109,9 @@ public enum AID : uint
     SoftEnrageGAOE = 23414, // Helper->self, 5.0s cast, range 60 circle, raidwide
     SoftEnrageS = 23075, // QueensSoldier->self, 5.0s cast, range 60 circle, visual (raidwide)
     SoftEnrageSAOE = 23413, // Helper->self, 5.0s cast, range 60 circle, raidwide
+    GodsSaveTheQueenEnrageVisual1 = 23386, // Boss->self, 10.0s cast, single-target
+    GodsSaveTheQueenEnrageVisual2 = 23388, // Boss->self, 2.0s cast, single-target
+    GodsSaveTheQueenEnrage = 23387 // Helper->self, 2.0s cast, range 60 circle
 }
 
 public enum SID : uint

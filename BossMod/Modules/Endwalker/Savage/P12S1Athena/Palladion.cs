@@ -152,7 +152,7 @@ class PalladionStack : Components.UniformStackSpread
     }
 }
 
-class PalladionVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.PalladionAOE), GetVoidzones, 0.9f)
+class PalladionVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.PalladionAOE, GetVoidzones, 0.9f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -249,7 +249,7 @@ class PalladionWhiteFlame : Components.GenericBaitAway
     }
 }
 
-class PalladionDestroyPlatforms(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.PalladionDestroyPlatforms), "Go to safe platform!")
+class PalladionDestroyPlatforms(BossModule module) : Components.GenericAOEs(module, (uint)AID.PalladionDestroyPlatforms, "Go to safe platform!")
 {
     private static readonly AOEShapeRect _shape = new(10f, 20f, 10f);
 

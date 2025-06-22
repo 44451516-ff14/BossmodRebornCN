@@ -44,4 +44,4 @@ class WaltzOfTheRegaliaBait(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class WaltzOfTheRegalia(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WaltzOfTheRegalia), new AOEShapeRect(14, 2));
+class WaltzOfTheRegalia(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaltzOfTheRegalia, new AOEShapeRect(14, 2));

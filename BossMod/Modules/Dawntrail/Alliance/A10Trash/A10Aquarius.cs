@@ -29,16 +29,16 @@ public enum AID : uint
     Agaricus = 41661 // DeathCap->self, 3.0s cast, range 5 circle
 }
 
-class CursedSphere(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CursedSphere), 3f);
-class WaterIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WaterIII), 7f);
-class BubbleShower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BubbleShower), new AOEShapeCone(6f, 30f.Degrees()));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
-class Agaricus(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Agaricus), 5f);
-class Beatdown(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Beatdown), new AOEShapeRect(9f, 1.5f));
-class SpiderWeb(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpiderWeb), 6f);
-class HundredFists(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.HundredFists), showNameInHint: true);
+sealed class CursedSphere(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CursedSphere, 3f);
+sealed class WaterIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaterIII, 7f);
+sealed class BubbleShower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BubbleShower, new AOEShapeCone(6f, 30f.Degrees()));
+sealed class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
+sealed class Agaricus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Agaricus, 5f);
+sealed class Beatdown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Beatdown, new AOEShapeRect(9f, 1.5f));
+sealed class SpiderWeb(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpiderWeb, 6f);
+sealed class HundredFists(BossModule module) : Components.CastInterruptHint(module, (uint)AID.HundredFists, showNameInHint: true);
 
-public class A10AquariusStates : StateMachineBuilder
+public sealed class A10AquariusStates : StateMachineBuilder
 {
     public A10AquariusStates(BossModule module) : base(module)
     {
@@ -66,7 +66,7 @@ public class A10AquariusStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13605, SortOrder = 3)]
-public class A10Aquarius(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class A10Aquarius(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-500.62f, 686.9f), new(-488.18f, 686.93f), new(-487.84f, 687.31f), new(-486.66f, 692.24f), new(-486.41f, 692.91f),
     new(-486.06f, 693.39f), new(-485.44f, 693.68f), new(-484.78f, 693.9f), new(-484.23f, 693.88f), new(-483.59f, 693.9f),

@@ -1,58 +1,17 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class HailOfFeathers(BossModule module) : Components.GenericAOEs(module)
+sealed class HailOfFeathers : Components.SimpleAOEGroups
 {
-    private readonly List<AOEInstance> _aoes = new(6);
-
-    private static readonly AOEShapeCircle _shape = new(20f); // TODO: verify falloff
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public HailOfFeathers(BossModule module) : base(module, [(uint)AID.HailOfFeathersAOE1, (uint)AID.HailOfFeathersAOE2, (uint)AID.HailOfFeathersAOE3,
+    (uint)AID.HailOfFeathersAOE4, (uint)AID.HailOfFeathersAOE5, (uint)AID.HailOfFeathersAOE6], 20f, 2, 6)
     {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var max = count > 2 ? 2 : count;
-        return CollectionsMarshal.AsSpan(_aoes)[..max];
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        switch (spell.Action.ID)
-        {
-            case (uint)AID.HailOfFeathersAOE1:
-            case (uint)AID.HailOfFeathersAOE2:
-            case (uint)AID.HailOfFeathersAOE3:
-            case (uint)AID.HailOfFeathersAOE4:
-            case (uint)AID.HailOfFeathersAOE5:
-            case (uint)AID.HailOfFeathersAOE6:
-                _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-                if (_aoes.Count == 6)
-                    _aoes.SortBy(x => x.Activation);
-                break;
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        switch (spell.Action.ID)
-        {
-            case (uint)AID.HailOfFeathersAOE1:
-            case (uint)AID.HailOfFeathersAOE2:
-            case (uint)AID.HailOfFeathersAOE3:
-            case (uint)AID.HailOfFeathersAOE4:
-            case (uint)AID.HailOfFeathersAOE5:
-            case (uint)AID.HailOfFeathersAOE6:
-                ++NumCasts;
-                if (_aoes.Count != 0)
-                    _aoes.RemoveAt(0);
-                break;
-        }
+        MaxDangerColor = 1;
     }
 }
 
-class FeatherOfRuin(BossModule module) : Components.Adds(module, (uint)OID.FeatherOfRuin);
+sealed class FeatherOfRuin(BossModule module) : Components.Adds(module, (uint)OID.FeatherOfRuin);
 
-class BlightedBolt : Components.GenericAOEs
+sealed class BlightedBolt : Components.GenericAOEs
 {
     private readonly List<Actor> _targets = [];
     private DateTime _activation;
@@ -68,8 +27,9 @@ class BlightedBolt : Components.GenericAOEs
             var len = party.Length;
             for (var i = 0; i < len; ++i)
             {
-                platform.RequireHint[i] = true;
-                platform.RequireLevitating[i] = false;
+                var slot = party[i].Item1;
+                platform.RequireHint[slot] = true;
+                platform.RequireLevitating[slot] = false;
             }
         }
     }
@@ -80,19 +40,19 @@ class BlightedBolt : Components.GenericAOEs
         if (count == 6)
             return [];
         var targetsspan = CollectionsMarshal.AsSpan(_targets);
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         var index = 0;
         var hasDead = false;
 
         for (var i = 0; i < count; ++i)
         {
-            ref var span = ref targetsspan[i];
+            ref readonly var span = ref targetsspan[i];
             if (span.IsDead)
                 hasDead = true;
             else
                 aoes[index++] = new(_shape, span.Position, default, _activation);
         }
-        return hasDead ? aoes.AsSpan(0, index) : [];
+        return hasDead ? aoes[..index] : [];
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

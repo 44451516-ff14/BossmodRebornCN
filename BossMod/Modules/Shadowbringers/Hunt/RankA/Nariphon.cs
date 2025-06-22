@@ -20,9 +20,9 @@ public enum SID : uint
     PiercingResistanceDownII = 1435 // Boss->player, extra=0x0
 }
 
-class OdiousMiasma(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OdiousMiasma), new AOEShapeCone(12f, 60f.Degrees()));
+class OdiousMiasma(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OdiousMiasma, new AOEShapeCone(12f, 60f.Degrees()));
 
-class AllergenInjection(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.AllergenInjection), new AOEShapeCircle(6f), true)
+class AllergenInjection(BossModule module) : Components.BaitAwayCast(module, (uint)AID.AllergenInjection, 6f)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -39,8 +39,9 @@ class RootsOfAtopy(BossModule module) : Components.GenericStackSpread(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RootsOfAtopy)
-            Stacks.Add(new(WorldState.Actors.Find(spell.TargetID)!, 6, 8, 8, activation: Module.CastFinishAt(spell), forbiddenPlayers: _forbidden));
+            Stacks.Add(new(WorldState.Actors.Find(spell.TargetID)!, 6f, 8, 8, activation: Module.CastFinishAt(spell), forbiddenPlayers: _forbidden));
     }
+
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.PiercingResistanceDownII)

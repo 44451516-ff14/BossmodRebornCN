@@ -36,7 +36,7 @@ class P3ThermionicBeam : Components.UniformStackSpread
     }
 }
 
-class P3MegaflareTower(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.MegaflareTower), 3f)
+class P3MegaflareTower(BossModule module) : Components.CastTowers(module, (uint)AID.MegaflareTower, 3f)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {

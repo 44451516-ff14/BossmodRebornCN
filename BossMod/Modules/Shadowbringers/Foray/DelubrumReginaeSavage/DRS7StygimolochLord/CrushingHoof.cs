@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS7StygimolochLord;
 
-class CrushingHoof(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.CrushingHoofAOE))
+sealed class CrushingHoof(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrushingHoofAOE)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeCircle circle = new(25);
@@ -16,7 +16,7 @@ class CrushingHoof(BossModule module) : Components.GenericAOEs(module, ActionID.
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _aoe = null;
     }
 }

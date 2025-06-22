@@ -1,6 +1,4 @@
-﻿using BossMod.QuestBattle;
-
-namespace BossMod.Shadowbringers.Quest.MSQ.ComingClean; // quest name: Full Steam Ahead
+﻿namespace BossMod.Shadowbringers.Quest.MSQ.ComingClean; // quest name: Full Steam Ahead
 
 public enum OID : uint
 {
@@ -47,22 +45,18 @@ public enum SID : uint
     DownForTheCount = 783 // 295E->player, extra=0xEC7
 }
 
-class KatunCycle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KatunCycle), new AOEShapeDonut(5, 40));
+class KatunCycle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KatunCycle, new AOEShapeDonut(5f, 40f));
 
-abstract class Cleaves(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 60.Degrees()));
-class MercilessLeft(BossModule module) : Cleaves(module, AID.MercilessLeft);
-class MercilessRight(BossModule module) : Cleaves(module, AID.MercilessRight);
-class Evisceration(BossModule module) : Cleaves(module, AID.Evisceration);
+class MercilessEvisceration(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MercilessLeft, (uint)AID.MercilessRight, (uint)AID.Evisceration], new AOEShapeCone(40f, 60f.Degrees()));
+class UnceremoniousBeheading(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnceremoniousBeheading, 10f);
+class HotPursuit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HotPursuit1, 5f);
+class NexusOfThunder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NexusOfThunder, new AOEShapeRect(60f, 2.5f));
+class CoiledLevin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CoiledLevin1, 6f);
+class LightningVoidzone(BossModule module) : Components.Voidzone(module, 6f, m => m.Enemies((uint)OID.LightningVoidzone).Where(x => x.EventState != 7));
 
-class UnceremoniousBeheading(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UnceremoniousBeheading), 10);
-class HotPursuit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HotPursuit1), 5);
-class NexusOfThunder(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NexusOfThunder), new AOEShapeRect(60, 2.5f));
-class CoiledLevin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CoiledLevin1), 6);
-class LightningVoidzone(BossModule module) : Components.Voidzone(module, 6, m => m.Enemies(OID.LightningVoidzone).Where(x => x.EventState != 7));
+class ThancredAI(BossModule module) : QuestBattle.RotationModule<AutoThancred>(module);
 
-class ThancredAI(BossModule module) : RotationModule<AutoThancred>(module);
-
-class AutoThancred(WorldState ws) : UnmanagedRotation(ws, 3)
+class AutoThancred(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 3f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
@@ -79,14 +73,14 @@ class AutoThancred(WorldState ws) : UnmanagedRotation(ws, 3)
 
         if (distance <= 3)
         {
-            UseAction(Roleplay.AID.Smackdown, Player, -100);
+            UseAction(Roleplay.AID.Smackdown, Player, -100f);
 
             if (Player.FindStatus(SID.Smackdown) != null)
-                UseAction(Roleplay.AID.RoughDivide, primaryTarget, -100);
+                UseAction(Roleplay.AID.RoughDivide, primaryTarget, -100f);
         }
 
         if (Player.HPMP.CurHP * 2 < Player.HPMP.MaxHP)
-            UseAction(Roleplay.AID.SoothingPotion, Player, -100);
+            UseAction(Roleplay.AID.SoothingPotion, Player, -100f);
 
         switch (ComboAction)
         {
@@ -114,22 +108,20 @@ class RanjitStates : StateMachineBuilder
             .ActivateOnEnter<CoiledLevin>()
             .ActivateOnEnter<LightningVoidzone>()
             .ActivateOnEnter<KatunCycle>()
-            .ActivateOnEnter<MercilessLeft>()
-            .ActivateOnEnter<MercilessRight>()
+            .ActivateOnEnter<MercilessEvisceration>()
             .ActivateOnEnter<UnceremoniousBeheading>()
-            .ActivateOnEnter<Evisceration>()
-            .Raw.Update = () => module.Enemies(OID.Ranjit) is var boss && boss.Count != 0 && boss[0].FindStatus(SID.DownForTheCount) != null || module.WorldState.CurrentCFCID != 680;
+            .Raw.Update = () => module.Enemies((uint)OID.Ranjit) is var boss && boss.Count != 0 && boss[0].FindStatus((uint)SID.DownForTheCount) != null || module.WorldState.CurrentCFCID != 680;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69155, NameID = 8374)]
 public class Ranjit(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-203, 395), 19.5f, 20)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-203f, 395f), 19.5f, 20)]);
 
     protected override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(OID.Ranjit));
+        Arena.Actors(Enemies((uint)OID.Ranjit));
         Arena.Actor(PrimaryActor);
     }
 }

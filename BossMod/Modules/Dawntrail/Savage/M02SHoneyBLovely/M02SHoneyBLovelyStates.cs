@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Savage.M02SHoneyBLovely;
 
-class M02SHoneyBLovelyStates : StateMachineBuilder
+sealed class M02SHoneyBLovelyStates : StateMachineBuilder
 {
     public M02SHoneyBLovelyStates(BossModule module) : base(module)
     {
@@ -21,18 +21,18 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
         Beat3(id + 0x90000, 11.3f);
         StingingSlashKillerSting(id + 0xA0000, 9.2f);
         RottenHeart(id + 0xB0000, 11.4f);
-        Cast(id + 0xC0000, AID.SheerHeartAttack, 12.2f, 10, "Enrage");
+        Cast(id + 0xC0000, (uint)AID.SheerHeartAttack, 12.2f, 10, "Enrage");
     }
 
     private State CallMeHoney(uint id, float delay, string name = "Raidwide")
     {
-        return Cast(id, AID.CallMeHoney, delay, 5, name)
+        return Cast(id, (uint)AID.CallMeHoney, delay, 5, name)
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void HoneyBeelineTemptingTwistResolve(uint id, float delay)
     {
-        CastMulti(id, [AID.HoneyBeeline, AID.TemptingTwist], delay, 5.5f)
+        CastMulti(id, [(uint)AID.HoneyBeeline, (uint)AID.TemptingTwist], delay, 5.5f)
             .ActivateOnEnter<HoneyBeeline>()
             .ActivateOnEnter<TemptingTwist>();
         Condition(id + 2, 0.7f, () => Module.FindComponent<HoneyBeeline>()?.NumCasts > 0 || Module.FindComponent<TemptingTwist>()?.NumCasts > 0, "In/out")
@@ -46,7 +46,7 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
     private void HoneyBeelineTemptingTwistBeatResolve(uint id, float delay)
     {
-        CastMulti(id, [AID.HoneyBeelineBeat, AID.TemptingTwistBeat], delay, 5.5f)
+        CastMulti(id, [(uint)AID.HoneyBeelineBeat, (uint)AID.TemptingTwistBeat], delay, 5.5f)
             .ActivateOnEnter<HoneyBeelineBeat>()
             .ActivateOnEnter<TemptingTwistBeat>();
         Condition(id + 2, 0.7f, () => Module.FindComponent<HoneyBeelineBeat>()?.NumCasts > 0 || Module.FindComponent<TemptingTwistBeat>()?.NumCasts > 0, "In/out")
@@ -60,14 +60,14 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
     private void DropSplashOfVenomHoneyBeelineTemptingTwist(uint id, float delay, bool shortInOutDelay)
     {
-        CastMulti(id, [AID.SplashOfVenom, AID.DropOfVenom], delay, 5)
+        CastMulti(id, [(uint)AID.SplashOfVenom, (uint)AID.DropOfVenom], delay, 5)
             .ActivateOnEnter<DropSplashOfVenom>();
         HoneyBeelineTemptingTwistResolve(id + 0x10, shortInOutDelay ? 2.1f : 5.5f);
     }
 
     private State StingingSlashKillerSting(uint id, float delay)
     {
-        CastStartMulti(id, [AID.StingingSlash, AID.KillerSting], delay) // icons appear right before cast start
+        CastStartMulti(id, [(uint)AID.StingingSlash, (uint)AID.KillerSting], delay) // icons appear right before cast start
             .ActivateOnEnter<StingingSlash>()
             .ActivateOnEnter<KillerSting>();
         CastEnd(id + 1, 4);
@@ -89,13 +89,13 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
     private void CenterOuterStageCombo(uint id, float delay)
     {
-        CastStartMulti(id, [AID.CenterstageCombo, AID.OuterstageCombo], delay);
+        CastStartMulti(id, [(uint)AID.CenterstageCombo, (uint)AID.OuterstageCombo], delay);
         CenterOuterStageComboResolve(id + 1, 5, true);
     }
 
     private void Beat1(uint id, float delay)
     {
-        Cast(id, AID.HoneyBLiveBeat1, delay, 2);
+        Cast(id, (uint)AID.HoneyBLiveBeat1, delay, 2);
         ComponentCondition<HoneyBLiveBeat1>(id + 2, 6.3f, comp => comp.NumCasts > 0, "Beat 1 raidwide")
             .ActivateOnEnter<HoneyBLiveBeat1>()
             .DeactivateOnExit<HoneyBLiveBeat1>()
@@ -103,7 +103,7 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
         CenterOuterStageCombo(id + 0x100, 2.9f);
 
-        Cast(id + 0x200, AID.LoveMeTender, 4.2f, 4);
+        Cast(id + 0x200, (uint)AID.LoveMeTender, 4.2f, 4);
         ComponentCondition<Fracture>(id + 0x210, 2.2f, comp => comp.Towers.Count > 0)
             .ActivateOnEnter<HoneyBLiveHearts>()
             .ActivateOnEnter<Fracture1>();
@@ -111,13 +111,13 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
         ComponentCondition<Fracture>(id + 0x230, 20, comp => comp.NumCasts >= 11, "Last tower")
             .DeactivateOnExit<Fracture>();
 
-        Cast(id + 0x300, AID.Loveseeker, 0.1f, 3)
+        Cast(id + 0x300, (uint)AID.Loveseeker, 0.1f, 3)
             .ActivateOnEnter<Loveseeker>();
         ComponentCondition<Loveseeker>(id + 0x302, 1, comp => comp.NumCasts > 0, "Out")
             .ActivateOnEnter<SweetheartsS>() // adds activate right after resolve
             .DeactivateOnExit<Loveseeker>();
 
-        Cast(id + 0x400, AID.LoveMeTender, 9.2f, 4);
+        Cast(id + 0x400, (uint)AID.LoveMeTender, 9.2f, 4);
         ComponentCondition<Heartsick>(id + 0x410, 1.1f, comp => comp.Stacks.Count > 0)
             .ActivateOnEnter<Heartsick1>();
         ComponentCondition<Heartsick>(id + 0x420, 7.1f, comp => comp.NumFinishedStacks > 0, "Stack")
@@ -125,14 +125,14 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
             .DeactivateOnExit<HoneyBLiveHearts>();
 
         CenterOuterStageCombo(id + 0x500, 5.2f);
-        Cast(id + 0x600, AID.HoneyBFinale, 6.2f, 5, "Beat 1 end raidwide")
+        Cast(id + 0x600, (uint)AID.HoneyBFinale, 6.2f, 5, "Beat 1 end raidwide")
             .DeactivateOnExit<SweetheartsS>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void AlarmPheromones1(uint id, float delay)
     {
-        Cast(id, AID.AlarmPheromones, delay, 3);
+        Cast(id, (uint)AID.AlarmPheromones, delay, 3);
         ComponentCondition<BlindingLoveBait>(id + 0x10, 3.6f, comp => comp.Casters.Count > 0) // every 1.2s, 16 total
             .ActivateOnEnter<BlindingLoveBait>();
         ComponentCondition<BlindingLoveBait>(id + 0x20, 7, comp => comp.NumCasts > 0, "Baited charges start");
@@ -142,15 +142,15 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
     private void Beat2(uint id, float delay)
     {
-        Cast(id, AID.HoneyBLiveBeat2, delay, 2);
+        Cast(id, (uint)AID.HoneyBLiveBeat2, delay, 2);
         ComponentCondition<HoneyBLiveBeat2>(id + 2, 6.3f, comp => comp.NumCasts > 0, "Beat 2 raidwide")
             .ActivateOnEnter<HoneyBLiveBeat2>()
             .DeactivateOnExit<HoneyBLiveBeat2>()
             .SetHint(StateMachine.StateHint.Raidwide);
-        CastMulti(id + 0x10, [AID.SpreadLove, AID.DropOfLove], 2.8f, 5)
+        CastMulti(id + 0x10, [(uint)AID.SpreadLove, (uint)AID.DropOfLove], 2.8f, 5)
             .ActivateOnEnter<DropSplashOfVenom>();
 
-        Cast(id + 0x100, AID.LoveMeTender, 6.2f, 4);
+        Cast(id + 0x100, (uint)AID.LoveMeTender, 6.2f, 4);
         ComponentCondition<Heartsick>(id + 0x110, 1.1f, comp => comp.Stacks.Count > 0, "Puddles bait start")
             .ActivateOnEnter<HoneyBLiveHearts>()
             .ActivateOnEnter<Heartsick2>();
@@ -169,17 +169,17 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
         HoneyBeelineTemptingTwistBeatResolve(id + 0x200, 3.7f);
 
-        Cast(id + 0x300, AID.HoneyBFinale, 4, 5, "Beat 2 end raidwide")
+        Cast(id + 0x300, (uint)AID.HoneyBFinale, 4, 5, "Beat 2 end raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void AlarmPheromones2(uint id, float delay)
     {
-        CastMulti(id, [AID.SplashOfVenom, AID.DropOfVenom], delay, 5)
+        CastMulti(id, [(uint)AID.SplashOfVenom, (uint)AID.DropOfVenom], delay, 5)
             .ActivateOnEnter<DropSplashOfVenom>();
 
-        Cast(id + 0x100, AID.AlarmPheromones, 2.1f, 3);
-        Cast(id + 0x110, AID.PoisonSting, 3.2f, 4.7f)
+        Cast(id + 0x100, (uint)AID.AlarmPheromones, 2.1f, 3);
+        Cast(id + 0x110, (uint)AID.PoisonSting, 3.2f, 4.7f)
             .ActivateOnEnter<PoisonStingBait>()
             .ActivateOnEnter<PoisonStingVoidzone>() // voidzones drop ~0.8s after puddle cast
             .ActivateOnEnter<BlindingLoveCharge1>() // first charges begin ~0.4s into cast
@@ -194,7 +194,7 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
             .DeactivateOnExit<PoisonStingBait>();
         // +0.4s: charges 4
 
-        Cast(id + 0x200, AID.BeeSting, 5, 4)
+        Cast(id + 0x200, (uint)AID.BeeSting, 5, 4)
             .ActivateOnEnter<BeeSting>();
         ComponentCondition<BeeSting>(id + 0x210, 1, comp => comp.NumFinishedStacks > 0, "Role stacks")
             .DeactivateOnExit<BeeSting>();
@@ -210,19 +210,19 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
     private void Beat3(uint id, float delay)
     {
-        Cast(id, AID.HoneyBLiveBeat3, delay, 2);
+        Cast(id, (uint)AID.HoneyBLiveBeat3, delay, 2);
         ComponentCondition<HoneyBLiveBeat3>(id + 2, 6.3f, comp => comp.NumCasts > 0, "Beat 3 raidwide")
             .ActivateOnEnter<HoneyBLiveBeat3>()
             .ActivateOnEnter<HoneyBLiveBeat3BigBurst>() // statuses appear right before raidwide
             .DeactivateOnExit<HoneyBLiveBeat3>()
             .SetHint(StateMachine.StateHint.Raidwide);
-        CastMulti(id + 0x10, [AID.SpreadLove, AID.DropOfLove], 1.9f, 5)
+        CastMulti(id + 0x10, [(uint)AID.SpreadLove, (uint)AID.DropOfLove], 1.9f, 5)
             .ActivateOnEnter<DropSplashOfVenom>();
 
         CenterOuterStageCombo(id + 0x100, 2.1f);
         ComponentCondition<HoneyBLiveBeat3BigBurst>(id + 0x110, 4.6f, comp => comp.NumCasts > 0, "Defamations 1")
             .ActivateOnEnter<Fracture3>();
-        CastStartMulti(id + 0x120, [AID.CenterstageCombo, AID.OuterstageCombo], 2.6f);
+        CastStartMulti(id + 0x120, [(uint)AID.CenterstageCombo, (uint)AID.OuterstageCombo], 2.6f);
         ComponentCondition<Fracture>(id + 0x121, 0.8f, comp => comp.NumCasts > 0, "Towers 1")
             .ActivateOnEnter<StageCombo>()
             .DeactivateOnExit<Fracture>();
@@ -235,13 +235,13 @@ class M02SHoneyBLovelyStates : StateMachineBuilder
 
         HoneyBeelineTemptingTwistBeatResolve(id + 0x200, 4.2f);
 
-        Cast(id + 0x300, AID.HoneyBFinale, 3, 5, "Beat 3 end raidwide")
+        Cast(id + 0x300, (uint)AID.HoneyBFinale, 3, 5, "Beat 3 end raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void RottenHeart(uint id, float delay)
     {
-        Cast(id, AID.RottenHeart, delay, 1);
+        Cast(id, (uint)AID.RottenHeart, delay, 1);
         ComponentCondition<RottenHeart>(id + 2, 3.6f, comp => comp.NumCasts > 0, "Nisi start raidwide")
             .ActivateOnEnter<RottenHeart>()
             .ActivateOnEnter<RottenHeartBigBurst>() // statuses appear right before raidwide

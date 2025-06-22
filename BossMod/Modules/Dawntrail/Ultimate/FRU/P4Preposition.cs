@@ -23,7 +23,7 @@ class P4Preposition(BossModule module) : BossComponent(module)
 // utility to draw hitbox around crystal, so that it's easier not to clip
 class P4FragmentOfFate(BossModule module) : BossComponent(module)
 {
-    private readonly IReadOnlyList<Actor> _fragment = module.Enemies((uint)OID.FragmentOfFate);
+    private readonly List<Actor> _fragment = module.Enemies((uint)OID.FragmentOfFate);
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
     {

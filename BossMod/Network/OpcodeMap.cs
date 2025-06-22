@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Network;
 
 // map betweek network message opcodes (which are randomized every build) to more-or-less stable indices
-public class OpcodeMap
+public sealed class OpcodeMap
 {
     public readonly List<int> OpcodeToID = [];
     public readonly List<int> IDToOpcode = [];
@@ -52,13 +52,14 @@ public class OpcodeMap
     private static readonly byte[] BodyPrefix = [0x48, 0x8B, 0x01, 0x4D, 0x8D, 0x4A, 0x10, 0x48, 0xFF];
     private static unsafe int ReadIndexForCaseBody(byte* bodyAddr)
     {
-        for (var i = 0; i < BodyPrefix.Length; ++i)
+        var len = BodyPrefix.Length;
+        for (var i = 0; i < len; ++i)
             if (bodyAddr[i] != BodyPrefix[i])
                 return -1;
-        var vtoff = bodyAddr[BodyPrefix.Length] switch
+        var vtoff = bodyAddr[len] switch
         {
-            0x60 => *(bodyAddr + BodyPrefix.Length + 1),
-            0xA0 => *(int*)(bodyAddr + BodyPrefix.Length + 1),
+            0x60 => *(bodyAddr + len + 1),
+            0xA0 => *(int*)(bodyAddr + len + 1),
             _ => -1
         };
         if (vtoff < 0x10 || (vtoff & 7) != 0)

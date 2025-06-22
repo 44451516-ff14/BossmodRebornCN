@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class BindingSigil(BossModule module) : Components.GenericAOEs(module)
+sealed class BindingSigil(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShapeCircle _shape = new(9f);
@@ -10,14 +10,14 @@ class BindingSigil(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

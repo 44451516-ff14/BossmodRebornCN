@@ -1,11 +1,10 @@
 ﻿using ImGuiNET;
-using System.Text.Json.Nodes;
 
 namespace BossMod.ReplayAnalysis;
 
-class StateTransitionTimings
+sealed class StateTransitionTimings
 {
-    class TransitionMetric(double duration, Replay replay, Replay.Encounter encounter, DateTime time)
+    sealed class TransitionMetric(double duration, Replay replay, Replay.Encounter encounter, DateTime time)
     {
         public double Duration = duration;
         public Replay Replay = replay;
@@ -13,7 +12,7 @@ class StateTransitionTimings
         public DateTime Time = time;
     }
 
-    class TransitionMetrics
+    sealed class TransitionMetrics
     {
         public bool Expected;
         public double MinTime = double.MaxValue;
@@ -23,7 +22,7 @@ class StateTransitionTimings
         public List<TransitionMetric> Instances = [];
     }
 
-    class StateMetrics(string name, double expectedTime)
+    sealed class StateMetrics(string name, double expectedTime)
     {
         public string Name = name;
         public double ExpectedTime = expectedTime;
@@ -80,8 +79,7 @@ class StateTransitionTimings
                 RecalculateMetrics(trans);
             }
         }
-
-        _encounters.SortByReverse(e => e.Item2.Time.Duration);
+        _encounters.Sort((b, a) => a.Item2.Time.Duration.CompareTo(b.Item2.Time.Duration));
     }
 
     public void Draw(UITree tree)
@@ -133,7 +131,7 @@ class StateTransitionTimings
     {
         if (trans.Instances.Count > 0)
         {
-            trans.Instances.SortBy(e => e.Duration);
+            trans.Instances.Sort((a, b) => a.Duration.CompareTo(b.Duration));
             trans.MinTime = trans.Instances[0].Duration;
             trans.MaxTime = trans.Instances[^1].Duration;
             double sum = 0, sumSq = 0;

@@ -9,7 +9,7 @@ class P5PolarizingStrikes(BossModule module) : Components.GenericAOEs(module)
     private Actor? _source;
     private bool _baitsActive;
 
-    private static readonly AOEShapeRect _shape = new(100, 3);
+    private static readonly AOEShapeRect _shape = new(100f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -96,15 +96,15 @@ class P5PolarizingStrikes(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.PolarizingStrikes:
-            case AID.PolarizingPaths:
+            case (uint)AID.PolarizingStrikes:
+            case (uint)AID.PolarizingPaths:
                 _source = caster;
                 _baitsActive = true;
                 break;
-            case AID.CruelPathOfLightBait:
-            case AID.CruelPathOfDarknessBait:
+            case (uint)AID.CruelPathOfLightBait:
+            case (uint)AID.CruelPathOfDarknessBait:
                 _baitsActive = false;
                 break;
         }
@@ -112,15 +112,15 @@ class P5PolarizingStrikes(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.CruelPathOfLightBait:
-            case AID.CruelPathOfDarknessBait:
+            case (uint)AID.CruelPathOfLightBait:
+            case (uint)AID.CruelPathOfDarknessBait:
                 ++NumCasts;
-                _aoes.Add(new(_shape, caster.Position, caster.Rotation, WorldState.FutureTime(2)));
+                _aoes.Add(new(_shape, caster.Position, caster.Rotation, WorldState.FutureTime(2d)));
                 break;
-            case AID.CruelPathOfLightAOE:
-            case AID.CruelPathOfDarknessAOE:
+            case (uint)AID.CruelPathOfLightAOE:
+            case (uint)AID.CruelPathOfDarknessAOE:
                 ++NumCasts;
                 _aoes.Clear();
                 break;
@@ -129,12 +129,12 @@ class P5PolarizingStrikes(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.LightResistanceDown:
+            case (uint)SID.LightResistanceDown:
                 _forbidden[0].Set(Raid.FindSlot(actor.InstanceID));
                 break;
-            case SID.DarkResistanceDown:
+            case (uint)SID.DarkResistanceDown:
                 _forbidden[1].Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }

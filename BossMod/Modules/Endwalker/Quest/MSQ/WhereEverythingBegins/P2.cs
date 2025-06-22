@@ -49,15 +49,15 @@ public enum AID : uint
     DeathStreak = 31242, // PlunderedGuard->self, 20.0s cast, range 60 circle
 }
 
-class CursedNoise(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.CursedNoiseVisual), ActionID.MakeSpell(AID.CursedNoise), 0.1f);
-class CursedEcho(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CursedEcho));
-class DeathStreak(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DeathStreak));
-class VoidVortex(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.VoidVortex), 6, 4, 4);
-class RottenRampageSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.RottenRampageSpread), 6);
-class RottenRampage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RottenRampage), 6);
+class CursedNoise(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.CursedNoiseVisual, (uint)AID.CursedNoise, 0.1f);
+class CursedEcho(BossModule module) : Components.RaidwideCast(module, (uint)AID.CursedEcho);
+class DeathStreak(BossModule module) : Components.RaidwideCast(module, (uint)AID.DeathStreak);
+class VoidVortex(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.VoidVortex, 6, 4, 4);
+class RottenRampageSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RottenRampageSpread, 6);
+class RottenRampage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottenRampage, 6);
 
-abstract class BlightedCleave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 90.Degrees()));
-class BlightedSwathe(BossModule module) : BlightedCleave(module, AID.BlightedSwathe)
+abstract class BlightedCleave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40, 90.Degrees()));
+class BlightedSwathe(BossModule module) : BlightedCleave(module, (uint)AID.BlightedSwathe)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -75,12 +75,12 @@ class BlightedSwathe(BossModule module) : BlightedCleave(module, AID.BlightedSwa
             base.AddAIHints(slot, actor, assignment, hints);
     }
 }
-class BlightedSweep(BossModule module) : BlightedCleave(module, AID.BlightedSweep);
+class BlightedSweep(BossModule module) : BlightedCleave(module, (uint)AID.BlightedSweep);
 
-class BlightedBuffet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlightedBuffet), 9);
+class BlightedBuffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlightedBuffet, 9);
 class DarkMist1 : Components.SimpleAOEs
 {
-    public DarkMist1(BossModule module) : base(module, ActionID.MakeSpell(AID.DarkMist1), 8)
+    public DarkMist1(BossModule module) : base(module, (uint)AID.DarkMist1, 8)
     {
         MaxRisky = 3;
     }
@@ -88,7 +88,7 @@ class DarkMist1 : Components.SimpleAOEs
 
 class DarkMist2 : Components.SimpleAOEs
 {
-    public DarkMist2(BossModule module) : base(module, ActionID.MakeSpell(AID.DarkMist2), 16)
+    public DarkMist2(BossModule module) : base(module, (uint)AID.DarkMist2, 16)
     {
         MaxRisky = 7;
     }
@@ -96,14 +96,14 @@ class DarkMist2 : Components.SimpleAOEs
 
 class VoidSlash : Components.SimpleAOEs
 {
-    public VoidSlash(BossModule module) : base(module, ActionID.MakeSpell(AID.VoidSlash), new AOEShapeCone(30, 45.Degrees()))
+    public VoidSlash(BossModule module) : base(module, (uint)AID.VoidSlash, new AOEShapeCone(30, 45.Degrees()))
     {
         MaxRisky = 3;
         Color = Colors.Danger;
     }
 }
 
-class VacuumWave(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.VacuumWave), 5)
+class VacuumWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VacuumWave, 5)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -113,7 +113,7 @@ class VacuumWave(BossModule module) : Components.SimpleKnockbacks(module, Action
         hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Position, 13), activation: Module.CastFinishAt(c.CastInfo));
     }
 }
-class VoidQuakeIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidQuakeIII), new AOEShapeCross(40, 5));
+class VoidQuakeIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidQuakeIII, new AOEShapeCross(40, 5));
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {

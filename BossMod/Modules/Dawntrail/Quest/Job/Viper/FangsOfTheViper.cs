@@ -26,14 +26,11 @@ public enum AID : uint
     LeftSidedShockwave = 37702 // WanderingGowrow->self, 4.0s cast, range 20 180-degree cone
 }
 
-class BurningCyclone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BurningCyclone), new AOEShapeCone(6, 60.Degrees()));
-class FoulBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FoulBreath), new AOEShapeCone(7, 45.Degrees()));
-class BrowHorn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BrowHorn), new AOEShapeRect(6, 2));
-class Firebreathe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Firebreathe), new AOEShapeCone(60, 45.Degrees()));
-
-abstract class Shockwave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(20, 90.Degrees()));
-class RightSidedShockwave(BossModule module) : Shockwave(module, AID.RightSidedShockwave);
-class LeftSidedShockwave(BossModule module) : Shockwave(module, AID.LeftSidedShockwave);
+class BurningCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningCyclone, new AOEShapeCone(6f, 60f.Degrees()));
+class FoulBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FoulBreath, new AOEShapeCone(7f, 45f.Degrees()));
+class BrowHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrowHorn, new AOEShapeRect(6f, 2f));
+class Firebreathe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firebreathe, new AOEShapeCone(60f, 45f.Degrees()));
+class Shockwave(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightSidedShockwave, (uint)AID.LeftSidedShockwave], new AOEShapeCone(20f, 90f.Degrees()));
 
 class FangsOfTheViperStates : StateMachineBuilder
 {
@@ -44,16 +41,15 @@ class FangsOfTheViperStates : StateMachineBuilder
             .ActivateOnEnter<FoulBreath>()
             .ActivateOnEnter<BrowHorn>()
             .ActivateOnEnter<Firebreathe>()
-            .ActivateOnEnter<RightSidedShockwave>()
-            .ActivateOnEnter<LeftSidedShockwave>()
-            .Raw.Update = () => module.Enemies(OID.WanderingGowrow).Any(e => e.IsDead) || module.PrimaryActor.IsDeadOrDestroyed;
+            .ActivateOnEnter<Shockwave>()
+            .Raw.Update = () => module.Enemies((uint)OID.WanderingGowrow).Any(e => e.IsDead) || module.PrimaryActor.IsDeadOrDestroyed;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70385, NameID = 12825)]
 public class FangsOfTheViper(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(264, 480), 19.5f, 20)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(264f, 480f), 19.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.FawningWivre, (uint)OID.FawningPeiste, (uint)OID.FawningRaptor, (uint)OID.WanderingGowrow];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

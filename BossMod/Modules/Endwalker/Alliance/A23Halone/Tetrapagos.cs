@@ -2,7 +2,7 @@
 
 class Tetrapagos(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(4);
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(10f, 30f);
     private static readonly AOEShapeCone cone = new(30f, 90f.Degrees());
@@ -35,7 +35,7 @@ class Tetrapagos(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
-            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 7.3f)));
+            _aoes.Add(new(shape, spell.LocXZ, caster.Rotation, Module.CastFinishAt(spell, 7.3f)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

@@ -30,16 +30,16 @@ public enum AID : uint
     Telega = 9630 // GymnasiouLyssa->self, no cast, single-target, bonus add disappear
 }
 
-class StormWing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StormWing), new AOEShapeCone(40f, 45f.Degrees()));
-class FlashGale(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlashGale), 6);
+class StormWing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StormWing, new AOEShapeCone(40f, 45f.Degrees()));
+class FlashGale(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlashGale, 6);
 class WindCutter(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones)
 {
     private static List<Actor> GetVoidzones(BossModule module) => module.Enemies((uint)OID.StormsGrip);
 }
-class Wingblow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wingblow), 15f);
-class DreadDive(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DreadDive));
+class Wingblow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wingblow, 15f);
+class DreadDive(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DreadDive);
 
-class HeavySmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySmash), 6f);
+class HeavySmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySmash, 6f);
 
 class GymnasiouSatyrosStates : StateMachineBuilder
 {

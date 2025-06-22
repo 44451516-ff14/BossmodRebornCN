@@ -13,9 +13,9 @@ public enum AID : uint
     IncendiaryRing = 38452 // Aerostat2->self, 4.8s cast, range 3-12 donut
 }
 
-class IncendiaryRing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IncendiaryRing), new AOEShapeDonut(3, 12));
+sealed class IncendiaryRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IncendiaryRing, new AOEShapeDonut(3, 12));
 
-class D040VanguardAerostat1States : StateMachineBuilder
+sealed class D040VanguardAerostat1States : StateMachineBuilder
 {
     public D040VanguardAerostat1States(BossModule module) : base(module)
     {
@@ -37,7 +37,7 @@ class D040VanguardAerostat1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12780, SortOrder = 4)]
-public class D040VanguardAerostat1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-50f, -15f), new ArenaBoundsRect(7.7f, 25f))
+public sealed class D040VanguardAerostat1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-50f, -15f), new ArenaBoundsRect(7.7f, 25f))
 {
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Aerostat2];
 

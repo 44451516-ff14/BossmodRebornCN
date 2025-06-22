@@ -4,7 +4,7 @@
 // - wide/knockback are always NE/NW platforms, narrow are always SE/SW platforms
 // - NE/NW are always mirrored (looking from platform to the main one, wide is on the left side on one of them and on the right side on the other); which one is which is random
 // - SE/SW have two patterns (either inner or outer lanes change left/right side); which one is which is random
-class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
+sealed class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
 {
     public enum Pattern { Unknown, A, B } // B is always inverted
 
@@ -87,16 +87,16 @@ class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
         switch (index)
         {
             case 2:
-                AssignPattern(ref _patternS, 0x00800040, 0x02000100, state);
+                AssignPattern(ref _patternS, 0x00800040u, 0x02000100u, state);
                 break;
             case 3:
-                AssignPattern(ref _patternS, 0x02000100, 0x00800040, state);
+                AssignPattern(ref _patternS, 0x02000100u, 0x00800040u, state);
                 break;
             case 5:
-                AssignPattern(ref _patternN, 0x00020001, 0x00200010, state);
+                AssignPattern(ref _patternN, 0x00020001u, 0x00200010u, state);
                 break;
             case 8:
-                AssignPattern(ref _patternN, 0x00200010, 0x00020001, state);
+                AssignPattern(ref _patternN, 0x00200010u, 0x00020001u, state);
                 break;
         }
     }
@@ -104,7 +104,7 @@ class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
     private void AssignPattern(ref Pattern field, uint stateA, uint stateB, uint state)
     {
         // 0x00020001 XX, 0x00200010 out and inner crossed, 0x02000100 inner crossed, 0x00800040 outer crossed, 0x00080004 disappear
-        if (state == 0x00080004)
+        if (state == 0x00080004u)
             return; // end
         if (state != stateA && state != stateB)
         {
@@ -118,7 +118,7 @@ class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ForgedTrackKnockback(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.StormyEdgeKnockback))
+sealed class ForgedTrackKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.StormyEdgeKnockback)
 {
     private readonly ForgedTrack? _main = module.FindComponent<ForgedTrack>();
 
@@ -129,7 +129,7 @@ class ForgedTrackKnockback(BossModule module) : Components.GenericKnockback(modu
         if (_main == null)
             return [];
         var count = _main.KnockbackAOEs.Count;
-        var sources = new Knockback[count * 2];
+        Span<Knockback> sources = new Knockback[count * 2];
         var index = 0;
         for (var i = 0; i < count; ++i)
         {

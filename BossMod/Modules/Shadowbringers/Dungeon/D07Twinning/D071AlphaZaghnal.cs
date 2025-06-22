@@ -26,7 +26,11 @@ public enum AID : uint
     BeastPassant = 15714, // Boss->self, no cast, single-target
     Pounce = 15724, // BetaZaghnal->player, no cast, single-target
 
-    PounceErrant = 15711, // Boss->players, no cast, range 10 circle
+    PounceErrant1 = 15711, // Boss->players, no cast, range 10 circle
+    PounceErrant2 = 15721, // Boss->player, no cast, range 10 circle
+    PounceErrant3 = 15722, // Boss->player, no cast, range 10 circle
+    PounceErrant4 = 16842, // Boss->player, no cast, range 10 circle
+
     ChargeEradicated = 15715 // Boss->player, 5.0s cast, range 8 circle
 }
 
@@ -36,14 +40,22 @@ public enum IconID : uint
     Target2 = 51, // player
     Target3 = 52, // player
     Target4 = 53, // player
-    Spreadmarker = 90 // player
+    PounceErrant = 90 // player
 }
 
-class BeastlyRoar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BeastlyRoar));
-class Augurium(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Augurium), new AOEShapeCone(12f, 60f.Degrees()));
+sealed class BeastlyRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.BeastlyRoar);
+sealed class Augurium(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Augurium, new AOEShapeCone(12f, 60f.Degrees()));
 
-class PounceErrant(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.PounceErrant), 10f, 4.6f)
+sealed class PounceErrant(BossModule module) : Components.GenericStackSpread(module, true)
 {
+    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
+    {
+        if (iconID == (uint)IconID.PounceErrant)
+        {
+            Spreads.Add(new(actor, 10f, WorldState.FutureTime(4.6d)));
+        }
+    }
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
@@ -79,10 +91,18 @@ class PounceErrant(BossModule module) : Components.SpreadFromIcon(module, (uint)
         if (IsSpreadTarget(actor))
             hints.Add("Spread, avoid intersecting cage hitboxes!");
     }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (Spreads.Count != 0 && spell.Action.ID is (uint)AID.PounceErrant1 or (uint)AID.PounceErrant2 or (uint)AID.PounceErrant3 or (uint)AID.PounceErrant4)
+        {
+            Spreads.RemoveAt(0);
+        }
+    }
 }
 
-class ChargeEradicated(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ChargeEradicated), 8f, 4, 4);
-class ChargeEradicatedVoidzone(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones)
+sealed class ChargeEradicated(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ChargeEradicated, 8f, 4, 4);
+sealed class ChargeEradicatedVoidzone(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -103,7 +123,7 @@ class ChargeEradicatedVoidzone(BossModule module) : Components.Voidzone(module, 
     }
 }
 
-class ForlornImpact(BossModule module) : Components.GenericBaitAway(module)
+sealed class ForlornImpact(BossModule module) : Components.GenericBaitAway(module)
 {
     private readonly AOEShapeRect rect = new(50f, 3f);
 
@@ -161,7 +181,7 @@ class ForlornImpact(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class D071AlphaZaghnalStates : StateMachineBuilder
+sealed class D071AlphaZaghnalStates : StateMachineBuilder
 {
     public D071AlphaZaghnalStates(BossModule module) : base(module)
     {
@@ -176,7 +196,7 @@ class D071AlphaZaghnalStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 655, NameID = 8162)]
-public class D071AlphaZaghnal(WorldState ws, Actor primary) : BossModule(ws, primary, new(200, 285), new ArenaBoundsSquare(19.5f))
+public sealed class D071AlphaZaghnal(WorldState ws, Actor primary) : BossModule(ws, primary, new(200f, 285f), new ArenaBoundsSquare(19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

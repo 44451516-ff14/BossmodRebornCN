@@ -1,19 +1,19 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.V01SS.V011Geryon;
 
-class ColossalStrike(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ColossalStrike));
+class ColossalStrike(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ColossalStrike);
 
-class ColossalCharge1(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.ColossalCharge1), 7f);
-class ColossalCharge2(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.ColossalCharge2), 7f);
+class ColossalCharge1(BossModule module) : Components.ChargeAOEs(module, (uint)AID.ColossalCharge1, 7f);
+class ColossalCharge2(BossModule module) : Components.ChargeAOEs(module, (uint)AID.ColossalCharge2, 7f);
 
-class ColossalLaunch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ColossalLaunch), new AOEShapeRect(20f, 20f));
-class ExplosionAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ExplosionAOE), 15);
-class ExplosionDonut(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ExplosionDonut), new AOEShapeDonut(5f, 17f));
+class ColossalLaunch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColossalLaunch, new AOEShapeRect(20f, 20f));
+class ExplosionAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ExplosionAOE, 15);
+class ExplosionDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ExplosionDonut, new AOEShapeDonut(5f, 17f));
 
-class ColossalSlam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ColossalSlam), new AOEShapeCone(60f, 30f.Degrees()));
-class ColossalSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ColossalSwing), new AOEShapeCone(60f, 90f.Degrees()));
+class ColossalSlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColossalSlam, new AOEShapeCone(60f, 30f.Degrees()));
+class ColossalSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColossalSwing, new AOEShapeCone(60f, 90f.Degrees()));
 
-class SubterraneanShudder(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SubterraneanShudder));
-class RunawaySludge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RunawaySludge), 9);
+class SubterraneanShudder(BossModule module) : Components.RaidwideCast(module, (uint)AID.SubterraneanShudder);
+class RunawaySludge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RunawaySludge, 9);
 
 class Shockwave(BossModule module) : Components.GenericKnockback(module)
 {

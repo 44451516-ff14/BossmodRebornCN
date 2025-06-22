@@ -2,7 +2,7 @@
 
 namespace BossMod.ReplayAnalysis;
 
-class TOPSpecific
+sealed class TOPSpecific
 {
     struct FlamethrowerData
     {

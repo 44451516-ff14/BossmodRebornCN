@@ -16,12 +16,12 @@ public enum AID : uint
     TailSmash = 15052, // 2724->self, 4.0s cast, range 12+R 90-degree cone
 }
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 10f);
-class Fireball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Fireball), 6f);
-class RipperClaw(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RipperClaw), new AOEShapeCone(8f, 45f.Degrees()));
-class TailSmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSmash), new AOEShapeCone(15f, 45f.Degrees()));
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 10f);
+class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, 6f);
+class RipperClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RipperClaw, new AOEShapeCone(8f, 45f.Degrees()));
+class TailSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSmash, new AOEShapeCone(15f, 45f.Degrees()));
 
-class WildCharge(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.WildCharge), 4f)
+class WildCharge(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.WildCharge, 4f)
 {
     public static List<Actor> GetKegs(BossModule module)
     {
@@ -48,7 +48,7 @@ class WildCharge(BossModule module) : Components.BaitAwayChargeCast(module, Acti
 }
 
 // knockback actually delayed by 0.5s to 1s, maybe it depends on the rectangle length of the charge
-class WildChargeKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.WildCharge), 10f, kind: Kind.DirForward, stopAtWall: true);
+class WildChargeKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.WildCharge, 10f, kind: Kind.DirForward, stopAtWall: true);
 
 class KegExplosion(BossModule module) : Components.GenericStackSpread(module)
 {

@@ -1,18 +1,19 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS1TrinitySeeker;
 
-class DRS1States : StateMachineBuilder
+sealed class DRS1TrinitySeekerStates : StateMachineBuilder
 {
-    public DRS1States(BossModule module) : base(module)
+    public DRS1TrinitySeekerStates(BossModule module) : base(module)
     {
-        SimplePhase(0, Phase1, "P1")
+        SimplePhase(default, Phase1, "P1")
             .ActivateOnEnter<ArenaChange>()
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1 || (Module.PrimaryActor.CastInfo?.IsSpell(AID.VerdantPathSword) ?? false);
-        SimplePhase(1, Phase2, "P2")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1 || (Module.PrimaryActor.CastInfo?.IsSpell(AID.VerdantPathFist) ?? false);
-        SimplePhase(2, Phase3, "P3")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1 || (Module.PrimaryActor.CastInfo?.IsSpell(AID.VerdantPathKatana) ?? false);
-        SimplePhase(3, Phase4, "P4")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1;
+            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1u || (Module.PrimaryActor.CastInfo?.IsSpell(AID.VerdantPathSword) ?? false);
+        SimplePhase(1u, Phase2, "P2")
+            .DeactivateOnEnter<ArenaChange>()
+            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1u || (Module.PrimaryActor.CastInfo?.IsSpell(AID.VerdantPathFist) ?? false);
+        SimplePhase(2u, Phase3, "P3")
+            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1u || (Module.PrimaryActor.CastInfo?.IsSpell(AID.VerdantPathKatana) ?? false);
+        SimplePhase(3u, Phase4, "P4")
+            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1u;
     }
 
     private void Phase1(uint id)
@@ -64,7 +65,7 @@ class DRS1States : StateMachineBuilder
 
     private void VerdantTempest(uint id, float delay, bool withChains = false)
     {
-        CastStart(id, AID.VerdantTempest, delay)
+        CastStart(id, (uint)AID.VerdantTempest, delay)
             .ActivateOnEnter<BurningChains>(withChains);
         CastEnd(id + 1, 5)
             .ActivateOnEnter<VerdantTempest>();
@@ -76,7 +77,7 @@ class DRS1States : StateMachineBuilder
 
     private void VerdantPathKatana(uint id, float delay)
     {
-        Cast(id, AID.VerdantPathKatana, delay, 3)
+        Cast(id, (uint)AID.VerdantPathKatana, delay, 3)
             .ActivateOnEnter<ActOfMercy>();
         ComponentCondition<ActOfMercy>(id + 2, 4.6f, comp => comp.NumCasts > 0, "Cross aoe")
             .DeactivateOnExit<ActOfMercy>();
@@ -84,11 +85,11 @@ class DRS1States : StateMachineBuilder
 
     private void MercyFourfoldHints(uint id, float delay)
     {
-        Cast(id, AID.FirstMercy, delay, 3)
+        Cast(id, (uint)AID.FirstMercy, delay, 3)
             .ActivateOnEnter<MercyFourfold>();
-        Cast(id + 0x10, AID.SecondMercy, 0.2f, 3);
-        Cast(id + 0x20, AID.ThirdMercy, 0.2f, 3);
-        Cast(id + 0x30, AID.FourthMercy, 0.2f, 3);
+        Cast(id + 0x10, (uint)AID.SecondMercy, 0.2f, 3);
+        Cast(id + 0x20, (uint)AID.ThirdMercy, 0.2f, 3);
+        Cast(id + 0x30, (uint)AID.FourthMercy, 0.2f, 3);
     }
 
     private State MercyFourfoldResolve(uint id, float delay, bool activateSeasons)
@@ -108,7 +109,7 @@ class DRS1States : StateMachineBuilder
     {
         MercyFourfoldHints(id, delay);
         // if with seasons, right before 4th mercy cast end, avatar starts seasons of mercy cast
-        Cast(id + 0x100, AID.MercyFourfold, 0.2f, 2);
+        Cast(id + 0x100, (uint)AID.MercyFourfold, 0.2f, 2);
         return MercyFourfoldResolve(id + 0x200, 0.2f, activateSeasons);
     }
 
@@ -126,7 +127,7 @@ class DRS1States : StateMachineBuilder
 
     private void MercyFourfoldSeasonsOfMercy(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
         MercyFourfold(id + 0x1000, 5.2f, true);
         SeasonsOfMercy(id + 0x2000, 1.4f);
     }
@@ -142,7 +143,7 @@ class DRS1States : StateMachineBuilder
 
     private void VerdantPathSword(uint id, float delay)
     {
-        Cast(id, AID.VerdantPathSword, delay, 3)
+        Cast(id, (uint)AID.VerdantPathSword, delay, 3)
             .ActivateOnEnter<BalefulSwathe>();
         ComponentCondition<BalefulSwathe>(id + 2, 4.6f, comp => comp.NumCasts > 0, "Side aoes")
             .DeactivateOnExit<BalefulSwathe>();
@@ -150,15 +151,15 @@ class DRS1States : StateMachineBuilder
 
     private void BalefulOnslaughtDouble(uint id, float delay)
     {
-        Cast(id, AID.BalefulOnslaught, delay, 4)
+        Cast(id, (uint)AID.BalefulOnslaught, delay, 4)
             .ActivateOnEnter<BalefulOnslaught1>();
         ComponentCondition<BalefulOnslaught1>(id + 2, 0.2f, comp => comp.NumCasts > 0, "Tankbuster (shared/invuln)")
             .DeactivateOnExit<BalefulOnslaught1>()
             .SetHint(StateMachine.StateHint.Tankbuster);
 
-        Cast(id + 0x10, AID.PhantomEdge, 3.2f, 4);
+        Cast(id + 0x10, (uint)AID.PhantomEdge, 3.2f, 4);
 
-        Cast(id + 0x20, AID.BalefulOnslaught, 2.2f, 4)
+        Cast(id + 0x20, (uint)AID.BalefulOnslaught, 2.2f, 4)
             .ActivateOnEnter<BalefulOnslaught2>();
         ComponentCondition<BalefulOnslaught2>(id + 0x22, 0.2f, comp => comp.NumCasts > 0, "Tankbuster (solo)")
             .DeactivateOnExit<BalefulOnslaught2>()
@@ -185,7 +186,7 @@ class DRS1States : StateMachineBuilder
 
     private void BalefulFirestormBalefulBlade(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
         BalefulBladeCastStart(id + 0x10, 13.5f)
             .ActivateOnEnter<BalefulFirestorm>(); // first comet happens 6.8s before, then every second; first firestorm starts right before this cast
         CastEnd(id + 0x11, 8, "Dashes + Knockback")
@@ -196,7 +197,7 @@ class DRS1States : StateMachineBuilder
 
     private void VerdantPathFist(uint id, float delay)
     {
-        Cast(id, AID.VerdantPathFist, delay, 3)
+        Cast(id, (uint)AID.VerdantPathFist, delay, 3)
             .ActivateOnEnter<IronImpact>();
         ComponentCondition<IronImpact>(id + 2, 4.8f, comp => comp.NumCasts > 0, "Line stack")
             .DeactivateOnExit<IronImpact>();
@@ -204,28 +205,28 @@ class DRS1States : StateMachineBuilder
 
     private void IronRoseIronSplitter(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
         ComponentCondition<IronRose>(id + 0x10, 9.4f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<IronRose>();
         ComponentCondition<IronRose>(id + 0x11, 3.5f, comp => comp.NumCasts > 0, "Line AOEs")
             .DeactivateOnExit<IronRose>();
-        Cast(id + 0x20, AID.IronSplitter, 0.8f, 5, "Tiles/sands")
+        Cast(id + 0x20, (uint)AID.IronSplitter, 0.8f, 5, "Tiles/sands")
             .ActivateOnEnter<IronSplitter>()
             .DeactivateOnExit<IronSplitter>();
     }
 
     private void IronSplitterDeadIronIronRose(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
 
-        Cast(id + 0x100, AID.IronSplitter, 6.0f, 5, "Tiles/sands")
+        Cast(id + 0x100, (uint)AID.IronSplitter, 6.0f, 5, "Tiles/sands")
             .ActivateOnEnter<IronSplitter>()
             .ActivateOnEnter<DeadIron>() // icons & tethers appear ~3.2s after cast start
             .DeactivateOnExit<IronSplitter>();
         ComponentCondition<DeadIron>(id + 0x110, 2.8f, comp => comp.NumCasts > 0, "Earthshakers 1")
             .DeactivateOnExit<DeadIron>();
 
-        CastStart(id + 0x200, AID.IronSplitter, 4.2f)
+        CastStart(id + 0x200, (uint)AID.IronSplitter, 4.2f)
             .ActivateOnEnter<DeadIron>(); // icons & tethers appear ~1.8s before cast start
         ComponentCondition<DeadIron>(id + 0x201, 3.2f, comp => comp.NumCasts > 0, "Earthshakers 2")
             .ActivateOnEnter<IronSplitter>()
@@ -243,7 +244,7 @@ class DRS1States : StateMachineBuilder
     private void BalefulFirestormMercyFourfoldSeasonsOfMercy(uint id, float delay)
     {
         // TODO: consider starting showing mercies only after firestorms resolve
-        Cast(id, AID.ManifestAvatar, delay, 3)
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3)
             .ActivateOnEnter<BalefulFirestorm>(); // first comet is ~6.2s after cast end
         MercyFourfold(id + 0x1000, 11.4f, true)
             .DeactivateOnExit<BalefulFirestorm>(); // last firestorm ends ~4.2s before 4th mercy cast end
@@ -252,11 +253,11 @@ class DRS1States : StateMachineBuilder
 
     private void MercyFourfoldIronSplitter(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3)
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3)
             .ActivateOnEnter<IronSplitter>(); // splitter cast starts ~1.9s after 3rd mercy cast start
         MercyFourfoldHints(id + 0x100, 4.2f);
 
-        CastStart(id + 0x200, AID.MercyFourfold, 0.2f);
+        CastStart(id + 0x200, (uint)AID.MercyFourfold, 0.2f);
         ComponentCondition<IronSplitter>(id + 0x210, 0.5f, comp => comp.NumCasts > 0, "Tiles/sands 1", 2) // note: very large variance here
             .DeactivateOnExit<IronSplitter>();
         CastEnd(id + 0x220, 1.5f)
@@ -269,7 +270,7 @@ class DRS1States : StateMachineBuilder
 
     private void SeasonsOfMercyIronSplitterIronRose(uint id, float delay)
     {
-        CastStart(id, AID.SeasonsOfMercy, delay)
+        CastStart(id, (uint)AID.SeasonsOfMercy, delay)
             .ActivateOnEnter<IronSplitter>(); // splitter starts ~1.3s before seasons cast start
         ComponentCondition<IronSplitter>(id + 0x10, 4, comp => comp.NumCasts > 0, "Tiles/sands", 2) // note: very large variance here
             .DeactivateOnExit<IronSplitter>();
@@ -295,7 +296,7 @@ class DRS1States : StateMachineBuilder
 
     private void BalefulBladeMercyFourfold(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
         BalefulBladeCastStart(id + 0x10, 13.4f)
             .ActivateOnEnter<MercyFourfold>(); // avatar starts first mercy cast ~3.1s before this
         CastEnd(id + 0x11, 8, "Knockback")
@@ -307,7 +308,7 @@ class DRS1States : StateMachineBuilder
 
     private void IronSplitterBalefulBlade(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
         BalefulBladeCastStart(id + 0x10, 12.5f)
             .ActivateOnEnter<IronSplitter>(); // avatar starts iron splitter cast ~0.8s before baleful blade
         ComponentCondition<IronSplitter>(id + 0x20, 4.2f, comp => comp.NumCasts > 0, "Tiles/sands", 2) // note: very large variance here
@@ -320,7 +321,7 @@ class DRS1States : StateMachineBuilder
     // TODO: haven't seen the full mechanic...
     private void BurningChainsMercyFourfoldBalefulBlade(uint id, float delay)
     {
-        Cast(id, AID.ManifestAvatar, delay, 3);
+        Cast(id, (uint)AID.ManifestAvatar, delay, 3);
         ComponentCondition<MercyFourfold>(id + 0x10, 9.3f, comp => comp.AOEs.Count > 0)
             .ActivateOnEnter<MercyFourfold>();
         // TODO: no idea about what happens after...

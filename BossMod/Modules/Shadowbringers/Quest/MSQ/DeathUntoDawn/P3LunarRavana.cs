@@ -1,5 +1,4 @@
-﻿using BossMod.QuestBattle;
-using RID = BossMod.Roleplay.AID;
+﻿using RID = BossMod.Roleplay.AID;
 
 namespace BossMod.Shadowbringers.Quest.MSQ.DeathUntoDawn.P3;
 
@@ -22,7 +21,7 @@ public enum SID : uint
     Invincibility = 325
 }
 
-class GrahaAI(BossModule module, WorldState ws) : UnmanagedRotation(ws, 25)
+class GrahaAI(BossModule module, WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
 {
     private static readonly uint[] _adds = [(uint)OID.MoonGana, (uint)OID.SpiritGana, (uint)OID.RavanasWill];
 
@@ -89,9 +88,22 @@ class GrahaAI(BossModule module, WorldState ws) : UnmanagedRotation(ws, 25)
     }
 }
 
-class AutoGraha(BossModule module) : RotationModule<GrahaAI>(module);
+class AutoGraha(BossModule module) : QuestBattle.RotationModule<GrahaAI>(module)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var h = hints.PotentialTargets[i];
+            if (h.Actor.FindStatus((uint)SID.Invincibility) != null)
+                h.Priority = AIHints.Enemy.PriorityInvincible;
+        }
+        base.AddAIHints(slot, actor, assignment, hints);
+    }
+}
 class DirectionalParry(BossModule module) : Components.DirectionalParry(module, [0x3201]);
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), new AOEShapeCross(80f, 5f), maxCasts: 2);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeCross(80f, 5f), maxCasts: 2);
 
 class LunarRavanaStates : StateMachineBuilder
 {
@@ -105,21 +117,8 @@ class LunarRavanaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69602, NameID = 10037)]
-public class LunarRavana(WorldState ws, Actor primary) : BossModule(ws, primary, new(-144, 83), new ArenaBoundsCircle(20))
+public class LunarRavana(WorldState ws, Actor primary) : BossModule(ws, primary, new(-144f, 83f), new ArenaBoundsCircle(20f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(WorldState.Actors.Where(x => !x.IsAlly));
-
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        base.CalculateModuleAIHints(slot, actor, assignment, hints);
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var h = hints.PotentialTargets[i];
-            if (h.Actor.FindStatus((uint)SID.Invincibility) != null)
-                h.Priority = AIHints.Enemy.PriorityInvincible;
-        }
-    }
-
     protected override bool CheckPull() => Raid.Player()!.InCombat;
 }

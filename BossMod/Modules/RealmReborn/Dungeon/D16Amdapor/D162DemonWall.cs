@@ -15,10 +15,10 @@ public enum AID : uint
     Repel = 1047 // Boss->self, 3.0s cast, range 40+R 180?-degree cone knockback 20 (non-immunable)
 }
 
-class LiquefyCenter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LiquefyCenter), new AOEShapeRect(50f, 4f));
-class LiquefySides(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LiquefySides), new AOEShapeRect(50f, 3.5f));
+class LiquefyCenter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LiquefyCenter, new AOEShapeRect(50f, 4f));
+class LiquefySides(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LiquefySides, new AOEShapeRect(50f, 3.5f));
 
-class Repel(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Repel), 20f, true)
+class Repel(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Repel, 20f, true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

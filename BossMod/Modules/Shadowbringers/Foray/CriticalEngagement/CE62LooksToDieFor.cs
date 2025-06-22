@@ -37,9 +37,9 @@ public enum AID : uint
     Deathwall = 24711 // Helper->self, no cast, range 20-30 donut
 }
 
-class Thundercall(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Thundercall), "Raidwide + summon lighting orbs");
+sealed class Thundercall(BossModule module) : Components.RaidwideCast(module, (uint)AID.Thundercall, "Raidwide + summon lighting orbs");
 
-class LightningBoltDistantClap(BossModule module) : Components.GenericAOEs(module)
+sealed class LightningBoltDistantClap(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -88,9 +88,9 @@ class LightningBoltDistantClap(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-class TwistingWinds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwistingWinds), new AOEShapeRect(80f, 5f));
+sealed class TwistingWinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwistingWinds, new AOEShapeRect(80f, 5f));
 
-class CloudToGround(BossModule module) : Components.Exaflare(module, 5f)
+sealed class CloudToGround(BossModule module) : Components.Exaflare(module, 5f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -122,9 +122,9 @@ class CloudToGround(BossModule module) : Components.Exaflare(module, 5f)
     }
 }
 
-class Flame(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Flame), "Raidwide + summon flame orbs");
+sealed class Flame(BossModule module) : Components.RaidwideCast(module, (uint)AID.Flame, "Raidwide + summon flame orbs");
 
-class Burn(BossModule module) : Components.GenericAOEs(module)
+sealed class Burn(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(12);
     private static readonly AOEShapeCircle _shape = new(8f);
@@ -134,19 +134,19 @@ class Burn(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
-        if (actor.OID == (uint)OID.BallOfFire && animState1 == 1)
+        if (actor.OID == (uint)OID.BallOfFire && animState1 == 1u)
             _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(5d)));
     }
 
@@ -159,16 +159,13 @@ class Burn(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-abstract class Lash(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 90f.Degrees()));
-class Forelash(BossModule module) : Lash(module, AID.Forelash);
-class Backlash(BossModule module) : Lash(module, AID.Backlash);
+sealed class Lash(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Forelash, (uint)AID.Backlash], new AOEShapeCone(40f, 90f.Degrees()));
+sealed class Charybdis(BossModule module) : Components.CastHint(module, (uint)AID.Charybdis, "Set hp to 1");
+sealed class Roar(BossModule module) : Components.RaidwideCast(module, (uint)AID.Roar);
+sealed class Levinbolt(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.LevinboltAOE, 6f);
+sealed class SerpentsEdge(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SerpentsEdge);
 
-class Charybdis(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Charybdis), "Set hp to 1");
-class Roar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Roar));
-class Levinbolt(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.LevinboltAOE), 6f);
-class SerpentsEdge(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SerpentsEdge));
-
-class CE62LooksToDieForStates : StateMachineBuilder
+sealed class CE62LooksToDieForStates : StateMachineBuilder
 {
     public CE62LooksToDieForStates(BossModule module) : base(module)
     {
@@ -179,8 +176,7 @@ class CE62LooksToDieForStates : StateMachineBuilder
             .ActivateOnEnter<CloudToGround>()
             .ActivateOnEnter<Flame>()
             .ActivateOnEnter<Burn>()
-            .ActivateOnEnter<Forelash>()
-            .ActivateOnEnter<Backlash>()
+            .ActivateOnEnter<Lash>()
             .ActivateOnEnter<Charybdis>()
             .ActivateOnEnter<Roar>()
             .ActivateOnEnter<Levinbolt>()
@@ -188,5 +184,8 @@ class CE62LooksToDieForStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 778, NameID = 30)] // bnpcname=9925
-public class CE62LooksToDieFor(WorldState ws, Actor primary) : BossModule(ws, primary, new(-200f, -580f), new ArenaBoundsCircle(20f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 30)] // bnpcname=9925
+public sealed class CE62LooksToDieFor(WorldState ws, Actor primary) : BossModule(ws, primary, new(-200f, -580f), new ArenaBoundsCircle(20f))
+{
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 20f);
+}

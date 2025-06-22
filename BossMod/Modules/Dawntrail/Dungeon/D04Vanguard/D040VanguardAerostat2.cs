@@ -20,11 +20,11 @@ public enum AID : uint
     SpreadShot = 39017, // SentryS7->self, 4.0s cast, range 12 90-degree cone
 }
 
-class IncendiaryRing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IncendiaryRing), new AOEShapeDonut(3f, 12f));
-class Electrobeam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Electrobeam), new AOEShapeRect(50f, 2f));
-class SpreadShot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpreadShot), new AOEShapeCone(12f, 45f.Degrees()));
+sealed class IncendiaryRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IncendiaryRing, new AOEShapeDonut(3f, 12f));
+sealed class Electrobeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrobeam, new AOEShapeRect(50f, 2f));
+sealed class SpreadShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpreadShot, new AOEShapeCone(12f, 45f.Degrees()));
 
-class D040VanguardAerostat2States : StateMachineBuilder
+sealed class D040VanguardAerostat2States : StateMachineBuilder
 {
     public D040VanguardAerostat2States(BossModule module) : base(module)
     {
@@ -48,7 +48,7 @@ class D040VanguardAerostat2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12780, SortOrder = 6)]
-public class D040VanguardAerostat2(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D040VanguardAerostat2(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(92.36f, -331.66f), new(97.65f, -331.36f), new(98.25f, -331.02f), new(100.54f, -328.46f), new(100.83f, -312.14f),
     new(100.27f, -312.18f), new(99.64f, -312.33f), new(99.11f, -312.16f), new(98.67f, -311.78f), new(98.42f, -311.24f),

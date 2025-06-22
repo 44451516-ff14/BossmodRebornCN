@@ -40,38 +40,29 @@ public enum AID : uint
     ChimneySmack = 38468, // Helper->player, 5.0s cast, single-target, tankbuster
 }
 
-class Anthrabomb(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10f);
-class Anthrabomb1(BossModule module) : Anthrabomb(module, AID.Anthrabomb1);
-class Anthrabomb2(BossModule module) : Anthrabomb(module, AID.Anthrabomb2);
+sealed class Anthrabomb(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Anthrabomb1, (uint)AID.Anthrabomb2], 10f);
+sealed class AnthrabombSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AnthrabombSpread, 6f);
+sealed class HotBlast(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HotBlast1, (uint)AID.HotBlast2], new AOEShapeRect(40f, 3f));
+sealed class CarbonaceousCombustion(BossModule module) : Components.RaidwideCast(module, (uint)AID.CarbonaceousCombustion);
+sealed class ChimneySmack(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ChimneySmack);
+sealed class BurningCoals(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.BurningCoals, 6f, 4, 4);
 
-class AnthrabombSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AnthrabombSpread), 6f);
-
-class HotBlast(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 3f));
-class HotBlast1(BossModule module) : HotBlast(module, AID.HotBlast1);
-class HotBlast2(BossModule module) : HotBlast(module, AID.HotBlast2);
-
-class CarbonaceousCombustion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CarbonaceousCombustion));
-class ChimneySmack(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ChimneySmack));
-class BurningCoals(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.BurningCoals), 6f, 4, 4);
-
-class D072AnthraciteStates : StateMachineBuilder
+sealed class D072AnthraciteStates : StateMachineBuilder
 {
     public D072AnthraciteStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Anthrabomb1>()
-            .ActivateOnEnter<Anthrabomb2>()
+            .ActivateOnEnter<Anthrabomb>()
             .ActivateOnEnter<AnthrabombSpread>()
             .ActivateOnEnter<ChimneySmack>()
-            .ActivateOnEnter<HotBlast1>()
-            .ActivateOnEnter<HotBlast2>()
+            .ActivateOnEnter<HotBlast>()
             .ActivateOnEnter<CarbonaceousCombustion>()
             .ActivateOnEnter<BurningCoals>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12853)]
-public class D072Anthracite(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D072Anthracite(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private const float Radius = 3.8f;
     private static readonly Square square1 = new(new(-118.001f, -56.999f), Radius);

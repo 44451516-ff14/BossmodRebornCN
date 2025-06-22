@@ -2,9 +2,9 @@
 
 class Lightstream(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(7);
 
-    private static readonly AOEShapeRect _shape = new(50, 5);
+    private static readonly AOEShapeRect _shape = new(50f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -29,8 +29,8 @@ class Lightstream(BossModule module) : Components.GenericAOEs(module)
         if (rotation != default)
         {
             for (var i = 0; i < 7; ++i)
-                _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), actor.Rotation + i * rotation, WorldState.FutureTime(8 + i * 1.1f)));
-            _aoes.SortBy(x => x.Activation);
+                _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), actor.Rotation + i * rotation, WorldState.FutureTime(8d + i * 1.1d)));
+            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 }

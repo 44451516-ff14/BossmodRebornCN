@@ -1,23 +1,23 @@
 namespace BossMod.Heavensward.Extreme.Ex3Thordan;
 
-class AscalonsMight(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.AscalonsMight), new AOEShapeCone(11.8f, 45f.Degrees()));
+class AscalonsMight(BossModule module) : Components.Cleave(module, (uint)AID.AscalonsMight, new AOEShapeCone(11.8f, 45f.Degrees()));
 
-abstract class HeavenlySlash(BossModule module, OID oid) : Components.Cleave(module, ActionID.MakeSpell(AID.HeavenlySlash), new AOEShapeCone(10.2f, 45f.Degrees()), [(uint)oid]);
+abstract class HeavenlySlash(BossModule module, OID oid) : Components.Cleave(module, (uint)AID.HeavenlySlash, new AOEShapeCone(10.2f, 45f.Degrees()), [(uint)oid]);
 class HeavenlySlashAdelphel(BossModule module) : HeavenlySlash(module, OID.SerAdelphel);
 class HeavenlySlashJanlenoux(BossModule module) : HeavenlySlash(module, OID.SerJanlenoux);
 
-class Meteorain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MeteorainAOE), 6);
-class AscalonsMercy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AscalonsMercy), new AOEShapeCone(34.8f, 10f.Degrees()));
-class AscalonsMercyHelper(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AscalonsMercyAOE), new AOEShapeCone(34.5f, 10f.Degrees()));
-class DragonsRage(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.DragonsRage), 6f, 8, 8);
-class LightningStorm(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.LightningStormAOE), 5f);
-class Heavensflame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavensflameAOE), 6f);
-class Conviction(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.ConvictionAOE), 3f);
-class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, ActionID.MakeSpell(AID.HolyChain));
+class Meteorain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeteorainAOE, 6);
+class AscalonsMercy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AscalonsMercy, new AOEShapeCone(34.8f, 10f.Degrees()));
+class AscalonsMercyHelper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AscalonsMercyAOE, new AOEShapeCone(34.5f, 10f.Degrees()));
+class DragonsRage(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.DragonsRage, 6f, 8, 8);
+class LightningStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.LightningStormAOE, 5f);
+class Heavensflame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavensflameAOE, 6f);
+class Conviction(BossModule module) : Components.CastTowers(module, (uint)AID.ConvictionAOE, 3f);
+class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, (uint)AID.HolyChain);
 class SerZephirin(BossModule module) : Components.Adds(module, (uint)OID.SerZephirin);
 
-class BossReappear(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.BossReappear));
-class LightOfAscalon(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.LightOfAscalon), true)
+class BossReappear(BossModule module) : Components.CastCounter(module, (uint)AID.BossReappear);
+class LightOfAscalon(BossModule module) : Components.GenericKnockback(module, (uint)AID.LightOfAscalon, true)
 {
     private readonly List<Knockback> _sources = [];
 
@@ -36,10 +36,10 @@ class LightOfAscalon(BossModule module) : Components.GenericKnockback(module, Ac
     }
 }
 
-class UltimateEnd(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.UltimateEndAOE));
-class HeavenswardLeap(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.HeavenswardLeap));
-class PureOfSoul(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.PureOfSoul));
-class AbsoluteConviction(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.AbsoluteConviction));
+class UltimateEnd(BossModule module) : Components.CastCounter(module, (uint)AID.UltimateEndAOE);
+class HeavenswardLeap(BossModule module) : Components.CastCounter(module, (uint)AID.HeavenswardLeap);
+class PureOfSoul(BossModule module) : Components.CastCounter(module, (uint)AID.PureOfSoul);
+class AbsoluteConviction(BossModule module) : Components.CastCounter(module, (uint)AID.AbsoluteConviction);
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {

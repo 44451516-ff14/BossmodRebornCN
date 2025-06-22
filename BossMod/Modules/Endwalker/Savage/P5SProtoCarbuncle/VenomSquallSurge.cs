@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
-class VenomDrops(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VenomDrops), 5);
+class VenomDrops(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VenomDrops, 5);
 
 class VenomSquallSurge(BossModule module) : BossComponent(module)
 {

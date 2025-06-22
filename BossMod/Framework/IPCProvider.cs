@@ -125,8 +125,7 @@ sealed class IPCProvider : IDisposable
             return true;
         });
 
-        Register("AI.SetPreset", (string name) =>
-            ai.SetAIPreset(autorotation.Database.Presets.VisiblePresets.FirstOrDefault(x => x.Name == name)));
+        Register("AI.SetPreset", (string name) => ai.SetAIPreset(autorotation.Database.Presets.VisiblePresets.FirstOrDefault(x => x.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))));
         Register("AI.GetPreset", () => ai.GetAIPreset);
     }
 

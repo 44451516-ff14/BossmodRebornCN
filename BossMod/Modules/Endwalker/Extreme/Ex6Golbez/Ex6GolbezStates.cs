@@ -51,13 +51,13 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void BindingCold(uint id, float delay)
     {
-        Cast(id, AID.BindingCold, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.BindingCold, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void LingeringSparkStart(uint id, float delay)
     {
-        CastStart(id, AID.LingeringSpark, delay);
+        CastStart(id, (uint)AID.LingeringSpark, delay);
     }
 
     private void LingeringSparkEnd(uint id, float delay)
@@ -71,7 +71,7 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void PhasesOfTheBlade(uint id, float delay)
     {
-        Cast(id, AID.PhasesOfTheBlade, delay, 5, "Front cleave")
+        Cast(id, (uint)AID.PhasesOfTheBlade, delay, 5, "Front cleave")
             .ActivateOnEnter<PhasesOfTheBladeFront>()
             .DeactivateOnExit<PhasesOfTheBladeFront>();
         ComponentCondition<PhasesOfTheBladeBack>(id + 2, 3.4f, comp => comp.NumCasts > 0, "Back cleave")
@@ -81,7 +81,7 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void TerrastormLingeringSpark(uint id, float delay)
     {
-        Cast(id, AID.Terrastorm, delay, 3);
+        Cast(id, (uint)AID.Terrastorm, delay, 3);
         ComponentCondition<Terrastorm>(id + 0x10, 1.2f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<Terrastorm>();
         LingeringSparkStart(id + 0x20, 6.0f);
@@ -94,10 +94,10 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void TerrastormArcticAssault(uint id, float delay)
     {
-        Cast(id, AID.Terrastorm, delay, 3);
+        Cast(id, (uint)AID.Terrastorm, delay, 3);
         ComponentCondition<Terrastorm>(id + 0x10, 1.2f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<Terrastorm>();
-        CastStart(id + 0x20, AID.ArcticAssault, 2.0f)
+        CastStart(id + 0x20, (uint)AID.ArcticAssault, 2.0f)
             .ActivateOnEnter<VoidBlizzard>(); // icons appear and spells start at the same time
         CastEnd(id + 0x21, 3)
             .ActivateOnEnter<ArcticAssault>();
@@ -110,8 +110,8 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void GaleSphere1(uint id, float delay)
     {
-        Cast(id, AID.GaleSphere, delay, 3);
-        CastStart(id + 0x10, AID.ArcticAssault, 12.7f)
+        Cast(id, (uint)AID.GaleSphere, delay, 3);
+        CastStart(id + 0x10, (uint)AID.ArcticAssault, 12.7f)
             .ActivateOnEnter<GaleSphere>();
         ComponentCondition<GaleSphere>(id + 0x12, 0.5f, comp => comp.NumCasts >= 1, "Spheres 1");
         CastEnd(id + 0x13, 2.5f)
@@ -128,8 +128,8 @@ class Ex6GolbezStates : StateMachineBuilder
     // very similar to 1, but with extra 2/4 man stacks
     private void GaleSphere2(uint id, float delay)
     {
-        Cast(id, AID.GaleSphere, delay, 3);
-        CastStart(id + 0x10, AID.ArcticAssault, 12.7f)
+        Cast(id, (uint)AID.GaleSphere, delay, 3);
+        CastStart(id + 0x10, (uint)AID.ArcticAssault, 12.7f)
             .ActivateOnEnter<GaleSphere>()
             .ActivateOnEnter<VoidAero>() // these start 7s after previous cast end
             .ActivateOnEnter<VoidTornado>();
@@ -147,7 +147,7 @@ class Ex6GolbezStates : StateMachineBuilder
         ComponentCondition<GaleSphere>(id + 0x30, 3.5f, comp => comp.NumCasts >= 4, "Spheres 4")
             .DeactivateOnExit<GaleSphere>();
 
-        CastStart(id + 0x1000, AID.PhasesOfTheBlade, 0.3f);
+        CastStart(id + 0x1000, (uint)AID.PhasesOfTheBlade, 0.3f);
         Condition(id + 0x1001, 0.9f, () => !(Module.FindComponent<VoidAero>()?.Active ?? false) && !(Module.FindComponent<VoidTornado>()?.Active ?? false), "Stacks")
             .ActivateOnEnter<PhasesOfTheBladeFront>()
             .DeactivateOnExit<VoidAero>()
@@ -161,7 +161,7 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void VoidMeteor(uint id, float delay)
     {
-        CastStart(id, AID.VoidMeteor, delay)
+        CastStart(id, (uint)AID.VoidMeteor, delay)
             .ActivateOnEnter<VoidMeteor>();
         CastEnd(id + 1, 5, "Small tankbusters start");
         // comets at +0.1, +1.1, +2.1 & +3.1
@@ -172,8 +172,8 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void BlackFang(uint id, float delay)
     {
-        Cast(id, AID.AzdajasShadowBlackFang, delay, 5);
-        Cast(id + 0x10, AID.BlackFang, 6.2f, 4);
+        Cast(id, (uint)AID.AzdajasShadowBlackFang, delay, 5);
+        Cast(id + 0x10, (uint)AID.BlackFang, 6.2f, 4);
         ComponentCondition<BlackFang>(id + 0x20, 3.8f, comp => comp.NumCasts > 0, "Raidwide hit 1")
             .ActivateOnEnter<BlackFang>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -184,8 +184,8 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void BlackFangEnrage(uint id, float delay)
     {
-        Cast(id, AID.AzdajasShadowEnrage, delay, 5);
-        Cast(id + 0x10, AID.BlackFangEnrage, 5.1f, 4);
+        Cast(id, (uint)AID.AzdajasShadowEnrage, delay, 5);
+        Cast(id + 0x10, (uint)AID.BlackFangEnrage, 5.1f, 4);
         ComponentCondition<BlackFang>(id + 0x20, 3.8f, comp => comp.NumCasts > 0, "Raidwide x5")
             .ActivateOnEnter<BlackFang>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -195,7 +195,7 @@ class Ex6GolbezStates : StateMachineBuilder
     // leaves component active
     private void AzdajasShadow(uint id, float delay)
     {
-        CastMulti(id, [AID.AzdajasShadowCircleStack, AID.AzdajasShadowDonutSpread], delay, 8)
+        CastMulti(id, [(uint)AID.AzdajasShadowCircleStack, (uint)AID.AzdajasShadowDonutSpread], delay, 8)
             .ActivateOnEnter<AzdajasShadow>();
         ComponentCondition<FlamesOfEventide>(id + 0x10, 5.2f, comp => comp.NumCasts >= 1, "Tankbuster 1")
             .ActivateOnEnter<FlamesOfEventide>()
@@ -210,7 +210,7 @@ class Ex6GolbezStates : StateMachineBuilder
     // resolve for azdaja's shadow
     private void PhasesOfTheShadow(uint id, float delay)
     {
-        Cast(id, AID.PhasesOfTheShadow, delay, 5, "Front cleave")
+        Cast(id, (uint)AID.PhasesOfTheShadow, delay, 5, "Front cleave")
             .ActivateOnEnter<PhasesOfTheShadowFront>()
             .DeactivateOnExit<PhasesOfTheShadowFront>();
         ComponentCondition<PhasesOfTheShadowBack>(id + 2, 3.4f, comp => comp.NumCasts > 0, "Back cleave")
@@ -231,7 +231,7 @@ class Ex6GolbezStates : StateMachineBuilder
 
     private void DoubleMeteor(uint id, float delay)
     {
-        CastStart(id, AID.DoubleMeteor, delay)
+        CastStart(id, (uint)AID.DoubleMeteor, delay)
             .ActivateOnEnter<DragonsDescent>()
             .ActivateOnEnter<DoubleMeteor>()
             .ActivateOnEnter<Explosion>();
@@ -250,7 +250,7 @@ class Ex6GolbezStates : StateMachineBuilder
     // leaves abyssal quasar active
     private void VoidStardustAbyssalQuasarStart(uint id, float delay)
     {
-        Cast(id, AID.VoidStardust, delay, 3);
+        Cast(id, (uint)AID.VoidStardust, delay, 3);
         ComponentCondition<VoidStardust>(id + 0x10, 6.3f, comp => comp.NumCasts > 0, "Exaflares start")
             .ActivateOnEnter<VoidStardust>()
             .ActivateOnEnter<AbyssalQuasar>(); // casts start ~4.3s after boss cast end
@@ -267,7 +267,7 @@ class Ex6GolbezStates : StateMachineBuilder
     private void VoidStardust(uint id, float delay)
     {
         VoidStardustAbyssalQuasarStart(id, delay);
-        CastStartMulti(id + 0x100, [AID.EventideTriad, AID.EventideFall], 3.0f);
+        CastStartMulti(id + 0x100, [(uint)AID.EventideTriad, (uint)AID.EventideFall], 3.0f);
         VoidStardustAbyssalQuasarEnd(id + 0x110, 0.1f)
             .ActivateOnEnter<EventideFallTriad>();
         CastEnd(id + 0x120, 4.9f, "Triad/fall")
@@ -282,7 +282,7 @@ class Ex6GolbezStates : StateMachineBuilder
         LingeringSparkStart(id + 0x100, 1.0f);
         VoidStardustAbyssalQuasarEnd(id + 0x110, 2.1f);
         LingeringSparkEnd(id + 0x120, 0.9f);
-        CastMulti(id + 0x200, [AID.EventideTriad, AID.EventideFall], 0.1f, 5, "Triad/fall")
+        CastMulti(id + 0x200, [(uint)AID.EventideTriad, (uint)AID.EventideFall], 0.1f, 5, "Triad/fall")
             .ActivateOnEnter<EventideFallTriad>()
             .DeactivateOnExit<EventideFallTriad>();
     }

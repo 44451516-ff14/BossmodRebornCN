@@ -27,11 +27,11 @@ public enum AID : uint
     SanctifiedHoly1 = 17431, // 2AB3/2AB2->players/2928, 5.0s cast, range 6 circle
 }
 
-class HereticsFork(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HereticsFork), new AOEShapeCross(40f, 3f));
-class SpiritsWithout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpiritsWithout), new AOEShapeRect(3.5f, 1.5f));
-class SeraphBlade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SeraphBlade), new AOEShapeCone(40f, 90f.Degrees()));
-class HereticsQuoit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HereticsQuoit), new AOEShapeDonut(5f, 15f));
-class SanctifiedHoly(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SanctifiedHoly1), 6f);
+class HereticsFork(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HereticsFork, new AOEShapeCross(40f, 3f));
+class SpiritsWithout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpiritsWithout, new AOEShapeRect(3.5f, 1.5f));
+class SeraphBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeraphBlade, new AOEShapeCone(40f, 90f.Degrees()));
+class HereticsQuoit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HereticsQuoit, new AOEShapeDonut(5f, 15f));
+class SanctifiedHoly(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SanctifiedHoly1, 6f);
 
 class Fracture(BossModule module) : Components.GenericTowers(module)
 {
@@ -75,11 +75,11 @@ class Fracture(BossModule module) : Components.GenericTowers(module)
             }
     }
 }
-class Bloodstain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bloodstain), 5f);
-class BrandOfSin(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.BrandOfSin), 10f);
-class BladeOfJustice(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.BladeOfJustice), 6f, minStackSize: 1);
-class SanctifiedHolyII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedHolyII), 5f);
-class SanctifiedHolyIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedHolyIII), 6f);
+class Bloodstain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bloodstain, 5f);
+class BrandOfSin(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BrandOfSin, 10f);
+class BladeOfJustice(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.BladeOfJustice, 6f, minStackSize: 1);
+class SanctifiedHolyII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedHolyII, 5f);
+class SanctifiedHolyIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedHolyIII, 6f);
 
 class DikaiosyneStates : StateMachineBuilder
 {

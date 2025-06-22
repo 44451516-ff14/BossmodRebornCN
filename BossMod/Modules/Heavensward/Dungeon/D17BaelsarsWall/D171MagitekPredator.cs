@@ -24,14 +24,17 @@ public enum SID : uint
     DamageUp = 290 // none->SkyArmorReinforcement/Helper, extra=0x0
 }
 
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), new AOEShapeRect(42.94f, 3f));
-class MagitekClaw(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.MagitekClaw));
-class MagitekMissile(BossModule module) : Components.SingleTargetInstant(module, ActionID.MakeSpell(AID.MagitekMissile), 5f, "50% HP damage on prey targets")
+class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(42.94f, 3f));
+class MagitekClaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MagitekClaw);
+class MagitekMissile(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.MagitekMissile, 5f, "50% HP damage on prey targets")
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
-            Targets.Add((Raid.FindSlot(actor.InstanceID), WorldState.FutureTime(5d)));
+        {
+            var id = actor.InstanceID;
+            Targets.Add((Raid.FindSlot(id), WorldState.FutureTime(5d), id));
+        }
     }
 }
 

@@ -4,7 +4,7 @@ namespace BossMod.ReplayVisualization;
 
 // a set of columns containing cast events (typically by non-players)
 // by default contains a single column showing all actions from all sources, but extra columns can be added and per-column filters can be assigned
-public class ColumnEnemiesCastEvents : Timeline.ColumnGroup
+public sealed class ColumnEnemiesCastEvents : Timeline.ColumnGroup
 {
     private readonly StateMachineTree _tree;
     private readonly List<int> _phaseBranches;

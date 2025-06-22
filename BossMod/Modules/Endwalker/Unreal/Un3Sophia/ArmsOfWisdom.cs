@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un3Sophia;
 
-class ArmsOfWisdom(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.ArmsOfWisdom))
+class ArmsOfWisdom(BossModule module) : Components.GenericKnockback(module, (uint)AID.ArmsOfWisdom)
 {
     private Actor? _caster;
 
@@ -27,13 +27,13 @@ class ArmsOfWisdom(BossModule module) : Components.GenericKnockback(module, Acti
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _caster = caster;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _caster = null;
     }
 }

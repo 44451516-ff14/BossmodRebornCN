@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class DarkNebula(BossModule module) : Components.GenericKnockback(module)
+sealed class DarkNebula(BossModule module) : Components.GenericKnockback(module)
 {
     private const float Length = 4f;
     private const float HalfWidth = 1.75f;

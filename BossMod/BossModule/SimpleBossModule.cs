@@ -2,7 +2,7 @@
 
 // base class for simple boss modules (hunts, fates, dungeons, etc.)
 // these always center map around PC
-public abstract class SimpleBossModule(WorldState ws, Actor primary) : BossModule(ws, primary, primary.Position, new ArenaBoundsCircle(30, AllowObstacleMap: true))
+public abstract class SimpleBossModule(WorldState ws, Actor primary) : BossModule(ws, primary, primary.Position, new ArenaBoundsCircle(30f, AllowObstacleMap: true))
 {
     private WPos _prevFramePathfindCenter;
 
@@ -15,7 +15,7 @@ public abstract class SimpleBossModule(WorldState ws, Actor primary) : BossModul
         Arena.Center = WorldState.Party.Player()?.Position ?? default;
         // we don't want to change pathfinding map origin every time player slightly moves, it makes movement jittery
         // instead, (a) quantize origin and (b) only update it when player moves sufficiently far away
-        if (!_prevFramePathfindCenter.AlmostEqual(Arena.Center, 5))
+        if (!_prevFramePathfindCenter.AlmostEqual(Arena.Center, 5f))
             _prevFramePathfindCenter = Arena.Center.Rounded();
     }
 

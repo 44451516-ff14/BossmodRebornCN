@@ -28,7 +28,7 @@ class TwoThousandMinaSlash : Components.GenericLineOfSightAOE
 {
     private readonly List<Actor> _casters = [];
 
-    public TwoThousandMinaSlash(BossModule module) : base(module, ActionID.MakeSpell(AID.TwoThousandMinaSlash), 40, false)
+    public TwoThousandMinaSlash(BossModule module) : base(module, (uint)AID.TwoThousandMinaSlash, 40, false)
     {
         Refresh();
     }
@@ -37,7 +37,7 @@ class TwoThousandMinaSlash : Components.GenericLineOfSightAOE
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _casters.Add(caster);
             Refresh();
@@ -46,7 +46,7 @@ class TwoThousandMinaSlash : Components.GenericLineOfSightAOE
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _casters.Remove(caster);
             Refresh();
@@ -63,8 +63,8 @@ class TwoThousandMinaSlash : Components.GenericLineOfSightAOE
     }
 }
 
-class FallingRock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FallingRock), 4);
-class ZoomIn(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.ZoomTargetSelect), ActionID.MakeSpell(AID.ZoomIn), 5.1f, 42)
+class FallingRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 4f);
+class ZoomIn(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.ZoomTargetSelect, (uint)AID.ZoomIn, 5.1f, 42)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

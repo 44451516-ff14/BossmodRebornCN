@@ -72,21 +72,14 @@ class DualBlowsSteeledStrike(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
-        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        aoes[0].Risky = true;
         return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), _aoes.Count == 0 ? Colors.Danger : default, false));
         switch (spell.Action.ID)
         {
             case (uint)AID.DualBlows1:
@@ -95,7 +88,7 @@ class DualBlowsSteeledStrike(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.DualBlows4:
                 AddAOE(cone);
                 if (_aoes.Count == 2)
-                    _aoes.SortBy(x => x.Activation);
+                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
             case (uint)AID.SteeledStrike1:
             case (uint)AID.SteeledStrike2:
@@ -159,7 +152,7 @@ class BurningSun(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BrawlEnder(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
+class BrawlEnder(BossModule module) : Components.GenericKnockback(module, (uint)AID.BrawlEnder, stopAtWall: true)
 {
     private DateTime activation;
     private readonly FireVoidzone _aoe = module.FindComponent<FireVoidzone>()!;
@@ -185,20 +178,20 @@ class BrawlEnder(BossModule module) : Components.GenericKnockback(module, stopAt
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.BrawlEnder)
+        if (spell.Action.ID == WatchedAction)
             activation = Module.CastFinishAt(spell, 0.9f);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.BrawlEnder)
+        if (spell.Action.ID == WatchedAction)
             activation = default;
     }
 }
 
-abstract class TheThrill(BossModule module, AID aid) : Components.CastTowers(module, ActionID.MakeSpell(aid), 3f);
-class TheThrill1(BossModule module) : TheThrill(module, AID.TheThrill1);
-class TheThrill2(BossModule module) : TheThrill(module, AID.TheThrill2);
+abstract class TheThrill(BossModule module, uint aid) : Components.CastTowers(module, aid, 3f);
+class TheThrill1(BossModule module) : TheThrill(module, (uint)AID.TheThrill1);
+class TheThrill2(BossModule module) : TheThrill(module, (uint)AID.TheThrill2);
 
 class FireVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
 {
@@ -221,14 +214,11 @@ class FireVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidz
     }
 }
 
-class FancyBladework(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FancyBladework));
-class CoiledStrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CoiledStrike), new AOEShapeCone(30f, 75f.Degrees()));
-class GloryBlaze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GloryBlaze), new AOEShapeRect(40f, 3f));
-class BattleBreaker(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BattleBreaker));
-
-abstract class MorningStars(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 4f);
-class MorningStars1(BossModule module) : MorningStars(module, AID.MorningStars1);
-class MorningStars2(BossModule module) : MorningStars(module, AID.MorningStars2);
+class FancyBladework(BossModule module) : Components.RaidwideCast(module, (uint)AID.FancyBladework);
+class CoiledStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CoiledStrike, new AOEShapeCone(30f, 75f.Degrees()));
+class GloryBlaze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GloryBlaze, new AOEShapeRect(40f, 3f));
+class BattleBreaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BattleBreaker);
+class MorningStars(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MorningStars1, (uint)AID.MorningStars2], 4f);
 
 class AFatherFirstStates : StateMachineBuilder
 {
@@ -239,8 +229,7 @@ class AFatherFirstStates : StateMachineBuilder
             .ActivateOnEnter<FancyBladework>()
             .ActivateOnEnter<GloryBlaze>()
             .ActivateOnEnter<CoiledStrike>()
-            .ActivateOnEnter<MorningStars1>()
-            .ActivateOnEnter<MorningStars2>()
+            .ActivateOnEnter<MorningStars>()
             .ActivateOnEnter<FireVoidzone>()
             .ActivateOnEnter<BurningSun>()
             .ActivateOnEnter<TheThrill1>()

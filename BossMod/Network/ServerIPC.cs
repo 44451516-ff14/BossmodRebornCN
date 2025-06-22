@@ -1,4 +1,3 @@
-﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace BossMod.Network.ServerIPC;
@@ -169,6 +168,9 @@ public enum PacketID
     ServerRequestCallbackResponse2 = 379,
     ServerRequestCallbackResponse3 = 380,
     EnvControl = 402,
+    EnvControl4 = 403,
+    EnvControl8 = 404,
+    EnvControl12 = 405,
     SystemLogMessage1 = 408,
     SystemLogMessage2 = 409,
     SystemLogMessage4 = 410,

@@ -33,18 +33,18 @@ class P8S2States : StateMachineBuilder
         Aionagonia(id + 0xB0000, 9.2f);
         DominionAionagonia(id + 0xC0000, 3.2f);
         DominionAionagonia(id + 0xD0000, 3.2f);
-        Cast(id + 0xE0000, AID.Enrage, 7.1f, 16, "Enrage");
+        Cast(id + 0xE0000, (uint)AID.Enrage, 7.1f, 16, "Enrage");
     }
 
     private void Aioniopyr(uint id, float delay)
     {
-        Cast(id, AID.Aioniopyr, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.Aioniopyr, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void TyrantsUnholyDarkness(uint id, float delay)
     {
-        Cast(id, AID.TyrantsUnholyDarkness, delay, 5)
+        Cast(id, (uint)AID.TyrantsUnholyDarkness, delay, 5)
             .ActivateOnEnter<TyrantsUnholyDarkness>();
         ComponentCondition<TyrantsUnholyDarkness>(id + 2, 1.2f, comp => comp.NumCasts > 0, "Tankbuster")
             .DeactivateOnExit<TyrantsUnholyDarkness>()
@@ -53,21 +53,21 @@ class P8S2States : StateMachineBuilder
 
     private void NaturalAlignment1(uint id, float delay)
     {
-        Cast(id, AID.NaturalAlignment, delay, 5)
+        Cast(id, (uint)AID.NaturalAlignment, delay, 5)
             .ActivateOnEnter<NaturalAlignment>();
         // +1.1s: each target gets status 3412 (debuff) and 2552 0x209 (circle under player)
 
         // ~0.1s before next cast start, first NA activates (209 replaced with 1E1/1E3)
-        Cast(id + 0x10, AID.TwistNature, 6.2f, 3);
+        Cast(id + 0x10, (uint)AID.TwistNature, 6.2f, 3);
 
         // ~0.1s before next cast start, NA progress bars start filling (1E1/1E3 replaced with 1E0/1E2)
-        Cast(id + 0x20, AID.TyrantsFlare, 3.2f, 3, "Puddle bait");
+        Cast(id + 0x20, (uint)AID.TyrantsFlare, 3.2f, 3, "Puddle bait");
 
         ComponentCondition<NaturalAlignment>(id + 0x30, 3, comp => comp.CurMechanicProgress > 0, "Stack/spread")
             .ActivateOnEnter<TyrantsFlare>() // AOE casts start right after visual cast end
             .DeactivateOnExit<TyrantsFlare>(); // AOE casts end together with first NA proc
 
-        CastMulti(id + 0x40, [AID.AshingBlazeL, AID.AshingBlazeR], 0.2f, 6, "Spread/stack") // second mechanic happens together with ashing blaze end
+        CastMulti(id + 0x40, [(uint)AID.AshingBlazeL, (uint)AID.AshingBlazeR], 0.2f, 6, "Spread/stack") // second mechanic happens together with ashing blaze end
             .ActivateOnEnter<AshingBlaze>()
             .DeactivateOnExit<AshingBlaze>();
 
@@ -91,15 +91,15 @@ class P8S2States : StateMachineBuilder
 
     private void NaturalAlignment2(uint id, float delay)
     {
-        Cast(id, AID.NaturalAlignment, delay, 5)
+        Cast(id, (uint)AID.NaturalAlignment, delay, 5)
             .ActivateOnEnter<NaturalAlignment>();
         // +1.1s: each target gets status 3412 (debuff) and 2552 0x209 (circle under player)
 
-        Cast(id + 0x10, AID.InverseMagicks, 3.2f, 3);
+        Cast(id + 0x10, (uint)AID.InverseMagicks, 3.2f, 3);
         // +1.1s: 1 or 2 targets get status 3349
 
         // ~0.1s before next cast start, first NA activates (209 replaced with 1E1/1E3)
-        Cast(id + 0x20, AID.TwistNature, 3.2f, 3);
+        Cast(id + 0x20, (uint)AID.TwistNature, 3.2f, 3);
 
         ComponentCondition<EndOfDays>(id + 0x30, 1, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<EndOfDays>();
@@ -125,7 +125,7 @@ class P8S2States : StateMachineBuilder
             .DeactivateOnExit<EndOfDays>();
 
         // end-of-days ends right after mechanic proc & ashing blaze start
-        CastMulti(id + 0x90, [AID.AshingBlazeL, AID.AshingBlazeR], 0.1f, 6)
+        CastMulti(id + 0x90, [(uint)AID.AshingBlazeL, (uint)AID.AshingBlazeR], 0.1f, 6)
             .ActivateOnEnter<AshingBlaze>()
             .DeactivateOnExit<AshingBlaze>();
 
@@ -134,31 +134,31 @@ class P8S2States : StateMachineBuilder
 
     private void HighConcept1(uint id, float delay)
     {
-        Cast(id, AID.HighConcept, delay, 5); // this is really weird...
+        Cast(id, (uint)AID.HighConcept, delay, 5); // this is really weird...
         Targetable(id + 2, false, 4.4f, "High Concept 1")
             .ActivateOnEnter<HighConcept1>() // buffs appear right as boss becomes untargetable
             .SetHint(StateMachine.StateHint.Raidwide);
 
-        Cast(id + 0x10, AID.ArcaneControl, 4.8f, 3, "Explosion 1");
+        Cast(id + 0x10, (uint)AID.ArcaneControl, 4.8f, 3, "Explosion 1");
         // +0.3s: first explosions (conceptual shift)
         // +1.0s: perfection status gains
         // +1.1s: first towers appear
 
-        CastMulti(id + 0x30, [AID.AshingBlazeL, AID.AshingBlazeR], 6.2f, 6, "Towers 1") // tower explosions happen at the same time as cast-end
+        CastMulti(id + 0x30, [(uint)AID.AshingBlazeL, (uint)AID.AshingBlazeR], 6.2f, 6, "Towers 1") // tower explosions happen at the same time as cast-end
             .ActivateOnEnter<AshingBlaze>()
             .DeactivateOnExit<AshingBlaze>();
 
-        Cast(id + 0x100, AID.ArcaneControl, 3.2f, 3, "Explosion 2");
+        Cast(id + 0x100, (uint)AID.ArcaneControl, 3.2f, 3, "Explosion 2");
         // +0.1s: second explosions (conceptual shift)
         // +0.7s: perfection status gains
         // +1.1s: second towers appear
 
-        CastMulti(id + 0x120, [AID.AshingBlazeL, AID.AshingBlazeR], 6.2f, 6, "Towers 2") // tower explosions happen at the same time as cast-end
+        CastMulti(id + 0x120, [(uint)AID.AshingBlazeL, (uint)AID.AshingBlazeR], 6.2f, 6, "Towers 2") // tower explosions happen at the same time as cast-end
             .ActivateOnEnter<AshingBlaze>()
             .DeactivateOnExit<AshingBlaze>();
 
         Targetable(id + 0x200, true, 3.1f, "Reappear");
-        Cast(id + 0x210, AID.Deconceptualize, 0.1f, 3)
+        Cast(id + 0x210, (uint)AID.Deconceptualize, 0.1f, 3)
             .DeactivateOnExit<HighConcept1>();
 
         Aioniopyr(id + 0x1000, 3.2f);
@@ -166,21 +166,21 @@ class P8S2States : StateMachineBuilder
 
     private void HighConcept2(uint id, float delay)
     {
-        Cast(id, AID.HighConcept, delay, 5); // this is really weird...
+        Cast(id, (uint)AID.HighConcept, delay, 5); // this is really weird...
         Targetable(id + 2, false, 4.4f, "High Concept 2")
             .ActivateOnEnter<HighConcept2>() // buffs appear right as boss becomes untargetable
             .SetHint(StateMachine.StateHint.Raidwide);
 
-        Cast(id + 0x10, AID.ArcaneControl, 4.7f, 3, "Explosion 1");
+        Cast(id + 0x10, (uint)AID.ArcaneControl, 4.7f, 3, "Explosion 1");
         // +0.3s: first explosions (conceptual shift)
         // +1.0s: perfection status gains
         // +1.1s: first towers appear (always blue or purple)
 
-        CastMulti(id + 0x30, [AID.AshingBlazeL, AID.AshingBlazeR], 6.2f, 6, "Towers 1") // tower explosions happen at the same time as cast-end
+        CastMulti(id + 0x30, [(uint)AID.AshingBlazeL, (uint)AID.AshingBlazeR], 6.2f, 6, "Towers 1") // tower explosions happen at the same time as cast-end
             .ActivateOnEnter<AshingBlaze>()
             .DeactivateOnExit<AshingBlaze>();
 
-        Cast(id + 0x100, AID.ArcaneControl, 3.2f, 3, "Explosion 2");
+        Cast(id + 0x100, (uint)AID.ArcaneControl, 3.2f, 3, "Explosion 2");
         // +0.0s: PATE 11D3 on IllusoryHephaistosMovable (appear)
         // +0.1s: second explosions (conceptual shift)
         // +0.7s: perfection status gains
@@ -197,7 +197,7 @@ class P8S2States : StateMachineBuilder
 
     private void LimitlessDesolation(uint id, float delay)
     {
-        Cast(id, AID.LimitlessDesolation, delay, 5)
+        Cast(id, (uint)AID.LimitlessDesolation, delay, 5)
             .ActivateOnEnter<LimitlessDesolation>(); // show spreads slightly in advance
 
         ComponentCondition<LimitlessDesolation>(id + 0x10, 1.1f, comp => comp.NumAOEs > 0, "Limitless desolation start");
@@ -221,7 +221,7 @@ class P8S2States : StateMachineBuilder
 
     private void EgoDeath(uint id, float delay)
     {
-        Cast(id, AID.EgoDeath, delay, 10);
+        Cast(id, (uint)AID.EgoDeath, delay, 10);
         ComponentCondition<EgoDeath>(id + 0x10, 2.2f, comp => comp.InEventMask.Any(), "Cutscene start")
             .ActivateOnEnter<EgoDeath>()
             .SetHint(StateMachine.StateHint.DowntimeStart);
@@ -232,13 +232,13 @@ class P8S2States : StateMachineBuilder
 
     private void Aionagonia(uint id, float delay)
     {
-        Cast(id, AID.Aionagonia, delay, 8, "Raidwide")
+        Cast(id, (uint)AID.Aionagonia, delay, 8, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void DominionAionagonia(uint id, float delay)
     {
-        Cast(id, AID.Dominion, delay, 7, "Raidwide")
+        Cast(id, (uint)AID.Dominion, delay, 7, "Raidwide")
             .ActivateOnEnter<Dominion>() // activate early to show spreads
             .SetHint(StateMachine.StateHint.Raidwide);
 
@@ -246,7 +246,7 @@ class P8S2States : StateMachineBuilder
         // +6.0s: cast-start for second set of shifts
         ComponentCondition<Dominion>(id + 0x20, 7.0f, comp => comp.NumShifts > 0, "Towers 1");
 
-        CastStart(id + 0x30, AID.Aionagonia, 3.1f);
+        CastStart(id + 0x30, (uint)AID.Aionagonia, 3.1f);
         ComponentCondition<Dominion>(id + 0x31, 2.9f, comp => comp.NumShifts > 4, "Towers 2")
             .DeactivateOnExit<Dominion>();
         CastEnd(id + 0x32, 5.1f, "Raidwide")

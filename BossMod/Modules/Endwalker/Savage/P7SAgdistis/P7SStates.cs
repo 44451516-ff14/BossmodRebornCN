@@ -39,18 +39,18 @@ class P7SStates : StateMachineBuilder
         BoughOfAttisFrontSideHemitheosHoly(id + 0x1A0000, 7.3f);
         SparkOfLife(id + 0x1B0000, 3.2f);
         SparkOfLife(id + 0x1C0000, 8.3f);
-        Cast(id + 0x1D0000, AID.Enrage, 7.3f, 10, "Enrage");
+        Cast(id + 0x1D0000, (uint)AID.Enrage, 7.3f, 10, "Enrage");
     }
 
     private void SparkOfLife(uint id, float delay)
     {
-        Cast(id, AID.SparkOfLife, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.SparkOfLife, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void DispersedCondensedAero(uint id, float delay, bool duringBladesOfAttis = false)
     {
-        CastMulti(id, [AID.DispersedAero, AID.CondensedAero], delay, 7)
+        CastMulti(id, [(uint)AID.DispersedAero, (uint)AID.CondensedAero], delay, 7)
             .ActivateOnEnter<DispersedCondensedAero>()
             .DeactivateOnExit<BladesOfAttis>(duringBladesOfAttis)
             .SetHint(StateMachine.StateHint.PositioningEnd, duringBladesOfAttis);
@@ -60,22 +60,22 @@ class P7SStates : StateMachineBuilder
 
     private void ImmortalsObol(uint id, float delay)
     {
-        Cast(id, AID.ImmortalsObol, delay, 5.5f, "Destroy platform");
+        Cast(id, (uint)AID.ImmortalsObol, delay, 5.5f, "Destroy platform");
     }
 
     private void RootsOfAttis(uint id, float delay, string name)
     {
-        Cast(id, AID.RootsOfAttis, delay, 3, name);
+        Cast(id, (uint)AID.RootsOfAttis, delay, 3, name);
     }
 
     private void BoughOfAttisFrontSide(uint id, float delay, bool withHoly = false)
     {
-        Cast(id, AID.BoughOfAttisFront, delay, 5.8f)
+        Cast(id, (uint)AID.BoughOfAttisFront, delay, 5.8f)
             .ActivateOnEnter<BoughOfAttisFront>();
         ComponentCondition<BoughOfAttisFront>(id + 0x2, 1.2f, comp => comp.NumCasts > 0, withHoly ? "Front hit + stacks" : "Front hit")
             .DeactivateOnExit<BoughOfAttisFront>()
             .DeactivateOnExit<HemitheosHoly>(withHoly);
-        CastMulti(id + 0x10, [AID.BoughOfAttisSideW, AID.BoughOfAttisSideE], 2.4f, 4)
+        CastMulti(id + 0x10, [(uint)AID.BoughOfAttisSideW, (uint)AID.BoughOfAttisSideE], 2.4f, 4)
             .ActivateOnEnter<BoughOfAttisSide>();
         ComponentCondition<BoughOfAttisSide>(id + 0x12, 1, comp => comp.NumCasts > 0, "Side hit")
             .DeactivateOnExit<BoughOfAttisSide>();
@@ -83,7 +83,7 @@ class P7SStates : StateMachineBuilder
 
     private void BoughOfAttisFrontSideHemitheosHoly(uint id, float delay)
     {
-        Cast(id, AID.HemitheosHoly, delay, 3)
+        Cast(id, (uint)AID.HemitheosHoly, delay, 3)
             .ActivateOnEnter<HemitheosHoly>();
         BoughOfAttisFrontSide(id + 0x100, 3.2f, true);
     }
@@ -91,7 +91,7 @@ class P7SStates : StateMachineBuilder
     // leaves component active
     private void BladesOfAttisImmortalsObol(uint id, float delay)
     {
-        Cast(id, AID.BladesOfAttis, delay, 3)
+        Cast(id, (uint)AID.BladesOfAttis, delay, 3)
             .ActivateOnEnter<BladesOfAttis>();
         ImmortalsObol(id + 0x10, 3.2f);
     }
@@ -99,9 +99,9 @@ class P7SStates : StateMachineBuilder
     // leaves component & pos flag active
     private void BladesOfAttisMulticast(uint id, float delay)
     {
-        Cast(id, AID.BladesOfAttis, delay, 3)
+        Cast(id, (uint)AID.BladesOfAttis, delay, 3)
             .ActivateOnEnter<BladesOfAttis>();
-        Cast(id + 0x10, AID.Multicast, 3.2f, 3);
+        Cast(id + 0x10, (uint)AID.Multicast, 3.2f, 3);
         ComponentCondition<HemitheosHoly>(id + 0x20, 2.7f, comp => comp.Active)
             .ActivateOnEnter<HemitheosAeroKnockback2>()
             .ActivateOnEnter<HemitheosHoly>();
@@ -112,10 +112,10 @@ class P7SStates : StateMachineBuilder
             .DeactivateOnExit<HemitheosHoly>();
     }
 
-    private State ForbiddenFruitHarvestStart(uint id, float delay, AID cast = AID.ForbiddenFruit)
+    private State ForbiddenFruitHarvestStart(uint id, float delay, uint cast = (uint)AID.ForbiddenFruit)
     {
         Cast(id, cast, delay, 4);
-        return Cast(id + 2, AID.ForbiddenFruitInvis, 2.1f, 3);
+        return Cast(id + 2, (uint)AID.ForbiddenFruitInvis, 2.1f, 3);
     }
 
     // expects blades of attis component to be active from previous state
@@ -124,8 +124,8 @@ class P7SStates : StateMachineBuilder
         ForbiddenFruitHarvestStart(id, delay)
             .ActivateOnEnter<ForbiddenFruit1>()
             .DeactivateOnExit<BladesOfAttis>();
-        Cast(id + 0x10, AID.HemitheosHoly, 3.3f, 3);
-        CastStart(id + 0x20, AID.BoughOfAttisBack, 3.2f); // at the same time HemitheosHolyAOE and BoughOfAttisBackAOE cast starts happen
+        Cast(id + 0x10, (uint)AID.HemitheosHoly, 3.3f, 3);
+        CastStart(id + 0x20, (uint)AID.BoughOfAttisBack, 3.2f); // at the same time HemitheosHolyAOE and BoughOfAttisBackAOE cast starts happen
         ComponentCondition<ForbiddenFruit1>(id + 0x21, 3.6f, comp => comp.CastsActive)
             .ActivateOnEnter<HemitheosHoly>()
             .ActivateOnEnter<BoughOfAttisBack>();
@@ -140,17 +140,17 @@ class P7SStates : StateMachineBuilder
 
     private void InviolateBonds(uint id, float delay)
     {
-        Cast(id, AID.InviolateBonds, delay, 4);
+        Cast(id, (uint)AID.InviolateBonds, delay, 4);
         ComponentCondition<WindsHoly>(id + 2, 1, comp => comp.Active)
             .ActivateOnEnter<WindsHoly>();
-        CastStart(id + 0x10, AID.BoughOfAttisFront, 3.2f)
+        CastStart(id + 0x10, (uint)AID.BoughOfAttisFront, 3.2f)
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 0x11, 5.8f)
             .ActivateOnEnter<BoughOfAttisFront>();
         ComponentCondition<WindsHoly>(id + 0x12, 0.1f, comp => comp.NumCasts >= 1, "Stack/spread back");
         ComponentCondition<BoughOfAttisFront>(id + 0x13, 1.1f, comp => comp.NumCasts > 0)
             .DeactivateOnExit<BoughOfAttisFront>();
-        CastMulti(id + 0x20, [AID.BoughOfAttisSideW, AID.BoughOfAttisSideE], 2.4f, 4)
+        CastMulti(id + 0x20, [(uint)AID.BoughOfAttisSideW, (uint)AID.BoughOfAttisSideE], 2.4f, 4)
             .ActivateOnEnter<BoughOfAttisSide>();
         ComponentCondition<BoughOfAttisSide>(id + 0x22, 1, comp => comp.NumCasts > 0)
             .DeactivateOnExit<BoughOfAttisSide>();
@@ -163,7 +163,7 @@ class P7SStates : StateMachineBuilder
     {
         ForbiddenFruitHarvestStart(id, delay)
             .ActivateOnEnter<ForbiddenFruit2>();
-        Cast(id + 0x10, AID.Multicast, 2.1f, 3);
+        Cast(id + 0x10, (uint)AID.Multicast, 2.1f, 3);
         ComponentCondition<HemitheosHolySpread>(id + 0x20, 4.8f, comp => comp.Active)
             .ActivateOnEnter<HemitheosAeroKnockback1>()
             .ActivateOnEnter<HemitheosHolySpread>();
@@ -179,7 +179,7 @@ class P7SStates : StateMachineBuilder
     {
         ForbiddenFruitHarvestStart(id, delay)
             .ActivateOnEnter<ForbiddenFruit3>();
-        Cast(id + 0x10, AID.HemitheosHoly, 3.8f, 3);
+        Cast(id + 0x10, (uint)AID.HemitheosHoly, 3.8f, 3);
         ComponentCondition<HemitheosHoly>(id + 0x20, 0.1f, comp => comp.Active)
             .ActivateOnEnter<HemitheosHoly>();
         ComponentCondition<HemitheosHoly>(id + 0x30, 6, comp => !comp.Active, "Stacks")
@@ -211,10 +211,10 @@ class P7SStates : StateMachineBuilder
     {
         ForbiddenFruitHarvestStart(id, delay)
             .ActivateOnEnter<ForbiddenFruit6>();
-        Cast(id + 0x10, AID.InviolatePurgation, 2.2f, 4);
+        Cast(id + 0x10, (uint)AID.InviolatePurgation, 2.2f, 4);
         ComponentCondition<WindsHoly>(id + 0x12, 1, comp => comp.Active)
             .ActivateOnEnter<WindsHoly>();
-        CastStart(id + 0x20, AID.LightOfLife, 6.3f);
+        CastStart(id + 0x20, (uint)AID.LightOfLife, 6.3f);
         ComponentCondition<WindsHoly>(id + 0x30, 3.8f, comp => comp.NumCasts >= 1, "Stack/spread 1")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<ForbiddenFruit6>(id + 0x40, 0.4f, comp => comp.NumCasts > 0)
@@ -225,7 +225,7 @@ class P7SStates : StateMachineBuilder
             .SetHint(StateMachine.StateHint.Raidwide);
         CastEnd(id + 0x60, 7.2f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
-        CastStart(id + 0x61, AID.LightOfLife, 5.2f);
+        CastStart(id + 0x61, (uint)AID.LightOfLife, 5.2f);
         ComponentCondition<WindsHoly>(id + 0x70, 2.6f, comp => comp.NumCasts >= 3, "Stack/spread 3")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<WindsHoly>(id + 0x80, 15, comp => comp.NumCasts >= 4, "Stack/spread 4")
@@ -243,14 +243,14 @@ class P7SStates : StateMachineBuilder
         ForbiddenFruitHarvestStart(id, delay)
             .ActivateOnEnter<ForbiddenFruit7>();
         RootsOfAttis(id + 0x10, 2.2f, "");
-        Cast(id + 0x20, AID.HemitheosGlare, 2.2f, 5);
+        Cast(id + 0x20, (uint)AID.HemitheosGlare, 2.2f, 5);
         ComponentCondition<ForbiddenFruit7>(id + 0x30, 7.7f, comp => comp.NumCasts > 0, "Fruit 7 (2 birds + chasing aoes) resolve")
             .DeactivateOnExit<ForbiddenFruit7>();
     }
 
     private void FaminesHarvest(uint id, float delay)
     {
-        ForbiddenFruitHarvestStart(id, delay, AID.FaminesHarvest)
+        ForbiddenFruitHarvestStart(id, delay, (uint)AID.FaminesHarvest)
             .ActivateOnEnter<ForbiddenFruit8>();
         ComponentCondition<ForbiddenFruit8>(id + 0x10, 6.5f, comp => comp.NumAssignedTethers > 0, "Tethers");
         ComponentCondition<ForbiddenFruit8>(id + 0x20, 6.4f, comp => comp.MinotaursBaited, "Bait");
@@ -260,7 +260,7 @@ class P7SStates : StateMachineBuilder
 
     private void DeathsHarvest(uint id, float delay)
     {
-        ForbiddenFruitHarvestStart(id, delay, AID.DeathsHarvest)
+        ForbiddenFruitHarvestStart(id, delay, (uint)AID.DeathsHarvest)
             .ActivateOnEnter<ForbiddenFruit9>();
         ComponentCondition<ForbiddenFruit9>(id + 0x10, 6.5f, comp => comp.NumAssignedTethers > 0, "Tethers");
         ComponentCondition<ForbiddenFruit9>(id + 0x20, 9.3f, comp => comp.NumCasts > 0, "Fruit 9 (3 bulls + 2 birds) resolve")
@@ -269,7 +269,7 @@ class P7SStates : StateMachineBuilder
 
     private void WarsHarvest(uint id, float delay)
     {
-        ForbiddenFruitHarvestStart(id, delay, AID.WarsHarvest)
+        ForbiddenFruitHarvestStart(id, delay, (uint)AID.WarsHarvest)
             .ActivateOnEnter<ForbiddenFruit10>();
         ComponentCondition<ForbiddenFruit10>(id + 0x10, 6.5f, comp => comp.NumAssignedTethers > 0, "Tethers");
         ComponentCondition<ForbiddenFruit10>(id + 0x20, 9.1f, comp => comp.NumCasts > 0, "Fruit 10 (bull + 2 birds + 2 minotaurs) resolve")

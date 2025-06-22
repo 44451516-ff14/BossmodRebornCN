@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class A14ShadowLordStates : StateMachineBuilder
+sealed class A14ShadowLordStates : StateMachineBuilder
 {
     public A14ShadowLordStates(BossModule module) : base(module)
     {
@@ -75,7 +75,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private State GigaSlash(uint id, float delay)
     {
-        CastMulti(id, [AID.GigaSlashL, AID.GigaSlashR], delay, 11);
+        CastMulti(id, [(uint)AID.GigaSlashL, (uint)AID.GigaSlashR], delay, 11);
         ComponentCondition<GigaSlash>(id + 2, 1, comp => comp.NumCasts > 0, "Cleave 1");
         return ComponentCondition<GigaSlash>(id + 0x10, 2.1f, comp => comp.NumCasts > 1, "Cleave 2")
             .ResetComp<GigaSlash>();
@@ -83,7 +83,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void UmbraSmashGigaSlash(uint id, float delay)
     {
-        Cast(id, AID.UmbraSmashBoss, delay, 4);
+        Cast(id, (uint)AID.UmbraSmashBoss, delay, 4);
         ComponentCondition<UmbraSmash>(id + 0x10, 0.5f, comp => comp.NumCasts > 0, "Exalines");
         GigaSlash(id + 0x100, 9.1f)
             .ResetComp<UmbraSmash>();
@@ -91,13 +91,13 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void FlamesOfHatred(uint id, float delay)
     {
-        Cast(id, AID.FlamesOfHatred, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.FlamesOfHatred, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Implosion(uint id, float delay)
     {
-        CastMulti(id, [AID.ImplosionL, AID.ImplosionR], delay, 8);
+        CastMulti(id, [(uint)AID.ImplosionL, (uint)AID.ImplosionR], delay, 8);
         ComponentCondition<Implosion>(id + 2, 1, comp => comp.NumCasts > 0, "Circle + cleave")
             .ResetComp<Implosion>();
     }
@@ -110,7 +110,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void EchoesOfAgony(uint id, float delay, int numCasts)
     {
-        CastStart(id, AID.EchoesOfAgony, delay);
+        CastStart(id, (uint)AID.EchoesOfAgony, delay);
         CastEnd(id + 1, 8);
         ComponentCondition<EchoesOfAgony>(id + 2, 1.1f, comp => comp.NumFinishedStacks > 0, "Stack 1");
         ComponentCondition<EchoesOfAgony>(id + 0x10, numCasts == 7 ? 6.4f : 4.3f, comp => comp.NumFinishedStacks >= numCasts, $"Stack {numCasts}")
@@ -119,19 +119,19 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void CthonicFuryStart(uint id, float delay)
     {
-        Cast(id, AID.CthonicFuryStart, delay, 7, "Raidwide + platforms start")
+        Cast(id, (uint)AID.CthonicFuryStart, delay, 7, "Raidwide + platforms start")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void CthonicFuryEnd(uint id, float delay)
     {
-        Cast(id, AID.CthonicFuryEnd, delay, 7, "Raidwide + platforms end")
+        Cast(id, (uint)AID.CthonicFuryEnd, delay, 7, "Raidwide + platforms end")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void DarkNebula(uint id, float delay)
     {
-        Cast(id, AID.DarkNebula, delay, 3);
+        Cast(id, (uint)AID.DarkNebula, delay, 3);
         ComponentCondition<DarkNebula>(id + 0x10, 1.2f, comp => comp.Casters.Count > 0);
         ComponentCondition<DarkNebula>(id + 0x11, 5, comp => comp.NumCasts > 0, "Knockback")
             .ResetComp<DarkNebula>();
@@ -159,7 +159,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void NightfallTeraSlash(uint id, float delay)
     {
-        Cast(id, AID.Nightfall, delay, 5);
+        Cast(id, (uint)AID.Nightfall, delay, 5);
         ComponentCondition<TeraSlash>(id + 0x10, 34.1f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<TeraSlash>()
             .DeactivateOnExit<TeraSlash>()
@@ -168,7 +168,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private State GigaSlashNightfall(uint id, float delay, bool removeComponent = true)
     {
-        CastMulti(id, [AID.GigaSlashNightfallLRF, AID.GigaSlashNightfallLRB, AID.GigaSlashNightfallRLF, AID.GigaSlashNightfallRLB], delay, 14);
+        CastMulti(id, [(uint)AID.GigaSlashNightfallLRF, (uint)AID.GigaSlashNightfallLRB, (uint)AID.GigaSlashNightfallRLF, (uint)AID.GigaSlashNightfallRLB], delay, 14);
         ComponentCondition<GigaSlash>(id + 2, 1, comp => comp.NumCasts > 0, "Cleave 1");
         ComponentCondition<GigaSlash>(id + 0x10, 2.1f, comp => comp.NumCasts > 1, "Cleave 2");
         return ComponentCondition<GigaSlash>(id + 0x11, 2.1f, comp => comp.NumCasts > 2, "Cleave 3")
@@ -177,10 +177,10 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void ShadowSpawnGigaSlashNightfallImplosion(uint id, float delay)
     {
-        Cast(id, AID.ShadowSpawn, delay, 3);
+        Cast(id, (uint)AID.ShadowSpawn, delay, 3);
         GigaSlashNightfall(id + 0x100, 3.1f, false);
 
-        CastStartMulti(id + 0x200, [AID.ImplosionL, AID.ImplosionR], 7.5f);
+        CastStartMulti(id + 0x200, [(uint)AID.ImplosionL, (uint)AID.ImplosionR], 7.5f);
         ComponentCondition<GigaSlash>(id + 0x201, 1.5f, comp => comp.NumCasts > 3, "Cleave 4");
         ComponentCondition<GigaSlash>(id + 0x202, 2.1f, comp => comp.NumCasts > 4, "Cleave 5")
             .ResetComp<GigaSlash>();
@@ -199,7 +199,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void UnbridledRage(uint id, float delay)
     {
-        CastStart(id, AID.UnbridledRage, delay);
+        CastStart(id, (uint)AID.UnbridledRage, delay);
         CastEnd(id + 1, 5);
         ComponentCondition<UnbridledRage>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Tankbusters")
             .ResetComp<UnbridledRage>()
@@ -209,7 +209,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void BindingSigil(uint id, float delay)
     {
-        Cast(id, AID.BindingSigil, delay, 12);
+        Cast(id, (uint)AID.BindingSigil, delay, 12);
         ComponentCondition<BindingSigil>(id + 2, 2.1f, comp => comp.NumCasts > 0, "Puddles 1"); // 8 or 9
         ComponentCondition<BindingSigil>(id + 3, 2.5f, comp => comp.NumCasts > 9, "Puddles 2"); // 16 or 17
         ComponentCondition<BindingSigil>(id + 4, 2.5f, comp => comp.NumCasts > 17, "Puddles 3") // 25
@@ -218,7 +218,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void DamningStrikes(uint id, float delay)
     {
-        CastMulti(id, [AID.DamningStrikes1, AID.DamningStrikes2], delay, 8); // note: alt cast is longer by 0.7s, whatever...
+        CastMulti(id, [(uint)AID.DamningStrikes1, (uint)AID.DamningStrikes2], delay, 8); // note: alt cast is longer by 0.7s, whatever...
         ComponentCondition<DamningStrikes>(id + 2, 2.5f, comp => comp.NumCasts >= 1, "Tower 1");
         ComponentCondition<DamningStrikes>(id + 3, 2.5f, comp => comp.NumCasts >= 2, "Tower 2");
         ComponentCondition<DamningStrikes>(id + 4, 2.7f, comp => comp.NumCasts >= 3, "Tower 3")
@@ -227,11 +227,11 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void DarkNebulaGigaSlashNightfall(uint id, float delay)
     {
-        Cast(id, AID.DarkNebula, delay, 3);
+        Cast(id, (uint)AID.DarkNebula, delay, 3);
         ComponentCondition<DarkNebula>(id + 0x10, 1.2f, comp => comp.Casters.Count > 0);
         ComponentCondition<DarkNebula>(id + 0x20, 13, comp => comp.NumCasts > 0, "Knockback 1");
         ComponentCondition<DarkNebula>(id + 0x21, 3, comp => comp.NumCasts > 1, "Knockback 2");
-        CastStartMulti(id + 0x23, [AID.GigaSlashNightfallLRF, AID.GigaSlashNightfallLRB, AID.GigaSlashNightfallRLF, AID.GigaSlashNightfallRLB], 1.4f);
+        CastStartMulti(id + 0x23, [(uint)AID.GigaSlashNightfallLRF, (uint)AID.GigaSlashNightfallLRB, (uint)AID.GigaSlashNightfallRLF, (uint)AID.GigaSlashNightfallRLB], 1.4f);
         ComponentCondition<DarkNebula>(id + 0x24, 1.6f, comp => comp.NumCasts > 2, "Knockback 3");
         ComponentCondition<DarkNebula>(id + 0x25, 3, comp => comp.NumCasts > 3, "Knockback 4")
             .ResetComp<DarkNebula>();
@@ -253,8 +253,8 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void ShadowSpawnUmbraSmashGigaSlashNightfall(uint id, float delay)
     {
-        Cast(id, AID.ShadowSpawn, delay, 3);
-        Cast(id + 0x10, AID.UmbraSmashBoss, 4.2f, 4);
+        Cast(id, (uint)AID.ShadowSpawn, delay, 3);
+        Cast(id + 0x10, (uint)AID.UmbraSmashBoss, 4.2f, 4);
         ComponentCondition<UmbraSmash>(id + 0x20, 0.5f, comp => comp.NumCasts > 0, "Exalines");
         GigaSlashNightfall(id + 0x100, 12.2f)
             .ResetComp<UmbraSmash>();
@@ -262,7 +262,7 @@ class A14ShadowLordStates : StateMachineBuilder
 
     private void DoomArc(uint id, float delay)
     {
-        Cast(id, AID.DoomArc, delay, 15, "Raidwide")
+        Cast(id, (uint)AID.DoomArc, delay, 15, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 }

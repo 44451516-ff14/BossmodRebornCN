@@ -23,12 +23,12 @@ public enum AID : uint
     Rehydration = 16776 // PackArmadillo->self, 5.0s cast, single-target
 }
 
-class StoneFlail(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.StoneFlail));
-class FallingRock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FallingRock), 4f);
-class FlailSmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlailSmash), 10f);
-class HeadToss(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.HeadToss), 6f, 4, 4);
-class Earthshake(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Earthshake), new AOEShapeDonut(10f, 20f));
-class Rehydration(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Rehydration), showNameInHint: true);
+class StoneFlail(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StoneFlail);
+class FallingRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 4f);
+class FlailSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlailSmash, 10f);
+class HeadToss(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeadToss, 6f, 4, 4);
+class Earthshake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthshake, new AOEShapeDonut(10f, 20f));
+class Rehydration(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Rehydration, showNameInHint: true);
 
 class RightRound(BossModule module) : Components.GenericAOEs(module)
 {

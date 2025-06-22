@@ -18,10 +18,10 @@ public enum AID : uint
     Landslip = 41118 // Boss->self, 4.8s cast, range 12 120-degree cone
 }
 
-class Landslip(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Landslip), new AOEShapeCone(12, 60.Degrees()));
-class Plummet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plummet), 10);
+sealed class Landslip(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Landslip, new AOEShapeCone(12, 60.Degrees()));
+sealed class Plummet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plummet, 10);
 
-class D90SprightlyPhoebadStates : StateMachineBuilder
+sealed class D90SprightlyPhoebadStates : StateMachineBuilder
 {
     public D90SprightlyPhoebadStates(BossModule module) : base(module)
     {
@@ -46,7 +46,7 @@ class D90SprightlyPhoebadStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13580, SortOrder = 7)]
-public class D90SprightlyPhoebad(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D90SprightlyPhoebad(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(123.42f, -297.25f), new(123.17f, -290.97f), new(123.59f, -290.57f), new(125.1f, -289.46f), new(123.03f, -284.58f),
     new(121.39f, -281.1f), new(121.14f, -280.63f), new(120.2f, -279.18f), new(119.3f, -277.2f), new(118.52f, -276),

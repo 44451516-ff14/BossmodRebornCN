@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
 // TODO: Make AI function for Destination Unsafe
-class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.TidalWaveVisual), 25f, kind: Kind.DirForward, stopAtWall: true)
+sealed class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TidalWaveVisual, 25f, kind: Kind.DirForward, stopAtWall: true)
 {
     private readonly Megaflare _megaflare = module.FindComponent<Megaflare>()!;
 

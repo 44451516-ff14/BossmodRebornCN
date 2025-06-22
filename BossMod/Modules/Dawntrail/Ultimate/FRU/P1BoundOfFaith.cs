@@ -1,24 +1,24 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-abstract class BurntStrike(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(80, 5));
-class P1TurnOfHeavensBurntStrikeFire(BossModule module) : BurntStrike(module, AID.TurnOfHeavensBurntStrikeFire);
-class P1TurnOfHeavensBurntStrikeLightning(BossModule module) : BurntStrike(module, AID.TurnOfHeavensBurntStrikeLightning);
+abstract class BurntStrike(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(80f, 5f));
+class P1TurnOfHeavensBurntStrikeFire(BossModule module) : BurntStrike(module, (uint)AID.TurnOfHeavensBurntStrikeFire);
+class P1TurnOfHeavensBurntStrikeLightning(BossModule module) : BurntStrike(module, (uint)AID.TurnOfHeavensBurntStrikeLightning);
 
-abstract class BurntOut(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(80, 10));
-class P1TurnOfHeavensBurnout(BossModule module) : BurntOut(module, AID.TurnOfHeavensBurnout);
+abstract class BurntOut(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(80f, 10f));
+class P1TurnOfHeavensBurnout(BossModule module) : BurntOut(module, (uint)AID.TurnOfHeavensBurnout);
 
-class P1BrightfireSmall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BrightfireSmall), 5);
-class P1BrightfireLarge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BrightfireLarge), 10);
+class P1BrightfireSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrightfireSmall, 5f);
+class P1BrightfireLarge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrightfireLarge, 10f);
 
 // TODO: fixed tethers strat variant (tether target with clone on safe side goes S, other goes N, if any group has 5 players prio1 adjusts)
-class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 6, 0, 4, 4)
+class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
     public bool EnableHints;
     public WDir SafeSide;
     public DateTime Activation;
     public readonly int[] AssignedGroups = new int[PartyState.MaxPartySize];
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
-    private OID _safeHalo;
+    private uint _safeHalo;
 
     public WDir AssignedLane(int slot) => new(0, AssignedGroups[slot] * 5.4f);
 
@@ -41,10 +41,10 @@ class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        _safeHalo = (AID)spell.Action.ID switch
+        _safeHalo = spell.Action.ID switch
         {
-            AID.TurnOfHeavensFire => OID.HaloOfLevin,
-            AID.TurnOfHeavensLightning => OID.HaloOfFlame,
+            (uint)AID.TurnOfHeavensFire => (uint)OID.HaloOfLevin,
+            (uint)AID.TurnOfHeavensLightning => (uint)OID.HaloOfFlame,
             _ => _safeHalo
         };
     }
@@ -53,7 +53,7 @@ class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 
     {
         if (tether.ID == (uint)TetherID.Fire && WorldState.Actors.Find(tether.Target) is var target && target != null)
         {
-            Activation = WorldState.FutureTime(10.6f);
+            Activation = WorldState.FutureTime(10.6d);
             AddStack(target, Activation);
             if (Stacks.Count == 2)
                 InitAssignments();
@@ -62,7 +62,7 @@ class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.BoundOfFaithSinsmoke)
+        if (spell.Action.ID == (uint)AID.BoundOfFaithSinsmoke)
             Stacks.Clear();
     }
 
@@ -117,19 +117,19 @@ class P1BoundOfFaithAIKnockback(BossModule module) : BossComponent(module)
         if (_comp == null || _comp.SafeSide == default)
             return;
 
-        var sideOffset = _horizDone ? 0 : 7; // before horizonal aoes are done, we don't show knockback, so adjust the unsafe zone
+        var sideOffset = _horizDone ? 0f : 7f; // before horizonal aoes are done, we don't show knockback, so adjust the unsafe zone
         hints.AddForbiddenZone(ShapeDistance.HalfPlane(Arena.Center + sideOffset * _comp.SafeSide, _comp.SafeSide), _comp.Activation);
 
         var lane = _comp.AssignedLane(slot);
-        if (_horizDone && lane.Z != 0)
+        if (_horizDone && lane.Z != 0f)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center + lane, new WDir(1, 0), 20, 20, 0.7f), _comp.Activation);
+            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center + lane, new WDir(1f, default), 20f, 20f, 0.7f), _comp.Activation);
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.TurnOfHeavensBurnout)
+        if (spell.Action.ID == (uint)AID.TurnOfHeavensBurnout)
             _horizDone = true;
     }
 }
@@ -152,8 +152,8 @@ class P1BoundOfFaithAIStack(BossModule module) : BossComponent(module)
             foreach (var s in _comp.Stacks)
             {
                 var zone = s.Target == stackWith.Target
-                    ? ShapeDistance.InvertedCircle(s.Target.Position, 4) // stay a bit closer to the target to avoid spooking people
-                    : ShapeDistance.Circle(s.Target.Position, 6);
+                    ? ShapeDistance.InvertedCircle(s.Target.Position, 4f) // stay a bit closer to the target to avoid spooking people
+                    : ShapeDistance.Circle(s.Target.Position, 6f);
                 hints.AddForbiddenZone(zone, _comp.Activation);
             }
 
@@ -163,13 +163,13 @@ class P1BoundOfFaithAIStack(BossModule module) : BossComponent(module)
         else
         {
             // just go to center
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center, new WDir(1, 0), 1, 1, 20), DateTime.MaxValue);
+            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center, new WDir(1f, default), 1f, 1f, 20f), DateTime.MaxValue);
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.FloatingFetters)
+        if (spell.Action.ID == (uint)AID.FloatingFetters)
             _haveFetters = true;
     }
 }

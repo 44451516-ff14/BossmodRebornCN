@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace BossMod.ReplayAnalysis;
 
-class ArenaBounds
+sealed class ArenaBounds
 {
     private readonly List<(Replay, Replay.Participant, DateTime, Vector3, uint)> _points = [];
     private readonly UIPlot _plot = new();

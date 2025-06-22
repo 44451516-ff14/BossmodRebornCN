@@ -2,7 +2,7 @@ namespace BossMod.Components;
 
 // component for ThinIce mechanic
 // observation: for SID 911 the distance is 0.1 * status extra
-public abstract class ThinIce(BossModule module, float distance, bool createforbiddenzones = false, uint statusID = 911, bool stopAtWall = false, bool stopAfterWall = false) : GenericKnockback(module, stopAtWall: stopAtWall, stopAfterWall: stopAfterWall)
+public abstract class ThinIce(BossModule module, float distance, bool createforbiddenzones = false, uint statusID = 911u, bool stopAtWall = false, bool stopAfterWall = false) : GenericKnockback(module, stopAtWall: stopAtWall, stopAfterWall: stopAfterWall)
 {
     public readonly uint StatusID = statusID;
     public readonly float Distance = distance;
@@ -19,18 +19,21 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == StatusID)
-            Mask.Set(Raid.FindSlot(actor.InstanceID));
+            Mask[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == StatusID)
-            Mask[Raid.FindSlot(actor.InstanceID)] = default;
+            Mask[Raid.FindSlot(actor.InstanceID)] = false;
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (CalculateMovements(slot, actor).Any(e => DestinationUnsafe(slot, actor, e.to)))
+        var movements = CalculateMovements(slot, actor);
+        if (movements.Count == 0)
+            return;
+        if (DestinationUnsafe(slot, actor, movements[0].to))
             hints.Add("You are risking to slide into danger!");
     }
 
@@ -43,7 +46,7 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (createforbiddenzones && Mask[slot] != default)
+        if (createforbiddenzones && Mask[slot])
         {
             var pos = actor.Position;
             var ddistance = 2f * Distance;

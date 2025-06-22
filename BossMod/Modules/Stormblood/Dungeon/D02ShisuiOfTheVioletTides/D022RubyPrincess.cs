@@ -166,9 +166,9 @@ class SeduceCoriolisKick(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AbyssalVolcano(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssalVolcano), 7f);
+class AbyssalVolcano(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalVolcano, 7f);
 
-class GeothermalFlatulence(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4f), ActionID.MakeSpell(AID.GeothermalFlatulenceFirst), ActionID.MakeSpell(AID.GeothermalFlatulenceRest), 3, 0.8f, 10, true, (uint)IconID.ChasingAOE)
+class GeothermalFlatulence(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4f), (uint)AID.GeothermalFlatulenceFirst, (uint)AID.GeothermalFlatulenceRest, 3, 0.8f, 10, true, (uint)IconID.ChasingAOE)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -178,7 +178,7 @@ class GeothermalFlatulence(BossModule module) : Components.StandardChasingAOEs(m
     }
 }
 
-class Tornadogenesis(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Tornadogenesis), new AOEShapeCone(9.6f, 60f.Degrees()))
+class Tornadogenesis(BossModule module) : Components.Cleave(module, (uint)AID.Tornadogenesis, new AOEShapeCone(9.6f, 60f.Degrees()))
 {
     private readonly SeduceCoriolisKick _aoe = module.FindComponent<SeduceCoriolisKick>()!;
     private readonly GeothermalFlatulence _aoes = module.FindComponent<GeothermalFlatulence>()!;

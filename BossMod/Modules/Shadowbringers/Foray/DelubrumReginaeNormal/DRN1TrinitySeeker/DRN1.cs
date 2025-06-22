@@ -1,18 +1,15 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN1TrinitySeeker;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN1TrinitySeeker;
 
-class MercifulBreeze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MercifulBreeze), new AOEShapeRect(50f, 2.5f));
-class MercifulBlooms(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MercifulBlooms), 20f);
-class MercifulArc(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(12f, 45f.Degrees()), (uint)IconID.MercifulArc, ActionID.MakeSpell(AID.MercifulArc)); // TODO: verify angle
+sealed class MercifulBreeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MercifulBreeze, new AOEShapeRect(50f, 2.5f));
+sealed class BalefulSwathe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BalefulSwathe, new AOEShapeCone(50f, 90f.Degrees()));
+sealed class ActOfMercy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ActOfMercy, new AOEShapeCross(50f, 4f));
+sealed class MercifulBlooms(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MercifulBlooms, 20f);
+sealed class MercifulArc(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(12f, 45f.Degrees()), (uint)IconID.MercifulArc, (uint)AID.MercifulArc, tankbuster: true);
 
-class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, ActionID.MakeSpell(AID.ScorchingShackle));
+sealed class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, (uint)AID.ScorchingShackle);
+sealed class IronImpact(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IronImpactMarker, (uint)AID.IronImpact, 5.9f);
 
-class IronImpact(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.IronImpact));
-class IronRose(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronRose), new AOEShapeRect(50f, 4f));
+sealed class DeadIron(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(50f, 15f.Degrees()), (uint)IconID.DeadIron, (uint)AID.DeadIronAOE, 4.6d);
 
-class DeadIron : Components.BaitAwayTethers
-{
-    public DeadIron(BossModule module) : base(module, new AOEShapeCone(50, 15.Degrees()), (uint)TetherID.DeadIron, ActionID.MakeSpell(AID.DeadIronAOE)) { DrawTethers = false; }
-}
-
-[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 760, NameID = 9834)]
-public class DRN1TrinitySeeker(WorldState ws, Actor primary) : TrinitySeeker(ws, primary);
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 760, NameID = 9834)]
+public sealed class DRN1TrinitySeeker(WorldState ws, Actor primary) : TrinitySeeker(ws, primary);

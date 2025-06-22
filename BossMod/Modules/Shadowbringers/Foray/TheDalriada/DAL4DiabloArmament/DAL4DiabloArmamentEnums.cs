@@ -14,6 +14,9 @@ public enum OID : uint
 
 public enum AID : uint
 {
+    BrutalCamisado = 24899, // Boss->player, no cast, single-target
+    TeleportBit = 23725, // DiabolicBit->location, no cast, single-target
+
     AdvancedDeathIV = 23727, // Boss->self, 4.0s cast, single-target
     AdvancedDeathIVAOE = 23728, // Helper->location, 7.0s cast, range 1 circle
 
@@ -32,7 +35,6 @@ public enum AID : uint
 
     Aetheroplasm = 23733, // Aether->self, no cast, range 6 circle
     AssaultCannon = 23726, // DiabolicBit->self, 7.0s cast, range 100 width 6 rect
-    BrutalCamisado = 24899, // Boss->player, no cast, single-target
 
     DeadlyDealingAOE = 23746, // Boss->location, 7.0s cast, range 6 circle
     DeadlyDealing = 23747, // Helper->self, 7.5s cast, ???
@@ -76,10 +78,9 @@ public enum AID : uint
     RuinousPseudomen5 = 24911, // Helper->self, 4.5s cast, range 80 width 24 rect
     RuinousPseudomen6 = 24995, // Helper->self, 1.5s cast, range 80 width 24 rect
 
-    UltimatePseudoterror = 23715, // Boss->self, 4.0s cast, range ?-70 donut
+    UltimatePseudoterror = 23715, // Boss->self, 4.0s cast, range 15-70 donut
 
-    UnknownAbility1 = 23725, // DiabolicBit->location, no cast, single-target
-    UnknownAbility2 = 24994, // Helper->self, no cast, range ?-60 donut
+    DeathWall = 24994, // Helper->self, no cast, range 17-60 donut
 
     VoidSystemsOverload1 = 23735, // Boss->self, 5.0s cast, single-target
     VoidSystemsOverload2 = 23736, // Helper->self, 5.0s cast, ???

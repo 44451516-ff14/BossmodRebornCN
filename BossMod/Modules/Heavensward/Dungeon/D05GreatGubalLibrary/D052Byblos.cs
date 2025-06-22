@@ -33,7 +33,7 @@ public enum SID : uint
     Invincibility = 325 // none->Boss, extra=0x0
 }
 
-class PageTear(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.PageTear), new AOEShapeCone(8f, 45f.Degrees()))
+class PageTear(BossModule module) : Components.Cleave(module, (uint)AID.PageTear, new AOEShapeCone(8f, 45f.Degrees()))
 {
     public static bool IsInvincible(Actor actor) => actor.FindStatus((uint)SID.Invincibility) != null;
 
@@ -56,8 +56,8 @@ class PageTear(BossModule module) : Components.Cleave(module, ActionID.MakeSpell
     }
 }
 
-class HeadDown(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.HeadDown), 4f);
-class DeathRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DeathRay), new AOEShapeRect(24.2f, 1.5f));
+class HeadDown(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.HeadDown, 4f);
+class DeathRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathRay, new AOEShapeRect(24.2f, 1.5f));
 class Tomewind(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
@@ -79,9 +79,9 @@ class Tomewind(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones
     }
 }
 
-class TailSmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSmash), new AOEShapeCone(12f, 45f.Degrees()));
+class TailSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSmash, new AOEShapeCone(12f, 45f.Degrees()));
 
-class Bibliocide(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCircle(0), (uint)TetherID.WhaleOil, activationDelay: 5f)
+class Bibliocide(BossModule module) : Components.BaitAwayTethers(module, 0f, (uint)TetherID.WhaleOil, activationDelay: 5f)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

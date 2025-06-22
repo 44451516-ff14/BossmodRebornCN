@@ -33,14 +33,14 @@ public enum AID : uint
     WingDeathVisual = 34896 // Boss->self, no cast, single-target
 }
 
-class PeckingFlurry(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PeckingFlurry));
-class WindUnbound(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WindUnbound));
-class SnatchMorsel(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SnatchMorsel));
-class FallingRock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FallingRock), 6, 8);
-class StickySpit(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.StickySpit), 6);
-class Swoop(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Swoop), 8);
-class FurlingFlapping(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FurlingFlapping), 8);
-class DeadlySwoop(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.DeadlySwoop), 8)
+class PeckingFlurry(BossModule module) : Components.RaidwideCast(module, (uint)AID.PeckingFlurry);
+class WindUnbound(BossModule module) : Components.RaidwideCast(module, (uint)AID.WindUnbound);
+class SnatchMorsel(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SnatchMorsel);
+class FallingRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 6, 8);
+class StickySpit(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.StickySpit, 6);
+class Swoop(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Swoop, 8);
+class FurlingFlapping(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FurlingFlapping, 8);
+class DeadlySwoop(BossModule module) : Components.ChargeAOEs(module, (uint)AID.DeadlySwoop, 8)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

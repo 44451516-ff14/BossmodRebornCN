@@ -2,7 +2,7 @@
 
 namespace BossMod.ReplayAnalysis;
 
-class TEASpecific
+sealed class TEASpecific
 {
     struct HandBaitData
     {

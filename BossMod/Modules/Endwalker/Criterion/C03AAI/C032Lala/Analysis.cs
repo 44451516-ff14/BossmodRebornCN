@@ -19,7 +19,7 @@ class Analysis(BossModule module) : BossComponent(module)
     }
 }
 
-class AnalysisRadiance(BossModule module) : Components.GenericGaze(module, default, true)
+class AnalysisRadiance(BossModule module) : Components.GenericGaze(module)
 {
     private readonly Analysis? _analysis = module.FindComponent<Analysis>();
     private readonly ArcaneArray? _pulse = module.FindComponent<ArcaneArray>();
@@ -29,7 +29,7 @@ class AnalysisRadiance(BossModule module) : Components.GenericGaze(module, defau
     {
         var (nextGlobe, activation) = NextGlobe();
         if (_analysis != null && nextGlobe != null && activation != default)
-            return new Eye[1] { new(nextGlobe.Position, activation, _analysis.SafeDir[slot]) };
+            return new Eye[1] { new(nextGlobe.Position, activation, _analysis.SafeDir[slot], Inverted: true) };
         return [];
     }
 
@@ -52,7 +52,7 @@ class AnalysisRadiance(BossModule module) : Components.GenericGaze(module, defau
     private (Actor? actor, DateTime activation) NextGlobe() => _globes.Select(g => (g, GlobeActivation(g))).MinBy(ga => ga.Item2);
 }
 
-class TargetedLight(BossModule module) : Components.GenericGaze(module, default, true)
+class TargetedLight(BossModule module) : Components.GenericGaze(module)
 {
     public bool Active;
     private readonly Analysis? _analysis = module.FindComponent<Analysis>();
@@ -64,7 +64,7 @@ class TargetedLight(BossModule module) : Components.GenericGaze(module, default,
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
         if (Active)
-            return new Eye[1] { new(Arena.Center, _activation, _safeDir[slot]) };
+            return new Eye[1] { new(Arena.Center, _activation, _safeDir[slot], Inverted: true) };
         return [];
     }
 

@@ -1,24 +1,24 @@
 namespace BossMod.Dawntrail.Alliance.A11Prishe;
 
-class BanishStorm(BossModule module) : Components.Exaflare(module, 6)
+sealed class BanishStorm(BossModule module) : Components.Exaflare(module, 6f)
 {
     public bool Done;
 
     private static readonly WPos[] positions = [new(815f, 415f), new(800f, 385f), new(785f, 400f), new(785f, 385f), new(815f, 400f), new(800f, 415f)];
     private static readonly WDir[] directions =
     [
-        4 * (-0.003f).Degrees().ToDirection(),
-        4 * 119.997f.Degrees().ToDirection(),
-        4 * (-120.003f).Degrees().ToDirection(),
-        4 * 180f.Degrees().ToDirection(),
-        4 * (-60.005f).Degrees().ToDirection(),
-        4 * 60f.Degrees().ToDirection(),
-        4 * 89.999f.Degrees().ToDirection(),
-        4 * (-150.001f).Degrees().ToDirection(),
-        4 * (-30.001f).Degrees().ToDirection(),
-        4 * (-90.004f).Degrees().ToDirection(),
-        4 * 29.996f.Degrees().ToDirection(),
-        4 * 149.996f.Degrees().ToDirection()
+        4f * (-0.003f).Degrees().ToDirection(),
+        4f * 119.997f.Degrees().ToDirection(),
+        4f * (-120.003f).Degrees().ToDirection(),
+        4f * 180f.Degrees().ToDirection(),
+        4f * (-60.005f).Degrees().ToDirection(),
+        4f * 60f.Degrees().ToDirection(),
+        4f * 89.999f.Degrees().ToDirection(),
+        4f * (-150.001f).Degrees().ToDirection(),
+        4f * (-30.001f).Degrees().ToDirection(),
+        4f * (-90.004f).Degrees().ToDirection(),
+        4f * 29.996f.Degrees().ToDirection(),
+        4f * 149.996f.Degrees().ToDirection()
     ];
     private static readonly Dictionary<byte, (int position, int[] directions, int[] numExplosions)> LineConfigs = new()
     {
@@ -44,7 +44,7 @@ class BanishStorm(BossModule module) : Components.Exaflare(module, 6)
     {
         if (LineConfigs.TryGetValue(index, out var config))
         {
-            if (state == 0x00020001) // rod appear
+            if (state == 0x00020001u) // rod appear
             {
                 var activation1 = WorldState.FutureTime(9.1d);
                 var activation2 = WorldState.FutureTime(9.8d);
@@ -62,7 +62,7 @@ class BanishStorm(BossModule module) : Components.Exaflare(module, 6)
                     });
                 }
             }
-            else if (state == 0x00080004) // rod disappear
+            else if (state == 0x00080004u) // rod disappear
             {
                 Done = true;
             }

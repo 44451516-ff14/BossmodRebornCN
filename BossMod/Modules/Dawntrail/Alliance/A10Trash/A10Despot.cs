@@ -22,11 +22,11 @@ public enum AID : uint
     PanzerfaustRepeats = 41353 // Boss->player, no cast, single-target, knockback 10, apply concussion
 }
 
-class IsleDrop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IsleDrop), 6f);
-class WingCutter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingCutter), new AOEShapeCone(6f, 60f.Degrees()));
-class PanzerfaustHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Panzerfaust), showNameInHint: true);
-class Panzerfaust(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Panzerfaust));
-class ScraplineStorm(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ScraplineStorm), 10f, kind: Kind.TowardsOrigin)
+sealed class IsleDrop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IsleDrop, 6f);
+sealed class WingCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingCutter, new AOEShapeCone(6f, 60f.Degrees()));
+sealed class PanzerfaustHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Panzerfaust, showNameInHint: true);
+sealed class Panzerfaust(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Panzerfaust);
+sealed class ScraplineStorm(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ScraplineStorm, 10f, kind: Kind.TowardsOrigin)
 {
     private readonly ScraplineTyphoon _aoe = module.FindComponent<ScraplineTyphoon>()!;
 
@@ -46,7 +46,7 @@ class ScraplineStorm(BossModule module) : Components.SimpleKnockbacks(module, Ac
     }
 }
 
-class ScraplineTyphoon(BossModule module) : Components.GenericAOEs(module)
+sealed class ScraplineTyphoon(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(2);
     private static readonly AOEShapeCircle circle = new(10f);
@@ -58,8 +58,9 @@ class ScraplineTyphoon(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.ScraplineStorm)
         {
-            AOEs.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 2.1f)));
-            AOEs.Add(new(donut, spell.LocXZ, default, Module.CastFinishAt(spell, 5.6f)));
+            AddAOE(circle, 2.1f);
+            AddAOE(donut, 5.6f);
+            void AddAOE(AOEShape shape, float delay) => AOEs.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay)));
         }
     }
 
@@ -70,7 +71,7 @@ class ScraplineTyphoon(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-public class A10DespotStates : StateMachineBuilder
+public sealed class A10DespotStates : StateMachineBuilder
 {
     public A10DespotStates(BossModule module) : base(module)
     {
@@ -96,7 +97,7 @@ public class A10DespotStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13608, SortOrder = 6)]
-public class A10Despot(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class A10Despot(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-585.1f, -640.25f), new(-584.42f, -640.14f), new(-556.15f, -628.13f), new(-556.17f, -627.43f), new(-556.81f, -626.37f),
     new(-556.72f, -625.74f), new(-556.38f, -624.57f), new(-555.35f, -623.79f), new(-554.92f, -623.21f), new(-556.88f, -618.59f),

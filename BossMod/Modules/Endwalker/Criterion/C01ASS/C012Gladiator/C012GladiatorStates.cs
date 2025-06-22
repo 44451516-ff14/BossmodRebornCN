@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C01ASS.C012Gladiator;
 
-class C012GladiatorStates : StateMachineBuilder
+abstract class C012GladiatorStates : StateMachineBuilder
 {
     private readonly bool _savage;
 
     public C012GladiatorStates(BossModule module, bool savage) : base(module)
     {
         _savage = savage;
-        DeathPhase(0, SinglePhase);
+        DeathPhase(default, SinglePhase);
     }
 
     private void SinglePhase(uint id)
@@ -27,31 +27,31 @@ class C012GladiatorStates : StateMachineBuilder
         SpecterOfMight(id + 0xC0000, 10.2f);
         SculptorsPassion(id + 0xD0000, 2.6f);
         FlashOfSteel(id + 0xE0000, 10.6f);
-        Cast(id + 0xF0000, AID.Enrage, 2.1f, 10, "Enrage");
+        Cast(id + 0xF0000, (uint)AID.Enrage, 2.1f, 10, "Enrage");
     }
 
     private void FlashOfSteel(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SFlashOfSteel : AID.NFlashOfSteel, delay, 5, "Raidwide")
+        Cast(id, _savage ? (uint)AID.SFlashOfSteel : (uint)AID.NFlashOfSteel, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void MightySmite(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SMightySmite : AID.NMightySmite, delay, 5, "Tankbuster")
+        Cast(id, _savage ? (uint)AID.SMightySmite : (uint)AID.NMightySmite, delay, 5, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void SpecterOfMight(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SSpecterOfMight : AID.NSpecterOfMight, delay, 4);
+        Cast(id, _savage ? (uint)AID.SSpecterOfMight : (uint)AID.NSpecterOfMight, delay, 4);
         ComponentCondition<RushOfMightFront>(id + 0x10, 4.2f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<NRushOfMightFront>(!_savage)
             .ActivateOnEnter<SRushOfMightFront>(_savage);
         ComponentCondition<RushOfMightFront>(id + 0x11, 10.5f, comp => comp.NumCasts > 0, "Charge 1 front")
             .DeactivateOnExit<RushOfMightFront>();
 
-        CastStart(id + 0x20, _savage ? AID.SSpecterOfMight : AID.NSpecterOfMight, 0.5f)
+        CastStart(id + 0x20, _savage ? (uint)AID.SSpecterOfMight : (uint)AID.NSpecterOfMight, 0.5f)
             .ActivateOnEnter<NRushOfMightBack>(!_savage)
             .ActivateOnEnter<SRushOfMightBack>(_savage);
         ComponentCondition<RushOfMightBack>(id + 0x21, 1.5f, comp => comp.NumCasts > 0, "Charge 1 back")
@@ -70,7 +70,7 @@ class C012GladiatorStates : StateMachineBuilder
 
     private void SculptorsPassion(uint id, float delay)
     {
-        CastStart(id, _savage ? AID.SSculptorsPassion : AID.NSculptorsPassion, delay)
+        CastStart(id, _savage ? (uint)AID.SSculptorsPassion : (uint)AID.NSculptorsPassion, delay)
             .ActivateOnEnter<NSculptorsPassion>(!_savage)
             .ActivateOnEnter<SSculptorsPassion>(_savage);
         CastEnd(id + 1, 5);
@@ -81,11 +81,11 @@ class C012GladiatorStates : StateMachineBuilder
 
     private void CurseOfTheFallen(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SCurseOfTheFallen : AID.NCurseOfTheFallen, delay, 5);
+        Cast(id, _savage ? (uint)AID.SCurseOfTheFallen : (uint)AID.NCurseOfTheFallen, delay, 5);
         ComponentCondition<CurseOfTheFallen>(id + 2, 1.1f, comp => comp.Active)
             .ActivateOnEnter<CurseOfTheFallen>();
 
-        CastMulti(id + 0x10, [_savage ? AID.SRingOfMight1Out : AID.NRingOfMight1Out, _savage ? AID.SRingOfMight2Out : AID.NRingOfMight2Out, _savage ? AID.SRingOfMight3Out : AID.NRingOfMight3Out], 3.7f, 10, "Out")
+        CastMulti(id + 0x10, [_savage ? (uint)AID.SRingOfMight1Out : (uint)AID.NRingOfMight1Out, _savage ? (uint)AID.SRingOfMight2Out : (uint)AID.NRingOfMight2Out, _savage ? (uint)AID.SRingOfMight3Out : (uint)AID.NRingOfMight3Out], 3.7f, 10, "Out")
             .ActivateOnEnter<NRingOfMight1Out>(!_savage)
             .ActivateOnEnter<NRingOfMight2Out>(!_savage)
             .ActivateOnEnter<NRingOfMight3Out>(!_savage)
@@ -116,12 +116,12 @@ class C012GladiatorStates : StateMachineBuilder
     private void WrathOfRuin(uint id, float delay)
     {
         // -0.7s: HatefulVisage actors spawn
-        Cast(id, _savage ? AID.SWrathOfRuin : AID.NWrathOfRuin, delay, 3)
+        Cast(id, _savage ? (uint)AID.SWrathOfRuin : (uint)AID.NWrathOfRuin, delay, 3)
             .ActivateOnEnter<GoldenSilverFlame>(); // casts start ~2.1s after cast-start
         // +1.4s: first set of Regrets spawn
         // +3.4s: second set of Regrets spawn
         // +5.4s: first set of RackAndRuin cast-starts
-        CastStart(id + 0x10, _savage ? AID.SNothingBesideRemains : AID.NNothingBesideRemains, 5.7f)
+        CastStart(id + 0x10, _savage ? (uint)AID.SNothingBesideRemains : (uint)AID.NNothingBesideRemains, 5.7f)
             .ActivateOnEnter<NRackAndRuin>(!_savage)
             .ActivateOnEnter<SRackAndRuin>(_savage);
         // +1.7s: second set of RackAndRuin cast-starts
@@ -138,13 +138,13 @@ class C012GladiatorStates : StateMachineBuilder
 
     private void HatefulVisage(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SHatefulVisage : AID.NHatefulVisage, delay, 3);
+        Cast(id, _savage ? (uint)AID.SHatefulVisage : (uint)AID.NHatefulVisage, delay, 3);
         WrathOfRuin(id + 0x100, 2.2f);
     }
 
     private void AccursedVisage(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SAccursedVisage : AID.NAccursedVisage, delay, 3);
+        Cast(id, _savage ? (uint)AID.SAccursedVisage : (uint)AID.NAccursedVisage, delay, 3);
         // +1.1s: gilded/silvered fate statuses
         WrathOfRuin(id + 0x100, 2.2f);
     }
@@ -152,7 +152,7 @@ class C012GladiatorStates : StateMachineBuilder
     // TODO: component for tether?..
     private void CurseOfTheMonument(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SCurseOfTheMonument : AID.NCurseOfTheMonument, delay, 4);
+        Cast(id, _savage ? (uint)AID.SCurseOfTheMonument : (uint)AID.NCurseOfTheMonument, delay, 4);
         // +1.0s: debuffs/tethers appear
 
         // after central cast, other pairs are staggered by ~0.6s
@@ -163,7 +163,7 @@ class C012GladiatorStates : StateMachineBuilder
             .DeactivateOnExit<SunderedRemains>();
 
         // note: spread explosions happen ~0.8s before tower explosions...
-        Cast(id + 0x100, _savage ? AID.SColossalWreck : AID.NColossalWreck, 4.9f, 6)
+        Cast(id + 0x100, _savage ? (uint)AID.SColossalWreck : (uint)AID.NColossalWreck, 4.9f, 6)
             .ActivateOnEnter<ScreamOfTheFallen>();
         ComponentCondition<ScreamOfTheFallen>(id + 0x110, 0.5f, comp => comp.NumCasts > 0, "Towers 1");
         ComponentCondition<ScreamOfTheFallen>(id + 0x120, 4, comp => comp.NumCasts > 2, "Towers 2")
@@ -171,5 +171,5 @@ class C012GladiatorStates : StateMachineBuilder
     }
 }
 
-class C012NGladiatorStates(BossModule module) : C012GladiatorStates(module, false);
-class C012SGladiatorStates(BossModule module) : C012GladiatorStates(module, true);
+sealed class C012NGladiatorStates(BossModule module) : C012GladiatorStates(module, false);
+sealed class C012SGladiatorStates(BossModule module) : C012GladiatorStates(module, true);

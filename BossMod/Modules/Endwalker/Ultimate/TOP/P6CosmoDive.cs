@@ -11,7 +11,7 @@ class P6CosmoDive(BossModule module) : Components.UniformStackSpread(module, 6, 
         Stacks.Clear();
         if (_source != null)
         {
-            BitMask forbidden = new();
+            BitMask forbidden = default;
             foreach (var (slot, actor) in Raid.WithSlot(false, true, true).SortedByRange(_source.Position).Take(2))
             {
                 AddSpread(actor, _activation);
@@ -31,7 +31,7 @@ class P6CosmoDive(BossModule module) : Components.UniformStackSpread(module, 6, 
         if (spell.Action.ID == (uint)AID.CosmoDive)
         {
             _source = caster;
-            _activation = Module.CastFinishAt(spell, 2.5f);
+            _activation = Module.CastFinishAt(spell, 2.5d);
         }
     }
 

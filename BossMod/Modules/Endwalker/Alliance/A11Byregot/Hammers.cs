@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A11Byregot;
 
-class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.DestroySideTiles), "GTFO from dangerous tile!")
+class HammersCells(BossModule module) : Components.GenericAOEs(module, (uint)AID.DestroySideTiles, "GTFO from dangerous tile!")
 {
     public bool Active;
     public bool MovementPending;
@@ -29,13 +29,13 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Active = true;
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Arena.Bounds = A11Byregot.StartingHammerBounds;
     }
 
@@ -43,15 +43,19 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.
     {
         if (index is >= 0x07 and <= 0x0B)
         {
-            var i = index - 0x07;
-            (LineOffset[i], LineMovement[i]) = state switch
+            (var offset, var movement) = state switch
             {
                 0x00020001u => (0, +1),
                 0x08000400u => (-1, +1),
                 0x00800040u => (0, -1),
                 0x80004000u => (+1, -1),
-                _ => (LineOffset[i], 0),
+                _ => default
             };
+            if (movement == default)
+                return;
+            var i = index - 0x07u;
+            LineOffset[i] = offset;
+            LineMovement[i] = movement;
             MovementPending = true;
             activation = WorldState.FutureTime(16d);
         }
@@ -90,11 +94,11 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, ActionID.
     }
 }
 
-abstract class Rect(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50f, 5f));
-class DestroySideTiles(BossModule module) : Rect(module, AID.DestroySideTiles);
-class HammersLevinforge(BossModule module) : Rect(module, AID.Levinforge);
+abstract class Rect(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50f, 5f));
+class DestroySideTiles(BossModule module) : Rect(module, (uint)AID.DestroySideTiles);
+class HammersLevinforge(BossModule module) : Rect(module, (uint)AID.Levinforge);
 
-class HammersSpire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotSpire), new AOEShapeRect(50f, 15f))
+class HammersSpire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ByregotSpire, new AOEShapeRect(50f, 15f))
 {
     private WPos? _safespot;
     private readonly HammersCells _cells = module.FindComponent<HammersCells>()!;
@@ -104,7 +108,7 @@ class HammersSpire(BossModule module) : Components.SimpleAOEs(module, ActionID.M
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ref readonly var aoe = ref CollectionsMarshal.AsSpan(Casters)[0];
             var safespots = new List<WPos>();
@@ -146,7 +150,7 @@ class HammersSpire(BossModule module) : Components.SimpleAOEs(module, ActionID.M
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (_safespot is WPos pos)
-            Arena.AddRect(pos, new(default, 1), 5f, 5f, 5f, Colors.Safe, 2);
+            Arena.AddRect(pos, new(default, 1), 5f, 5f, 5f, Colors.Safe, 2f);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

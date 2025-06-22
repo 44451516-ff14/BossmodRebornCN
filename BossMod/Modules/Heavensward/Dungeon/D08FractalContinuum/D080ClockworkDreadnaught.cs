@@ -14,7 +14,7 @@ public enum AID : uint
     Rotoswipe = 4556 // Boss->self, 3.0s cast, range 8+R 120-degree cone
 }
 
-class Rotoswipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Rotoswipe), new AOEShapeCone(11f, 60f.Degrees()));
+class Rotoswipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rotoswipe, new AOEShapeCone(11f, 60f.Degrees()));
 
 class D080ClockworkDreadnaughtStates : StateMachineBuilder
 {

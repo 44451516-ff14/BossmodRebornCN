@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Raid.M03NBruteBomber;
 
-class M03NBruteBomberStates : StateMachineBuilder
+sealed class M03NBruteBomberStates : StateMachineBuilder
 {
     public M03NBruteBomberStates(BossModule module) : base(module)
     {
@@ -9,8 +9,7 @@ class M03NBruteBomberStates : StateMachineBuilder
             .ActivateOnEnter<BrutalImpact>()
             .ActivateOnEnter<BarbarousBarrageTower>()
             .ActivateOnEnter<BarbarousBarrageKnockback>()
-            .ActivateOnEnter<BrutalLariat1>()
-            .ActivateOnEnter<BrutalLariat2>()
+            .ActivateOnEnter<BrutalLariat>()
             .ActivateOnEnter<ExplosiveRainCircle>()
             .ActivateOnEnter<ExplosiveRainConcentric>()
             .ActivateOnEnter<FireSpin>()

@@ -26,8 +26,8 @@ public enum SID : uint
     AboutFace = 2162
 }
 
-class ResonantBuzz(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ResonantBuzz), "Apply forced march!");
-class ResonantBuzzMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
+sealed class ResonantBuzz(BossModule module) : Components.RaidwideCast(module, (uint)AID.ResonantBuzz, "Apply forced march!");
+sealed class ResonantBuzzMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {
     private readonly BeeBeAOE _aoe = module.FindComponent<BeeBeAOE>()!;
 
@@ -53,10 +53,10 @@ class ResonantBuzzMarch(BossModule module) : Components.StatusDrivenForcedMarch(
     }
 }
 
-class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StraightSpindle), new AOEShapeRect(50f, 2.5f));
-class FrenziedSting(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.FrenziedSting));
+sealed class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StraightSpindle, new AOEShapeRect(50f, 2.5f));
+sealed class FrenziedSting(BossModule module) : Components.SingleTargetCast(module, (uint)AID.FrenziedSting);
 
-class BeeBeAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class BeeBeAOE(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance? AOE;
     private static readonly AOEShapeCircle _shapeCircle = new(12f);
@@ -83,7 +83,7 @@ class BeeBeAOE(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class QueenHawkStates : StateMachineBuilder
+sealed class QueenHawkStates : StateMachineBuilder
 {
     public QueenHawkStates(BossModule module) : base(module)
     {
@@ -97,4 +97,4 @@ class QueenHawkStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13361)]
-public class QueenHawk(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class QueenHawk(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

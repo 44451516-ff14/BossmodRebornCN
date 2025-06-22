@@ -1,5 +1,5 @@
 ﻿namespace BossMod.RealmReborn.Dungeon.D09CuttersCry.D092GiantTunnelWorm;
-
+// TODO: Revist when it gets duty support to finish.
 public enum OID : uint
 {
     Boss = 0x536, // x1
@@ -18,10 +18,10 @@ public enum AID : uint
     SandPillar = 1113 // SandPillarHelper->self, no cast, range 4.5 aoe
 }
 
-class Sandstorm(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Sandstorm), new AOEShapeCone(10.5f, 45f.Degrees()));
+class Sandstorm(BossModule module) : Components.Cleave(module, (uint)AID.Sandstorm, new AOEShapeCone(10.5f, 45f.Degrees()));
 
 // TODO: pillars teleport right before cast, so we don't show them for now...
-class Submerge(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Earthbreak))
+class Submerge(BossModule module) : Components.GenericAOEs(module, (uint)AID.Earthbreak)
 {
     private readonly AOEShapeCircle _shape = new(14.5f);
 
@@ -45,4 +45,4 @@ class D092GiantTunnelWormStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 12, NameID = 1589)]
-public class D092GiantTunnelWorm(WorldState ws, Actor primary) : BossModule(ws, primary, new(-140f, 150f), new ArenaBoundsCircle(20f));
+public class D092GiantTunnelWorm(WorldState ws, Actor primary) : BossModule(ws, primary, new(-140f, 150f), new ArenaBoundsCircle(35f));

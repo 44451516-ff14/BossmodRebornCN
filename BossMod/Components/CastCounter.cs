@@ -1,26 +1,33 @@
 ﻿namespace BossMod.Components;
 
 // generic component that counts specified casts
-public class CastCounter(BossModule module, ActionID aid) : BossComponent(module)
+public class CastCounter(BossModule module, uint aid) : BossComponent(module)
 {
-    public readonly ActionID WatchedAction = aid;
+    public readonly uint WatchedAction = aid;
     public int NumCasts;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             ++NumCasts;
     }
 }
 
-public class CastCounterMulti(BossModule module, HashSet<ActionID> aids) : BossComponent(module)
+public class CastCounterMulti(BossModule module, uint[] aids) : BossComponent(module)
 {
-    public readonly HashSet<ActionID> WatchedActions = aids;
+    public readonly uint[] WatchedActions = aids;
     public int NumCasts;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (WatchedActions.Contains(spell.Action))
-            ++NumCasts;
+        var len = WatchedActions.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            if (spell.Action.ID == WatchedActions[i])
+            {
+                ++NumCasts;
+                return;
+            }
+        }
     }
 }

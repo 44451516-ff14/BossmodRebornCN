@@ -35,14 +35,14 @@ public enum AID : uint
     FireToss = 15449, // HydatosDelphyne->players, 3.0s cast, range 5 circle
 }
 
-class SickleStrike(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SickleStrike));
-class PetrifactionBoss(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.PetrifactionBoss), range: 50f);
-class PetrifactionAdds(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.PetrifactionAdds), range: 50f);
-class AbyssalReaper(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssalReaper), 18f);
-class CircleOfFlames(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CircleOfFlames), 5f);
-class TailSlap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSlap), new AOEShapeCone(12f, 60f.Degrees()));
-class GrimFate(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrimFate), new AOEShapeCone(8f, 60f.Degrees()));
-class Desolation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Desolation), new AOEShapeRect(12f, 4f));
+class SickleStrike(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SickleStrike);
+class PetrifactionBoss(BossModule module) : Components.CastGaze(module, (uint)AID.PetrifactionBoss, range: 50f);
+class PetrifactionAdds(BossModule module) : Components.CastGaze(module, (uint)AID.PetrifactionAdds, range: 50f);
+class AbyssalReaper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalReaper, 18f);
+class CircleOfFlames(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleOfFlames, 5f);
+class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSlap, new AOEShapeCone(12f, 60f.Degrees()));
+class GrimFate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrimFate, new AOEShapeCone(8f, 60f.Degrees()));
+class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(12f, 4f));
 
 class Petrattraction(BossModule module) : Components.GenericKnockback(module)
 {
@@ -65,9 +65,9 @@ class Petrattraction(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class CircleBlade1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CircleBlade1), 7);
-class CircleBlade2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CircleBlade2), 7);
-class FireToss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireToss), 5f);
+class CircleBlade1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleBlade1, 7);
+class CircleBlade2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleBlade2, 7);
+class FireToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireToss, 5f);
 
 class CetoStates : StateMachineBuilder
 {
@@ -90,7 +90,7 @@ class CetoStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "xan, Malediktus", GroupType = BossModuleInfo.GroupType.EurekaNM, GroupID = 639, NameID = 1421, SortOrder = 9)]
-public class Ceto(WorldState ws, Actor primary) : BossModule(ws, primary, new(747.8959f, -878.8765f), SharedBounds.Circle)
+public class Ceto(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
 {
     private static readonly uint[] trash = [(uint)OID.FaithlessGuard, (uint)OID.HydatosDelphyne, (uint)OID.DarkGargoyle];
     protected override void DrawEnemies(int pcSlot, Actor pc)

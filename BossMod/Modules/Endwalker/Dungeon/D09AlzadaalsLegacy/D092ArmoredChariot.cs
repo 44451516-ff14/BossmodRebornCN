@@ -208,9 +208,9 @@ class AssaultCannon(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DiffusionRay(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DiffusionRay));
-class RailCannon(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.RailCannon));
-class GravitonCannon(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.GravitonCannon), 6f);
+class DiffusionRay(BossModule module) : Components.RaidwideCast(module, (uint)AID.DiffusionRay);
+class RailCannon(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RailCannon);
+class GravitonCannon(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.GravitonCannon, 6f);
 
 class D092ArmoredChariotStates : StateMachineBuilder
 {

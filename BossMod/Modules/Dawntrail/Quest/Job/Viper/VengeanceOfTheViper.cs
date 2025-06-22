@@ -50,10 +50,10 @@ public enum AID : uint
     Razorwind = 38736 // Helper->Keshkwa, 5.0s cast, range 7 circle, stack
 }
 
-class Razorwind(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Razorwind), 7f, 2, 2);
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 15f);
+class Razorwind(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Razorwind, 7f, 2, 2);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 15f);
 
-class SwoopingFrenzy1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SwoopingFrenzy1), 15f);
+class SwoopingFrenzy1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwoopingFrenzy1, 15f);
 class SwoopingFrenzy2(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -95,16 +95,12 @@ class SwoopingFrenzy2(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BrutalStroke(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BrutalStroke), 25f);
-class CatchingChaos(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CatchingChaos));
-class Galeripper(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Galeripper), new AOEShapeCone(60f, 45f.Degrees()));
-
-abstract class BitingScratch(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 45f.Degrees()));
-class BitingScratch1(BossModule module) : BitingScratch(module, AID.BitingScratch1);
-class BitingScratch2(BossModule module) : BitingScratch(module, AID.BitingScratch2);
-
-class FervidImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FervidImpact), 12f);
-class FrigidPulse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FrigidPulse), new AOEShapeDonut(12f, 60f));
+class BrutalStroke(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrutalStroke, 25f);
+class CatchingChaos(BossModule module) : Components.RaidwideCast(module, (uint)AID.CatchingChaos);
+class Galeripper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Galeripper, new AOEShapeCone(60f, 45f.Degrees()));
+class BitingScratch(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BitingScratch1, (uint)AID.BitingScratch2], new AOEShapeCone(40f, 45f.Degrees()));
+class FervidImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FervidImpact, 12f);
+class FrigidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidPulse, new AOEShapeDonut(12f, 60f));
 
 class FirestormCycle(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -187,8 +183,7 @@ class VengeanceOfTheViperStates : StateMachineBuilder
     public VengeanceOfTheViperStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<BitingScratch1>()
-            .ActivateOnEnter<BitingScratch2>()
+            .ActivateOnEnter<BitingScratch>()
             .ActivateOnEnter<Razorwind>()
             .ActivateOnEnter<Explosion>()
             .ActivateOnEnter<BrutalStroke>()

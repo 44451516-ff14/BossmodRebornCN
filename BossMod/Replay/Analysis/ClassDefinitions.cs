@@ -1,8 +1,9 @@
-﻿using ImGuiNET;
+using BossMod.Data;
+using ImGuiNET;
 
 namespace BossMod.ReplayAnalysis;
 
-class ClassDefinitions
+sealed class ClassDefinitions
 {
     private const string GroupRoleActions = "Multi-role actions";
     private const string GroupLimitBreaks = "Shared limit breaks";
@@ -28,6 +29,7 @@ class ClassDefinitions
         public bool PotentiallyRemoved;
         public bool ReplayOnly;
         public bool IsBozjaHolster;
+        public bool IsPhantomAction;
         public bool SeenDifferentInstantAnimLocks;
         public bool SeenDifferentCastAnimLocks;
         public Dictionary<int, List<Entry>> InstantByAnimLock = [];
@@ -39,7 +41,7 @@ class ClassDefinitions
         public bool Error => Definition == null || Row == null || SeenDifferentInstantAnimLocks || SeenDifferentCastAnimLocks || PotentiallyRemoved || ReplayOnly;
     }
 
-    private class StatusData
+    private sealed class StatusData
     {
         public HashSet<ActionID> Actions = [];
         public bool OnSource;
@@ -49,7 +51,7 @@ class ClassDefinitions
         public string AppliedToString() => OnSource ? (OnTarget ? "self/target" : "self") : "target";
     }
 
-    private record class ClassData(Class ID, Class Base)
+    private sealed record class ClassData(Class ID, Class Base)
     {
         public readonly List<ActionData> Actions = [];
         public readonly SortedDictionary<int, List<ActionData>> ByCDGroup = [];
@@ -92,7 +94,7 @@ class ClassDefinitions
 
             bool traitIsInteresting(Lumina.Excel.Sheets.Trait t) => cjcSheet.GetRow(t.ClassJobCategory.RowId).ReadBoolColumn((int)i + 1);
             classData.Traits.AddRange(traitSheet.Where(traitIsInteresting));
-            classData.Traits.SortBy(e => e.Level);
+            classData.Traits.Sort((a, b) => a.Level.CompareTo(b.Level));
         }
         var nullOwner = _classData[Class.None] = new(Class.None, Class.None);
 
@@ -139,6 +141,10 @@ class ClassDefinitions
         for (var i = BozjaHolsterID.None + 1; i < BozjaHolsterID.Count; ++i)
             _actionData[BozjaActionID.GetNormal(i)].IsBozjaHolster = true;
 
+        foreach (var id in typeof(PhantomID).GetEnumValues())
+            if ((uint)id > 0)
+                _actionData[ActionID.MakeSpell((PhantomID)id)].IsPhantomAction = true;
+
         // split actions by categories
         foreach (var (aid, data) in _actionData)
         {
@@ -153,6 +159,7 @@ class ClassDefinitions
                     : data.IsRoleAction ? GroupRoleActions
                     : data.LimitBreakLevel > 0 && data.OwningClasses.NumSetBits() > 1 ? GroupLimitBreaks
                     : data.IsBozjaHolster ? "Bozja action"
+                    : data.IsPhantomAction ? "Phantom action"
                     : data.OwningClasses.Any() ? $"Class: {string.Join(" ", data.OwningClasses.SetBits().Select(i => (Class)i))}"
                     : "???",
                 ActionType.Item => "Item",
@@ -167,10 +174,11 @@ class ClassDefinitions
             AddActionsToCDGroups(data, data.ExtraCDGroup);
         }
         foreach (var (_, list) in _byCategory)
-            list.SortBy(d => d.Row?.ClassJobLevel ?? 0);
+            list.Sort((a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
         foreach (var (_, cd) in _classData)
         {
-            cd.Actions.SortBy(d => d.Row?.ClassJobLevel ?? 0);
+            cd.Actions.Sort((a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
+
             foreach (var a in cd.Actions)
             {
                 foreach (var s in a.AppliedStatusesToSource)
@@ -462,7 +470,7 @@ class ClassDefinitions
         }
     }
 
-    private record class AIDWriter(string Namespace) : EnumWriter("AID")
+    private sealed record class AIDWriter(string Namespace) : EnumWriter("AID")
     {
         public void Add(ActionData a, bool allowClasses, bool shared = false)
         {
@@ -566,7 +574,7 @@ class ClassDefinitions
         }
     }
 
-    private record class DefinitionWriter(string Namespace)
+    private sealed record class DefinitionWriter(string Namespace)
     {
         private readonly StringBuilder _sb = new("public Definitions(ActionDefinitions d)\n{\n");
 
@@ -618,7 +626,7 @@ class ClassDefinitions
         };
     }
 
-    private record class UnlockWriter(string EnumName)
+    private sealed record class UnlockWriter(string EnumName)
     {
         private readonly StringBuilder _sb = new($"public static bool Unlocked({EnumName} id, int level, int questProgress) => id switch\n{{\n");
 

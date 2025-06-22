@@ -47,7 +47,7 @@ class P5FulgentBlade : Components.Exaflare
             if (_lines.Count == 6)
             {
                 // sort in arbitrary order (say, CW), until we know better
-                _lines.SortBy(l => l.dir.Cross(_initialSafespot));
+                _lines.Sort((a, b) => a.dir.Cross(_initialSafespot).CompareTo(b.dir.Cross(_initialSafespot)));
             }
         }
     }

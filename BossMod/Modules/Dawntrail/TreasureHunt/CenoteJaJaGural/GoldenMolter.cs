@@ -47,6 +47,7 @@ public enum AID : uint
 
     Inhale = 38280, // UolonOfFortune->self, 0.5s cast, range 27 120-degree cone
     Spin = 38279, // UolonOfFortune->self, 3.0s cast, range 11 circle
+    Scoop = 38278, // UolonOfFortune->self, 4.0s cast, range 15 120-degree cone
     RottenSpores = 38277, // UolonOfFortune->location, 3.0s cast, range 6 circle
     TearyTwirl = 32301, // TuraliOnion->self, 3.5s cast, range 7 circle
     HeirloomScream = 32304, // TuraliTomato->self, 3.5s cast, range 7 circle
@@ -62,10 +63,10 @@ public enum SID : uint
     Slime = 569 // Boss->player, extra=0x0
 }
 
-class Lap(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Lap));
-class Lightburst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Lightburst));
+sealed class Lap(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Lap);
+sealed class Lightburst(BossModule module) : Components.RaidwideCast(module, (uint)AID.Lightburst);
 
-class Crypsis(BossModule module) : BossComponent(module)
+sealed class Crypsis(BossModule module) : BossComponent(module)
 {
     private bool IsConcealed;
     private const int RevealDistance = 9;
@@ -97,21 +98,18 @@ class Crypsis(BossModule module) : BossComponent(module)
     }
 }
 
-class GoldenGall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldenGall), new AOEShapeCone(40f, 90f.Degrees()));
-class GoldenRadiance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GoldenRadiance), 5f);
-class BlindingLight(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.BlindingLight), 6f);
+sealed class GoldenGall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldenGall, new AOEShapeCone(40f, 90f.Degrees()));
+sealed class GoldenRadiance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldenRadiance, 5f);
+sealed class BlindingLight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlindingLight, 6f);
 
-class AetherialLight : Components.SimpleAOEs
+sealed class AetherialLight : Components.SimpleAOEs
 {
-    public AetherialLight(BossModule module) : base(module, ActionID.MakeSpell(AID.AetherialLight), new AOEShapeCone(40f, 30f.Degrees()), 4) { MaxDangerColor = 2; }
+    public AetherialLight(BossModule module) : base(module, (uint)AID.AetherialLight, new AOEShapeCone(40f, 30f.Degrees()), 4) { MaxDangerColor = 2; }
 }
 
-abstract class Vasoconstrictor(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f);
-class Vasoconstrictor1(BossModule module) : Vasoconstrictor(module, AID.Vasoconstrictor1);
-class Vasoconstrictor2(BossModule module) : Vasoconstrictor(module, AID.Vasoconstrictor2);
-class Vasoconstrictor3(BossModule module) : Vasoconstrictor(module, AID.Vasoconstrictor3);
+sealed class Vasoconstrictor(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Vasoconstrictor1, (uint)AID.Vasoconstrictor2, (uint)AID.Vasoconstrictor3], 6f);
 
-class VasoconstrictorPool(BossModule module) : Components.GenericAOEs(module)
+sealed class VasoconstrictorPool(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(3);
     private readonly AOEShapeCircle circle = new(17f);
@@ -131,17 +129,13 @@ class VasoconstrictorPool(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class RottenSpores(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RottenSpores), 6f);
+sealed class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+sealed class RottenSpores(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottenSpores, 6f);
+sealed class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
+sealed class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
-
-class GoldenMolterStates : StateMachineBuilder
+sealed class GoldenMolterStates : StateMachineBuilder
 {
     public GoldenMolterStates(BossModule module) : base(module)
     {
@@ -153,16 +147,11 @@ class GoldenMolterStates : StateMachineBuilder
             .ActivateOnEnter<GoldenRadiance>()
             .ActivateOnEnter<BlindingLight>()
             .ActivateOnEnter<AetherialLight>()
-            .ActivateOnEnter<Vasoconstrictor1>()
-            .ActivateOnEnter<Vasoconstrictor2>()
-            .ActivateOnEnter<Vasoconstrictor3>()
+            .ActivateOnEnter<Vasoconstrictor>()
             .ActivateOnEnter<VasoconstrictorPool>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<Spin>()
+            .ActivateOnEnter<Scoop>()
             .ActivateOnEnter<RottenSpores>()
             .Raw.Update = () =>
             {
@@ -179,7 +168,7 @@ class GoldenMolterStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Kismet, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 993, NameID = 13248)]
-public class GoldenMolter(WorldState ws, Actor primary) : SharedBoundsBoss(ws, primary)
+public sealed class GoldenMolter(WorldState ws, Actor primary) : SharedBoundsBoss(ws, primary)
 {
     private static readonly uint[] bonusAdds = [(uint)OID.TuraliEggplant, (uint)OID.TuraliTomato, (uint)OID.TuligoraQueen, (uint)OID.TuraliGarlic,
     (uint)OID.TuraliOnion, (uint)OID.UolonOfFortune, (uint)OID.AlpacaOfFortune];

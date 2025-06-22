@@ -2,12 +2,13 @@
 
 public enum OID : uint
 {
-    Boss = 0x35DC, // R5.875, x1
+    Boss = 0x35DC // R5.875, x1
 }
 
 public enum AID : uint
 {
     AutoAttack = 872, // Boss->player, no cast, single-target
+
     RightMaw = 27350, // Boss->self, 5.0s cast, range 30 180-degree cone
     LeftMaw = 27351, // Boss->self, 5.0s cast, range 30 180-degree cone
     PyricCircle = 27352, // Boss->self, 5.0s cast, range 5-40 donut
@@ -16,59 +17,49 @@ public enum AID : uint
     LeapingPyricBurst = 27342, // Boss->location, 6.0s cast, width 0 rect charge, visual
     LeapingPyricCircleAOE = 27346, // Boss->self, 1.0s cast, range 5-40 donut
     LeapingPyricBurstAOE = 27347, // Boss->self, 1.0s cast, range 40 circle with ? falloff
-    Scratch = 27348, // Boss->player, 5.0s cast, single-target
+    Scratch = 27348 // Boss->player, 5.0s cast, single-target
 }
 
-abstract class Maw(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(30, 90.Degrees()));
-class RightMaw(BossModule module) : Maw(module, AID.RightMaw);
-class LeftMaw(BossModule module) : Maw(module, AID.LeftMaw);
+class Maw(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightMaw, (uint)AID.LeftMaw], new AOEShapeCone(30, 90.Degrees()));
 
 class PyricCircleBurst(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
 
-    private static readonly AOEShapeCircle _shapeCircle = new(10); // TODO: verify falloff
-    private static readonly AOEShapeDonut _shapeDonut = new(5, 40);
+    private static readonly AOEShapeCircle circle = new(10f); // TODO: verify falloff
+    private static readonly AOEShapeDonut donut = new(5f, 40f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        AOEShape? shape = spell.Action.ID switch
         {
-            case AID.PyricCircle:
-            case AID.LeapingPyricCircleAOE:
-                _aoe = new(_shapeDonut, caster.Position, spell.Rotation, Module.CastFinishAt(spell));
-                break;
-            case AID.PyricBurst:
-            case AID.LeapingPyricBurstAOE:
-                _aoe = new(_shapeCircle, caster.Position, spell.Rotation, Module.CastFinishAt(spell));
-                break;
-            case AID.LeapingPyricCircle:
-                _aoe = new(_shapeDonut, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 5));
-                break;
-            case AID.LeapingPyricBurst:
-                _aoe = new(_shapeCircle, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 5));
-                break;
+            (uint)AID.PyricCircle or (uint)AID.LeapingPyricCircleAOE or (uint)AID.LeapingPyricCircle => donut,
+            (uint)AID.PyricBurst or (uint)AID.LeapingPyricBurstAOE or (uint)AID.LeapingPyricBurst => circle,
+            _ => null
+        };
+        if (shape != null)
+        {
+            _aoe = new(shape, caster.Position, spell.Rotation, Module.CastFinishAt(spell, spell.Action.ID <= (uint)AID.LeapingPyricBurst ? 5f : default));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.PyricCircle or AID.PyricBurst or AID.LeapingPyricCircleAOE or AID.LeapingPyricBurstAOE)
+        if (spell.Action.ID is (uint)AID.PyricCircle or (uint)AID.PyricBurst or (uint)AID.LeapingPyricCircleAOE or (uint)AID.LeapingPyricBurstAOE)
             _aoe = null;
     }
 }
 
-class Scratch(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Scratch));
+class Scratch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Scratch);
 
 class OphioneusStates : StateMachineBuilder
 {
     public OphioneusStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<RightMaw>()
-            .ActivateOnEnter<LeftMaw>()
+            .ActivateOnEnter<Maw>()
             .ActivateOnEnter<PyricCircleBurst>()
             .ActivateOnEnter<Scratch>();
     }

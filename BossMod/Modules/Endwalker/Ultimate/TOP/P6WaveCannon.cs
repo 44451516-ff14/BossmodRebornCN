@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P6WaveCannonPuddle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.P6WaveCannonPuddle), 6);
+class P6WaveCannonPuddle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.P6WaveCannonPuddle, 6);
 
 class P6WaveCannonExaflare(BossModule module) : Components.Exaflare(module, 8f)
 {
@@ -57,7 +57,7 @@ class P6WaveCannonProteans(BossModule module) : Components.GenericBaitAway(modul
     }
 }
 
-class P6WaveCannonWildCharge(BossModule module) : Components.GenericWildCharge(module, 4f, ActionID.MakeSpell(AID.P6WaveCannonWildCharge), 100)
+class P6WaveCannonWildCharge(BossModule module) : Components.GenericWildCharge(module, 4f, (uint)AID.P6WaveCannonWildCharge, 100)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

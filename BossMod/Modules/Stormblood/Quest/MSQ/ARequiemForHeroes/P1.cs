@@ -1,15 +1,13 @@
-﻿using BossMod.QuestBattle;
+﻿namespace BossMod.Stormblood.Quest.MSQ.ARequiemForHeroes;
 
-namespace BossMod.Stormblood.Quest.MSQ.ARequiemForHeroes;
-
-class AutoHien(WorldState ws) : UnmanagedRotation(ws, 3)
+class AutoHien(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 3f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
         if (primaryTarget == null)
             return;
 
-        Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget, 3));
+        Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget, 3f));
 
         var ajisai = StatusDetails(primaryTarget, Roleplay.SID.Ajisai, Player.InstanceID);
 
@@ -31,13 +29,13 @@ class AutoHien(WorldState ws) : UnmanagedRotation(ws, 3)
         }
 
         if (Player.HPMP.CurHP < 5000)
-            UseAction(Roleplay.AID.SecondWind, Player, -10);
+            UseAction(Roleplay.AID.SecondWind, Player, -10f);
 
-        UseAction(Roleplay.AID.HissatsuGyoten, primaryTarget, -10);
+        UseAction(Roleplay.AID.HissatsuGyoten, primaryTarget, -10f);
     }
 }
 
-class HienAI(BossModule module) : RotationModule<AutoHien>(module);
+class HienAI(BossModule module) : QuestBattle.RotationModule<AutoHien>(module);
 
 public class ZenosP1States : StateMachineBuilder
 {
@@ -48,4 +46,4 @@ public class ZenosP1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68721, NameID = 6039, PrimaryActorOID = (uint)OID.BossP1)]
-public class ZenosP1(WorldState ws, Actor primary) : BossModule(ws, primary, new(233, -93.25f), new ArenaBoundsCircle(20));
+public class ZenosP1(WorldState ws, Actor primary) : BossModule(ws, primary, new(233f, -93.25f), new ArenaBoundsCircle(20f));

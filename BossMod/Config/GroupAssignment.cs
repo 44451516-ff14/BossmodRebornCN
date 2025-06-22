@@ -48,7 +48,7 @@ public class GroupAssignment
     // build slot mask for members of specified group; returns 0 if resolve fails
     public BitMask BuildGroupMask(int group, PartyState party, PartyRolesConfig actorAssignments)
     {
-        BitMask mask = new();
+        BitMask mask = default;
         foreach (var (slot, g) in Resolve(party, actorAssignments))
             if (g == group)
                 mask.Set(slot);
@@ -105,7 +105,7 @@ public class GroupAssignmentDDSupportPairs : GroupAssignment
 
     public override bool Validate()
     {
-        BitMask mask = new(); // bits 0-3 - support for group N, bits 4-7 - dd for group (N-4)
+        BitMask mask = default; // bits 0-3 - support for group N, bits 4-7 - dd for group (N-4)
         void addToMask(int group, int offset)
         {
             if (group is >= 0 and < 4)
@@ -152,7 +152,7 @@ public class GroupAssignmentUnique : GroupAssignment
 
     public override bool Validate()
     {
-        BitMask mask = new();
+        BitMask mask = default;
         for (var i = 0; i < 8; ++i)
             mask.Set(Assignments[i]);
         return mask.Raw == 0xff;

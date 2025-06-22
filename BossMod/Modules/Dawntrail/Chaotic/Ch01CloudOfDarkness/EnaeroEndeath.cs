@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class EnaeroEndeath(BossModule module) : Components.GenericKnockback(module)
+sealed class EnaeroEndeath(BossModule module) : Components.GenericKnockback(module)
 {
     private Knockback? _source;
     private Kind _delayed;
@@ -81,7 +81,7 @@ class EnaeroEndeath(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class EnaeroAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class EnaeroAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private bool _delayed;
@@ -128,7 +128,7 @@ class EnaeroAOE(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class EndeathAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class EndeathAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private bool _delayed;

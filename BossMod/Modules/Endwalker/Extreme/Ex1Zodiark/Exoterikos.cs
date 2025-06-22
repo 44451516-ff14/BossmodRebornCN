@@ -5,9 +5,9 @@ class Exoterikos(BossModule module) : BossComponent(module)
 {
     private readonly List<(Actor, AOEShape)> _sources = [];
 
-    private static readonly AOEShapeRect _aoeSquare = new(21, 21);
-    private static readonly AOEShapeCone _aoeTriangle = new(47, 30.Degrees());
-    private static readonly AOEShapeRect _aoeRay = new(42, 7);
+    private static readonly AOEShapeRect _aoeSquare = new(21f, 21f);
+    private static readonly AOEShapeCone _aoeTriangle = new(47f, 30f.Degrees());
+    private static readonly AOEShapeRect _aoeRay = new(42f, 7f);
 
     public bool Done => _sources.Count == 0;
 
@@ -49,11 +49,11 @@ class Exoterikos(BossModule module) : BossComponent(module)
 
     private AOEShape? ShapeForSigil(Actor sigil)
     {
-        return (OID)sigil.OID switch
+        return sigil.OID switch
         {
-            OID.ExoSquare => _aoeSquare,
-            OID.ExoTri => _aoeTriangle,
-            OID.ExoGreen => _aoeRay,
+            (uint)OID.ExoSquare => _aoeSquare,
+            (uint)OID.ExoTri => _aoeTriangle,
+            (uint)OID.ExoGreen => _aoeRay,
             _ => null
         };
     }
@@ -61,10 +61,10 @@ class Exoterikos(BossModule module) : BossComponent(module)
     private IEnumerable<(Actor, AOEShape)> ActiveKnockbacks()
     {
         var hadSideSquare = false; // we don't show multiple side-squares, since that would cover whole arena and be useless
-        DateTime lastRay = new(); // we only show first rays, otherwise triple rays would cover whole arena and be useless
+        DateTime lastRay = default; // we only show first rays, otherwise triple rays would cover whole arena and be useless
         foreach (var (actor, shape) in _sources)
         {
-            if (shape == _aoeSquare && Math.Abs(actor.Position.X - Arena.Center.X) > 10)
+            if (shape == _aoeSquare && Math.Abs(actor.Position.X - Arena.Center.X) > 10f)
             {
                 if (hadSideSquare)
                     continue;
@@ -72,7 +72,7 @@ class Exoterikos(BossModule module) : BossComponent(module)
             }
             else if (shape == _aoeRay)
             {
-                if (lastRay != default && (actor.CastInfo == null || (Module.CastFinishAt(actor.CastInfo) - lastRay).TotalSeconds > 2))
+                if (lastRay != default && (actor.CastInfo == null || (Module.CastFinishAt(actor.CastInfo) - lastRay).TotalSeconds > 2d))
                     continue;
                 lastRay = Module.CastFinishAt(actor.CastInfo);
             }

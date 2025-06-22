@@ -47,77 +47,77 @@ public enum AID : uint
     SLeftSwipe = 34441, // SYuki->self, 4.0s cast, range 60 180-degree cone
 }
 
-abstract class BloodyCaress(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(12f, 60f.Degrees()))
+abstract class BloodyCaress(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(12f, 60f.Degrees()))
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NBloodyCaress(BossModule module) : BloodyCaress(module, AID.NBloodyCaress);
-class SBloodyCaress(BossModule module) : BloodyCaress(module, AID.SBloodyCaress);
+class NBloodyCaress(BossModule module) : BloodyCaress(module, (uint)AID.NBloodyCaress);
+class SBloodyCaress(BossModule module) : BloodyCaress(module, (uint)AID.SBloodyCaress);
 
-abstract class DisciplesOfLevin(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10f)
+abstract class DisciplesOfLevin(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, AID.NDisciplesOfLevin);
-class SDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, AID.SDisciplesOfLevin);
+class NDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, (uint)AID.NDisciplesOfLevin);
+class SDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, (uint)AID.SDisciplesOfLevin);
 
-abstract class BarrelingSmash(BossModule module, AID aid) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(aid), 3.5f)
+abstract class BarrelingSmash(BossModule module, uint aid) : Components.BaitAwayChargeCast(module, aid, 3.5f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NBarrelingSmash(BossModule module) : BarrelingSmash(module, AID.NBarrelingSmash);
-class SBarrelingSmash(BossModule module) : BarrelingSmash(module, AID.SBarrelingSmash);
+class NBarrelingSmash(BossModule module) : BarrelingSmash(module, (uint)AID.NBarrelingSmash);
+class SBarrelingSmash(BossModule module) : BarrelingSmash(module, (uint)AID.SBarrelingSmash);
 
-abstract class Howl(BossModule module, AID aid) : Components.RaidwideCast(module, ActionID.MakeSpell(aid))
+abstract class Howl(BossModule module, uint aid) : Components.RaidwideCast(module, aid)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NHowl(BossModule module) : Howl(module, AID.NHowl);
-class SHowl(BossModule module) : Howl(module, AID.SHowl);
+class NHowl(BossModule module) : Howl(module, (uint)AID.NHowl);
+class SHowl(BossModule module) : Howl(module, (uint)AID.SHowl);
 
-abstract class MasterOfLevin(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(5f, 30f))
+abstract class MasterOfLevin(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(5f, 30f))
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NMasterOfLevin(BossModule module) : MasterOfLevin(module, AID.NMasterOfLevin);
-class SMasterOfLevin(BossModule module) : MasterOfLevin(module, AID.SMasterOfLevin);
+class NMasterOfLevin(BossModule module) : MasterOfLevin(module, (uint)AID.NMasterOfLevin);
+class SMasterOfLevin(BossModule module) : MasterOfLevin(module, (uint)AID.SMasterOfLevin);
 
-abstract class Swipe(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(60f, 90f.Degrees()))
+abstract class Swipe(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(60f, 90f.Degrees()))
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NRightSwipe(BossModule module) : Swipe(module, AID.NRightSwipe);
-class SRightSwipe(BossModule module) : Swipe(module, AID.SRightSwipe);
-class NLeftSwipe(BossModule module) : Swipe(module, AID.NLeftSwipe);
-class SLeftSwipe(BossModule module) : Swipe(module, AID.SLeftSwipe);
+class NRightSwipe(BossModule module) : Swipe(module, (uint)AID.NRightSwipe);
+class SRightSwipe(BossModule module) : Swipe(module, (uint)AID.SRightSwipe);
+class NLeftSwipe(BossModule module) : Swipe(module, (uint)AID.NLeftSwipe);
+class SLeftSwipe(BossModule module) : Swipe(module, (uint)AID.SLeftSwipe);
 
-abstract class Tornado(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f)
+abstract class Tornado(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NTornado(BossModule module) : Tornado(module, AID.NTornado);
-class STornado(BossModule module) : Tornado(module, AID.STornado);
+class NTornado(BossModule module) : Tornado(module, (uint)AID.NTornado);
+class STornado(BossModule module) : Tornado(module, (uint)AID.STornado);
 
-abstract class ScytheTail(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10f)
+abstract class ScytheTail(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NScytheTail(BossModule module) : ScytheTail(module, AID.NScytheTail);
-class SScytheTail(BossModule module) : ScytheTail(module, AID.SScytheTail);
+class NScytheTail(BossModule module) : ScytheTail(module, (uint)AID.NScytheTail);
+class SScytheTail(BossModule module) : ScytheTail(module, (uint)AID.SScytheTail);
 
-abstract class Twister(BossModule module, AID aid) : Components.StackWithCastTargets(module, ActionID.MakeSpell(aid), 8f, 4, 4)
+abstract class Twister(BossModule module, uint aid) : Components.StackWithCastTargets(module, aid, 8f, 4, 4)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NTwister(BossModule module) : Twister(module, AID.NTwister);
-class STwister(BossModule module) : Twister(module, AID.STwister);
+class NTwister(BossModule module) : Twister(module, (uint)AID.NTwister);
+class STwister(BossModule module) : Twister(module, (uint)AID.STwister);
 
-abstract class Crosswind(BossModule module, AID aid) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(aid), 25f)
+abstract class Crosswind(BossModule module, uint aid) : Components.SimpleKnockbacks(module, aid, 25f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NCrosswind(BossModule module) : Crosswind(module, AID.NCrosswind);
-class SCrosswind(BossModule module) : Crosswind(module, AID.SCrosswind);
+class NCrosswind(BossModule module) : Crosswind(module, (uint)AID.NCrosswind);
+class SCrosswind(BossModule module) : Crosswind(module, (uint)AID.SCrosswind);
 
 class C020NTrash1States(Trash1Arena module) : C020Trash1States(module, false);
 class C020STrash1States(Trash1Arena module) : C020Trash1States(module, true);
@@ -185,18 +185,18 @@ class C020Trash1States : StateMachineBuilder
 
     private void DisciplesOfLevin(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? AID.SDisciplesOfLevin : AID.NDisciplesOfLevin, delay, 4f, false, "Out");
+        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SDisciplesOfLevin : (uint)AID.NDisciplesOfLevin, delay, 4f, false, "Out");
     }
 
     private void BarrelingSmashHowl(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? AID.SBarrelingSmash : AID.NBarrelingSmash, delay, 4f, false, "Charge");
-        ActorCast(id + 0x1000, _module.Raiko, _savage ? AID.SHowl : AID.NHowl, 2.1f, 4, false, "Raidwide");
+        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SBarrelingSmash : (uint)AID.NBarrelingSmash, delay, 4f, false, "Charge");
+        ActorCast(id + 0x1000, _module.Raiko, _savage ? (uint)AID.SHowl : (uint)AID.NHowl, 2.1f, 4, false, "Raidwide");
     }
 
     private void MasterOfLevin(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? AID.SMasterOfLevin : AID.NMasterOfLevin, delay, 4f, false, "In");
+        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SMasterOfLevin : (uint)AID.NMasterOfLevin, delay, 4f, false, "In");
     }
 
     private void Fuko(uint id)
@@ -214,17 +214,17 @@ class C020Trash1States : StateMachineBuilder
 
     private void ScytheTail(uint id, float delay)
     {
-        ActorCast(id, _module.Fuko, _savage ? AID.SScytheTail : AID.NScytheTail, delay, 4f, false, "Out");
+        ActorCast(id, _module.Fuko, _savage ? (uint)AID.SScytheTail : (uint)AID.NScytheTail, delay, 4f, false, "Out");
     }
 
     private void Twister(uint id, float delay)
     {
-        ActorCast(id, _module.Fuko, _savage ? AID.STwister : AID.NTwister, delay, 5f, false, "Stack");
+        ActorCast(id, _module.Fuko, _savage ? (uint)AID.STwister : (uint)AID.NTwister, delay, 5f, false, "Stack");
     }
 
     private void Crosswind(uint id, float delay)
     {
-        ActorCast(id, _module.Raiko, _savage ? AID.SCrosswind : AID.NCrosswind, delay, 4f, false, "Knockback");
+        ActorCast(id, _module.Raiko, _savage ? (uint)AID.SCrosswind : (uint)AID.NCrosswind, delay, 4f, false, "Knockback");
     }
 }
 

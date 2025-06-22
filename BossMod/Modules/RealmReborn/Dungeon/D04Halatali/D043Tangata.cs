@@ -31,8 +31,8 @@ public enum SID : uint
 
 }
 
-class StraightPunch(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.StraightPunch));
-class Firewater(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Firewater), 3);
+class StraightPunch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StraightPunch);
+class Firewater(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firewater, 3);
 
 class PlainPound(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {

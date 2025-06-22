@@ -1,6 +1,6 @@
 namespace BossMod.Shadowbringers.Foray.Duel.Duel6Lyon;
 
-class OnFire(BossModule module) : BossComponent(module)
+sealed class OnFire(BossModule module) : BossComponent(module)
 {
     private bool _hasBuff;
     private bool _isCasting;
@@ -38,9 +38,9 @@ class OnFire(BossModule module) : BossComponent(module)
     }
 }
 
-class WildfiresFury(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WildfiresFury));
+sealed class WildfiresFury(BossModule module) : Components.RaidwideCast(module, (uint)AID.WildfiresFury);
 
-class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private Angle _increment;
 
@@ -74,7 +74,7 @@ class HeavenAndEarth(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class HeartOfNatureConcentric(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class HeartOfNatureConcentric(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10), new AOEShapeDonut(10, 20), new AOEShapeDonut(20, 30)];
 
@@ -100,11 +100,11 @@ class HeartOfNatureConcentric(BossModule module) : Components.ConcentricAOEs(mod
     }
 }
 
-class CagedHeartOfNature(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CagedHeartOfNature), 6f);
+sealed class CagedHeartOfNature(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CagedHeartOfNature, 6f);
 
-class WindsPeak(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindsPeak1), 5f);
+sealed class WindsPeak(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindsPeak1, 5f);
 
-class WindsPeakKB(BossModule module) : Components.GenericKnockback(module)
+sealed class WindsPeakKB(BossModule module) : Components.GenericKnockback(module)
 {
     private DateTime _time;
     private bool _watched;
@@ -129,9 +129,9 @@ class WindsPeakKB(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class SplittingRage(BossModule module) : Components.TemporaryMisdirection(module, ActionID.MakeSpell(AID.SplittingRage));
+sealed class SplittingRage(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.SplittingRage);
 
-class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
+sealed class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -162,9 +162,6 @@ class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
     }
 }
 
-class MoveMountains(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MoveMountains3), new AOEShapeRect(40f, 3f))
-{
-    // TODO predict rotation
-}
+sealed class MoveMountains(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MoveMountains3, new AOEShapeRect(40f, 3f));
 
-class WildfireCrucible(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.WildfireCrucible), "Enrage!", true);
+sealed class WildfireCrucible(BossModule module) : Components.CastHint(module, (uint)AID.WildfireCrucible, "Enrage!", true);

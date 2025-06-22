@@ -27,7 +27,7 @@ public enum AID : uint
     ExplosiveDehiscence = 5234 // RoseHip->self, no cast, range 40 circle, rose hips if not killed fast enough
 }
 
-class VineProbe(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.VineProbe), new AOEShapeRect(11.775f, 3.5f), activeWhileCasting: false)
+class VineProbe(BossModule module) : Components.Cleave(module, (uint)AID.VineProbe, new AOEShapeRect(11.775f, 3.5f), activeWhileCasting: false)
 {
     private readonly ExtremelyBadBreathRotation _rot = module.FindComponent<ExtremelyBadBreathRotation>()!;
     private bool RotationInactive => _rot.Sequences.Count == 0;
@@ -51,7 +51,7 @@ class VineProbe(BossModule module) : Components.Cleave(module, ActionID.MakeSpel
     }
 }
 
-class ExtremelyBadBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ExtremelyBadBreath), ExtremelyBadBreathRotation.Cone);
+class ExtremelyBadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ExtremelyBadBreath, ExtremelyBadBreathRotation.Cone);
 
 class ExtremelyBadBreathRotation(BossModule module) : Components.GenericRotatingAOE(module)
 {
@@ -190,7 +190,7 @@ class ResinVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVoid
     }
 }
 
-class BurrFester(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BurrFester));
+class BurrFester(BossModule module) : Components.RaidwideCast(module, (uint)AID.BurrFester);
 
 class D091RoseGardenStates : StateMachineBuilder
 {

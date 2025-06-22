@@ -24,11 +24,11 @@ public enum AID : uint
     SphereShatter = 18986 // IceBoulder->self, no cast, range 10 circle
 }
 
-abstract class LawOfTheTorch(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(34f, 10f.Degrees()));
-class LawOfTheTorch1(BossModule module) : LawOfTheTorch(module, AID.LawOfTheTorch1);
-class LawOfTheTorch2(BossModule module) : LawOfTheTorch(module, AID.LawOfTheTorch2);
+abstract class LawOfTheTorch(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(34f, 10f.Degrees()));
+class LawOfTheTorch1(BossModule module) : LawOfTheTorch(module, (uint)AID.LawOfTheTorch1);
+class LawOfTheTorch2(BossModule module) : LawOfTheTorch(module, (uint)AID.LawOfTheTorch2);
 
-class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.SwiftsteelKB), 10f)
+class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.SwiftsteelKB, 10f)
 {
     private readonly Swiftsteel1 _aoe1 = module.FindComponent<Swiftsteel1>()!;
     private readonly Swiftsteel2 _aoe2 = module.FindComponent<Swiftsteel2>()!;
@@ -53,9 +53,9 @@ class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, Acti
     }
 }
 
-class Swiftsteel1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Swiftsteel1), 4f);
-class Swiftsteel2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Swiftsteel2), new AOEShapeDonut(8f, 20f));
-class Sparksteel1(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.Sparksteel1), GetVoidzones, 0.8f)
+class Swiftsteel1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swiftsteel1, 4f);
+class Swiftsteel2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swiftsteel2, new AOEShapeDonut(8f, 20f));
+class Sparksteel1(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Sparksteel1, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -78,13 +78,13 @@ class Sparksteel1(BossModule module) : Components.VoidzoneAtCastTarget(module, 5
 
 public class Sparksteel2 : Components.SimpleAOEs
 {
-    public Sparksteel2(BossModule module) : base(module, ActionID.MakeSpell(AID.Sparksteel2), 8f)
+    public Sparksteel2(BossModule module) : base(module, (uint)AID.Sparksteel2, 8f)
     {
         Color = Colors.Danger;
     }
 }
 
-class Sparksteel3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sparksteel3), 8f)
+class Sparksteel3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sparksteel3, 8f)
 {
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
@@ -93,7 +93,7 @@ class Sparksteel3(BossModule module) : Components.SimpleAOEs(module, ActionID.Ma
     }
 }
 
-class Shattersteel(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shattersteel), 5f);
+class Shattersteel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shattersteel, 5f);
 class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(10f);

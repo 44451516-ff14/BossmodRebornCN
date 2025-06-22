@@ -23,7 +23,7 @@ public enum SID : uint
     Resonant = 780,
 }
 
-class Skullbreaker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Skullbreaker1), 12);
+class Skullbreaker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skullbreaker1, 12);
 
 class TerminusEst(BossModule module) : Components.GenericAOEs(module)
 {
@@ -62,8 +62,8 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module)
             Activation = null;
     }
 }
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), new AOEShapeRect(45.6f, 1f));
-class ChoppingBlock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ChoppingBlock1), 5f);
+class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(45.6f, 1f));
+class ChoppingBlock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ChoppingBlock1, 5f);
 
 class Siphon(BossModule module) : BossComponent(module)
 {

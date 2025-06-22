@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.BurnMark), centerAtTarget: true)
+class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(module, (uint)AID.BurnMark, centerAtTarget: true)
 {
     public bool AllowTankStacking;
     private Actor? _target;
@@ -73,7 +73,7 @@ class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(module, 
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             _target = null;

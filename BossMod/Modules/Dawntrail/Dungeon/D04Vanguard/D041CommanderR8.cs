@@ -40,7 +40,7 @@ public enum AID : uint
     Electrosurge = 36573 // Helper->player, 5.0s cast, range 5 circle, spread
 }
 
-class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D041CommanderR8.ArenaCenter, 20f)], [new Square(D041CommanderR8.ArenaCenter, 17f)]);
     private AOEInstance? _aoe;
@@ -54,7 +54,7 @@ class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x0A)
+        if (state == 0x00020001u && index == 0x0Au)
         {
             Arena.Bounds = D041CommanderR8.DefaultBounds;
             _aoe = null;
@@ -62,7 +62,7 @@ class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class EnhancedMobility(BossModule module) : Components.GenericAOEs(module)
+sealed class EnhancedMobility(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeRect[] rects = [new(14f, 3f), new(10f, 7f), new(20f, 7f)];
@@ -105,7 +105,7 @@ class EnhancedMobility(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class RapidRotary(BossModule module) : Components.GenericAOEs(module)
+sealed class RapidRotary(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Angle a60 = 60f.Degrees();
     private static readonly Angle a120 = 120f.Degrees();
@@ -119,14 +119,13 @@ class RapidRotary(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 2)
         {
-            var aoe = _aoes[i];
-            if (i < 2)
-                aoes[i] = count > 2 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            for (var i = 0; i < 2; ++i)
+            {
+                aoes[i].Color = Colors.Danger;
+            }
         }
         return aoes;
     }
@@ -168,13 +167,13 @@ class RapidRotary(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Electrowave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Electrowave));
+sealed class Electrowave(BossModule module) : Components.RaidwideCast(module, (uint)AID.Electrowave);
 
-class Rush(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Rush), 2.5f);
-class AerialOffensive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AerialOffensive), 14f, 4);
-class Electrosurge(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Electrosurge), 5f);
+sealed class Rush(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Rush, 2.5f);
+sealed class AerialOffensive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AerialOffensive, 14f, 4);
+sealed class Electrosurge(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Electrosurge, 5f);
 
-class D041CommanderR8States : StateMachineBuilder
+sealed class D041CommanderR8States : StateMachineBuilder
 {
     public D041CommanderR8States(BossModule module) : base(module)
     {
@@ -190,7 +189,7 @@ class D041CommanderR8States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12750, SortOrder = 3)]
-public class D041CommanderR8(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D041CommanderR8(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-100f, 207f);
     public static readonly ArenaBoundsSquare StartingBounds = new(19.5f);

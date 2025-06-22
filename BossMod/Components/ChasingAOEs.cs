@@ -1,7 +1,7 @@
 namespace BossMod.Components;
 
 // generic 'chasing AOE' component - these are AOEs that follow the target for a set amount of casts
-public class GenericChasingAOEs(BossModule module, float moveDistance, ActionID aid = default, string warningText = "GTFO from chasing aoe!") : GenericAOEs(module, aid, warningText)
+public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid = default, string warningText = "GTFO from chasing aoe!") : GenericAOEs(module, aid, warningText)
 {
     private readonly float MoveDistance = moveDistance;
 
@@ -99,11 +99,13 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, ActionID 
 }
 
 // standard chasing aoe; first cast is long - assume it is baited on the nearest allowed target; successive casts are instant
-public class StandardChasingAOEs(BossModule module, AOEShape shape, ActionID actionFirst, ActionID actionRest, float moveDistance, float secondsBetweenActivations, int maxCasts, bool resetExcludedTargets = false, uint icon = default, float activationDelay = 5.1f) : GenericChasingAOEs(module, moveDistance)
+public class StandardChasingAOEs(BossModule module, AOEShape shape, uint actionFirst, uint actionRest, float moveDistance, float secondsBetweenActivations, int maxCasts, bool resetExcludedTargets = false, uint icon = default, float activationDelay = 5.1f) : GenericChasingAOEs(module, moveDistance)
 {
+    public StandardChasingAOEs(BossModule module, float radius, uint actionFirst, uint actionRest, float moveDistance, float secondsBetweenActivations, int maxCasts, bool resetExcludedTargets = false, uint icon = default, float activationDelay = 5.1f) : this(module, new AOEShapeCircle(radius), actionFirst, actionRest, moveDistance, secondsBetweenActivations, maxCasts, resetExcludedTargets, icon, activationDelay) { }
+
     public readonly AOEShape Shape = shape;
-    public readonly ActionID ActionFirst = actionFirst;
-    public readonly ActionID ActionRest = actionRest;
+    public readonly uint ActionFirst = actionFirst;
+    public readonly uint ActionRest = actionRest;
     public readonly float MoveDistance = moveDistance;
     public readonly float SecondsBetweenActivations = secondsBetweenActivations;
     public int MaxCasts = maxCasts;
@@ -143,7 +145,7 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, ActionID act
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == ActionFirst)
+        if (spell.Action.ID == ActionFirst)
         {
             var pos = spell.LocXZ;
             var (slot, target) = Raid.WithSlot().ExcludedFromMask(ExcludedTargets).MinBy(ip => (ip.Item2.Position - pos).LengthSq());
@@ -158,7 +160,7 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, ActionID act
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == ActionFirst || spell.Action == ActionRest)
+        if (spell.Action.ID is var id && id == ActionFirst || id == ActionRest)
         {
             var pos = spell.MainTargetID == caster.InstanceID ? caster.Position : WorldState.Actors.Find(spell.MainTargetID)?.Position ?? spell.TargetXZ;
             Advance(WPos.ClampToGrid(pos), MoveDistance, WorldState.CurrentTime);
@@ -181,13 +183,13 @@ public class StandardChasingAOEs(BossModule module, AOEShape shape, ActionID act
 }
 
 // since open world players don't count towards party, we need to make a new component
-public abstract class OpenWorldChasingAOEs(BossModule module, AOEShape shape, ActionID actionFirst, ActionID actionRest, float moveDistance, float secondsBetweenActivations, int maxCasts, bool resetExcludedTargets = false, uint icon = default, float activationDelay = 5.1f) : StandardChasingAOEs(module, shape, actionFirst, actionRest, moveDistance, secondsBetweenActivations, maxCasts, resetExcludedTargets, icon, activationDelay)
+public abstract class OpenWorldChasingAOEs(BossModule module, AOEShape shape, uint actionFirst, uint actionRest, float moveDistance, float secondsBetweenActivations, int maxCasts, bool resetExcludedTargets = false, uint icon = default, float activationDelay = 5.1f) : StandardChasingAOEs(module, shape, actionFirst, actionRest, moveDistance, secondsBetweenActivations, maxCasts, resetExcludedTargets, icon, activationDelay)
 {
     public new HashSet<Actor> ExcludedTargets = []; // any targets in this hashset aren't considered to be possible targets
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == ActionFirst)
+        if (spell.Action.ID == ActionFirst)
         {
             var pos = spell.TargetID == caster.InstanceID ? caster.Position : WorldState.Actors.Find(spell.TargetID)?.Position ?? spell.LocXZ;
             Actor? target = null;
@@ -216,7 +218,7 @@ public abstract class OpenWorldChasingAOEs(BossModule module, AOEShape shape, Ac
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == ActionFirst || spell.Action == ActionRest)
+        if (spell.Action.ID == ActionFirst || spell.Action.ID == ActionRest)
         {
             var pos = spell.MainTargetID == caster.InstanceID ? caster.Position : WorldState.Actors.Find(spell.MainTargetID)?.Position ?? spell.TargetXZ;
             Advance(WPos.ClampToGrid(pos), MoveDistance, WorldState.CurrentTime);

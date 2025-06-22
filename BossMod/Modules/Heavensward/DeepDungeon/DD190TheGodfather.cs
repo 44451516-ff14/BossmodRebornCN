@@ -23,7 +23,7 @@ public enum AID : uint
 //TODO: Make the boss's hitbox show up potentially/maybe add 2 circle indicators to show how close the stun bomb needs to be, add indicators to where the stun bomb will spawn next, to allow pre-positioning
 //spawn locations for stun bomb are as follows: 1:(-288.626, -300.256) 2:(-297.465, -297.525) 3:(-288.837, -305.537) 4:(-309.132, -303.739) 5:(-298.355, -293.630) 6:(-301.954, -314.289) 7:(-299.119, -297.563)
 class BossAdds(BossModule module) : Components.AddsMulti(module, [(uint)OID.LavaBomb, (uint)OID.RemedyBomb]);
-class Flashthoom(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Flashthoom), 7.2f)
+class Flashthoom(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Flashthoom, 7.2f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -33,10 +33,10 @@ class Flashthoom(BossModule module) : Components.SimpleAOEs(module, ActionID.Mak
             hints.SetPriority(g, AIHints.Enemy.PriorityForbidden);
     }
 }
-class Sap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sap), 8f);
-class ScaldingScoldingCleave(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ScaldingScolding), new AOEShapeCone(11.75f, 45f.Degrees()), activeWhileCasting: false);
-class RemedyBombEnrage(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.HypothermalCombustionRemedyBomb), "Remedy bomb is enraging!", true);
-class MassiveBurstEnrage(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.MassiveBurst), "Enrage! Stun boss with the Lavabomb!", true);
+class Sap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sap, 8f);
+class ScaldingScoldingCleave(BossModule module) : Components.Cleave(module, (uint)AID.ScaldingScolding, new AOEShapeCone(11.75f, 45f.Degrees()), activeWhileCasting: false);
+class RemedyBombEnrage(BossModule module) : Components.CastHint(module, (uint)AID.HypothermalCombustionRemedyBomb, "Remedy bomb is enraging!", true);
+class MassiveBurstEnrage(BossModule module) : Components.CastHint(module, (uint)AID.MassiveBurst, "Enrage! Stun boss with the Lavabomb!", true);
 
 class HypothermalMinion(BossModule module) : Components.GenericAOEs(module)
 {

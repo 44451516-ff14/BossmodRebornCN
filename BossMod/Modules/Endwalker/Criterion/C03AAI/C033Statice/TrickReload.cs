@@ -16,12 +16,12 @@ class TrickReload(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.LockedAndLoaded:
+            case (uint)AID.LockedAndLoaded:
                 ++NumLoads;
                 break;
-            case AID.Misload:
+            case (uint)AID.Misload:
                 if (NumLoads == 0)
                     FirstStack = true;
                 else if (SafeSlice == 0)
@@ -32,14 +32,14 @@ class TrickReload(BossModule module) : BossComponent(module)
     }
 }
 
-class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6, 6, 4, alwaysShowSpreads: true)
+class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6f, 6, 4, alwaysShowSpreads: true)
 {
     public int NumResolves;
     private readonly TrickReload? _reload = module.FindComponent<TrickReload>();
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.NTrapshooting1 or AID.NTrapshooting2 or AID.STrapshooting1 or AID.STrapshooting2 && _reload != null)
+        if (spell.Action.ID is (uint)AID.NTrapshooting1 or (uint)AID.NTrapshooting2 or (uint)AID.STrapshooting1 or (uint)AID.STrapshooting2 && _reload != null)
         {
             var stack = NumResolves == 0 ? _reload.FirstStack : !_reload.FirstStack;
             if (stack)
@@ -57,18 +57,18 @@ class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6,
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.NTrapshootingStack:
-            case AID.STrapshootingStack:
+            case (uint)AID.NTrapshootingStack:
+            case (uint)AID.STrapshootingStack:
                 if (Stacks.Count > 0)
                 {
                     Stacks.Clear();
                     ++NumResolves;
                 }
                 break;
-            case AID.NTrapshootingSpread:
-            case AID.STrapshootingSpread:
+            case (uint)AID.NTrapshootingSpread:
+            case (uint)AID.STrapshootingSpread:
                 if (Spreads.Count > 0)
                 {
                     Spreads.Clear();
@@ -79,6 +79,6 @@ class Trapshooting(BossModule module) : Components.UniformStackSpread(module, 6,
     }
 }
 
-abstract class TriggerHappy(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 30.Degrees()));
-class NTriggerHappy(BossModule module) : TriggerHappy(module, AID.NTriggerHappyAOE);
-class STriggerHappy(BossModule module) : TriggerHappy(module, AID.STriggerHappyAOE);
+abstract class TriggerHappy(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 30f.Degrees()));
+class NTriggerHappy(BossModule module) : TriggerHappy(module, (uint)AID.NTriggerHappyAOE);
+class STriggerHappy(BossModule module) : TriggerHappy(module, (uint)AID.STriggerHappyAOE);

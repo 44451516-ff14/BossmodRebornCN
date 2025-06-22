@@ -73,5 +73,5 @@ abstract class PuffTethers(BossModule module, bool originAtBoss) : BossComponent
         }
     }
 }
-class PuffTethers1(BossModule module) : PuffTethers(module, false);
-class PuffTethers2(BossModule module) : PuffTethers(module, true);
+sealed class PuffTethers1(BossModule module) : PuffTethers(module, false);
+sealed class PuffTethers2(BossModule module) : PuffTethers(module, true);

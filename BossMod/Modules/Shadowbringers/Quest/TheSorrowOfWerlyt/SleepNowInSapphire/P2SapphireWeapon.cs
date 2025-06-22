@@ -45,11 +45,11 @@ public enum SID : uint
     Invincibility = 775 // none->Boss, extra=0x0
 }
 
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), new AOEShapeRect(100f, 3f));
-class ServantRoar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ServantRoar), new AOEShapeRect(100f, 4f));
-class MagitekSpread(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekSpread), new AOEShapeCone(43f, 120f.Degrees()));
+class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(100f, 3f));
+class ServantRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ServantRoar, new AOEShapeRect(100f, 4f));
+class MagitekSpread(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekSpread, new AOEShapeCone(43f, 120f.Degrees()));
 
-class TailSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailSwing), 46f)
+class TailSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSwing, 46f)
 {
     private readonly MagitekSpread _aoe = module.FindComponent<MagitekSpread>()!;
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -58,19 +58,19 @@ class TailSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.Make
     }
 }
 
-class OptimizedJudgment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OptimizedJudgment), new AOEShapeDonut(22f, 60f));
-class SapphireRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SapphireRay), new AOEShapeRect(120f, 20f));
+class OptimizedJudgment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OptimizedJudgment, new AOEShapeDonut(22f, 60f));
+class SapphireRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SapphireRay, new AOEShapeRect(120f, 20f));
 
-abstract class Siderays(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(128f, 45f.Degrees()));
-class SideraysLeft(BossModule module) : Siderays(module, AID.SideraysLeft);
-class SideraysRight(BossModule module) : Siderays(module, AID.SideraysRight);
+abstract class Siderays(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(128f, 45f.Degrees()));
+class SideraysLeft(BossModule module) : Siderays(module, (uint)AID.SideraysLeft);
+class SideraysRight(BossModule module) : Siderays(module, (uint)AID.SideraysRight);
 
-class FloodRay(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.FloodRay), "Enrage", true);
-class SelfDestruct(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SelfDestructVisual), "Turrets are enraging!", true);
-class OptimizedUltima(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OptimizedUltima));
-class Swiftbreach(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Swiftbreach));
-class PlasmaShot(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.PlasmaShot));
-class PlasmaCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PlasmaCannon), 40f);
+class FloodRay(BossModule module) : Components.CastHint(module, (uint)AID.FloodRay, "Enrage", true);
+class SelfDestruct(BossModule module) : Components.CastHint(module, (uint)AID.SelfDestructVisual, "Turrets are enraging!", true);
+class OptimizedUltima(BossModule module) : Components.RaidwideCast(module, (uint)AID.OptimizedUltima);
+class Swiftbreach(BossModule module) : Components.RaidwideCast(module, (uint)AID.Swiftbreach);
+class PlasmaShot(BossModule module) : Components.SingleTargetCast(module, (uint)AID.PlasmaShot);
+class PlasmaCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PlasmaCannon, 40f);
 
 class TheSapphireWeaponStates : StateMachineBuilder
 {

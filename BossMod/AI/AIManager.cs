@@ -27,14 +27,13 @@ sealed class AIManager : IDisposable
         Autorot = autorot;
         Controller = new(autorot.WorldState, amex, movement);
         Service.CommandManager.AddHandler("/bmrai", new Dalamud.Game.Command.CommandInfo(OnCommand) { HelpMessage = "Toggle AI mode" });
-        Service.CommandManager.AddHandler("/vbmai", new Dalamud.Game.Command.CommandInfo(OnCommand) { ShowInHelp = false });
     }
 
     public void SetAIPreset(Preset? p)
     {
         AiPreset = p;
-        if (Beh != null)
-            Beh.AIPreset = p;
+        _config.AIAutorotPresetName = p?.Name;
+        Beh?.AIPreset = p;
     }
 
     public void Dispose()
@@ -42,7 +41,6 @@ sealed class AIManager : IDisposable
         SwitchToIdle();
         _wndAI.Dispose();
         Service.CommandManager.RemoveHandler("/bmrai");
-        Service.CommandManager.RemoveHandler("/vbmai");
     }
 
     public void Update()
@@ -73,13 +71,25 @@ sealed class AIManager : IDisposable
     {
         SwitchToIdle();
         MasterSlot = WorldState.Party[masterSlot]?.Name == null ? 0 : masterSlot;
-        Beh = new AIBehaviour(Controller, Autorot, Autorot.Database.Presets.VisiblePresets.FirstOrDefault(p => p.Name == _config.AIAutorotPresetName));
+        var count = Autorot.Database.Presets.VisiblePresets.Count;
+        Preset? preset = null;
+        for (var i = 0; i < count; ++i)
+        {
+            var p = Autorot.Database.Presets.VisiblePresets[i];
+            if (p.Name == _config.AIAutorotPresetName)
+            {
+                preset = p;
+                break;
+            }
+        }
+        Beh = new AIBehaviour(Controller, Autorot, preset);
         _wndAI.UpdateTitle();
     }
 
     private unsafe int FindPartyMemberSlotFromSender(SeString sender)
     {
-        if (sender.Payloads.FirstOrDefault() is not PlayerPayload source)
+        var sources = sender.Payloads.Count != 0 ? sender.Payloads[0] : null;
+        if (sources is not PlayerPayload source)
             return -1;
         var group = GroupManager.Instance()->GetGroup();
         var slot = -1;
@@ -560,7 +570,6 @@ sealed class AIManager : IDisposable
         {
             SetAIPreset(null);
             Autorot.Preset = null;
-            _config.AIAutorotPresetName = null;
             Service.Log("Disabled AI autorotation preset.");
             return;
         }
@@ -574,7 +583,6 @@ sealed class AIManager : IDisposable
         {
             Service.Log($"Console: Changed preset from '{Beh?.AIPreset?.Name ?? "<n/a>"}' to '{preset?.Name ?? "<n/a>"}'");
             SetAIPreset(preset);
-            _config.AIAutorotPresetName = preset?.Name;
         }
         else
         {

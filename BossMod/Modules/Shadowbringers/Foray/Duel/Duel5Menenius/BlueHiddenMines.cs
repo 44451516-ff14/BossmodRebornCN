@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.Duel.Duel5Menenius;
 
-class BlueHiddenMines(BossModule module) : Components.GenericTowers(module)
+sealed class BlueHiddenMines(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {

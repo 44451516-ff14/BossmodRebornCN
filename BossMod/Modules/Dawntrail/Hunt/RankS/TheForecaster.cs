@@ -37,13 +37,13 @@ public enum AID : uint
     ClimateChangeStatusEffect = 39133 // Boss->self, no cast, single-target
 }
 
-class FloodConditions(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FloodConditions), 6f);
-class GaleForceWinds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GaleForceWinds), new AOEShapeRect(40f, 20f));
-class Hyperelectricity(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hyperelectricity), 10f);
-class WildfireConditions(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WildfireConditions), new AOEShapeDonut(5f, 40f));
-class BlizzardConditions(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlizzardConditions), new AOEShapeCross(40f, 2.5f));
+sealed class FloodConditions(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FloodConditions, 6f);
+sealed class GaleForceWinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GaleForceWinds, new AOEShapeRect(40f, 20f));
+sealed class Hyperelectricity(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hyperelectricity, 10f);
+sealed class WildfireConditions(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildfireConditions, new AOEShapeDonut(5f, 40f));
+sealed class BlizzardConditions(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlizzardConditions, new AOEShapeCross(40f, 2.5f));
 
-class ForecastClimateChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ForecastClimateChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 20f);
     private static readonly AOEShapeDonut donut = new(5f, 40f);
@@ -150,7 +150,7 @@ class ForecastClimateChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TheForecasterStates : StateMachineBuilder
+sealed class TheForecasterStates : StateMachineBuilder
 {
     public TheForecasterStates(BossModule module) : base(module)
     {
@@ -165,4 +165,4 @@ class TheForecasterStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 13437)]
-public class TheForecaster(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class TheForecaster(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

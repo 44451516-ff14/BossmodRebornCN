@@ -13,8 +13,8 @@ public enum AID : uint
     Shred = 14759 // Boss/RightClaw->self, 2.5s cast, range 4+R width 4 rect, stuns player
 }
 
-class TheHand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheHand), new AOEShapeCone(8f, 60f.Degrees()));
-class Shred(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shred), new AOEShapeRect(6f, 2f));
+class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
+class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
 
 class Hints2(BossModule module) : BossComponent(module)
 {

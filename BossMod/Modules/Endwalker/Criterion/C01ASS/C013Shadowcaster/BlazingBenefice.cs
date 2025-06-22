@@ -11,15 +11,17 @@ abstract class BlazingBenifice(BossModule module, uint aid, uint oid) : Componen
         if (count == 0)
             return [];
 
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         var startTime = WorldState.CurrentTime.AddSeconds(-5d);
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
         var index = 0;
 
-        while (index < count && _aoes[index].Activation >= startTime && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation >= startTime && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
+
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == oid)
@@ -36,5 +38,5 @@ abstract class BlazingBenifice(BossModule module, uint aid, uint oid) : Componen
     }
 }
 
-class NBlazingBenifice(BossModule module) : BlazingBenifice(module, (uint)AID.NBlazingBenifice, (uint)OID.NArcaneFont);
-class SBlazingBenifice(BossModule module) : BlazingBenifice(module, (uint)AID.SBlazingBenifice, (uint)OID.SArcaneFont);
+sealed class NBlazingBenifice(BossModule module) : BlazingBenifice(module, (uint)AID.NBlazingBenifice, (uint)OID.NArcaneFont);
+sealed class SBlazingBenifice(BossModule module) : BlazingBenifice(module, (uint)AID.SBlazingBenifice, (uint)OID.SArcaneFont);

@@ -20,15 +20,15 @@ public enum AID : uint
     BlackNebula = 14724, // Boss->self, 6.0s cast, range 50+R circle, interruptible enrage after 3 King's Will casts
 }
 
-class IronJustice1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronJustice1), new AOEShapeCone(9f, 60f.Degrees()));
-class IronJustice2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronJustice2), new AOEShapeCone(9.5f, 60f.Degrees()));
-class IronJustice3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronJustice3), new AOEShapeCone(10f, 60f.Degrees()));
-class IronJustice4(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronJustice4), new AOEShapeCone(10.5f, 60f.Degrees()));
-class BlackNebula(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.BlackNebula));
-class Cloudcover1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Cloudcover1), 6f);
-class KingsWill1(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.KingsWill));
-class KingsWill2(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.KingsWill2));
-class KingsWill3(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.KingsWill3));
+class IronJustice1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice1, new AOEShapeCone(9f, 60f.Degrees()));
+class IronJustice2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice2, new AOEShapeCone(9.5f, 60f.Degrees()));
+class IronJustice3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice3, new AOEShapeCone(10f, 60f.Degrees()));
+class IronJustice4(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice4, new AOEShapeCone(10.5f, 60f.Degrees()));
+class BlackNebula(BossModule module) : Components.CastInterruptHint(module, (uint)AID.BlackNebula);
+class Cloudcover1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Cloudcover1, 6f);
+class KingsWill1(BossModule module) : Components.CastInterruptHint(module, (uint)AID.KingsWill);
+class KingsWill2(BossModule module) : Components.CastInterruptHint(module, (uint)AID.KingsWill2);
+class KingsWill3(BossModule module) : Components.CastInterruptHint(module, (uint)AID.KingsWill3);
 
 class Hints(BossModule module) : BossComponent(module)
 {

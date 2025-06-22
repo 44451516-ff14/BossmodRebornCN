@@ -4,7 +4,7 @@ class P2PlasmaShield(BossModule module) : Components.DirectionalParry(module, [(
 {
     public override void OnActorCreated(Actor actor)
     {
-        if ((OID)actor.OID == OID.PlasmaShield)
+        if (actor.OID == (uint)OID.PlasmaShield)
             PredictParrySide(actor.InstanceID, Side.Left | Side.Right | Side.Back);
     }
 }

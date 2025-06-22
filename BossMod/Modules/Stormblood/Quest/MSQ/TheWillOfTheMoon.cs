@@ -1,5 +1,4 @@
-﻿using BossMod.QuestBattle;
-using RPID = BossMod.Roleplay.AID;
+﻿using RPID = BossMod.Roleplay.AID;
 
 namespace BossMod.Stormblood.Quest.MSQ.TheWillOfTheMoon;
 
@@ -34,14 +33,14 @@ public enum SID : uint
     Invincibility = 775 // none->Boss, extra=0x0
 }
 
-class DispellingWind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DispellingWind), new AOEShapeRect(40f, 4f));
-class Epigraph(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Epigraph), new AOEShapeRect(45f, 4f));
-class Whisper(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WhisperOfLivesPast), new AOEShapeDonut(6f, 12f));
-class Blizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AncientBlizzard), new AOEShapeCone(40f, 22.5f.Degrees()));
-class Tornado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tornado), 6f);
-class Epigraph1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Epigraph2), new AOEShapeRect(45f, 4f));
+class DispellingWind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DispellingWind, new AOEShapeRect(40f, 4f));
+class Epigraph(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Epigraph, new AOEShapeRect(45f, 4f));
+class Whisper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WhisperOfLivesPast, new AOEShapeDonut(6f, 12f));
+class Blizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientBlizzard, new AOEShapeCone(40f, 22.5f.Degrees()));
+class Tornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tornado, 6f);
+class Epigraph1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Epigraph2, new AOEShapeRect(45f, 4f));
 
-public class FlatlandFury(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlatlandFury), 10f)
+public class FlatlandFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlatlandFury, 10f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -53,7 +52,7 @@ public class FlatlandFury(BossModule module) : Components.SimpleAOEs(module, Act
     }
 }
 
-public class FlatlandFuryEnrage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlatlandFuryEnrage), 10f)
+public class FlatlandFuryEnrage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlatlandFuryEnrage, 10f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -62,12 +61,12 @@ public class FlatlandFuryEnrage(BossModule module) : Components.SimpleAOEs(modul
     }
 }
 
-public class ViolentEarth(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ViolentEarth), 6f);
-public class WindChisel(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindChisel), new AOEShapeCone(34f, 10f.Degrees()));
+public class ViolentEarth(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ViolentEarth, 6f);
+public class WindChisel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindChisel, new AOEShapeCone(34f, 10f.Degrees()));
 
 public class Scales(BossModule module) : Components.Adds(module, (uint)OID.TheScaleOfTheFather);
 
-class AutoYshtola(BossModule module, WorldState ws) : UnmanagedRotation(ws, 25f)
+class AutoYshtola(BossModule module, WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
 {
     private Actor Magnai => module.Enemies((uint)OID.Magnai)[0];
     private Actor Hien => module.Enemies((uint)OID.Hien)[0];
@@ -79,7 +78,7 @@ class AutoYshtola(BossModule module, WorldState ws) : UnmanagedRotation(ws, 25f)
             ? 28000
             : 10000;
 
-        if (Hien.PredictedHPRaw < hienMinHP)
+        if (Hien.PendingHPRaw < hienMinHP)
         {
             if (Player.DistanceToHitbox(Hien) > 25f)
                 Hints.ForcedMovement = Player.DirectionTo(Hien).ToVec3();
@@ -101,7 +100,7 @@ class AutoYshtola(BossModule module, WorldState ws) : UnmanagedRotation(ws, 25f)
     }
 }
 
-class YshtolaAI(BossModule module) : RotationModule<AutoYshtola>(module);
+class YshtolaAI(BossModule module) : QuestBattle.RotationModule<AutoYshtola>(module);
 
 class P1Hints(BossModule module) : BossComponent(module)
 {

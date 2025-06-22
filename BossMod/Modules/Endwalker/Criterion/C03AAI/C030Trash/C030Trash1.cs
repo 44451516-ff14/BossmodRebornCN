@@ -65,8 +65,8 @@ class Twister(BossModule module) : Components.Adds(module, (uint)OID.Twister)
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         foreach (var twister in Actors)
-            Arena.ZoneCircle(twister.Position, 6, Colors.AOE);
+            Arena.ZoneCircle(twister.Position, 6f, Colors.AOE);
     }
 }
 
-public abstract class C030Trash1(WorldState ws, Actor primary) : BossModule(ws, primary, new(0, 100), new ArenaBoundsRect(20, 30));
+public abstract class C030Trash1(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, 100f), new ArenaBoundsRect(20f, 30f));

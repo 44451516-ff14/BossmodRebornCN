@@ -24,7 +24,7 @@ public class Adds(BossModule module, uint oid, int priority = 0) : BossComponent
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (priority > 0)
+        if (priority != 0)
             hints.PrioritizeTargetsByOID(oid, priority);
     }
 
@@ -49,12 +49,28 @@ public class AddsPointless(BossModule module, uint oid) : Adds(module, oid)
 public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossComponent(module)
 {
     public readonly uint[] OIDs = oids;
-    public readonly List<Actor> Actors = module.Enemies(oids);
-    public IEnumerable<Actor> ActiveActors => Actors.Where(a => a.IsTargetable && !a.IsDead);
+    public List<Actor> ActiveActors
+    {
+        get
+        {
+            var enemies = Module.Enemies(OIDs);
+            var count = enemies.Count;
+            List<Actor> activeActors = new(count);
+            for (var i = 0; i < count; ++i)
+            {
+                var actor = enemies[i];
+                if (actor.IsTargetable && !actor.IsDead)
+                {
+                    activeActors.Add(actor);
+                }
+            }
+            return activeActors;
+        }
+    }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (priority > 0)
+        if (priority != 0)
             hints.PrioritizeTargetsByOID(OIDs, priority);
     }
 

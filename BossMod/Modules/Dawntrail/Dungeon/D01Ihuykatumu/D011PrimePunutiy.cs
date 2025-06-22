@@ -57,13 +57,13 @@ public enum TetherID : uint
     BaitAway = 17, // ProdigiousPunutiy/Punutiy/PetitPunutiy->player
 }
 
-class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(60f, 15f.Degrees()), (uint)TetherID.BaitAway, ActionID.MakeSpell(AID.HydrowaveBait), (uint)OID.Punutiy, 8.6f)
+sealed class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(60f, 15f.Degrees()), (uint)TetherID.BaitAway, (uint)AID.HydrowaveBait, (uint)OID.Punutiy, 8.6f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (CurrentBaits.Any(x => x.Target == actor))
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center - new WDir(0f, -18f), Arena.Center - new WDir(0f, 18f), 18), WorldState.FutureTime(ActivationDelay));
+        if (ActiveBaitsOn(actor).Count != 0)
+            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center - new WDir(default, -18f), Arena.Center - new WDir(default, 18f), 18f), WorldState.FutureTime(ActivationDelay));
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether) { } // snapshot is ~0.6s after tether disappears
@@ -75,8 +75,8 @@ class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(module, new 
     }
 }
 
-class Resurface(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Resurface), Inhale.Cone);
-class Inhale(BossModule module) : Components.GenericAOEs(module)
+sealed class Resurface(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Resurface, Inhale.Cone);
+sealed class Inhale(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     public static readonly AOEShapeCone Cone = new(100f, 30f.Degrees());
@@ -100,10 +100,10 @@ class Inhale(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PunutiyPress(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PunutiyPress));
-class Hydrowave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrowave), new AOEShapeCone(60f, 15f.Degrees()));
+sealed class PunutiyPress(BossModule module) : Components.RaidwideCast(module, (uint)AID.PunutiyPress);
+sealed class Hydrowave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrowave, new AOEShapeCone(60f, 15f.Degrees()));
 
-class BuryDecay(BossModule module) : Components.GenericAOEs(module)
+sealed class BuryDecay(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(12f), new AOEShapeRect(35f, 5f), new AOEShapeCircle(8f), new AOEShapeCircle(4f),
@@ -165,10 +165,10 @@ class BuryDecay(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PunutiyFlop1(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.PunutiyFlop1), 14f);
-class PunutiyFlop2(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.PunutiyFlop2), 6f);
+sealed class PunutiyFlop1(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.PunutiyFlop1, 14f);
+sealed class PunutiyFlop2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.PunutiyFlop2, 6f);
 
-class ShoreShaker(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class ShoreShaker(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
 
@@ -194,7 +194,7 @@ class ShoreShaker(BossModule module) : Components.ConcentricAOEs(module, _shapes
     }
 }
 
-class D011PrimePunutiyStates : StateMachineBuilder
+sealed class D011PrimePunutiyStates : StateMachineBuilder
 {
     public D011PrimePunutiyStates(BossModule module) : base(module)
     {
@@ -212,7 +212,7 @@ class D011PrimePunutiyStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 826, NameID = 12723)]
-public class D011PrimePunutiy(WorldState ws, Actor primary) : BossModule(ws, primary, new(35, -95), new ArenaBoundsSquare(19.5f))
+public sealed class D011PrimePunutiy(WorldState ws, Actor primary) : BossModule(ws, primary, new(35, -95), new ArenaBoundsSquare(19.5f))
 {
     private static readonly uint[] adds = [(uint)OID.Punutiy, (uint)OID.PetitPunutiy, (uint)OID.ProdigiousPunutiy];
     protected override void DrawEnemies(int pcSlot, Actor pc)

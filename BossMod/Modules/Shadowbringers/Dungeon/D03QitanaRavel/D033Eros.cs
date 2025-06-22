@@ -36,7 +36,7 @@ public enum AID : uint
 }
 
 class HoundOutOfHeaven(BossModule module) : Components.StretchTetherDuo(module, 19f, 5.2f);
-class ViperPoisonVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.ViperPoisonPatterns), GetVoidzones, 0.8f)
+class ViperPoisonVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.ViperPoisonPatterns, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -56,25 +56,25 @@ class ViperPoisonVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(m
         return voidzones[..index];
     }
 }
-class ConfessionOfFaithStack(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ConfessionOfFaithStack), 6f, 4, 4);
-class ConfessionOfFaithSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ConfessionOfFaithSpread), 5f);
+class ConfessionOfFaithStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ConfessionOfFaithStack, 6f, 4, 4);
+class ConfessionOfFaithSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ConfessionOfFaithSpread, 5f);
 
-abstract class Breath(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(60f, 30f.Degrees()));
-class ConfessionOfFaithCenter(BossModule module) : Breath(module, AID.ConfessionOfFaithCenter);
-class ConfessionOfFaithLeft(BossModule module) : Breath(module, AID.ConfessionOfFaithLeft);
-class ConfessionOfFaithRight(BossModule module) : Breath(module, AID.ConfessionOfFaithRight);
+abstract class Breath(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(60f, 30f.Degrees()));
+class ConfessionOfFaithCenter(BossModule module) : Breath(module, (uint)AID.ConfessionOfFaithCenter);
+class ConfessionOfFaithLeft(BossModule module) : Breath(module, (uint)AID.ConfessionOfFaithLeft);
+class ConfessionOfFaithRight(BossModule module) : Breath(module, (uint)AID.ConfessionOfFaithRight);
 
-class ViperPoisonBait(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.ViperPoisonBait), new AOEShapeCircle(6f), true)
+class ViperPoisonBait(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ViperPoisonBait, 6f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaits.Any(x => x.Target == actor))
+        if (ActiveBaitsOn(actor).Count != 0)
             hints.AddForbiddenZone(ShapeDistance.Rect(new(17f, -518f), new(17f, -558f), 13f));
     }
 }
 
-class Inhale(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Inhale), 50f, kind: Kind.TowardsOrigin)
+class Inhale(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Inhale, 50f, kind: Kind.TowardsOrigin)
 {
     private readonly ViperPoisonVoidzone _aoe = module.FindComponent<ViperPoisonVoidzone>()!;
 
@@ -105,7 +105,7 @@ class Inhale(BossModule module) : Components.SimpleKnockbacks(module, ActionID.M
     }
 }
 
-class HeavingBreath(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.HeavingBreath), 35f, kind: Kind.DirForward, stopAtWall: true)
+class HeavingBreath(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HeavingBreath, 35f, kind: Kind.DirForward, stopAtWall: true)
 {
     private readonly ViperPoisonVoidzone _aoe = module.FindComponent<ViperPoisonVoidzone>()!;
 
@@ -135,8 +135,8 @@ class HeavingBreath(BossModule module) : Components.SimpleKnockbacks(module, Act
     }
 }
 
-class Glossolalia(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Glossolalia));
-class Rend(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Rend));
+class Glossolalia(BossModule module) : Components.RaidwideCast(module, (uint)AID.Glossolalia);
+class Rend(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Rend);
 
 class D033ErosStates : StateMachineBuilder
 {

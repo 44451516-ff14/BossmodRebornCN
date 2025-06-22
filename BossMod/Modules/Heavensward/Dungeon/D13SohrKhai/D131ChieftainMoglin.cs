@@ -62,7 +62,7 @@ class PomBom(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ThousandKuponzeCharge(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ThousandKuponzeCharge), new AOEShapeCone(9.8f, 60f.Degrees()))
+class ThousandKuponzeCharge(BossModule module) : Components.Cleave(module, (uint)AID.ThousandKuponzeCharge, new AOEShapeCone(9.8f, 60f.Degrees()))
 {
     private bool active = true; // cleave happens near the start of the fight then again after every demoniacal mogcane cast
 
@@ -177,10 +177,10 @@ class PomPraise(BossModule module) : BossComponent(module)
     }
 }
 
-class HundredKuponzeSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HundredKuponzeSwipe), new AOEShapeCone(20.9f, 45f.Degrees()));
-class PomFlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PomFlare), 20.9f);
-class PomHoly(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PomHoly));
-class SpinningMogshield(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpinningMogshield), 6.9f);
+class HundredKuponzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredKuponzeSwipe, new AOEShapeCone(20.9f, 45f.Degrees()));
+class PomFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PomFlare, 20.9f);
+class PomHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.PomHoly);
+class SpinningMogshield(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningMogshield, 6.9f);
 
 class D131ChieftainMoglinStates : StateMachineBuilder
 {

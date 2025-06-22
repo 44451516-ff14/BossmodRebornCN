@@ -61,35 +61,9 @@ class ToxinShowerCorrosiveVenom(BossModule module) : Components.GenericAOEs(modu
             _aoes.RemoveAt(0);
     }
 }
+class ToxicCorrosiveFountain(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ToxicFountain, (uint)AID.CorrosiveFountain], 8f, 10, 13);
 
-class ToxicCorrosiveFountain(BossModule module) : Components.GenericAOEs(module)
-{
-    private static readonly AOEShapeCircle circle = new(8f);
-    private readonly List<AOEInstance> _aoes = new(12);
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var max = count > 10 ? 10 : count;
-        return CollectionsMarshal.AsSpan(_aoes)[..max];
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID is (uint)AID.ToxicFountain or (uint)AID.CorrosiveFountain)
-            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell)));
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.ToxicFountain or (uint)AID.CorrosiveFountain)
-            _aoes.RemoveAt(0);
-    }
-}
-
-class BigWave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BigWave));
+class BigWave(BossModule module) : Components.RaidwideCast(module, (uint)AID.BigWave);
 
 class D091AmbujamStates : StateMachineBuilder
 {

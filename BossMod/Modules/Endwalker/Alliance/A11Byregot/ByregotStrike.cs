@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Alliance.A11Byregot;
 
-class ByregotStrikeJump(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotStrikeJump), 8f);
-class ByregotStrikeJumpCone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ByregotStrikeJumpCone), 8f);
-class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ByregotStrikeKnockback), 18f)
+class ByregotStrikeJump(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ByregotStrikeJump, (uint)AID.ByregotStrikeJumpCone], 8f);
+
+class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ByregotStrikeKnockback, 18f)
 {
     private static readonly Angle a45 = 45f.Degrees(), a180 = 180f.Degrees();
 

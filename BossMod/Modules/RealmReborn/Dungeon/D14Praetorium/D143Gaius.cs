@@ -58,11 +58,11 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class HandOfTheEmpire(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HandOfTheEmpireAOE), 5f);
-class FestinaLente(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.FestinaLente), 6f, 4, 4);
-class Innocence(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Innocence));
-class HorridaBella(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HorridaBella));
-class Ductus(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DuctusAOE), 8f);
+class HandOfTheEmpire(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HandOfTheEmpireAOE, 5f);
+class FestinaLente(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FestinaLente, 6f, 4, 4);
+class Innocence(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Innocence);
+class HorridaBella(BossModule module) : Components.RaidwideCast(module, (uint)AID.HorridaBella);
+class Ductus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DuctusAOE, 8f);
 
 class AddEnrage(BossModule module) : BossComponent(module)
 {
@@ -85,7 +85,7 @@ class AddEnrage(BossModule module) : BossComponent(module)
     }
 }
 
-class Heirsbane(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Innocence), "");
+class Heirsbane(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Innocence, "");
 
 class D143GaiusStates : StateMachineBuilder
 {

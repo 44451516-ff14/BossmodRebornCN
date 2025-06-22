@@ -16,7 +16,7 @@ public enum AID : uint
     RanaasFinish = 15646, // Boss->self, 6.0s cast, range 15 circle
 }
 
-class Foxshot(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.Foxshot), 2f);
+class Foxshot(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.Foxshot, 2f);
 
 class FoxshotKB(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
 {
@@ -96,11 +96,11 @@ class Whirlwind(BossModule module) : Components.Voidzone(module, 6f, GetVoidzone
         return voidzones[..index];
     }
 }
-class WarDance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WarDance), 5f);
-class CharmingChasse(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.CharmingChasse));
-class HannishFire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HannishFire1), 6f);
-class HannishWaters(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HannishWaters), new AOEShapeCone(40f, 15f.Degrees()));
-class RanaasFinish(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RanaasFinish), 15f);
+class WarDance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WarDance, 5f);
+class CharmingChasse(BossModule module) : Components.CastGaze(module, (uint)AID.CharmingChasse);
+class HannishFire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HannishFire1, 6f);
+class HannishWaters(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HannishWaters, new AOEShapeCone(40f, 15f.Degrees()));
+class RanaasFinish(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RanaasFinish, 15f);
 
 class RanaaMihgoStates : StateMachineBuilder
 {

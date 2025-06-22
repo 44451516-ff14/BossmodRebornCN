@@ -32,12 +32,12 @@ public enum AID : uint
     VoidQuakeAOE3 = 20551, // Helper->self, 3.0s cast, range 20-30 donut aoe
 }
 
-class Hellclaw(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Hellclaw));
-class TailBlow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailBlow), new AOEShapeCone(19f, 45f.Degrees()));
-class LavaSpit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LavaSpitAOE), 5f);
-class ScorchingLash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ScorchingLash), new AOEShapeRect(50f, 5f));
+sealed class Hellclaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Hellclaw);
+sealed class TailBlow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailBlow, new AOEShapeCone(19f, 45f.Degrees()));
+sealed class LavaSpit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LavaSpitAOE, 5f);
+sealed class ScorchingLash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScorchingLash, new AOEShapeRect(50f, 5f));
 
-class Hellpounce(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Hellpounce), "GTFO from charge!")
+sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _charge;
 
@@ -55,7 +55,7 @@ class Hellpounce(BossModule module) : Components.GenericAOEs(module, ActionID.Ma
         {
             case (uint)AID.Hellpounce:
                 var offset = spell.LocXZ - Arena.Center;
-                Activate(spell.LocXZ, Arena.Center - offset, WorldState.FutureTime(3.7f));
+                Activate(spell.LocXZ, Arena.Center - offset, WorldState.FutureTime(3.7d));
                 break;
             case (uint)AID.HellpounceSecond:
                 _charge = null;
@@ -70,14 +70,11 @@ class Hellpounce(BossModule module) : Components.GenericAOEs(module, ActionID.Ma
     }
 }
 
-abstract class Breath(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(60f, 30f.Degrees()));
-class DragonsBreathR(BossModule module) : Breath(module, AID.DragonsBreathAOER);
-class DragonsBreathL(BossModule module) : Breath(module, AID.DragonsBreathAOEL);
-class LionsBreath(BossModule module) : Breath(module, AID.LionsBreathAOE);
+sealed class DragonsLionsBreath(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DragonsBreathAOER, (uint)AID.DragonsBreathAOEL, (uint)AID.LionsBreathAOE], new AOEShapeCone(60f, 30f.Degrees()));
 
-class VoidTornado(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.VoidTornado), "Set hp to 1");
+sealed class VoidTornado(BossModule module) : Components.CastHint(module, (uint)AID.VoidTornado, "Set hp to 1");
 
-class VoidQuake(BossModule module) : Components.GenericAOEs(module) // this concentric AOE can happen forwards or backwards in order with the same AID as the starter
+sealed class VoidQuake(BossModule module) : Components.GenericAOEs(module) // this concentric AOE can happen forwards or backwards in order with the same AID as the starter
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeCircle _shape1 = new(10f);
@@ -109,7 +106,7 @@ class VoidQuake(BossModule module) : Components.GenericAOEs(module) // this conc
     }
 }
 
-class CE12BayingOfHoundsStates : StateMachineBuilder
+sealed class CE12BayingOfHoundsStates : StateMachineBuilder
 {
     public CE12BayingOfHoundsStates(BossModule module) : base(module)
     {
@@ -119,13 +116,16 @@ class CE12BayingOfHoundsStates : StateMachineBuilder
             .ActivateOnEnter<LavaSpit>()
             .ActivateOnEnter<ScorchingLash>()
             .ActivateOnEnter<Hellpounce>()
-            .ActivateOnEnter<LionsBreath>()
-            .ActivateOnEnter<DragonsBreathR>()
-            .ActivateOnEnter<DragonsBreathL>()
+            .ActivateOnEnter<DragonsLionsBreath>()
             .ActivateOnEnter<VoidTornado>()
             .ActivateOnEnter<VoidQuake>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 735, NameID = 2)] // bnpcname=9394
-public class CE12BayingOfHounds(WorldState ws, Actor primary) : BossModule(ws, primary, new(154f, 785f), new ArenaBoundsCircle(25f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 2)] // bnpcname=9394
+public sealed class CE12BayingOfHounds(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+{
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(154f, 785f), 24.5f, 32)]);
+
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
+}

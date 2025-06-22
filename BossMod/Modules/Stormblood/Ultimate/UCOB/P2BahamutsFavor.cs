@@ -122,7 +122,7 @@ class P2BahamutsFavorDeathstorm(BossModule module) : BossComponent(module)
         if (status.ID == (uint)SID.Doom)
         {
             _dooms.Add((actor, status.ExpireAt, false));
-            _dooms.SortBy(x => x.expiration);
+            _dooms.Sort((a, b) => a.expiration.CompareTo(b.expiration));
         }
     }
 
@@ -155,4 +155,4 @@ class P2BahamutsFavorDeathstorm(BossModule module) : BossComponent(module)
     }
 }
 
-class P2BahamutsFavorWingsOfSalvation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingsOfSalvation), 4f);
+class P2BahamutsFavorWingsOfSalvation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingsOfSalvation, 4f);

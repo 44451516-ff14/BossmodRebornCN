@@ -31,7 +31,7 @@ public enum SID : uint
     ForcedMarch = 1257 // Boss->player, extra=0x1/0x2/0x4/0x8
 }
 
-class AetherstockAbyssalSmog(BossModule module) : Components.GenericAOEs(module)
+sealed class AetherstockAbyssalSmog(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEShape? shape;
     private static readonly AOEShapeCone cone = new(40f, 90f.Degrees());
@@ -100,12 +100,12 @@ class AetherstockAbyssalSmog(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ChaoticStormForcedMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace);
-class ChaoticStorm(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ChaoticStorm), "Raidwide + forced march debuffs");
-class RazorZephyr(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RazorZephyr), new AOEShapeRect(50f, 6f));
-class Blade(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Blade));
+sealed class ChaoticStormForcedMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace);
+sealed class ChaoticStorm(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ChaoticStorm, "Raidwide + forced march debuffs");
+sealed class RazorZephyr(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RazorZephyr, new AOEShapeRect(50f, 6f));
+sealed class Blade(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Blade);
 
-class IhnuxokiyStates : StateMachineBuilder
+sealed class IhnuxokiyStates : StateMachineBuilder
 {
     public IhnuxokiyStates(BossModule module) : base(module)
     {
@@ -119,4 +119,4 @@ class IhnuxokiyStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 13444)]
-public class Ihnuxokiy(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Ihnuxokiy(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

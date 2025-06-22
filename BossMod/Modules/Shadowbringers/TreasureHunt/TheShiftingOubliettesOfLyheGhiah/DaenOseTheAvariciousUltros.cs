@@ -43,16 +43,16 @@ public enum AID : uint
     Telega = 9630 // Mandragoras->self, no cast, single-target, bonus adds disappear
 }
 
-class AquaBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AquaBreath), new AOEShapeCone(13f, 45f.Degrees()));
-class Tentacle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Tentacle), 8f);
-class Wallop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wallop), new AOEShapeRect(20f, 5f));
-class Megavolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Megavolt), 11f);
-class Waterspout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Waterspout), 4f);
-class SoakingSplatter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SoakingSplatter), 10f);
-class FallingWater(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FallingWater), 8f);
-class ThunderIII(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ThunderIII));
+class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13f, 45f.Degrees()));
+class Tentacle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tentacle, 8f);
+class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, new AOEShapeRect(20f, 5f));
+class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11f);
+class Waterspout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Waterspout, 4f);
+class SoakingSplatter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SoakingSplatter, 10f);
+class FallingWater(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FallingWater, 8f);
+class ThunderIII(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ThunderIII);
 
-class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.WaveOfTurmoil), 20f, stopAtWall: true)
+class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.WaveOfTurmoil, 20f, stopAtWall: true)
 {
     private readonly SoakingSplatter _aoe = module.FindComponent<SoakingSplatter>()!;
     private static readonly Angle cone = 30f.Degrees();
@@ -86,12 +86,8 @@ class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, Act
     }
 }
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
 class DaenOseTheAvariciousUltrosStates : StateMachineBuilder
 {
@@ -107,11 +103,7 @@ class DaenOseTheAvariciousUltrosStates : StateMachineBuilder
             .ActivateOnEnter<FallingWater>()
             .ActivateOnEnter<ThunderIII>()
             .ActivateOnEnter<WaveOfTurmoil>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(DaenOseTheAvariciousUltros.All);

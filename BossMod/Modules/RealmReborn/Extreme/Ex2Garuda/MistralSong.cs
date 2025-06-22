@@ -4,7 +4,7 @@ class MistralSong : Components.GenericLineOfSightAOE
 {
     private WPos _predictedPosition;
 
-    public MistralSong(BossModule module, WPos predictedPosition) : base(module, ActionID.MakeSpell(AID.MistralSong), 31.7f, true)
+    public MistralSong(BossModule module, WPos predictedPosition) : base(module, (uint)AID.MistralSong, 31.7f, true)
     {
         _predictedPosition = predictedPosition;
         Modify(_predictedPosition, ActiveBlockers());
@@ -12,13 +12,13 @@ class MistralSong : Components.GenericLineOfSightAOE
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Modify(caster.Position, ActiveBlockers());
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Modify(null, ActiveBlockers());
     }
 

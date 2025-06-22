@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UCOB;
 
-class Hatch(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Hatch))
+class Hatch(BossModule module) : Components.CastCounter(module, (uint)AID.Hatch)
 {
     public bool Active = true;
     public override bool KeepOnPhaseChange => true;
@@ -58,7 +58,7 @@ class Hatch(BossModule module) : Components.CastCounter(module, ActionID.MakeSpe
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             foreach (var t in spell.Targets)

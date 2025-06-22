@@ -37,7 +37,7 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void BlueMoon(uint id, float delay, bool mounted)
     {
-        Cast(id, mounted ? AID.BlueMoonMounted : AID.BlueMoonNormal, delay, 5);
+        Cast(id, mounted ? (uint)AID.BlueMoonMounted : (uint)AID.BlueMoonNormal, delay, 5);
         ComponentCondition<BlueMoon>(id + 2, 0.9f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<BlueMoon>()
             .DeactivateOnExit<BlueMoon>()
@@ -46,7 +46,7 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void LunarKiss(uint id, float delay, bool mounted)
     {
-        CastStart(id, mounted ? AID.LunarKissMounted : AID.LunarKissNormal, delay)
+        CastStart(id, mounted ? (uint)AID.LunarKissMounted : (uint)AID.LunarKissNormal, delay)
             .ActivateOnEnter<LunarKiss>();
         CastEnd(id + 1, 7);
         ComponentCondition<LunarKiss>(id + 2, 0.9f, comp => comp.NumCasts > 0, "Tankbusters")
@@ -56,14 +56,14 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void MoonsetRays(uint id, float delay)
     {
-        Cast(id, AID.MoonsetRays, delay, 5, "Stack")
+        Cast(id, (uint)AID.MoonsetRays, delay, 5, "Stack")
             .ActivateOnEnter<MoonsetRays>()
             .DeactivateOnExit<MoonsetRays>();
     }
 
     private void MidnightFrost(uint id, float delay)
     {
-        CastMulti(id, [AID.MidnightFrostShortNormalFront, AID.MidnightFrostShortNormalBack], delay, 6)
+        CastMulti(id, [(uint)AID.MidnightFrostShortNormalFront, (uint)AID.MidnightFrostShortNormalBack], delay, 6)
             .ActivateOnEnter<MidnightFrostWaxingClaw>();
         ComponentCondition<MidnightFrostWaxingClaw>(id + 2, 0.2f, comp => comp.NumCasts > 0, "Half-arena cleave")
             .DeactivateOnExit<MidnightFrostWaxingClaw>();
@@ -71,7 +71,7 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void MidnightFrostWaxingClaw(uint id, float delay)
     {
-        CastMulti(id, [AID.MidnightFrostLongMountedFrontRight, AID.MidnightFrostLongMountedFrontLeft, AID.MidnightFrostLongMountedBackRight, AID.MidnightFrostLongMountedBackLeft], delay, 8)
+        CastMulti(id, [(uint)AID.MidnightFrostLongMountedFrontRight, (uint)AID.MidnightFrostLongMountedFrontLeft, (uint)AID.MidnightFrostLongMountedBackRight, (uint)AID.MidnightFrostLongMountedBackLeft], delay, 8)
             .ActivateOnEnter<MidnightFrostWaxingClaw>();
         ComponentCondition<MidnightFrostWaxingClaw>(id + 2, 0.2f, comp => comp.NumCasts > 0, "Double cleave")
             .DeactivateOnExit<MidnightFrostWaxingClaw>();
@@ -79,8 +79,8 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void PlayfulOrbitMidnightFrostWaxingClaw(uint id, float delay)
     {
-        CastMulti(id, [AID.PlayfulOrbit1, AID.PlayfulOrbit2], delay, 2.6f);
-        CastMulti(id + 0x10, [AID.MidnightFrostLongDismounted1FrontRight, AID.MidnightFrostLongDismounted1FrontLeft, AID.MidnightFrostLongDismounted1BackRight, AID.MidnightFrostLongDismounted1BackLeft, AID.MidnightFrostLongDismounted2FrontRight, AID.MidnightFrostLongDismounted2FrontLeft, AID.MidnightFrostLongDismounted2BackRight, AID.MidnightFrostLongDismounted2BackLeft], 2.2f, 8)
+        CastMulti(id, [(uint)AID.PlayfulOrbit1, (uint)AID.PlayfulOrbit2], delay, 2.6f);
+        CastMulti(id + 0x10, [(uint)AID.MidnightFrostLongDismounted1FrontRight, (uint)AID.MidnightFrostLongDismounted1FrontLeft, (uint)AID.MidnightFrostLongDismounted1BackRight, (uint)AID.MidnightFrostLongDismounted1BackLeft, (uint)AID.MidnightFrostLongDismounted2FrontRight, (uint)AID.MidnightFrostLongDismounted2FrontLeft, (uint)AID.MidnightFrostLongDismounted2BackRight, (uint)AID.MidnightFrostLongDismounted2BackLeft], 2.2f, 8)
             .ActivateOnEnter<MidnightFrostWaxingClaw>();
         ComponentCondition<MidnightFrostWaxingClaw>(id + 0x12, 0.2f, comp => comp.NumCasts > 0, "Double cleave")
             .DeactivateOnExit<MidnightFrostWaxingClaw>();
@@ -88,10 +88,10 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void KeenMoonbeamMidnightFrostWaxingClaw(uint id, float delay)
     {
-        Cast(id, AID.KeenMoonbeam, delay, 3);
+        Cast(id, (uint)AID.KeenMoonbeam, delay, 3);
         ComponentCondition<KeenMoonbeam>(id + 2, 1.5f, comp => comp.Active)
             .ActivateOnEnter<KeenMoonbeam>();
-        CastStartMulti(id + 0x10, [AID.MidnightFrostLongMountedFrontRight, AID.MidnightFrostLongMountedFrontLeft, AID.MidnightFrostLongMountedBackRight, AID.MidnightFrostLongMountedBackLeft], 2.9f);
+        CastStartMulti(id + 0x10, [(uint)AID.MidnightFrostLongMountedFrontRight, (uint)AID.MidnightFrostLongMountedFrontLeft, (uint)AID.MidnightFrostLongMountedBackRight, (uint)AID.MidnightFrostLongMountedBackLeft], 2.9f);
         ComponentCondition<KeenMoonbeam>(id + 0x11, 2.1f, comp => !comp.Active, "Spreads")
             .ActivateOnEnter<MidnightFrostWaxingClaw>()
             .DeactivateOnExit<KeenMoonbeam>();
@@ -102,14 +102,14 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void CrateringChill(uint id, float delay)
     {
-        Cast(id, AID.CrateringChill, delay, 3);
+        Cast(id, (uint)AID.CrateringChill, delay, 3);
         ComponentCondition<CrateringChill>(id + 2, 1.5f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<CrateringChill>();
-        Cast(id + 0x10, AID.WinterSolstice, 2.7f, 3);
+        Cast(id + 0x10, (uint)AID.WinterSolstice, 2.7f, 3);
         ComponentCondition<CrateringChill>(id + 0x20, 0.3f, comp => comp.NumCasts > 0, "Proximity + icy floor")
             .DeactivateOnExit<CrateringChill>();
-        CastMulti(id + 0x30, [AID.PlayfulOrbit1, AID.PlayfulOrbit2], 1.6f, 2.6f);
-        CastMulti(id + 0x40, [AID.WinterHaloLongDismounted1Right, AID.WinterHaloLongDismounted1Left, AID.WinterHaloLongDismounted2Right, AID.WinterHaloLongDismounted2Left], 2.2f, 8)
+        CastMulti(id + 0x30, [(uint)AID.PlayfulOrbit1, (uint)AID.PlayfulOrbit2], 1.6f, 2.6f);
+        CastMulti(id + 0x40, [(uint)AID.WinterHaloLongDismounted1Right, (uint)AID.WinterHaloLongDismounted1Left, (uint)AID.WinterHaloLongDismounted2Right, (uint)AID.WinterHaloLongDismounted2Left], 2.2f, 8)
             .ActivateOnEnter<MidnightFrostWaxingClaw>()
             .ActivateOnEnter<WinterHalo>();
         ComponentCondition<WinterHalo>(id + 0x42, 0.2f, comp => comp.NumCasts > 0, "Donut + half-arena cleave")
@@ -119,9 +119,9 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void LovesLightNormalOne(uint id, float delay)
     {
-        Cast(id, AID.LovesLightNormalOne, delay, 3);
+        Cast(id, (uint)AID.LovesLightNormalOne, delay, 3);
         // +0.9s: envcontrol .0E=00020001 = N moon
-        Cast(id + 0x10, AID.FullBrightNormal, 2.7f, 3);
+        Cast(id + 0x10, (uint)AID.FullBrightNormal, 2.7f, 3);
         ComponentCondition<FirstBlush>(id + 0x20, 0.9f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<FirstBlush>();
         ComponentCondition<FirstBlush>(id + 0x21, 10.5f, comp => comp.NumCasts > 0, "Line through center")
@@ -130,13 +130,13 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void LovesLightMountedOneMidnightFrost(uint id, float delay)
     {
-        Cast(id, AID.LovesLightMountedOne, delay, 3);
+        Cast(id, (uint)AID.LovesLightMountedOne, delay, 3);
         // +0.8s: envcontrol .11=00020001 = SW moon
-        Cast(id + 0x10, AID.FullBrightMounted, 1.6f, 3);
+        Cast(id + 0x10, (uint)AID.FullBrightMounted, 1.6f, 3);
         ComponentCondition<FirstBlush>(id + 0x20, 0.8f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<FirstBlush>();
-        CastMulti(id + 0x30, [AID.PlayfulOrbit1, AID.PlayfulOrbit2], 1.9f, 2.6f);
-        CastStartMulti(id + 0x40, [AID.MidnightFrostLongDismounted1FrontRight, AID.MidnightFrostLongDismounted1FrontLeft, AID.MidnightFrostLongDismounted1BackRight, AID.MidnightFrostLongDismounted1BackLeft, AID.MidnightFrostLongDismounted2FrontRight, AID.MidnightFrostLongDismounted2FrontLeft, AID.MidnightFrostLongDismounted2BackRight, AID.MidnightFrostLongDismounted2BackLeft], 2.2f);
+        CastMulti(id + 0x30, [(uint)AID.PlayfulOrbit1, (uint)AID.PlayfulOrbit2], 1.9f, 2.6f);
+        CastStartMulti(id + 0x40, [(uint)AID.MidnightFrostLongDismounted1FrontRight, (uint)AID.MidnightFrostLongDismounted1FrontLeft, (uint)AID.MidnightFrostLongDismounted1BackRight, (uint)AID.MidnightFrostLongDismounted1BackLeft, (uint)AID.MidnightFrostLongDismounted2FrontRight, (uint)AID.MidnightFrostLongDismounted2FrontLeft, (uint)AID.MidnightFrostLongDismounted2BackRight, (uint)AID.MidnightFrostLongDismounted2BackLeft], 2.2f);
         ComponentCondition<FirstBlush>(id + 0x50, 3.8f, comp => comp.NumCasts > 0, "Line through center")
             .ActivateOnEnter<MidnightFrostWaxingClaw>()
             .DeactivateOnExit<FirstBlush>();
@@ -147,14 +147,14 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void LovesLightNormalFourMidnightFrost(uint id, float delay)
     {
-        Cast(id, AID.LovesLightNormalFour, delay, 3);
+        Cast(id, (uint)AID.LovesLightNormalFour, delay, 3);
         // +0.9s: envcontrol .17/19/1A/1C=00020001 = N/S -> E/W moons
-        Cast(id + 0x10, AID.FullBrightNormal, 2.7f, 3);
+        Cast(id + 0x10, (uint)AID.FullBrightNormal, 2.7f, 3);
         ComponentCondition<LoversBridgeShort>(id + 0x20, 0.9f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<LoversBridgeShort>();
         ComponentCondition<LoversBridgeShort>(id + 0x21, 6, comp => comp.NumCasts > 0, "Moons 1")
             .DeactivateOnExit<LoversBridgeShort>();
-        CastStartMulti(id + 0x30, [AID.MidnightFrostShortNormalFront, AID.MidnightFrostShortNormalBack], 5)
+        CastStartMulti(id + 0x30, [(uint)AID.MidnightFrostShortNormalFront, (uint)AID.MidnightFrostShortNormalBack], 5)
             .ActivateOnEnter<LoversBridgeLong>();
         ComponentCondition<LoversBridgeLong>(id + 0x31, 1, comp => comp.NumCasts > 0, "Moons 2")
             .ActivateOnEnter<MidnightFrostWaxingClaw>()
@@ -166,9 +166,9 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void LovesLightMountedFour(uint id, float delay)
     {
-        Cast(id, AID.LovesLightMountedFour, delay, 3);
+        Cast(id, (uint)AID.LovesLightMountedFour, delay, 3);
         // +0.7s: envcontrol .16/18/1B/1D=00020001 = E/W -> N/S moons
-        Cast(id + 0x10, AID.FullBrightMounted, 1.6f, 3);
+        Cast(id + 0x10, (uint)AID.FullBrightMounted, 1.6f, 3);
         ComponentCondition<LoversBridgeShort>(id + 0x20, 0.8f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<LoversBridgeShort>();
         ComponentCondition<LoversBridgeShort>(id + 0x21, 6, comp => comp.NumCasts > 0, "Moons 1")
@@ -180,12 +180,12 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void LovesLightMountedFourMidnightFrost(uint id, float delay)
     {
-        Cast(id, AID.LovesLightMountedFour, delay, 3);
+        Cast(id, (uint)AID.LovesLightMountedFour, delay, 3);
         // +0.7s: envcontrol .17/19/1A/1C=00020001 = N/S -> E/W moons
-        Cast(id + 0x10, AID.FullBrightMounted, 1.6f, 3);
+        Cast(id + 0x10, (uint)AID.FullBrightMounted, 1.6f, 3);
         ComponentCondition<LoversBridgeShort>(id + 0x20, 0.8f, comp => comp.Casters.Count > 0)
             .ActivateOnEnter<LoversBridgeShort>();
-        CastStartMulti(id + 0x30, [AID.MidnightFrostShortMountedFront, AID.MidnightFrostShortMountedBack], 3.1f);
+        CastStartMulti(id + 0x30, [(uint)AID.MidnightFrostShortMountedFront, (uint)AID.MidnightFrostShortMountedBack], 3.1f);
         ComponentCondition<LoversBridgeShort>(id + 0x40, 2.9f, comp => comp.NumCasts > 0, "Moons 1")
             .ActivateOnEnter<MidnightFrostWaxingClaw>()
             .DeactivateOnExit<LoversBridgeShort>();
@@ -199,16 +199,16 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void SilverMirrorNormalMoonsetWinterHalo(uint id, float delay)
     {
-        Cast(id, AID.SilverMirrorNormal, delay, 4, "Puddles")
+        Cast(id, (uint)AID.SilverMirrorNormal, delay, 4, "Puddles")
             .ActivateOnEnter<SilverMirror>();
-        Cast(id + 0x10, AID.Moonset, 2.7f, 4)
+        Cast(id + 0x10, (uint)AID.Moonset, 2.7f, 4)
             .ActivateOnEnter<Moonset>()
             .DeactivateOnExit<SilverMirror>(); // last puddle ends ~1.3s into cast
         ComponentCondition<Moonset>(id + 0x20, 1, comp => comp.NumCasts >= 1, "Jump 1");
         ComponentCondition<Moonset>(id + 0x21, 2.2f, comp => comp.NumCasts >= 2, "Jump 2");
         ComponentCondition<Moonset>(id + 0x22, 2.2f, comp => comp.NumCasts >= 3, "Jump 3")
             .DeactivateOnExit<Moonset>();
-        Cast(id + 0x30, AID.WinterHaloShort, 1.5f, 5)
+        Cast(id + 0x30, (uint)AID.WinterHaloShort, 1.5f, 5)
             .ActivateOnEnter<WinterHalo>();
         ComponentCondition<WinterHalo>(id + 0x32, 0.3f, comp => comp.NumCasts > 0, "Donut")
             .DeactivateOnExit<WinterHalo>();
@@ -216,9 +216,9 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void SilverMirrorMounted(uint id, float delay)
     {
-        Cast(id, AID.SilverMirrorMounted, delay, 4, "Puddles")
+        Cast(id, (uint)AID.SilverMirrorMounted, delay, 4, "Puddles")
             .ActivateOnEnter<SilverMirror>();
-        CastMulti(id + 0x10, [AID.MidnightFrostLongMountedFrontRight, AID.MidnightFrostLongMountedFrontLeft, AID.MidnightFrostLongMountedBackRight, AID.MidnightFrostLongMountedBackLeft, AID.WinterHaloLongMountedRight, AID.WinterHaloLongMountedLeft], 1.7f, 8)
+        CastMulti(id + 0x10, [(uint)AID.MidnightFrostLongMountedFrontRight, (uint)AID.MidnightFrostLongMountedFrontLeft, (uint)AID.MidnightFrostLongMountedBackRight, (uint)AID.MidnightFrostLongMountedBackLeft, (uint)AID.WinterHaloLongMountedRight, (uint)AID.WinterHaloLongMountedLeft], 1.7f, 8)
             .ActivateOnEnter<MidnightFrostWaxingClaw>()
             .ActivateOnEnter<WinterHalo>()
             .DeactivateOnExit<SilverMirror>(); // last puddle ends ~2.3s into cast
@@ -229,7 +229,7 @@ class A24MenphinaStates : StateMachineBuilder
 
     private void SelenainMysteria(uint id, float delay)
     {
-        Cast(id, AID.SelenainMysteria, delay, 3, "Boss disappears")
+        Cast(id, (uint)AID.SelenainMysteria, delay, 3, "Boss disappears")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ComponentCondition<CeremonialPillar>(id + 0x10, 4.5f, comp => comp.ActiveActors.Count != 0, "Adds appear")
             .ActivateOnEnter<CeremonialPillar>()

@@ -66,12 +66,12 @@ class LeftRightCheek(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TerrifyingGlance(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.TerrifyingGlance));
-class TheStake(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheStake), 18f);
-class SecondCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SecondCircle), new AOEShapeRect(40f, 4f));
-class CleansingFire(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CleansingFire));
+class TerrifyingGlance(BossModule module) : Components.CastGaze(module, (uint)AID.TerrifyingGlance);
+class TheStake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStake, 18f);
+class SecondCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SecondCircle, new AOEShapeRect(40f, 4f));
+class CleansingFire(BossModule module) : Components.RaidwideCast(module, (uint)AID.CleansingFire);
 
-class FeveredFlagellation(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.FeveredFlagellation), new AOEShapeCone(15f, 45f.Degrees()), tankbuster: true, endsOnCastEvent: true);
+class FeveredFlagellation(BossModule module) : Components.BaitAwayCast(module, (uint)AID.FeveredFlagellation, new AOEShapeCone(15f, 45f.Degrees()), tankbuster: true, endsOnCastEvent: true);
 
 class WitchHunt(BossModule module) : Components.GenericBaitAway(module)
 {

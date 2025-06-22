@@ -40,10 +40,10 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class RockBuster(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.RockBuster), new AOEShapeCone(11.25f, 60.Degrees())); // TODO: verify angle
-class Geocrush(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Geocrush), 18); // TODO: verify falloff
-class Landslide(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Landslide), new AOEShapeRect(40, 3));
-class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WeightOfTheLandAOE), 6);
+class RockBuster(BossModule module) : Components.Cleave(module, (uint)AID.RockBuster, new AOEShapeCone(11.25f, 60.Degrees())); // TODO: verify angle
+class Geocrush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geocrush, 18); // TODO: verify falloff
+class Landslide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Landslide, new AOEShapeRect(40, 3));
+class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLandAOE, 6);
 
 class T02TitanNStates : StateMachineBuilder
 {

@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class ConcertedDissolution(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ConcertedDissolution), new AOEShapeCone(40f, 20f.Degrees()))
+sealed class ConcertedDissolution(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ConcertedDissolution, new AOEShapeCone(40f, 20f.Degrees()))
 {
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -21,7 +21,7 @@ class ConcertedDissolution(BossModule module) : Components.SimpleAOEs(module, Ac
     }
 }
 
-class LightsChain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightsChain), new AOEShapeDonut(4f, 40f))
+class LightsChain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightsChain, new AOEShapeDonut(4f, 40f))
 {
     private readonly ConcertedDissolution? _aoe = module.FindComponent<ConcertedDissolution>();
 
@@ -38,7 +38,7 @@ class LightsChain(BossModule module) : Components.SimpleAOEs(module, ActionID.Ma
     }
 }
 
-class CrossReaver(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrossReaverAOE), new AOEShapeCross(50f, 6f))
+class CrossReaver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrossReaverAOE, new AOEShapeCross(50f, 6f))
 {
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

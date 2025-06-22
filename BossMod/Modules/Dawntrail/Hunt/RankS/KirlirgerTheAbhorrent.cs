@@ -35,45 +35,24 @@ public enum AID : uint
     OdiousUproar = 39481 // Boss->self, 5.0s cast, range 40 circle
 }
 
-class Flourish(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 135f.Degrees()));
-class FightersFlourish1(BossModule module) : Flourish(module, AID.FightersFlourish1);
-class FightersFlourish2(BossModule module) : Flourish(module, AID.FightersFlourish2);
-class FightersFlourish3(BossModule module) : Flourish(module, AID.FightersFlourish3);
-class DiscordantFlourish1(BossModule module) : Flourish(module, AID.DiscordantFlourish1);
-class DiscordantFlourish2(BossModule module) : Flourish(module, AID.DiscordantFlourish2);
-class DiscordantFlourish3(BossModule module) : Flourish(module, AID.DiscordantFlourish3);
+sealed class Flourish(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FightersFlourish1, (uint)AID.FightersFlourish2, (uint)AID.FightersFlourish3,
+(uint)AID.DiscordantFlourish1, (uint)AID.DiscordantFlourish2, (uint)AID.DiscordantFlourish3], new AOEShapeCone(40f, 135f.Degrees()));
+sealed class Fullmoon(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FullmoonFuryCircle1, (uint)AID.FullmoonFuryCircle2, (uint)AID.DiscordantMoonCircle], 20f);
+sealed class DiscordantMoon(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FullmoonFuryDonut, (uint)AID.DiscordantMoonDonut1,
+(uint)AID.DiscordantMoonDonut2], new AOEShapeDonut(10f, 40f));
 
-class Fullmoon(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 20f);
-class FullmoonFuryCircle1(BossModule module) : Fullmoon(module, AID.FullmoonFuryCircle1);
-class FullmoonFuryCircle2(BossModule module) : Fullmoon(module, AID.FullmoonFuryCircle2);
-class DiscordantMoonCircle(BossModule module) : Fullmoon(module, AID.DiscordantMoonCircle);
+sealed class FlyingFist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlyingFist, new AOEShapeRect(40f, 4f));
+sealed class OdiousUproar(BossModule module) : Components.RaidwideCast(module, (uint)AID.OdiousUproar);
+sealed class EnervatingGloom(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.EnervatingGloom, 6f, 8);
 
-class DiscordantMoon(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(10f, 40f));
-class FullmoonFuryDonut(BossModule module) : DiscordantMoon(module, AID.FullmoonFuryDonut);
-class DiscordantMoonDonut1(BossModule module) : DiscordantMoon(module, AID.DiscordantMoonDonut1);
-class DiscordantMoonDonut2(BossModule module) : DiscordantMoon(module, AID.DiscordantMoonDonut2);
-
-class FlyingFist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlyingFist), new AOEShapeRect(40f, 4f));
-class OdiousUproar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OdiousUproar));
-class EnervatingGloom(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.EnervatingGloom), 6f, 8);
-
-class KirlirgerTheAbhorrentStates : StateMachineBuilder
+sealed class KirlirgerTheAbhorrentStates : StateMachineBuilder
 {
     public KirlirgerTheAbhorrentStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<FightersFlourish1>()
-            .ActivateOnEnter<FightersFlourish2>()
-            .ActivateOnEnter<FightersFlourish3>()
-            .ActivateOnEnter<DiscordantFlourish1>()
-            .ActivateOnEnter<DiscordantFlourish2>()
-            .ActivateOnEnter<DiscordantFlourish3>()
-            .ActivateOnEnter<FullmoonFuryCircle1>()
-            .ActivateOnEnter<FullmoonFuryCircle2>()
-            .ActivateOnEnter<DiscordantMoonCircle>()
-            .ActivateOnEnter<FullmoonFuryDonut>()
-            .ActivateOnEnter<DiscordantMoonDonut1>()
-            .ActivateOnEnter<DiscordantMoonDonut2>()
+            .ActivateOnEnter<Flourish>()
+            .ActivateOnEnter<Fullmoon>()
+            .ActivateOnEnter<DiscordantMoon>()
             .ActivateOnEnter<FlyingFist>()
             .ActivateOnEnter<OdiousUproar>()
             .ActivateOnEnter<EnervatingGloom>();
@@ -81,4 +60,4 @@ class KirlirgerTheAbhorrentStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 13360)]
-public class KirlirgerTheAbhorrent(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class KirlirgerTheAbhorrent(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

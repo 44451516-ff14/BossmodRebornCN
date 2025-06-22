@@ -34,20 +34,22 @@ public sealed record class PolygonCustom(IReadOnlyList<WPos> Vertices) : Shape
 {
     public override List<WDir> Contour(WPos center)
     {
-        var count = Vertices.Count;
+        var vertices = Vertices;
+        var count = vertices.Count;
         var result = new List<WDir>(count);
         for (var i = 0; i < count; ++i)
-            result.Add(Vertices[i] - center);
+            result.Add(vertices[i] - center);
         return result;
     }
 
     public override string ToString()
     {
-        var count = Vertices.Count;
-        var sb = new StringBuilder("PolygonCustom:", 14 + count * 15);
+        var vertices = Vertices;
+        var count = vertices.Count;
+        var sb = new StringBuilder("PolygonCustom:", 14 + count * 9);
         for (var i = 0; i < count; ++i)
         {
-            var vertex = Vertices[i];
+            var vertex = vertices[i];
             sb.Append(vertex.X).Append(',').Append(vertex.Z).Append(';');
         }
         --sb.Length;
@@ -65,9 +67,11 @@ public sealed record class PolygonCustomO(IReadOnlyList<WPos> Vertices, float Of
         if (path == null)
         {
             var originalPath = new Path64();
-            for (var i = 0; i < Vertices.Count; ++i)
+            var vertices = Vertices;
+            var countV = vertices.Count;
+            for (var i = 0; i < countV; ++i)
             {
-                var v = Vertices[i];
+                var v = vertices[i];
                 originalPath.Add(new Point64((long)(v.X * PolygonClipper.Scale), (long)(v.Z * PolygonClipper.Scale)));
             }
 
@@ -92,11 +96,12 @@ public sealed record class PolygonCustomO(IReadOnlyList<WPos> Vertices, float Of
 
     public override string ToString()
     {
-        var count = Vertices.Count;
-        var sb = new StringBuilder("PolygonCustomO:", 15 + count * 15);
+        var vertices = Vertices;
+        var count = vertices.Count;
+        var sb = new StringBuilder("PolygonCustomO:", 15 + count * 9);
         for (var i = 0; i < count; ++i)
         {
-            var vertex = Vertices[i];
+            var vertex = vertices[i];
             sb.Append(vertex.X).Append(',').Append(vertex.Z).Append(';');
         }
         sb.Append("Offset:").Append(Offset);

@@ -26,7 +26,7 @@ public enum AID : uint
     VoidFireIV = 7109 // Boss->location, 3.5s cast, range 10 circle
 }
 
-class BloodRain(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BloodRain), "Heavy Raidwide damage! Also killing any add that is currently up");
+class BloodRain(BossModule module) : Components.RaidwideCast(module, (uint)AID.BloodRain, "Heavy Raidwide damage! Also killing any add that is currently up");
 class BossAdds(BossModule module) : Components.AddsMulti(module, [(uint)OID.FanaticZombie, (uint)OID.FanaticSuccubus])
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -53,14 +53,14 @@ class BossAdds(BossModule module) : Components.AddsMulti(module, [(uint)OID.Fana
         }
     }
 }
-class DarkMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkMist), 10f);
-class Desolation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Desolation), new AOEShapeRect(57.3f, 3f));
-class FatalAllure(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.FatalAllure), "Boss is life stealing from the succubus");
-class SweetSteel(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SweetSteel), new AOEShapeCone(7f, 45f.Degrees()));
-class TerrorEye(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TerrorEye), 6f);
-class VoidAero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidAero), new AOEShapeRect(42f, 4f));
-class VoidFireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFireII), 5f);
-class VoidFireIV(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFireIV), 10f);
+class DarkMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkMist, 10f);
+class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(57.3f, 3f));
+class FatalAllure(BossModule module) : Components.SingleTargetCast(module, (uint)AID.FatalAllure, "Boss is life stealing from the succubus");
+class SweetSteel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SweetSteel, new AOEShapeCone(7f, 45f.Degrees()));
+class TerrorEye(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TerrorEye, 6f);
+class VoidAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidAero, new AOEShapeRect(42f, 4f));
+class VoidFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFireII, 5f);
+class VoidFireIV(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFireIV, 10f);
 
 class EncounterHints(BossModule module) : BossComponent(module)
 {

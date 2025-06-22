@@ -1,17 +1,17 @@
 namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
-class MousasScorn(BossModule module) : Components.CastSharedTankbuster(module, ActionID.MakeSpell(AID.MousasScorn), 4);
+class MousasScorn(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.MousasScorn, 4f);
 
-class HerossSundering(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.HerossSundering), new AOEShapeCone(40, 45.Degrees()), tankbuster: true);
+class HerossSundering(BossModule module) : Components.BaitAwayCast(module, (uint)AID.HerossSundering, new AOEShapeCone(40f, 45f.Degrees()), tankbuster: true);
 
-class HerossRadiance(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HerossRadiance));
-class MagossRadiance(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MagossRadiance));
-class RadiantHalo(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RadiantHalo));
-class CrystallineStoneIII(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.CrystallineStoneIII2), 6, 8, 8);
-class CrystallineBlizzardIII(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.CrystallineBlizzardIII2), 5);
-class Beacon(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Beacon), 3);
-class Beacon2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Beacon2), new AOEShapeRect(45, 3), 10);
-class HydaelynsRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HydaelynsRay), new AOEShapeRect(45, 15));
+class HerossRadiance(BossModule module) : Components.RaidwideCast(module, (uint)AID.HerossRadiance);
+class MagossRadiance(BossModule module) : Components.RaidwideCast(module, (uint)AID.MagossRadiance);
+class RadiantHalo(BossModule module) : Components.RaidwideCast(module, (uint)AID.RadiantHalo);
+class CrystallineStoneIII(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.CrystallineStoneIII2, 6f, 8, 8);
+class CrystallineBlizzardIII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.CrystallineBlizzardIII2, 5f);
+class Beacon1(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Beacon1, 3f);
+class Beacon2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Beacon2, new AOEShapeRect(45f, 3f), 10);
+class HydaelynsRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HydaelynsRay, new AOEShapeRect(45f, 15f));
 
 class T02HydaelynStates : StateMachineBuilder
 {
@@ -21,7 +21,7 @@ class T02HydaelynStates : StateMachineBuilder
             .ActivateOnEnter<ParhelicCircle>()
             .ActivateOnEnter<MousasScorn>()
             .ActivateOnEnter<Echoes>()
-            .ActivateOnEnter<Beacon>()
+            .ActivateOnEnter<Beacon1>()
             .ActivateOnEnter<Beacon2>()
             .ActivateOnEnter<CrystallineStoneIII>()
             .ActivateOnEnter<CrystallineBlizzardIII>()

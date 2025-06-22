@@ -1,8 +1,8 @@
 ﻿namespace BossMod.ReplayAnalysis;
 
-class UnknownActionEffects
+sealed class UnknownActionEffects
 {
-    class Entry(Replay replay, Replay.Action action, Replay.ActionTarget target, ActionEffect effect)
+    sealed class Entry(Replay replay, Replay.Action action, Replay.ActionTarget target, ActionEffect effect)
     {
         public Replay Replay = replay;
         public Replay.Action Action = action;

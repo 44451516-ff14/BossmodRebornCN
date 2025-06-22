@@ -25,26 +25,30 @@ public enum AID : uint
     MagitekRay = 21268 // MagitekBit->self, 2.5s cast, range 50 width 4 rect
 }
 
-class LightLeap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightLeap), 10f);
-class ChemicalMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ChemicalMissile), 12f);
-class TailMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailMissileAOE), 30f);
-class Shockwave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shockwave), 16f);
-class ExplosiveFlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ExplosiveFlare), 10f);
-class CripplingBlow(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CripplingBlow));
-class PlasmaField(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PlasmaField));
-class Towers(BossModule module) : Components.CastTowersOpenWorld(module, ActionID.MakeSpell(AID.Explosion), 6f);
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), new AOEShapeRect(50f, 2f));
+sealed class LightLeapExplosiveFlare(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LightLeap, (uint)AID.ExplosiveFlare], 10f);
+sealed class ChemicalMissile : Components.SimpleAOEs
+{
+    public ChemicalMissile(BossModule module) : base(module, (uint)AID.ChemicalMissile, 12f)
+    {
+        MaxDangerColor = 2;
+    }
+}
+sealed class TailMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailMissileAOE, 30f);
+sealed class Shockwave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shockwave, 16f);
+sealed class CripplingBlow(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CripplingBlow);
+sealed class PlasmaField(BossModule module) : Components.RaidwideCast(module, (uint)AID.PlasmaField);
+sealed class Towers(BossModule module) : Components.CastTowersOpenWorld(module, (uint)AID.Explosion, 6f);
+sealed class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(50f, 2f));
 
-class CE14VigilForLostStates : StateMachineBuilder
+sealed class CE14VigilForLostStates : StateMachineBuilder
 {
     public CE14VigilForLostStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<LightLeap>()
+            .ActivateOnEnter<LightLeapExplosiveFlare>()
             .ActivateOnEnter<ChemicalMissile>()
             .ActivateOnEnter<TailMissile>()
             .ActivateOnEnter<Shockwave>()
-            .ActivateOnEnter<ExplosiveFlare>()
             .ActivateOnEnter<CripplingBlow>()
             .ActivateOnEnter<PlasmaField>()
             .ActivateOnEnter<Towers>()
@@ -52,5 +56,10 @@ class CE14VigilForLostStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.BozjaCE, GroupID = 735, NameID = 3)] // bnpcname=9396
-public class CE14VigilForLost(WorldState ws, Actor primary) : BossModule(ws, primary, new(451f, 830f), new ArenaBoundsCircle(30f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 3)] // bnpcname=9396
+public sealed class CE14VigilForLost(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+{
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(451f, 830f), 29.5f, 32)]);
+
+    protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
+}

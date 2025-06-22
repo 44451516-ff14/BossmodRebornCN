@@ -35,7 +35,7 @@ public enum AID : uint
     ThunderlightFlurry = 36450 // Helper->player, 5.0s cast, range 6 circle
 }
 
-class DynamicDominanceArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class DynamicDominanceArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D032Firearms.ArenaCenter, 25f)], [new Square(D032Firearms.ArenaCenter, 20f)]);
     private AOEInstance? _aoe;
@@ -57,26 +57,22 @@ class DynamicDominanceArenaChange(BossModule module) : Components.GenericAOEs(mo
     }
 }
 
-class DynamicDominance(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DynamicDominance));
+sealed class DynamicDominance(BossModule module) : Components.RaidwideCast(module, (uint)AID.DynamicDominance);
 
-class ThunderlightBurstAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ThunderlightBurstAOE), 35f);
+sealed class ThunderlightBurstAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderlightBurstAOE, 35f);
 
-abstract class ThunderlightBurst(BossModule module, AID aid, float length) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(length, 4f));
-class ThunderlightBurst1(BossModule module) : ThunderlightBurst(module, AID.ThunderlightBurst1, 42f);
-class ThunderlightBurst2(BossModule module) : ThunderlightBurst(module, AID.ThunderlightBurst2, 49f);
-class ThunderlightBurst3(BossModule module) : ThunderlightBurst(module, AID.ThunderlightBurst3, 35f);
-class ThunderlightBurst4(BossModule module) : ThunderlightBurst(module, AID.ThunderlightBurst4, 36f);
+abstract class ThunderlightBurst(BossModule module, uint aid, float length) : Components.SimpleAOEs(module, aid, new AOEShapeRect(length, 4f));
+sealed class ThunderlightBurst1(BossModule module) : ThunderlightBurst(module, (uint)AID.ThunderlightBurst1, 42f);
+sealed class ThunderlightBurst2(BossModule module) : ThunderlightBurst(module, (uint)AID.ThunderlightBurst2, 49f);
+sealed class ThunderlightBurst3(BossModule module) : ThunderlightBurst(module, (uint)AID.ThunderlightBurst3, 35f);
+sealed class ThunderlightBurst4(BossModule module) : ThunderlightBurst(module, (uint)AID.ThunderlightBurst4, 36f);
 
-abstract class Artillery(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(10f, 5f));
-class Artillery1(BossModule module) : Artillery(module, AID.Artillery1);
-class Artillery2(BossModule module) : Artillery(module, AID.Artillery2);
-class Artillery3(BossModule module) : Artillery(module, AID.Artillery3);
-class Artillery4(BossModule module) : Artillery(module, AID.Artillery4);
+sealed class Artillery(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Artillery1, (uint)AID.Artillery2, (uint)AID.Artillery3, (uint)AID.Artillery4], new AOEShapeRect(10f, 5f));
 
-class Pummel(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Pummel));
-class ThunderlightFlurry(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ThunderlightFlurry), 6f);
+sealed class Pummel(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Pummel);
+sealed class ThunderlightFlurry(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderlightFlurry, 6f);
 
-class D032FirearmsStates : StateMachineBuilder
+sealed class D032FirearmsStates : StateMachineBuilder
 {
     public D032FirearmsStates(BossModule module) : base(module)
     {
@@ -88,17 +84,14 @@ class D032FirearmsStates : StateMachineBuilder
             .ActivateOnEnter<ThunderlightBurst2>()
             .ActivateOnEnter<ThunderlightBurst3>()
             .ActivateOnEnter<ThunderlightBurst4>()
-            .ActivateOnEnter<Artillery1>()
-            .ActivateOnEnter<Artillery2>()
-            .ActivateOnEnter<Artillery3>()
-            .ActivateOnEnter<Artillery4>()
+            .ActivateOnEnter<Artillery>()
             .ActivateOnEnter<Pummel>()
             .ActivateOnEnter<ThunderlightFlurry>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12888)]
-public class D032Firearms(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D032Firearms(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-85f, -155f);
     public static readonly ArenaBoundsSquare StartingBounds = new(24.5f);

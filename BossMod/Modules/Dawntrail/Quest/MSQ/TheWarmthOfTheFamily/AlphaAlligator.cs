@@ -20,7 +20,7 @@ public enum AID : uint
     CriticalBite = 40563, // Alligator->self, 25.0s cast, range 10 120-degree cone
 }
 
-class FeedingTime(BossModule module) : Components.InterceptTether(module, ActionID.MakeSpell(AID.ToxicSpit), excludedAllies: [(uint)OID.Boss])
+class FeedingTime(BossModule module) : Components.InterceptTether(module, (uint)AID.ToxicSpit, excludedAllies: [(uint)OID.Boss])
 {
     private DateTime _activation;
 
@@ -57,7 +57,7 @@ class FeedingTime(BossModule module) : Components.InterceptTether(module, Action
     }
 }
 
-class CriticalBite(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CriticalBite), new AOEShapeCone(10, 60.Degrees()));
+class CriticalBite(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CriticalBite, new AOEShapeCone(10, 60.Degrees()));
 
 class AlphaAlligatorStates : StateMachineBuilder
 {

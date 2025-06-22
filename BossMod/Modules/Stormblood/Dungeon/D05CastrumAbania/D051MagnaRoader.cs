@@ -40,38 +40,36 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (AI.AIManager.Instance?.Beh == null || _aoe.AOEs.Count == 0)
-            return;
-
-        var forbidden = new List<Func<WPos, float>>();
-        var turrets = Module.Enemies((uint)OID.MarkXLIIIMiniCannon);
-        Actor? closest = null;
-        var minDistSq = float.MaxValue;
-
-        var count = turrets.Count;
-        for (var i = 0; i < count; ++i)
+        if (_aoe.AOEs.Count != 0)
         {
-            var turret = turrets[i];
-            if (turret.IsTargetable)
+            var turrets = Module.Enemies((uint)OID.MarkXLIIIMiniCannon);
+            Actor? closest = null;
+            var minDistSq = float.MaxValue;
+
+            var count = turrets.Count;
+            for (var i = 0; i < count; ++i)
             {
-                hints.GoalZones.Add(hints.GoalSingleTarget(turret, 3f, 5f));
-                var distSq = (actor.Position - turret.Position).LengthSq();
-                if (distSq < minDistSq)
+                var turret = turrets[i];
+                if (turret.IsTargetable)
                 {
-                    minDistSq = distSq;
-                    closest = turret;
+                    hints.GoalZones.Add(hints.GoalSingleTarget(turret, 1.5f, 5f));
+                    var distSq = (actor.Position - turret.Position).LengthSq();
+                    if (distSq < minDistSq)
+                    {
+                        minDistSq = distSq;
+                        closest = turret;
+                    }
                 }
             }
-        }
-
-        if (closest != null)
-        {
-            if (minDistSq < 9f)
+            if (closest != null && minDistSq < 12.25f)
             {
+                hints.ForcedTarget = closest;
                 hints.InteractWithTarget = closest;
                 hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.MagitekPulse), null, ActionQueue.Priority.High, targetPos: Module.PrimaryActor.PosRot.XYZ());
             }
         }
+        else if (Module.PrimaryActor.FindStatus((uint)SID.Fetters) != null)
+            hints.ForcedTarget = Module.PrimaryActor;
     }
 
     public override void AddGlobalHints(GlobalHints hints)
@@ -116,15 +114,9 @@ class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
 
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = AOEs[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
-        }
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        if (count > 1)
+            aoes[0].Color = Colors.Danger;
         return aoes;
     }
 
@@ -136,7 +128,7 @@ class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (AOEs.Count > 0 && spell.Action.ID == (uint)AID.WildSpeed)
+        if (AOEs.Count != 0 && spell.Action.ID == (uint)AID.WildSpeed)
             AOEs.RemoveAt(0);
     }
 
@@ -147,9 +139,9 @@ class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MagitekPulse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekPulse), 6f);
-class MagitekFireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekFireII), 5f);
-class MagitekFireIII(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MagitekFireIII));
+class MagitekPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekPulse, 6f);
+class MagitekFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekFireII, 5f);
+class MagitekFireIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.MagitekFireIII);
 
 class D051MagnaRoaderStates : StateMachineBuilder
 {

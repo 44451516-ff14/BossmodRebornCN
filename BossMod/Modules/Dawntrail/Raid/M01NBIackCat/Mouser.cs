@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
-class ArenaChanges(BossModule module) : BossComponent(module)
+sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public static readonly WPos ArenaCenter = new(100f, 100f);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20f);
@@ -24,16 +24,16 @@ class ArenaChanges(BossModule module) : BossComponent(module)
         // 0x04, 0x05, 0x06, 0x07
         // 0x08, 0x09, 0x0A, 0x0B
         // 0x0C, 0x0D, 0x0E, 0x0F
-        if (index > 0x0F)
+        if (index > 0x0Fu)
             return;
-        if (state == 0x00020001) // tile gets damaged
+        if (state == 0x00020001u) // tile gets damaged
             DamagedCells[index] = true;
-        else if (state == 0x00200010) // tile gets broken
+        else if (state == 0x00200010u) // tile gets broken
         {
             DamagedCells[index] = false;
             DestroyedCells[index] = true;
         }
-        else if (state is 0x01000004 or 0x00800004) // tile gets repaired
+        else if (state is 0x01000004u or 0x00800004u) // tile gets repaired
         {
             DamagedCells[index] = false;
             DestroyedCells[index] = false;
@@ -79,7 +79,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
     }
 }
 
-class Mouser(BossModule module) : Components.GenericAOEs(module)
+sealed class Mouser(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(19);
     private static readonly AOEShapeRect rect = new(10f, 5f);
@@ -93,14 +93,14 @@ class Mouser(BossModule module) : Components.GenericAOEs(module)
         var total = countDanger + 4;
         var max = total > count ? count : total;
 
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
+        if (count > countDanger)
         {
-            var aoe = _aoes[i];
-            if (i < countDanger)
-                aoes[i] = count > countDanger ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            var color = Colors.Danger;
+            for (var i = 0; i < countDanger; ++i)
+            {
+                aoes[i].Color = color;
+            }
         }
         return aoes;
     }
@@ -113,7 +113,7 @@ class Mouser(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index <= 0x0F && state is 0x00020001 or 0x00200010 && _aoes.Count > 0)
+        if (index <= 0x0Fu && state is 0x00020001u or 0x00200010u && _aoes.Count != 0)
             _aoes.RemoveAt(0);
     }
 

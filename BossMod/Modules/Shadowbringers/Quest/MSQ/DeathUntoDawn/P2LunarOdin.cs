@@ -1,5 +1,4 @@
-﻿using BossMod.QuestBattle;
-using RID = BossMod.Roleplay.AID;
+﻿using RID = BossMod.Roleplay.AID;
 
 namespace BossMod.Shadowbringers.Quest.MSQ.DeathUntoDawn.P2;
 
@@ -20,7 +19,7 @@ public enum AID : uint
     RightZantetsuken = 24032, // LunarOdin->self, 4.0s cast, range 70 width 39 rect
 }
 
-class UriangerAI(WorldState ws) : UnmanagedRotation(ws, 25f)
+class UriangerAI(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
 {
     public const ushort StatusParam = 158;
 
@@ -74,22 +73,22 @@ class UriangerAI(WorldState ws) : UnmanagedRotation(ws, 25f)
         if (Player.FindStatus((uint)Roleplay.SID.DestinyDrawn) != null)
         {
             if (ComboAction == RID.DestinyDrawn)
-                UseAction(RID.LordOfCrowns, primaryTarget, -100);
+                UseAction(RID.LordOfCrowns, primaryTarget, -100f);
 
             if (ComboAction == RID.DestinysSleeve)
-                UseAction(RID.TheScroll, Player, -100);
+                UseAction(RID.TheScroll, Player, -100f);
         }
         else
         {
-            UseAction(RID.DestinyDrawn, Player, -100);
-            UseAction(RID.DestinysSleeve, Player, -100);
+            UseAction(RID.DestinyDrawn, Player, -100f);
+            UseAction(RID.DestinysSleeve, Player, -100f);
         }
 
         UseAction(RID.FixedSign, Player, -150);
     }
 }
 
-class AutoUrianger(BossModule module) : RotationModule<UriangerAI>(module);
+class AutoUrianger(BossModule module) : QuestBattle.RotationModule<UriangerAI>(module);
 class Fetters(BossModule module) : Components.Adds(module, (uint)OID.Fetters);
 
 class GunmetalSoul(BossModule module) : Components.GenericAOEs(module)
@@ -122,15 +121,12 @@ class GunmetalSoul(BossModule module) : Components.GenericAOEs(module)
         return aoes;
     }
 }
-class LunarGungnir1(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.LunarGungnir), 6f);
-class LunarGungnir2(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.LunarGungnir1), 6f);
-class Gungnir(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GungnirAOE), 10f);
-class Gagnrath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Gagnrath), new AOEShapeRect(50f, 2f));
-class GungnirSpread(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(10f), 189, ActionID.MakeSpell(AID.GungnirSpread), 5.3f, centerAtTarget: true);
-
-abstract class Zantetsuken(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(70f, 19.5f));
-class RightZantetsuken(BossModule module) : Zantetsuken(module, AID.RightZantetsuken);
-class LeftZantetsuken(BossModule module) : Zantetsuken(module, AID.LeftZantetsuken);
+class LunarGungnir1(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.LunarGungnir, 6f);
+class LunarGungnir2(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.LunarGungnir1, 6f);
+class Gungnir(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GungnirAOE, 10f);
+class Gagnrath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gagnrath, new AOEShapeRect(50f, 2f));
+class GungnirSpread(BossModule module) : Components.BaitAwayIcon(module, 10f, 189u, (uint)AID.GungnirSpread, 5.3f);
+class Zantetsuken(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightZantetsuken, (uint)AID.LeftZantetsuken], new AOEShapeRect(70f, 19.5f));
 
 public class LunarOdinStates : StateMachineBuilder
 {
@@ -145,8 +141,7 @@ public class LunarOdinStates : StateMachineBuilder
             .ActivateOnEnter<GunmetalSoul>()
             .ActivateOnEnter<LunarGungnir1>()
             .ActivateOnEnter<LunarGungnir2>()
-            .ActivateOnEnter<LeftZantetsuken>()
-            .ActivateOnEnter<RightZantetsuken>();
+            .ActivateOnEnter<Zantetsuken>();
     }
 }
 

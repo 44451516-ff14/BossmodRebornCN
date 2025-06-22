@@ -35,10 +35,10 @@ class HiemalStormVoidzone(BossModule module) : Components.Voidzone(module, 6f, G
         return voidzones[..index];
     }
 }
-class SpiralPierce(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50, 6), (uint)TetherID.SpiralPierce, ActionID.MakeSpell(AID.SpiralPierce));
-class DimensionalCollapse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DimensionalCollapseAOE), 9f);
+class SpiralPierce(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 6f), (uint)TetherID.SpiralPierce, (uint)AID.SpiralPierce);
+class DimensionalCollapse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DimensionalCollapseAOE, 9f);
 
-class FaithUnmoving(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.FaithUnmoving), true)
+class FaithUnmoving(BossModule module) : Components.GenericKnockback(module, (uint)AID.FaithUnmoving, true)
 {
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {

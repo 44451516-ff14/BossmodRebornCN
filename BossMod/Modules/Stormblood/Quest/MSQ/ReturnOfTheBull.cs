@@ -1,13 +1,14 @@
 ﻿namespace BossMod.Stormblood.Quest.MSQ.ReturnOfTheBull;
+
 public enum OID : uint
 {
     Boss = 0x1FD2,
-    Helper = 0x233C,
-    Lakshmi = 0x18D6, // R0.500, x12, Helper type
-    DreamingKshatriya = 0x1FDD, // R1.000, x0 (spawn during fight)
-    DreamingFighter = 0x1FDB, // R0.500, x0 (spawn during fight)
-    Aether = 0x1FD3, // R1.000, x0 (spawn during fight)
+    DreamingKshatriya = 0x1FDD, // R1.0
+    DreamingFighter = 0x1FDB, // R0.5
+    Aether = 0x1FD3, // R1.0
     FordolaShield = 0x1EA080,
+    Helper2 = 0x18D6,
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -15,32 +16,32 @@ public enum AID : uint
     BlissfulSpear = 9872, // Lakshmi->self, 11.0s cast, range 40 width 8 cross
     BlissfulHammer = 9874, // Lakshmi->self, no cast, range 7 circle
     ThePallOfLight = 9877, // Boss->players/1FD8, 5.0s cast, range 6 circle
-    ThePathOfLight = 9875, // Boss->self, 5.0s cast, range 40+R 120-degree cone
+    ThePathOfLight = 9875 // Boss->self, 5.0s cast, range 40+R 120-degree cone
 }
 
-class PathOfLight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ThePathOfLight), new AOEShapeCone(43.5f, 60.Degrees()));
-class BlissfulSpear(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlissfulSpear), new AOEShapeCross(40, 4));
-class ThePallOfLight(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ThePallOfLight), 6, 1);
-class BlissfulHammer(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(7), 109, ActionID.MakeSpell(AID.BlissfulHammer), 12.15f, true);
+class PathOfLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThePathOfLight, new AOEShapeCone(43.5f, 60f.Degrees()));
+class BlissfulSpear(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlissfulSpear, new AOEShapeCross(40f, 4f));
+class ThePallOfLight(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ThePallOfLight, 6f, 1);
+class BlissfulHammer(BossModule module) : Components.BaitAwayIcon(module, 7f, 109u, (uint)AID.BlissfulHammer, 12.1f);
 class FordolaShield(BossModule module) : BossComponent(module)
 {
-    public Actor? Shield => WorldState.Actors.FirstOrDefault(a => (OID)a.OID == OID.FordolaShield);
+    public Actor? Shield => WorldState.Actors.FirstOrDefault(a => a.OID == (uint)OID.FordolaShield);
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (Shield != null)
-            Arena.AddCircleFilled(Shield.Position, 4, Colors.SafeFromAOE);
+            Arena.AddCircleFilled(Shield.Position, 4f, Colors.SafeFromAOE);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Shield != null)
-            hints.AddForbiddenZone(new AOEShapeDonut(4, 100), Shield.Position, default, WorldState.FutureTime(5));
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Shield.Position, 4f), WorldState.FutureTime(5d));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (Shield != null && !actor.Position.InCircle(Shield.Position, 4))
+        if (Shield != null && !actor.Position.InCircle(Shield.Position, 4f))
             hints.Add("Go to safe zone!");
     }
 }

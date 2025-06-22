@@ -23,18 +23,18 @@ public enum SID : uint
     Invincibility = 325 // KnightOfDarkness->Boss/_Gen_FirstWard, extra=0x0
 }
 
-class Overpower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Overpower), new AOEShapeCone(7, 45.Degrees()));
-class UnlitCyclone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UnlitCyclone), 6);
-class UnlitCycloneAdds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UnlitCycloneAdds), 9);
+class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(7f, 45f.Degrees()));
+class UnlitCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnlitCyclone, 6f);
+class UnlitCycloneAdds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnlitCycloneAdds, 9f);
 
-class Skydrive(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(5), 23, ActionID.MakeSpell(AID.Skydrive), centerAtTarget: true);
-class SkydrivePuddle(BossModule module) : Components.Voidzone(module, 5, m => m.Enemies(0x1EA19C).Where(x => x.EventState != 7));
-class RollingBlade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RollingBladeCircle), 7);
-class RollingBladeCone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RollingBladeCone), new AOEShapeCone(60, 15.Degrees()));
+class Skydrive(BossModule module) : Components.BaitAwayIcon(module, 5f, 23u, (uint)AID.Skydrive);
+class SkydrivePuddle(BossModule module) : Components.Voidzone(module, 5f, m => m.Enemies(0x1EA19Cu).Where(x => x.EventState != 7));
+class RollingBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RollingBladeCircle, 7f);
+class RollingBladeCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RollingBladeCone, new AOEShapeCone(60f, 15f.Degrees()));
 
 class BladeOfLight(BossModule module) : BossComponent(module)
 {
-    public Actor? Blade => WorldState.Actors.FirstOrDefault(x => x.OID == 0x1EA19E && x.IsTargetable);
+    public Actor? Blade => WorldState.Actors.FirstOrDefault(x => x.OID == 0x1EA19Eu && x.IsTargetable);
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -43,12 +43,12 @@ class BladeOfLight(BossModule module) : BossComponent(module)
     }
 }
 
-class Adds(BossModule module) : Components.AddsMulti(module, [0x17CE, 0x17CF, 0x17D0, 0x17D1]);
+class Adds(BossModule module) : Components.AddsMulti(module, [0x17CEu, 0x17CFu, 0x17D0u, 0x17D1u]);
 class TargetPriorityHandler(BossModule module) : BossComponent(module)
 {
-    private Actor? Knight => Module.Enemies(OID.KnightOfDarkness).FirstOrDefault();
-    private Actor? Covered => WorldState.Actors.FirstOrDefault(s => s.OID != 0x18D6 && s.FindStatus(SID.Invincibility) != null);
-    private Actor? BladeOfLight => WorldState.Actors.FirstOrDefault(s => (OID)s.OID == OID.BladeOfLight && s.IsTargetable);
+    private Actor? Knight => Module.Enemies((uint)OID.KnightOfDarkness).FirstOrDefault();
+    private Actor? Covered => WorldState.Actors.FirstOrDefault(s => s.OID != 0x18D6u && s.FindStatus((uint)SID.Invincibility) != null);
+    private Actor? BladeOfLight => WorldState.Actors.FirstOrDefault(s => s.OID == (uint)OID.BladeOfLight && s.IsTargetable);
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
@@ -100,7 +100,7 @@ class TargetPriorityHandler(BossModule module) : BossComponent(module)
     }
 }
 
-class UtterDestruction(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UtterDestruction), new AOEShapeDonut(10, 20));
+class UtterDestruction(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UtterDestruction, new AOEShapeDonut(10f, 20f));
 
 class WarriorOfDarknessStates : StateMachineBuilder
 {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex3QueenEternal;
 
-class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module, default, "GTFO from broken bridge!")
+sealed class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module, default, "GTFO from broken bridge!")
 {
     private readonly List<AOEInstance> _unsafeBridges = new(4);
     private readonly List<Rectangle> _destroyedBridges = [new(new(95f, 96f), 3f, 2f), new(new(95f, 104f), 3f, 2f), new(new(105f, 96f), 3f, 2f), new(new(95f, 104f), 3f, 2f)];
@@ -25,18 +25,18 @@ class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module, defaul
         var center = Ex3QueenEternal.ArenaCenter + offset;
         switch (state)
         {
-            case 0x00020001: // destroyed bridge respawns
+            case 0x00020001u: // destroyed bridge respawns
                 _destroyedBridges.RemoveAll(s => s.Center == center);
                 UpdateArena();
                 break;
-            case 0x00200010: // bridge gets damaged
+            case 0x00200010u: // bridge gets damaged
                 _unsafeBridges.Add(new(_shape, center));
                 break;
-            case 0x00400001: // damaged bridge gets repaired
-            case 0x00080004: // bridges despawn
+            case 0x00400001u: // damaged bridge gets repaired
+            case 0x00080004u: // bridges despawn
                 RemoveUnsafeBridges();
                 break;
-            case 0x00800004: // bridge gets destroyed
+            case 0x00800004u: // bridge gets destroyed
                 RemoveUnsafeBridges();
                 _destroyedBridges.Add(new(center, 3, 2));
                 UpdateArena();
@@ -48,7 +48,7 @@ class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module, defaul
     }
 }
 
-class LawsOfIce(BossModule module) : Components.StayMove(module)
+sealed class LawsOfIce(BossModule module) : Components.StayMove(module)
 {
     public int NumCasts;
 
@@ -71,7 +71,7 @@ class LawsOfIce(BossModule module) : Components.StayMove(module)
     }
 }
 
-class Rush(BossModule module) : Components.GenericBaitAway(module)
+sealed class Rush(BossModule module) : Components.GenericBaitAway(module)
 {
     public DateTime Activation;
     private BitMask _unstretched;
@@ -163,11 +163,11 @@ class Rush(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class IceDart(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCircle(16), (uint)TetherID.IceDart, ActionID.MakeSpell(AID.IceDart), centerAtTarget: true)
+sealed class IceDart(BossModule module) : Components.BaitAwayTethers(module, 16f, (uint)TetherID.IceDart, (uint)AID.IceDart)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             ForbiddenPlayers[Raid.FindSlot(spell.MainTargetID)] = true;
@@ -175,7 +175,7 @@ class IceDart(BossModule module) : Components.BaitAwayTethers(module, new AOESha
     }
 }
 
-class RaisedTribute(BossModule module) : Components.GenericWildCharge(module, 4, ActionID.MakeSpell(AID.RaisedTribute), 80f)
+sealed class RaisedTribute(BossModule module) : Components.GenericWildCharge(module, 4f, (uint)AID.RaisedTribute, 80f)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -194,7 +194,7 @@ class RaisedTribute(BossModule module) : Components.GenericWildCharge(module, 4,
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             Source = null;

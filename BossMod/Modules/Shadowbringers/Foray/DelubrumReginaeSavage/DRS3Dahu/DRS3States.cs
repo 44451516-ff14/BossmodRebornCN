@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS3Dahu;
 
-class DRS3States : StateMachineBuilder
+sealed class DRS3DahuStates : StateMachineBuilder
 {
-    public DRS3States(BossModule module) : base(module)
+    public DRS3DahuStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase);
+        DeathPhase(default, SinglePhase);
     }
 
     private void SinglePhase(uint id)
@@ -21,15 +21,15 @@ class DRS3States : StateMachineBuilder
 
     private void Shockwave(uint id, float delay)
     {
-        CastMulti(id, [AID.LeftSidedShockwaveFirst, AID.RightSidedShockwaveFirst], delay, 3, "Shockwave 1")
+        CastMulti(id, [(uint)AID.LeftSidedShockwaveFirst, (uint)AID.RightSidedShockwaveFirst], delay, 3, "Shockwave 1")
             .ActivateOnEnter<Shockwave>();
-        CastMulti(id + 0x10, [AID.LeftSidedShockwaveSecond, AID.RightSidedShockwaveSecond], 1.6f, 1, "Shockwave 2")
+        CastMulti(id + 0x10, [(uint)AID.LeftSidedShockwaveSecond, (uint)AID.RightSidedShockwaveSecond], 1.6f, 1, "Shockwave 2")
             .DeactivateOnExit<Shockwave>();
     }
 
     private State SpitFlame(uint id, float delay)
     {
-        CastStart(id, AID.SpitFlame, delay)
+        CastStart(id, (uint)AID.SpitFlame, delay)
             .ActivateOnEnter<SpitFlame>(); // first icon appears right before cast start
         CastEnd(id + 1, 8);
         return ComponentCondition<SpitFlame>(id + 0x10, 3.7f, comp => !comp.Active, "Spits resolve")
@@ -40,14 +40,14 @@ class DRS3States : StateMachineBuilder
     {
         ComponentCondition<FallingRock>(id, delay, comp => comp.Casters.Count > 0, "Rocks 1 bait")
             .ActivateOnEnter<FallingRock>();
-        Cast(id + 0x10, AID.HotCharge, 9.5f, 3, "Charge 1") // note: large variance
+        Cast(id + 0x10, (uint)AID.HotCharge, 9.5f, 3, "Charge 1") // note: large variance
             .ActivateOnEnter<HotCharge>()
             .DeactivateOnExit<HotCharge>();
-        Cast(id + 0x20, AID.HotCharge, 1.8f, 3, "Charge 2")
+        Cast(id + 0x20, (uint)AID.HotCharge, 1.8f, 3, "Charge 2")
             .ActivateOnEnter<HotCharge>()
             .DeactivateOnExit<HotCharge>()
             .DeactivateOnExit<FallingRock>(); // last rock ends ~1.1s before cast start
-        Cast(id + 0x30, AID.Firebreathe, 1.8f, 5, "Cone")
+        Cast(id + 0x30, (uint)AID.Firebreathe, 1.8f, 5, "Cone")
             .ActivateOnEnter<Firebreathe>()
             .DeactivateOnExit<Firebreathe>();
     }
@@ -61,7 +61,7 @@ class DRS3States : StateMachineBuilder
         ComponentCondition<HeadDown>(id + 0x300, 1, comp => comp.Casters.Count == 0, "Add charges resolve", 5) // if one of the spit flame target dies, shockwave happens a bit earlier
             .DeactivateOnExit<HeadDown>();
 
-        Cast(id + 0x400, AID.FeralHowl, 1.6f, 5)
+        Cast(id + 0x400, (uint)AID.FeralHowl, 1.6f, 5)
             .ActivateOnEnter<HuntersClaw>()
             .ActivateOnEnter<FeralHowl>();
         ComponentCondition<FeralHowl>(id + 0x410, 2.1f, comp => comp.NumCasts > 0, "Knockback")
@@ -72,7 +72,7 @@ class DRS3States : StateMachineBuilder
 
     private void FirebreatheRotating(uint id, float delay, bool withHeadDown = false)
     {
-        CastStart(id, AID.FirebreatheRotating, delay)
+        CastStart(id, (uint)AID.FirebreatheRotating, delay)
             .ActivateOnEnter<FirebreatheRotating>(); // icon appears just before cast start
         CastEnd(id + 1, 5)
             .ActivateOnEnter<HeadDown>(withHeadDown);
@@ -108,7 +108,7 @@ class DRS3States : StateMachineBuilder
         ComponentCondition<Burn>(id + 0x300, 1.0f, comp => comp.CurrentBaits.Count > 0)
             .ActivateOnEnter<Burn>();
 
-        Cast(id + 0x400, AID.HystericAssault, 0.1f, 5)
+        Cast(id + 0x400, (uint)AID.HystericAssault, 0.1f, 5)
             .ActivateOnEnter<HuntersClaw>()
             .ActivateOnEnter<HystericAssault>();
         ComponentCondition<HystericAssault>(id + 0x310, 0.9f, comp => comp.NumCasts > 0, "Knockback")

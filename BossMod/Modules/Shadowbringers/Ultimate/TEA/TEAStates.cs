@@ -49,7 +49,7 @@ class TEAStates : StateMachineBuilder
         P1Throttle(id + 0x50000, 4.6f);
         P1ProteansBoth(id + 0x60000, 7.7f);
         P1PainSplashCleaves(id + 0x70000, 5.1f);
-        ActorCast(id + 0x80000, _module.BossP1, AID.Enrage, 3.1f, 4, true, "Enrage");
+        ActorCast(id + 0x80000, _module.BossP1, (uint)AID.Enrage, 3.1f, 4, true, "Enrage");
     }
 
     private void P1FluidSwing(uint id, float delay)
@@ -63,7 +63,7 @@ class TEAStates : StateMachineBuilder
     // keeps cascade component active
     private void P1Cascade(uint id, float delay)
     {
-        ActorCast(id, _module.BossP1, AID.Cascade, delay, 4, true, "Raidwide")
+        ActorCast(id, _module.BossP1, (uint)AID.Cascade, delay, 4, true, "Raidwide")
             .ActivateOnEnter<P1Cascade>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
@@ -112,7 +112,7 @@ class TEAStates : StateMachineBuilder
 
     private void P1ProteansBoss(uint id, float delay)
     {
-        ActorCast(id + 1, _module.BossP1, AID.ProteanWaveLiquidVisBoss, delay, 3, true, "Protean baited")
+        ActorCast(id + 1, _module.BossP1, (uint)AID.ProteanWaveLiquidVisBoss, delay, 3, true, "Protean baited")
             .ActivateOnEnter<P1ProteanWaveLiquidVisBoss>()
             .ActivateOnEnter<P1ProteanWaveLiquidVisHelper>()
             .DeactivateOnExit<P1ProteanWaveLiquidVisBoss>()
@@ -142,7 +142,7 @@ class TEAStates : StateMachineBuilder
             .DeactivateOnExit<P1Splash>()
             .DeactivateOnExit<P1Drainage>()
             .SetHint(StateMachine.StateHint.Raidwide);
-        ActorCastStart(id + 0x100, _module.BossP1, AID.Cascade, 1.1f, true);
+        ActorCastStart(id + 0x100, _module.BossP1, (uint)AID.Cascade, 1.1f, true);
         P1HandOfPain(id + 0x101, 1.3f, 3);
         ActorCastEnd(id + 0x102, _module.BossP1, 2.7f, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -157,7 +157,7 @@ class TEAStates : StateMachineBuilder
 
     private void P1ProteansBoth(uint id, float delay)
     {
-        ActorCast(id, _module.BossP1, AID.ProteanWaveLiquidVisBoss, delay, 3, true, "Protean baited")
+        ActorCast(id, _module.BossP1, (uint)AID.ProteanWaveLiquidVisBoss, delay, 3, true, "Protean baited")
             .ActivateOnEnter<P1ProteanWaveLiquidVisBoss>()
             .ActivateOnEnter<P1ProteanWaveLiquidVisHelper>()
             .DeactivateOnExit<P1ProteanWaveLiquidVisBoss>()
@@ -245,25 +245,25 @@ class TEAStates : StateMachineBuilder
     // keeps nisi component active
     private void P2WhirlwindDebuffs(uint id, float delay)
     {
-        ActorCastStart(id, _module.CruiseChaser, AID.Whirlwind, delay);
-        ActorCastStart(id + 1, _module.BruteJustice, AID.JudgmentNisi, 3);
+        ActorCastStart(id, _module.CruiseChaser, (uint)AID.Whirlwind, delay);
+        ActorCastStart(id + 1, _module.BruteJustice, (uint)AID.JudgmentNisi, 3);
         ActorCastEnd(id + 2, _module.CruiseChaser, 1, false, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ActorCastEnd(id + 3, _module.BruteJustice, 3, false, "Nisi")
             .ActivateOnEnter<P2Nisi>(); // debuffs are applied ~0.8s after cast end
-        ActorCast(id + 0x10, _module.BruteJustice, AID.LinkUp, 3.2f, 3, false, "Debuffs")
+        ActorCast(id + 0x10, _module.BruteJustice, (uint)AID.LinkUp, 3.2f, 3, false, "Debuffs")
             .ActivateOnEnter<P2CompressedWaterLightning>(); // debuffs & icons are applied ~0.8s after cast end
     }
 
     private void P2ChakramOpticalSightPhoton(uint id, float delay)
     {
-        ActorCastStart(id, _module.CruiseChaser, AID.OpticalSight, delay)
+        ActorCastStart(id, _module.CruiseChaser, (uint)AID.OpticalSight, delay)
             .ActivateOnEnter<P2EyeOfTheChakram>();
         ActorCastEnd(id + 1, _module.CruiseChaser, 2);
         ComponentCondition<P2EyeOfTheChakram>(id + 2, 0.9f, comp => comp.NumCasts > 0, "Chakrams")
             .ActivateOnEnter<P2HawkBlasterOpticalSight>()
             .DeactivateOnExit<P2EyeOfTheChakram>();
-        ActorCastStart(id + 0x10, _module.CruiseChaser, AID.Photon, 3.3f);
+        ActorCastStart(id + 0x10, _module.CruiseChaser, (uint)AID.Photon, 3.3f);
         ComponentCondition<P2HawkBlasterOpticalSight>(id + 0x11, 1.1f, comp => comp.NumCasts > 0, "Puddles")
             .DeactivateOnExit<P2HawkBlasterOpticalSight>();
         ActorCastEnd(id + 0x12, _module.CruiseChaser, 1.9f)
@@ -278,7 +278,7 @@ class TEAStates : StateMachineBuilder
     // keeps tornado component active
     private void P2SpinCrusherCompressedWaterLightning(uint id, float delay)
     {
-        ActorCast(id, _module.CruiseChaser, AID.SpinCrusher, delay, 3, false, "Baited cleave")
+        ActorCast(id, _module.CruiseChaser, (uint)AID.SpinCrusher, delay, 3, false, "Baited cleave")
             .ActivateOnEnter<P2SpinCrusher>()
             .DeactivateOnExit<P2SpinCrusher>();
         ComponentCondition<P2CompressedWaterLightning>(id + 0x10, 4.6f, comp => !comp.ResolveImminent, "Water/lightning 1")
@@ -290,7 +290,7 @@ class TEAStates : StateMachineBuilder
 
     private void P2MissileCommand(uint id, float delay)
     {
-        ActorCast(id, _module.BruteJustice, AID.MissileCommand, delay, 3);
+        ActorCast(id, _module.BruteJustice, (uint)AID.MissileCommand, delay, 3);
         ComponentCondition<P2EarthMissileBaited>(id + 0x10, 1.2f, comp => comp.HaveCasters, "Bait missiles")
             .ActivateOnEnter<P2EarthMissileBaited>();
         ComponentCondition<P2Enumeration>(id + 0x20, 1.9f, comp => comp.Active)
@@ -320,12 +320,12 @@ class TEAStates : StateMachineBuilder
 
     private void P2VerdictGavel(uint id, float delay)
     {
-        ActorCastStart(id, _module.BruteJustice, AID.Verdict, delay);
+        ActorCastStart(id, _module.BruteJustice, (uint)AID.Verdict, delay);
         ComponentCondition<P2CompressedWaterLightning>(id + 0x10, 2.2f, comp => !comp.ResolveImminent, "Water/lightning 2")
             .ActivateOnEnter<P2Drainage>();
         ActorCastEnd(id + 0x20, _module.BruteJustice, 1.8f); // judgment debuffs appear ~0.8s after cast end
 
-        ActorCast(id + 0x100, _module.CruiseChaser, AID.LimitCutP2, 3.2f, 2, false, "CC invuln") // note: BJ starts flarethrower cast together with CC; invuln is applied ~0.6s after cast end
+        ActorCast(id + 0x100, _module.CruiseChaser, (uint)AID.LimitCutP2, 3.2f, 2, false, "CC invuln") // note: BJ starts flarethrower cast together with CC; invuln is applied ~0.6s after cast end
             .ActivateOnEnter<P2Flarethrower>();
         ActorCastEnd(id + 0x102, _module.BruteJustice, 1.9f)
             .ActivateOnEnter<P2PlasmaShield>();
@@ -333,7 +333,7 @@ class TEAStates : StateMachineBuilder
             .DeactivateOnExit<P2Flarethrower>() // note: tornado is normally destroyed by a flarethrower, failing to do that will cause tornado to wipe the raid later
             .ExecOnExit<P2Nisi>(comp => comp.ShowPassHint = 3) // third nisi pass should happen after flarethrower bait
             .ExecOnExit<P2CompressedWaterLightning>(comp => comp.ResolveImminent = true); // resolve stacks after nisi pass
-        ActorCast(id + 0x110, _module.CruiseChaser, AID.Whirlwind, 8.0f, 4, false, "Raidwide")
+        ActorCast(id + 0x110, _module.CruiseChaser, (uint)AID.Whirlwind, 8.0f, 4, false, "Raidwide")
             .DeactivateOnExit<P2PlasmaShield>() // it's a wipe if shield is not dealth with in time
             .SetHint(StateMachine.StateHint.Raidwide);
 
@@ -341,8 +341,8 @@ class TEAStates : StateMachineBuilder
             .DeactivateOnExit<P2CompressedWaterLightning>()
             .ExecOnExit<P2Nisi>(comp => comp.ShowPassHint = 4); // fourth nisi pass should happen after last stacks, while resolving propeller wind
 
-        ActorCastStart(id + 0x300, _module.CruiseChaser, AID.PropellerWind, 12.5f);
-        ActorCastStart(id + 0x301, _module.BruteJustice, AID.Gavel, 3)
+        ActorCastStart(id + 0x300, _module.CruiseChaser, (uint)AID.PropellerWind, 12.5f);
+        ActorCastStart(id + 0x301, _module.BruteJustice, (uint)AID.Gavel, 3)
             .ActivateOnEnter<P2PropellerWind>();
         ActorCastEnd(id + 0x302, _module.CruiseChaser, 3, false, "LOS")
             .DeactivateOnExit<P2PropellerWind>();
@@ -354,12 +354,12 @@ class TEAStates : StateMachineBuilder
 
     private void P2PhotonDoubleRocketPunch(uint id, float delay)
     {
-        ActorCast(id, _module.CruiseChaser, AID.Photon, delay, 3);
+        ActorCast(id, _module.CruiseChaser, (uint)AID.Photon, delay, 3);
         ComponentCondition<P2Photon>(id + 2, 0.3f, comp => comp.NumCasts > 0, "Photon")
             .ActivateOnEnter<P2Photon>()
             .DeactivateOnExit<P2Photon>()
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ActorCast(id + 0x100, _module.BruteJustice, AID.DoubleRocketPunch, 3.4f, 4, false, "Shared tankbuster")
+        ActorCast(id + 0x100, _module.BruteJustice, (uint)AID.DoubleRocketPunch, 3.4f, 4, false, "Shared tankbuster")
             .ActivateOnEnter<P2DoubleRocketPunch>()
             .DeactivateOnExit<P2DoubleRocketPunch>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -367,7 +367,7 @@ class TEAStates : StateMachineBuilder
 
     private void P2SuperJumpApocalypticRay(uint id, float delay)
     {
-        ActorCast(id, _module.BruteJustice, AID.SuperJump, delay, 3.9f)
+        ActorCast(id, _module.BruteJustice, (uint)AID.SuperJump, delay, 3.9f)
             .ActivateOnEnter<P2SuperJump>();
         ComponentCondition<P2SuperJump>(id + 2, 0.4f, comp => comp.NumCasts > 0, "Jump")
             .DeactivateOnExit<P2SuperJump>();
@@ -380,7 +380,7 @@ class TEAStates : StateMachineBuilder
 
     private void P2Whirlwind(uint id, float delay)
     {
-        ActorCast(id, _module.CruiseChaser, AID.Whirlwind, delay, 4, false, "Raidwide")
+        ActorCast(id, _module.CruiseChaser, (uint)AID.Whirlwind, delay, 4, false, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -399,7 +399,7 @@ class TEAStates : StateMachineBuilder
     {
         ActorTargetable(id, _module.AlexPrime, false, delay)
             .SetHint(StateMachine.StateHint.DowntimeStart);
-        ActorCast(id + 0x10, _module.AlexPrime, AID.TemporalStasis, 7.5f, 8, true)
+        ActorCast(id + 0x10, _module.AlexPrime, (uint)AID.TemporalStasis, 7.5f, 8, true)
             .ActivateOnEnter<P3TemporalStasis>();
         ComponentCondition<P3TemporalStasis>(id + 0x20, 1.2f, comp => comp.Frozen, "Temporal stasis");
         ComponentCondition<P3TemporalStasis>(id + 0x30, 6.4f, comp => comp.NumCasts >= 2)
@@ -410,7 +410,7 @@ class TEAStates : StateMachineBuilder
 
     private void P3ChasteningHeat(uint id, float delay, bool longDivineSpearDelay)
     {
-        ActorCast(id, _module.AlexPrime, AID.ChasteningHeat, delay, 5, true, "Tankbuster (vuln)")
+        ActorCast(id, _module.AlexPrime, (uint)AID.ChasteningHeat, delay, 5, true, "Tankbuster (vuln)")
             .ActivateOnEnter<P3ChasteningHeat>()
             .DeactivateOnExit<P3ChasteningHeat>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -426,13 +426,13 @@ class TEAStates : StateMachineBuilder
 
     private void P3InceptionFormation(uint id, float delay)
     {
-        ActorCast(id, _module.AlexPrime, AID.InceptionFormation, delay, 4, true);
+        ActorCast(id, _module.AlexPrime, (uint)AID.InceptionFormation, delay, 4, true);
         ActorTargetable(id + 0x10, _module.AlexPrime, false, 3.1f, "Inception formation")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ComponentCondition<P3Inception1>(id + 0x20, 4.2f, comp => comp.AllSpheresSpawned)
             .ActivateOnEnter<P3Inception1>()
             .ActivateOnEnter<P3Inception2>(); // note: activated early, since spheres potentially could be intercepted early, and we track their casts to start showing hints
-        ActorCast(id + 0x30, _module.AlexPrime, AID.JudgmentCrystal, 4.2f, 3, true);
+        ActorCast(id + 0x30, _module.AlexPrime, (uint)AID.JudgmentCrystal, 4.2f, 3, true);
         // +0.7s: remaining 4 players get icon 96
         ComponentCondition<P3Inception1>(id + 0x40, 5.8f, comp => comp.CrystalsDone, "Crystals");
         ActorTargetable(id + 0x50, _module.TrueHeart, true, 0.7f);
@@ -444,7 +444,7 @@ class TEAStates : StateMachineBuilder
             .DeactivateOnExit<P3Inception2>();
 
         // debuffs (restraining x2, aggravated x2, shared) appear right before cast start
-        ActorCast(id + 0x200, _module.AlexPrime, AID.Inception, 2.2f, 5, true);
+        ActorCast(id + 0x200, _module.AlexPrime, (uint)AID.Inception, 2.2f, 5, true);
         Condition(id + 0x208, 4.0f, () => _module.TrueHeart()?.IsDead ?? true, "Heart disappears");
         ComponentCondition<P3Inception3Sacrament>(id + 0x210, 4.3f, comp => comp.NumCasts > 0, "Shared sentence")
             .ActivateOnEnter<P3Inception3Sacrament>()
@@ -452,7 +452,7 @@ class TEAStates : StateMachineBuilder
             .DeactivateOnExit<P3Inception3Debuffs>() // note: debuffs resolve ~0.3s before sacrament
             .DeactivateOnExit<P3Inception3Sacrament>();
 
-        ActorCastStart(id + 0x300, _module.BruteJustice, AID.SuperJump, 5.1f)
+        ActorCastStart(id + 0x300, _module.BruteJustice, (uint)AID.SuperJump, 5.1f)
             .ActivateOnEnter<P2SuperJump>()
             .ActivateOnEnter<P3Inception4Cleaves>();
         ComponentCondition<P3Inception4Cleaves>(id + 0x301, 0.9f, comp => comp.NumCasts >= 1);
@@ -469,19 +469,19 @@ class TEAStates : StateMachineBuilder
 
     private void P3WormholeFormation(uint id, float delay)
     {
-        ActorCast(id, _module.AlexPrime, AID.WormholeFormation, delay, 4);
+        ActorCast(id, _module.AlexPrime, (uint)AID.WormholeFormation, delay, 4);
         ActorTargetable(id + 0x10, _module.AlexPrime, false, 3.1f, "Wormhole formation")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         // +2.2s: PATE 1E43 on alex & bj & cc in their spots
         // +3.4s: CC starts casting limit cut (to 5.4)
         // +5.4s: BJ starts casting link-up (to 8.4)
-        ActorCast(id + 0x100, _module.AlexPrime, AID.VoidOfRepentance, 8.4f, 3, true)
+        ActorCast(id + 0x100, _module.AlexPrime, (uint)AID.VoidOfRepentance, 8.4f, 3, true)
             .ActivateOnEnter<P3WormholeLimitCut>() // icons appear ~0.7s after cast start
             .ActivateOnEnter<P3WormholeRepentance>()
             .ActivateOnEnter<P2EyeOfTheChakram>(); // chakrams start casts around cast end
         // +1.0s: wormholes appear
         // +1.8s: eobjanim 00010002 on wormholes
-        ActorCastStart(id + 0x110, _module.BruteJustice, AID.SuperJump, 3.2f);
+        ActorCastStart(id + 0x110, _module.BruteJustice, (uint)AID.SuperJump, 3.2f);
         ComponentCondition<P2EyeOfTheChakram>(id + 0x120, 2.7f, comp => comp.NumCasts > 0, "Chakrams")
             .ActivateOnEnter<P2SuperJump>() // TODO: reconsider activation time?..
             .DeactivateOnExit<P2EyeOfTheChakram>();
@@ -490,7 +490,7 @@ class TEAStates : StateMachineBuilder
         ComponentCondition<P2SuperJump>(id + 0x140, 0.3f, comp => comp.NumCasts > 0, "Jump")
             .DeactivateOnExit<P2SuperJump>();
 
-        ActorCastStart(id + 0x200, _module.AlexPrime, AID.SacramentWormhole, 0.8f, true)
+        ActorCastStart(id + 0x200, _module.AlexPrime, (uint)AID.SacramentWormhole, 0.8f, true)
             .ActivateOnEnter<P3ApocalypticRay>();
         // +0.6s: blasty charge @ 2
         ComponentCondition<P3ApocalypticRay>(id + 0x210, 1.6f, comp => comp.Source != null)
@@ -510,7 +510,7 @@ class TEAStates : StateMachineBuilder
         ComponentCondition<P3WormholeRepentance>(id + 0x260, 4.2f, comp => comp.NumSoaks >= 3, "Wormhole 3")
             .DeactivateOnExit<P3WormholeRepentance>();
 
-        ActorCastStart(id + 0x300, _module.AlexPrime, AID.IncineratingHeat, 1.0f, true);
+        ActorCastStart(id + 0x300, _module.AlexPrime, (uint)AID.IncineratingHeat, 1.0f, true);
         ComponentCondition<P3WormholeLimitCut>(id + 0x310, 0.1f, comp => comp.NumCasts >= 8)
             .DeactivateOnExit<P3WormholeLimitCut>();
         // +1.4s: BJ ends missile command
@@ -527,18 +527,18 @@ class TEAStates : StateMachineBuilder
 
     private void P3MegaHoly(uint id, float delay)
     {
-        ActorCast(id, _module.AlexPrime, AID.MegaHoly, delay, 4, true, "Raidwide")
+        ActorCast(id, _module.AlexPrime, (uint)AID.MegaHoly, delay, 4, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
-        ActorCast(id + 0x10, _module.AlexPrime, AID.MegaHoly, 3.2f, 4, true, "Raidwide")
+        ActorCast(id + 0x10, _module.AlexPrime, (uint)AID.MegaHoly, 3.2f, 4, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P3SummonAlexander(uint id, float delay)
     {
-        ActorCast(id, _module.AlexPrime, AID.SummonAlexander, delay, 3, true);
+        ActorCast(id, _module.AlexPrime, (uint)AID.SummonAlexander, delay, 3, true);
         ActorTargetable(id + 0x10, _module.AlexPrime, false, 6.2f, "Alex disappers");
         // +0.2s: j storm
-        ActorCast(id + 0x20, _module.AlexPrime, AID.DivineJudgment, 1.3f, 75, true, "Enrage");
+        ActorCast(id + 0x20, _module.AlexPrime, (uint)AID.DivineJudgment, 1.3f, 75, true, "Enrage");
         // +0.9s after cast start: bj targetable
         // +4.1s after cast start: j wave 1, then every 3s
     }
@@ -572,12 +572,12 @@ class TEAStates : StateMachineBuilder
 
     private State P4OrdainedMotionStillness(uint id, float delay)
     {
-        return ActorCastMulti(id, _module.PerfectAlex, [AID.OrdainedMotion, AID.OrdainedStillness], delay, 4, true, "Stay/move");
+        return ActorCastMulti(id, _module.PerfectAlex, [(uint)AID.OrdainedMotion, (uint)AID.OrdainedStillness], delay, 4, true, "Stay/move");
     }
 
     private void P4FinalWord(uint id, float delay)
     {
-        ActorCast(id, _module.PerfectAlex, AID.FinalWord, delay, 4, true)
+        ActorCast(id, _module.PerfectAlex, (uint)AID.FinalWord, delay, 4, true)
             .ActivateOnEnter<P4FinalWordDebuffs>(); // debuffs appear ~0.8s after cast
         P4OrdainedMotionStillness(id + 0x10, 3.1f)
             .ActivateOnEnter<P4FinalWordStillnessMotion>();
@@ -589,7 +589,7 @@ class TEAStates : StateMachineBuilder
 
     private void P4OpticalSight(uint id, float delay)
     {
-        ActorCastStartMulti(id, _module.PerfectAlex, [AID.OpticalSightSpread, AID.OpticalSightStack], delay, true)
+        ActorCastStartMulti(id, _module.PerfectAlex, [(uint)AID.OpticalSightSpread, (uint)AID.OpticalSightStack], delay, true)
             .ActivateOnEnter<P4OpticalSight>(); // icons appear right before cast start
         ActorCastEnd(id + 1, _module.PerfectAlex, 3, true);
         ComponentCondition<P4OpticalSight>(id + 2, 2.1f, comp => !comp.Active, "Spread/stack")
@@ -604,11 +604,11 @@ class TEAStates : StateMachineBuilder
 
     private void P4OrdainedPunishment(uint id, float delay)
     {
-        ActorCast(id, _module.PerfectAlex, AID.OrdainedCapitalPunishment, delay, 3, true)
+        ActorCast(id, _module.PerfectAlex, (uint)AID.OrdainedCapitalPunishment, delay, 3, true)
             .ActivateOnEnter<P4OrdainedCapitalPunishment>();
         ComponentCondition<P4OrdainedCapitalPunishment>(id + 0x10, 3.1f, comp => comp.NumCasts >= 1, "Shared tankbuster 1")
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ActorCastStart(id + 0x20, _module.PerfectAlex, AID.OrdainedPunishment, 1.1f, true)
+        ActorCastStart(id + 0x20, _module.PerfectAlex, (uint)AID.OrdainedPunishment, 1.1f, true)
             .SetHint(StateMachine.StateHint.Tankbuster); // second shared hit happens at the same time as cast start
         ComponentCondition<P4OrdainedCapitalPunishment>(id + 0x30, 1.0f, comp => comp.NumCasts >= 3, "Shared tankbuster 3")
             .DeactivateOnExit<P4OrdainedCapitalPunishment>()
@@ -621,9 +621,9 @@ class TEAStates : StateMachineBuilder
 
     private void P4FateCalibrationAlpha(uint id, float delay)
     {
-        ActorCast(id, _module.PerfectAlex, AID.FateProjectionAlpha, delay, 5, true)
+        ActorCast(id, _module.PerfectAlex, (uint)AID.FateProjectionAlpha, delay, 5, true)
             .ActivateOnEnter<P4FateProjection>(); // tethers appear ~1.2s after cast end
-        ActorCast(id + 0x10, _module.PerfectAlex, AID.FateCalibrationAlpha, 3.2f, 22, true)
+        ActorCast(id + 0x10, _module.PerfectAlex, (uint)AID.FateCalibrationAlpha, 3.2f, 22, true)
             .ActivateOnEnter<P4FateCalibrationAlphaStillnessMotion>()
             .ActivateOnEnter<P4FateCalibrationAlphaDebuffs>()
             .ActivateOnEnter<P4FateCalibrationAlphaSacrament>();
@@ -659,9 +659,9 @@ class TEAStates : StateMachineBuilder
 
     private void P4FateCalibrationBeta(uint id, float delay)
     {
-        ActorCast(id, _module.PerfectAlex, AID.FateProjectionBeta, delay, 5, true)
+        ActorCast(id, _module.PerfectAlex, (uint)AID.FateProjectionBeta, delay, 5, true)
             .ActivateOnEnter<P4FateProjection>(); // tethers appear ~1.2s after cast end
-        ActorCast(id + 0x10, _module.PerfectAlex, AID.FateCalibrationBeta, 3.2f, 35, true)
+        ActorCast(id + 0x10, _module.PerfectAlex, (uint)AID.FateCalibrationBeta, 3.2f, 35, true)
             .ActivateOnEnter<P4FateCalibrationBetaDebuffs>()
             .ActivateOnEnter<P4FateCalibrationBetaJJump>()
             .ActivateOnEnter<P4FateCalibrationBetaOpticalSight>()
@@ -696,8 +696,8 @@ class TEAStates : StateMachineBuilder
 
     private void P4AlmightyJudgmentIrresistibleGrace(uint id, float delay)
     {
-        ActorCast(id, _module.PerfectAlex, AID.AlmightyJudgment, delay, 3, true);
-        ActorCastStart(id + 0x10, _module.PerfectAlex, AID.IrresistibleGrace, 11.1f, true, "Exatrines 1") // first exatrine aoe happens together with cast start
+        ActorCast(id, _module.PerfectAlex, (uint)AID.AlmightyJudgment, delay, 3, true);
+        ActorCastStart(id + 0x10, _module.PerfectAlex, (uint)AID.IrresistibleGrace, 11.1f, true, "Exatrines 1") // first exatrine aoe happens together with cast start
             .ActivateOnEnter<P4AlmightyJudgment>();
         ComponentCondition<P4AlmightyJudgment>(id + 0x20, 4, comp => !comp.Active, "Exatrines 3")
             .DeactivateOnExit<P4AlmightyJudgment>();
@@ -707,9 +707,9 @@ class TEAStates : StateMachineBuilder
 
     private void P4TemporalInterference(uint id, float delay)
     {
-        ActorCast(id, _module.PerfectAlex, AID.TemporalInterference, delay, 5, true)
+        ActorCast(id, _module.PerfectAlex, (uint)AID.TemporalInterference, delay, 5, true)
             .ActivateOnEnter<P4TemporalPrison>();
-        ActorCastStart(id + 0x10, _module.PerfectAlex, AID.TemporalPrison, 3.2f, true);
+        ActorCastStart(id + 0x10, _module.PerfectAlex, (uint)AID.TemporalPrison, 3.2f, true);
         ComponentCondition<P4TemporalPrison>(id + 0x20, 10, comp => comp.NumPrisons >= 1, "Prison 1");
         ComponentCondition<P4TemporalPrison>(id + 0x21, 5, comp => comp.NumPrisons >= 2, "Prison 2");
         ComponentCondition<P4TemporalPrison>(id + 0x22, 5, comp => comp.NumPrisons >= 3, "Prison 3");

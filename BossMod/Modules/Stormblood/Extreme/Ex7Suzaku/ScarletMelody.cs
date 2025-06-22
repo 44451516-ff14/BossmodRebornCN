@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
-public class RapturousEchoTowers(BossModule module) : Components.GenericTowers(module)
+sealed class RapturousEchoTowers(BossModule module) : Components.GenericTowers(module)
 {
     private readonly int party = module.Raid.WithoutSlot(true, false, false).Length;
     private bool done;
@@ -41,7 +41,7 @@ public class RapturousEchoTowers(BossModule module) : Components.GenericTowers(m
     }
 }
 
-class ScarletMelody(BossModule module) : BossComponent(module)
+sealed class ScarletMelody(BossModule module) : BossComponent(module)
 {
     private readonly Dictionary<ulong, (WPos Position, Angle direction, DateTime time)> _towerData = [];
     private static readonly Angle a175 = 175f.Degrees();
@@ -52,10 +52,10 @@ class ScarletMelody(BossModule module) : BossComponent(module)
             return;
         Angle? direction = state switch
         {
-            0x00080004 => new Angle(), // north
-            0x02000100 => -90f.Degrees(), // east
-            0x00400020 => 180f.Degrees(), // south
-            0x10000800 => 90f.Degrees(), // west
+            0x00080004u => new Angle(), // north
+            0x02000100u => -90f.Degrees(), // east
+            0x00400020u => 180f.Degrees(), // south
+            0x10000800u => 90f.Degrees(), // west
             _ => null
         };
         if (direction != null)

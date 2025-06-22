@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex3QueenEternal;
 
 [ConfigDisplay(Order = 0x010, Parent = typeof(DawntrailConfig))]
-class Ex3QueenEternalConfig() : ConfigNode()
+sealed class Ex3QueenEternalConfig() : ConfigNode()
 {
     [PropertyDisplay("Absolute Authority: ignore flares, stack together")]
     public bool AbsoluteAuthorityIgnoreFlares = true;

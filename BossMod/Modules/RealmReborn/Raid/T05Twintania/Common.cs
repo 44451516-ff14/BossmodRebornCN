@@ -3,7 +3,7 @@
 // mechanics used for the whole fight
 class Plummet : Components.Cleave
 {
-    public Plummet(BossModule module) : base(module, ActionID.MakeSpell(AID.Plummet), new AOEShapeRect(20, 6)) // TODO: verify shape
+    public Plummet(BossModule module) : base(module, (uint)AID.Plummet, new AOEShapeRect(20, 6)) // TODO: verify shape
     {
         NextExpected = WorldState.FutureTime(6.5f);
     }
@@ -22,7 +22,7 @@ class Plummet : Components.Cleave
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             NextExpected = WorldState.FutureTime(12.5f);
     }
 }
@@ -30,7 +30,7 @@ class Plummet : Components.Cleave
 // note: happens every ~36s; various other mechanics can delay it somewhat - it seems that e.g. phase transitions don't affect the running timer...
 // note: actual hit happens ~0.2s after watched cast end and has different IDs on different phases (P2+ is stronger and inflicts debuff)
 // TODO: is it true that taunt mid cast makes OT eat debuff? is it true that boss can be single-tanked in p2+?
-class DeathSentence(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.DeathSentence))
+class DeathSentence(BossModule module) : Components.CastCounter(module, (uint)AID.DeathSentence)
 {
     public DateTime NextCastStart { get; private set; } = module.WorldState.FutureTime(18);
     public bool TankedByOT { get; private set; }
@@ -61,7 +61,7 @@ class DeathSentence(BossModule module) : Components.CastCounter(module, ActionID
         // - component gets destroyed at the end of P2 and recreated at the beginning of P4 - it takes at least 150s, which is more than any cooldowns we use
         boss.ShouldBeTanked = TankRole == assignment;
         boss.PreferProvoking = true;
-        if (Module.PrimaryActor.CastInfo?.Action == WatchedAction)
+        if (Module.PrimaryActor.CastInfo?.Action.ID == WatchedAction)
         {
             var cooldownWindowEnd = Module.PrimaryActor.CastInfo.NPCRemainingTime;
             switch (assignment)
@@ -125,9 +125,9 @@ class DeathSentence(BossModule module) : Components.CastCounter(module, ActionID
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
-            NextCastStart = WorldState.FutureTime(36);
+            NextCastStart = WorldState.FutureTime(36d);
             TankedByOT = !TankedByOT;
         }
     }

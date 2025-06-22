@@ -37,12 +37,12 @@ public enum AID : uint
     Telega = 9630 // Mandragoras/AltarMatanga->self, no cast, single-target, bonus add disappear
 }
 
-class IronJustice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronJustice), new AOEShapeCone(11.8f, 60.Degrees()));
-class Cloudcover(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Cloudcover), 6f);
-class TerrorEye(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TerrorEye), 6f);
-class VillainousRebuke(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.VillainousRebuke), 6f, 8, 8);
-class StygianRelease(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.StygianRelease));
-class StygianReleaseKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.StygianRelease), 20f, stopAtWall: true)
+class IronJustice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice, new AOEShapeCone(11.8f, 60.Degrees()));
+class Cloudcover(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Cloudcover, 6f);
+class TerrorEye(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TerrorEye, 6f);
+class VillainousRebuke(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.VillainousRebuke, 6f, 8, 8);
+class StygianRelease(BossModule module) : Components.RaidwideCast(module, (uint)AID.StygianRelease);
+class StygianReleaseKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.StygianRelease, 20f, stopAtWall: true)
 {
     private readonly TerrorEye _aoe = module.FindComponent<TerrorEye>()!;
 
@@ -59,16 +59,12 @@ class StygianReleaseKB(BossModule module) : Components.SimpleKnockbacks(module, 
     }
 }
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
 class AltarDullahanStates : StateMachineBuilder
 {
@@ -81,11 +77,7 @@ class AltarDullahanStates : StateMachineBuilder
             .ActivateOnEnter<VillainousRebuke>()
             .ActivateOnEnter<StygianRelease>()
             .ActivateOnEnter<StygianReleaseKB>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()

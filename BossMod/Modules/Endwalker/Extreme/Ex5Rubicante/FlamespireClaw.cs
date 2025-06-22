@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex5Rubicante;
 
-class FlamespireClaw(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.FlamespireClawAOE))
+class FlamespireClaw(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlamespireClawAOE)
 {
     private readonly int[] _order = new int[PartyState.MaxPartySize];
     private readonly BitMask _tethers;
@@ -41,7 +41,7 @@ class FlamespireClaw(BossModule module) : Components.GenericBaitAway(module, Act
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             CurrentBaits.Clear();
             var nextSlot = Array.IndexOf(_order, NumCasts + 1);

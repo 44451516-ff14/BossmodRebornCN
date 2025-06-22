@@ -164,21 +164,21 @@ class GoldChaser(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SacramentSforzando(BossModule module) : Components.SingleTargetCastDelay(module, ActionID.MakeSpell(AID.SacramentSforzando), ActionID.MakeSpell(AID.SacramentSforzando2), 0.8f);
-class OrisonFortissimo(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.OrisonFortissimo), ActionID.MakeSpell(AID.OrisonFortissimo2), 0.8f);
+class SacramentSforzando(BossModule module) : Components.SingleTargetCastDelay(module, (uint)AID.SacramentSforzando, (uint)AID.SacramentSforzando2, 0.8f);
+class OrisonFortissimo(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.OrisonFortissimo, (uint)AID.OrisonFortissimo2, 0.8f);
 
-abstract class DivineDiminuendoCircle(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 8f);
-class DivineDiminuendoCircle1(BossModule module) : DivineDiminuendoCircle(module, AID.DivineDiminuendoCircle1);
-class DivineDiminuendoCircle2(BossModule module) : DivineDiminuendoCircle(module, AID.DivineDiminuendoCircle2);
-class DivineDiminuendoCircle3(BossModule module) : DivineDiminuendoCircle(module, AID.DivineDiminuendoCircle3);
+abstract class DivineDiminuendoCircle(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 8f);
+class DivineDiminuendoCircle1(BossModule module) : DivineDiminuendoCircle(module, (uint)AID.DivineDiminuendoCircle1);
+class DivineDiminuendoCircle2(BossModule module) : DivineDiminuendoCircle(module, (uint)AID.DivineDiminuendoCircle2);
+class DivineDiminuendoCircle3(BossModule module) : DivineDiminuendoCircle(module, (uint)AID.DivineDiminuendoCircle3);
 
-class DivineDiminuendoDonut1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DivineDiminuendoDonut1), new AOEShapeDonut(10f, 16f));
-class DivineDiminuendoDonut2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DivineDiminuendoDonut2), new AOEShapeDonut(18f, 32f));
+class DivineDiminuendoDonut1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DivineDiminuendoDonut1, new AOEShapeDonut(10f, 16f));
+class DivineDiminuendoDonut2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DivineDiminuendoDonut2, new AOEShapeDonut(18f, 32f));
 
-abstract class ConvictionMarcato(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 2.5f));
-class ConvictionMarcato1(BossModule module) : ConvictionMarcato(module, AID.ConvictionMarcato1);
-class ConvictionMarcato2(BossModule module) : ConvictionMarcato(module, AID.ConvictionMarcato2);
-class ConvictionMarcato3(BossModule module) : ConvictionMarcato(module, AID.ConvictionMarcato3);
+abstract class ConvictionMarcato(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 2.5f));
+class ConvictionMarcato1(BossModule module) : ConvictionMarcato(module, (uint)AID.ConvictionMarcato1);
+class ConvictionMarcato2(BossModule module) : ConvictionMarcato(module, (uint)AID.ConvictionMarcato2);
+class ConvictionMarcato3(BossModule module) : ConvictionMarcato(module, (uint)AID.ConvictionMarcato3);
 
 class PenancePianissimo(BossModule module) : Components.GenericAOEs(module)
 {

@@ -34,8 +34,8 @@ public enum AID : uint
     ClassicalStone = 26850, // Helper->self, 9.0s cast, range 50 circle
 }
 
-class DemifireII(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DemifireII));
-class ElectrogeneticForce(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.ElectrogeneticForce), 6);
+class DemifireII(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DemifireII);
+class ElectrogeneticForce(BossModule module) : Components.CastTowers(module, (uint)AID.ElectrogeneticForce, 6);
 class RawRockbreaker(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10), new AOEShapeDonut(10, 20)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -56,14 +56,14 @@ class RawRockbreaker(BossModule module) : Components.ConcentricAOEs(module, [new
     }
 }
 
-class ChiBlast(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ChiBlast));
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 6);
-class ArmOfTheScholar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArmOfTheScholar), 5);
+class ChiBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.ChiBlast);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6);
+class ArmOfTheScholar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArmOfTheScholar, 5);
 
-class ClassicalFire(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ClassicalFire), 6);
-class ClassicalThunder(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ClassicalThunder), 6);
-class ClassicalBlizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ClassicalBlizzard), 6);
-class ClassicalStone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ClassicalStone), 15);
+class ClassicalFire(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ClassicalFire, 6);
+class ClassicalThunder(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ClassicalThunder, 6);
+class ClassicalBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ClassicalBlizzard, 6);
+class ClassicalStone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ClassicalStone, 15);
 
 class AncelAndMahaudStates : StateMachineBuilder
 {

@@ -15,10 +15,10 @@ public enum AID : uint
     TheSpin = 16833 // Boss->self, 3.0s cast, range 40 circle
 }
 
-class RustingClaw(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RustingClaw), new AOEShapeCone(12.025f, 60f.Degrees()));
-class TailDrive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailDrive), new AOEShapeCone(34.025f, 60f.Degrees()));
-class WordsOfWoe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WordsOfWoe), new AOEShapeRect(49.025f, 3f));
-class TheSpin(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TheSpin));
+class RustingClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RustingClaw, new AOEShapeCone(12.025f, 60f.Degrees()));
+class TailDrive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailDrive, new AOEShapeCone(34.025f, 60f.Degrees()));
+class WordsOfWoe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WordsOfWoe, new AOEShapeRect(49.025f, 3f));
+class TheSpin(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheSpin);
 
 class OPoorestPauldiaStates : StateMachineBuilder
 {

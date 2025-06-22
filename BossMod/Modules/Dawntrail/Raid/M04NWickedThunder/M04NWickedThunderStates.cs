@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 
-class M04NWickedThunderStates : StateMachineBuilder
+sealed class M04NWickedThunderStates : StateMachineBuilder
 {
     public M04NWickedThunderStates(BossModule module) : base(module)
     {

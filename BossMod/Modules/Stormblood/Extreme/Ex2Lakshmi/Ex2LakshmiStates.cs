@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Stormblood.Extreme.Ex2Lakshmi;
 
-class DivineDenial(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DivineDenial));
-class ThePallOfLight(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ThePallOfLight), 7, 8, 8);
-class InnerDemonsGaze(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.InnerDemons));
-class InnerDemonsAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InnerDemons), 7);
+class DivineDenial(BossModule module) : Components.RaidwideCast(module, (uint)AID.DivineDenial);
+class ThePallOfLight(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ThePallOfLight, 7, 8, 8);
+class InnerDemonsGaze(BossModule module) : Components.CastGaze(module, (uint)AID.InnerDemons);
+class InnerDemonsAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InnerDemons, 7);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 264, NameID = 6385)]
 public class Ex2Lakshmi : BossModule

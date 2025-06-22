@@ -48,10 +48,10 @@ class BlackTide(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BiteAndRun1(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.BiteAndRun1), 2.5f);
-class BiteAndRun2(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.BiteAndRun2), 2.5f);
-class MadStare(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.MadStare));
-class ThickFog(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ThickFog));
+class BiteAndRun1(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.BiteAndRun1, 2.5f);
+class BiteAndRun2(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.BiteAndRun2, 2.5f);
+class MadStare(BossModule module) : Components.CastGaze(module, (uint)AID.MadStare);
+class ThickFog(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThickFog);
 
 class D023ShisuiYohiStates : StateMachineBuilder
 {

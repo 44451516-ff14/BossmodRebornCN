@@ -1,7 +1,7 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V023Gorai;
 
-class Unenlightenment(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.Unenlightenment), ActionID.MakeSpell(AID.UnenlightenmentAOE), 0.5f);
-class SpikeOfFlameAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpikeOfFlameAOE), 5f);
+class Unenlightenment(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.Unenlightenment, (uint)AID.UnenlightenmentAOE, 0.5f);
+class SpikeOfFlameAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpikeOfFlameAOE, 5f);
 
 class StringSnap(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -29,12 +29,12 @@ class StringSnap(BossModule module) : Components.ConcentricAOEs(module, _shapes)
     }
 }
 
-class TorchingTorment(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6f), (uint)IconID.Tankbuster, ActionID.MakeSpell(AID.TorchingTorment), 5.9f, true, tankbuster: true);
+class TorchingTorment(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Tankbuster, (uint)AID.TorchingTorment, 5.9f, tankbuster: true);
 
-class PureShock(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PureShock));
-class HumbleHammer(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HumbleHammer), 3f);
-class FightingSpirits(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FightingSpirits));
-class BiwaBreaker(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BiwaBreakerFirst), "Raidwide x5");
+class PureShock(BossModule module) : Components.RaidwideCast(module, (uint)AID.PureShock);
+class HumbleHammer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HumbleHammer, 3f);
+class FightingSpirits(BossModule module) : Components.RaidwideCast(module, (uint)AID.FightingSpirits);
+class BiwaBreaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BiwaBreakerFirst, "Raidwide x5");
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 945, NameID = 12373, SortOrder = 4)]
 public class V023Gorai(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChange.ArenaCenter, ArenaChange.StartingBounds)

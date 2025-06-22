@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.Alliance.A32Llymlaen;
 
-class TorrentialTridentLanding(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.TorrentialTridentLanding));
+class TorrentialTridentLanding(BossModule module) : Components.CastCounter(module, (uint)AID.TorrentialTridentLanding);
 
 class TorrentialTridentAOE(BossModule module) : Components.GenericAOEs(module)
 {

@@ -25,15 +25,15 @@ public enum AID : uint
     BloodRain = 14882 // Boss->location, 3.0s cast, range 50 circle
 }
 
-class VoidFireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFireII), 5f);
-class VoidFireIV(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFireIV), 10f);
-class VoidFireIV3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidFireIV3), 6f);
-class VoidAero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidAero), new AOEShapeRect(42f, 4f));
-class DarkSabbath(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.DarkSabbath));
-class DarkMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkMist), 10f);
-class CircleOfBlood(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CircleOfBlood2), new AOEShapeDonut(10f, 20f));
-class BeguilingMist(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.BeguilingMist));
-class BloodRain(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BloodRain), "Harmless raidwide unless you failed to kill succubus in time");
+class VoidFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFireII, 5f);
+class VoidFireIV(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFireIV, 10f);
+class VoidFireIV3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidFireIV3, 6f);
+class VoidAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidAero, new AOEShapeRect(42f, 4f));
+class DarkSabbath(BossModule module) : Components.CastGaze(module, (uint)AID.DarkSabbath);
+class DarkMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkMist, 10f);
+class CircleOfBlood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleOfBlood2, new AOEShapeDonut(10f, 20f));
+class BeguilingMist(BossModule module) : Components.CastInterruptHint(module, (uint)AID.BeguilingMist);
+class BloodRain(BossModule module) : Components.RaidwideCast(module, (uint)AID.BloodRain, "Harmless raidwide unless you failed to kill succubus in time");
 
 class Hints(BossModule module) : BossComponent(module)
 {

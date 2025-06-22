@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C01ASS.C011Silkie;
 
-class PuffTracker(BossModule module) : BossComponent(module)
+sealed class PuffTracker(BossModule module) : BossComponent(module)
 {
     public List<Actor> BracingPuffs = [];
     public List<Actor> ChillingPuffs = [];

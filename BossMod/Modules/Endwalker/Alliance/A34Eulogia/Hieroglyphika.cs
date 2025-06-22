@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.Alliance.A34Eulogia;
 
 // see A31 for details; apparently there is only 1 pattern here (rotated CW or CCW)
 // unlike A31, origins are not cell centers, but south sides
-class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.HieroglyphikaAOE))
+class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AID.HieroglyphikaAOE)
 {
     public bool BindsAssigned;
     public readonly List<AOEInstance> AOEs = [];
@@ -46,7 +46,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, ActionID
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             var cnt = AOEs.RemoveAll(aoe => aoe.Origin.AlmostEqual(caster.Position, 1f));

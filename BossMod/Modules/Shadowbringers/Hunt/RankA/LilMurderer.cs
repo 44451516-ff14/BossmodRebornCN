@@ -36,11 +36,11 @@ class GoblinSlash(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class GobthunderIII(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.GobthunderIII), 20f);
-class GobthunderIIIHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.GobthunderIII));
-class GoblinPunch(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.GoblinPunch));
-class Gobhaste(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Gobhaste), "Attack speed buff");
-class GobthunderII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GobthunderII), 8f);
+class GobthunderIII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.GobthunderIII, 20f);
+class GobthunderIIIHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GobthunderIII);
+class GoblinPunch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.GoblinPunch);
+class Gobhaste(BossModule module) : Components.CastHint(module, (uint)AID.Gobhaste, "Attack speed buff");
+class GobthunderII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GobthunderII, 8f);
 
 class LilMurdererStates : StateMachineBuilder
 {

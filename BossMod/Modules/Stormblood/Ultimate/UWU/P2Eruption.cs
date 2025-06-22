@@ -2,7 +2,7 @@
 
 // TODO: is it baited on farthest dps or any roles? can subsequent eruptions bait on other targets?
 // casts are 3s long and 2s apart (overlapping)
-class P2Eruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EruptionAOE), 8)
+class P2Eruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EruptionAOE, 8)
 {
     public int NumCastsStarted;
     private BitMask _baiters;

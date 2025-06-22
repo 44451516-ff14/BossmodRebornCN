@@ -33,13 +33,13 @@ public enum TetherID : uint
     Tether23 = 23, // SmileySupporter->Boss
 }
 
-class OmnidimensionalOnslaughtAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OmnidimensionalOnslaughtAOE), new AOEShapeCone(40, 22.5f.Degrees()));
+class OmnidimensionalOnslaughtAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OmnidimensionalOnslaughtAOE, new AOEShapeCone(40, 22.5f.Degrees()));
 
-class LeapForward1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LeapForward1), 15);
-class LeapForward2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LeapForward2), 15);
+class LeapForward1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LeapForward1, 15);
+class LeapForward2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LeapForward2, 15);
 
-//class SteelBeam(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SteelBeam));
-class CircularSaw(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CircularSaw));
+//class SteelBeam(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SteelBeam);
+class CircularSaw(BossModule module) : Components.RaidwideCast(module, (uint)AID.CircularSaw);
 
 class D072FrameworkerStates : StateMachineBuilder
 {

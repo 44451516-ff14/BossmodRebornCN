@@ -41,7 +41,7 @@ class A23HaloneStates : StateMachineBuilder
 
     private void RainOfSpears(uint id, float delay)
     {
-        Cast(id, AID.RainOfSpears, delay, 4.3f);
+        Cast(id, (uint)AID.RainOfSpears, delay, 4.3f);
         ComponentCondition<RainOfSpearsFirst>(id + 0x10, 0.7f, comp => comp.NumCasts > 0, "Raidwide 1")
             .ActivateOnEnter<RainOfSpearsFirst>()
             .DeactivateOnExit<RainOfSpearsFirst>()
@@ -65,14 +65,14 @@ class A23HaloneStates : StateMachineBuilder
 
     private void Tetrapagos(uint id, float delay)
     {
-        Cast(id, AID.Tetrapagos, delay, 13)
+        Cast(id, (uint)AID.Tetrapagos, delay, 13)
             .ActivateOnEnter<Tetrapagos>();
         TetrapagosResolve(id + 0x10, 0.8f);
     }
 
     private void DoomSpear(uint id, float delay)
     {
-        Cast(id, AID.DoomSpear, delay, 7)
+        Cast(id, (uint)AID.DoomSpear, delay, 7)
             .ActivateOnEnter<DoomSpear>();
         ComponentCondition<DoomSpear>(id + 0x10, 1, comp => comp.NumCasts >= 1, "Tower 1");
         ComponentCondition<DoomSpear>(id + 0x11, 2, comp => comp.NumCasts >= 2, "Tower 2");
@@ -82,7 +82,7 @@ class A23HaloneStates : StateMachineBuilder
 
     private void SpearsThree(uint id, float delay)
     {
-        Cast(id, AID.SpearsThree, delay, 4.3f)
+        Cast(id, (uint)AID.SpearsThree, delay, 4.3f)
             .ActivateOnEnter<SpearsThree>();
         ComponentCondition<SpearsThree>(id + 0x10, 0.7f, comp => comp.NumCasts > 0, "Tankbusters")
             .DeactivateOnExit<SpearsThree>()
@@ -91,7 +91,7 @@ class A23HaloneStates : StateMachineBuilder
 
     private void ThousandfoldThrust(uint id, float delay)
     {
-        CastMulti(id, [AID.ThousandfoldThrustFirst1, AID.ThousandfoldThrustFirst2, AID.ThousandfoldThrustFirst3, AID.ThousandfoldThrustFirst4], delay, 5)
+        CastMulti(id, [(uint)AID.ThousandfoldThrustFirst1, (uint)AID.ThousandfoldThrustFirst2, (uint)AID.ThousandfoldThrustFirst3, (uint)AID.ThousandfoldThrustFirst4], delay, 5)
             .ActivateOnEnter<ThousandfoldThrust>();
         ComponentCondition<ThousandfoldThrust>(id + 0x10, 1.3f, comp => comp.NumCasts > 0, "Safe half start");
         ComponentCondition<ThousandfoldThrust>(id + 0x20, 4.3f, comp => comp.NumCasts > 4, "Safe half resolve")
@@ -100,7 +100,7 @@ class A23HaloneStates : StateMachineBuilder
 
     private void Lochos(uint id, float delay)
     {
-        CastStart(id, AID.Lochos, delay)
+        CastStart(id, (uint)AID.Lochos, delay)
             .ActivateOnEnter<Lochos1>();
         CastEnd(id + 1, 5);
         ComponentCondition<Lochos>(id + 0x10, 5.9f, comp => comp.NumCasts > 0, "Safe quarter start");
@@ -110,10 +110,10 @@ class A23HaloneStates : StateMachineBuilder
 
     private void LochosThousandfoldThrust(uint id, float delay)
     {
-        CastStart(id, AID.Lochos, delay)
+        CastStart(id, (uint)AID.Lochos, delay)
             .ActivateOnEnter<Lochos2>();
         CastEnd(id + 1, 5);
-        CastMulti(id + 0x10, [AID.ThousandfoldThrustFirst1, AID.ThousandfoldThrustFirst2, AID.ThousandfoldThrustFirst3, AID.ThousandfoldThrustFirst4], 3.5f, 5)
+        CastMulti(id + 0x10, [(uint)AID.ThousandfoldThrustFirst1, (uint)AID.ThousandfoldThrustFirst2, (uint)AID.ThousandfoldThrustFirst3, (uint)AID.ThousandfoldThrustFirst4], 3.5f, 5)
             .ActivateOnEnter<ThousandfoldThrust>();
         ComponentCondition<ThousandfoldThrust>(id + 0x20, 1.3f, comp => comp.NumCasts > 0, "Safe eighth start");
         ComponentCondition<Lochos>(id + 0x30, 4.4f, comp => comp.NumCasts > 8, "Safe eighth resolve")
@@ -126,10 +126,10 @@ class A23HaloneStates : StateMachineBuilder
 
     private void WillOfTheFury(uint id, float delay)
     {
-        Cast(id, AID.WillOfTheFury, delay, 3);
+        Cast(id, (uint)AID.WillOfTheFury, delay, 3);
         ComponentCondition<WillOfTheFury>(id + 0x10, 0.8f, comp => comp.Sequences.Count != 0)
             .ActivateOnEnter<WillOfTheFury>();
-        CastStart(id + 0x20, AID.WrathOfHalone, 3.3f);
+        CastStart(id + 0x20, (uint)AID.WrathOfHalone, 3.3f);
         ComponentCondition<WillOfTheFury>(id + 0x30, 1.7f, comp => comp.NumCasts >= 1, "Ring 1");
         ComponentCondition<WillOfTheFury>(id + 0x31, 2, comp => comp.NumCasts >= 2)
             .ActivateOnEnter<WrathOfHalone>(); // note: activate only after first ring is done (?)
@@ -144,7 +144,7 @@ class A23HaloneStates : StateMachineBuilder
 
     private void TetrapagosThrust(uint id, float delay)
     {
-        Cast(id, AID.TetrapagosThrust, delay, 13)
+        Cast(id, (uint)AID.TetrapagosThrust, delay, 13)
             .ActivateOnEnter<Tetrapagos>();
         TetrapagosResolve(id + 0x10, 0.8f);
         ComponentCondition<ThousandfoldThrust>(id + 0x20, 3.3f, comp => comp.NumCasts > 0, "Safe half start")
@@ -155,8 +155,8 @@ class A23HaloneStates : StateMachineBuilder
 
     private void Chalaza(uint id, float delay)
     {
-        Cast(id, AID.Chalaza, delay, 3);
-        CastStart(id + 0x10, AID.Tetrapagos, 5.2f)
+        Cast(id, (uint)AID.Chalaza, delay, 3);
+        CastStart(id + 0x10, (uint)AID.Tetrapagos, 5.2f)
             .ActivateOnEnter<IceDart>() // both stack & spreads start ~0.8s after previous cast end
             .ActivateOnEnter<IceRondel>();
         ComponentCondition<IceDart>(id + 0x20, 1.6f, comp => !comp.Active, "Stack/spread")

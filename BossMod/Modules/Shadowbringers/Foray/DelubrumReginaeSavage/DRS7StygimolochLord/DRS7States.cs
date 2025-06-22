@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS7StygimolochLord;
 
-class DRS7States : StateMachineBuilder
+sealed class DRS7StygimolochLordStates : StateMachineBuilder
 {
-    public DRS7States(BossModule module) : base(module)
+    public DRS7StygimolochLordStates(BossModule module) : base(module)
     {
-        SimplePhase(0, PhaseBeforeAdds, "Before adds")
+        SimplePhase(default, PhaseBeforeAdds, "Before adds")
             .ActivateOnEnter<RapidBoltsAOE>()
             .Raw.Update = () => Module.PrimaryActor.IsDestroyed || !Module.PrimaryActor.IsTargetable;
         SimplePhase(1, PhaseAdds, "Adds")
@@ -59,7 +59,7 @@ class DRS7States : StateMachineBuilder
 
     private void FoeSplitter(uint id, float delay)
     {
-        Cast(id, AID.FoeSplitter, delay, 5, "Tankbuster")
+        Cast(id, (uint)AID.FoeSplitter, delay, 5, "Tankbuster")
             .ActivateOnEnter<FoeSplitter>()
             .DeactivateOnExit<FoeSplitter>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -74,7 +74,7 @@ class DRS7States : StateMachineBuilder
 
     private void ThunderousDischarge(uint id, float delay)
     {
-        Cast(id, AID.ThunderousDischarge, delay, 5);
+        Cast(id, (uint)AID.ThunderousDischarge, delay, 5);
         ComponentCondition<ThunderousDischarge>(id + 2, 0.7f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<ThunderousDischarge>()
             .DeactivateOnExit<ThunderousDischarge>();
@@ -82,7 +82,7 @@ class DRS7States : StateMachineBuilder
 
     private void RapidBolts(uint id, float delay)
     {
-        CastStart(id, AID.RapidBolts, delay)
+        CastStart(id, (uint)AID.RapidBolts, delay)
             .ActivateOnEnter<RapidBoltsBait>();
         CastEnd(id + 1, 5, "Baited puddles")
             .DeactivateOnExit<RapidBoltsBait>();
@@ -90,14 +90,14 @@ class DRS7States : StateMachineBuilder
 
     private void ThousandTonzeSwing(uint id, float delay)
     {
-        Cast(id, AID.ThousandTonzeSwing, delay, 6, "Center aoe")
+        Cast(id, (uint)AID.ThousandTonzeSwing, delay, 6, "Center aoe")
             .ActivateOnEnter<ThousandTonzeSwing>()
             .DeactivateOnExit<ThousandTonzeSwing>();
     }
 
     private void CrushingHoof(uint id, float delay)
     {
-        Cast(id, AID.CrushingHoof, delay, 5)
+        Cast(id, (uint)AID.CrushingHoof, delay, 5)
             .ActivateOnEnter<CrushingHoof>();
         ComponentCondition<CrushingHoof>(id + 2, 1, comp => comp.NumCasts > 0, "Baited proximity")
             .DeactivateOnExit<CrushingHoof>();
@@ -105,7 +105,7 @@ class DRS7States : StateMachineBuilder
 
     private void Whack(uint id, float delay)
     {
-        Cast(id, AID.Whack, delay, 3, "Cone 1")
+        Cast(id, (uint)AID.Whack, delay, 3, "Cone 1")
             .ActivateOnEnter<Whack>();
         ComponentCondition<Whack>(id + 2, 2, comp => comp.NumCasts >= 2, "Cone 2");
         ComponentCondition<Whack>(id + 3, 2, comp => comp.NumCasts >= 3, "Cone 3")
@@ -114,13 +114,13 @@ class DRS7States : StateMachineBuilder
 
     private void MemoryOfTheLabyrinth(uint id, float delay)
     {
-        Cast(id, AID.MemoryOfTheLabyrinth, delay, 3);
+        Cast(id, (uint)AID.MemoryOfTheLabyrinth, delay, 3);
         Condition(id + 0x10, 0.9f, () => Module.Enemies(OID.StygimolochMonk).Any(a => a.IsTargetable), "Adds appear");
     }
 
     private State FatefulWords(uint id, float delay)
     {
-        Cast(id, AID.FatefulWords, delay, 5)
+        Cast(id, (uint)AID.FatefulWords, delay, 5)
             .ActivateOnEnter<FatefulWords>();
         return ComponentCondition<FatefulWords>(id + 2, 0.5f, comp => comp.NumCasts > 0, "Knockback/attract")
             .DeactivateOnExit<FatefulWords>();
@@ -128,13 +128,13 @@ class DRS7States : StateMachineBuilder
 
     private void LabyrinthineFateFatefulWords(uint id, float delay)
     {
-        Cast(id, AID.LabyrinthineFate, delay, 3);
+        Cast(id, (uint)AID.LabyrinthineFate, delay, 3);
         FatefulWords(id + 0x10, 3.3f);
     }
 
     private State DevastatingBolt(uint id, float delay)
     {
-        Cast(id, AID.DevastatingBolt, delay, 3);
+        Cast(id, (uint)AID.DevastatingBolt, delay, 3);
         return ComponentCondition<DevastatingBoltInner>(id + 0x10, 4.5f, comp => comp.NumCasts > 0, "Alcoves")
             .ActivateOnEnter<DevastatingBoltOuter>()
             .ActivateOnEnter<DevastatingBoltInner>()
@@ -144,7 +144,7 @@ class DRS7States : StateMachineBuilder
 
     private void RendingBolt(uint id, float delay)
     {
-        Cast(id, AID.RendingBolt, delay, 3, "Puddles first")
+        Cast(id, (uint)AID.RendingBolt, delay, 3, "Puddles first")
             .ActivateOnEnter<Electrocution>();
         ComponentCondition<Electrocution>(id + 0x10, 4, comp => comp.Casters.Count == 0, "Puddles last")
             .DeactivateOnExit<Electrocution>();
@@ -152,10 +152,10 @@ class DRS7States : StateMachineBuilder
 
     private void LabyrinthineFateDevastatingBoltRendingBoltFatefulWords(uint id, float delay)
     {
-        Cast(id, AID.LabyrinthineFate, delay, 3);
+        Cast(id, (uint)AID.LabyrinthineFate, delay, 3);
         DevastatingBolt(id + 0x100, 3.3f);
 
-        Cast(id + 0x200, AID.RendingBolt, 2.8f, 3, "Puddles first")
+        Cast(id + 0x200, (uint)AID.RendingBolt, 2.8f, 3, "Puddles first")
             .ActivateOnEnter<Electrocution>();
         FatefulWords(id + 0x210, 3.3f)
             .DeactivateOnExit<Electrocution>(); // last puddles resolve ~0.7s into cast
@@ -163,7 +163,7 @@ class DRS7States : StateMachineBuilder
 
     private void RendingBoltDevastatingBolt(uint id, float delay)
     {
-        Cast(id, AID.RendingBolt, delay, 3, "Puddles first")
+        Cast(id, (uint)AID.RendingBolt, delay, 3, "Puddles first")
             .ActivateOnEnter<Electrocution>();
         DevastatingBolt(id + 0x100, 1.3f)
             .DeactivateOnExit<Electrocution>(); // last puddles resolve ~0.3s before cast end

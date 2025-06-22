@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
-class Exaflare(BossModule module) : Components.Exaflare(module, 6)
+sealed class Exaflare(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

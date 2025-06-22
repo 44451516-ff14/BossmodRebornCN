@@ -16,7 +16,7 @@ public enum AID : uint
     FangsEnd = 7159 // Boss->player, no cast, single-target
 }
 
-class Douse(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, ActionID.MakeSpell(AID.Douse), GetVoidzones, 0.8f)
+class Douse(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, (uint)AID.Douse, GetVoidzones, 0.8f)
 {
     public static Actor[] GetVoidzones(BossModule module)
     {
@@ -86,8 +86,8 @@ class DousePuddle(BossModule module) : BossComponent(module)
     }
 }
 
-class Drench(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Drench), new AOEShapeCone(15.75f, 45f.Degrees()), activeWhileCasting: false);
-class Electrogenesis(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Electrogenesis), 8f);
+class Drench(BossModule module) : Components.Cleave(module, (uint)AID.Drench, new AOEShapeCone(15.75f, 45f.Degrees()), activeWhileCasting: false);
+class Electrogenesis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrogenesis, 8f);
 
 class DD170YulungguStates : StateMachineBuilder
 {

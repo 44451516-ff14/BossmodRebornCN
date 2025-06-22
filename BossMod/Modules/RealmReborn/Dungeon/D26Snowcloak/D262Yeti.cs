@@ -24,13 +24,13 @@ public enum AID : uint
     FrozenCircle = 29591, // Helper->self, 5.0s cast, range 10-40 donut
 
     FrozenSpikeVisual = 25583, // Boss->self, 4.5+0,5s cast, single-target
-    FrozenSpike = 29592, // Helper->player, 5.0s cast, range 6 circle
+    FrozenSpike = 29592 // Helper->player, 5.0s cast, range 6 circle
 }
 
-class FrozenSpike(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FrozenSpike), 5);
-class HeavySnow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySnow), 15);
-class LightSnow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightSnow), 2);
-class Buffet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Buffet), new AOEShapeCone(12, 60.Degrees()));
+class FrozenSpike(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FrozenSpike, 5);
+class HeavySnow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySnow, 15);
+class LightSnow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightSnow, 2);
+class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeCone(12, 60.Degrees()));
 
 class SpinFrozenCircle(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -57,7 +57,7 @@ class SpinFrozenCircle(BossModule module) : Components.ConcentricAOEs(module, _s
     }
 }
 
-class Northerlies(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Northerlies));
+class Northerlies(BossModule module) : Components.RaidwideCast(module, (uint)AID.Northerlies);
 
 class D262YetiStates : StateMachineBuilder
 {

@@ -41,14 +41,17 @@ public enum TetherID : uint
     BaitAway = 84 // ThornHuaca->Cymet/player
 }
 
-class TouchOfShadow(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TheTouchOfShadow));
-class MarrowOfFlame(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.TheMarrowOfFlame), 8);
-class GraceOfCalamity(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TheGraceOfCalamity), 6);
-class BurningBeamNPC(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(40, 2), (uint)TetherID.NPCBaitAway);
-class BurningBeamPlayer(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(40, 2), (uint)TetherID.BaitAway);
-class SoundOfHeat(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheSoundOfHeat), new AOEShapeCone(60, 30.Degrees()));
-class DeceitOfPain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheDeceitOfPain), 14);
-class BalmOfDisgrace(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheBalmOfDisgrace), 12);
+class TouchOfShadow(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheTouchOfShadow);
+class MarrowOfFlame(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TheMarrowOfFlame, 8f);
+class GraceOfCalamity(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TheGraceOfCalamity, 6f);
+
+abstract class BurningBeam(BossModule module, uint tetherID) : Components.BaitAwayTethers(module, new AOEShapeRect(40f, 2f), tetherID);
+class BurningBeamNPC(BossModule module) : BurningBeam(module, (uint)TetherID.NPCBaitAway);
+class BurningBeamPlayer(BossModule module) : BurningBeam(module, (uint)TetherID.BaitAway);
+
+class SoundOfHeat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheSoundOfHeat, new AOEShapeCone(60f, 30f.Degrees()));
+class DeceitOfPain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDeceitOfPain, 14f);
+class BalmOfDisgrace(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheBalmOfDisgrace, 12f);
 class ASleepDisturbedStates : StateMachineBuilder
 {
     public ASleepDisturbedStates(BossModule module) : base(module)
@@ -66,12 +69,12 @@ class ASleepDisturbedStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "croizat", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69301, NameID = 9296)]
-public class ASleepDisturbed(WorldState ws, Actor primary) : BossModule(ws, primary, new(100, 100), new ArenaBoundsSquare(19.5f))
+public class ASleepDisturbed(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(19.5f))
 {
     protected override bool CheckPull() => PrimaryActor.IsTargetable;
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        hints.PrioritizeTargetsByOID(OID.Boss, 0);
+        hints.PrioritizeTargetsByOID((uint)OID.Boss, 0);
     }
 }

@@ -16,11 +16,11 @@ public enum AID : uint
     Skylight = 35446 // AngelosMikros->self, 3.0s cast, range 6 circle
 }
 
-class RingOfSkylight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RingOfSkylight), new AOEShapeDonut(8f, 30f));
-class RingOfSkylightInterruptHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.RingOfSkylight));
-class SkylightCross(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SkylightCross), new AOEShapeCross(60f, 4f));
-class SkylightCrossInterruptHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.SkylightCross));
-class Skylight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Skylight), 6f);
+class RingOfSkylight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RingOfSkylight, new AOEShapeDonut(8f, 30f));
+class RingOfSkylightInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.RingOfSkylight);
+class SkylightCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SkylightCross, new AOEShapeCross(60f, 4f));
+class SkylightCrossInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SkylightCross);
+class Skylight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skylight, 6f);
 
 public class A30Trash2Pack1States : StateMachineBuilder
 {

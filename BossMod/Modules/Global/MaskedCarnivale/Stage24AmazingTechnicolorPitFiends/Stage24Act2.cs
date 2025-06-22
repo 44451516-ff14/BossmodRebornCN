@@ -20,12 +20,12 @@ public enum AID : uint
     Silence = 15321 // 2736->player, 5.0s cast, single-target
 }
 
-class Starstorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Starstorm), 5f);
-class Mechanogravity(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mechanogravity), 6f);
-class RagingAxe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RagingAxe), new AOEShapeCone(5f, 45f.Degrees()));
-class CondensedLibra(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CondensedLibra), "Use Diamondback!");
-class TripleHit(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.TripleHit), "Use Diamondback!");
-class Silence(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Silence));
+class Starstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Starstorm, 5f);
+class Mechanogravity(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mechanogravity, 6f);
+class RagingAxe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RagingAxe, new AOEShapeCone(5f, 45f.Degrees()));
+class CondensedLibra(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CondensedLibra, "Use Diamondback!");
+class TripleHit(BossModule module) : Components.SingleTargetCast(module, (uint)AID.TripleHit, "Use Diamondback!");
+class Silence(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Silence);
 
 class Hints2(BossModule module) : BossComponent(module)
 {

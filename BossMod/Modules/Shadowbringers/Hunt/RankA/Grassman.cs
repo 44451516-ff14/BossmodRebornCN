@@ -67,13 +67,13 @@ class ChestThump(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        hints.PredictedDamage.Add((Raid.WithSlot(false, false, true).Mask(), _activation));
+        hints.AddPredictedDamage(Raid.WithSlot(false, false, true).Mask(), _activation);
     }
 }
 
-class StoolPelt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StoolPelt), 5f);
-class Browbeat(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Browbeat));
-class Streak(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Streak), 3f);
+class StoolPelt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StoolPelt, 5f);
+class Browbeat(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Browbeat);
+class Streak(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Streak, 3f);
 
 class GrassmanStates : StateMachineBuilder
 {

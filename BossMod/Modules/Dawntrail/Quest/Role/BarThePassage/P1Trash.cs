@@ -44,13 +44,13 @@ public enum TetherID : uint
     ToxicSpitTepeke = 17, // UncannyHornedLizard->Tepeke
 }
 
-class NopalFan(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NopalFan), new AOEShapeRect(15f, 2f));
-class PulverizingPound(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PulverizingPound), 5f);
-class BodySlam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BodySlam), 6f);
-class PredatorySwoop1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PredatorySwoop1), 6f);
-class ZillionNeedles(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ZillionNeedles), 4f);
-class FlockFrenzy(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FlockFrenzy));
-class ToxicSpit(BossModule module) : Components.InterceptTether(module, ActionID.MakeSpell(AID.ToxicSpitVisual), excludedAllies: [(uint)OID.Boss])
+class NopalFan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NopalFan, new AOEShapeRect(15f, 2f));
+class PulverizingPound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PulverizingPound, 5f);
+class BodySlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BodySlam, 6f);
+class PredatorySwoop1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PredatorySwoop1, 6f);
+class ZillionNeedles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ZillionNeedles, 4f);
+class FlockFrenzy(BossModule module) : Components.RaidwideCast(module, (uint)AID.FlockFrenzy);
+class ToxicSpit(BossModule module) : Components.InterceptTether(module, (uint)AID.ToxicSpitVisual, excludedAllies: [(uint)OID.Boss])
 {
     private DateTime _activation;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

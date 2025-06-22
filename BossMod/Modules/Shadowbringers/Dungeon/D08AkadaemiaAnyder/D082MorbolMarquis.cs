@@ -25,27 +25,27 @@ public enum AID : uint
     Blossom = 15891 // Boss->self, 4.0s cast, single-target
 }
 
-class ArborStorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ArborStorm));
+class ArborStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.ArborStorm);
 
-abstract class Leash(BossModule module, AID aid) : Components.SingleTargetEventDelay(module, ActionID.MakeSpell(aid), ActionID.MakeSpell(AID.Lash), 3.4f)  // actual delay can be higher since boss needs to run into melee range for it
+abstract class Leash(BossModule module, uint aid) : Components.SingleTargetEventDelay(module, aid, (uint)AID.Lash, 3.4f)  // actual delay can be higher since boss needs to run into melee range for it
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (Targets.Count != 0 && spell.Action != ActionVisual && spell.Action != ActionVisual)  // it seems like sometimes the tankbuster gets skipped and it does it twice next time
+        if (Targets.Count != 0 && spell.Action.ID != ActionVisual && spell.Action.ID != ActionVisual)  // it seems like sometimes the tankbuster gets skipped and it does it twice next time
             Targets.Clear();
     }
 }
 
-class LeashSapShower(BossModule module) : Leash(module, AID.SapShowerVisual);
-class LeashPutridBreath(BossModule module) : Leash(module, AID.PutridBreath);
+class LeashSapShower(BossModule module) : Leash(module, (uint)AID.SapShowerVisual);
+class LeashPutridBreath(BossModule module) : Leash(module, (uint)AID.PutridBreath);
 
-class SapShower(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SapShower), 8);
+class SapShower(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SapShower, 8);
 
 class ExtensibleTendrilsPutridBreath(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCross cross = new(25, 3);
-    private static readonly Angle a45 = 45.Degrees();
-    private static readonly AOEShapeCone cone = new(25, a45);
+    private static readonly AOEShapeCross cross = new(25f, 3f);
+    private static readonly Angle a45 = 45f.Degrees();
+    private static readonly AOEShapeCone cone = new(25f, a45);
     private AOEInstance? _aoe;
     private DateTime activation;
     private int remainingCasts;
@@ -104,8 +104,8 @@ class BlossomArenaChanges(BossModule module) : BossComponent(module)
         {
             Arena.Bounds = state switch
             {
-                0x00100020 => D082MorbolMarquis.YellowBlossomBounds,
-                0x00010002 => D082MorbolMarquis.BlueBlossomBounds,
+                0x00100020u => D082MorbolMarquis.YellowBlossomBounds,
+                0x00010002u => D082MorbolMarquis.BlueBlossomBounds,
                 _ => D082MorbolMarquis.DefaultBounds
             };
         }

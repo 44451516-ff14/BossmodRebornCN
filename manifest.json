@@ -2,6 +2,7 @@
   "Author": "The Combat Reborn Team",
   "Name": "BossMod Reborn",
   "InternalName": "BossModReborn",
+  "RepoUrl": "https://github.com/FFXIV-CombatReborn/BossmodReborn",
   "Description": "A bunch of utilities to simplify boss mechanics",
   "ApplicableVersion": "any",
   "Tags": [
@@ -13,7 +14,7 @@
     "raids",
     "trials"
   ],
-  "DalamudApiLevel": 11,
+  "DalamudApiLevel": 12,
   "LoadRequiredState": 0,
   "LoadSync": false,
   "CanUnloadAsync": false,

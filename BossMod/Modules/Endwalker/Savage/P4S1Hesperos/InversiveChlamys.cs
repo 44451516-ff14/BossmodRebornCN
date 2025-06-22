@@ -32,7 +32,7 @@ class InversiveChlamys(BossModule module) : BossComponent(module)
             }
         }
 
-        _tetherTargets = _tetherInAOE = new();
+        _tetherTargets = _tetherInAOE = default;
         if (_tetherForbidden.None())
             return;
 

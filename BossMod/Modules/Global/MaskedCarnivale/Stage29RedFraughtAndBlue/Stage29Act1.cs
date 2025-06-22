@@ -32,16 +32,16 @@ public enum SID : uint
     Pyretic = 960 // Boss->player, extra=0x0
 }
 
-class FluidSwing(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.FluidSwing));
-class FluidSwingKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.FluidSwing), 50f, kind: Kind.DirForward);
-class SeaOfFlames(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SeaOfFlames), 6f);
-class FireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireII), 5f);
-class PillarOfFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarOfFlame), 8f);
-class PillarOfFlame2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarOfFlame2), 8f);
-class Rush(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Rush), "GTFO from boss! (Distance based charge)");
-class FlareStar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlareStar), 10f);
-class FireBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireBlast), new AOEShapeRect(74f, 2f));
-class PyreticHint(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Pyretic), "Pyretic, stop everything! Dodge the AOE after it runs out.");
+class FluidSwing(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FluidSwing);
+class FluidSwingKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FluidSwing, 50f, kind: Kind.DirForward);
+class SeaOfFlames(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeaOfFlames, 6f);
+class FireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireII, 5f);
+class PillarOfFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarOfFlame, 8f);
+class PillarOfFlame2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarOfFlame2, 8f);
+class Rush(BossModule module) : Components.CastHint(module, (uint)AID.Rush, "GTFO from boss! (Distance based charge)");
+class FlareStar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlareStar, 10f);
+class FireBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireBlast, new AOEShapeRect(74f, 2f));
+class PyreticHint(BossModule module) : Components.CastHint(module, (uint)AID.Pyretic, "Pyretic, stop everything! Dodge the AOE after it runs out.");
 
 class Pyretic(BossModule module) : Components.StayMove(module)
 {

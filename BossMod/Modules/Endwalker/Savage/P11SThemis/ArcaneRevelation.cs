@@ -79,5 +79,5 @@ class DismissalOverruling(BossModule module) : Components.GenericKnockback(modul
     }
 }
 
-class InnerLight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InnerLight), 13f);
-class OuterDark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OuterDark), new AOEShapeDonut(8f, 50f));
+class InnerLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InnerLight, 13f);
+class OuterDark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OuterDark, new AOEShapeDonut(8f, 50f));

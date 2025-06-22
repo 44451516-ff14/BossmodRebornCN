@@ -26,11 +26,11 @@ public enum AID : uint
     Scoop = 21768 // KeeperOfKeys->self, 4.0s cast, range 15 120-degree cone
 }
 
-class Buffet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Buffet), new AOEShapeCone(11f, 60f.Degrees()));
-class Inhale(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InhaleBoss), new AOEShapeCone(20f, 60f.Degrees()));
-class InhalePull(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.InhaleBoss), 20f, false, 1, new AOEShapeCone(20f, 60f.Degrees()), Kind.TowardsOrigin, default, true);
-class HeavyScrapline(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavyScrapline), 11f);
-class MoldyPhlegm(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.MoldyPhlegm), GetVoidzones, 1.4f)
+class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeCone(11f, 60f.Degrees()));
+class Inhale(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InhaleBoss, new AOEShapeCone(20f, 60f.Degrees()));
+class InhalePull(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.InhaleBoss, 20f, false, 1, new AOEShapeCone(20f, 60f.Degrees()), Kind.TowardsOrigin, default, true);
+class HeavyScrapline(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavyScrapline, 11f);
+class MoldyPhlegm(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.MoldyPhlegm, GetVoidzones, 1.4f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -50,11 +50,11 @@ class MoldyPhlegm(BossModule module) : Components.VoidzoneAtCastTarget(module, 6
         return voidzones[..index];
     }
 }
-class MoldySneeze(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.MoldySneeze), new AOEShapeCone(12f, 60f.Degrees()));
+class MoldySneeze(BossModule module) : Components.Cleave(module, (uint)AID.MoldySneeze, new AOEShapeCone(12f, 60f.Degrees()));
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretKeeperStates : StateMachineBuilder
 {

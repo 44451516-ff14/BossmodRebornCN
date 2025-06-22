@@ -11,9 +11,6 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 {
     public static readonly BossModuleConfig Config = Service.Config.Get<BossModuleConfig>();
     private WPos _center = center;
-#pragma warning disable IDE0032
-    private ArenaBounds _bounds = bounds;
-#pragma warning restore IDE0032
     private readonly TriangulationCache _triCache = new();
 
     public WPos Center
@@ -31,29 +28,29 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     public ArenaBounds Bounds
     {
-        get => _bounds;
+        get;
         set
         {
-            if (!ReferenceEquals(_bounds, value))
+            if (!ReferenceEquals(field, value))
             {
-                _bounds = value;
+                field = value;
                 _triCache.Invalidate();
             }
         }
-    }
+    } = bounds;
 
-    public float ScreenHalfSize => 150 * Config.ArenaScale;
-    public float ScreenMarginSize => 20 * Config.ArenaScale;
+    public float ScreenHalfSize => 150f * Config.ArenaScale;
+    public float ScreenMarginSize => 20f * Config.ArenaScale;
 
     // these are set at the beginning of each draw
     public Vector2 ScreenCenter;
     private Angle _cameraAzimuth;
     private float _cameraSinAzimuth;
-    private float _cameraCosAzimuth = 1;
+    private float _cameraCosAzimuth = 1f;
 
-    public bool InBounds(WPos position) => _bounds.Contains(position - _center);
-    public WPos ClampToBounds(WPos position) => _center + _bounds.ClampToBounds(position - _center);
-    public float IntersectRayBounds(WPos rayOrigin, WDir rayDir) => _bounds.IntersectRay(rayOrigin - _center, rayDir);
+    public bool InBounds(WPos position) => Bounds.Contains(position - _center);
+    public WPos ClampToBounds(WPos position) => _center + Bounds.ClampToBounds(position - _center);
+    public float IntersectRayBounds(WPos rayOrigin, WDir rayDir) => Bounds.IntersectRay(rayOrigin - _center, rayDir);
 
     // prepare for drawing - set up internal state, clip rect etc.
     public void Begin(Angle cameraAzimuth)
@@ -66,7 +63,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var cursor = ImGui.GetCursorScreenPos();
         ImGui.Dummy(fullSize);
 
-        if (_bounds.ScreenHalfSize != ScreenHalfSize)
+        if (Bounds.ScreenHalfSize != ScreenHalfSize)
         {
             Bounds.ScreenHalfSize = ScreenHalfSize;
             _triCache.Invalidate();
@@ -86,7 +83,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
         if (Config.OpaqueArenaBackground)
         {
-            Zone(_bounds.ShapeTriangulation, Colors.Background);
+            Zone(Bounds.ShapeTriangulation, Colors.Background);
         }
     }
 
@@ -112,51 +109,41 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     private Vector2 WorldOffsetToScreenOffset(WDir worldOffset)
     {
-        return ScreenHalfSize * RotatedCoords(new(worldOffset.X, worldOffset.Z)) / _bounds.Radius;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static Vector2 TransformCoords(WDir worldOffset, float screenHalfSize, float cosAzimuth, float sinAzimuth, float invRadius)
-    {
-        var x0 = worldOffset.X;
-        var z0 = worldOffset.Z;
-        var x = x0 * cosAzimuth - z0 * sinAzimuth;
-        var z = z0 * cosAzimuth + x0 * sinAzimuth;
-        return screenHalfSize * new Vector2(x, z) * invRadius;
+        return ScreenHalfSize * RotatedCoords(new(worldOffset.X, worldOffset.Z)) / Bounds.Radius;
     }
 
     // unclipped primitive rendering that accept world-space positions; thin convenience wrappers around drawlist api
-    public void AddLine(WPos a, WPos b, uint color = 0, float thickness = 1)
+    public void AddLine(WPos a, WPos b, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         if (Config.ShowOutlinesAndShadows)
-            ImGui.GetWindowDrawList().AddLine(WorldPositionToScreenPosition(a), WorldPositionToScreenPosition(b), Colors.Shadows, thickness + 1);
-        ImGui.GetWindowDrawList().AddLine(WorldPositionToScreenPosition(a), WorldPositionToScreenPosition(b), color != 0 ? color : Colors.Danger, thickness);
+            ImGui.GetWindowDrawList().AddLine(WorldPositionToScreenPosition(a), WorldPositionToScreenPosition(b), Colors.Shadows, thickness + 1f);
+        ImGui.GetWindowDrawList().AddLine(WorldPositionToScreenPosition(a), WorldPositionToScreenPosition(b), color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddTriangle(WPos p1, WPos p2, WPos p3, uint color = 0, float thickness = 1)
+    public void AddTriangle(WPos p1, WPos p2, WPos p3, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
-        ImGui.GetWindowDrawList().AddTriangle(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != 0 ? color : Colors.Danger, thickness);
+        ImGui.GetWindowDrawList().AddTriangle(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddTriangleFilled(WPos p1, WPos p2, WPos p3, uint color = 0)
+    public void AddTriangleFilled(WPos p1, WPos p2, WPos p3, uint color = default)
     {
-        ImGui.GetWindowDrawList().AddTriangleFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != 0 ? color : Colors.Danger);
+        ImGui.GetWindowDrawList().AddTriangleFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != default ? color : Colors.Danger);
     }
 
-    public void AddQuad(WPos p1, WPos p2, WPos p3, WPos p4, uint color = 0, float thickness = 1)
+    public void AddQuad(WPos p1, WPos p2, WPos p3, WPos p4, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
-        ImGui.GetWindowDrawList().AddQuad(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != 0 ? color : Colors.Danger, thickness);
+        ImGui.GetWindowDrawList().AddQuad(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddQuadFilled(WPos p1, WPos p2, WPos p3, WPos p4, uint color = 0)
+    public void AddQuadFilled(WPos p1, WPos p2, WPos p3, WPos p4, uint color = default)
     {
-        ImGui.GetWindowDrawList().AddQuadFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != 0 ? color : Colors.Danger);
+        ImGui.GetWindowDrawList().AddQuadFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != default ? color : Colors.Danger);
     }
 
-    public void AddRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, uint color, float thickness = 1)
+    public void AddRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, uint color, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         var side = halfWidth * direction.OrthoR();
@@ -165,32 +152,32 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         AddQuad(front + side, front - side, back - side, back + side, color, thickness);
     }
 
-    public void AddCircle(WPos center, float radius, uint color = 0, float thickness = 1)
+    public void AddCircle(WPos center, float radius, uint color = default, float thickness = 1f)
     {
-        var radiusscreenhalfsize = radius / _bounds.Radius * ScreenHalfSize;
+        var radiusscreenhalfsize = radius / Bounds.Radius * ScreenHalfSize;
         thickness *= Config.ThicknessScale;
         if (Config.ShowOutlinesAndShadows)
-            ImGui.GetWindowDrawList().AddCircle(WorldPositionToScreenPosition(center), radiusscreenhalfsize, Colors.Shadows, 0, thickness + 1);
-        ImGui.GetWindowDrawList().AddCircle(WorldPositionToScreenPosition(center), radiusscreenhalfsize, color != 0 ? color : Colors.Danger, 0, thickness);
+            ImGui.GetWindowDrawList().AddCircle(WorldPositionToScreenPosition(center), radiusscreenhalfsize, Colors.Shadows, default, thickness + 1f);
+        ImGui.GetWindowDrawList().AddCircle(WorldPositionToScreenPosition(center), radiusscreenhalfsize, color != default ? color : Colors.Danger, default, thickness);
     }
 
-    public void AddCircleFilled(WPos center, float radius, uint color = 0)
+    public void AddCircleFilled(WPos center, float radius, uint color = default)
     {
-        ImGui.GetWindowDrawList().AddCircleFilled(WorldPositionToScreenPosition(center), radius / _bounds.Radius * ScreenHalfSize, color != 0 ? color : Colors.Danger);
+        ImGui.GetWindowDrawList().AddCircleFilled(WorldPositionToScreenPosition(center), radius / Bounds.Radius * ScreenHalfSize, color != default ? color : Colors.Danger);
     }
 
-    public void AddCone(WPos center, float radius, Angle centerDirection, Angle halfAngle, uint color = 0, float thickness = 1)
+    public void AddCone(WPos center, float radius, Angle centerDirection, Angle halfAngle, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         var sCenter = WorldPositionToScreenPosition(center);
         var sDir = Angle.HalfPi - centerDirection.Rad + _cameraAzimuth.Rad;
         var drawlist = ImGui.GetWindowDrawList();
         drawlist.PathLineTo(sCenter);
-        drawlist.PathArcTo(sCenter, radius / _bounds.Radius * ScreenHalfSize, sDir - halfAngle.Rad, sDir + halfAngle.Rad);
-        drawlist.PathStroke(color != 0 ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
+        drawlist.PathArcTo(sCenter, radius / Bounds.Radius * ScreenHalfSize, sDir - halfAngle.Rad, sDir + halfAngle.Rad);
+        drawlist.PathStroke(color != default ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
     }
 
-    public void AddDonutCone(WPos center, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle, uint color = 0, float thickness = 1)
+    public void AddDonutCone(WPos center, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         var sCenter = WorldPositionToScreenPosition(center);
@@ -198,12 +185,14 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var drawlist = ImGui.GetWindowDrawList();
         var sDirP = sDir + halfAngle.Rad;
         var sDirN = sDir - halfAngle.Rad;
-        drawlist.PathArcTo(sCenter, innerRadius / Bounds.Radius * ScreenHalfSize, sDirP, sDirN);
-        drawlist.PathArcTo(sCenter, outerRadius / Bounds.Radius * ScreenHalfSize, sDirN, sDirP);
-        drawlist.PathStroke(color != 0 ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
+        var radius = Bounds.Radius;
+        var screenHalfSize = ScreenHalfSize;
+        drawlist.PathArcTo(sCenter, innerRadius / radius * screenHalfSize, sDirP, sDirN);
+        drawlist.PathArcTo(sCenter, outerRadius / radius * screenHalfSize, sDirN, sDirP);
+        drawlist.PathStroke(color != default ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
     }
 
-    public void AddCapsule(WPos start, WDir direction, float radius, float length, uint color = 0, float thickness = 1)
+    public void AddCapsule(WPos start, WDir direction, float radius, float length, uint color = default, float thickness = 1f)
     {
         var dirNorm = direction.Normalized();
         var halfLengthdirNorm = dirNorm * length * 0.5f;
@@ -213,7 +202,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
         var drawList = ImGui.GetWindowDrawList();
 
-        var screenRadius = radius / _bounds.Radius * ScreenHalfSize;
+        var screenRadius = radius / Bounds.Radius * ScreenHalfSize;
         var screenCapsuleStart = WorldPositionToScreenPosition(capsuleStart);
         var screenCapsuleEnd = WorldPositionToScreenPosition(capsuleEnd);
 
@@ -238,35 +227,35 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         // Arc around capsuleStart from sDirAngle + π/2 to sDirAngle - π/2
         drawList.PathArcTo(screenCapsuleStart, screenRadius, dirPHalfPI, dirMHalfPI);
 
-        drawList.PathStroke(color != 0 ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
+        drawList.PathStroke(color != default ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
     }
 
-    public void AddPolygon(ReadOnlySpan<WPos> vertices, uint color = 0, float thickness = 1)
+    public void AddPolygon(ReadOnlySpan<WPos> vertices, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         var len = vertices.Length;
         for (var i = 0; i < len; ++i)
             PathLineTo(vertices[i]);
-        PathStroke(true, color != 0 ? color : Colors.Danger, thickness);
+        PathStroke(true, color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddPolygon(IEnumerable<WPos> vertices, uint color = 0, float thickness = 1)
+    public void AddPolygon(IEnumerable<WPos> vertices, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         foreach (var p in vertices)
             PathLineTo(p);
-        PathStroke(true, color != 0 ? color : Colors.Danger, thickness);
+        PathStroke(true, color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddPolygonTransformed(WPos center, WDir rotation, ReadOnlySpan<WDir> vertices, uint color, float thickness = 1)
+    public void AddPolygonTransformed(WPos center, WDir rotation, ReadOnlySpan<WDir> vertices, uint color, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         foreach (var p in vertices)
             PathLineTo(center + p.Rotate(rotation));
-        PathStroke(true, color != 0 ? color : Colors.Danger, thickness);
+        PathStroke(true, color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddComplexPolygon(WPos center, WDir rotation, RelSimplifiedComplexPolygon poly, uint color, float thickness = 1)
+    public void AddComplexPolygon(WPos center, WDir rotation, RelSimplifiedComplexPolygon poly, uint color, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
 
@@ -287,67 +276,77 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     // adds a bunch of points corresponding to arc - if path is non empty, this adds an edge from last point to first arc point
     public void PathArcTo(WPos center, float radius, float amin, float amax)
     {
-        ImGui.GetWindowDrawList().PathArcTo(WorldPositionToScreenPosition(center), radius / _bounds.Radius * ScreenHalfSize, Angle.HalfPi - amin + _cameraAzimuth.Rad, Angle.HalfPi - amax + _cameraAzimuth.Rad);
+        ImGui.GetWindowDrawList().PathArcTo(WorldPositionToScreenPosition(center), radius / Bounds.Radius * ScreenHalfSize, Angle.HalfPi - amin + _cameraAzimuth.Rad, Angle.HalfPi - amax + _cameraAzimuth.Rad);
     }
 
-    public static void PathStroke(bool closed, uint color = 0, float thickness = 1)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void PathStroke(bool closed, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
-        ImGui.GetWindowDrawList().PathStroke(color != 0 ? color : Colors.Danger, closed ? ImDrawFlags.Closed : ImDrawFlags.None, thickness);
+        ImGui.GetWindowDrawList().PathStroke(color != default ? color : Colors.Danger, closed ? ImDrawFlags.Closed : ImDrawFlags.None, thickness);
     }
 
-    public static void PathFillConvex(uint color = 0)
+    public static void PathFillConvex(uint color = default)
     {
-        ImGui.GetWindowDrawList().PathFillConvex(color != 0 ? color : Colors.Danger);
+        ImGui.GetWindowDrawList().PathFillConvex(color != default ? color : Colors.Danger);
     }
 
     // draw clipped & triangulated zone
-    public void Zone(List<RelTriangle> triangulation, uint color = 0)
+    public void Zone(List<RelTriangle> triangulation, uint color = default)
     {
         var drawlist = ImGui.GetWindowDrawList();
         var restoreFlags = drawlist.Flags;
         drawlist.Flags &= ~ImDrawListFlags.AntiAliasedFill;
-
-        var count = triangulation.Count;
-        var col = color != 0 ? color : Colors.AOE;
+        var triangles = CollectionsMarshal.AsSpan(triangulation);
+        var len = triangles.Length;
+        var col = color != default ? color : Colors.AOE;
         var center = ScreenCenter;
 
         var cosAzimuth = _cameraCosAzimuth;
         var sinAzimuth = _cameraSinAzimuth;
         var screenHalfSize = ScreenHalfSize;
-        var invRadius = 1f / _bounds.Radius;
+        var invRadius = 1f / Bounds.Radius;
 
-        for (var i = 0; i < count; ++i)
+        for (var i = 0; i < len; ++i)
         {
-            var tri = triangulation[i];
-            var a = TransformCoords(tri.A, screenHalfSize, cosAzimuth, sinAzimuth, invRadius);
-            var b = TransformCoords(tri.B, screenHalfSize, cosAzimuth, sinAzimuth, invRadius);
-            var c = TransformCoords(tri.C, screenHalfSize, cosAzimuth, sinAzimuth, invRadius);
+            ref readonly var tri = ref triangles[i];
+            var a = TransformCoords(tri.A);
+            var b = TransformCoords(tri.B);
+            var c = TransformCoords(tri.C);
             drawlist.AddTriangleFilled(center + a, center + b, center + c, col);
         }
 
         drawlist.Flags = restoreFlags;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        Vector2 TransformCoords(WDir worldOffset)
+        {
+            var x0 = worldOffset.X;
+            var z0 = worldOffset.Z;
+            var x = x0 * cosAzimuth - z0 * sinAzimuth;
+            var z = z0 * cosAzimuth + x0 * sinAzimuth;
+            return screenHalfSize * new Vector2(x, z) * invRadius;
+        }
     }
 
     // draw zones - these are filled primitives clipped to arena border; note that triangulation is cached
     public void ZoneCone(WPos center, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(1, center, innerRadius, outerRadius, centerDirection, halfAngle)] ??= _bounds.ClipAndTriangulateCone(center - Center, innerRadius, outerRadius, centerDirection, halfAngle), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(1, center, innerRadius, outerRadius, centerDirection, halfAngle)] ??= Bounds.ClipAndTriangulateCone(center - Center, innerRadius, outerRadius, centerDirection, halfAngle), color);
     public void ZoneCircle(WPos center, float radius, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(2, center, radius)] ??= _bounds.ClipAndTriangulateCircle(center - Center, radius), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(2, center, radius)] ??= Bounds.ClipAndTriangulateCircle(center - Center, radius), color);
     public void ZoneDonut(WPos center, float innerRadius, float outerRadius, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(3, center, innerRadius, outerRadius)] ??= _bounds.ClipAndTriangulateDonut(center - Center, innerRadius, outerRadius), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(3, center, innerRadius, outerRadius)] ??= Bounds.ClipAndTriangulateDonut(center - Center, innerRadius, outerRadius), color);
     public void ZoneTri(WPos a, WPos b, WPos c, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(4, a, b, c)] ??= _bounds.ClipAndTriangulateTri(a - Center, b - Center, c - Center), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(4, a, b, c)] ??= Bounds.ClipAndTriangulateTri(a - Center, b - Center, c - Center), color);
     public void ZoneIsoscelesTri(WPos apex, WDir height, WDir halfBase, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(5, apex, height, halfBase)] ??= _bounds.ClipAndTriangulateIsoscelesTri(apex - Center, height, halfBase), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(5, apex, height, halfBase)] ??= Bounds.ClipAndTriangulateIsoscelesTri(apex - Center, height, halfBase), color);
     public void ZoneIsoscelesTri(WPos apex, Angle direction, Angle halfAngle, float height, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(6, apex, direction, halfAngle, height)] ??= _bounds.ClipAndTriangulateIsoscelesTri(apex - Center, direction, halfAngle, height), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(6, apex, direction, halfAngle, height)] ??= Bounds.ClipAndTriangulateIsoscelesTri(apex - Center, direction, halfAngle, height), color);
     public void ZoneRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(7, origin, direction, lenFront, lenBack, halfWidth)] ??= _bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(7, origin, direction, lenFront, lenBack, halfWidth)] ??= Bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth), color);
     public void ZoneRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(8, origin, direction, lenFront, lenBack, halfWidth)] ??= _bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(8, origin, direction, lenFront, lenBack, halfWidth)] ??= Bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth), color);
     public void ZoneRect(WPos start, WPos end, float halfWidth, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(9, start, end, halfWidth)] ??= _bounds.ClipAndTriangulateRect(start - Center, end - Center, halfWidth), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(9, start, end, halfWidth)] ??= Bounds.ClipAndTriangulateRect(start - Center, end - Center, halfWidth), color);
     public void ZoneComplex(WPos origin, Angle direction, RelSimplifiedComplexPolygon poly, uint color)
         => Zone(_triCache[TriangulationCache.GetKeyHash(10, origin, direction, poly)] ?? Bounds.ClipAndTriangulate(poly.Transform(origin - Center, direction.ToDirection())), color);
     public void ZonePoly(object key, WPos[] contour, uint color)
@@ -362,25 +361,25 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             {
                 adjustedContour[i] = contour[i] - Center;
             }
-            triangulation = _bounds.ClipAndTriangulate(adjustedContour);
+            triangulation = Bounds.ClipAndTriangulate(adjustedContour);
             _triCache[hash] = triangulation;
         }
         Zone(triangulation, color);
     }
     public void ZoneRelPoly(object key, WDir[] relContour, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(12, key)] ??= _bounds.ClipAndTriangulate(relContour), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(12, key)] ??= Bounds.ClipAndTriangulate(relContour), color);
     public void ZoneRelPoly(int key, RelSimplifiedComplexPolygon poly, uint color)
-        => Zone(_triCache[key] ??= _bounds.ClipAndTriangulate(poly), color);
+        => Zone(_triCache[key] ??= Bounds.ClipAndTriangulate(poly), color);
     public void ZoneCapsule(WPos start, WDir direction, float radius, float length, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(12, start, direction, radius, length)] ??= _bounds.ClipAndTriangulateCapsule(start - Center, direction, radius, length), color);
+        => Zone(_triCache[TriangulationCache.GetKeyHash(12, start, direction, radius, length)] ??= Bounds.ClipAndTriangulateCapsule(start - Center, direction, radius, length), color);
 
-    public void TextScreen(Vector2 center, string text, uint color, float fontSize = 17)
+    public void TextScreen(Vector2 center, string text, uint color, float fontSize = 17f)
     {
         var size = ImGui.CalcTextSize(text) * Config.ArenaScale;
         ImGui.GetWindowDrawList().AddText(ImGui.GetFont(), fontSize * Config.ArenaScale, center - size * 0.5f, color, text);
     }
 
-    public void TextWorld(WPos center, string text, uint color, float fontSize = 17)
+    public void TextWorld(WPos center, string text, uint color, float fontSize = 17f)
     {
         TextScreen(WorldPositionToScreenPosition(center), text, color, fontSize);
     }
@@ -390,29 +389,31 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     public void Border(uint color)
     {
         var dl = ImGui.GetWindowDrawList();
-        var count = _bounds.ShapeSimplified.Parts.Count;
+        var parts = Bounds.ShapeSimplified.Parts;
+        var count = parts.Count;
         for (var i = 0; i < count; ++i)
         {
-            var part = _bounds.ShapeSimplified.Parts[i];
+            var part = parts[i];
             Vector2? lastPoint = null;
-            var exteriorLen = part.Exterior.Length;
+            var partExt = part.Exterior;
+            var exteriorLen = partExt.Length;
             for (var j = 0; j < exteriorLen; ++j)
             {
-                var offset = part.Exterior[j];
+                var offset = partExt[j];
                 var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(offset);
                 if (lastPoint != currentPoint)
                     dl.PathLineTo(currentPoint);
                 lastPoint = currentPoint;
             }
 
-            dl.PathStroke(color, ImDrawFlags.Closed, 2);
-
-            var lenHoles = part.Holes.Length;
+            dl.PathStroke(color, ImDrawFlags.Closed, 2f);
+            var holes = part.Holes;
+            var lenHoles = holes.Length;
             for (var l = 0; l < lenHoles; ++l)
             {
                 lastPoint = null;
 
-                var holeInteriorPoints = part.Interior(part.Holes[l]);
+                var holeInteriorPoints = part.Interior(holes[l]);
                 var interiorLen = holeInteriorPoints.Length;
                 for (var k = 0; k < interiorLen; ++k)
                 {
@@ -423,22 +424,22 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
                     lastPoint = currentPoint;
                 }
 
-                dl.PathStroke(color, ImDrawFlags.Closed, 2);
+                dl.PathStroke(color, ImDrawFlags.Closed, 2f);
             }
         }
     }
 
     public void CardinalNames()
     {
-        var offCenter = (ScreenHalfSize + ScreenMarginSize * 0.5f) * _bounds.ScaleFactor;
+        var center = ScreenCenter;
         var fontSetting = Config.CardinalsFontSize;
-        var sizeoffset = fontSetting - 17;
-        var offS = RotatedCoords(new(0, offCenter + sizeoffset));
-        var offE = RotatedCoords(new(offCenter + sizeoffset, 0));
-        TextScreen(ScreenCenter - offS, "N", Colors.CardinalN, fontSetting);
-        TextScreen(ScreenCenter + offS, "S", Colors.CardinalS, fontSetting);
-        TextScreen(ScreenCenter + offE, "E", Colors.CardinalE, fontSetting);
-        TextScreen(ScreenCenter - offE, "W", Colors.CardinalW, fontSetting);
+        var offCenterSizeOffset = (ScreenHalfSize + ScreenMarginSize * 0.5f) * Bounds.ScaleFactor + fontSetting - 17f;
+        var offS = RotatedCoords(new(default, offCenterSizeOffset));
+        var offE = RotatedCoords(new(offCenterSizeOffset, default));
+        TextScreen(center - offS, "N", Colors.CardinalN, fontSetting);
+        TextScreen(center + offS, "S", Colors.CardinalS, fontSetting);
+        TextScreen(center + offE, "E", Colors.CardinalE, fontSetting);
+        TextScreen(center - offE, "W", Colors.CardinalW, fontSetting);
     }
 
     public void ActorInsideBounds(WPos position, Angle rotation, uint color)
@@ -453,7 +454,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var positionscale035pscale0433 = positionscale035 + scale0433;
         var positionscale035mscale0433 = positionscale035 - scale0433;
         if (Config.ShowOutlinesAndShadows)
-            AddTriangle(positionscale07, positionscale035pscale0433, positionscale035mscale0433, Colors.Shadows, 2);
+            AddTriangle(positionscale07, positionscale035pscale0433, positionscale035mscale0433, Colors.Shadows, 2f);
         AddTriangleFilled(positionscale07, positionscale035pscale0433, positionscale035mscale0433, color);
     }
 
@@ -479,7 +480,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
         var dir = to - from;
         var l = dir.Length();
-        if (l == 0)
+        if (l == default)
             return; // can't determine projection direction
 
         dir /= l;
@@ -496,26 +497,24 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
             ActorOutsideBounds(ClampToBounds(position), rotation, color);
     }
 
-    public void Actor(Actor? actor, uint color = 0, bool allowDeadAndUntargetable = false)
+    public void Actor(Actor? actor, uint color = default, bool allowDeadAndUntargetable = false)
     {
         if (actor != null && !actor.IsDestroyed && (allowDeadAndUntargetable || actor.IsTargetable && !actor.IsDead))
-            Actor(actor.Position, actor.Rotation, color == 0 ? Colors.Enemy : color);
+            Actor(actor.Position, actor.Rotation, color == default ? Colors.Enemy : color);
     }
 
-    public void Actors(IEnumerable<Actor> actors, uint color = 0, bool allowDeadAndUntargetable = false)
+    public void Actors(IEnumerable<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false)
     {
         foreach (var a in actors)
-            Actor(a, color == 0 ? Colors.Enemy : color, allowDeadAndUntargetable);
+            Actor(a, color == default ? Colors.Enemy : color, allowDeadAndUntargetable);
     }
 
-    public void Actors(List<Actor> actors, uint color = 0, bool allowDeadAndUntargetable = false)
+    public void Actors(List<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false)
     {
         var count = actors.Count;
-        if (count == 0)
-            return;
         for (var i = 0; i < count; ++i)
         {
-            Actor(actors[i], color == 0 ? Colors.Enemy : color, allowDeadAndUntargetable);
+            Actor(actors[i], color == default ? Colors.Enemy : color, allowDeadAndUntargetable);
         }
     }
 

@@ -14,7 +14,7 @@ namespace BossMod;
 public sealed class ModuleViewer : IDisposable
 {
     private record struct ModuleInfo(BossModuleRegistry.Info Info, string Name, int SortOrder);
-    private record struct ModuleGroupInfo(string Name, uint Id, uint SortOrder, uint Icon = 0);
+    private record struct ModuleGroupInfo(string Name, uint Id, uint SortOrder, uint Icon = default);
     private record struct ModuleGroup(ModuleGroupInfo Info, List<ModuleInfo> Modules);
 
     private readonly PlanDatabase? _planDB;
@@ -105,14 +105,14 @@ public sealed class ModuleViewer : IDisposable
 
         foreach (var groups in _groups)
         {
-            groups.SortBy(g => g.Info.SortOrder);
+            groups.Sort((a, b) => a.Info.SortOrder.CompareTo(b.Info.SortOrder));
             foreach (var (g1, g2) in groups.Pairwise())
                 if (g1.Info.SortOrder == g2.Info.SortOrder)
                     Service.Log($"[ModuleViewer] Same sort order between groups {g1.Info} and {g2.Info}");
 
             foreach (var g in groups)
             {
-                g.Modules.SortBy(m => m.SortOrder);
+                g.Modules.Sort((a, b) => a.SortOrder.CompareTo(b.SortOrder));
                 foreach (var (m1, m2) in g.Modules.Pairwise())
                     if (m1.SortOrder == m2.SortOrder)
                         Service.Log($"[ModuleViewer] Same sort order between modules {m1.Info.ModuleType.FullName} and {m2.Info.ModuleType.FullName}");
@@ -302,6 +302,16 @@ public sealed class ModuleViewer : IDisposable
                 return (new("Removed Content", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.BaldesionArsenal:
                 return (new("Baldesion Arsenal", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+            case BossModuleInfo.GroupType.CastrumLacusLitore:
+                return (new("Castrum Lacus Litore", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+            case BossModuleInfo.GroupType.TheDaldriada:
+                return (new("The Daldriada", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+            case BossModuleInfo.GroupType.TheForkedTowerBlood:
+                return (new("The Forked Tower: Blood", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+            case BossModuleInfo.GroupType.ForayFATE:
+                var fateRowBozjaSkirmish = Service.LuminaRow<Fate>(module.NameID)!.Value;
+                var skirmishName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} FATE";
+                return (new(skirmishName, groupId, groupId), new(module, $"{fateRowBozjaSkirmish.Name}", module.SortOrder));
             case BossModuleInfo.GroupType.Quest:
                 var questRow = Service.LuminaRow<Quest>(module.GroupID)!.Value;
                 groupId |= questRow.JournalGenre.RowId;
@@ -313,7 +323,7 @@ public sealed class ModuleViewer : IDisposable
             case BossModuleInfo.GroupType.Hunt:
                 groupId |= module.GroupID;
                 return (new($"{module.Expansion.ShortName()} Hunt {(BossModuleInfo.HuntRank)module.GroupID}", groupId, groupId, _iconHunt), new(module, BNpcName(module.NameID), module.SortOrder));
-            case BossModuleInfo.GroupType.BozjaCE:
+            case BossModuleInfo.GroupType.CriticalEngagement:
                 groupId |= module.GroupID;
                 var ceName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} CE";
                 return (new(ceName, groupId, groupId), new(module, Service.LuminaRow<DynamicEvent>(module.NameID)!.Value.Name.ToString(), module.SortOrder));

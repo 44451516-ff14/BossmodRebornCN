@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex2ZoraalJa;
 
 // TODO: consider improving this somehow? too many ways to resolve...
-class ProjectionOfTurmoil(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.MightOfVollok))
+sealed class ProjectionOfTurmoil(BossModule module) : Components.CastCounter(module, (uint)AID.MightOfVollok)
 {
     private readonly List<Actor> _line = module.Enemies((uint)OID.ProjectionOfTurmoil);
     private BitMask _targets;

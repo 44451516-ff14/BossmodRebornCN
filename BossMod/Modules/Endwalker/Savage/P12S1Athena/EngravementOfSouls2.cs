@@ -70,7 +70,7 @@ class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
 
 class EngrameventOfSouls2Spread(BossModule module) : Components.GenericStackSpread(module, true, false)
 {
-    public int NumCasts { get; private set; }
+    public int NumCasts;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {

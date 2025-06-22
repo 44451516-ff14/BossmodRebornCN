@@ -17,8 +17,8 @@ public enum AID : uint
     Nicker = 37518 // Boss->self, 4.0s cast, range 12 circle
 }
 
-class BurningBright(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BurningBright), new AOEShapeRect(47, 3));
-class Nicker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Nicker), 12);
+class BurningBright(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningBright, new AOEShapeRect(47, 3));
+class Nicker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Nicker, 12);
 
 class TheWingedSteedStates : StateMachineBuilder
 {

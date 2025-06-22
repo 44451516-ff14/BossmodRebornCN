@@ -23,7 +23,7 @@ public enum AID : uint
     SkullDasher = 25182, // Boss->player, 5.0s cast, single-target, tankbuster
 }
 
-class PillarPierceAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarPierceAOE), new AOEShapeRect(40, 2))
+class PillarPierceAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarPierceAOE, new AOEShapeRect(40, 2))
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -73,8 +73,8 @@ class PunishingSlice(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class IcePillar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IcePillar), 4f);
-class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.HeavySmash), 6f, 4, 4)
+class IcePillar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcePillar, 4f);
+class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeavySmash, 6f, 4, 4)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -95,8 +95,8 @@ class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, Ac
         base.AddAIHints(slot, actor, assignment, hints);
     }
 }
-class SkullDasher(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SkullDasher));
-class FrigidStomp(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FrigidStomp));
+class SkullDasher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SkullDasher);
+class FrigidStomp(BossModule module) : Components.RaidwideCast(module, (uint)AID.FrigidStomp);
 
 class D041LyssaStates : StateMachineBuilder
 {

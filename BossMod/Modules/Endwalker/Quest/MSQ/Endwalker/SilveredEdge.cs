@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
-class SilveredEdge(BossModule module) : Components.GenericAOEs(module)
+sealed class SilveredEdge(BossModule module) : Components.GenericAOEs(module)
 {
     private DateTime _activation;
     private bool active;
     private bool casting;
     private Angle _rotation;
-    private static readonly Angle a120 = 120f.Degrees(), a240 = 240f.Degrees();
+
     private static readonly AOEShapeRect rect = new(40f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -14,19 +14,11 @@ class SilveredEdge(BossModule module) : Components.GenericAOEs(module)
         if (active)
         {
             var pos = Module.PrimaryActor.Position;
-            var aoes = new AOEInstance[3];
-            if (casting)
+            Span<AOEInstance> aoes = new AOEInstance[3];
+            var angle = casting ? Angle.FromDirection(actor.Position - pos) : _rotation;
+            for (var i = 0; i < 3; ++i)
             {
-                var angle = Angle.FromDirection(actor.Position - pos);
-                aoes[0] = new(rect, pos, angle, _activation);
-                aoes[1] = new(rect, pos, angle + a120, _activation);
-                aoes[2] = new(rect, pos, angle + a240, _activation);
-            }
-            else
-            {
-                aoes[0] = new(rect, pos, _rotation, _activation);
-                aoes[1] = new(rect, pos, _rotation + a120, _activation);
-                aoes[2] = new(rect, pos, _rotation + a240, _activation);
+                aoes[i] = new(rect, pos, angle + i * 120f.Degrees(), _activation);
             }
             return aoes;
         }

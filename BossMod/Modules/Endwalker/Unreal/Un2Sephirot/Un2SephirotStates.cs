@@ -60,7 +60,7 @@ class Un2SephirotStates : StateMachineBuilder
 
     private void P1Chesed(uint id, float delay)
     {
-        ActorCast(id, _module.BossP1, AID.Chesed, delay, 4, true, "Tankbuster")
+        ActorCast(id, _module.BossP1, (uint)AID.Chesed, delay, 4, true, "Tankbuster")
             .ActivateOnEnter<P1TripleTrial>()
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<P1TripleTrial>(id + 0x10, 2.2f, comp => comp.NumCasts > 0, "Cleave")
@@ -73,7 +73,7 @@ class Un2SephirotStates : StateMachineBuilder
         ComponentCondition<EinSof>(id, delay, comp => comp.Active)
             .ActivateOnEnter<EinSof>();
         ComponentCondition<EinSof>(id + 2, 4, comp => comp.NumCasts > 0, "Orbs"); // first hit
-        ActorCastStart(id + 0x10, _module.BossP1, AID.Ein, 2.2f, true, "Bait")
+        ActorCastStart(id + 0x10, _module.BossP1, (uint)AID.Ein, 2.2f, true, "Bait")
             .ActivateOnEnter<P1Ratzon>();
         ActorCastEnd(id + 0x11, _module.BossP1, 4, true)
             .ActivateOnEnter<P1Ein>()
@@ -138,7 +138,7 @@ class Un2SephirotStates : StateMachineBuilder
 
     private void P3ForceField(uint id, float delay)
     {
-        ActorCastMulti(id, _module.BossP3, [AID.GevurahChesed, AID.ChesedGevurah], delay, 5, true)
+        ActorCastMulti(id, _module.BossP3, [(uint)AID.GevurahChesed, (uint)AID.ChesedGevurah], delay, 5, true)
             .ActivateOnEnter<P3GevurahChesed>();
         ComponentCondition<P3GevurahChesed>(id + 2, 0.6f, comp => comp.NumCasts > 0, "Match color")
             .DeactivateOnExit<P3GevurahChesed>();
@@ -156,7 +156,7 @@ class Un2SephirotStates : StateMachineBuilder
         ComponentCondition<P3FiendishWail>(id + 0x41, 4, comp => !comp.Active, "Towers 2")
             .DeactivateOnExit<P3FiendishWail>();
 
-        ActorCastMulti(id + 0x50, _module.BossP3, [AID.GevurahChesed, AID.ChesedGevurah], 2.2f, 5, true)
+        ActorCastMulti(id + 0x50, _module.BossP3, [(uint)AID.GevurahChesed, (uint)AID.ChesedGevurah], 2.2f, 5, true)
             .ActivateOnEnter<P3GevurahChesed>();
         ComponentCondition<P3GevurahChesed>(id + 0x52, 0.6f, comp => comp.NumCasts > 0, "Match color")
             .DeactivateOnExit<P3GevurahChesed>();
@@ -174,7 +174,7 @@ class Un2SephirotStates : StateMachineBuilder
 
     private void P3Daat(uint id, float delay)
     {
-        ActorCast(id, _module.BossP3, AID.DaatMT, delay, 5, true, "Spread hit 1")
+        ActorCast(id, _module.BossP3, (uint)AID.DaatMT, delay, 5, true, "Spread hit 1")
             .ActivateOnEnter<P3Daat>();
         ComponentCondition<P3Daat>(id + 0x10, 3.2f, comp => comp.NumCasts >= 3, "Spread hit 4")
             .DeactivateOnExit<P3Daat>();
@@ -190,7 +190,7 @@ class Un2SephirotStates : StateMachineBuilder
 
     private void P3GevurahChesed(uint id, float delay)
     {
-        ActorCastMulti(id, _module.BossP3, [AID.GevurahChesed, AID.ChesedGevurah], delay, 5, true)
+        ActorCastMulti(id, _module.BossP3, [(uint)AID.GevurahChesed, (uint)AID.ChesedGevurah], delay, 5, true)
             .ActivateOnEnter<P3GevurahChesed>();
         ComponentCondition<P3GevurahChesed>(id + 2, 0.6f, comp => comp.NumCasts > 0, "Raidwide")
             .DeactivateOnExit<P3GevurahChesed>()
@@ -225,7 +225,7 @@ class Un2SephirotStates : StateMachineBuilder
 
     private void P3DaatYesad(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP3, AID.DaatMT, delay, true);
+        ActorCastStart(id, _module.BossP3, (uint)AID.DaatMT, delay, true);
         ComponentCondition<P3Yesod>(id + 1, 4.1f, comp => comp.Casters.Count > 0, "Twisters bait")
             .ActivateOnEnter<P3Daat>();
         ActorCastEnd(id + 2, _module.BossP3, 0.9f, true, "Spread hit 1");
@@ -236,7 +236,7 @@ class Un2SephirotStates : StateMachineBuilder
 
     private void P3Malkuth(uint id, float delay)
     {
-        ActorCast(id, _module.BossP3, AID.Malkuth, delay, 4, true, "Knockback")
+        ActorCast(id, _module.BossP3, (uint)AID.Malkuth, delay, 4, true, "Knockback")
             .ActivateOnEnter<P3Malkuth>()
             .DeactivateOnExit<P3Malkuth>();
     }
@@ -255,7 +255,7 @@ class Un2SephirotStates : StateMachineBuilder
         P3GevurahChesed(id + 0x2000, 0.5f);
 
         ComponentCondition<P3Yesod>(id + 0x3000, 9.5f, comp => comp.Casters.Count > 0, "Twisters bait");
-        ActorCastStartMulti(id + 0x3001, _module.BossP3, [AID.GevurahChesed, AID.ChesedGevurah], 1.1f, true);
+        ActorCastStartMulti(id + 0x3001, _module.BossP3, [(uint)AID.GevurahChesed, (uint)AID.ChesedGevurah], 1.1f, true);
         ComponentCondition<P3Yesod>(id + 0x3002, 1.9f, comp => comp.Casters.Count == 0, "Twisters resolve")
             .ActivateOnEnter<P3GevurahChesed>();
         ActorCastEnd(id + 0x3003, _module.BossP3, 3.1f, true);

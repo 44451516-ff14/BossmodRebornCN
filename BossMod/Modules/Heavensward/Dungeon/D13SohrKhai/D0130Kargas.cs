@@ -18,8 +18,8 @@ public enum AID : uint
     WingsOfWoe = 2478 // SanctuaryTsanahale->location, 2.5s cast, range 6 circle
 }
 
-class BreathWing(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BreathWing));
-class WingsOfWoe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingsOfWoe), 6f);
+class BreathWing(BossModule module) : Components.RaidwideCast(module, (uint)AID.BreathWing);
+class WingsOfWoe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingsOfWoe, 6f);
 
 class D130KargasStates : StateMachineBuilder
 {

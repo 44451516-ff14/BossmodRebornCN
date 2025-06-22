@@ -34,9 +34,9 @@ class P3QuickmarchTrio(BossModule module) : BossComponent(module)
     }
 }
 
-class P3TwistingDive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwistingDive), new AOEShapeRect(63.96f, 4f));
-class P3LunarDive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LunarDive), new AOEShapeRect(62.55f, 4f));
-class P3MegaflareDive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MegaflareDive), new AOEShapeRect(64.2f, 6f));
+class P3TwistingDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwistingDive, new AOEShapeRect(63.96f, 4f));
+class P3LunarDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarDive, new AOEShapeRect(62.55f, 4f));
+class P3MegaflareDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareDive, new AOEShapeRect(64.2f, 6f));
 class P3Twister(BossModule module) : Components.ImmediateTwister(module, 2, (uint)OID.VoidzoneTwister, 1.4f); // TODO: verify radius
 
 class P3MegaflareSpreadStack : Components.UniformStackSpread
@@ -71,5 +71,5 @@ class P3MegaflareSpreadStack : Components.UniformStackSpread
     }
 }
 
-class P3MegaflarePuddle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MegaflarePuddle), 6);
-class P3TempestWing(BossModule module) : Components.TankbusterTether(module, ActionID.MakeSpell(AID.TempestWing), (uint)TetherID.TempestWing, 5);
+class P3MegaflarePuddle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflarePuddle, 6);
+class P3TempestWing(BossModule module) : Components.TankbusterTether(module, (uint)AID.TempestWing, (uint)TetherID.TempestWing, 5);

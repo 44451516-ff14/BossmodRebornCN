@@ -16,10 +16,10 @@ public enum AID : uint
     DoubleRay = 41668 // Sprinkler->player, no cast, single-target
 }
 
-class IsleDrop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IsleDrop), 6f);
-class MysteriousLight(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.MysteriousLight));
+sealed class IsleDrop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IsleDrop, 6f);
+sealed class MysteriousLight(BossModule module) : Components.CastGaze(module, (uint)AID.MysteriousLight);
 
-public class A10GroundskeeperStates : StateMachineBuilder
+public sealed class A10GroundskeeperStates : StateMachineBuilder
 {
     public A10GroundskeeperStates(BossModule module) : base(module)
     {
@@ -41,7 +41,7 @@ public class A10GroundskeeperStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13607, SortOrder = 5)]
-public class A10Groundskeeper(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class A10Groundskeeper(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-544.28f, -642.15f), new(-532, -635.01f), new(-531.47f, -634.52f), new(-531.58f, -634), new(-547.79f, -595.87f),
     new(-547.82f, -595.32f), new(-547.35f, -594.98f), new(-540.15f, -590.75f), new(-539.65f, -590.89f), new(-539.18f, -591.4f),

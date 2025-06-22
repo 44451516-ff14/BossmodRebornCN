@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class EntanglingWebAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EntanglingWebAOE), 5);
+class EntanglingWebAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntanglingWebAOE, 5);
 
 class EntanglingWebHints(BossModule module) : BossComponent(module)
 {

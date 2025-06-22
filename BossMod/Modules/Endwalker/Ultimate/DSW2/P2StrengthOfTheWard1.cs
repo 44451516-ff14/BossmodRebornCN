@@ -16,7 +16,7 @@ class P2StrengthOfTheWard1LightningStorm : Components.UniformStackSpread
 }
 
 // charges
-class P2StrengthOfTheWard1SpiralThrust(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.SpiralThrust), "GTFO from charge aoe!")
+class P2StrengthOfTheWard1SpiralThrust(BossModule module) : Components.GenericAOEs(module, (uint)AID.SpiralThrust, "GTFO from charge aoe!")
 {
     private readonly List<Actor> _knights = [];
 
@@ -44,7 +44,7 @@ class P2StrengthOfTheWard1SpiralThrust(BossModule module) : Components.GenericAO
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _knights.Remove(caster);
             ++NumCasts;

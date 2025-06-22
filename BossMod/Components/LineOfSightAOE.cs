@@ -3,7 +3,7 @@
 // generic component that shows line-of-sight cones for arbitrary origin and blocking shapes
 // TODO: add support for multiple AOE sources at the same time (I simplified Hermes from 4 AOEs into one)
 // add support for blockers that spawn or get destroyed after cast already started (Hermes: again a cheat here by only using that meteor that exists for the whole mechanic)
-public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : GenericAOEs(module, aid, "Hide behind obstacle!")
+public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : GenericAOEs(module, aid, "Hide behind obstacle!")
 {
     public DateTime NextExplosion;
     public readonly bool BlockersImpassable = blockersImpassable;
@@ -27,12 +27,13 @@ public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, flo
         Visibility.Clear();
         if (origin != null)
         {
-            for (var i = 0; i < Blockers.Count; ++i)
+            var count = Blockers.Count;
+            for (var i = 0; i < count; ++i)
             {
                 var b = Blockers[i];
                 var toBlock = b.Center - origin.Value;
                 var dist = toBlock.Length();
-                Visibility.Add((dist, Angle.FromDirection(toBlock), b.Radius < dist ? Angle.Asin(b.Radius / dist) : 90.Degrees()));
+                Visibility.Add((dist, Angle.FromDirection(toBlock), b.Radius < dist ? Angle.Asin(b.Radius / dist) : 90f.Degrees()));
             }
         }
     }
@@ -59,7 +60,7 @@ public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, flo
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             AddSafezone(Module.CastFinishAt(spell), spell.Rotation);
     }
 
@@ -98,7 +99,7 @@ public abstract class GenericLineOfSightAOE(BossModule module, ActionID aid, flo
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (Safezones.Count != 0 && spell.Action == WatchedAction)
+        if (Safezones.Count != 0 && spell.Action.ID == WatchedAction)
             Safezones.RemoveAt(0);
     }
 }
@@ -129,7 +130,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
         }
     }
 
-    protected CastLineOfSightAOE(BossModule module, ActionID aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox)
+    protected CastLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox)
     {
         Refresh();
     }
@@ -138,7 +139,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             Casters.Add(caster);
             Refresh();
@@ -148,7 +149,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             Casters.Remove(caster);
             Refresh();

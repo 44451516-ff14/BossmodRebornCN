@@ -196,16 +196,16 @@ class BlackFlame(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class OtherworldlyHeat(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OtherworldlyHeat), new AOEShapeCross(10f, 2f));
+class OtherworldlyHeat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OtherworldlyHeat, new AOEShapeCross(10f, 2f));
 
-abstract class Scorching(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40f, 90f.Degrees()));
-class ScorchingLeft(BossModule module) : Scorching(module, AID.ScorchingLeft);
-class ScorchingRight(BossModule module) : Scorching(module, AID.ScorchingRight);
+abstract class Scorching(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 90f.Degrees()));
+class ScorchingLeft(BossModule module) : Scorching(module, (uint)AID.ScorchingLeft);
+class ScorchingRight(BossModule module) : Scorching(module, (uint)AID.ScorchingRight);
 
-class CullingBlade(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CullingBlade));
-class CaptiveBolt(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.CaptiveBolt));
-class FiresIre(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FiresIre), new AOEShapeCone(20f, 45f.Degrees()));
-class Plummet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plummet), 3f);
+class CullingBlade(BossModule module) : Components.RaidwideCast(module, (uint)AID.CullingBlade);
+class CaptiveBolt(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CaptiveBolt);
+class FiresIre(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FiresIre, new AOEShapeCone(20f, 45f.Degrees()));
+class Plummet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plummet, 3f);
 class FiresDomainTether(BossModule module) : Components.StretchTetherDuo(module, default, default)
 {
     private static readonly WDir offset = new(default, 23.5f);
@@ -239,10 +239,11 @@ class FiresDomain(BossModule module) : Components.GenericBaitAway(module)
         var count = CurrentBaits.Count;
         if (count == 0)
             return;
+        var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         for (var i = 0; i < count; ++i)
         {
-            var b = CurrentBaits[i];
-            CurrentBaits[i] = b with { Shape = rect with { LengthFront = (b.Target.Position - b.Source.Position).Length() } };
+            ref var b = ref baits[i];
+            b.Shape = rect with { LengthFront = (b.Target.Position - b.Source.Position).Length() };
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA2Raiden;
 
-class CloudToGround(BossModule module) : Components.Exaflare(module, 6)
+sealed class CloudToGround(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class DominionSlash(BossModule module) : Components.GenericAOEs(module)
+sealed class DominionSlash(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
 
@@ -10,7 +10,7 @@ class DominionSlash(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.DominionSlashHelper && state == 0x00010002)
+        if (actor.OID == (uint)OID.DominionSlashHelper && state == 0x00010002u)
             AOEs.Add(new(_shape, actor.Position, default, WorldState.FutureTime(6.5d)));
     }
 

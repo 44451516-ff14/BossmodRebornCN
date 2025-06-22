@@ -20,10 +20,10 @@ public enum AID : uint
     DeadlySwoop = 39799 // Boss->player, no cast, single-target, deadly ability if caught in samba mechanic
 }
 
-class GlidingSwoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GlidingSwoop), new AOEShapeRect(18f, 8f));
-class PeckingFlurry(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PeckingFlurryFirst), "Raidwide (3x)");
+sealed class GlidingSwoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GlidingSwoop, new AOEShapeRect(18f, 8f));
+sealed class PeckingFlurry(BossModule module) : Components.RaidwideCast(module, (uint)AID.PeckingFlurryFirst, "Raidwide (3x)");
 
-class MesmerizingMarchStirringSamba(BossModule module) : Components.GenericAOEs(module)
+sealed class MesmerizingMarchStirringSamba(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeCircle circle = new(12f);
@@ -72,7 +72,7 @@ class MesmerizingMarchStirringSamba(BossModule module) : Components.GenericAOEs(
     }
 }
 
-class PkuuchaStates : StateMachineBuilder
+sealed class PkuuchaStates : StateMachineBuilder
 {
     public PkuuchaStates(BossModule module) : base(module)
     {
@@ -84,4 +84,4 @@ class PkuuchaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13443)]
-public class Pkuucha(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Pkuucha(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

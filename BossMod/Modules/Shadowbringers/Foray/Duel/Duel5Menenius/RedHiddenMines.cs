@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.Duel.Duel5Menenius;
 
-class RedHiddenMines(BossModule module) : Components.GenericAOEs(module)
+sealed class RedHiddenMines(BossModule module) : Components.GenericAOEs(module)
 {
     private List<AOEInstance> _mines = [];
     private static readonly AOEShapeCircle _shapeTrigger = new(3.6f);
@@ -30,7 +30,7 @@ class RedHiddenMines(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.IndiscriminateDetonation)
+        if (spell.Action.ID == (uint)AID.IndiscriminateDetonation)
         {
             List<AOEInstance> _detonatingMines = [];
             var count = _mines.Count;

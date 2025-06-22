@@ -16,10 +16,10 @@ public enum AID : uint
     Thunderball = 40666 // ForestAxeBeak->location, 4.0s cast, range 8 circle
 }
 
-class SweepingGouge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SweepingGouge), new AOEShapeCone(9f, 45f.Degrees()));
-class Thunderball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Thunderball), 8);
+sealed class SweepingGouge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SweepingGouge, new AOEShapeCone(9f, 45f.Degrees()));
+sealed class Thunderball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Thunderball, 8f);
 
-class D90ForestWoolbackStates : StateMachineBuilder
+sealed class D90ForestWoolbackStates : StateMachineBuilder
 {
     public D90ForestWoolbackStates(BossModule module) : base(module)
     {
@@ -42,7 +42,7 @@ class D90ForestWoolbackStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13573, SortOrder = 2)]
-public class D90ForestWoolback(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D90ForestWoolback(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(54.16f, 358.33f), new(54.83f, 358.64f), new(61.41f, 363.35f), new(61.86f, 363.88f), new(60.68f, 366.6f),
     new(60.55f, 367.22f), new(61.05f, 370.44f), new(60.92f, 371.09f), new(57.05f, 372.87f), new(56.02f, 373.6f),

@@ -46,8 +46,8 @@ class WallRemoval(BossModule module) : BossComponent(module)
     }
 }
 
-class OffalBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OffalBreath), 6f);
-class Spiritus(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spiritus), new AOEShapeCone(6f, 30f.Degrees()));
+class OffalBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OffalBreath, 6f);
+class Spiritus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spiritus, new AOEShapeCone(6f, 30f.Degrees()));
 
 class D090MalboroTerraStates : StateMachineBuilder
 {

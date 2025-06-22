@@ -1,12 +1,12 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class BewitchingFlight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BewitchingFlightAOE), new AOEShapeRect(40, 2.5f));
-class WickedJolt(BossModule module) : Components.TankSwap(module, ActionID.MakeSpell(AID.WickedJolt), ActionID.MakeSpell(AID.WickedJolt), ActionID.MakeSpell(AID.WickedJoltSecond), 3.2f, new AOEShapeRect(60f, 2.5f), false);
-class Soulshock(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Soulshock));
-class Impact(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Impact));
-class Cannonbolt(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Cannonbolt));
+sealed class BewitchingFlight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BewitchingFlightAOE, new AOEShapeRect(40, 2.5f));
+sealed class WickedJolt(BossModule module) : Components.TankSwap(module, (uint)AID.WickedJolt, (uint)AID.WickedJolt, (uint)AID.WickedJoltSecond, 3.2f, new AOEShapeRect(60f, 2.5f), false);
+sealed class Soulshock(BossModule module) : Components.CastCounter(module, (uint)AID.Soulshock);
+sealed class Impact(BossModule module) : Components.CastCounter(module, (uint)AID.Impact);
+sealed class Cannonbolt(BossModule module) : Components.CastCounter(module, (uint)AID.Cannonbolt);
 
-class CannonboltKB(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class CannonboltKB(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
 {
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -14,13 +14,13 @@ class CannonboltKB(BossModule module) : Components.GenericKnockback(module, igno
     }
 }
 
-class CrossTailSwitch(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.CrossTailSwitchAOE));
-class CrossTailSwitchLast(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.CrossTailSwitchLast));
-class WickedSpecialCenter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WickedSpecialCenterAOE), new AOEShapeRect(40f, 10f));
-class WickedSpecialSides(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WickedSpecialSidesAOE), new AOEShapeRect(40f, 7.5f));
+sealed class CrossTailSwitch(BossModule module) : Components.CastCounter(module, (uint)AID.CrossTailSwitchAOE);
+sealed class CrossTailSwitchLast(BossModule module) : Components.CastCounter(module, (uint)AID.CrossTailSwitchLast);
+sealed class WickedSpecialCenter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WickedSpecialCenterAOE, new AOEShapeRect(40f, 10f));
+sealed class WickedSpecialSides(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WickedSpecialSidesAOE, new AOEShapeRect(40f, 7.5f));
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 992, NameID = 13057, PlanLevel = 100)]
-public class M04SWickedThunder(WorldState ws, Actor primary) : BossModule(ws, primary, P1DefaultCenter, P1DefaultBounds)
+public sealed class M04SWickedThunder(WorldState ws, Actor primary) : BossModule(ws, primary, P1DefaultCenter, P1DefaultBounds)
 {
     public static readonly WPos P1DefaultCenter = new(100f, 100f);
     public static readonly WPos P2Center = new(100f, 165f);

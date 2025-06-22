@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un3Sophia;
 
-class Tilt(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.QuasarTilt))
+class Tilt(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuasarTilt)
 {
     public const float DistanceShort = 28;
     public const float DistanceLong = 37;
@@ -12,14 +12,14 @@ class Tilt(BossModule module) : Components.GenericKnockback(module, ActionID.Mak
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (Distance > 0)
-            return new Knockback[1] { new(new(), Distance, Activation, null, Direction, Kind.DirForward) };
+            return new Knockback[1] { new(default, Distance, Activation, null, Direction, Kind.DirForward) };
         return [];
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Distance = 0;
     }
 }

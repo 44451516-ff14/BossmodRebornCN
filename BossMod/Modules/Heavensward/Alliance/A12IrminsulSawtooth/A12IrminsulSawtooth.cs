@@ -1,15 +1,15 @@
 ﻿namespace BossMod.Heavensward.Alliance.A12IrminsulSawtooth;
 
-class WhiteBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WhiteBreath), new AOEShapeCone(28f, 60f.Degrees()));
-class MeanThrash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MeanThrash), new AOEShapeCone(12f, 60f.Degrees()));
-class MeanThrashKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.MeanThrash), 10f, stopAtWall: true);
-class MucusBomb(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.MucusBomb), 10f);
-class MucusSpray(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MucusSpray2), new AOEShapeDonut(6f, 20f));
-class Rootstorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Rootstorm));
-class Ambush(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Ambush), 9f);
-class AmbushKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Ambush), 30f, stopAtWall: true, kind: Kind.TowardsOrigin);
+class WhiteBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WhiteBreath, new AOEShapeCone(28f, 60f.Degrees()));
+class MeanThrash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeanThrash, new AOEShapeCone(12f, 60f.Degrees()));
+class MeanThrashKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.MeanThrash, 10f, stopAtWall: true);
+class MucusBomb(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MucusBomb, 10f);
+class MucusSpray(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MucusSpray2, new AOEShapeDonut(6f, 20f));
+class Rootstorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.Rootstorm);
+class Ambush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ambush, 9f);
+class AmbushKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Ambush, 30f, stopAtWall: true, kind: Kind.TowardsOrigin);
 
-class ShockwaveStomp(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.ShockwaveStomp), 70f)
+class ShockwaveStomp(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.ShockwaveStomp, 70f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {

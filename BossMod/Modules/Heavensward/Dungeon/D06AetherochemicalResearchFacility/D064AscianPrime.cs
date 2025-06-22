@@ -55,10 +55,10 @@ public enum AID : uint
 
     Dualstar = 31894, // Boss->self, 4.0s cast, single-target
 
-    EntropicFlame = 31907, // Helper->player, no cast, single-target
-    EntropicFlame1 = 32126, // Boss->self, no cast, single-target
-    EntropicFlame2 = 31906, // Boss->self, 5.0s cast, single-target
-    EntropicFlame3 = 32555, // Helper->self, no cast, range 50 width 8 rect, line stack
+    EntropicFlameMarker = 31907, // Helper->player, no cast, single-target
+    EntropicFlameVisual1 = 32126, // Boss->self, no cast, single-target
+    EntropicFlameVisual2 = 31906, // Boss->self, 5.0s cast, single-target
+    EntropicFlame = 32555, // Helper->self, no cast, range 50 width 8 rect, line stack
 
     FusionPrime = 31895, // Boss->self, 3.0s cast, single-target
 
@@ -85,7 +85,7 @@ public enum TetherID : uint
     BurningChains = 9 // player->player
 }
 
-class AncientCircle(BossModule module) : Components.DonutStack(module, ActionID.MakeSpell(AID.AncientCircle), (uint)IconID.AncientCircle, 10f, 20f, 8f, 4, 4);
+class AncientCircle(BossModule module) : Components.DonutStack(module, (uint)AID.AncientCircle, (uint)IconID.AncientCircle, 10f, 20f, 8f, 4, 4);
 
 class DarkWhispers(BossModule module) : Components.UniformStackSpread(module, default, 6f, alwaysShowSpreads: true)
 {
@@ -103,30 +103,24 @@ class DarkWhispers(BossModule module) : Components.UniformStackSpread(module, de
     }
 }
 
-class AncientFrost(BossModule module) : Components.StackWithIcon(module, (uint)IconID.AncientFrost, ActionID.MakeSpell(AID.AncientFrost), 6f, 5f, 4, 4);
-class ShadowFlare(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ShadowFlare1));
-class ShadowFlareLBPhase(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ShadowFlare2), "Raidwide x2");
-class Annihilation(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AnnihilationAOE));
-class UniversalManipulation(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.UniversalManipulation), "Raidwide + Apply debuffs for later");
+class AncientFrost(BossModule module) : Components.StackWithIcon(module, (uint)IconID.AncientFrost, (uint)AID.AncientFrost, 6f, 5f, 4, 4);
+class ShadowFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShadowFlare1);
+class ShadowFlareLBPhase(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShadowFlare2, "Raidwide x2");
+class Annihilation(BossModule module) : Components.RaidwideCast(module, (uint)AID.AnnihilationAOE);
+class UniversalManipulation(BossModule module) : Components.RaidwideCast(module, (uint)AID.UniversalManipulation, "Raidwide + Apply debuffs for later");
 
-class HeightOfChaos(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.HeightOfChaos), new AOEShapeCircle(5f), true, tankbuster: true);
+class HeightOfChaos(BossModule module) : Components.BaitAwayCast(module, (uint)AID.HeightOfChaos, 5f, tankbuster: true);
 
-class AncientEruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AncientEruption), 5f);
+class AncientEruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientEruption, 5f);
 
-abstract class ChillingCross(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCross(40f, 2.5f));
-class ChillingCross1(BossModule module) : ChillingCross(module, AID.ChillingCross1);
-class ChillingCross2(BossModule module) : ChillingCross(module, AID.ChillingCross2);
+class ChillingCross(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ChillingCross1, (uint)AID.ChillingCross2], new AOEShapeCross(40f, 2.5f));
 
-abstract class DarkBlizzard(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(41f, 10f.Degrees()));
-class DarkBlizzardIIIAOE1(BossModule module) : DarkBlizzard(module, AID.DarkBlizzardIII1);
-class DarkBlizzardIIIAOE2(BossModule module) : DarkBlizzard(module, AID.DarkBlizzardIII2);
-class DarkBlizzardIIIAOE3(BossModule module) : DarkBlizzard(module, AID.DarkBlizzardIII3);
-class DarkBlizzardIIIAOE4(BossModule module) : DarkBlizzard(module, AID.DarkBlizzardIII4);
-class DarkBlizzardIIIAOE5(BossModule module) : DarkBlizzard(module, AID.DarkBlizzardIII5);
+class DarkBlizzardIII(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DarkBlizzardIII1, (uint)AID.DarkBlizzardIII2, (uint)AID.DarkBlizzardIII3,
+(uint)AID.DarkBlizzardIII4, (uint)AID.DarkBlizzardIII5], new AOEShapeCone(41f, 10f.Degrees()));
 
-class DarkFireII(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.DarkFireII), 6f);
-class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, ActionID.MakeSpell(AID.BurningChains));
-class EntropicFlame(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.EntropicFlame), ActionID.MakeSpell(AID.EntropicFlame3), 5.2f);
+class DarkFireII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkFireII, 6f);
+class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, (uint)AID.BurningChains);
+class EntropicFlame(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.EntropicFlameMarker, (uint)AID.EntropicFlame, 5.2f);
 
 class Stars(BossModule module) : Components.GenericAOEs(module)
 {
@@ -141,14 +135,14 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnActorCreated(Actor actor)
@@ -191,14 +185,9 @@ class D064AscianPrimeStates : StateMachineBuilder
             .ActivateOnEnter<ShadowFlareLBPhase>()
             .ActivateOnEnter<Annihilation>()
             .ActivateOnEnter<HeightOfChaos>()
-            .ActivateOnEnter<DarkBlizzardIIIAOE1>()
-            .ActivateOnEnter<DarkBlizzardIIIAOE2>()
-            .ActivateOnEnter<DarkBlizzardIIIAOE3>()
-            .ActivateOnEnter<DarkBlizzardIIIAOE4>()
-            .ActivateOnEnter<DarkBlizzardIIIAOE5>()
+            .ActivateOnEnter<DarkBlizzardIII>()
             .ActivateOnEnter<AncientEruption>()
-            .ActivateOnEnter<ChillingCross1>()
-            .ActivateOnEnter<ChillingCross2>()
+            .ActivateOnEnter<ChillingCross>()
             .ActivateOnEnter<Stars>()
             .ActivateOnEnter<DarkFireII>()
             .ActivateOnEnter<UniversalManipulation>()

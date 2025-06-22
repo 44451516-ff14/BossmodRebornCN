@@ -38,8 +38,8 @@ public enum SID : uint
     RightwardBearing = 2838 // Boss->Boss, extra=0x0
 }
 
-class Gnaw(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Gnaw));
-class Caterwaul(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Caterwaul));
+class Gnaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Gnaw);
+class Caterwaul(BossModule module) : Components.RaidwideCast(module, (uint)AID.Caterwaul);
 
 class Stance(BossModule module) : Components.GenericAOEs(module)
 {
@@ -127,7 +127,7 @@ class Stance(BossModule module) : Components.GenericAOEs(module)
                     break;
             }
         }
-        bearings.SortBy(x => x.priority);
+        bearings.Sort((a, b) => a.priority.CompareTo(b.priority));
 
         _pendingCleaves.Clear();
         foreach (var b in bearings)

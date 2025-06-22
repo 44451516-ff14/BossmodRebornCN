@@ -1,39 +1,39 @@
 ﻿namespace BossMod.Dawntrail.Savage.M02SHoneyBLovely;
 
-class HoneyBLiveBeat1(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.HoneyBLiveBeat1AOE));
-class HoneyBLiveBeat2(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.HoneyBLiveBeat2AOE));
-class HoneyBLiveBeat3(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.HoneyBLiveBeat3AOE));
+sealed class HoneyBLiveBeat1(BossModule module) : Components.CastCounter(module, (uint)AID.HoneyBLiveBeat1AOE);
+sealed class HoneyBLiveBeat2(BossModule module) : Components.CastCounter(module, (uint)AID.HoneyBLiveBeat2AOE);
+sealed class HoneyBLiveBeat3(BossModule module) : Components.CastCounter(module, (uint)AID.HoneyBLiveBeat3AOE);
 
-class HoneyBLiveHearts(BossModule module) : BossComponent(module)
+sealed class HoneyBLiveHearts(BossModule module) : BossComponent(module)
 {
     public int[] Hearts = new int[PartyState.MaxPartySize];
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var hearts = NumHearts((SID)status.ID);
+        var hearts = NumHearts(status.ID);
         if (hearts >= 0 && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             Hearts[slot] = hearts;
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        var hearts = NumHearts((SID)status.ID);
+        var hearts = NumHearts(status.ID);
         if (hearts >= 0 && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && Hearts[slot] == hearts)
             Hearts[slot] = 0;
     }
 
-    private static int NumHearts(SID sid) => sid switch
+    private static int NumHearts(uint sid) => sid switch
     {
-        SID.Hearts0 => 0,
-        SID.Hearts1 => 1,
-        SID.Hearts2 => 2,
-        SID.Hearts3 => 3,
-        SID.Hearts4 => 4,
+        (uint)SID.Hearts0 => 0,
+        (uint)SID.Hearts1 => 1,
+        (uint)SID.Hearts2 => 2,
+        (uint)SID.Hearts3 => 3,
+        (uint)SID.Hearts4 => 4,
         _ => -1
     };
 }
 
-abstract class Fracture(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.Fracture), 4)
+abstract class Fracture(BossModule module) : Components.CastTowers(module, (uint)AID.Fracture, 4f)
 {
     protected abstract BitMask UpdateForbidden();
 
@@ -45,7 +45,7 @@ abstract class Fracture(BossModule module) : Components.CastTowers(module, Actio
     }
 }
 
-class Fracture1(BossModule module) : Fracture(module)
+sealed class Fracture1(BossModule module) : Fracture(module)
 {
     private readonly HoneyBLiveHearts? _hearts = module.FindComponent<HoneyBLiveHearts>();
 
@@ -60,7 +60,7 @@ class Fracture1(BossModule module) : Fracture(module)
     }
 }
 
-class Fracture2(BossModule module) : Fracture(module)
+sealed class Fracture2(BossModule module) : Fracture(module)
 {
     private BitMask _spreads;
     private readonly HoneyBLiveHearts? _hearts = module.FindComponent<HoneyBLiveHearts>();
@@ -83,7 +83,7 @@ class Fracture2(BossModule module) : Fracture(module)
     }
 }
 
-class Fracture3 : Fracture
+sealed class Fracture3 : Fracture
 {
     private BitMask _defamations;
 
@@ -100,12 +100,12 @@ class Fracture3 : Fracture
     protected override BitMask UpdateForbidden() => _defamations;
 }
 
-class Loveseeker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LoveseekerAOE), 10);
-class HeartStruck(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeartStruck), 6);
-class Heartsore(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Heartsore, ActionID.MakeSpell(AID.Heartsore), 6, 7.1f);
-class SweetheartsS(BossModule module) : Raid.M02NHoneyBLovely.Sweethearts(module, (uint)OID.Sweetheart, (uint)AID.SweetheartTouch);
+sealed class Loveseeker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LoveseekerAOE, 10);
+sealed class HeartStruck(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeartStruck, 6);
+sealed class Heartsore(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Heartsore, (uint)AID.Heartsore, 6, 7.1f);
+sealed class SweetheartsS(BossModule module) : Raid.M02NHoneyBLovely.Sweethearts(module, (uint)OID.Sweetheart, (uint)AID.SweetheartTouch);
 
-abstract class Heartsick(BossModule module, bool roles) : Components.StackWithIcon(module, (uint)IconID.Heartsick, ActionID.MakeSpell(AID.Heartsick), 6, 7, roles ? 2 : 4, roles ? 2 : 4)
+abstract class Heartsick(BossModule module, bool roles) : Components.StackWithIcon(module, (uint)IconID.Heartsick, (uint)AID.Heartsick, 6, 7, roles ? 2 : 4, roles ? 2 : 4)
 {
     private readonly HoneyBLiveHearts? _hearts = module.FindComponent<HoneyBLiveHearts>();
 
@@ -125,10 +125,10 @@ abstract class Heartsick(BossModule module, bool roles) : Components.StackWithIc
         }
     }
 }
-class Heartsick1(BossModule module) : Heartsick(module, false);
-class Heartsick2(BossModule module) : Heartsick(module, true);
+sealed class Heartsick1(BossModule module) : Heartsick(module, false);
+sealed class Heartsick2(BossModule module) : Heartsick(module, true);
 
-class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread(module, 0, 14, alwaysShowSpreads: true)
+sealed class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread(module, default, 14f, alwaysShowSpreads: true)
 {
     public int NumCasts;
     public int[] Order = new int[PartyState.MaxPartySize];
@@ -143,7 +143,7 @@ class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.PoisonNPop)
+        if (status.ID == (uint)SID.PoisonNPop)
         {
             var order = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds > 30 ? 1 : 0;
             Activation[order] = status.ExpireAt;
@@ -155,7 +155,7 @@ class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.Fracture && Spreads.Count == 0)
+        if (spell.Action.ID == (uint)AID.Fracture && Spreads.Count == 0)
         {
             var order = NumCasts == 0 ? 1 : 2;
             AddSpreads(Raid.WithSlot(true, true, true).WhereSlot(i => Order[i] == order).Actors(), Activation[order - 1]);
@@ -164,7 +164,7 @@ class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.HoneyBLiveBeat3BigBurst)
+        if (spell.Action.ID == (uint)AID.HoneyBLiveBeat3BigBurst)
         {
             ++NumCasts;
             Spreads.Clear();

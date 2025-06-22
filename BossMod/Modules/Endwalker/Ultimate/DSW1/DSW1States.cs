@@ -38,7 +38,7 @@ class DSW1States : StateMachineBuilder
         // TODO: do we care about shockwaves?..
         ActorTargetable(id, _module.SerCharibert, false, 0);
         ActorTargetable(id + 1, _module.SerCharibert, true, 4, "Appear");
-        ActorCastStart(id + 2, _module.SerCharibert, AID.PureOfHeart, 0.1f, true)
+        ActorCastStart(id + 2, _module.SerCharibert, (uint)AID.PureOfHeart, 0.1f, true)
             .ActivateOnEnter<PureOfHeartBrightwing>()
             .ActivateOnEnter<PureOfHeartSkyblindBait>()
             .ActivateOnEnter<PureOfHeartSkyblind>();
@@ -53,13 +53,13 @@ class DSW1States : StateMachineBuilder
 
     private State HoliestOfHoly(uint id, float delay)
     {
-        return ActorCast(id, _module.SerAdelphel, AID.HoliestOfHoly, delay, 4, false, "Raidwide")
+        return ActorCast(id, _module.SerAdelphel, (uint)AID.HoliestOfHoly, delay, 4, false, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Heavensblaze(uint id, float delay)
     {
-        ActorCast(id, _module.SerGrinnaux, AID.EmptyDimension, delay, 5, false, "Donut + Tankbuster")
+        ActorCast(id, _module.SerGrinnaux, (uint)AID.EmptyDimension, delay, 5, false, "Donut + Tankbuster")
             .ActivateOnEnter<EmptyDimension>()
             .ActivateOnEnter<HolyShieldBash>()
             .ActivateOnEnter<HolyBladedance>()
@@ -67,7 +67,7 @@ class DSW1States : StateMachineBuilder
             .DeactivateOnExit<EmptyDimension>()
             .DeactivateOnExit<HolyShieldBash>()
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ActorCast(id + 0x10, _module.SerCharibert, AID.Heavensblaze, 0.1f, 5, false, "Stack")
+        ActorCast(id + 0x10, _module.SerCharibert, (uint)AID.Heavensblaze, 0.1f, 5, false, "Stack")
             .DeactivateOnExit<HolyBladedance>()
             .DeactivateOnExit<Heavensblaze>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -75,7 +75,7 @@ class DSW1States : StateMachineBuilder
 
     private void HyperdimensionalSlash(uint id, float delay)
     {
-        ActorCastStart(id, _module.SerGrinnaux, AID.HyperdimensionalSlash, delay, false, "Adelphel disappear")
+        ActorCastStart(id, _module.SerGrinnaux, (uint)AID.HyperdimensionalSlash, delay, false, "Adelphel disappear")
             .ActivateOnEnter<HyperdimensionalSlash>() // icons appear just before cast start
             .SetHint(StateMachine.StateHint.PositioningStart);
         ActorCastEnd(id + 1, _module.SerGrinnaux, 5);
@@ -88,7 +88,7 @@ class DSW1States : StateMachineBuilder
     // leaves positioning hint at the end, since tanks need to move bosses after this stage
     private void ShiningBlade(uint id, float delay)
     {
-        ActorCastStart(id, _module.SerGrinnaux, AID.FaithUnmoving, delay)
+        ActorCastStart(id, _module.SerGrinnaux, (uint)AID.FaithUnmoving, delay)
             .ActivateOnEnter<ShiningBladeKnockback>()
             .ActivateOnEnter<ShiningBladeFlares>()
             .SetHint(StateMachine.StateHint.PositioningStart);
@@ -107,7 +107,7 @@ class DSW1States : StateMachineBuilder
     // this often happens when pos flag is set
     private void HoliestHallowing(uint id, float delay, bool clearPosFlag)
     {
-        ActorCastStart(id, _module.SerAdelphel, AID.HoliestHallowing, delay);
+        ActorCastStart(id, _module.SerAdelphel, (uint)AID.HoliestHallowing, delay);
 
         var castEnd = SimpleState(id + 1, 4, "Heal") // note: we use custom state instead of cast-end, since cast-end happens whenever anyone presses interrupt - and if not interrupted, spell finish can be slightly delayed
             .ActivateOnEnter<HoliestHallowing>()
@@ -120,10 +120,10 @@ class DSW1States : StateMachineBuilder
     // leaves positioning hint at the end, since tanks need to move bosses after this stage
     private void Heavensflame(uint id, float delay)
     {
-        ActorCastStart(id, _module.SerCharibert, AID.Heavensflame, delay)
+        ActorCastStart(id, _module.SerCharibert, (uint)AID.Heavensflame, delay)
             .ActivateOnEnter<HeavensflameKnockback>() // icons appear just before cast start
             .SetHint(StateMachine.StateHint.PositioningStart);
-        ActorCast(id + 0x10, _module.SerGrinnaux, AID.FaithUnmoving, 1.1f, 4, false, "Knockback");
+        ActorCast(id + 0x10, _module.SerGrinnaux, (uint)AID.FaithUnmoving, 1.1f, 4, false, "Knockback");
         ActorCastEnd(id + 0x20, _module.SerCharibert, 1.9f);
         ComponentCondition<HeavensflameAOE>(id + 0x30, 0.6f, comp => comp.NumCasts > 0, "Heavensflame")
             .ActivateOnEnter<HeavensflameAOE>()

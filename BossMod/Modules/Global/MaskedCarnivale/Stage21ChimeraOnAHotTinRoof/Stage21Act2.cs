@@ -18,7 +18,7 @@ public enum AID : uint
     TheRamsKeeper = 15081 // Boss->location, 6.0s cast, range 9 circle
 }
 
-class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, ActionID.MakeSpell(AID.TheRamsKeeper), GetVoidzones, 0.9f)
+class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, (uint)AID.TheRamsKeeper, GetVoidzones, 0.9f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -38,11 +38,11 @@ class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module,
         return voidzones[..index];
     }
 }
-class TheRamsKeeperHint(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.TheRamsKeeper));
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsVoice), 9f);
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheDragonsVoice), new AOEShapeDonut(8f, 30f));
-class Icefall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Icefall), 5f);
-class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.VoidBlizzard));
+class TheRamsKeeperHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheRamsKeeper);
+class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9f);
+class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(8f, 30f));
+class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
+class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
 
 class Hints(BossModule module) : BossComponent(module)
 {

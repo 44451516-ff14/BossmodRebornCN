@@ -29,10 +29,10 @@ public enum AID : uint
     HereticsFork3 = 15886 // Boss->self, 23.0s cast, range 60 width 10 cross
 }
 
-class IntestinalCrank(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.IntestinalCrank));
-class BreakingWheel(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BreakingWheel1), new AOEShapeDonut(5f, 60f));
-class HereticsFork(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HereticsFork1), new AOEShapeCross(60f, 5f));
-class CrystalNail(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CrystalNail), 5f);
+class IntestinalCrank(BossModule module) : Components.RaidwideCast(module, (uint)AID.IntestinalCrank);
+class BreakingWheel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreakingWheel1, new AOEShapeDonut(5f, 60f));
+class HereticsFork(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HereticsFork1, new AOEShapeCross(60f, 5f));
+class CrystalNail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrystalNail, 5f);
 
 class HereticsForkBreakingWheelStreak(BossModule module) : Components.GenericAOEs(module)
 {

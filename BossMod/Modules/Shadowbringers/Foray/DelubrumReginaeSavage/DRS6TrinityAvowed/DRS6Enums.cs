@@ -2,16 +2,16 @@
 
 public enum OID : uint
 {
-    Boss = 0x30DC, // R3.400, x1
-    SparkArrow = 0x30DD, // R2.000, spawn during fight (gives +1 temperature)
-    FlameArrow = 0x30DE, // R2.000, spawn during fight (gives +2 temperature)
-    FrostArrow = 0x30DF, // R2.000, spawn during fight (gives -1 temperature)
-    GlacierArrow = 0x30E0, // R2.000, spawn during fight (gives -2 temperature)
-    SwirlingOrb = 0x30E1, // R1.000, spawn during fight (gives -1 temperature)
-    TempestuousOrb = 0x30E2, // R1.000, spawn during fight (gives -2 temperature)
-    BlazingOrb = 0x30E3, // R1.500, spawn during fight (gives +1 temperature)
-    RoaringOrb = 0x30E4, // R1.500, spawn during fight (gives +2 temperature)
-    AvowedAvatar = 0x30E5, // R3.400, x11
+    Boss = 0x30DC, // R3.4
+    SparkArrow = 0x30DD, // R2.0 (gives +1 temperature)
+    FlameArrow = 0x30DE, // R2.0 (gives +2 temperature)
+    FrostArrow = 0x30DF, // R2.0 (gives -1 temperature)
+    GlacierArrow = 0x30E0, // R2.0(gives -2 temperature)
+    SwirlingOrb = 0x30E1, // R1.0(gives -1 temperature)
+    TempestuousOrb = 0x30E2, // R1.0 (gives -2 temperature)
+    BlazingOrb = 0x30E3, // R1.5 (gives +1 temperature)
+    RoaringOrb = 0x30E4, // R1.5 (gives +2 temperature)
+    AvowedAvatar = 0x30E5, // R3.4
     Helper = 0x233C
 }
 

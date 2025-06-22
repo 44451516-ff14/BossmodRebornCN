@@ -25,8 +25,8 @@ public enum AID : uint
     Water = 14271 // Flan->player, 1.0s cast, single-target
 }
 
-class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.GoldenTongue));
-class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, ActionID.MakeSpell(AID.Dark), GetVoidzones, 1f)
+class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
+class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.Dark, GetVoidzones, 1f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -47,7 +47,7 @@ class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 
     }
 }
 
-class Dark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Dark), 5f);
+class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 5f);
 
 class Hints(BossModule module) : BossComponent(module)
 {

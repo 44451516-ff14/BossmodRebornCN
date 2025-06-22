@@ -19,8 +19,8 @@ public enum AID : uint
     MassiveExplosion = 19261 // MagitekExplosive->self, no cast, range 60 circle, wipe, failed to destroy Magitek Explosive in time
 }
 
-class Fireball(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Fireball), 8f);
-class Snort(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Snort), 15f, stopAtWall: true);
+class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, 8f);
+class Snort(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Snort, 15f, stopAtWall: true);
 
 class Fungah(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
 {

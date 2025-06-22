@@ -26,10 +26,10 @@ public enum AID : uint
     WildRattle = 408, // ChasmCobra->player, no cast, single-target
 }
 
-class FlashFlood(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlashFlood), new AOEShapeCone(8.16f, 60f.Degrees()));
-class LaboredLeap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LaboredLeap), 10.32f);
-class FallenRock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FallingRock), 4f);
-class WingsOfWoe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WingsOfWoe), 6f);
+class FlashFlood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlashFlood, new AOEShapeCone(8.16f, 60f.Degrees()));
+class LaboredLeap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LaboredLeap, 10.32f);
+class FallenRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 4f);
+class WingsOfWoe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingsOfWoe, 6f);
 
 class D150ChasmHarpeiaStates : StateMachineBuilder
 {

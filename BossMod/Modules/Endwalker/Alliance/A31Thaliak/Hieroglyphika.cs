@@ -7,7 +7,7 @@ namespace BossMod.Endwalker.Alliance.A31Thaliak;
 // XXXX       XXXO
 // OXXX       XXXX
 // the pattern is then rotated CW or CCW, giving 4 possible results
-class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.HieroglyphikaAOE))
+class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AID.HieroglyphikaAOE)
 {
     public bool BindsAssigned;
     public WDir SafeSideDir;
@@ -77,7 +77,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, ActionID
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (AOEs.Count != 0 && spell.Action == WatchedAction)
+        if (AOEs.Count != 0 && spell.Action.ID == WatchedAction)
         {
             AOEs.Clear();
             ++NumCasts;

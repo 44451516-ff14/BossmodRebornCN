@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class ChaosCondensedParticleBeam(BossModule module) : Components.GenericWildCharge(module, 3, default, 50)
+sealed class ChaosCondensedParticleBeam(BossModule module) : Components.GenericWildCharge(module, 3f, default, 50f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

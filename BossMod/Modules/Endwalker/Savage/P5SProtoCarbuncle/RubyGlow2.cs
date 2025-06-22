@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Savage.P5SProtoCarbuncle;
 
 // note: we start showing magic aoe only after double rush resolve
-class RubyGlow2(BossModule module) : RubyGlowCommon(module, ActionID.MakeSpell(AID.DoubleRush))
+class RubyGlow2(BossModule module) : RubyGlowCommon(module, (uint)AID.DoubleRush)
 {
     private string _hint = "";
 
@@ -36,7 +36,7 @@ class RubyGlow2(BossModule module) : RubyGlowCommon(module, ActionID.MakeSpell(A
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             var stones = MagicStones;
             var magic = stones.Count != 0 ? MagicStones[0] : null;
@@ -49,7 +49,7 @@ class RubyGlow2(BossModule module) : RubyGlowCommon(module, ActionID.MakeSpell(A
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _hint = "";
     }
 }

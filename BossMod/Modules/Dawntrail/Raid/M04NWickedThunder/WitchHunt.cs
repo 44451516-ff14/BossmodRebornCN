@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 
-class WitchHunt(BossModule module) : Components.GenericAOEs(module)
+sealed class WitchHunt(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(25);
     private static readonly AOEShapeCircle circle = new(6f);
@@ -10,15 +10,15 @@ class WitchHunt(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        var countH = count / 2;
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var max = count > 12 ? 12 : count;
+        var color = Colors.Danger;
+        for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
-            if (i < countH)
-                aoes[i] = aoe with { Color = count > 2 ? Colors.Danger : 0 };
-            else
-                aoes[i] = count < 12 ? aoe : aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            if (count > 12 && i < 12)
+                aoe.Color = color;
+            aoe.Risky = true;
         }
         return aoes;
     }
@@ -26,7 +26,7 @@ class WitchHunt(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WitchHuntTelegraph)
-            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 6.3f)));
+            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 6.3f), Risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

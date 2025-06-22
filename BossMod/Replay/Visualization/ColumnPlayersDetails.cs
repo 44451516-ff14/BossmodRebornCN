@@ -3,7 +3,7 @@ using ImGuiNET;
 
 namespace BossMod.ReplayVisualization;
 
-public class ColumnPlayersDetails : Timeline.ColumnGroup
+public sealed class ColumnPlayersDetails : Timeline.ColumnGroup
 {
     private readonly StateMachineTree _tree;
     private readonly List<int> _phaseBranches;

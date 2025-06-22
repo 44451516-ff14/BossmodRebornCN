@@ -36,7 +36,7 @@ public enum TetherID : uint
     Freeze = 272 // RorrlohTeh/QorrlohTeh1->Boss
 }
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 23f);
     private AOEInstance? _aoe;
@@ -50,7 +50,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x17)
+        if (state == 0x00020001u && index == 0x17u)
         {
             Arena.Bounds = D021RyoqorTerteh.DefaultBounds;
             _aoe = null;
@@ -58,66 +58,56 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class IceScreamFrozenSwirl(BossModule module) : Components.GenericAOEs(module)
+sealed class IceScreamFrozenSwirl(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(20f, 10f);
     private static readonly AOEShapeCircle circle = new(15f);
-    private readonly List<AOEInstance> _aoesCircle = new(4), _aoesRect = new(4);
-    private readonly List<Actor> circleAOE = new(4), rectAOE = new(4);
+    private readonly List<AOEInstance> _aoes = new(8);
+    private int tetherCount;
+    private byte tutorial;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var countCircle = _aoesCircle.Count;
-        var countRect = _aoesRect.Count;
-        if (countCircle == 0 && countRect == 0)
+        if (tetherCount == default)
             return [];
-        var aoes = new List<AOEInstance>(4);
-        for (var i = 0; i < 2 && i < countCircle; ++i)
-            aoes.Add(_aoesCircle[i]);
-        for (var i = 0; i < 2 && i < countRect; ++i)
-            aoes.Add(_aoesRect[i]);
-        return CollectionsMarshal.AsSpan(aoes);
+
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var isTutorial = tutorial < 2u;
+        var len = aoes.Length;
+        var max = len > 1 && isTutorial ? 2 : len > 3 && !isTutorial ? 4 : len;
+        return aoes[..max];
     }
 
-    public override void OnActorCreated(Actor actor)
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (actor.OID == (uint)OID.QorrlohTeh1)
-            circleAOE.Add(actor);
-        else if (actor.OID == (uint)OID.RorrlohTeh)
-            rectAOE.Add(actor);
+        AOEShape? shape = spell.Action.ID switch
+        {
+            (uint)AID.IceScream => rect,
+            (uint)AID.FrozenSwirlVisual => circle,
+            _ => null
+        };
+        if (shape != null)
+            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Freeze)
         {
-            var activation1 = WorldState.FutureTime(9.9f);
-            var activation2 = WorldState.FutureTime(14.9f);
-            if (circleAOE.Contains(source))
+            var count = _aoes.Count;
+            var id = source.InstanceID;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            for (var i = 0; i < count; ++i)
             {
-                _aoesCircle.Add(new(circle, source.Position, default, activation2));
-                circleAOE.Remove(source);
-                if (_aoesCircle.Count == 2)
+                ref var aoe = ref aoes[i];
+                if (aoe.ActorID == id)
                 {
-                    for (var i = 0; i < circleAOE.Count; ++i)
-                        _aoesCircle.Add(new(circle, circleAOE[i].Position, default, activation1));
-                    circleAOE.Clear();
-                    _aoesCircle.Sort((x, y) => x.Activation.CompareTo(y.Activation));
-                }
-            }
-            else if (rectAOE.Contains(source))
-            {
-                _aoesRect.Add(new(rect, source.Position, source.Rotation, activation2));
-                rectAOE.Remove(source);
-                if (_aoesRect.Count == 2)
-                {
-                    for (var i = 0; i < rectAOE.Count; ++i)
-                    {
-                        var e = rectAOE[i];
-                        _aoesRect.Add(new(rect, e.Position, e.Rotation, activation1));
-                    }
-                    rectAOE.Clear();
-                    _aoesRect.Sort((x, y) => x.Activation.CompareTo(y.Activation));
+                    aoe.Activation = WorldState.FutureTime(14.9d);
+                    ++tetherCount;
+                    var isTutorial = tutorial < 2u;
+                    if (isTutorial && tetherCount == 2 || !isTutorial && tetherCount == 4)
+                        aoes.Sort((x, y) => x.Activation.CompareTo(y.Activation));
+                    return;
                 }
             }
         }
@@ -125,18 +115,32 @@ class IceScreamFrozenSwirl(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (_aoesRect.Count != 0 && spell.Action.ID == (uint)AID.IceScream)
-            _aoesRect.RemoveAt(0);
-        else if (_aoesCircle.Count != 0 && spell.Action.ID == (uint)AID.FrozenSwirl)
-            _aoesCircle.RemoveAt(0);
+        if (spell.Action.ID is (uint)AID.IceScream or (uint)AID.FrozenSwirlVisual)
+        {
+            var count = _aoes.Count;
+            var id = caster.InstanceID;
+            for (var i = 0; i < count; ++i)
+            {
+                if (_aoes[i].ActorID == id)
+                {
+                    _aoes.RemoveAt(i);
+                    if (_aoes.Count == 0)
+                    {
+                        ++tutorial;
+                        tetherCount = default;
+                    }
+                    return;
+                }
+            }
+        }
     }
 }
 
-class FrostingFracas(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FrostingFracas));
-class SnowBoulder(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SnowBoulder), new AOEShapeRect(50f, 3f), 6);
-class SparklingSprinkling(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.SparklingSprinkling), 5f);
+sealed class FrostingFracas(BossModule module) : Components.RaidwideCast(module, (uint)AID.FrostingFracas);
+sealed class SnowBoulder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SnowBoulder, new AOEShapeRect(50f, 3f), 6);
+sealed class SparklingSprinkling(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SparklingSprinkling, 5f);
 
-class D021RyoqorTertehStates : StateMachineBuilder
+sealed class D021RyoqorTertehStates : StateMachineBuilder
 {
     public D021RyoqorTertehStates(BossModule module) : base(module)
     {
@@ -150,9 +154,10 @@ class D021RyoqorTertehStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12699)]
-public class D021RyoqorTerteh(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
+public sealed class D021RyoqorTerteh(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     private static readonly WPos arenaCenter = new(-108f, 119f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(arenaCenter, 22.5f, 52)]);
+    public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(arenaCenter, 22.5f, 52)], [new Rectangle(new(-108f, 141.95f), 20f, 1.25f),
+    new Rectangle(new(-108f, 96.25f), 20f, 1.25f)]);
     public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(arenaCenter, 20f, 52)]);
 }

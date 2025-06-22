@@ -21,13 +21,13 @@ public enum AID : uint
     LozatlsFury2 = 15503 // Boss->self, 4.0s cast, range 60 width 20 rect
 }
 
-abstract class LozatlsFury(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(60f, 10f));
-class LozatlsFury1(BossModule module) : LozatlsFury(module, AID.LozatlsFury1);
-class LozatlsFury2(BossModule module) : LozatlsFury(module, AID.LozatlsFury2);
+abstract class LozatlsFury(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 10f));
+class LozatlsFury1(BossModule module) : LozatlsFury(module, (uint)AID.LozatlsFury1);
+class LozatlsFury2(BossModule module) : LozatlsFury(module, (uint)AID.LozatlsFury2);
 
-class Stonefist(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Stonefist));
-class LozatlsScorn(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.LozatlsScorn));
-class SunToss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SunToss), 5f);
+class Stonefist(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Stonefist);
+class LozatlsScorn(BossModule module) : Components.RaidwideCast(module, (uint)AID.LozatlsScorn);
+class SunToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SunToss, 5f);
 
 class RonkanLight(BossModule module) : Components.GenericAOEs(module)
 {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
-class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.FaithUnmoving), 16)
+class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16)
 {
     private WDir _dirToAdelphel = (module.Enemies((uint)OID.SerAdelphel).FirstOrDefault()?.Position ?? module.Center) - module.Center; // we don't want to be knocked near adelphel
     private readonly List<Actor> _tears = module.Enemies((uint)OID.AetherialTear); // we don't want to be knocked into them
@@ -36,7 +36,7 @@ class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(mod
     }
 }
 
-class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.BrightFlare), "GTFO from explosion!")
+class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, (uint)AID.BrightFlare, "GTFO from explosion!")
 {
     private readonly List<WDir> _flares = []; // [0] = initial boss offset from center, [2] = first charge offset, [5] = second charge offset, [7] = third charge offset, [10] = fourth charge offset == [0]
 
@@ -103,12 +103,12 @@ class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, Act
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _flares.RemoveAt(0);
     }
 }
 
-class ShiningBladeExecution(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Execution))
+class ShiningBladeExecution(BossModule module) : Components.CastCounter(module, (uint)AID.Execution)
 {
     private Actor? _target;
 

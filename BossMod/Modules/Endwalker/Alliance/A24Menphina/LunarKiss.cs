@@ -12,7 +12,7 @@ class LunarKiss(BossModule module) : Components.GenericBaitAway(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.LunarKissAOE)
+        if (spell.Action.ID == (uint)AID.LunarKissAOE)
         {
             ++NumCasts;
             CurrentBaits.Clear();

@@ -107,7 +107,7 @@ class P4DarklitDragonsong(BossModule module) : BossComponent(module)
     }
 }
 
-class P4DarklitDragonsongBrightHunger(BossModule module) : Components.GenericTowers(module, ActionID.MakeSpell(AID.BrightHunger))
+class P4DarklitDragonsongBrightHunger(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
 {
     private readonly P4DarklitDragonsong? _darklit = module.FindComponent<P4DarklitDragonsong>();
     private int _numTethers;
@@ -143,7 +143,7 @@ class P4DarklitDragonsongBrightHunger(BossModule module) : Components.GenericTow
     }
 }
 
-class P4DarklitDragonsongPathOfLight(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.PathOfLightAOE))
+class P4DarklitDragonsongPathOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.PathOfLightAOE)
 {
     private readonly P4DarklitDragonsong? _darklit = module.FindComponent<P4DarklitDragonsong>();
     private Actor? _source;

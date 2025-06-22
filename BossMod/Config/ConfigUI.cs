@@ -1,6 +1,5 @@
 using BossMod.Autorotation;
 using ImGuiNET;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Dalamud.Interface.Utility.Raii;
@@ -35,13 +34,11 @@ public sealed class ConfigUI : IDisposable
         _mv = new(rotationDB?.Plans, ws);
         _presets = rotationDB != null ? new(rotationDB.Presets) : null;
 
-        
         _tabs.Add("设置", DrawSettings);
         _tabs.Add("支持的 Bosses", () => _mv.Draw(_tree, _ws));
         _tabs.Add("自动输出预设", () => _presets?.Draw());
         _tabs.Add("Slash commands", DrawAvailableCommands);
         _tabs.Add("说明", _about.Draw);
-        
 
         Dictionary<Type, UINode> nodes = [];
         var nodes2 = _root.Nodes;
@@ -77,58 +74,58 @@ public sealed class ConfigUI : IDisposable
         _tabs.Draw();
     }
 
-    private static readonly Dictionary<string, string> _availableAICommands = new()
-    {
-        { "on", "开启AI" },
-        { "off", "关闭AI " },
-        { "toggle", "切换 the AI on/off." },
-        { "targetmaster", "Toggles the focus on target leader." },
-        { "follow slotX", "Follows the specified slot, eg. Slot1." },
-        { "follow name", "Follows the specified party member by name." },
-        { "ui", "Toggles the AI menu." },
-        { "forbidactions", "Toggles the forbidding of actions. (only for autorotation)" },
-        { "forbidactions on/off", "Sets forbid actions to on or off. (only for autorotation)" },
-        { "forbidmovement", "Toggles the forbidding of movement." },
-        { "forbidmovement on/off", "Sets forbid movement to on or off." },
-        { "idlewhilemounted", "Toggles the idling while mounted." },
-        { "idlewhilemounted on/off", "Sets idle while mounted to on or off." },
-        { "followcombat", "Toggles following during combat." },
-        { "followcombat on/off", "Sets following following during combat to on or off." },
-        { "followmodule", "Toggles following during active boss module." },
-        { "followmodule on/off", "Sets following following during active boss module to on or off." },
-        { "followoutofcombat", "Toggles following during out of combat." },
-        { "followoutofcombat on/off", "Sets following target out of combat to on or off." },
-        { "followtarget", "Toggles following targets during combat." },
-        { "followtarget on/off", "Sets following target during combat to on or off." },
-        { "positional X", "Switch to positional when following targets. (any, rear, flank, front)" },
-        { "maxdistancetarget X", "Sets max distance to target. (default = 2.6)" },
-        { "maxdistanceslot X", "Sets max distance to slot. (default = 1)" },
-        { "movedelay X", "Sets AI movement decision delay. (default = 0)" },
-        { "obstaclemaps", "Toggles loading obstacle maps." },
-        { "obstaclemaps on/off", "Sets the loading of obstacle maps to on or off." },
-        { "setpresetname X", "Sets an autorotation preset for the AI, eg. setpresetname vbm default." }
-    };
+    private static readonly (string, string)[] _availableAICommands =
+    [
+        ( "on", "开启AI" ),
+        ( "off", "关闭AI" ),
+        ( "toggle", "切换 AI on/off." ),
+        ( "targetmaster", "Toggles the focus on target leader." ),
+        ( "follow slotX", "Follows the specified slot, eg. Slot1." ),
+        ( "follow name", "Follows the specified party member by name." ),
+        ( "ui", "Toggles the AI menu." ),
+        ( "forbidactions", "Toggles the forbidding of actions. (only for autorotation)" ),
+        ( "forbidactions on/off", "Sets forbid actions to on or off. (only for autorotation)" ),
+        ( "forbidmovement", "Toggles the forbidding of movement." ),
+        ( "forbidmovement on/off", "Sets forbid movement to on or off." ),
+        ( "idlewhilemounted", "Toggles the idling while mounted." ),
+        ( "idlewhilemounted on/off", "Sets idle while mounted to on or off." ),
+        ( "followcombat", "Toggles following during combat." ),
+        ( "followcombat on/off", "Sets following following during combat to on or off." ),
+        ( "followmodule", "Toggles following during active boss module." ),
+        ( "followmodule on/off", "Sets following following during active boss module to on or off." ),
+        ( "followoutofcombat", "Toggles following during out of combat." ),
+        ( "followoutofcombat on/off", "Sets following target out of combat to on or off." ),
+        ( "followtarget", "Toggles following targets during combat." ),
+        ( "followtarget on/off", "Sets following target during combat to on or off." ),
+        ( "positional X", "Switch to positional when following targets. (any, rear, flank, front)" ),
+        ( "maxdistancetarget X", "Sets max distance to target. (default = 2.6)" ),
+        ( "maxdistanceslot X", "Sets max distance to slot. (default = 1)" ),
+        ( "movedelay X", "Sets AI movement decision delay. (default = 0)" ),
+        ( "obstaclemaps", "Toggles loading obstacle maps." ),
+        ( "obstaclemaps on/off", "Sets the loading of obstacle maps to on or off." ),
+        ( "setpresetname X", "Sets an autorotation preset for the AI, eg. setpresetname vbm default." )
+    ];
 
-    private static readonly Dictionary<string, string> _autorotationCommands = new()
-    {
-        { "ar clear", "Clear current preset; autorotation will do nothing unless plan is active" },
-        { "ar disable", "Force disable autorotation; no actions will be executed automatically even if plan is active." },
-        { "ar set Preset", "Start executing specified preset." },
-        { "ar toggle", "Force disable autorotation if not already; otherwise clear overrides." },
-        { "ar toggle Preset", "Start executing specified preset unless it's already active; clear otherwise" },
-        { "ar ui", "Toggle autorotation ui." },
-    };
+    private static readonly (string, string)[] _autorotationCommands =
+    [
+        ( "ar clear", "Clear current preset; autorotation will do nothing unless plan is active" ),
+        ( "ar disable", "Force disable autorotation; no actions will be executed automatically even if plan is active." ),
+        ( "ar set Preset", "Start executing specified preset." ),
+        ( "ar toggle", "Force disable autorotation if not already; otherwise clear overrides." ),
+        ( "ar toggle Preset", "Start executing specified preset unless it's already active; clear otherwise" ),
+        ( "ar ui", "Toggle autorotation ui." ),
+    ];
 
-    private static readonly Dictionary<string, string> _availableOtherCommands = new()
-    {
-        { "restorerotation", "Toggle restore character orientation after action use setting." },
-        { "resetcolors", "Resets all colors to their default values." },
-        { "d", "Opens the debug menu." },
-        { "r", "Opens the replay menu." },
-        { "r on/off", "Starts/stops recording a replay." },
-        { "gc", "Triggers the garbage collection." },
-        { "cfg", "Lists all configs." }
-    };
+    private static readonly (string, string)[] _availableOtherCommands =
+    [
+        ( "restorerotation", "Toggle restore character orientation after action use setting." ),
+        ( "resetcolors", "Resets all colors to their default values." ),
+        ( "d", "Opens the debug menu." ),
+        ( "r", "Opens the replay menu." ),
+        ( "r on/off", "Starts/stops recording a replay." ),
+        ( "gc", "Triggers the garbage collection." ),
+        ( "cfg", "Lists all configs." )
+    ];
 
     private static void DrawAvailableCommands()
     {
@@ -136,26 +133,27 @@ public sealed class ConfigUI : IDisposable
         ImGui.Separator();
         ImGui.Text("AI:");
         ImGui.Separator();
-        foreach (var command in _availableAICommands)
+        for (var i = 0; i < 28; ++i)
         {
-            ImGui.Text($"/bmrai {command.Key}: {command.Value}");
+            ref readonly var text = ref _availableAICommands[i];
+            ImGui.Text($"/bmrai {text.Item1}: {text.Item2}");
         }
         ImGui.Separator();
         ImGui.Text("Autorotation commands:");
         ImGui.Separator();
-        foreach (var command in _autorotationCommands)
+        for (var i = 0; i < 6; ++i)
         {
-            ImGui.Text($"/bmr {command.Key}: {command.Value}");
+            ref readonly var text = ref _autorotationCommands[i];
+            ImGui.Text($"/bmr {text.Item1}: {text.Item2}");
         }
         ImGui.Separator();
         ImGui.Text("Other commands:");
         ImGui.Separator();
-        foreach (var command in _availableOtherCommands)
+        for (var i = 0; i < 7; ++i)
         {
-            ImGui.Text($"/bmr {command.Key}: {command.Value}");
+            ref readonly var text = ref _availableOtherCommands[i];
+            ImGui.Text($"/bmr {text.Item1}: {text.Item2}");
         }
-        ImGui.Separator();
-        ImGui.Text("/vbm can be used instead of /bmr and /vbmai can be used instead of /bmrai");
     }
 
     private void DrawSettings()
@@ -194,7 +192,7 @@ public sealed class ConfigUI : IDisposable
 
     private static void SortByOrder(List<UINode> nodes)
     {
-        nodes.SortBy(e => e.Order);
+        nodes.Sort((a, b) => a.Order.CompareTo(b.Order));
         foreach (var n in nodes)
             SortByOrder(n.Children);
     }

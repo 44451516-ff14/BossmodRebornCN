@@ -34,7 +34,7 @@ public enum IconID : uint
     NegativeChargeBoss = 290 // Boss
 }
 
-class Magnetism(BossModule module) : Components.GenericKnockback(module)
+sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
 {
     private BitMask positiveCharge;
     private BitMask negativeCharge;
@@ -144,7 +144,7 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(module)
+sealed class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Magnetism _kb = module.FindComponent<Magnetism>()!;
     private static readonly AOEShapeDonut donut = new(8f, 60f);
@@ -189,17 +189,15 @@ class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ThunderousShower(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ThunderousShower), 6f, 8);
-class Electrowave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Electrowave));
-class Magnetron(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Magnetron));
+sealed class ThunderousShower(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ThunderousShower, 6f, 8);
+sealed class ElectrowaveMagnetron(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.Electrowave, (uint)AID.Magnetron]);
 
-class UrnaVariabilisStates : StateMachineBuilder
+sealed class UrnaVariabilisStates : StateMachineBuilder
 {
     public UrnaVariabilisStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Magnetron>()
-            .ActivateOnEnter<Electrowave>()
+            .ActivateOnEnter<ElectrowaveMagnetron>()
             .ActivateOnEnter<Magnetism>()
             .ActivateOnEnter<MagnetismCircleDonut>()
             .ActivateOnEnter<ThunderousShower>();
@@ -207,4 +205,4 @@ class UrnaVariabilisStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13158)]
-public class UrnaVariabilis(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class UrnaVariabilis(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

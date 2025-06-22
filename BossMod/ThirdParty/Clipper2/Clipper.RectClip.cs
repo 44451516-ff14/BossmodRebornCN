@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 
 namespace Clipper2Lib
 {
-  public class OutPt2
+  public sealed class OutPt2
   {
     public OutPt2? next;
     public OutPt2? prev;
@@ -972,7 +972,7 @@ namespace Clipper2Lib
 
   } // RectClip class
 
-  public class RectClipLines64 : RectClip64
+  public sealed class RectClipLines64 : RectClip64
   {
     internal RectClipLines64(Rect64 rect) : base(rect) { }
 

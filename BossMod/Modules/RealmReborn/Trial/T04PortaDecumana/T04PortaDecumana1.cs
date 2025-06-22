@@ -56,21 +56,21 @@ public enum SID : uint
     VortexBarrier = 3012, // Boss->Boss, extra=0x0
 }
 
-class EarthenFury(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.EarthenFuryAOE));
-class Geocrush(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Geocrush), 25); // TODO: verify falloff...
+class EarthenFury(BossModule module) : Components.RaidwideCast(module, (uint)AID.EarthenFuryAOE);
+class Geocrush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geocrush, 25); // TODO: verify falloff...
 
-abstract class Landslide(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40, 3));
-class Landslide1(BossModule module) : Landslide(module, AID.Landslide1);
-class Landslide2(BossModule module) : Landslide(module, AID.Landslide2);
+abstract class Landslide(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40, 3));
+class Landslide1(BossModule module) : Landslide(module, (uint)AID.Landslide1);
+class Landslide2(BossModule module) : Landslide(module, (uint)AID.Landslide2);
 
-class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WeightOfTheLand), 6);
-class AerialBlast(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AerialBlastAOE));
-class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EyeOfTheStormAOE), new AOEShapeDonut(12.5f, 25));
-class MistralShriek(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MistralShriek), 23);
-class Hellfire(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HellfireAOE));
-class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RadiantPlumeAOE), 8);
+class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLand, 6);
+class AerialBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.AerialBlastAOE);
+class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheStormAOE, new AOEShapeDonut(12.5f, 25));
+class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralShriek, 23);
+class Hellfire(BossModule module) : Components.RaidwideCast(module, (uint)AID.HellfireAOE);
+class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8);
 
-class VulcanBurst(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.VulcanBurst), 15, stopAtWall: true)
+class VulcanBurst(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VulcanBurst, 15, stopAtWall: true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -99,11 +99,11 @@ class T04PortaDecumana1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830, NameID = 2137, SortOrder = 1)]
-public class T04PortaDecumana1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-772, -600), new ArenaBoundsCircle(19.5f))
+public class T04PortaDecumana1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-772f, -600f), new ArenaBoundsCircle(19.5f))
 {
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (PrimaryActor.FindStatus(SID.Invincibility) != null || PrimaryActor.FindStatus(SID.VortexBarrier) != null)
+        if (PrimaryActor.FindStatus((uint)SID.Invincibility) != null || PrimaryActor.FindStatus((uint)SID.VortexBarrier) != null)
         {
             var e = hints.FindEnemy(PrimaryActor);
             if (e != null)

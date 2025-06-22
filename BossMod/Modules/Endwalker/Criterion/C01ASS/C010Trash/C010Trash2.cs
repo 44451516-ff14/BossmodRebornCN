@@ -2,58 +2,60 @@
 
 public enum OID : uint
 {
-    NDullahan = 0x3AD7, // R2.500, x1
-    SDullahan = 0x3AE0, // R2.500, x1
-    NArmor = 0x3AD8, // R2.500, x1
-    SArmor = 0x3AE1, // R2.500, x1
+    NDullahan = 0x3AD7, // R2.5
+    SDullahan = 0x3AE0, // R2.5
+    NArmor = 0x3AD8, // R2.5
+    SArmor = 0x3AE1, // R2.5
 }
 
 public enum AID : uint
 {
     // Armor
     AutoAttack1 = 31109, // NArmor/SArmor->player, no cast, single-target
-    NDominionSlash = 31082, // NArmor->self, 3.5s cast, range 12 90-degree cone aoe
+
+    NDominionSlash = 31082, // NArmor->self, 3.5s cast, range 12 90-degree cone
     NInfernalWeight = 31083, // NArmor->self, 5.0s cast, raidwide
     NHellsNebula = 31084, // NArmor->self, 4.0s cast, raidwide set hp to 1
-    SDominionSlash = 31106, // SArmor->self, 3.5s cast, range 12 90-degree cone aoe
+    SDominionSlash = 31106, // SArmor->self, 3.5s cast, range 12 90-degree cone
     SInfernalWeight = 31107, // SArmor->self, 5.0s cast, raidwide
     SHellsNebula = 31108, // SArmor->self, 4.0s cast, raidwide set hp to 1
 
     // Dullahan
     AutoAttack2 = 31318, // NDullahan/SDullahan->player, no cast, single-target
-    NBlightedGloom = 31078, // NDullahan->self, 4.0s cast, range 10 circle aoe
+
+    NBlightedGloom = 31078, // NDullahan->self, 4.0s cast, range 10 circle
     NKingsWill = 31080, // NDullahan->self, 2.5s cast, single-target damage up
     NInfernalPain = 31081, // NDullahan->self, 5.0s cast, raidwide
-    SBlightedGloom = 31102, // SDullahan->self, 4.0s cast, range 10 circle aoe
+    SBlightedGloom = 31102, // SDullahan->self, 4.0s cast, range 10 circle
     SKingsWill = 31104, // SDullahan->self, 2.5s cast, single-target damage up
-    SInfernalPain = 31105, // SDullahan->self, 5.0s cast, raidwide
+    SInfernalPain = 31105 // SDullahan->self, 5.0s cast, raidwide
 }
 
-abstract class DominionSlash(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(12, 45.Degrees()));
-class NDominionSlash(BossModule module) : DominionSlash(module, AID.NDominionSlash);
-class SDominionSlash(BossModule module) : DominionSlash(module, AID.SDominionSlash);
+abstract class DominionSlash(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(12f, 45f.Degrees()));
+sealed class NDominionSlash(BossModule module) : DominionSlash(module, (uint)AID.NDominionSlash);
+sealed class SDominionSlash(BossModule module) : DominionSlash(module, (uint)AID.SDominionSlash);
 
-abstract class InfernalWeight(BossModule module, AID aid) : Components.RaidwideCast(module, ActionID.MakeSpell(aid), "Raidwide with slow");
-class NInfernalWeight(BossModule module) : InfernalWeight(module, AID.NInfernalWeight);
-class SInfernalWeight(BossModule module) : InfernalWeight(module, AID.SInfernalWeight);
+abstract class InfernalWeight(BossModule module, uint aid) : Components.RaidwideCast(module, aid, "Raidwide with slow");
+sealed class NInfernalWeight(BossModule module) : InfernalWeight(module, (uint)AID.NInfernalWeight);
+sealed class SInfernalWeight(BossModule module) : InfernalWeight(module, (uint)AID.SInfernalWeight);
 
-abstract class HellsNebula(BossModule module, AID aid) : Components.CastHint(module, ActionID.MakeSpell(aid), "Reduce hp to 1");
-class NHellsNebula(BossModule module) : HellsNebula(module, AID.NHellsNebula);
-class SHellsNebula(BossModule module) : HellsNebula(module, AID.SHellsNebula);
+abstract class HellsNebula(BossModule module, uint aid) : Components.CastHint(module, aid, "Reduce hp to 1");
+sealed class NHellsNebula(BossModule module) : HellsNebula(module, (uint)AID.NHellsNebula);
+sealed class SHellsNebula(BossModule module) : HellsNebula(module, (uint)AID.SHellsNebula);
 
-abstract class BlightedGloom(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10);
-class NBlightedGloom(BossModule module) : BlightedGloom(module, AID.NBlightedGloom);
-class SBlightedGloom(BossModule module) : BlightedGloom(module, AID.SBlightedGloom);
+abstract class BlightedGloom(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f);
+sealed class NBlightedGloom(BossModule module) : BlightedGloom(module, (uint)AID.NBlightedGloom);
+sealed class SBlightedGloom(BossModule module) : BlightedGloom(module, (uint)AID.SBlightedGloom);
 
-abstract class KingsWill(BossModule module, AID aid) : Components.CastHint(module, ActionID.MakeSpell(aid), "Damage increase buff");
-class NKingsWill(BossModule module) : KingsWill(module, AID.NKingsWill);
-class SKingsWill(BossModule module) : KingsWill(module, AID.SKingsWill);
+abstract class KingsWill(BossModule module, uint aid) : Components.CastHint(module, aid, "Damage increase buff");
+sealed class NKingsWill(BossModule module) : KingsWill(module, (uint)AID.NKingsWill);
+sealed class SKingsWill(BossModule module) : KingsWill(module, (uint)AID.SKingsWill);
 
-abstract class InfernalPain(BossModule module, AID aid) : Components.RaidwideCast(module, ActionID.MakeSpell(aid));
-class NInfernalPain(BossModule module) : InfernalPain(module, AID.NInfernalPain);
-class SInfernalPain(BossModule module) : InfernalPain(module, AID.SInfernalPain);
+abstract class InfernalPain(BossModule module, uint aid) : Components.RaidwideCast(module, aid);
+sealed class NInfernalPain(BossModule module) : InfernalPain(module, (uint)AID.NInfernalPain);
+sealed class SInfernalPain(BossModule module) : InfernalPain(module, (uint)AID.SInfernalPain);
 
-class C010DullahanStates : StateMachineBuilder
+abstract class C010DullahanStates : StateMachineBuilder
 {
     public C010DullahanStates(BossModule module, bool savage) : base(module)
     {
@@ -88,14 +90,14 @@ class C010DullahanStates : StateMachineBuilder
             };
     }
 }
-class C010NTrash2States(BossModule module) : C010DullahanStates(module, false);
-class C010STrash2States(BossModule module) : C010DullahanStates(module, true);
+sealed class C010NTrash2States(BossModule module) : C010DullahanStates(module, false);
+sealed class C010STrash2States(BossModule module) : C010DullahanStates(module, true);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NDullahan, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878, NameID = 11506, SortOrder = 3)]
-public class C010NTrash2(WorldState ws, Actor primary) : Trash2Arena(ws, primary, false);
+public sealed class C010NTrash2(WorldState ws, Actor primary) : Trash2Arena(ws, primary, false);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SDullahan, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879, NameID = 11506, SortOrder = 3)]
-public class C010STrash2(WorldState ws, Actor primary) : Trash2Arena(ws, primary, true);
+public sealed class C010STrash2(WorldState ws, Actor primary) : Trash2Arena(ws, primary, true);
 
 public abstract class Trash2Arena(WorldState ws, Actor primary, bool savage) : BossModule(ws, primary, arena.Center, arena)
 {

@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
-class Exodus(BossModule module) : Components.RaidwideInstant(module, ActionID.MakeSpell(AID.Exodus), 7.2f)
+class Exodus(BossModule module) : Components.RaidwideInstant(module, (uint)AID.Exodus, 7.2f)
 {
     private int _numCrystalsDestroyed;
 

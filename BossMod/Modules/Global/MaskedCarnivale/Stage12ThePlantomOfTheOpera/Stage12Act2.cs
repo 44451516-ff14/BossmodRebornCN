@@ -15,10 +15,10 @@ public enum AID : uint
     InflammableFumes = 14753 // Boss->self, 15.0s cast, range 50 circle
 }
 
-class WildHorn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WildHorn), new AOEShapeCone(16.96f, 60f.Degrees()));
-class Trounce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Trounce), new AOEShapeCone(46.96f, 30f.Degrees()));
-class SporeSac(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SporeSac), "Calls Roselets. Prepare Ice Spikes if available.");
-class InflammableFumes(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.InflammableFumes), false, true);
+class WildHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildHorn, new AOEShapeCone(16.96f, 60f.Degrees()));
+class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trounce, new AOEShapeCone(46.96f, 30f.Degrees()));
+class SporeSac(BossModule module) : Components.CastHint(module, (uint)AID.SporeSac, "Calls Roselets. Prepare Ice Spikes if available.");
+class InflammableFumes(BossModule module) : Components.CastInterruptHint(module, (uint)AID.InflammableFumes, false, true);
 
 class Hints(BossModule module) : BossComponent(module)
 {

@@ -3,7 +3,7 @@
 // state related to channeling [over]flow mechanics
 class ChannelingFlow(BossModule module) : BossComponent(module)
 {
-    public int NumStunned { get; private set; }
+    public int NumStunned;
     private readonly (WDir, DateTime)[] _arrows = new (WDir, DateTime)[PartyState.MaxPartySize];
 
     private const float _typhoonHalfWidth = 2.5f;
@@ -11,7 +11,7 @@ class ChannelingFlow(BossModule module) : BossComponent(module)
     public bool SlotActive(int slot)
     {
         var (dir, expire) = _arrows[slot];
-        return dir != new WDir() && (expire - WorldState.CurrentTime).TotalSeconds < 13;
+        return dir != new WDir() && (expire - WorldState.CurrentTime).TotalSeconds < 13d;
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -58,21 +58,21 @@ class ChannelingFlow(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.MarkFlowN:
+            case (uint)SID.MarkFlowN:
                 SetArrow(actor, new(0, -1), status.ExpireAt);
                 break;
-            case SID.MarkFlowS:
+            case (uint)SID.MarkFlowS:
                 SetArrow(actor, new(0, +1), status.ExpireAt);
                 break;
-            case SID.MarkFlowW:
+            case (uint)SID.MarkFlowW:
                 SetArrow(actor, new(-1, 0), status.ExpireAt);
                 break;
-            case SID.MarkFlowE:
+            case (uint)SID.MarkFlowE:
                 SetArrow(actor, new(+1, 0), status.ExpireAt);
                 break;
-            case SID.Stun:
+            case (uint)SID.Stun:
                 ++NumStunned;
                 break;
         }
@@ -80,15 +80,15 @@ class ChannelingFlow(BossModule module) : BossComponent(module)
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.MarkFlowN:
-            case SID.MarkFlowS:
-            case SID.MarkFlowW:
-            case SID.MarkFlowE:
-                SetArrow(actor, new(), new());
+            case (uint)SID.MarkFlowN:
+            case (uint)SID.MarkFlowS:
+            case (uint)SID.MarkFlowW:
+            case (uint)SID.MarkFlowE:
+                SetArrow(actor, default, default);
                 break;
-            case SID.Stun:
+            case (uint)SID.Stun:
                 --NumStunned;
                 break;
         }

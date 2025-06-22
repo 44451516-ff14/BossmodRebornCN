@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P2EarthMissileBaited(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, ActionID.MakeSpell(AID.EarthMissileBaited), m => m.Enemies(OID.VoidzoneEarthMissileBaited).Where(z => z.EventState != 7), 0.9f);
+class P2EarthMissileBaited(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.EarthMissileBaited, m => m.Enemies(OID.VoidzoneEarthMissileBaited).Where(z => z.EventState != 7), 0.9f);
 
-class P2EarthMissileIce(BossModule module) : Components.VoidzoneAtCastTarget(module, 10, ActionID.MakeSpell(AID.EarthMissileIce), Voidzones, 0.8f) // TODO: verify larger radius...
+class P2EarthMissileIce(BossModule module) : Components.VoidzoneAtCastTarget(module, 10, (uint)AID.EarthMissileIce, Voidzones, 0.8f) // TODO: verify larger radius...
 {
     private static IEnumerable<Actor> Voidzones(BossModule m)
     {
@@ -51,7 +51,7 @@ class P2Enumeration(BossModule module) : Components.UniformStackSpread(module, 5
     }
 }
 
-class P2HiddenMinefield(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HiddenMinefield), 5)
+class P2HiddenMinefield(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HiddenMinefield, 5)
 {
     private readonly List<WPos> _mines = [];
 
@@ -64,7 +64,7 @@ class P2HiddenMinefield(BossModule module) : Components.SimpleAOEs(module, Actio
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _mines.Add(caster.Position);
     }
 

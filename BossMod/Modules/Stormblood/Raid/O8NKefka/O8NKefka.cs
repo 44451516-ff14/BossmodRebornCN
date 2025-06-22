@@ -45,51 +45,50 @@ public enum AID : uint
     UltimaUpsurge = 10541, // Boss->self, 4.0s cast, range 100 circle
 }
 
-class Hyperdrive(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Hyperdrive));
+class Hyperdrive(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Hyperdrive);
+class BlizzardBlitzDonut(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BlizzardBlitzDonut1, (uint)AID.BlizzardBlitzDonut2], new AOEShapeDonut(10f, 40f));
+class BlizzardBlitzCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BlizzardBlitzCircle1, (uint)AID.BlizzardBlitzCircle2], 10f);
 
-abstract class BlizzardBlitzDonut(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(10, 40));
-class BlizzardBlitzDonut1(BossModule module) : BlizzardBlitzDonut(module, AID.BlizzardBlitzDonut1);
-class BlizzardBlitzDonut2(BossModule module) : BlizzardBlitzDonut(module, AID.BlizzardBlitzDonut2);
+class FlagrantFireSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FlagrantFireSpread, 5f);
+class FlagrantFireStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FlagrantFireStack, 6f, 8, 8);
 
-abstract class BlizzardBlitzCircle(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10);
-class BlizzardBlitzCircle1(BossModule module) : BlizzardBlitzCircle(module, AID.BlizzardBlitzCircle1);
-class BlizzardBlitzCircle2(BossModule module) : BlizzardBlitzCircle(module, AID.BlizzardBlitzCircle2);
+class ThrummingThunder(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ThrummingThunder1, (uint)AID.ThrummingThunder2], new AOEShapeRect(40, 5f));
 
-class FlagrantFireSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FlagrantFireSpread), 5);
-class FlagrantFireStack(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.FlagrantFireStack), 6, 8, 8);
+class UltimaUpsurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.UltimaUpsurge);
 
-abstract class ThrummingThunder(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40, 5));
-class ThrummingThunder1(BossModule module) : ThrummingThunder(module, AID.ThrummingThunder1);
-class ThrummingThunder2(BossModule module) : ThrummingThunder(module, AID.ThrummingThunder2);
-
-class UltimaUpsurge(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.UltimaUpsurge));
-
-class AeroAssault(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AeroAssault), 10)
+class AeroAssault(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AeroAssault, 10f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var c in Casters)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Position, 15f, Angle.FromDirection(Arena.Center - c.Position).Normalized(), 45.Degrees()), Module.CastFinishAt(c.CastInfo));
+        if (Casters.Count != 0)
+        {
+            var c = Casters[0];
+            var act = Module.CastFinishAt(c.CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Position, 15f, Angle.FromDirection(Arena.Center - c.Position).Normalized(), 45.Degrees()), Module.CastFinishAt(c.CastInfo));
+        }
     }
 }
 
-class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Shockwave), 15, kind: Kind.DirForward)
+class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Shockwave, 15f, kind: Kind.DirForward)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var c in Casters)
-            hints.AddForbiddenZone(ShapeDistance.Cone(c.CastInfo!.Rotation.AlmostEqual(90f.Degrees(), Angle.DegToRad) ? c.Position - new WDir(-33, 0) : c.Position - new WDir(33, 0), 40, c.Rotation, 135f.Degrees()), Module.CastFinishAt(c.CastInfo));
+        if (Casters.Count != 0)
+        {
+            var c = Casters[0];
+            var act = Module.CastFinishAt(c.CastInfo);
+            if (!IsImmune(slot, act))
+                hints.AddForbiddenZone(ShapeDistance.Cone(c.CastInfo!.Rotation.AlmostEqual(90f.Degrees(), Angle.DegToRad) ? c.Position - new WDir(-33f, default) : c.Position - new WDir(33, default), 40f, c.Rotation, 135f.Degrees()), Module.CastFinishAt(c.CastInfo));
+        }
     }
 }
 
-class WaveCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WaveCannon), new AOEShapeRect(70, 3));
+class WaveCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaveCannon, new AOEShapeRect(70f, 3f));
 
-abstract class Cleave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(100, 90.Degrees()));
-class GravitationalWave(BossModule module) : Cleave(module, AID.GravitationalWave);
-class IntemperateWill(BossModule module) : Cleave(module, AID.IntemperateWill);
-
-class AveMaria(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.AveMaria), true);
-class IndolentWill(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.IndolentWill));
+class GravitationalWaveIntemperateWill(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.GravitationalWave, (uint)AID.IntemperateWill], new AOEShapeCone(100f, 90f.Degrees()));
+class AveMaria(BossModule module) : Components.CastGaze(module, (uint)AID.AveMaria, true);
+class IndolentWill(BossModule module) : Components.CastGaze(module, (uint)AID.IndolentWill);
 
 class RevoltingRuin(BossModule module) : Components.GenericAOEs(module)
 {
@@ -119,25 +118,21 @@ class O8NKefkaStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Hyperdrive>()
-            .ActivateOnEnter<BlizzardBlitzDonut1>()
-            .ActivateOnEnter<BlizzardBlitzDonut2>()
-            .ActivateOnEnter<BlizzardBlitzCircle1>()
-            .ActivateOnEnter<BlizzardBlitzCircle2>()
+            .ActivateOnEnter<BlizzardBlitzDonut>()
+            .ActivateOnEnter<BlizzardBlitzCircle>()
             .ActivateOnEnter<FlagrantFireSpread>()
             .ActivateOnEnter<FlagrantFireStack>()
-            .ActivateOnEnter<ThrummingThunder1>()
-            .ActivateOnEnter<ThrummingThunder2>()
+            .ActivateOnEnter<ThrummingThunder>()
             .ActivateOnEnter<UltimaUpsurge>()
             .ActivateOnEnter<RevoltingRuin>()
             .ActivateOnEnter<AeroAssault>()
             .ActivateOnEnter<Shockwave>()
             .ActivateOnEnter<WaveCannon>()
-            .ActivateOnEnter<GravitationalWave>()
-            .ActivateOnEnter<IntemperateWill>()
+            .ActivateOnEnter<GravitationalWaveIntemperateWill>()
             .ActivateOnEnter<AveMaria>()
             .ActivateOnEnter<IndolentWill>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (LTS, Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 289, NameID = 7131)]
-public class O8NKefka(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20));
+public class O8NKefka(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20f));

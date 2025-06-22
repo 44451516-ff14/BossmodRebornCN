@@ -15,7 +15,7 @@ class VenomTowers(BossModule module) : BossComponent(module)
         foreach (var t in _activeTowerOffsets)
         {
             var origin = Arena.Center + t;
-            Arena.AddCircle(origin, _radius, Raid.WithoutSlot(false, true, true).InRadius(origin, _radius).Any() ? Colors.Safe : Colors.Danger);
+            Arena.AddCircle(origin, _radius, Raid.WithoutSlot(false, true, true).InRadius(origin, _radius).Any() ? Colors.Safe : default);
         }
     }
 
@@ -31,14 +31,14 @@ class VenomTowers(BossModule module) : BossComponent(module)
             8 => new(0, +_meleeOffset),
             9 => new(-_rangedOffset, +_rangedOffset),
             10 => new(+_rangedOffset, +_rangedOffset),
-            _ => new()
+            _ => default
         };
         if (offset == new WDir())
             return;
 
-        if (state == 0x00020001)
+        if (state == 0x00020001u)
             _activeTowerOffsets.Add(offset);
-        else if (state is 0x00080004 or 0x00100004) // soaked or unsoaked
+        else if (state is 0x00080004u or 0x00100004u) // soaked or unsoaked
             _activeTowerOffsets.Remove(offset);
     }
 }

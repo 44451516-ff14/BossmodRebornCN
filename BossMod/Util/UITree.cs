@@ -2,11 +2,11 @@
 
 namespace BossMod;
 
-public class UITree
+public sealed class UITree
 {
     private uint _selectedId;
 
-    public record struct NodeProperties(string Text, bool Leaf = false, uint Color = 0)
+    public record struct NodeProperties(string Text, bool Leaf = false, uint Color = default)
     {
         public uint Colors = Color == 0 ? BossMod.Colors.TextColor1 : Color;
     }

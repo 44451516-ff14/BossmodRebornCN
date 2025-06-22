@@ -13,10 +13,10 @@ public enum AID : uint
     BlizzardII = 39624 // Boss->self, 5.0s cast, range 40 45-degree cone
 }
 
-class FireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireII), 5f);
-class BlizzardII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlizzardII), new AOEShapeCone(40f, 22.5f.Degrees()));
+sealed class FireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireII, 5f);
+sealed class BlizzardII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlizzardII, new AOEShapeCone(40f, 22.5f.Degrees()));
 
-class CrystalIncarnationStates : StateMachineBuilder
+sealed class CrystalIncarnationStates : StateMachineBuilder
 {
     public CrystalIncarnationStates(BossModule module) : base(module)
     {
@@ -27,4 +27,4 @@ class CrystalIncarnationStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.SS, NameID = 13407)]
-public class CrystalIncarnation(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class CrystalIncarnation(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

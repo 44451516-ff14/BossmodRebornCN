@@ -8,7 +8,7 @@ class P2MirrorMirrorReflectedScytheKickBlue : Components.GenericAOEs
 
     private static readonly AOEShapeDonut _shape = new(4f, 20f);
 
-    public P2MirrorMirrorReflectedScytheKickBlue(BossModule module) : base(module, ActionID.MakeSpell(AID.ReflectedScytheKickBlue))
+    public P2MirrorMirrorReflectedScytheKickBlue(BossModule module) : base(module, (uint)AID.ReflectedScytheKickBlue)
     {
         foreach (var (slot, group) in Service.Config.Get<FRUConfig>().P2MirrorMirror1SpreadSpots.Resolve(Raid))
             _rangedSpots[slot] = group >= 4;
@@ -45,17 +45,17 @@ class P2MirrorMirrorReflectedScytheKickBlue : Components.GenericAOEs
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ScytheKick && _blueMirror != default)
-            _aoe = new(_shape, Arena.Center + 20 * _blueMirror, default, Module.CastFinishAt(spell));
+            _aoe = new(_shape, Arena.Center + 20f * _blueMirror, default, Module.CastFinishAt(spell));
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index is >= 0x01 and <= 0x08 && state == 0x00020001)
+        if (index is >= 0x01 and <= 0x08 && state == 0x00020001u)
             _blueMirror = (225f - index * 45f).Degrees().ToDirection();
     }
 }
 
-class P2MirrorMirrorReflectedScytheKickRed(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ReflectedScytheKickRed), new AOEShapeDonut(4, 20))
+class P2MirrorMirrorReflectedScytheKickRed(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ReflectedScytheKickRed, new AOEShapeDonut(4f, 20f))
 {
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -68,7 +68,7 @@ class P2MirrorMirrorReflectedScytheKickRed(BossModule module) : Components.Simpl
     }
 }
 
-class P2MirrorMirrorHouseOfLight(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.HouseOfLight))
+class P2MirrorMirrorHouseOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLight)
 {
     public readonly record struct Source(Actor Actor, DateTime Activation);
 
@@ -130,7 +130,7 @@ class P2MirrorMirrorHouseOfLight(BossModule module) : Components.GenericBaitAway
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index is >= 1 and <= 8 && state == 0x00020001)
+        if (index is >= 0x01 and <= 0x08 && state == 0x00020001u)
         {
             _blueMirror = (225f - index * 45f).Degrees();
         }

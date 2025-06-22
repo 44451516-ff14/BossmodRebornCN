@@ -45,7 +45,7 @@ public enum IconID : uint
     ChasingAOE = 197 // player
 }
 
-class MaliciousMistArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(14f, 20f);
     private AOEInstance? _aoe;
@@ -59,7 +59,7 @@ class MaliciousMistArenaChange(BossModule module) : Components.GenericAOEs(modul
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x00)
+        if (state == 0x00020001u && index == 0x00u)
         {
             Arena.Bounds = D081HisRoyalHeadnessLeonoggI.DefaultBounds;
             _aoe = null;
@@ -67,14 +67,14 @@ class MaliciousMistArenaChange(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-class LoomingNightmare(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(4), ActionID.MakeSpell(AID.LoomingNightmareFirst), ActionID.MakeSpell(AID.LoomingNightmareRest), 3, 1.6f, 5, true, (uint)IconID.ChasingAOE)
+sealed class LoomingNightmare(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.LoomingNightmareFirst, (uint)AID.LoomingNightmareRest, 3, 1.6f, 5, true, (uint)IconID.ChasingAOE)
 {
     private int totalChasers;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
-        if (spell.Action == ActionFirst)
+        if (spell.Action.ID == ActionFirst)
         {
             ++totalChasers;
             if (totalChasers > 1)
@@ -90,7 +90,7 @@ class LoomingNightmare(BossModule module) : Components.StandardChasingAOEs(modul
     }
 }
 
-class FallingNightmare(BossModule module) : Components.GenericAOEs(module)
+sealed class FallingNightmare(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(2);
     private readonly List<AOEInstance> _aoes = [];
@@ -99,7 +99,7 @@ class FallingNightmare(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.NobleNoggin && id == 0x11D1)
+        if (actor.OID == (uint)OID.NobleNoggin && id == 0x11D1u)
             _aoes.Add(new(circle, actor.Position, default, WorldState.FutureTime(3d))); // can be 3 or 4 seconds depending on mechanic
     }
 
@@ -110,7 +110,7 @@ class FallingNightmare(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
+sealed class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(6f, 1f);
     private readonly List<Actor> _charges = [];
@@ -120,7 +120,7 @@ class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
         var count = _charges.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var c = _charges[i];
@@ -137,12 +137,12 @@ class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x1E3C)
+        if (id == 0x1E3Cu)
             _charges.Remove(actor);
     }
 }
 
-class EvilScheme(BossModule module) : Components.Exaflare(module, 4f)
+sealed class EvilScheme(BossModule module) : Components.Exaflare(module, 4f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -171,14 +171,14 @@ class EvilScheme(BossModule module) : Components.Exaflare(module, 4f)
     }
 }
 
-class MaliciousMist(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MaliciousMist));
+sealed class MaliciousMist(BossModule module) : Components.RaidwideCast(module, (uint)AID.MaliciousMist);
 
-class Scream : Components.SimpleAOEs
+sealed class Scream : Components.SimpleAOEs
 {
-    public Scream(BossModule module) : base(module, ActionID.MakeSpell(AID.Scream), new AOEShapeCone(20f, 30f.Degrees()), 4) { MaxDangerColor = 2; }
+    public Scream(BossModule module) : base(module, (uint)AID.Scream, new AOEShapeCone(20f, 30f.Degrees()), 4) { MaxDangerColor = 2; }
 }
 
-class D081HisRoyalHeadnessLeonoggIStates : StateMachineBuilder
+sealed class D081HisRoyalHeadnessLeonoggIStates : StateMachineBuilder
 {
     public D081HisRoyalHeadnessLeonoggIStates(BossModule module) : base(module)
     {
@@ -194,9 +194,9 @@ class D081HisRoyalHeadnessLeonoggIStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 13073)]
-public class D081HisRoyalHeadnessLeonoggI(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D081HisRoyalHeadnessLeonoggI(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
-    public static readonly WPos ArenaCenter = new(0, 150);
+    public static readonly WPos ArenaCenter = new(default, 150f);
     public static readonly ArenaBoundsCircle StartingBounds = new(19.5f);
-    public static readonly ArenaBoundsCircle DefaultBounds = new(14);
+    public static readonly ArenaBoundsCircle DefaultBounds = new(14f);
 }

@@ -28,7 +28,7 @@ public enum IconID : uint
     DigestiveFluid = 14, // player
 }
 
-class DigestiveFluid(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, ActionID.MakeSpell(AID.Digest), m => m.Enemies(OID.WaterVoidzone).Where(z => z.EventState != 7), 0.7f);
+class DigestiveFluid(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.Digest, m => m.Enemies(OID.WaterVoidzone).Where(z => z.EventState != 7), 0.7f);
 class BindVoidzone(BossModule module) : Components.Voidzone(module, 3, m => m.Enemies(OID.BindVoidzone).Where(z => z.EventState != 7));
 
 class DigestiveFluidBait(BossModule module) : Components.GenericBaitAway(module)

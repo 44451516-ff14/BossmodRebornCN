@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS4QueensGuard;
 
-class WindsOfWeight(BossModule module) : Components.GenericAOEs(module)
+sealed class WindsOfWeight(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> _green = [];
     private readonly List<Actor> _purple = [];

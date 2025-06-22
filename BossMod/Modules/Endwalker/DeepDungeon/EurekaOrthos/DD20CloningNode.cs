@@ -32,14 +32,14 @@ class FlameBreath(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -82,7 +82,7 @@ class FlameBreath(BossModule module) : Components.GenericAOEs(module)
     private static WPos RoundPosition(WPos position) => new(MathF.Round(position.X * 2) * 0.5f, MathF.Round(position.Z * 2) * 0.5f);
 }
 
-class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PiercingLaser), new AOEShapeRect(40f, 2.5f));
+class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PiercingLaser, new AOEShapeRect(40f, 2.5f));
 
 class DD20CloningNodeStates : StateMachineBuilder
 {

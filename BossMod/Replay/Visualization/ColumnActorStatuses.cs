@@ -2,7 +2,7 @@
 
 namespace BossMod.ReplayVisualization;
 
-public class ColumnActorStatuses : Timeline.ColumnGroup
+public sealed class ColumnActorStatuses : Timeline.ColumnGroup
 {
     private readonly StateMachineTree _tree;
     private readonly List<int> _phaseBranches;

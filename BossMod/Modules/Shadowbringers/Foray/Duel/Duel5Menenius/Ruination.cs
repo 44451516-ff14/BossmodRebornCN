@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Shadowbringers.Foray.Duel.Duel5Menenius;
 
-class RuinationCross(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Ruination), new AOEShapeCross(40f, 4f));
+sealed class RuinationCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ruination, new AOEShapeCross(40f, 4f));
 
-class RuinationExaflare(BossModule module) : Components.Exaflare(module, 4f)
+sealed class RuinationExaflare(BossModule module) : Components.Exaflare(module, 4f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

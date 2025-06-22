@@ -100,11 +100,11 @@ class VoidSpark(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DeepDarkness(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DeepDarkness), new AOEShapeDonut(12f, 25f));
-class MagicBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagicBurst), 15f);
-class VoidBlizzardIIIAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidBlizzardIIIAOE), 5f);
-class AbyssalSwing(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.AbyssalSwing), new AOEShapeCone(7.5f, 45f.Degrees()), [(uint)OID.Biblioklept]);
-class AbyssalCharge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssalCharge), new AOEShapeRect(41f, 2f));
+class DeepDarkness(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeepDarkness, new AOEShapeDonut(12f, 25f));
+class MagicBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagicBurst, 15f);
+class VoidBlizzardIIIAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidBlizzardIIIAOE, 5f);
+class AbyssalSwing(BossModule module) : Components.Cleave(module, (uint)AID.AbyssalSwing, new AOEShapeCone(7.5f, 45f.Degrees()), [(uint)OID.Biblioklept]);
+class AbyssalCharge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalCharge, new AOEShapeRect(41f, 2f));
 
 class VoidCall(BossModule module) : Components.GenericTowers(module, prioritizeInsufficient: true)
 {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex2Garuda;
 
-class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.EyeOfTheStorm))
+class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, (uint)AID.EyeOfTheStorm)
 {
     private Actor? _caster;
     private DateTime _nextCastAt;
@@ -11,13 +11,13 @@ class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, ActionID
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_caster != null)
-            return new AOEInstance[1] { new(_shape, WPos.ClampToGrid(_caster.Position), new(), _nextCastAt) };
+            return new AOEInstance[1] { new(_shape, WPos.ClampToGrid(_caster.Position), default, _nextCastAt) };
         return [];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _caster = caster;
             _nextCastAt = Module.CastFinishAt(caster.CastInfo!);
@@ -26,7 +26,7 @@ class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, ActionID
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _nextCastAt = WorldState.FutureTime(4.2d);
         }

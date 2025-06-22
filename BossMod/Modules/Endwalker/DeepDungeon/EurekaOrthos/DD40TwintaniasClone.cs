@@ -22,8 +22,8 @@ public enum AID : uint
     TwistingDive = 31471 // Boss->self, 5.0s cast, range 50 width 15 rect
 }
 
-class Twister(BossModule module) : Components.CastTwister(module, 1.5f, (uint)OID.Twister, ActionID.MakeSpell(AID.TwisterVisual), 0.4f, 0.25f);
-class BitingWind(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.Gust), GetVoidzones, 0.9f)
+class Twister(BossModule module) : Components.CastTwister(module, 1.5f, (uint)OID.Twister, (uint)AID.TwisterVisual, 0.4f, 0.25f);
+class BitingWind(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Gust, GetVoidzones, 0.9f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -44,12 +44,12 @@ class BitingWind(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f
     }
 }
 
-class MeracydianSquall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MeracydianSquall), 5f);
+class MeracydianSquall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeracydianSquall, 5f);
 
-class TwistersHint(BossModule module, AID aid) : Components.CastHint(module, ActionID.MakeSpell(aid), "Twisters soon, get moving!");
-class Twisters1(BossModule module) : TwistersHint(module, AID.TwisterVisual);
-class Twisters2(BossModule module) : TwistersHint(module, AID.TwistingDive);
-class DiveTwister(BossModule module) : Components.CastTwister(module, 1.5f, (uint)OID.Twister, ActionID.MakeSpell(AID.TwistingDive), 0.4f, 0.25f);
+class TwistersHint(BossModule module, uint aid) : Components.CastHint(module, aid, "Twisters soon, get moving!");
+class Twisters1(BossModule module) : TwistersHint(module, (uint)AID.TwisterVisual);
+class Twisters2(BossModule module) : TwistersHint(module, (uint)AID.TwistingDive);
+class DiveTwister(BossModule module) : Components.CastTwister(module, 1.5f, (uint)OID.Twister, (uint)AID.TwistingDive, 0.4f, 0.25f);
 
 class TwistingDive(BossModule module) : Components.GenericAOEs(module)
 {
@@ -80,7 +80,7 @@ class TwistingDive(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Turbine(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Turbine), 15f)
+class Turbine(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Turbine, 15f, true)
 {
     private readonly BitingWind _aoe = module.FindComponent<BitingWind>()!;
     private static readonly Angle a20 = 20f.Degrees();

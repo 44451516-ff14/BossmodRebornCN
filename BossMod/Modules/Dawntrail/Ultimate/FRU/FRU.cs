@@ -1,13 +1,12 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2QuadrupleSlap(BossModule module) : Components.TankSwap(module, ActionID.MakeSpell(AID.QuadrupleSlapFirst), ActionID.MakeSpell(AID.QuadrupleSlapFirst), ActionID.MakeSpell(AID.QuadrupleSlapSecond), 4.1f, null, true);
-class P3Junction(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Junction));
-class P3BlackHalo(BossModule module) : Components.CastSharedTankbuster(module, ActionID.MakeSpell(AID.BlackHalo), new AOEShapeCone(60, 45.Degrees())); // TODO: verify angle
+class P2QuadrupleSlap(BossModule module) : Components.TankSwap(module, (uint)AID.QuadrupleSlapFirst, (uint)AID.QuadrupleSlapFirst, (uint)AID.QuadrupleSlapSecond, 4.1f, null, true);
+class P3Junction(BossModule module) : Components.CastCounter(module, (uint)AID.Junction);
+class P3BlackHalo(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.BlackHalo, new AOEShapeCone(60f, 45f.Degrees())); // TODO: verify angle
 
-abstract class P4HallowedWings(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(80, 20));
-class P4HallowedWingsL(BossModule module) : P4HallowedWings(module, AID.HallowedWingsL);
-class P4HallowedWingsR(BossModule module) : P4HallowedWings(module, AID.HallowedWingsR);
-class P5ParadiseLost(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.ParadiseLostP5AOE));
+class P4HallowedWings(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HallowedWingsL, (uint)AID.HallowedWingsR], new AOEShapeRect(80f, 20f));
+
+class P5ParadiseLost(BossModule module) : Components.CastCounter(module, (uint)AID.ParadiseLostP5AOE);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1006, NameID = 9707, PlanLevel = 100)]
 public class FRU(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena with { IsCircle = true })

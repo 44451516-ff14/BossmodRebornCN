@@ -19,6 +19,7 @@ public sealed class ReplayManager : IDisposable
         public bool AutoShowWindow;
         public bool Selected;
         public bool Disposed;
+        public bool Disposing;
         public DateTime? InitialTime;
 
         public ReplayEntry(string path, bool autoShow, DateTime? initialTime = null)
@@ -31,6 +32,7 @@ public sealed class ReplayManager : IDisposable
 
         public void Dispose()
         {
+            Disposing = true;
             Window?.Dispose();
             Cancel.Cancel();
             Replay.Wait();
@@ -175,7 +177,10 @@ public sealed class ReplayManager : IDisposable
                 if (popup)
                 {
                     if (ImGui.MenuItem("Show"))
+                    {
                         e.Show(_rotationDB);
+                        SaveHistory();
+                    }
                     if (ImGui.MenuItem("Convert to verbose"))
                         ConvertLog(e.Replay.Result, ReplayLogFormat.TextVerbose);
                     if (ImGui.MenuItem("Convert to short text"))
@@ -261,9 +266,7 @@ public sealed class ReplayManager : IDisposable
         {
             if (ImGui.Button("Open"))
             {
-                if (_path.StartsWith('"') && _path.EndsWith('"'))
-                    _path = _path[1..^1];
-
+                CleanPath();
                 _replayEntries.Add(new(_path, true));
                 SaveHistory();
             }
@@ -273,6 +276,7 @@ public sealed class ReplayManager : IDisposable
         {
             if (ImGui.Button("Analyze all"))
             {
+                CleanPath();
                 var replays = LoadAll(_path);
                 if (replays.Count > 0)
                     _analysisEntries.Add(new(_path, replays));
@@ -283,10 +287,17 @@ public sealed class ReplayManager : IDisposable
         {
             if (ImGui.Button("Load all"))
             {
+                CleanPath();
                 LoadAll(_path);
                 SaveHistory();
             }
         }
+    }
+
+    private void CleanPath()
+    {
+        if (_path.StartsWith('"') && _path.EndsWith('"'))
+            _path = _path[1..^1];
     }
 
     private List<ReplayEntry> LoadAll(string path)
@@ -333,26 +344,19 @@ public sealed class ReplayManager : IDisposable
 
     private void SaveHistory()
     {
-        if (!_config.RememberReplays)
+        if (!RememberReplays)
             return;
-        var replayHistory = new List<ReplayMemory>();
-
-        foreach (var r in _replayEntries)
-        {
-            var isOpen = r.Window?.IsOpen ?? true;
-            var currentTime = r.Window?.CurrentTime ?? default;
-            replayHistory.Add(new ReplayMemory(r.Path, isOpen, currentTime));
-        }
-
-        _config.ReplayHistory = replayHistory;
+        _config.ReplayHistory = [.. _replayEntries.Where(r => !r.Disposing).Select(r => new ReplayMemory(r.Path, r.Window?.IsOpen ?? false, r.Window?.CurrentTime ?? default))];
         _config.Modified.Fire();
     }
 
     private void RestoreHistory()
     {
-        if (!_config.RememberReplays)
+        if (!RememberReplays)
             return;
         foreach (var memory in _config.ReplayHistory)
             _replayEntries.Add(new(memory.Path, memory.IsOpen, _config.RememberReplayTimes ? memory.PlaybackPosition : null));
     }
+
+    private bool RememberReplays => Service.SigScanner == null && _config.RememberReplays;
 }

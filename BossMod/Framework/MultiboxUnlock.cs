@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace BossMod;
+﻿namespace BossMod;
 
 // utility to remove anti-multibox check
 public static partial class MultiboxUnlock

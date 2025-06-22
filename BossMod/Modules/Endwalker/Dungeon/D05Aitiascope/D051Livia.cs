@@ -30,7 +30,7 @@ public enum AID : uint
     OdiEtAmo = 25675 // Boss->self, 3.0s cast, single-target
 }
 
-class AglaeaBite(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.AglaeaBite), new AOEShapeCone(9f, 60f.Degrees()), endsOnCastEvent: true, tankbuster: true);
+class AglaeaBite(BossModule module) : Components.BaitAwayCast(module, (uint)AID.AglaeaBite, new AOEShapeCone(9f, 60f.Degrees()), endsOnCastEvent: true, tankbuster: true);
 
 class AglaeaShot(BossModule module) : Components.GenericAOEs(module)
 {
@@ -82,12 +82,12 @@ class AglaeaShot(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AglaeaClimbAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AglaeaClimbAOE), new AOEShapeCone(20f, 45f.Degrees()));
-class Disparagement(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Disparagement), new AOEShapeCone(40f, 60f.Degrees()));
+class AglaeaClimbAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AglaeaClimbAOE, new AOEShapeCone(20f, 45f.Degrees()));
+class Disparagement(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Disparagement, new AOEShapeCone(40f, 60f.Degrees()));
 
-class IgnisOdi(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.IgnisOdi), 6f, 4, 4);
-class IgnisAmoris(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IgnisAmoris), 6f);
-class Frustration(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Frustration));
+class IgnisOdi(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.IgnisOdi, 6f, 4, 4);
+class IgnisAmoris(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IgnisAmoris, 6f);
+class Frustration(BossModule module) : Components.RaidwideCast(module, (uint)AID.Frustration);
 
 class D051LiviaStates : StateMachineBuilder
 {

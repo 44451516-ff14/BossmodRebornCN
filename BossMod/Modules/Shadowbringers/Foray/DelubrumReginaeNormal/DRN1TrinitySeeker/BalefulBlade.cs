@@ -1,43 +1,51 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN1TrinitySeeker;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN1TrinitySeeker;
 
-class BalefulBlade(BossModule module) : BossComponent(module)
+sealed class BalefulBlade(BossModule module) : Components.GenericAOEs(module)
 {
     private bool _phantomEdge;
+    private AOEInstance? _aoe;
 
-    private static readonly AOEShapeCone _shapeFront = new(20, 22.5f.Degrees());
-    private static readonly AOEShapeDonutSector _shapeBehind = new(20, 30, 22.5f.Degrees());
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        hints.Add(_phantomEdge ? "Stay in front of barricade!" : "Hide behind barricade!", !IsSafe(actor));
-    }
-
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        AOEShape shape = _phantomEdge ? _shapeFront : _shapeBehind;
-        for (var i = 0; i < 4; ++i)
-        {
-            var center = (45 + i * 90).Degrees();
-            shape.Draw(Arena, Arena.Center, center, Colors.SafeFromAOE);
-        }
+        if (_aoe is not AOEInstance aoe)
+            return;
+        hints.Add(_phantomEdge ? "Stay in front of barricade!" : "Hide behind barricade!", !aoe.Check(actor.Position));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.BalefulBlade2)
-            _phantomEdge = true;
+        if (spell.Action.ID is (uint)AID.BalefulBladeVisual1 or (uint)AID.BalefulBladeVisual2)
+        {
+            var shapes = new Shape[4];
+            var centerPos = Arena.Center;
+            var halfAngle = 22.5f.Degrees();
+            if (spell.Action.ID == (uint)AID.BalefulBladeVisual1)
+            {
+                for (var i = 0; i < 4; ++i)
+                {
+                    shapes[i] = new DonutSegmentV(centerPos, 20f, 30f, (45f + i * 90f).Degrees(), halfAngle, 6);
+                }
+                _phantomEdge = false;
+            }
+            else
+            {
+                for (var i = 0; i < 4; ++i)
+                {
+                    shapes[i] = new ConeV(centerPos, 20f, (45f + i * 90f).Degrees(), halfAngle, 6);
+                }
+                _phantomEdge = true;
+            }
+            _aoe = new(new AOEShapeCustom(shapes, InvertForbiddenZone: true), centerPos, default, Module.CastFinishAt(spell, 0.1f), Colors.SafeFromAOE);
+        }
     }
 
-    public bool IsSafe(Actor actor)
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        var offset = actor.Position - Arena.Center;
-        var angle = Angle.FromDirection(offset).Rad; // 4 barricades to check, at +-45 and +-135
-        angle = Math.Abs(angle); // fold around z axis, leaving two barricades to check - at 45 and 135
-        angle = Math.Abs(angle - 90.Degrees().Rad); // rotate and fold again, leaving one barricade at 45 +- 22.5
-        angle = Math.Abs(angle - 45.Degrees().Rad); // rotate and fold again - now barricade is [0, 22.5]
-        if (angle > 22.5f.Degrees().Rad)
-            return false; // this is always unsafe, will be knocked into wall
-        var behind = offset.LengthSq() > 400;
-        return behind != _phantomEdge;
+        if (spell.Action.ID is (uint)AID.BalefulBlade1 or (uint)AID.BalefulBlade2)
+        {
+            _aoe = null;
+        }
     }
 }

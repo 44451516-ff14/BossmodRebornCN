@@ -1,4 +1,5 @@
 namespace BossMod.Global.DeepDungeon;
+
 public static class GeneratedTrapData // taken from PalacePal plugin and converted to dictionary for optimal performance
 {
     public static readonly Dictionary<uint, WPos[]> Traps = new()

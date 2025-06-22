@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAOEs(module)
+sealed class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -26,7 +26,7 @@ class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAOEs(modu
         if (delay > 0)
         {
             _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(delay)));
-            _aoes.SortBy(aoe => aoe.Activation);
+            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
@@ -41,7 +41,7 @@ class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAOEs(modu
     }
 }
 
-class FinalFusedownExplosion(BossModule module) : Components.GenericStackSpread(module, true)
+sealed class FinalFusedownExplosion(BossModule module) : Components.GenericStackSpread(module, true)
 {
     public int NumCasts;
     private readonly List<Spread> _spreads1 = [];

@@ -28,13 +28,10 @@ public enum SID : uint
     AboutFace = 2162
 }
 
-abstract class BodyPress(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 15f);
-class BodyPress1(BossModule module) : BodyPress(module, AID.BodyPress1);
-class BodyPress2(BossModule module) : BodyPress(module, AID.BodyPress2);
+sealed class BodyPress(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BodyPress1, (uint)AID.BodyPress2], 15f);
+sealed class Scatterscourge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scatterscourge1, new AOEShapeDonut(10f, 40f));
 
-class Scatterscourge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scatterscourge1), new AOEShapeDonut(10f, 40f));
-
-class SlipperyScatterscourge(BossModule module) : Components.GenericAOEs(module)
+sealed class SlipperyScatterscourge(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeRect rect = new(20f, 5f);
@@ -67,9 +64,9 @@ class SlipperyScatterscourge(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PoisonGas(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PoisonGas));
+sealed class PoisonGas(BossModule module) : Components.RaidwideCast(module, (uint)AID.PoisonGas);
 
-class PoisonGasMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace, activationLimit: 5f)
+sealed class PoisonGasMarch(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace, activationLimit: 5f)
 {
     private readonly SlipperyScatterscourge _aoe = module.FindComponent<SlipperyScatterscourge>()!;
 
@@ -97,16 +94,15 @@ class PoisonGasMarch(BossModule module) : Components.StatusDrivenForcedMarch(mod
     }
 }
 
-class MalignantMucus(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.MalignantMucus));
-class PoisonMucus(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PoisonMucus), 6f);
+sealed class MalignantMucus(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MalignantMucus);
+sealed class PoisonMucus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoisonMucus, 6f);
 
-class KeheniheyamewiStates : StateMachineBuilder
+sealed class KeheniheyamewiStates : StateMachineBuilder
 {
     public KeheniheyamewiStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<BodyPress1>()
-            .ActivateOnEnter<BodyPress2>()
+            .ActivateOnEnter<BodyPress>()
             .ActivateOnEnter<Scatterscourge>()
             .ActivateOnEnter<SlipperyScatterscourge>()
             .ActivateOnEnter<PoisonGas>()
@@ -117,4 +113,4 @@ class KeheniheyamewiStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13401)]
-public class Keheniheyamewi(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Keheniheyamewi(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

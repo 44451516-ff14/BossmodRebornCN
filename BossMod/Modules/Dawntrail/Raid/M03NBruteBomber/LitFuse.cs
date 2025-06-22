@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M03NBruteBomber;
 
-public class LitFuse(BossModule module) : Components.GenericAOEs(module)
+sealed class LitFuse(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(8);
     private readonly BarbarousBarrageTower _tower = module.FindComponent<BarbarousBarrageTower>()!;
@@ -35,10 +35,11 @@ public class LitFuse(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (fusesOfFury && _tower!.Towers.Count != 0 && count == 8)
         {
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                var a = _aoes[i];
-                _aoes[i] = a with { Activation = a.Activation.AddSeconds(3d) };
+                ref var a = ref aoes[i];
+                a.Activation = a.Activation.AddSeconds(3d);
             }
             fusesOfFury = false;
         }
@@ -50,7 +51,7 @@ public class LitFuse(BossModule module) : Components.GenericAOEs(module)
         {
             _aoes.Add(new(circle, actor.Position, default, activation));
             if (_aoes.Count == 8)
-                _aoes.SortBy(x => x.Activation);
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
         switch (status.ID)
         {

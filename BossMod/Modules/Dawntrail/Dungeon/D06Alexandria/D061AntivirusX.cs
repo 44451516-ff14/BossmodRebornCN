@@ -34,7 +34,7 @@ public enum IconID : uint
     Stackmarker = 62 // player
 }
 
-class ImmuneResponseArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ImmuneResponseArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom rect = new([new Rectangle(D061AntivirusX.ArenaCenter, 23f, 18f)], [new Rectangle(D061AntivirusX.ArenaCenter, 20f, 15f)]);
     private AOEInstance? _aoe;
@@ -48,7 +48,7 @@ class ImmuneResponseArenaChange(BossModule module) : Components.GenericAOEs(modu
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x03)
+        if (state == 0x00020001u && index == 0x03u)
         {
             Arena.Bounds = D061AntivirusX.DefaultBounds;
             _aoe = null;
@@ -56,7 +56,7 @@ class ImmuneResponseArenaChange(BossModule module) : Components.GenericAOEs(modu
     }
 }
 
-class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(module)
+sealed class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(4f, 40f);
     private static readonly AOEShapeCross cross = new(40f, 3f);
@@ -116,7 +116,7 @@ class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(module)
     private void AddAOE(AOEInstance aoe)
     {
         _aoes.Add(aoe);
-        _aoes.SortBy(x => x.Activation);
+        _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -134,9 +134,9 @@ class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Cytolysis(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Cytolysis));
+sealed class Cytolysis(BossModule module) : Components.RaidwideCast(module, (uint)AID.Cytolysis);
 
-class Quarantine(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.Quarantine), 6f, 5.1f, 3, 3)
+sealed class Quarantine(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.Quarantine, 6f, 5.1f, 3, 3)
 {
     private readonly Disinfection _tb = module.FindComponent<Disinfection>()!;
 
@@ -164,7 +164,7 @@ class Quarantine(BossModule module) : Components.StackWithIcon(module, (uint)Ico
     }
 }
 
-class Disinfection(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(6), (uint)IconID.Tankbuster, ActionID.MakeSpell(AID.Disinfection), centerAtTarget: true, tankbuster: true)
+sealed class Disinfection(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Tankbuster, (uint)AID.Disinfection, tankbuster: true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -175,7 +175,7 @@ class Disinfection(BossModule module) : Components.BaitAwayIcon(module, new AOES
     }
 }
 
-class D061AntivirusXStates : StateMachineBuilder
+sealed class D061AntivirusXStates : StateMachineBuilder
 {
     public D061AntivirusXStates(BossModule module) : base(module)
     {
@@ -189,7 +189,7 @@ class D061AntivirusXStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12844)]
-public class D061AntivirusX(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D061AntivirusX(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(852f, 823f);
     public static readonly ArenaBoundsRect StartingBounds = new(22.5f, 17.5f);

@@ -19,7 +19,7 @@ public enum AID : uint
     RapidSever = 3962 // Boss->players, 3.0s cast, single-target, tankbuster
 }
 
-class DoubleSever(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DoubleSever), new AOEShapeCone(30.5f, 45f.Degrees()))
+class DoubleSever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSever, new AOEShapeCone(30.5f, 45f.Degrees()))
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -32,8 +32,8 @@ class DoubleSever(BossModule module) : Components.SimpleAOEs(module, ActionID.Ma
         hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
     }
 }
-class AtmosphericCompression(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AtmosphericCompression), 5f);
-class RapidSever(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.RapidSever));
+class AtmosphericCompression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AtmosphericCompression, 5f);
+class RapidSever(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RapidSever);
 
 class D081PhantomRayStates : StateMachineBuilder
 {

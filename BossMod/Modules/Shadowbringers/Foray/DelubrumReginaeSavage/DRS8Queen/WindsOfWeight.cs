@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS8Queen;
 
 // TODO: this is essentialy copy-paste of DRS4 component, generalize?.. the only different thing is AIDs
-class WindsOfWeight(BossModule module) : Components.GenericAOEs(module)
+sealed class WindsOfWeight(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> _green = [];
     private readonly List<Actor> _purple = [];

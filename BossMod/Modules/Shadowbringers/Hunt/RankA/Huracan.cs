@@ -18,8 +18,8 @@ public enum AID : uint
     AutumnWreath = 17498 // Boss->self, 4.0s cast, range 10-20 donut
 }
 
-class SpringBreeze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpringBreeze), new AOEShapeRect(80f, 5f));
-class SummerHeat(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SummerHeat));
+class SpringBreeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpringBreeze, new AOEShapeRect(80f, 5f));
+class SummerHeat(BossModule module) : Components.RaidwideCast(module, (uint)AID.SummerHeat);
 
 class Combos(BossModule module) : Components.GenericAOEs(module)
 {
@@ -34,14 +34,11 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        aoes[0].Risky = true;
+        if (count > 1)
         {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
+            aoes[0].Color = Colors.Danger;
         }
         return aoes;
     }
@@ -57,20 +54,15 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
         };
         if (shape != null)
         {
-            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.Add(new(rect2, spell.LocXZ, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 3.1f)));
+            AddAOE(shape);
+            AddAOE(rect2, 180f.Degrees(), 3.1f);
         }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.AutumnWreath or (uint)AID.DawnsEdge or (uint)AID.WinterRain)
-            _aoes.RemoveAt(0);
+        void AddAOE(AOEShape shape, Angle offset = default, float delay = default) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, delay), Risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.Windburst)
+        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.Windburst or (uint)AID.AutumnWreath or (uint)AID.DawnsEdge or (uint)AID.WinterRain)
             _aoes.RemoveAt(0);
     }
 }

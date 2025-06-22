@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Components;
 
 // generic 'wild charge': various mechanics that consist of charge aoe on some target that other players have to stay in; optionally some players can be marked as 'having to be closest to source' (usually tanks)
-public class GenericWildCharge(BossModule module, float halfWidth, ActionID aid = default, float fixedLength = 0) : CastCounter(module, aid)
+public class GenericWildCharge(BossModule module, float halfWidth, uint aid = default, float fixedLength = default) : CastCounter(module, aid)
 {
     public enum PlayerRole
     {
@@ -95,6 +95,11 @@ public class GenericWildCharge(BossModule module, float halfWidth, ActionID aid 
                     forbiddenInverted.Add(ShapeDistance.Rect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth));
                 break;
         }
+
+        foreach (var aoe in EnumerateAOEs())
+            // TODO add separate "tankbuster" hint for PlayerRole.Share if there are any ShareNotFirsts in the party
+            hints.AddPredictedDamage(Raid.WithSlot().Where(p => InAOE(aoe, p.Item2)).Mask(), Activation);
+
         if (forbiddenInverted.Count != 0)
         {
             hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), Activation);
@@ -125,9 +130,9 @@ public class GenericWildCharge(BossModule module, float halfWidth, ActionID aid 
         return (sourcePos, dir, length);
     }
 
-    private bool InAOE((WPos origin, WDir dir, float length) aoe, Actor actor) => actor.Position.InRect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth);
+    protected bool InAOE((WPos origin, WDir dir, float length) aoe, Actor actor) => actor.Position.InRect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth);
 
-    private IEnumerable<(WPos origin, WDir dir, float length)> EnumerateAOEs(int targetSlotToSkip = -1)
+    protected IEnumerable<(WPos origin, WDir dir, float length)> EnumerateAOEs(int targetSlotToSkip = -1)
     {
         if (Source == null)
             yield break;
@@ -138,24 +143,3 @@ public class GenericWildCharge(BossModule module, float halfWidth, ActionID aid 
     private bool AnyRoleCloser((WPos origin, WDir dir, float length) aoe, PlayerRole role1, PlayerRole role2, float thresholdSq)
         => Raid.WithSlot().Any(ia => (PlayerRoles[ia.Item1] == role1 || PlayerRoles[ia.Item1] == role2) && InAOE(aoe, ia.Item2) && (ia.Item2.Position - aoe.origin).LengthSq() < thresholdSq);
 }
-
-// // simple line stack where target is determined by 'target select' cast
-// public class SimpleLineStack(BossModule module, float halfWidth, float fixedLength, ActionID aidTargetSelect, ActionID aidResolve, float activationDelay) : GenericWildCharge(module, halfWidth, aidResolve, fixedLength)
-// {
-//     public override void OnEventCast(Actor caster, ActorCastEvent spell)
-//     {
-//         if (spell.Action == aidTargetSelect)
-//         {
-//             Source = caster;
-//             Activation = WorldState.FutureTime(activationDelay);
-//             foreach (var (i, p) in Raid.WithSlot(true))
-//                 PlayerRoles[i] = p.InstanceID == spell.MainTargetID ? PlayerRole.Target : PlayerRole.Share;
-//         }
-//         else if (spell.Action == WatchedAction)
-//         {
-//             ++NumCasts;
-//             Source = null;
-//             Array.Fill(PlayerRoles, PlayerRole.Ignore);
-//         }
-//     }
-// }

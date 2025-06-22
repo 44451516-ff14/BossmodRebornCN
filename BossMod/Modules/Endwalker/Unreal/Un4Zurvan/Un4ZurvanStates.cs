@@ -50,7 +50,7 @@ class Un4ZurvanStates : StateMachineBuilder
         ComponentCondition<P1Platforms>(id, delay, comp => comp.ForbiddenPlatforms.Count >= 1)
             .ActivateOnEnter<P1MetalCutter>()
             .ActivateOnEnter<P1Platforms>();
-        ActorCastStart(id + 0x10, _module.BossP1, AID.FlareStar, 3.2f, true);
+        ActorCastStart(id + 0x10, _module.BossP1, (uint)AID.FlareStar, 3.2f, true);
         ComponentCondition<P1Platforms>(id + 0x20, 1.8f, comp => comp.NumCasts >= 1, "Platform E")
             .ActivateOnEnter<P1FlareStar>();
         ActorCastEnd(id + 0x30, _module.BossP1, 1.2f, true);
@@ -62,7 +62,7 @@ class Un4ZurvanStates : StateMachineBuilder
 
         ComponentCondition<P1Platforms>(id + 0x200, 5.2f, comp => comp.ForbiddenPlatforms.Count >= 3)
             .DeactivateOnExit<P1MetalCutter>(); // no more cleaves after third platform becomes unsafe
-        ActorCast(id + 0x210, _module.BossP1, AID.FlareStar, 0.1f, 3, true)
+        ActorCast(id + 0x210, _module.BossP1, (uint)AID.FlareStar, 0.1f, 3, true)
             .ActivateOnEnter<P1FlareStar>();
         ComponentCondition<P1FlareStar>(id + 0x220, 0.6f, comp => comp.NumCasts > 0, "Puddles")
             .DeactivateOnExit<P1FlareStar>();
@@ -97,13 +97,13 @@ class Un4ZurvanStates : StateMachineBuilder
 
     private void Phase2Icy(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP2, AID.BitingHalberd, delay, true)
+        ActorCastStart(id, _module.BossP2, (uint)AID.BitingHalberd, delay, true)
             .ActivateOnEnter<P2IcyVoidzone>();
         ActorCastEnd(id + 1, _module.BossP2, 5, true, "Frontal cone")
             .ActivateOnEnter<P2BitingHalberd>()
             .DeactivateOnExit<P2BitingHalberd>();
         SouthernCross(id + 0x100, 3.2f);
-        ActorCastStartMulti(id + 0x200, _module.BossP2, [AID.BitingHalberd, AID.TailEnd, AID.Ciclicle], 6.8f, true)
+        ActorCastStartMulti(id + 0x200, _module.BossP2, [(uint)AID.BitingHalberd, (uint)AID.TailEnd, (uint)AID.Ciclicle], 6.8f, true)
             .ActivateOnEnter<P2SouthernCrossVoidzone>()
             .ActivateOnEnter<P2MetalCutter>() // 1 metal cutter before cast start
             .DeactivateOnExit<P2MetalCutter>();
@@ -151,7 +151,7 @@ class Un4ZurvanStates : StateMachineBuilder
 
     private void Soar(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP2, AID.Soar, delay, true);
+        ActorCastStart(id, _module.BossP2, (uint)AID.Soar, delay, true);
         ActorCastEnd(id + 1, _module.BossP2, 5, true, "Soar")
             .ActivateOnEnter<P2SoarTwinSpirit>();
         ActorTargetable(id + 0x10, _module.BossP2, false, 0.2f);
@@ -171,7 +171,7 @@ class Un4ZurvanStates : StateMachineBuilder
 
     private void DemonsClaw(uint id, float delay)
     {
-        ActorCastStart(id, _module.BossP2, AID.DemonsClaw, delay, true);
+        ActorCastStart(id, _module.BossP2, (uint)AID.DemonsClaw, delay, true);
         ActorCastEnd(id + 1, _module.BossP2, 3, true, "Knockback tankbuster")
             .ActivateOnEnter<P2DemonsClawKnockback>()
             .ActivateOnEnter<P2DemonsClawWaveCannon>()
@@ -185,7 +185,7 @@ class Un4ZurvanStates : StateMachineBuilder
 
     private void SouthernCross(uint id, float delay)
     {
-        ActorCast(id, _module.BossP2, AID.SouthernCross, delay, 3, true, "Puddles bait");
+        ActorCast(id, _module.BossP2, (uint)AID.SouthernCross, delay, 3, true, "Puddles bait");
         ComponentCondition<P2SouthernCross>(id + 0x10, 3.6f, comp => comp.NumCasts > 0, "Puddles resolve")
             .ActivateOnEnter<P2SouthernCross>()
             .DeactivateOnExit<P2SouthernCross>();
@@ -195,11 +195,11 @@ class Un4ZurvanStates : StateMachineBuilder
     {
         ComponentCondition<P2BrokenSeal>(id, delay, comp => comp.NumAssigned > 0)
             .ActivateOnEnter<P2BrokenSeal>();
-        ActorCast(id + 0x100, _module.BossP2, AID.WaveCannonSolo, 3.0f, 5, true, "Wave cannon")
+        ActorCast(id + 0x100, _module.BossP2, (uint)AID.WaveCannonSolo, 3.0f, 5, true, "Wave cannon")
             .ActivateOnEnter<P2WaveCannon>()
             .DeactivateOnExit<P2WaveCannon>();
 
-        ActorCast(id + 0x200, _module.BossP2, AID.Tyrfing, 4.4f, 3, true, $"Multi tankbuster ({tyrfings})")
+        ActorCast(id + 0x200, _module.BossP2, (uint)AID.Tyrfing, 4.4f, 3, true, $"Multi tankbuster ({tyrfings})")
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<P2TyrfingFire>(id + 0x210, tyrfings * 1.0f + 0.3f, comp => comp.NumCasts > 0, "AOE tankbuster", 10) // 1: 4 hits, 5.3; 2: 5 hits, 6.3; 3: 6 hits, 7.3
             .ActivateOnEnter<P2TyrfingFire>()
@@ -209,10 +209,10 @@ class Un4ZurvanStates : StateMachineBuilder
         SouthernCross(id + 0x300, 3.2f);
         MetalCutter(id + 0x400, 1.6f)
             .ActivateOnEnter<P2SouthernCrossVoidzone>();
-        ActorCast(id + 0x500, _module.BossP2, AID.BrokenSeal, 6.2f, 3, true)
+        ActorCast(id + 0x500, _module.BossP2, (uint)AID.BrokenSeal, 6.2f, 3, true)
             .DeactivateOnExit<P2SouthernCrossVoidzone>();
         // note: timings below have significant variance
-        ActorCastStartMulti(id + 0x510, _module.BossP2, [AID.BitingHalberd, AID.TailEnd, AID.Ciclicle], 10.5f, true);
+        ActorCastStartMulti(id + 0x510, _module.BossP2, [(uint)AID.BitingHalberd, (uint)AID.TailEnd, (uint)AID.Ciclicle], 10.5f, true);
         ComponentCondition<P2BrokenSeal>(id + 0x520, 1.2f, comp => comp.NumCasts > 0, "Towers", 2)
             .ActivateOnEnter<P2BitingHalberd>()
             .ActivateOnEnter<P2TailEnd>()

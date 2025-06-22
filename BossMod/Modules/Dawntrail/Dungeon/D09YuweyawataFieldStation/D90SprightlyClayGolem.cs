@@ -17,8 +17,8 @@ public enum AID : uint
     Plummet = 40676 // SprightlyStone2->self, 4.0s cast, range 10 circle
 }
 
-class WildHorn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WildHorn), new AOEShapeCone(15, 60.Degrees()));
-class Plummet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plummet), 10);
+sealed class WildHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildHorn, new AOEShapeCone(15f, 60f.Degrees()));
+sealed class Plummet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plummet, 10f);
 
 class D90SprightlyClayGolemStates : StateMachineBuilder
 {
@@ -43,7 +43,7 @@ class D90SprightlyClayGolemStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13582, SortOrder = 8)]
-public class D90SprightlyClayGolem(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D90SprightlyClayGolem(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(107.5f, -419.32f), new(108.05f, -418.91f), new(108.99f, -417.9f), new(109.55f, -416.49f), new(109.98f, -416.05f),
     new(110.47f, -415.84f), new(110.99f, -415.45f), new(111.18f, -414.97f), new(111.6f, -414.5f), new(111.99f, -413.88f),

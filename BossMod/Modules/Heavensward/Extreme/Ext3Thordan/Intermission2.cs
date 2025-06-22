@@ -70,9 +70,9 @@ class SwordShieldOfTheHeavens(BossModule module) : BossComponent(module)
     private bool AddActive(Actor add) => !add.IsDestroyed && add.IsTargetable;
 }
 
-class HoliestOfHoly(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HoliestOfHoly));
+class HoliestOfHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.HoliestOfHoly);
 
-class SkywardLeap(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.SkywardLeap), centerAtTarget: true)
+class SkywardLeap(BossModule module) : Components.GenericBaitAway(module, (uint)AID.SkywardLeap, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle _shape = new(20); // not sure about the spread radius, 15 seems to be enough but damage goes up to 20
 
@@ -84,7 +84,7 @@ class SkywardLeap(BossModule module) : Components.GenericBaitAway(module, Action
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             if (CurrentBaits.Count > 0)

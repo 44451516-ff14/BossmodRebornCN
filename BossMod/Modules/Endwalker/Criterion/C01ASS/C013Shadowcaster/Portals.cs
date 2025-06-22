@@ -12,21 +12,21 @@ static class Portals
 
         var rotation = state switch
         {
-            0x00400080 => -90f, // CW arrows appear
-            0x01000200 => 90f, // CCW arrows appear
-            _ => 0f, // other known: 0x04000800 = CW arrows end, 0x10002000 = CCW arrows end, 0x00100020 = arrows disappear, 0x00040008 = disappear
+            0x00400080u => -90f, // CW arrows appear
+            0x01000200u => 90f, // CCW arrows appear
+            _ => default, // other known: 0x04000800 = CW arrows end, 0x10002000 = CCW arrows end, 0x00100020 = arrows disappear, 0x00040008 = disappear
         };
-        if (rotation == 0)
+        if (rotation == default)
             return null;
 
         return actor.Position + _portalLength * (actor.Rotation + rotation.Degrees()).ToDirection();
     }
 }
 
-class PortalsAOE(BossModule module, AID aid, OID movedOID, float activationDelay, AOEShape shape) : Components.GenericAOEs(module, ActionID.MakeSpell(aid))
+class PortalsAOE(BossModule module, uint aid, uint movedOID, double activationDelay, AOEShape shape) : Components.GenericAOEs(module, aid)
 {
-    private readonly List<Actor> _movedActors = module.Enemies((uint)movedOID);
-    private readonly float _activationDelay = activationDelay;
+    private readonly List<Actor> _movedActors = module.Enemies(movedOID);
+    private readonly double _activationDelay = activationDelay;
     private readonly AOEShape _shape = shape;
     private readonly List<AOEInstance> _aoes = [];
 
@@ -44,17 +44,17 @@ class PortalsAOE(BossModule module, AID aid, OID movedOID, float activationDelay
     }
 }
 
-abstract class PortalsBurn(BossModule module, AID aid, OID oid) : PortalsAOE(module, aid, oid, 11.6f, new AOEShapeCircle(12f));
-class NPortalsBurn(BossModule module) : PortalsBurn(module, AID.NBurn, OID.NBallOfFire);
-class SPortalsBurn(BossModule module) : PortalsBurn(module, AID.SBurn, OID.SBallOfFire);
+abstract class PortalsBurn(BossModule module, uint aid, uint oid) : PortalsAOE(module, aid, oid, 11.6d, new AOEShapeCircle(12f));
+sealed class NPortalsBurn(BossModule module) : PortalsBurn(module, (uint)AID.NBurn, (uint)OID.NBallOfFire);
+sealed class SPortalsBurn(BossModule module) : PortalsBurn(module, (uint)AID.SBurn, (uint)OID.SBallOfFire);
 
-abstract class PortalsMirror(BossModule module, AID aid, OID oid) : PortalsAOE(module, aid, oid, 11.7f, new AOEShapeRect(100f, 5f));
-class NPortalsMirror(BossModule module) : PortalsMirror(module, AID.NBlazingBenifice, OID.NArcaneFont);
-class SPortalsMirror(BossModule module) : PortalsMirror(module, AID.SBlazingBenifice, OID.SArcaneFont);
+abstract class PortalsMirror(BossModule module, uint aid, uint oid) : PortalsAOE(module, aid, oid, 11.7d, new AOEShapeRect(60f, 5f, 60f));
+sealed class NPortalsMirror(BossModule module) : PortalsMirror(module, (uint)AID.NBlazingBenifice, (uint)OID.NArcaneFont);
+sealed class SPortalsMirror(BossModule module) : PortalsMirror(module, (uint)AID.SBlazingBenifice, (uint)OID.SArcaneFont);
 
-class PortalsWave(BossModule module) : BossComponent(module)
+sealed class PortalsWave(BossModule module) : BossComponent(module)
 {
-    public bool Done { get; private set; }
+    public bool Done;
     private readonly List<(WPos n, WPos s)> _portals = [];
     private readonly int[] _playerPortals = new int[PartyState.MaxPartySize]; // 0 = unassigned, otherwise 'z direction sign' (-1 if own portal points N, +1 for S)
 

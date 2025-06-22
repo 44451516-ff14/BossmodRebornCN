@@ -18,7 +18,7 @@ public enum AID : uint
     FoulBite = 40670 // RottenHound2->player, no cast, single-target
 }
 
-class D90RottenResearcherStates : StateMachineBuilder
+sealed class D90RottenResearcherStates : StateMachineBuilder
 {
     public D90RottenResearcherStates(BossModule module) : base(module)
     {
@@ -41,7 +41,7 @@ class D90RottenResearcherStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13575, SortOrder = 4)]
-public class D90RottenResearcher(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D90RottenResearcher(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(54.67f, 59.58f), new(58.29f, 60.28f), new(58.94f, 60.14f), new(59.88f, 60.06f), new(60.69f, 60.1f),
     new(60.69f, 60.67f), new(61.09f, 61.18f), new(61.68f, 61.43f), new(61.95f, 61.86f), new(62.09f, 62.48f),

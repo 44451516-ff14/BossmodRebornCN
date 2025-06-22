@@ -43,7 +43,7 @@ public enum AID : uint
     Whirlwind = 36311 // Helper->self, no cast, range 5 circle
 }
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D023Gurfurlur.ArenaCenter, 25f)], [new Square(D023Gurfurlur.ArenaCenter, 20f)]);
     private AOEInstance? _aoe;
@@ -65,7 +65,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AuraSphere(BossModule module) : BossComponent(module)
+sealed class AuraSphere(BossModule module) : BossComponent(module)
 {
     public static List<Actor> GetOrbs(BossModule module)
     {
@@ -118,12 +118,31 @@ class AuraSphere(BossModule module) : BossComponent(module)
     }
 }
 
-class SledgeHammer(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.SledgeHammerMarker), ActionID.MakeSpell(AID.Sledgehammer3), 4.9f);
-class HeavingHaymaker(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HeavingHaymaker));
-class LithicImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LithicImpact), new AOEShapeRect(4f, 2f));
-class Whirlwind(BossModule module) : Components.Voidzone(module, 5f, m => m.Enemies(OID.BitingWind), 7);
+sealed class SledgeHammer(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.SledgeHammerMarker, (uint)AID.Sledgehammer3, 4.9f);
+sealed class HeavingHaymaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.HeavingHaymaker);
+sealed class LithicImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LithicImpact, new AOEShapeRect(4f, 2f));
+sealed class Whirlwind(BossModule module) : Components.Voidzone(module, 5f, GetVoidzones, 7f)
+{
+    private static Actor[] GetVoidzones(BossModule module)
+    {
+        var enemies = module.Enemies((uint)OID.BitingWind);
+        var count = enemies.Count;
+        if (count == 0)
+            return [];
 
-class GreatFlood(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.GreatFlood), 25f, kind: Kind.DirForward)
+        var voidzones = new Actor[count];
+        var index = 0;
+        for (var i = 0; i < count; ++i)
+        {
+            var z = enemies[i];
+            if (z.EventState != 7)
+                voidzones[index++] = z;
+        }
+        return voidzones[..index];
+    }
+}
+
+sealed class GreatFlood(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GreatFlood, 25f, kind: Kind.DirForward)
 {
     private readonly Allfire _aoe = module.FindComponent<Allfire>()!;
 
@@ -139,7 +158,7 @@ class GreatFlood(BossModule module) : Components.SimpleKnockbacks(module, Action
     }
 }
 
-class Allfire(BossModule module) : Components.GenericAOEs(module)
+sealed class Allfire(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(10f, 5f);
     private static readonly AOEShapeRect safespot = new(15f, 10f, InvertForbiddenZone: true);
@@ -180,7 +199,7 @@ class Allfire(BossModule module) : Components.GenericAOEs(module)
         {
             AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
             if (AOEs.Count == 16)
-                AOEs.SortBy(x => x.Activation);
+                AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
         else if (!first && spell.Action.ID == (uint)AID.GreatFlood)
         {
@@ -212,14 +231,12 @@ class Allfire(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class VolcanicDrop(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.VolcanicDrop), 6f);
-class EnduringGlory(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.EnduringGlory));
-class Windswrath1Raidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Windswrath1));
-class Windswrath2Raidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Windswrath2));
-class GreatFloodRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GreatFlood));
+sealed class VolcanicDrop(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.VolcanicDrop, 6f);
+sealed class EnduringGloryGreatFloodWindswrathRaidwide(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.EnduringGlory, (uint)AID.GreatFlood,
+(uint)AID.Windswrath1, (uint)AID.Windswrath2]);
 
-class Windswrath(BossModule module, AID aid) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(aid), 15f);
-class Windswrath1(BossModule module) : Windswrath(module, AID.Windswrath1)
+class Windswrath(BossModule module, uint aid) : Components.SimpleKnockbacks(module, aid, 15f);
+sealed class Windswrath1(BossModule module) : Windswrath(module, (uint)AID.Windswrath1)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -230,7 +247,7 @@ class Windswrath1(BossModule module) : Windswrath(module, AID.Windswrath1)
     }
 }
 
-class Windswrath2(BossModule module) : Windswrath(module, AID.Windswrath2)
+sealed class Windswrath2(BossModule module) : Windswrath(module, (uint)AID.Windswrath2)
 {
     private enum Pattern { None, EWEW, WEWE }
     private Pattern CurrentPattern;
@@ -288,7 +305,7 @@ class Windswrath2(BossModule module) : Windswrath(module, AID.Windswrath2)
     }
 }
 
-class D023GurfurlurStates : StateMachineBuilder
+sealed class D023GurfurlurStates : StateMachineBuilder
 {
     public D023GurfurlurStates(BossModule module) : base(module)
     {
@@ -298,21 +315,18 @@ class D023GurfurlurStates : StateMachineBuilder
             .ActivateOnEnter<Whirlwind>()
             .ActivateOnEnter<AuraSphere>()
             .ActivateOnEnter<LithicImpact>()
-            .ActivateOnEnter<GreatFloodRaidwide>()
             .ActivateOnEnter<Allfire>()
             .ActivateOnEnter<GreatFlood>()
             .ActivateOnEnter<VolcanicDrop>()
-            .ActivateOnEnter<EnduringGlory>()
             .ActivateOnEnter<SledgeHammer>()
             .ActivateOnEnter<Windswrath1>()
-            .ActivateOnEnter<Windswrath1Raidwide>()
             .ActivateOnEnter<Windswrath2>()
-            .ActivateOnEnter<Windswrath2Raidwide>();
+            .ActivateOnEnter<EnduringGloryGreatFloodWindswrathRaidwide>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12705)]
-public class D023Gurfurlur(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D023Gurfurlur(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-54f, -195f);
     public static readonly ArenaBoundsSquare StartingBounds = new(24.5f);

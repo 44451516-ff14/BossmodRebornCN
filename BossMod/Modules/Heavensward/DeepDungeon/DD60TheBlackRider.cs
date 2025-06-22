@@ -18,8 +18,8 @@ public enum AID : uint
 }
 
 class CleaveAuto(BossModule module) : Components.Cleave(module, default, new AOEShapeCone(11.92f, 45f.Degrees()), activeWhileCasting: false);
-class Infatuation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Infatuation), 7f);
-class HallOfSorrow(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, ActionID.MakeSpell(AID.HallOfSorrow), GetVoidzones, 1.3f)
+class Infatuation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Infatuation, 7f);
+class HallOfSorrow(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, (uint)AID.HallOfSorrow, GetVoidzones, 1.3f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -39,8 +39,8 @@ class HallOfSorrow(BossModule module) : Components.VoidzoneAtCastTarget(module, 
         return voidzones[..index];
     }
 }
-class Valfodr(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.Valfodr), 3f);
-class ValfodrKB(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.Valfodr), stopAtWall: true) // note actual knockback is delayed by upto 1.2s in replay
+class Valfodr(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.Valfodr, 3f);
+class ValfodrKB(BossModule module) : Components.GenericKnockback(module, (uint)AID.Valfodr, stopAtWall: true) // note actual knockback is delayed by upto 1.2s in replay
 {
     private readonly Infatuation _aoe1 = module.FindComponent<Infatuation>()!;
     private readonly HallOfSorrow _aoe2 = module.FindComponent<HallOfSorrow>()!;
@@ -58,7 +58,7 @@ class ValfodrKB(BossModule module) : Components.GenericKnockback(module, ActionI
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _source = new(caster.Position, 25f, Module.CastFinishAt(spell));
             _target = Raid.FindSlot(spell.TargetID);
@@ -67,7 +67,7 @@ class ValfodrKB(BossModule module) : Components.GenericKnockback(module, ActionI
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _target = -1;
             _source = null;

@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Components;
 
 // generic 'exaflare' component - these mechanics are a bunch of moving aoes, with different lines either staggered or moving with different speed
-public class Exaflare(BossModule module, AOEShape shape, ActionID aid = default) : GenericAOEs(module, aid, "GTFO from exaflare!")
+public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : GenericAOEs(module, aid, "GTFO from exaflare!")
 {
-    public class Line
+    public sealed class Line
     {
         public WPos Next;
         public WDir Advance;
@@ -21,7 +21,7 @@ public class Exaflare(BossModule module, AOEShape shape, ActionID aid = default)
 
     public bool Active => Lines.Count != 0;
 
-    public Exaflare(BossModule module, float radius, ActionID aid = new()) : this(module, new AOEShapeCircle(radius), aid) { }
+    public Exaflare(BossModule module, float radius, uint aid = default) : this(module, new AOEShapeCircle(radius), aid) { }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -33,7 +33,7 @@ public class Exaflare(BossModule module, AOEShape shape, ActionID aid = default)
         var futureCount = futureAOEs.Count;
         var imminentCount = imminentAOEs.Length;
 
-        var aoes = new AOEInstance[futureCount + imminentCount];
+        Span<AOEInstance> aoes = new AOEInstance[futureCount + imminentCount];
         for (var i = 0; i < futureCount; ++i)
         {
             var aoe = futureAOEs[i];
@@ -85,5 +85,84 @@ public class Exaflare(BossModule module, AOEShape shape, ActionID aid = default)
         l.Next = pos + l.Advance;
         l.NextExplosion = WorldState.FutureTime(l.TimeToMove);
         --l.ExplosionsLeft;
+    }
+}
+
+public class SimpleExaflare(BossModule module, AOEShape shape, uint aidFirst, uint aidRest, float distance, float timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false,
+bool locationBased = false) : Exaflare(module, shape)
+{
+    private readonly uint AIDFirst = aidFirst;
+    private readonly uint AIDRest = aidRest;
+    private readonly float Distance = distance;
+    private readonly float TimeToMove = timeToMove;
+    private readonly int ExplosionsLeft = explosionsLeft;
+    private readonly int MaxShownExplosions = maxShownExplosions;
+    private readonly bool CastEvent = castEvent; // if exaflare gets advanced by castevent instead of castfinished
+    private readonly bool LocationBased = locationBased; // if cast is location based
+    public int NumLinesFinished;
+
+    public SimpleExaflare(BossModule module, float radius, uint aidFirst, uint aidRest, float distance, float timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false, bool locationBased = false)
+    : this(module, new AOEShapeCircle(radius), aidFirst, aidRest, distance, timeToMove, explosionsLeft, maxShownExplosions, castEvent, locationBased) { }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == AIDFirst)
+        {
+            Lines.Add(new()
+            {
+                Next = LocationBased ? spell.LocXZ : caster.Position,
+                Advance = Distance * caster.Rotation.ToDirection(),
+                NextExplosion = Module.CastFinishAt(spell),
+                TimeToMove = TimeToMove,
+                ExplosionsLeft = ExplosionsLeft,
+                MaxShownExplosions = MaxShownExplosions
+            });
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (!CastEvent && spell.Action.ID is var id && (id == AIDFirst || id == AIDRest))
+        {
+            var count = Lines.Count;
+            var pos = spell.LocXZ;
+            for (var i = 0; i < count; ++i)
+            {
+                var line = Lines[i];
+                if (line.Next.AlmostEqual(pos, 1f))
+                {
+                    AdvanceLine(line, pos);
+                    if (line.ExplosionsLeft == 0)
+                    {
+                        Lines.RemoveAt(i);
+                        ++NumLinesFinished;
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (CastEvent && spell.Action.ID is var id && (id == AIDFirst || id == AIDRest))
+        {
+            var count = Lines.Count;
+            var pos = LocationBased ? spell.TargetXZ : caster.Position;
+            for (var i = 0; i < count; ++i)
+            {
+                var line = Lines[i];
+                if (line.Next.AlmostEqual(pos, 1f))
+                {
+                    AdvanceLine(line, pos);
+                    if (line.ExplosionsLeft == 0)
+                    {
+                        Lines.RemoveAt(i);
+                        ++NumLinesFinished;
+                    }
+                    return;
+                }
+            }
+        }
     }
 }

@@ -39,10 +39,10 @@ public enum AID : uint
     Telega = 9630 // Mandragoras/GymnasiouLyssa->self, no cast, single-target, bonus add disappear
 }
 
-class Rake(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Rake));
-class Tiiimbeeer(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Tiiimbeeer));
-class StoneIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.StoneIII2), 6f);
-class EarthShaker(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.EarthShaker), new AOEShapeCone(60f, 15f.Degrees()), endsOnCastEvent: true);
+class Rake(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Rake);
+class Tiiimbeeer(BossModule module) : Components.RaidwideCast(module, (uint)AID.Tiiimbeeer);
+class StoneIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StoneIII2, 6f);
+class EarthShaker(BossModule module) : Components.BaitAwayCast(module, (uint)AID.EarthShaker, new AOEShapeCone(60f, 15f.Degrees()), endsOnCastEvent: true);
 
 class EarthQuaker(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -69,14 +69,10 @@ class EarthQuaker(BossModule module) : Components.ConcentricAOEs(module, _shapes
     }
 }
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
-class HeavySmash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavySmash), 6f);
+class HeavySmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySmash, 6f);
 
 class GymnasiouStyphnolobionStates : StateMachineBuilder
 {
@@ -88,11 +84,7 @@ class GymnasiouStyphnolobionStates : StateMachineBuilder
             .ActivateOnEnter<StoneIII>()
             .ActivateOnEnter<EarthShaker>()
             .ActivateOnEnter<EarthQuaker>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<HeavySmash>()
             .Raw.Update = () =>
             {

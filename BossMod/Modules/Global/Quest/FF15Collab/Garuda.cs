@@ -43,7 +43,7 @@ class GustFront(BossModule module) : Components.UniformStackSpread(module, 1.2f,
     }
 }
 
-class Microburst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Microburst), 18f)
+class Microburst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Microburst, 18f)
 {
     private bool casting;
 
@@ -75,7 +75,7 @@ class Microburst(BossModule module) : Components.SimpleAOEs(module, ActionID.Mak
     }
 }
 
-class MistralShriek(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MistralShriek), 30f)
+class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralShriek, 30f)
 {
     private bool casting;
     private DateTime done;
@@ -126,16 +126,16 @@ class MistralShriek(BossModule module) : Components.SimpleAOEs(module, ActionID.
     }
 }
 
-class MistralSong(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MistralSong), new AOEShapeCone(20, 75f.Degrees()));
-class WickedTornado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WickedTornado), new AOEShapeDonut(8f, 20f));
-class MiniSupercell(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.MiniSupercell), ActionID.MakeSpell(AID.MiniSupercell2), 5f, 45f, 3f, 2);
-class MiniSupercellKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.MiniSupercell2), 50f, shape: new AOEShapeRect(45f, 3f), stopAtWall: true);
+class MistralSong(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralSong, new AOEShapeCone(20f, 75f.Degrees()));
+class WickedTornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WickedTornado, new AOEShapeDonut(8f, 20f));
+class MiniSupercell(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.MiniSupercell, (uint)AID.MiniSupercell2, 5f, 45f, 3f, 2);
+class MiniSupercellKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.MiniSupercell2, 50f, shape: new AOEShapeRect(45f, 3f), stopAtWall: true);
 
-class GravitationalForce(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.GravitationalForce2), GetVoidzones, 0f)
+class GravitationalForce(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.GravitationalForce2, GetVoidzones, 0f)
 {
     private static List<Actor> GetVoidzones(BossModule module) => module.Enemies((uint)OID.GravityVoidzone);
 }
-class MistralGaol(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.MistralGaol), "Prepare for Quick Time Event (spam buttons when it starts)");
+class MistralGaol(BossModule module) : Components.CastHint(module, (uint)AID.MistralGaol, "Prepare for Quick Time Event (spam buttons when it starts)");
 
 class GarudaStates : StateMachineBuilder
 {

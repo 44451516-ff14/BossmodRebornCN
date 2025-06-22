@@ -2,15 +2,23 @@
 
 public record struct ReplayMemory(string Path, bool IsOpen, DateTime PlaybackPosition);
 
+
 [ConfigDisplay(Name = "录像设置", Order = 0)]
-public class ReplayManagementConfig : ConfigNode
+
+public sealed class ReplayManagementConfig : ConfigNode
+
 {
      [PropertyDisplay("显示录像管理界面")]
     public bool ShowUI = false;
 
     [PropertyDisplay("副本开始自动录像")]
     public bool AutoRecord = false;
+    
 
+    [PropertyDisplay("Auto record in Duty Recorder replays", tooltip: "Requires auto-record to be turned on")]
+    public bool AutoARR = false;
+
+    
     [PropertyDisplay("最大录像数量")]
     [PropertySlider(0, 1000)]
     public int MaxReplays = 0;

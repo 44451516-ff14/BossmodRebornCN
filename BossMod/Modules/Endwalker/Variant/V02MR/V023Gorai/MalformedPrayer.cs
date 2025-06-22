@@ -1,12 +1,14 @@
 namespace BossMod.Endwalker.VariantCriterion.V02MR.V023Gorai;
 
+class ImpurePurgation(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ImpurePurgationFirst, (uint)AID.ImpurePurgationSecond], new AOEShapeCone(60f, 22.5f.Degrees()), 4, 8);
+
 class MalformedPrayer(BossModule module) : Components.GenericTowers(module)
 {
     private readonly ImpurePurgation _aoe = module.FindComponent<ImpurePurgation>()!;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state != 0x00020001)
+        if (state != 0x00020001u)
             return;
         WPos? pos = index switch
         {
@@ -32,7 +34,7 @@ class MalformedPrayer(BossModule module) : Components.GenericTowers(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe.AOEs.Count != 0 && Towers.Count != 0 && !Towers[0].IsInside(actor))
+        if (_aoe.Casters.Count != 0 && Towers.Count != 0 && !Towers[0].IsInside(actor))
         {
             hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 3f));
         }

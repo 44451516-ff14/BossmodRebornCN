@@ -9,7 +9,7 @@ class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module
     private Mechanic CurMechanic;
     private Actor? CurMechanicSource;
     private bool CurMechanicInverted;
-    public int CurMechanicProgress { get; private set; }
+    public int CurMechanicProgress;
 
     public override void Update()
     {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS1TrinitySeeker;
 
-class ActOfMercy(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.ActOfMercy))
+sealed class ActOfMercy(BossModule module) : Components.GenericAOEs(module, (uint)AID.ActOfMercy)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(7.6d); // from verdant path cast start
     private static readonly AOEShapeCross _shape = new(50f, 4f);

@@ -37,7 +37,7 @@ public enum AID : uint
 
 public enum TetherID : uint
 {
-    Tankbuster = 8, // Icicle->player
+    Crack = 8, // Icicle->player
     Gurgle = 3 // Boss->Helper
 }
 
@@ -50,7 +50,7 @@ class Gurgle(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index is > 0x12 and < 0x1B)
+        if (state == 0x00020001u && index is > 0x12 and < 0x1B)
         {
             var posX = index < 0x17 ? -20f : 20f;
             var posZ = posX == -20f ? -165 + (index - 0x13) * 10f : -165f + (index - 0x17) * 10f;
@@ -72,23 +72,19 @@ class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: 
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if (tether.ID == (uint)TetherID.Tankbuster)
-            CurrentBaits.Add(new(source, WorldState.Actors.Find(tether.Target)!, rect, WorldState.FutureTime(5.4d)));
+        if (tether.ID == (uint)TetherID.Crack)
+        {
+            var target = WorldState.Actors.Find(tether.Target);
+            if (target is Actor t)
+                CurrentBaits.Add(new(source, t, rect, WorldState.FutureTime(5.4d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Crack)
         {
-            var count = CurrentBaits.Count;
-            for (var i = 0; i < count; ++i)
-            {
-                if (CurrentBaits[i].Source == caster)
-                {
-                    CurrentBaits.RemoveAt(i);
-                    return;
-                }
-            }
+            CurrentBaits.Clear();
         }
     }
 }
@@ -104,9 +100,10 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count != 0 && Arena.Bounds == D122Nixie.DefaultArena)
         {
-            AOEInstance? closestGeysir = null;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             if (active)
             {
+                AOEInstance? closestGeysir = null;
                 var minDistanceSq = float.MaxValue;
                 for (var i = 0; i < count; ++i)
                 {
@@ -118,13 +115,18 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
                         closestGeysir = aoe;
                     }
                 }
-            }
-            var aoes = new AOEInstance[count];
-            for (var i = 0; i < count; ++i)
-            {
-                var a = _aoes[i];
-                var safeGeysir = closestGeysir != null;
-                aoes[i] = a with { Shape = safeGeysir ? circle with { InvertForbiddenZone = true } : circle, Color = safeGeysir ? Colors.SafeFromAOE : 0 };
+                if (closestGeysir != null)
+                {
+                    for (var i = 0; i < count; ++i)
+                    {
+                        ref var aoe = ref aoes[i];
+                        if (aoe == closestGeysir)
+                        {
+                            aoe.Shape = circle with { InvertForbiddenZone = true };
+                            aoe.Color = Colors.SafeFromAOE;
+                        }
+                    }
+                }
             }
             return aoes;
         }
@@ -133,11 +135,11 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x12)
+        if (index == 0x12u)
         {
-            if (state == 0x00020001)
+            if (state == 0x00020001u)
                 active = true;
-            else if (state == 0x00080004)
+            else if (state == 0x00080004u)
                 active = false;
         }
     }
@@ -183,7 +185,7 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (active)
+        if (active && Arena.Bounds == D122Nixie.DefaultArena)
         {
             var aoes = ActiveAOEs(slot, actor);
             var len = aoes.Length;
@@ -205,7 +207,7 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Sputter(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Sputter), 6f);
+class Sputter(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Sputter, 6f);
 
 class D122NixieStates : StateMachineBuilder
 {

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace BossMod.ReplayVisualization;
 
-class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Info? moduleInfo, IEnumerable<WorldState.Operation> ops, Action<DateTime> scrollTo)
+sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Info? moduleInfo, IEnumerable<WorldState.Operation> ops, Action<DateTime> scrollTo)
 {
     public readonly Replay.Encounter? Encounter = enc;
     public readonly BossModuleRegistry.Info? ModuleInfo = moduleInfo;
@@ -17,25 +17,24 @@ class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Info? modu
     0x4630, 0x46D6, 0xF5B, 0xF5C, 0x2E20, 0x2E21, 0x318A, 0x2E1E, 0x3346, 0x3353, 0x31D4, 0x3345, 0x3355, 0x3326, 0x3344, 0x31B1, 0x3343, 0x1EB165, 0x1EB166,
     0x1EB167, 0x1EB168, 0x4339, 0x4144, 0x4146, 0x4348, 0x4339, 0x4337, 0x35F5, 0x3226, 0x35FA, 0x35F6, 0x35F9, 0x35F7, 0x361A, 0x35F5, 0x34A4, 0x35F4, 0x3605, 0x35F2,
     0x375C, 0x375A, 0x3759, 0x375B, 0x35E0, 0x35E1, 0x35F1, 0x35F3, 0x3604, 0x39BF, 0x39BD, 0x39C0, 0x39C1, 0x39BE, 0x402D, 0x402E, 0x40B1, 0x3D7F, 0x3D80, 0x3D7E, 0x465C, 0x465D, 0x465E,
-    0x466D, 0x466E, 0x466F, 0x466B, 0x466C];
-    public static readonly HashSet<uint> BoringSIDs = [43, 44, 418, 364, 902, 414, 1050, 368, 362, 1086, 1461, 1463, 365, 1778, 1755, 360, 1411, 2625, 2626, 2627, 2415, 2449, 361, 367, 2355, 413];
+    0x466D, 0x466E, 0x466F, 0x466B, 0x466C, 0x2ED7, 0x2EDB, 0x2EDA, 0x2EF2, 0x2EDC, 0x2EF5, 0x2EF6, 0x2EF4, 0x2EDD, 0x2EF1, 0x2EDC, 0x2EF3, 0x2EEE, 0x2EED, 0x2EF0,
+    0x2EEF, 0x2FCC, 0x2FCB, 0x195D, 0x195B, 0x195C, 0x338F, 0x326A, 0x3269, 0x334B, 0x3267, 0x3268, 0x3266];
+    public static readonly HashSet<uint> BoringSIDs = [43, 44, 418, 364, 902, 414, 1050, 368, 362, 1086, 1461, 1463, 365, 1778, 1755, 360, 1411, 2625, 2626, 2627, 2415, 2449, 361, 367, 2355, 413,
+    4233, 4244, 4227, 4239, 4226, 4229, 4209, 4265, 2932, 4266, 4267, 4268, 4262, 4228];
     private readonly HashSet<ActionID> _filteredActions = [];
     private readonly HashSet<uint> _filteredStatuses = [];
     private readonly HashSet<uint> _filteredDirectorUpdateTypes = [];
-#pragma warning disable IDE0032
-    private bool _showActorSizeEvents;
-#pragma warning restore IDE0032
     private bool _nodesUpToDate;
 
     public bool ShowActorSizeEvents
     {
-        get => _showActorSizeEvents;
+        get;
         set
         {
-            _showActorSizeEvents = value;
+            field = value;
             _nodesUpToDate = false;
         }
-    }
+    } = false;
 
     public void Draw(UITree tree, DateTime reference)
     {
@@ -109,17 +108,18 @@ class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Info? modu
         {
             WorldState.OpFrameStart => false,
             WorldState.OpDirectorUpdate op => !_filteredDirectorUpdateTypes.Contains(op.UpdateID),
+            ActorState.OpForayInfo => false,
             ActorState.OpCreate op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpDestroy op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpMove => false,
-            ActorState.OpSizeChange op => _showActorSizeEvents && FilterInterestingActor(op.InstanceID, op.Timestamp, false),
+            ActorState.OpSizeChange op => ShowActorSizeEvents && FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpHPMP => false,
             ActorState.OpTargetable op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpDead op => FilterInterestingActor(op.InstanceID, op.Timestamp, true),
             ActorState.OpCombat => false,
             ActorState.OpAggroPlayer => false,
             ActorState.OpEventState op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
-            ActorState.OpTarget op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
+            ActorState.OpTarget => false,
             ActorState.OpCastInfo op => FilterInterestingActor(op.InstanceID, op.Timestamp, false) && !_filteredActions.Contains(FindCast(replay.FindParticipant(op.InstanceID, op.Timestamp), op.Timestamp, op.Value != null)?.ID ?? new()),
             ActorState.OpCastEvent op => FilterInterestingActor(op.InstanceID, op.Timestamp, false) && !_filteredActions.Contains(op.Value.Action),
             ActorState.OpEffectResult => false,
@@ -133,7 +133,8 @@ class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Info? modu
             ActorState.OpIcon op => FilterInterestingActor(op.InstanceID, op.Timestamp, true),
             ActorState.OpTether op => FilterInterestingActor(op.InstanceID, op.Timestamp, true),
             ClientState.OpActionRequest => false,
-            //ClientState.OpActionReject => false,
+            ClientState.OpHateChange => false,
+            ClientState.OpActionReject => false,
             ClientState.OpAnimationLockChange => false,
             ClientState.OpComboChange => false,
             ClientState.OpCooldown => false,
@@ -179,7 +180,7 @@ class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Info? modu
             ActorState.OpEventObjectAnimation op => $"EObjAnim: {ActorString(op.InstanceID, op.Timestamp)} = {((uint)op.Param1 << 16) | op.Param2:X8}",
             ActorState.OpPlayActionTimelineEvent op => $"Play action timeline: {ActorString(op.InstanceID, op.Timestamp)} = {op.ActionTimelineID:X4}",
             ActorState.OpEventNpcYell op => $"Yell: {ActorString(op.InstanceID, op.Timestamp)} = {op.Message} '{Service.LuminaRow<Lumina.Excel.Sheets.NpcYell>(op.Message)?.Text}'",
-            ClientState.OpDutyActionsChange op => $"Player duty actions change: {op.Slot0}, {op.Slot1}",
+            ClientState.OpDutyActionsChange op => $"Player duty actions change: {string.Join(", ", op.Slots)}",
             ClientState.OpBozjaHolsterChange op => $"Player bozja holster change: {string.Join(", ", op.Contents.Select(e => $"{e.count}x {e.entry}"))}",
             _ => DumpOp(o)
         };

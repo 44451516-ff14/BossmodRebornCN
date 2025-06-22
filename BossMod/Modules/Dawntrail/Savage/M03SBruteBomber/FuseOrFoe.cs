@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-class InfernalSpin(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class InfernalSpin(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCone _shape = new(40f, 30f.Degrees());
 
@@ -25,7 +25,7 @@ class InfernalSpin(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class ExplosiveRain(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class ExplosiveRain(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(8f), new AOEShapeDonut(8f, 16f), new AOEShapeDonut(16f, 24f)];
 
@@ -44,7 +44,7 @@ class ExplosiveRain(BossModule module) : Components.ConcentricAOEs(module, _shap
             (uint)AID.ExplosiveRain13 or (uint)AID.ExplosiveRain23 => 2,
             _ => -1
         };
-        if (!AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(4)))
+        if (!AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(4d)))
             ReportError($"Unexpected ring {order}");
     }
 }

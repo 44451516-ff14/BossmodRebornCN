@@ -136,7 +136,7 @@ class QuoteMeteorStream(BossModule module) : Components.UniformStackSpread(modul
     }
 }
 
-class QuoteDalamudDive(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.DalamudDive), true, true)
+class QuoteDalamudDive(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DalamudDive, true, true)
 {
     private readonly Quote? _quote = module.FindComponent<Quote>();
 

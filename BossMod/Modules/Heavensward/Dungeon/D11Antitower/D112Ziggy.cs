@@ -26,13 +26,13 @@ public enum TetherID : uint
     JitteringJounce = 2 // Boss->player/Stardust
 }
 
-class GyratingGlare(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GyratingGlare));
-class MysticLight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MysticLight), 12f);
-class DeepFracture(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DeepFracture), 11f);
-class JitteringGlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.JitteringGlare), new AOEShapeCone(40f, 15f.Degrees()));
-class JitteringJab(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.JitteringJab));
+class GyratingGlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.GyratingGlare);
+class MysticLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticLight, 12f);
+class DeepFracture(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeepFracture, 11f);
+class JitteringGlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.JitteringGlare, new AOEShapeCone(40f, 15f.Degrees()));
+class JitteringJab(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.JitteringJab);
 
-class JitteringJounceBait(BossModule module) : Components.BaitAwayChargeTether(module, 3f, default, ActionID.MakeSpell(AID.JitteringJounce), tetherIDBad: (uint)TetherID.JitteringJounce)
+class JitteringJounceBait(BossModule module) : Components.BaitAwayChargeTether(module, 3f, default, (uint)AID.JitteringJounce, tetherIDBad: (uint)TetherID.JitteringJounce)
 {
     public Actor? Target;
 

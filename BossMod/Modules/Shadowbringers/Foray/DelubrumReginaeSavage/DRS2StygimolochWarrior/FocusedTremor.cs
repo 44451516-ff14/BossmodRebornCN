@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS2StygimolochWarrior;
 
-class FocusedTremorLarge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FocusedTremorAOELarge), new AOEShapeRect(20f, 10f), 2);
-class ForcefulStrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ForcefulStrike), new AOEShapeRect(44f, 24f));
+sealed class FocusedTremorLarge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FocusedTremorAOELarge, new AOEShapeRect(20f, 10f), 2);
+sealed class ForcefulStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ForcefulStrike, new AOEShapeRect(44f, 24f));
 
 // combined with flailing strike, first bait should be into first square
-class FocusedTremorSmall : Components.SimpleAOEs
+sealed class FocusedTremorSmall : Components.SimpleAOEs
 {
-    public FocusedTremorSmall(BossModule module) : base(module, ActionID.MakeSpell(AID.FocusedTremorAOESmall), new AOEShapeRect(10f, 5f), 1)
+    public FocusedTremorSmall(BossModule module) : base(module, (uint)AID.FocusedTremorAOESmall, new AOEShapeRect(10f, 5f), 1)
     {
         Color = Colors.SafeFromAOE;
         Risky = false;
@@ -20,9 +20,9 @@ class FocusedTremorSmall : Components.SimpleAOEs
     }
 }
 
-class FlailingStrikeBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(40f, 30f.Degrees()), (uint)TetherID.FlailingStrike);
+sealed class FlailingStrikeBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(40f, 30f.Degrees()), (uint)TetherID.FlailingStrike);
 
-class FlailingStrike(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class FlailingStrike(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCone _shape = new(60f, 30f.Degrees());
 

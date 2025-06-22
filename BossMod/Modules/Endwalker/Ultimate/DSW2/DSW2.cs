@@ -1,26 +1,26 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P2AscalonsMercyConcealed(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AscalonsMercyConcealedAOE), new AOEShapeCone(50, 15.Degrees()));
+class P2AscalonsMercyConcealed(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AscalonsMercyConcealedAOE, new AOEShapeCone(50, 15.Degrees()));
 
-abstract class AscalonMight(BossModule module, uint oid) : Components.Cleave(module, ActionID.MakeSpell(AID.AscalonsMight), new AOEShapeCone(50, 30.Degrees()), [oid]);
+abstract class AscalonMight(BossModule module, uint oid) : Components.Cleave(module, (uint)AID.AscalonsMight, new AOEShapeCone(50, 30.Degrees()), [oid]);
 class P2AscalonMight(BossModule module) : AscalonMight(module, (uint)OID.BossP2);
 
-class P2UltimateEnd(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.UltimateEndAOE));
-class P3Drachenlance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DrachenlanceAOE), new AOEShapeCone(13, 45.Degrees()));
-class P3SoulTether(BossModule module) : Components.TankbusterTether(module, ActionID.MakeSpell(AID.SoulTether), (uint)TetherID.HolyShieldBash, 5);
-class P4Resentment(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Resentment));
-class P5TwistingDive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwistingDive), new AOEShapeRect(60, 5));
+class P2UltimateEnd(BossModule module) : Components.CastCounter(module, (uint)AID.UltimateEndAOE);
+class P3Drachenlance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DrachenlanceAOE, new AOEShapeCone(13, 45.Degrees()));
+class P3SoulTether(BossModule module) : Components.TankbusterTether(module, (uint)AID.SoulTether, (uint)TetherID.HolyShieldBash, 5);
+class P4Resentment(BossModule module) : Components.CastCounter(module, (uint)AID.Resentment);
+class P5TwistingDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwistingDive, new AOEShapeRect(60, 5));
 
-abstract class Cauterize(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(48, 10));
-class P5Cauterize1(BossModule module) : Cauterize(module, AID.Cauterize1);
-class P5Cauterize2(BossModule module) : Cauterize(module, AID.Cauterize2);
+abstract class Cauterize(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(48, 10));
+class P5Cauterize1(BossModule module) : Cauterize(module, (uint)AID.Cauterize1);
+class P5Cauterize2(BossModule module) : Cauterize(module, (uint)AID.Cauterize2);
 
-class P5SpearOfTheFury(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpearOfTheFuryP5), new AOEShapeRect(50, 5));
+class P5SpearOfTheFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpearOfTheFuryP5, new AOEShapeRect(50, 5));
 class P5AscalonMight(BossModule module) : AscalonMight(module, (uint)OID.BossP5);
-class P5Surrender(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Surrender));
-class P6SwirlingBlizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SwirlingBlizzard), new AOEShapeDonut(20, 35));
-class P7Shockwave(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.ShockwaveP7));
-class P7AlternativeEnd(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.AlternativeEnd));
+class P5Surrender(BossModule module) : Components.CastCounter(module, (uint)AID.Surrender);
+class P6SwirlingBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwirlingBlizzard, new AOEShapeDonut(20, 35));
+class P7Shockwave(BossModule module) : Components.CastCounter(module, (uint)AID.ShockwaveP7);
+class P7AlternativeEnd(BossModule module) : Components.CastCounter(module, (uint)AID.AlternativeEnd);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP2, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 788, PlanLevel = 90)]
 public class DSW2(WorldState ws, Actor primary) : BossModule(ws, primary, new(100, 100), BoundsCircle)
@@ -50,6 +50,8 @@ public class DSW2(WorldState ws, Actor primary) : BossModule(ws, primary, new(10
     public Actor? NidhoggP6() => _nidhoggP6;
     public Actor? HraesvelgrP6() => _hraesvelgrP6;
     public Actor? BossP7() => _bossP7;
+
+    public override bool ShouldPrioritizeAllEnemies => true;
 
     protected override void UpdateModule()
     {

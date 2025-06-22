@@ -36,19 +36,19 @@ class P6SStates : StateMachineBuilder
         AethericPolyominoidChorosIxou(id + 0x180000, 7.5f);
         Synergy(id + 0x190000, 6.2f);
         HemitheosDark(id + 0x1A0000, 7.2f);
-        Cast(id + 0x1B0000, AID.Enrage, 10, 10, "Enrage");
+        Cast(id + 0x1B0000, (uint)AID.Enrage, 10, 10, "Enrage");
     }
 
     private void HemitheosDark(uint id, float delay)
     {
-        Cast(id, AID.HemitheosDark, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.HemitheosDark, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Synergy(uint id, float delay)
     {
         // note that casts have different time, but resolve is the same
-        CastStartMulti(id, [AID.Synergy, AID.ChelicSynergy], delay);
+        CastStartMulti(id, [(uint)AID.Synergy, (uint)AID.ChelicSynergy], delay);
         ComponentCondition<Synergy>(id + 1, 7, comp => comp.Done, "Tankbuster")
             .ActivateOnEnter<Synergy>()
             .DeactivateOnExit<Synergy>()
@@ -57,7 +57,7 @@ class P6SStates : StateMachineBuilder
 
     private void PathogenicCells(uint id, float delay)
     {
-        CastStart(id, AID.PathogenicCells, delay)
+        CastStart(id, (uint)AID.PathogenicCells, delay)
             .ActivateOnEnter<PathogenicCells>();
         CastEnd(id + 1, 8, "Limit cut start");
         ComponentCondition<PathogenicCells>(id + 0x10, 14, comp => comp.NumCasts >= 8, "Limit cut resolve")
@@ -67,7 +67,7 @@ class P6SStates : StateMachineBuilder
     // leaves component active for second cone
     private void ChorosIxouStart(uint id, float delay, bool withParasiteStun = false)
     {
-        CastMulti(id, [AID.ChorosIxouFSFront, AID.ChorosIxouSFSides], delay, 4.5f, withParasiteStun ? "Parasite stun" : "")
+        CastMulti(id, [(uint)AID.ChorosIxouFSFront, (uint)AID.ChorosIxouSFSides], delay, 4.5f, withParasiteStun ? "Parasite stun" : "")
             .ActivateOnEnter<ChorosIxou>()
             .SetHint(StateMachine.StateHint.DowntimeStart, withParasiteStun);
         ComponentCondition<ChorosIxou>(id + 2, 0.5f, comp => comp.FirstDone, "Cones 1");
@@ -83,8 +83,8 @@ class P6SStates : StateMachineBuilder
     // leaves component active; includes two 'exchange' casts
     private void ExchangeOfAgoniesStart(uint id, float delay)
     {
-        Cast(id, AID.AetherialExchange, delay, 3);
-        Cast(id + 2, AID.ExchangeOfAgonies, 2.7f, 4);
+        Cast(id, (uint)AID.AetherialExchange, delay, 3);
+        Cast(id + 2, (uint)AID.ExchangeOfAgonies, 2.7f, 4);
         ComponentCondition<Agonies>(id + 4, 0.9f, comp => comp.Active)
             .ActivateOnEnter<Agonies>();
     }
@@ -99,7 +99,7 @@ class P6SStates : StateMachineBuilder
     // leaves component active
     private State DarkDomeBait(uint id, float delay, string activateName = "")
     {
-        Cast(id, AID.DarkDome, delay, 4, "Puddles bait");
+        Cast(id, (uint)AID.DarkDome, delay, 4, "Puddles bait");
         return ComponentCondition<DarkDome>(id + 2, 0.9f, comp => comp.Casters.Count > 0, activateName)
             .ActivateOnEnter<DarkDome>();
     }
@@ -121,7 +121,7 @@ class P6SStates : StateMachineBuilder
 
     private void TransmissionChorosIxou(uint id, float delay)
     {
-        Cast(id, AID.Transmission, delay, 5)
+        Cast(id, (uint)AID.Transmission, delay, 5)
             .ActivateOnEnter<Transmission>();
         ChorosIxouStart(id + 0x10, 8.4f, true); // out-of-control is applied right as cast ends
         ComponentCondition<Transmission>(id + 0x20, 1.5f, comp => !comp.StunsActive)
@@ -132,7 +132,7 @@ class P6SStates : StateMachineBuilder
 
     private void DarkAshesChorosIxou(uint id, float delay)
     {
-        Cast(id, AID.DarkAshes, delay, 4)
+        Cast(id, (uint)AID.DarkAshes, delay, 4)
             .ActivateOnEnter<DarkAshes>();
         ChorosIxouStart(id + 0x10, 3.5f);
         ComponentCondition<DarkAshes>(id + 0x20, 0.4f, comp => comp.NumFinishedSpreads > 0, "Spread")
@@ -142,8 +142,8 @@ class P6SStates : StateMachineBuilder
 
     private void PolyominoidSigmaChorosIxou(uint id, float delay)
     {
-        Cast(id, AID.AetherialExchange, delay, 3);
-        Cast(id + 0x10, AID.PolyominoidSigma, 2.7f, 4)
+        Cast(id, (uint)AID.AetherialExchange, delay, 3);
+        Cast(id + 0x10, (uint)AID.PolyominoidSigma, 2.7f, 4)
             .ActivateOnEnter<Polyominoid>();
         ChorosIxouStart(id + 0x20, 7.4f);
         ComponentCondition<Polyominoid>(id + 0x30, 0.3f, comp => comp.NumCasts > 0, "Cells resolve")
@@ -153,7 +153,7 @@ class P6SStates : StateMachineBuilder
 
     private void AethericPolyominoidChorosIxou(uint id, float delay)
     {
-        Cast(id, AID.AethericPolyominoid, delay, 4)
+        Cast(id, (uint)AID.AethericPolyominoid, delay, 4)
             .ActivateOnEnter<Polyominoid>();
         ChorosIxouStart(id + 0x20, 4.8f);
         ComponentCondition<Polyominoid>(id + 0x30, 0.2f, comp => comp.NumCasts > 0, "Cells resolve")
@@ -163,10 +163,10 @@ class P6SStates : StateMachineBuilder
 
     private void PolyominoidUnholyDarkness(uint id, float delay)
     {
-        Cast(id, AID.AetherialExchange, delay, 3);
-        Cast(id + 0x10, AID.PolyominoidSigma, 2.6f, 4)
+        Cast(id, (uint)AID.AetherialExchange, delay, 3);
+        Cast(id + 0x10, (uint)AID.PolyominoidSigma, 2.6f, 4)
             .ActivateOnEnter<Polyominoid>();
-        Cast(id + 0x20, AID.UnholyDarkness, 2.7f, 4);
+        Cast(id + 0x20, (uint)AID.UnholyDarkness, 2.7f, 4);
         ComponentCondition<UnholyDarkness>(id + 0x30, 7.1f, comp => comp.NumFinishedStacks > 0, "Cells resolve + Party stacks")
             .ActivateOnEnter<UnholyDarkness>() // activates ~1s after cast end
             .DeactivateOnExit<UnholyDarkness>()
@@ -175,10 +175,10 @@ class P6SStates : StateMachineBuilder
 
     private void PolyominoidUnholyDarknessExocleaver(uint id, float delay)
     {
-        Cast(id, AID.AethericPolyominoid, delay, 4)
+        Cast(id, (uint)AID.AethericPolyominoid, delay, 4)
             .ActivateOnEnter<Polyominoid>();
-        Cast(id + 0x10, AID.UnholyDarkness, 2.7f, 4);
-        Cast(id + 0x20, AID.Exocleaver, 2.2f, 4, "Cells resolve + Pizzas 1")
+        Cast(id + 0x10, (uint)AID.UnholyDarkness, 2.7f, 4);
+        Cast(id + 0x20, (uint)AID.Exocleaver, 2.2f, 4, "Cells resolve + Pizzas 1")
             .ActivateOnEnter<UnholyDarkness>() // activates ~0.1s after cast start
             .ActivateOnEnter<Exocleaver>()
             .DeactivateOnExit<Polyominoid>(); // resolves ~0.2s before cast end
@@ -191,7 +191,7 @@ class P6SStates : StateMachineBuilder
     private void ExchangeOfAgoniesExocleaver(uint id, float delay)
     {
         ExchangeOfAgoniesStart(id, delay);
-        Cast(id + 0x10, AID.Exocleaver, 3, 4, "Pizzas 1")
+        Cast(id + 0x10, (uint)AID.Exocleaver, 3, 4, "Pizzas 1")
             .ActivateOnEnter<Exocleaver>();
         ExchangeOfAgoniesResolve(id + 0x20, 0);
         ComponentCondition<Exocleaver>(id + 0x30, 2.6f, comp => comp.NumCasts > 0, "Pizzas 2")
@@ -200,8 +200,8 @@ class P6SStates : StateMachineBuilder
 
     private void PolyominoidSigmaDarkDome(uint id, float delay)
     {
-        Cast(id, AID.AetherialExchange, delay, 3);
-        Cast(id + 0x10, AID.PolyominoidSigma, 2.7f, 4)
+        Cast(id, (uint)AID.AetherialExchange, delay, 3);
+        Cast(id + 0x10, (uint)AID.PolyominoidSigma, 2.7f, 4)
             .ActivateOnEnter<Polyominoid>();
         DarkDomeBait(id + 0x20, 5.7f);
         ComponentCondition<Polyominoid>(id + 0x30, 3.9f, comp => comp.NumCasts > 0, "Cells resolve")
@@ -211,7 +211,7 @@ class P6SStates : StateMachineBuilder
 
     private void AethericPolyominoidDarkDome(uint id, float delay)
     {
-        Cast(id, AID.AethericPolyominoid, delay, 4)
+        Cast(id, (uint)AID.AethericPolyominoid, delay, 4)
             .ActivateOnEnter<Polyominoid>();
         DarkDomeBait(id + 0x10, 4.7f);
         ComponentCondition<Polyominoid>(id + 0x20, 3.6f, comp => comp.NumCasts > 0, "Cells resolve")
@@ -221,9 +221,9 @@ class P6SStates : StateMachineBuilder
 
     private void PolyominoidDarkSphereDarkDome(uint id, float delay)
     {
-        Cast(id, AID.AethericPolyominoid, delay, 4)
+        Cast(id, (uint)AID.AethericPolyominoid, delay, 4)
             .ActivateOnEnter<Polyominoid>();
-        Cast(id + 0x10, AID.DarkSphere, 2.7f, 4)
+        Cast(id + 0x10, (uint)AID.DarkSphere, 2.7f, 4)
             .ActivateOnEnter<DarkSphere>(); // activates ~0.9s after cast end
         DarkDomeBait(id + 0x20, 2.1f, "Spread + Cells resolve")
             .DeactivateOnExit<DarkSphere>() // resolves ~0.1s before bait
@@ -233,11 +233,11 @@ class P6SStates : StateMachineBuilder
 
     private void CachexiaDualPredationPteraIxou(uint id, float delay)
     {
-        Cast(id, AID.Cachexia, delay, 3)
+        Cast(id, (uint)AID.Cachexia, delay, 3)
             .ActivateOnEnter<AetheronecrosisPredation>();
         ComponentCondition<AetheronecrosisPredation>(id + 2, 0.9f, comp => comp.Active, "Cachexia 1 start");
         ComponentCondition<AetheronecrosisPredation>(id + 0x10, 8, comp => comp.NumCastsAetheronecrosis > 0, "Explode 1");
-        CastStart(id + 0x20, AID.DualPredationFirst, 2.3f);
+        CastStart(id + 0x20, (uint)AID.DualPredationFirst, 2.3f);
         ComponentCondition<AetheronecrosisPredation>(id + 0x21, 1.7f, comp => comp.NumCastsAetheronecrosis > 2, "Explode 2");
         ComponentCondition<AetheronecrosisPredation>(id + 0x22, 4, comp => comp.NumCastsAetheronecrosis > 4, "Explode 3");
         CastEnd(id + 0x23, 0.3f);
@@ -247,7 +247,7 @@ class P6SStates : StateMachineBuilder
         ComponentCondition<AetheronecrosisPredation>(id + 0x31, 4, comp => comp.NumCastsDualPredation > 2, "Wing/snake 3");
         ComponentCondition<AetheronecrosisPredation>(id + 0x32, 4, comp => comp.NumCastsDualPredation > 3, "Wing/snake 4")
             .DeactivateOnExit<AetheronecrosisPredation>();
-        Cast(id + 0x40, AID.PteraIxou, 3.1f, 6)
+        Cast(id + 0x40, (uint)AID.PteraIxou, 3.1f, 6)
             .ActivateOnEnter<PteraIxou>(); // old statuses are removed ~0.4s before cast start
         ComponentCondition<PteraIxou>(id + 0x42, 1, comp => comp.NumCasts > 0, "Sides")
             .DeactivateOnExit<PteraIxou>();
@@ -255,14 +255,14 @@ class P6SStates : StateMachineBuilder
 
     private void CachexiaTransmissionPolyominoidPteraIxou(uint id, float delay)
     {
-        Cast(id, AID.Cachexia, delay, 3)
+        Cast(id, (uint)AID.Cachexia, delay, 3)
             .ActivateOnEnter<PteraIxou>(); // activate early, since side selection is first thing we do - and boss won't rotate
-        Cast(id + 0x10, AID.Transmission, 2.7f, 5)
+        Cast(id + 0x10, (uint)AID.Transmission, 2.7f, 5)
             .ActivateOnEnter<Transmission>();
-        Cast(id + 0x20, AID.AetherialExchange, 4.6f, 3);
-        Cast(id + 0x30, AID.PolyominoidSigma, 2.7f, 4)
+        Cast(id + 0x20, (uint)AID.AetherialExchange, 4.6f, 3);
+        Cast(id + 0x30, (uint)AID.PolyominoidSigma, 2.7f, 4)
             .ActivateOnEnter<Polyominoid>();
-        CastStart(id + 0x40, AID.PteraIxou, 7.5f);
+        CastStart(id + 0x40, (uint)AID.PteraIxou, 7.5f);
         ComponentCondition<Transmission>(id + 0x41, 5.2f, comp => comp.StunsActive, "Parasite stun")
             .ActivateOnEnter<PteraIxouSpreadStack>()
             .SetHint(StateMachine.StateHint.DowntimeStart);

@@ -18,6 +18,7 @@ public enum AID : uint
     AutoAttack = 870, // Boss/TerminusSprinter/TerminusCrier->player, no cast, single-target
     AutoAttack2 = 6499, // TerminusFlesher/TerminusBeholder->player, no cast, single-target
     AutoAttack3 = 18013, // TerminusDetonator->player, no cast, single-target
+
     ShrillShriek = 15567, // Boss->self, 3.0s cast, range 50 circle
     Aetherspike = 15571, // TerminusSprinter->self, 4.0s cast, range 40 width 8 rect
     SelfDestruct = 15570, // TerminusDetonator->self, no cast, range 6 circle
@@ -27,16 +28,16 @@ public enum AID : uint
     SicklyInferno = 16765, // TerminusShriver->location, 3.0s cast, range 5 circle
     Burst = 15569, // Boss->self, no cast, range 50 circle, raidwide on boss death
     BurstEnrage = 15568, // Boss->self, 45.0s cast, single-target, enrage cast
-    ExplosionEnrage = 15919, // Boss->self, no cast, range 50 circle, enrage
+    ExplosionEnrage = 15919 // Boss->self, no cast, range 50 circle, enrage
 }
 
-class ShrillShriek(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ShrillShriek));
-class Aetherspike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Aetherspike), new AOEShapeRect(40, 4));
-class Comet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Comet), 4);
-class SicklyInferno(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SicklyInferno), 5);
-class Burst(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.BurstEnrage), "Enrage!", true);
+sealed class ShrillShriek(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShrillShriek);
+sealed class Aetherspike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Aetherspike, new AOEShapeRect(40f, 4f));
+sealed class Comet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Comet, 4f);
+sealed class SicklyInferno(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SicklyInferno, 5f);
+sealed class Burst(BossModule module) : Components.CastHint(module, (uint)AID.BurstEnrage, "Enrage!", true);
 
-class D062BellwetherStates : StateMachineBuilder
+sealed class D062BellwetherStates : StateMachineBuilder
 {
     public D062BellwetherStates(BossModule module) : base(module)
     {
@@ -50,11 +51,12 @@ class D062BellwetherStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 652, NameID = 8202)]
-public class D062Bellwether(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D062Bellwether(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(60, -361), 19.5f)], [new Rectangle(new(60, -341), 20, 1)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(60f, -361f), 19.5f, 40)], [new Rectangle(new(60.024f, -340.815f), 20f, 1.25f)]);
     private static readonly uint[] trash = [(uint)OID.TerminusRoiler, (uint)OID.TerminusShriver, (uint)OID.TerminusFlesher, (uint)OID.TerminusDetonator,
     (uint)OID.TerminusBeholder, (uint)OID.TerminusCrier, (uint)OID.TerminusSprinter];
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

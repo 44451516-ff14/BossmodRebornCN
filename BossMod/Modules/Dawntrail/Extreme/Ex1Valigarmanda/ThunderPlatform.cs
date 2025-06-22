@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
+sealed class ThunderPlatform(BossModule module) : Components.GenericAOEs(module)
 {
     public BitMask RequireLevitating;
     public BitMask RequireHint;

@@ -2,7 +2,7 @@
 
 namespace BossMod.ReplayVisualization;
 
-public class ColumnPlayerActions : Timeline.ColumnGroup
+public sealed class ColumnPlayerActions : Timeline.ColumnGroup
 {
     private struct CooldownGroup
     {

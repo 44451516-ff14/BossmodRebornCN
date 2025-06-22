@@ -3,7 +3,7 @@
 // note: grid cell indices are same as ENVC indices: 0 for NW, then increasing along x, then increasing along z (so NE is 3, SW is 12, SE is 15)
 // normally, boss does 8 sets of 3 jumps then 2 sets of 2 jumps, destroying 12 cells and damaging remaining 4
 // on enrage, boss does 8 sets of 4 jumps, destroying all cells
-class ArenaChanges(BossModule module) : BossComponent(module)
+sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public static readonly WPos ArenaCenter = new(100, 100);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20);
@@ -22,24 +22,24 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index > 0x0F)
+        if (index > 0x0Fu)
             return;
         switch (state)
         {
-            case 0x00020001: // damage tile (first jump)
+            case 0x00020001u: // damage tile (first jump)
                 DamagedCells[index] = true;
                 break;
-            case 0x00200010: // destroy tile (second jump)
+            case 0x00200010u: // destroy tile (second jump)
                 DamagedCells[index] = false;
                 DestroyedCells[index] = true;
                 break;
-            case 0x01000004: // repair destroyed tile (after initial jumps)
-            case 0x00800004: // repair damaged tile (mechanic end)
-            case 0x00080004: // start short repair (will finish before kb)
+            case 0x01000004u: // repair destroyed tile (after initial jumps)
+            case 0x00800004u: // repair damaged tile (mechanic end)
+            case 0x00080004u: // start short repair (will finish before kb)
                 DamagedCells[index] = false;
                 DestroyedCells[index] = false;
                 break;
-            case 0x00400004: // start long repair (won't finish before kb)
+            case 0x00400004u: // start long repair (won't finish before kb)
                 break;
         }
         UpdateArenaBounds();
@@ -98,7 +98,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
     // public BitMask IntactCells => new BitMask(0xffff) ^ DamagedCells ^ DestroyedCells;
 }
 
-class Mouser(BossModule module) : Components.GenericAOEs(module)
+sealed class Mouser(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(32);
     private bool enrage;
@@ -114,14 +114,14 @@ class Mouser(BossModule module) : Components.GenericAOEs(module)
         var total = countDanger + countsAOE;
         var max = total > count ? count : total;
 
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
+        if (count > countDanger)
         {
-            var aoe = _aoes[i];
-            if (i < countDanger)
-                aoes[i] = count > countDanger ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            var color = Colors.Danger;
+            for (var i = 0; i < countDanger; ++i)
+            {
+                aoes[i].Color = color;
+            }
         }
         return aoes;
     }
@@ -136,7 +136,7 @@ class Mouser(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index <= 0x0F && state is 0x00020001 or 0x00200010 && _aoes.Count > 0)
+        if (index <= 0x0Fu && state is 0x00020001u or 0x00200010u && _aoes.Count != 0)
             _aoes.RemoveAt(0);
     }
 
@@ -147,10 +147,10 @@ class Mouser(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class GrimalkinGaleShockwave(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.GrimalkinGaleShockwaveAOE), 21f, true, stopAfterWall: true);
-class GrimalkinGaleSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.GrimalkinGaleSpreadAOE), 5f);
+sealed class GrimalkinGaleShockwave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GrimalkinGaleShockwaveAOE, 21f, true, stopAfterWall: true);
+sealed class GrimalkinGaleSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.GrimalkinGaleSpreadAOE, 5f);
 
-class SplinteringNails(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.SplinteringNailsAOE))
+sealed class SplinteringNails(BossModule module) : Components.CastCounter(module, (uint)AID.SplinteringNailsAOE)
 {
     private readonly ElevateAndEviscerate? _jumps = module.FindComponent<ElevateAndEviscerate>();
     private Actor? _source;
@@ -190,7 +190,7 @@ class SplinteringNails(BossModule module) : Components.CastCounter(module, Actio
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             _source = null;

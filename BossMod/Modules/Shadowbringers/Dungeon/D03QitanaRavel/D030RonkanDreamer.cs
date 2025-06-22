@@ -30,8 +30,8 @@ public enum TetherID : uint
     StatueActivate = 37 // 28E8->Boss
 }
 
-class RonkanFire(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.RonkanFire));
-class RonkanAbyss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RonkanAbyss), 6f);
+class RonkanFire(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RonkanFire);
+class RonkanAbyss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RonkanAbyss, 6f);
 
 class WrathOfTheRonka(BossModule module) : Components.GenericAOEs(module)
 {
@@ -73,7 +73,7 @@ class WrathOfTheRonka(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BurningBeam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BurningBeam), new AOEShapeRect(15f, 2f));
+class BurningBeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningBeam, new AOEShapeRect(15f, 2f));
 
 class D030RonkanDreamerStates : StateMachineBuilder
 {

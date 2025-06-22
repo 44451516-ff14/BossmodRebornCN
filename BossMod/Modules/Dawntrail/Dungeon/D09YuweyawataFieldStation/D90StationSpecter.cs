@@ -19,10 +19,10 @@ public enum AID : uint
     Catapult = 40672 // GiantCorse->location, 4.0s cast, range 6 circle
 }
 
-class GlassPunch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GlassPunch), new AOEShapeCone(7f, 60f.Degrees()));
-class Catapult(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Catapult), 6f);
+sealed class GlassPunch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GlassPunch, new AOEShapeCone(7f, 60f.Degrees()));
+sealed class Catapult(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Catapult, 6f);
 
-class D90StationSpecterStates : StateMachineBuilder
+sealed class D90StationSpecterStates : StateMachineBuilder
 {
     public D90StationSpecterStates(BossModule module) : base(module)
     {
@@ -47,7 +47,7 @@ class D90StationSpecterStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13577, SortOrder = 5)]
-public class D90StationSpecter(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D90StationSpecter(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(117.43f, -25.65f), new(119.51f, -25.64f), new(120.13f, -25.32f), new(120.8f, -25.13f), new(121.36f, -24.64f),
     new(121.94f, -24.26f), new(122.01f, -23.75f), new(121.85f, -23.07f), new(121.64f, -22.47f), new(121.53f, -21.84f),

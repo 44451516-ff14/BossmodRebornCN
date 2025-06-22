@@ -21,10 +21,10 @@ public enum SID : uint
     ThinIce = 905 // Boss->player/10BB, extra=0x1/0x2/0x3
 }
 
-class SheetOfIce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SheetOfIce), 5);
-class PillarImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarImpact), 6.5f);
-class PillarPierce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarPierce), new AOEShapeRect(82.5f, 2));
-class Cauterize(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Cauterize), new AOEShapeRect(55, 10));
+class SheetOfIce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SheetOfIce, 5);
+class PillarImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarImpact, 6.5f);
+class PillarPierce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarPierce, new AOEShapeRect(82.5f, 2));
+class Cauterize(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Cauterize, new AOEShapeRect(55, 10));
 
 class Prey(BossModule module) : BossComponent(module)
 {

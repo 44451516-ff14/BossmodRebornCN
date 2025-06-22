@@ -43,10 +43,10 @@ class Divebomb(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class LiquidHell(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LiquidHell), 6f);
-class Plummet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Plummet), new AOEShapeCone(8f, 45f.Degrees()));
-class DeathSentence(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DeathSentence));
-class CycloneWing(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CycloneWing));
+class LiquidHell(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LiquidHell, 6f);
+class Plummet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plummet, new AOEShapeCone(8f, 45f.Degrees()));
+class DeathSentence(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DeathSentence);
+class CycloneWing(BossModule module) : Components.RaidwideCast(module, (uint)AID.CycloneWing);
 
 class FanAilStates : StateMachineBuilder
 {

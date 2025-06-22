@@ -1,10 +1,8 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN5TrinityAvowed;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN5TrinityAvowed;
 
-class WrathOfBozja(BossModule module) : Components.CastSharedTankbuster(module, ActionID.MakeSpell(AID.WrathOfBozja), new AOEShapeCone(60, 45.Degrees())); // TODO: verify angle
+sealed class WrathOfBozja(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WrathOfBozja, new AOEShapeCone(60f, 45f.Degrees()), tankbuster: true);
+sealed class GleamingArrow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GleamingArrow, new AOEShapeRect(60f, 5f));
+sealed class GloryOfBozja(BossModule module) : Components.RaidwideCast(module, (uint)AID.GloryOfBozja);
 
-class ElementalImpact1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElementalImpact1), 20);
-class ElementalImpact2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElementalImpact2), 20);
-class GleamingArrow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GleamingArrow), new AOEShapeRect(60, 5));
-
-[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 760, NameID = 9853)]
-public class DRN5TrinityAvowed(WorldState ws, Actor primary) : BossModule(ws, primary, new(-272, -82), new ArenaBoundsSquare(25));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 760, NameID = 9853)]
+public sealed class DRN5TrinityAvowed(WorldState ws, Actor primary) : TrinityAvowed(ws, primary);

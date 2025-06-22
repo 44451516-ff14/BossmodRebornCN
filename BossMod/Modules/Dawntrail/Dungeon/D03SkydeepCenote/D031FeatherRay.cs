@@ -30,7 +30,7 @@ public enum AID : uint
     TroubleBubbles = 38787 // Boss->self, 3.0s cast, single-target
 }
 
-class HydroRing(BossModule module) : Components.GenericAOEs(module)
+sealed class HydroRing(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(12f, 24f);
     private AOEInstance? _aoe;
@@ -44,20 +44,20 @@ class HydroRing(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x13)
+        if (index == 0x13u)
         {
-            if (state == 0x00020001)
+            if (state == 0x00020001u)
             {
                 Arena.Bounds = D031FeatherRay.CircleBounds;
                 _aoe = null;
             }
-            else if (state == 0x00080004)
+            else if (state == 0x00080004u)
                 Arena.Bounds = D031FeatherRay.NormalBounds;
         }
     }
 }
 
-class AiryBubble(BossModule module) : Components.GenericAOEs(module)
+sealed class AiryBubble(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 1.1f;
     private const float Length = 3f;
@@ -70,7 +70,7 @@ class AiryBubble(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var o = _aoes[i];
@@ -93,10 +93,10 @@ class AiryBubble(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.HitboxRadius == 1.1f)
-            if (id == 0x1E46)
+        if (actor.HitboxRadius == Radius)
+            if (id == 0x1E46u)
                 _aoes.Add(actor);
-            else if (id == 0x1E3C)
+            else if (id == 0x1E3Cu)
                 _aoes.Remove(actor);
     }
 
@@ -122,7 +122,7 @@ class AiryBubble(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Burst(BossModule module) : Components.GenericAOEs(module)
+sealed class Burst(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
     private readonly List<AOEInstance> _aoes = new(18);
@@ -148,7 +148,7 @@ class Burst(BossModule module) : Components.GenericAOEs(module)
             {
                 var b = bubbles[i];
                 if (b.HitboxRadius != 1.1f)
-                    _aoes.Add(new(circle, b.Position + new WDir(offset, 0f), default, Module.CastFinishAt(spell, 3.4f)));
+                    _aoes.Add(new(circle, b.Position + new WDir(offset, default), default, Module.CastFinishAt(spell, 3.4f)));
             }
         }
     }
@@ -160,10 +160,10 @@ class Burst(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Immersion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Immersion));
-class WorrisomeWaveBoss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WorrisomeWave1), WorrisomeWavePlayer.Cone);
+sealed class Immersion(BossModule module) : Components.RaidwideCast(module, (uint)AID.Immersion);
+sealed class WorrisomeWaveBoss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WorrisomeWave1, WorrisomeWavePlayer.Cone);
 
-class WorrisomeWavePlayer(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class WorrisomeWavePlayer(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     public static readonly AOEShapeCone Cone = new(24f, 15f.Degrees());
 
@@ -214,7 +214,7 @@ class WorrisomeWavePlayer(BossModule module) : Components.GenericBaitAway(module
     }
 }
 
-class D031FeatherRayStates : StateMachineBuilder
+sealed class D031FeatherRayStates : StateMachineBuilder
 {
     public D031FeatherRayStates(BossModule module) : base(module)
     {
@@ -229,7 +229,7 @@ class D031FeatherRayStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12755)]
-public class D031FeatherRay(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, NormalBounds)
+public sealed class D031FeatherRay(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, NormalBounds)
 {
     private static readonly WPos arenaCenter = new(-105f, -160f);
     public static readonly ArenaBoundsSquare NormalBounds = new(15.5f);

@@ -23,8 +23,8 @@ public enum AID : uint
     AethersupRest = 15849, // Helper->self, no cast, range 24+R 120-degree cone
     RightKnout = 15846, // Boss->self, 5.0s cast, range 24 210-degree cone
     LeftKnout = 15847, // Boss->self, 5.0s cast, range 24 210-degree cone
-    Taphephobia = 15842, // Boss->self, 4.5s cast, single-target
-    Taphephobia2 = 16769, // Helper->player, 5.0s cast, range 6 circle
+    TaphephobiaVisual = 15842, // Boss->self, 4.5s cast, single-target
+    Taphephobia = 16769, // Helper->player, 5.0s cast, range 6 circle
     IntoTheLightMarker = 15844, // Helper->player, no cast, single-target, line stack
     IntoTheLightVisual = 17232, // Boss->self, 5.0s cast, single-target
     IntoTheLight = 15845, // Boss->self, no cast, range 50 width 8 rect
@@ -70,8 +70,8 @@ class SludgeVoidzone(BossModule module) : Components.Voidzone(module, 9.8f, GetV
     }
 }
 
-class ScavengersDaughter(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ScavengersDaughter));
-class HeadCrusher(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.HeadCrusher));
+class ScavengersDaughter(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScavengersDaughter);
+class HeadCrusher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HeadCrusher);
 
 class Fetters(BossModule module) : BossComponent(module)
 {
@@ -177,7 +177,7 @@ class Aethersup(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(20f), (uint)IconID.SpreadFlare, ActionID.MakeSpell(AID.PendulumAOE1), 5.1f, true)
+class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)IconID.SpreadFlare, (uint)AID.PendulumAOE1, 5.1f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -194,15 +194,13 @@ class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, new AOE
     }
 }
 
-class PendulumAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PendulumAOE3), 15f);
+class PendulumAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PendulumAOE3, 15f);
 
-class Knout(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(24f, 105f.Degrees()));
-class LeftKnout(BossModule module) : Knout(module, AID.LeftKnout);
-class RightKnout(BossModule module) : Knout(module, AID.RightKnout);
+class Knout(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftKnout, (uint)AID.RightKnout], new AOEShapeCone(24f, 105f.Degrees()));
 
-class Taphephobia(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Taphephobia2), 6f);
+class Taphephobia(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Taphephobia, 6f);
 
-class IntoTheLight(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.IntoTheLightMarker), ActionID.MakeSpell(AID.IntoTheLight), 5.3f);
+class IntoTheLight(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IntoTheLightMarker, (uint)AID.IntoTheLight, 5.3f);
 
 class CatONineTails(BossModule module) : Components.GenericRotatingAOE(module)
 {
@@ -304,7 +302,9 @@ class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
         if (_aoes.Count != 0 && NumCasts > 2)
             _aoes.RemoveAt(0);
         if (NumCasts <= 14)
-            _aoes.Add(new(circle, WPos.ClampToGrid(WPos.RotateAroundOrigin(45, D013Philia.ArenaCenter, caster.Position + adv)), default, WorldState.FutureTime(3.7d)));
+        {
+            _aoes.Add(new(circle, WPos.ClampToGrid(WPos.RotateAroundOrigin(45, D013Philia.ArenaCenter, caster.Position)), default, WorldState.FutureTime(3.7d)));
+        }
         if (NumCasts == 16)
             NumCasts = 0;
     }
@@ -322,8 +322,7 @@ class D013PhiliaStates : StateMachineBuilder
             .ActivateOnEnter<Aethersup>()
             .ActivateOnEnter<Fetters>()
             .ActivateOnEnter<SludgeVoidzone>()
-            .ActivateOnEnter<LeftKnout>()
-            .ActivateOnEnter<RightKnout>()
+            .ActivateOnEnter<Knout>()
             .ActivateOnEnter<Taphephobia>()
             .ActivateOnEnter<IntoTheLight>()
             .ActivateOnEnter<CatONineTails>()

@@ -4,6 +4,7 @@ public enum OID : uint
 {
     Boss = 0x2E8D, // R0.60
     VermillionFlame = 0x2E8F, // R1.2
+    Deathwall = 0x1EB02F, // R0.5
     RavenousGaleVoidzone = 0x1E8910, // R0.5
     Helper = 0x233C
 }

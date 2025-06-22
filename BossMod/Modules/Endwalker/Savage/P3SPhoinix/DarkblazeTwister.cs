@@ -21,9 +21,9 @@ class TwisterVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVo
         return voidzones[..index];
     }
 }
-class BurningTwister(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BurningTwister), new AOEShapeDonut(7f, 20f));
+class BurningTwister(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningTwister, new AOEShapeDonut(7f, 20f));
 
-class DarkTwister(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.DarkTwister), _knockbackRange, true)
+class DarkTwister(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DarkTwister, _knockbackRange, true)
 {
     private const float _knockbackRange = 17;
     private const float _aoeInnerRadius = 5;

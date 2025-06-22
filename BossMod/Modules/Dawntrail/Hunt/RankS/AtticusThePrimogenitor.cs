@@ -59,11 +59,11 @@ public enum NPCYell : ushort
     LeftHead10 = 16899
 }
 
-class PyricBlast(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.PyricBlast), 6f, 8);
-class Intimidation(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Intimidation));
-class Brutality(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Brutality), "Applies Haste");
+sealed class PyricBlast(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.PyricBlast, 6f, 8);
+sealed class Intimidation(BossModule module) : Components.RaidwideCast(module, (uint)AID.Intimidation);
+sealed class Brutality(BossModule module) : Components.CastHint(module, (uint)AID.Brutality, "Applies Haste");
 
-class BreathSequence(BossModule module) : Components.GenericAOEs(module)
+sealed class BreathSequence(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(6);
     private static readonly Angle angle = 120f.Degrees();
@@ -131,13 +131,16 @@ class BreathSequence(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count != 0)
-            switch ((AID)spell.Action.ID)
+            switch (spell.Action.ID)
             {
-                case AID.BreathSequenceFirstFront:
-                case AID.BreathSequenceFirstLeft:
-                case AID.BreathSequenceFirstRight:
+                case (uint)AID.BreathSequenceFirstFront:
+                case (uint)AID.BreathSequenceFirstLeft:
+                case (uint)AID.BreathSequenceFirstRight:
+                    var aoes = CollectionsMarshal.AsSpan(_aoes);
                     for (var i = 0; i < count; ++i)
-                        _aoes[i] = _aoes[i] with { Activation = Module.CastFinishAt(spell, 2.3f * i) };
+                    {
+                        aoes[i].Activation = Module.CastFinishAt(spell, 2.3d * i);
+                    }
                     break;
             }
     }
@@ -159,7 +162,7 @@ class BreathSequence(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AtticusThePrimogenitorStates : StateMachineBuilder
+sealed class AtticusThePrimogenitorStates : StateMachineBuilder
 {
     public AtticusThePrimogenitorStates(BossModule module) : base(module)
     {
@@ -172,4 +175,4 @@ class AtticusThePrimogenitorStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 13156)]
-public class AtticusThePrimogenitor(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class AtticusThePrimogenitor(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

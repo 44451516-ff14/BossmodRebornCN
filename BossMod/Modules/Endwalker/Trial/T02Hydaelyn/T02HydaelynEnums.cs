@@ -55,7 +55,7 @@ public enum AID : uint
     CrystallizeTriggerWater = 26017, // Boss->self, no cast, single-target
     Parhelion = 26032, // Boss->self, 5.0s cast, single-target
     Parhelion2 = 26033, // Boss->self, no cast, single-target
-    Beacon = 26062, // Parhelion->location, 5.2s cast, width 6 rect charge
+    Beacon1 = 26062, // Parhelion->location, 5.2s cast, width 6 rect charge
     Beacon2 = 26063, // Parhelion->self, 5.0s cast, range 45 width 6 rect
     Subparhelion = 27734, // Boss->self, 5.0s cast, single-target
     RadiantHalo = 26064, // Boss->self, 5.0s cast, range 40 circle

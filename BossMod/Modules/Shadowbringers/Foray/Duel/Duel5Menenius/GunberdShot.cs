@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.Duel.Duel5Menenius;
 
-class GunberdShot(BossModule module) : BossComponent(module)
+sealed class GunberdShot(BossModule module) : BossComponent(module)
 {
     private Actor? _gunberdCaster;
 
@@ -29,16 +29,16 @@ class GunberdShot(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.DarkShot:
+            case (uint)AID.DarkShot:
                 DarkShotLoaded = true;
                 break;
-            case AID.WindslicerShot:
+            case (uint)AID.WindslicerShot:
                 WindslicerLoaded = true;
                 break;
-            case AID.GunberdDark:
-            case AID.GunberdWindslicer:
+            case (uint)AID.GunberdDark:
+            case (uint)AID.GunberdWindslicer:
                 Gunberding = true;
                 _gunberdCaster = caster;
                 break;
@@ -47,13 +47,13 @@ class GunberdShot(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.GunberdDark:
+            case (uint)AID.GunberdDark:
                 DarkShotLoaded = false;
                 Gunberding = false;
                 break;
-            case AID.GunberdWindslicer:
+            case (uint)AID.GunberdWindslicer:
                 WindslicerLoaded = false;
                 Gunberding = false;
                 break;
@@ -64,7 +64,7 @@ class GunberdShot(BossModule module) : BossComponent(module)
     {
         if (Gunberding && WindslicerLoaded)
         {
-            var adjPos = Components.GenericKnockback.AwayFromSource(pc.Position, _gunberdCaster, 10);
+            var adjPos = Components.GenericKnockback.AwayFromSource(pc.Position, _gunberdCaster, 10f);
             Components.GenericKnockback.DrawKnockback(pc, adjPos, Arena);
         }
     }

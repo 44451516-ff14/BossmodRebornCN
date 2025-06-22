@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class CthonicFury(BossModule module) : Components.GenericAOEs(module)
+sealed class CthonicFury(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     public bool Active => _aoe != null || Arena.Bounds != A14ShadowLord.DefaultBounds;
@@ -83,7 +83,7 @@ class BurningCourtMoatKeepBattlements(BossModule module) : Components.GenericAOE
     };
 }
 
-class EchoesOfAgony(BossModule module) : Components.StackWithIcon(module, (uint)IconID.EchoesOfAgony, ActionID.MakeSpell(AID.EchoesOfAgonyAOE), 5f, 9.2f, PartyState.MaxAllianceSize, PartyState.MaxAllianceSize)
+class EchoesOfAgony(BossModule module) : Components.StackWithIcon(module, (uint)IconID.EchoesOfAgony, (uint)AID.EchoesOfAgonyAOE, 5f, 9.2f, PartyState.MaxAllianceSize, PartyState.MaxAllianceSize)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -93,7 +93,7 @@ class EchoesOfAgony(BossModule module) : Components.StackWithIcon(module, (uint)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == StackAction)
+        if (spell.Action.ID == StackAction)
         {
             if (++NumFinishedStacks >= 5)
             {

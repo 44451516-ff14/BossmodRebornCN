@@ -19,12 +19,12 @@ public enum AID : uint
     LockOn2 = 27463, // _Gen_6->self, 1.0s cast, range 6 circle
 }
 
-class GigaTempest(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GigaTempest));
-class Ruination(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Ruination1), new AOEShapeCross(40f, 4f));
-class Ruination2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Ruination2), new AOEShapeRect(30f, 4f));
-class ResinBomb(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ResinBomb), 5f);
-class MagitekCannon(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.MagitekCannon), 6f);
-class Bombardment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bombardment), 6f);
+class GigaTempest(BossModule module) : Components.RaidwideCast(module, (uint)AID.GigaTempest);
+class Ruination(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ruination1, new AOEShapeCross(40f, 4f));
+class Ruination2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ruination2, new AOEShapeRect(30f, 4f));
+class ResinBomb(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ResinBomb, 5f);
+class MagitekCannon(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MagitekCannon, 6f);
+class Bombardment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bombardment, 6f);
 
 class LockOn(BossModule module) : Components.GenericAOEs(module)
 {

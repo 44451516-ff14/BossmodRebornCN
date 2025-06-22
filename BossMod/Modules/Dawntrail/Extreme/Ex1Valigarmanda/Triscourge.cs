@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class FireScourgeOfFire(BossModule module) : Components.UniformStackSpread(module, 5, 0, 4)
+sealed class FireScourgeOfFire(BossModule module) : Components.UniformStackSpread(module, 5f, default, 4)
 {
     private readonly List<int> _remainingCasts = [];
 
@@ -29,7 +29,7 @@ class FireScourgeOfFire(BossModule module) : Components.UniformStackSpread(modul
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.FireScourgeOfFire)
+        if (spell.Action.ID == (uint)AID.FireScourgeOfFire)
         {
             var index = Stacks.FindIndex(s => s.Target.InstanceID == spell.MainTargetID);
             if (index >= 0)
@@ -38,22 +38,22 @@ class FireScourgeOfFire(BossModule module) : Components.UniformStackSpread(modul
     }
 }
 
-class FireScourgeOfFireVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, ActionID.MakeSpell(AID.FireScourgeOfFire), module => module.Enemies(OID.ScourgeOfFireVoidzone).Where(z => z.EventState != 7), 0.9f);
+sealed class FireScourgeOfFireVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.FireScourgeOfFire, module => module.Enemies(OID.ScourgeOfFireVoidzone).Where(z => z.EventState != 7), 0.9f);
 
-class FireScourgeOfIce(BossModule module) : Components.StayMove(module)
+sealed class FireScourgeOfIce(BossModule module) : Components.StayMove(module)
 {
     public int NumImminent;
     public int NumActiveFreezes;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.FreezingUp)
+        if (status.ID == (uint)SID.FreezingUp)
             ++NumActiveFreezes;
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.FreezingUp)
+        if (status.ID == (uint)SID.FreezingUp)
             --NumActiveFreezes;
     }
 
@@ -67,23 +67,23 @@ class FireScourgeOfIce(BossModule module) : Components.StayMove(module)
     }
 }
 
-class IceScourgeOfFireIce(BossModule module) : Components.IconStackSpread(module, (uint)IconID.CalamitysInferno, (uint)IconID.CalamitysChill, ActionID.MakeSpell(AID.IceScourgeOfFire), ActionID.MakeSpell(AID.IceScourgeOfIce), 5, 16, 7.1f, 3, 3, true);
-class FireIceScourgeOfThunder(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.CalamitysBolt, ActionID.MakeSpell(AID.FireIceScourgeOfThunder), 5, 7.1f);
+sealed class IceScourgeOfFireIce(BossModule module) : Components.IconStackSpread(module, (uint)IconID.CalamitysInferno, (uint)IconID.CalamitysChill, (uint)AID.IceScourgeOfFire, (uint)AID.IceScourgeOfIce, 5f, 16f, 7.1f, 3, 3, true);
+sealed class FireIceScourgeOfThunder(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.CalamitysBolt, (uint)AID.FireIceScourgeOfThunder, 5f, 7.1f);
 
 // TODO: add hint if player and stack target has different levitate states
-class ThunderScourgeOfFire(BossModule module) : Components.StackWithIcon(module, (uint)IconID.CalamitysInferno, ActionID.MakeSpell(AID.ThunderScourgeOfFire), 5, 7.1f, 4, 4);
+sealed class ThunderScourgeOfFire(BossModule module) : Components.StackWithIcon(module, (uint)IconID.CalamitysInferno, (uint)AID.ThunderScourgeOfFire, 5f, 7.1f, 4, 4);
 
 // TODO: verify spread radius for ice boulders...
-class ThunderScourgeOfIceThunder(BossModule module) : Components.UniformStackSpread(module, 0, 8, alwaysShowSpreads: true)
+sealed class ThunderScourgeOfIceThunder(BossModule module) : Components.UniformStackSpread(module, default, 8f, alwaysShowSpreads: true)
 {
     public int NumCasts;
     private readonly ThunderPlatform? _platform = module.FindComponent<ThunderPlatform>();
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if ((IconID)iconID is IconID.CalamitysBolt or IconID.CalamitysChill)
+        if (iconID is (uint)IconID.CalamitysBolt or (uint)IconID.CalamitysChill)
         {
-            AddSpread(actor, WorldState.FutureTime(7.1f));
+            AddSpread(actor, WorldState.FutureTime(7.1d));
             var slot = Raid.FindSlot(actor.InstanceID);
             if (slot >= 0 && _platform != null)
             {
@@ -95,7 +95,7 @@ class ThunderScourgeOfIceThunder(BossModule module) : Components.UniformStackSpr
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.ThunderScourgeOfThunderFail or AID.ThunderScourgeOfThunder)
+        if (spell.Action.ID is (uint)AID.ThunderScourgeOfThunderFail or (uint)AID.ThunderScourgeOfThunder)
         {
             ++NumCasts;
             Spreads.Clear();

@@ -45,9 +45,9 @@ class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class IceGuillotine(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.IceGuillotine), new AOEShapeCone(11.23f, 60f.Degrees()), activeWhileCasting: false);
-class SnowDrift(BossModule module) : Components.RaidwideCastDelay(module, ActionID.MakeSpell(AID.SnowDriftVisual), ActionID.MakeSpell(AID.SnowDrift), 2f);
-class ColdWave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ColdWave), 8f);
+class IceGuillotine(BossModule module) : Components.Cleave(module, (uint)AID.IceGuillotine, new AOEShapeCone(11.23f, 60f.Degrees()), activeWhileCasting: false);
+class SnowDrift(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.SnowDriftVisual, (uint)AID.SnowDrift, 2f);
+class ColdWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColdWave, 8f);
 
 class D261WandilStates : StateMachineBuilder
 {

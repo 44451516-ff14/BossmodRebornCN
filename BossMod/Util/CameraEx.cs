@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace BossMod.Util;
+﻿namespace BossMod.Util;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x2B0)]
 public unsafe struct CameraEx

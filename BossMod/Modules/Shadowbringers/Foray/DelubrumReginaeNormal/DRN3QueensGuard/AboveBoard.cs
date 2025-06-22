@@ -1,83 +1,48 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN3QueensGuard;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN3QueensGuard;
 
-class AboveBoard(BossModule module) : Components.GenericAOEs(module)
+sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
 {
-    public enum State { Initial, ThrowUpDone, ShortExplosionsDone, LongExplosionsDone }
+    private readonly List<AOEInstance> _aoes = new(6);
+    private static readonly AOEShapeCircle circle = new(10f);
 
-    public State CurState;
-    private readonly List<Actor> _smallBombs = module.Enemies((uint)OID.AetherialBolt);
-    private readonly List<Actor> _bigBombs = module.Enemies((uint)OID.AetherialBurst);
-    private bool _invertedBombs; // bombs are always either all normal (big=short) or all inverted
-    private BitMask _invertedPlayers; // default for player is 'long', short is considered inverted (has visible status)
-    private readonly DateTime _activation = module.WorldState.FutureTime(12f);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
-    private static readonly AOEShapeCircle _shape = new(10);
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var imminentBombs = AreBigBombsDangerous(slot) ? _bigBombs : _smallBombs;
-        var count = imminentBombs.Count;
-
-        if (count == 0)
-            return [];
-
-        var aoes = new AOEInstance[count];
-
-        for (var i = 0; i < count; ++i)
+        if (spell.Action.ID == (uint)AID.ReversalOfForcesExtra)
         {
-            aoes[i] = new(_shape, imminentBombs[i].Position, new(), _activation);
+            _aoes.Clear();
+            var bombs = Module.Enemies((uint)OID.AetherialBurst);
+            var count = bombs.Count;
+            var activation = Module.CastFinishAt(spell, 15.1f);
+            for (var i = 0; i < count; ++i)
+            {
+                _aoes.Add(new(circle, WPos.ClampToGrid(bombs[i].Position), default, activation));
+            }
         }
-        return aoes;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnActorCreated(Actor actor)
     {
-        switch (status.ID)
+        if (actor.OID == (uint)OID.AetherialBolt)
         {
-            case (uint)SID.ReversalOfForces:
-                if (actor.OID is (uint)OID.AetherialBolt or (uint)OID.AetherialBurst)
-                    _invertedBombs = true;
-                else
-                    _invertedPlayers[Raid.FindSlot(actor.InstanceID)] = true;
-                break;
-            case (uint)SID.AboveBoardPlayerLong:
-            case (uint)SID.AboveBoardBombLong:
-            case (uint)SID.AboveBoardBombShort:
-                AdvanceState(State.ThrowUpDone);
-                break;
+            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(14d)));
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch (spell.Action.ID)
+        if (spell.Action.ID is (uint)AID.LotsCastBigLong or (uint)AID.LotsCastSmallLong)
         {
-            case (uint)AID.LotsCastBigShort:
-            case (uint)AID.LotsCastSmallShort:
-                AdvanceState(State.ShortExplosionsDone);
-                break;
+            _aoes.Clear();
         }
     }
 
-    private bool AreBigBombsDangerous(int slot)
+    public override void OnActorUntargetable(Actor actor)
     {
-        if (_invertedPlayers[slot])
+        if (actor.OID == (uint)OID.QueensWarrior)
         {
-            // inverted players fall right before first bomb explosion, so they have to avoid first bombs, then move to avoid second bombs
-            var firstSetImminent = CurState < State.ShortExplosionsDone;
-            return firstSetImminent != _invertedBombs; // first set is big if inverted
+            _aoes.Clear();
         }
-        else
-        {
-            // normally players fall right before second bomb explosion, so they only avoid second bombs
-            // second bombs are normally small, big if inverted
-            return _invertedBombs;
-        }
-    }
-
-    private void AdvanceState(State dest)
-    {
-        if (CurState < dest)
-            CurState = dest;
     }
 }

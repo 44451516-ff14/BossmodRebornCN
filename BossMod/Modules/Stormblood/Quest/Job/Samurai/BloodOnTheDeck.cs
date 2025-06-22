@@ -18,10 +18,10 @@ public enum AID : uint
     Bombslinger1 = 8411, // AdjunctOstyrgreinHelper->location, 3.0s cast, range 6 circle
 }
 
-class ScytheTail(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ScytheTail), 7);
-class Butcher(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Butcher), new AOEShapeCone(9, 45.Degrees()));
-class TenkaGoken(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TenkaGoken), new AOEShapeCone(8.5f, 60.Degrees()));
-class Bombslinger(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bombslinger1), 6);
+class ScytheTail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScytheTail, 7);
+class Butcher(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Butcher, new AOEShapeCone(9, 45.Degrees()));
+class TenkaGoken(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenkaGoken, new AOEShapeCone(8.5f, 60.Degrees()));
+class Bombslinger(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bombslinger1, 6);
 
 class GurumiBorlumiStates : StateMachineBuilder
 {

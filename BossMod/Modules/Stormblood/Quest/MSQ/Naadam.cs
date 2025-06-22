@@ -26,13 +26,13 @@ public enum SID : uint
     EarthenAccord = 778
 }
 
-class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DiffractiveLaser), 5);
-class AugmentedSuffering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AugmentedSuffering), 6.5f);
-class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AugmentedUprising), new AOEShapeCone(8.5f, 60.Degrees()));
+class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DiffractiveLaser, 5);
+class AugmentedSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedSuffering, 6.5f);
+class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedUprising, new AOEShapeCone(8.5f, 60.Degrees()));
 
-class ViolentEarth(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ViolentEarth), 6);
-class DispellingWind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DispellingWind), new AOEShapeRect(40.5f, 4));
-class Epigraph(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Epigraph), new AOEShapeRect(45, 4));
+class ViolentEarth(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ViolentEarth, 6);
+class DispellingWind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DispellingWind, new AOEShapeRect(40.5f, 4));
+class Epigraph(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Epigraph, new AOEShapeRect(45, 4));
 
 class DrawOvoo : BossComponent
 {

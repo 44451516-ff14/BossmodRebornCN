@@ -82,7 +82,7 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void ArmsOfWisdom(uint id, float delay)
     {
-        Cast(id, AID.ArmsOfWisdom, delay, 4, "Tankbuster")
+        Cast(id, (uint)AID.ArmsOfWisdom, delay, 4, "Tankbuster")
             .ActivateOnEnter<ArmsOfWisdom>()
             .DeactivateOnExit<ArmsOfWisdom>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -90,7 +90,7 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void Gnosis(uint id, float delay)
     {
-        ActorCast(id, Module.Enemies(OID.Barbelo).FirstOrDefault, AID.Gnosis, delay, 3, false, "Knockback")
+        ActorCast(id, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.Gnosis, delay, 3, false, "Knockback")
             .ActivateOnEnter<Gnosis>()
             .DeactivateOnExit<Gnosis>();
     }
@@ -107,28 +107,28 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void ThunderCone(uint id, float delay)
     {
-        Cast(id, AID.ThunderCone, delay, 3, "Frontal cone")
+        Cast(id, (uint)AID.ThunderCone, delay, 3, "Frontal cone")
             .ActivateOnEnter<ThunderCone>()
             .DeactivateOnExit<ThunderCone>();
     }
 
     private void ThunderDonut(uint id, float delay)
     {
-        Cast(id, AID.ThunderDonut, delay, 3, "Donut")
+        Cast(id, (uint)AID.ThunderDonut, delay, 3, "Donut")
             .ActivateOnEnter<ThunderDonut>()
             .DeactivateOnExit<ThunderDonut>();
     }
 
     private void Aero(uint id, float delay)
     {
-        Cast(id, AID.Aero, delay, 3, "Circle")
+        Cast(id, (uint)AID.Aero, delay, 3, "Circle")
             .ActivateOnEnter<Aero>()
             .DeactivateOnExit<Aero>();
     }
 
     private void RandomThunder(uint id, float delay)
     {
-        CastMulti(id, [AID.ThunderDonut, AID.ThunderCone], delay, 3, "Donut/cone")
+        CastMulti(id, [(uint)AID.ThunderDonut, (uint)AID.ThunderCone], delay, 3, "Donut/cone")
             .ActivateOnEnter<ThunderDonut>()
             .ActivateOnEnter<ThunderCone>()
             .DeactivateOnExit<ThunderDonut>()
@@ -137,7 +137,7 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void ThunderDonutAero(uint id, float delay)
     {
-        CastMulti(id, [AID.ThunderDonut, AID.Aero], delay, 3, "Donut/circle")
+        CastMulti(id, [(uint)AID.ThunderDonut, (uint)AID.Aero], delay, 3, "Donut/circle")
             .ActivateOnEnter<ThunderDonut>()
             .ActivateOnEnter<Aero>()
             .DeactivateOnExit<ThunderDonut>()
@@ -149,7 +149,7 @@ class Un3SophiaStates : StateMachineBuilder
     {
         RandomThunder(id, delay);
         Aero(id + 0x100, 3.2f);
-        Cast(id + 0x200, AID.Execute, 5.2f, 5, "Repeat by copies")
+        Cast(id + 0x200, (uint)AID.Execute, 5.2f, 5, "Repeat by copies")
             .ActivateOnEnter<ExecuteDonut>()
             .ActivateOnEnter<ExecuteAero>()
             .ActivateOnEnter<ExecuteCone>()
@@ -164,8 +164,8 @@ class Un3SophiaStates : StateMachineBuilder
         Aero(id + 0x100, 3.1f);
         ArmsOfWisdom(id + 0x200, 5.2f);
 
-        CastStart(id + 0x300, AID.Execute, 7.3f);
-        ActorCastStart(id + 0x301, Module.Enemies(OID.Barbelo).FirstOrDefault, AID.LightDewShort, 2.1f)
+        CastStart(id + 0x300, (uint)AID.Execute, 7.3f);
+        ActorCastStart(id + 0x301, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.LightDewShort, 2.1f)
             .ActivateOnEnter<ExecuteDonut>()
             .ActivateOnEnter<ExecuteAero>()
             .ActivateOnEnter<ExecuteCone>();
@@ -181,7 +181,7 @@ class Un3SophiaStates : StateMachineBuilder
     private void CloudyHeavensScalesOfWisdom(uint id, float delay)
     {
         Targetable(id, true, delay);
-        Cast(id + 0x10, AID.CloudyHeavens, 2.1f, 3, "Raidwide")
+        Cast(id + 0x10, (uint)AID.CloudyHeavens, 2.1f, 3, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<Demiurges>(id + 0x1000, 1.5f, comp => comp.AddsActive, "Adds appear")
             .ActivateOnEnter<Demiurges>();
@@ -211,7 +211,7 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void Proximity(uint id, float delay)
     {
-        Cast(id, AID.Quasar1, delay, 2.7f);
+        Cast(id, (uint)AID.Quasar1, delay, 2.7f);
         ComponentCondition<QuasarProximity1>(id + 0x10, 1, comp => comp.Casters.Count > 0, "Proximity baits")
             .ActivateOnEnter<QuasarProximity1>()
             .ActivateOnEnter<QuasarProximity2>();
@@ -222,7 +222,7 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void Quasar(uint id, float delay)
     {
-        Cast(id, AID.Quasar1, delay, 2.7f);
+        Cast(id, (uint)AID.Quasar1, delay, 2.7f);
         ComponentCondition<Quasar>(id + 0x10, 1, comp => comp.WeightLeft + comp.WeightRight > 0)
             .ActivateOnEnter<Quasar>();
         ComponentCondition<Quasar>(id + 0x20, 7.8f, comp => comp.NumCasts > 0, "Tilt")
@@ -231,11 +231,11 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void QuasarOnrush(uint id, float delay)
     {
-        Cast(id, AID.Quasar2, delay, 3);
+        Cast(id, (uint)AID.Quasar2, delay, 3);
         Targetable(id + 0x10, false, 0.9f, "Boss disappear");
         ComponentCondition<Quasar>(id + 0x20, 0.1f, comp => comp.WeightLeft + comp.WeightRight > 0)
             .ActivateOnEnter<Quasar>();
-        Cast(id + 0x30, AID.Onrush, 3.2f, 3, "Half room aoe")
+        Cast(id + 0x30, (uint)AID.Onrush, 3.2f, 3, "Half room aoe")
             .ActivateOnEnter<Onrush>()
             .DeactivateOnExit<Onrush>();
         ComponentCondition<Quasar>(id + 0x40, 1.6f, comp => comp.NumCasts > 0, "Tilt")
@@ -245,24 +245,24 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void QuasarLightDew(uint id, float delay)
     {
-        Cast(id, AID.Quasar1, delay, 2.7f);
+        Cast(id, (uint)AID.Quasar1, delay, 2.7f);
         ComponentCondition<Quasar>(id + 0x10, 1, comp => comp.WeightLeft + comp.WeightRight > 0)
             .ActivateOnEnter<Quasar>();
         ComponentCondition<Quasar>(id + 0x20, 7.8f, comp => comp.NumCasts > 0, "Tilt")
             .DeactivateOnExit<Quasar>();
-        ActorCast(id + 0x30, Module.Enemies(OID.Barbelo).FirstOrDefault, AID.LightDewShort, 0.5f, 2, false, "Line")
+        ActorCast(id + 0x30, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.LightDewShort, 0.5f, 2, false, "Line")
             .ActivateOnEnter<LightDewShort>()
             .DeactivateOnExit<LightDewShort>();
     }
 
     private void QuasarOnrushLightDew(uint id, float delay)
     {
-        Cast(id, AID.Quasar2, delay, 3);
+        Cast(id, (uint)AID.Quasar2, delay, 3);
         Targetable(id + 0x10, false, 0.9f, "Boss disappear");
         ComponentCondition<Quasar>(id + 0x20, 0, comp => comp.WeightLeft + comp.WeightRight > 0)
             .ActivateOnEnter<Quasar>();
-        ActorCastStart(id + 0x30, Module.Enemies(OID.Barbelo).FirstOrDefault, AID.LightDewLong, 3.3f);
-        CastStart(id + 0x31, AID.Onrush, 3.0f)
+        ActorCastStart(id + 0x30, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.LightDewLong, 3.3f);
+        CastStart(id + 0x31, (uint)AID.Onrush, 3.0f)
             .ActivateOnEnter<LightDewLong>();
         ComponentCondition<Quasar>(id + 0x40, 1.5f, comp => comp.NumCasts > 0, "Tilt")
             .ActivateOnEnter<Onrush>()
@@ -296,7 +296,7 @@ class Un3SophiaStates : StateMachineBuilder
     {
         ComponentCondition<Pairs>(id, delay, comp => comp.Active)
             .ActivateOnEnter<Pairs>();
-        Cast(id + 0x10, AID.Quasar1, 1.1f, 2.7f);
+        Cast(id + 0x10, (uint)AID.Quasar1, 1.1f, 2.7f);
         ComponentCondition<Quasar>(id + 0x20, 1, comp => comp.WeightLeft + comp.WeightRight > 0)
             .ActivateOnEnter<Quasar>(); // resolves slightly after casts start; TODO: find better condition
         ComponentCondition<Pairs>(id + 0x21, 0.2f, comp => !comp.Active, "Color pairs")
@@ -314,7 +314,7 @@ class Un3SophiaStates : StateMachineBuilder
 
         ComponentCondition<Pairs>(id + 0x4000, 7.1f, comp => comp.Active)
             .ActivateOnEnter<Pairs>();
-        CastStart(id + 0x4001, AID.Execute, 2.1f);
+        CastStart(id + 0x4001, (uint)AID.Execute, 2.1f);
         ComponentCondition<Pairs>(id + 0x4002, 2.9f, comp => !comp.Active, "Color pairs")
             .ActivateOnEnter<ExecuteDonut>()
             .ActivateOnEnter<ExecuteAero>()

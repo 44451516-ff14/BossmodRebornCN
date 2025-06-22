@@ -347,16 +347,16 @@ class IceBloomCross(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AbyssalSlash1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssalSlash1), new AOEShapeDonutSector(2f, 7f, 90f.Degrees()));
-class AbyssalSlash2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssalSlash2), new AOEShapeDonutSector(7f, 12f, 90f.Degrees()));
-class AbyssalSlash3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbyssalSlash3), new AOEShapeDonutSector(17f, 22f, 90f.Degrees()));
-class VacuumSlash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VacuumSlash), new AOEShapeCone(80f, 22.5f.Degrees()));
-class ThermalDivide(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ThermalDivide1), new AOEShapeRect(40f, 4f));
-class Exflammeus(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exflammeus), 8f);
-class IceShoot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IceShoot), 6f);
-class IceBloomCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IceBloomCircle), 6f);
-class EmptySoulsCaliber(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EmptySoulsCaliber), new AOEShapeDonut(5f, 40f));
-class SolidSoulsCaliber(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SolidSoulsCaliber), 10f);
+class AbyssalSlash1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalSlash1, new AOEShapeDonutSector(2f, 7f, 90f.Degrees()));
+class AbyssalSlash2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalSlash2, new AOEShapeDonutSector(7f, 12f, 90f.Degrees()));
+class AbyssalSlash3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalSlash3, new AOEShapeDonutSector(17f, 22f, 90f.Degrees()));
+class VacuumSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VacuumSlash, new AOEShapeCone(80f, 22.5f.Degrees()));
+class ThermalDivide(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThermalDivide1, new AOEShapeRect(40f, 4f));
+class Exflammeus(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exflammeus, 8f);
+class IceShoot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceShoot, 6f);
+class IceBloomCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceBloomCircle, 6f);
+class EmptySoulsCaliber(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EmptySoulsCaliber, new AOEShapeDonut(5f, 40f));
+class SolidSoulsCaliber(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SolidSoulsCaliber, 10f);
 
 class DD99ExcaliburStates : StateMachineBuilder
 {

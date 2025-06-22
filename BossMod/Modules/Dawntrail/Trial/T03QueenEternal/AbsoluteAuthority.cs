@@ -1,8 +1,8 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class AbsoluteAuthorityCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbsoluteAuthorityCircle), 8f);
+class AbsoluteAuthorityCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbsoluteAuthorityCircle, 8f);
 
-class AbsoluteAuthorityFlare(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(12), (uint)IconID.Flare, ActionID.MakeSpell(AID.AbsoluteAuthorityFlare), 6f, true)
+class AbsoluteAuthorityFlare(BossModule module) : Components.BaitAwayIcon(module, 12f, (uint)IconID.Flare, (uint)AID.AbsoluteAuthorityFlare, 6f)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

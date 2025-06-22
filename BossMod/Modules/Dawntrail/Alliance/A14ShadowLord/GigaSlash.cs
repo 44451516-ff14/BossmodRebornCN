@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class GigaSlash(BossModule module) : Components.GenericAOEs(module)
+sealed class GigaSlash(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(3);
     private static readonly AOEShapeCone[] _shapes = [new(60f, 112.5f.Degrees()), new(60f, 135f.Degrees()), new(60f, 105f.Degrees())];

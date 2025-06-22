@@ -2,7 +2,7 @@
 
 class PartedPlumes : Components.SimpleAOEs
 {
-    public PartedPlumes(BossModule module) : base(module, ActionID.MakeSpell(AID.PartedPlumes), new AOEShapeCone(50f, 10f.Degrees()), 16) { MaxDangerColor = 2; }
+    public PartedPlumes(BossModule module) : base(module, (uint)AID.PartedPlumes, new AOEShapeCone(50f, 10f.Degrees()), 16) { MaxDangerColor = 2; }
 }
 
 class PartedPlumesVoidzone(BossModule module) : Components.GenericAOEs(module, default, "GTFO from voidzone!")

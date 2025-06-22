@@ -2,7 +2,7 @@
 
 abstract class SpiritTaker(BossModule module) : Components.GenericStackSpread(module)
 {
-    public const float Radius = 5;
+    public const float Radius = 5f;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -12,7 +12,7 @@ abstract class SpiritTaker(BossModule module) : Components.GenericStackSpread(mo
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.SpiritTaker)
+        if (spell.Action.ID == (uint)AID.SpiritTaker)
         {
             var activation = Module.CastFinishAt(spell, 0.3f);
             foreach (var (i, p) in Raid.WithSlot(true, true, true))
@@ -25,7 +25,7 @@ abstract class SpiritTaker(BossModule module) : Components.GenericStackSpread(mo
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.SpiritTakerAOE)
+        if (spell.Action.ID == (uint)AID.SpiritTakerAOE)
             Spreads.Clear();
     }
 }

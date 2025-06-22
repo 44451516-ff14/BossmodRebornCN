@@ -31,17 +31,17 @@ public enum AID : uint
     Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
-class DarkSpike(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.DarkSpike));
-class FrondAffeared(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.FrondAffeared));
-class SilkenSpray(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SilkenSpray), new AOEShapeCone(24f, 30f.Degrees()));
-class Implosion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Implosion));
-class Earthquake1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Earthquake1), 10.5f);
-class Earthquake2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Earthquake2), new AOEShapeDonut(10f, 20f));
-class Earthquake3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Earthquake3), new AOEShapeDonut(20f, 30f));
+class DarkSpike(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.DarkSpike);
+class FrondAffeared(BossModule module) : Components.CastGaze(module, (uint)AID.FrondAffeared);
+class SilkenSpray(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SilkenSpray, new AOEShapeCone(24f, 30f.Degrees()));
+class Implosion(BossModule module) : Components.RaidwideCast(module, (uint)AID.Implosion);
+class Earthquake1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthquake1, 10.5f);
+class Earthquake2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthquake2, new AOEShapeDonut(10f, 20f));
+class Earthquake3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Earthquake3, new AOEShapeDonut(20f, 30f));
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
 class AltarArachneStates : StateMachineBuilder
 {

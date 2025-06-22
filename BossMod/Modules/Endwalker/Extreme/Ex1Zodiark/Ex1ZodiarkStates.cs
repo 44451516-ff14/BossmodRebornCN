@@ -9,7 +9,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
 
     private void SinglePhase(uint id)
     {
-        Cast(id, AID.Kokytos, 6.1f, 4, "Kokytos");
+        Cast(id, (uint)AID.Kokytos, 6.1f, 4, "Kokytos");
         Paradeigma1(id + 0x010000, 7.2f);
         Ania(id + 0x020000, 2.7f);
         Exoterikos1(id + 0x030000, 4.1f);
@@ -37,12 +37,12 @@ class Ex1ZodiarkStates : StateMachineBuilder
         TrimorphosExoterikos(id + 0x350000, 10.2f, false);
         Styx(id + 0x360000, 3.2f, 9);
         Paradeigma9(id + 0x370000, 0.4f);
-        Cast(id + 0x380000, AID.Enrage, 3.5f, 8, "Enrage");
+        Cast(id + 0x380000, (uint)AID.Enrage, 3.5f, 8, "Enrage");
     }
 
     private void Ania(uint id, float delay)
     {
-        Cast(id, AID.Ania, delay, 4)
+        Cast(id, (uint)AID.Ania, delay, 4)
             .ActivateOnEnter<Ania>();
         ComponentCondition<Ania>(id + 2, 1, comp => comp.Done, "Tankbuster")
             .DeactivateOnExit<Ania>()
@@ -51,13 +51,13 @@ class Ex1ZodiarkStates : StateMachineBuilder
 
     private void Phobos(uint id, float delay)
     {
-        Cast(id, AID.Phobos, delay, 4, "Raidwide")
+        Cast(id, (uint)AID.Phobos, delay, 4, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private State Algedon(uint id, float delay, bool setPosFlags)
     {
-        CastStartMulti(id, [AID.AlgedonTL, AID.AlgedonTR], delay)
+        CastStartMulti(id, [(uint)AID.AlgedonTL, (uint)AID.AlgedonTR], delay)
             .SetHint(StateMachine.StateHint.PositioningStart, setPosFlags);
         CastEnd(id + 1, 7)
             .ActivateOnEnter<Algedon>();
@@ -68,7 +68,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
 
     private State Adikia(uint id, float delay)
     {
-        Cast(id, AID.Adikia, delay, 6)
+        Cast(id, (uint)AID.Adikia, delay, 6)
             .ActivateOnEnter<Adikia>();
         return ComponentCondition<Adikia>(id + 0x10, 1.7f, comp => comp.Done, "SideSmash")
             .DeactivateOnExit<Adikia>();
@@ -76,7 +76,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
 
     private State Styx(uint id, float delay, int numHits)
     {
-        CastStart(id, AID.Styx, delay)
+        CastStart(id, (uint)AID.Styx, delay)
             .ActivateOnEnter<Styx>();
         CastEnd(id + 1, 5, "Stack");
         return ComponentCondition<Styx>(id + 0x10, 1.1f * numHits - 0.1f, comp => comp.NumCasts >= numHits, "Stack resolve", 2)
@@ -86,7 +86,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
     // note that exoterikos component is optionally activated, but unconditionally deactivated
     private State TripleEsotericRay(uint id, float delay, bool startExo, bool setPosFlags)
     {
-        Cast(id, AID.TripleEsotericRay, delay, 7, "TripleRay")
+        Cast(id, (uint)AID.TripleEsotericRay, delay, 7, "TripleRay")
             .ActivateOnEnter<Exoterikos>(startExo)
             .SetHint(StateMachine.StateHint.PositioningStart, setPosFlags);
         return ComponentCondition<Exoterikos>(id + 0x10, 3.1f, comp => comp.Done, "TripleRay resolve")
@@ -97,14 +97,14 @@ class Ex1ZodiarkStates : StateMachineBuilder
     // this is used by various paradeigma states; the state activates component
     private void ParadeigmaStart(uint id, float delay, string name)
     {
-        Cast(id, AID.Paradeigma, delay, 3, name)
+        Cast(id, (uint)AID.Paradeigma, delay, 3, name)
             .ActivateOnEnter<Paradeigma>();
     }
 
     // this is used by various paradeigma states; automatically deactivates paradeigma component
     private State AstralFlow(uint id, float delay)
     {
-        CastStartMulti(id, [AID.AstralFlowCW, AID.AstralFlowCCW], delay);
+        CastStartMulti(id, [(uint)AID.AstralFlowCW, (uint)AID.AstralFlowCCW], delay);
         CastEnd(id + 1, 10, "Rotate")
             .SetHint(StateMachine.StateHint.PositioningStart);
         return Condition(id + 0x10, 6.2f, () => Module.WorldState.Party.WithoutSlot(false, true, true).All(a => a.FindStatus(SID.TenebrousGrasp) == null), "Rotate resolve", 5, 1)
@@ -115,7 +115,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
     // this is used by various exoterikos states; the state activates component
     private void ExoterikosStart(uint id, float delay, string name)
     {
-        Cast(id, AID.ExoterikosGeneric, delay, 5, name)
+        Cast(id, (uint)AID.ExoterikosGeneric, delay, 5, name)
             .ActivateOnEnter<Exoterikos>();
     }
 
@@ -129,7 +129,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
     private void Exoterikos1(uint id, float delay)
     {
         ExoterikosStart(id, delay, "Exo1 (side tri)");
-        Cast(id + 0x1000, AID.ExoterikosFront, 2.1f, 7, "Exo2 (front)")
+        Cast(id + 0x1000, (uint)AID.ExoterikosFront, 2.1f, 7, "Exo2 (front)")
             .DeactivateOnExit<Exoterikos>();
     }
 
@@ -177,7 +177,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
 
     private void TrimorphosExoterikos(uint id, float delay, bool first)
     {
-        Cast(id, AID.TrimorphosExoterikos, delay, 13, "TriExo")
+        Cast(id, (uint)AID.TrimorphosExoterikos, delay, 13, "TriExo")
             .ActivateOnEnter<Exoterikos>();
 
         var followup = first ? Adikia(id + 0x1000, 6.2f) : Algedon(id + 0x1000, 5.2f, true);
@@ -190,7 +190,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
         ExoterikosStart(id + 0x1000, 2.1f, "Exo5 (side)");
         AstralFlow(id + 0x2000, 2.2f)
             .DeactivateOnExit<Exoterikos>();
-        Cast(id + 0x3000, AID.Phlegeton, 0, 2.9f, "Puddles") // note: 3s cast starts ~0.1s before flow resolve...
+        Cast(id + 0x3000, (uint)AID.Phlegeton, 0, 2.9f, "Puddles") // note: 3s cast starts ~0.1s before flow resolve...
             .ActivateOnEnter<Phlegethon>();
         Styx(id + 0x4000, 2.2f, 8)
             .DeactivateOnExit<Phlegethon>(); // resolve happens mid cast
@@ -223,7 +223,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
     {
         Targetable(id, false, delay, "Intermission start")
             .ClearHint(StateMachine.StateHint.DowntimeStart); // adds appear almost immediately, so there is no downtime
-        CastStartMulti(id + 0x1000, [AID.AddsEndFail, AID.AddsEndSuccess], 40, "Add enrage")
+        CastStartMulti(id + 0x1000, [(uint)AID.AddsEndFail, (uint)AID.AddsEndSuccess], 40, "Add enrage")
             .ActivateOnEnter<Exoterikos>()
             .DeactivateOnExit<Exoterikos>()
             .SetHint(StateMachine.StateHint.DowntimeStart);
@@ -237,7 +237,7 @@ class Ex1ZodiarkStates : StateMachineBuilder
 
     private void AstralEclipse(uint id, float delay, bool first)
     {
-        Cast(id, AID.AstralEclipse, delay, 5, "Eclipse")
+        Cast(id, (uint)AID.AstralEclipse, delay, 5, "Eclipse")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         Targetable(id + 0x1000, true, 12.1f, "Boss reappear", 1)
             .ActivateOnEnter<AstralEclipse>()

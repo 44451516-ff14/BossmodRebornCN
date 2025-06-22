@@ -61,16 +61,16 @@ public enum AID : uint
     MogCreation = 29208 // GoodKingMoggleMogXII->self, 3.0s cast, range 50 width 10 rect aoe
 }
 
-class SpinningMogshield(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpinningMogshield), 6f);
-class ThousandKuponzeSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ThousandKuponzeSwipe), new AOEShapeCone(20f, 45f.Degrees()));
-class MograinOfDeath(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.MograinOfDeathAOE), 6f);
-class PomHoly(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PomHoly));
-class MoggledayNightFever(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MoggledayNightFever), new AOEShapeCone(30f, 60f.Degrees()));
-class MoogleThrust(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.MoogleThrust));
-class MementoMoogle(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MementoMoogle));
-class PomHolyBoss(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PomHolyBoss));
-class ThousandKuponzeCharge(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ThousandKuponzeCharge));
-class PomBog(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, ActionID.MakeSpell(AID.PomBog), GetVoidzones, 0.8f)
+class SpinningMogshield(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningMogshield, 6f);
+class ThousandKuponzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThousandKuponzeSwipe, new AOEShapeCone(20f, 45f.Degrees()));
+class MograinOfDeath(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MograinOfDeathAOE, 6f);
+class PomHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.PomHoly);
+class MoggledayNightFever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MoggledayNightFever, new AOEShapeCone(30f, 60f.Degrees()));
+class MoogleThrust(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MoogleThrust);
+class MementoMoogle(BossModule module) : Components.RaidwideCast(module, (uint)AID.MementoMoogle);
+class PomHolyBoss(BossModule module) : Components.RaidwideCast(module, (uint)AID.PomHolyBoss);
+class ThousandKuponzeCharge(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ThousandKuponzeCharge);
+class PomBog(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, (uint)AID.PomBog, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -90,10 +90,10 @@ class PomBog(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, Ac
         return voidzones[..index];
     }
 }
-class MogStone(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.MogStoneAOE), 6f, 8, 8);
-class TwinPomMeteor(BossModule module) : Components.CastSharedTankbuster(module, ActionID.MakeSpell(AID.TwinPomMeteorAOE), 6f);
-class MogComet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MogCometAOE), 6);
-class MogCreation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MogCreation), new AOEShapeRect(50f, 5f));
+class MogStone(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MogStoneAOE, 6f, 8, 8);
+class TwinPomMeteor(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.TwinPomMeteorAOE, 6f);
+class MogComet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MogCometAOE, 6);
+class MogCreation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MogCreation, new AOEShapeRect(50f, 5f));
 
 // note: this fight has well-timed state machine for all phases, but it's just too simple to bother...
 class T08ThornmarchHStates : StateMachineBuilder

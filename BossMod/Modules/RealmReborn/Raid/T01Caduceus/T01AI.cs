@@ -54,7 +54,7 @@ class T01AI(BossModule module) : BossComponent(module)
                     case PartyRolesConfig.Assignment.OT:
                         // when clone is about to spawn, have OT move closer to tank position
                         if (cloneSpawningSoon)
-                            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Platforms.HexaPlatformCenters[6], 20), DateTime.MaxValue);
+                            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Platforms.hexaPlatformCenters[6], 20), DateTime.MaxValue);
                         //else if (clone != null)
                         //    SetPreferredPlatform(hints, 6);
                         break;
@@ -103,7 +103,7 @@ class T01AI(BossModule module) : BossComponent(module)
                     e.ShouldBeTanked = assignment == PartyRolesConfig.Assignment.OT;
                     e.PreferProvoking = true;
                     if ((e.Actor.Position - Module.PrimaryActor.Position).LengthSq() < 625)
-                        e.DesiredPosition = Platforms.HexaPlatformCenters[6];
+                        e.DesiredPosition = Platforms.hexaPlatformCenters[6];
                     e.DesiredRotation = -90.Degrees();
                 }
                 e.AttackStrength = _hoodSwing!.SecondsUntilNextCast() < 3 ? 0.5f : 0.2f;
@@ -112,7 +112,7 @@ class T01AI(BossModule module) : BossComponent(module)
             else if ((OID)e.Actor.OID == OID.DarkMatterSlime)
             {
                 // for now, let kiter damage it until 20%
-                var predictedHP = e.Actor.PredictedHPRaw;
+                var predictedHP = e.Actor.PendingHPRaw;
                 //e.Priority = predictedHP > 0.7f * e.Actor.HPMP.MaxHP ? (actor.Role is Role.Ranged or Role.Melee ? 3 : AIHints.Enemy.PriorityForbidAI) : AIHints.Enemy.PriorityForbidAI;
                 e.Priority = predictedHP > 0.2f * e.Actor.HPMP.MaxHP ? (e.Actor.TargetID == actor.InstanceID ? 3 : AIHints.Enemy.PriorityPointless) : AIHints.Enemy.PriorityPointless;
                 e.ShouldBeTanked = false;

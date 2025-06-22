@@ -23,11 +23,11 @@ class WreathOfThorns3(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        _coneTargets = _playersInAOE = new();
+        _coneTargets = _playersInAOE = default;
         if (NumCones == NumJumps)
         {
             _jumpTarget = Raid.WithoutSlot(false, true, true).SortedByRange(Module.PrimaryActor.Position).LastOrDefault();
-            _playersInAOE = _jumpTarget != null ? Raid.WithSlot(false, true, true).InRadiusExcluding(_jumpTarget, _jumpAOERadius).Mask() : new();
+            _playersInAOE = _jumpTarget != null ? Raid.WithSlot(false, true, true).InRadiusExcluding(_jumpTarget, _jumpAOERadius).Mask() : default;
         }
         else
         {
@@ -117,24 +117,24 @@ class WreathOfThorns3(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (CurState == State.RangedTowers && (AID)spell.Action.ID == AID.AkanthaiExplodeTower)
+        if (CurState == State.RangedTowers && spell.Action.ID == (uint)AID.AkanthaiExplodeTower)
             CurState = State.Knockback;
-        else if (CurState == State.Knockback && (AID)spell.Action.ID == AID.AkanthaiExplodeKnockback)
+        else if (CurState == State.Knockback && spell.Action.ID == (uint)AID.AkanthaiExplodeKnockback)
             CurState = State.MeleeTowers;
-        else if (CurState == State.MeleeTowers && (AID)spell.Action.ID == AID.AkanthaiExplodeTower)
+        else if (CurState == State.MeleeTowers && spell.Action.ID == (uint)AID.AkanthaiExplodeTower)
             CurState = State.Done;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.KothornosKickJump:
+            case (uint)AID.KothornosKickJump:
                 ++NumJumps;
                 _jumpTarget = WorldState.Actors.Find(spell.MainTargetID);
                 break;
-            case AID.KothornosQuake1:
-            case AID.KothornosQuake2:
+            case (uint)AID.KothornosQuake1:
+            case (uint)AID.KothornosQuake2:
                 ++NumCones;
                 break;
         }

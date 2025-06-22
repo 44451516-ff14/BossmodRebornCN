@@ -23,13 +23,13 @@ class EyeOfTheStormGeocrush(BossModule module) : BossComponent(module)
         if (_eotsCaster != null)
         {
             // we want to stand in a small ring near inner edge of aoe
-            var inner = ShapeDistance.Circle(_eotsCaster.Position, _aoeEOTS.InnerRadius - 2);
+            var inner = ShapeDistance.Circle(_eotsCaster.Position, _aoeEOTS.InnerRadius - 2f);
             var outer = ShapeDistance.InvertedCircle(_eotsCaster.Position, _aoeEOTS.InnerRadius);
             hints.AddForbiddenZone(p => Math.Min(inner(p), outer(p)), Module.CastFinishAt(_eotsCaster.CastInfo!));
         }
         else if (_geocrushCaster != null)
         {
-            hints.AddForbiddenZone(_aoeGeocrush, _geocrushCaster.Position, new(), Module.CastFinishAt(_geocrushCaster.CastInfo!));
+            hints.AddForbiddenZone(_aoeGeocrush, _geocrushCaster.Position, default, Module.CastFinishAt(_geocrushCaster.CastInfo!));
         }
     }
 
@@ -43,12 +43,12 @@ class EyeOfTheStormGeocrush(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.EyeOfTheStorm:
+            case (uint)AID.EyeOfTheStorm:
                 _eotsCaster = caster;
                 break;
-            case AID.Geocrush:
+            case (uint)AID.Geocrush:
                 _geocrushCaster = caster;
                 break;
         }
@@ -56,12 +56,12 @@ class EyeOfTheStormGeocrush(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.EyeOfTheStorm:
+            case (uint)AID.EyeOfTheStorm:
                 _eotsCaster = null;
                 break;
-            case AID.Geocrush:
+            case (uint)AID.Geocrush:
                 _geocrushCaster = null;
                 break;
         }

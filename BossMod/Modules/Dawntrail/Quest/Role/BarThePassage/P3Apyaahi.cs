@@ -80,9 +80,9 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FlamesOfTheFallingOrder(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlamesOfTheFallingOrder), 12f);
-class RottingRoar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RottingRoar));
-class Mycocyclone(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Mycocyclone));
+class FlamesOfTheFallingOrder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlamesOfTheFallingOrder, 12f);
+class RottingRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.RottingRoar);
+class Mycocyclone(BossModule module) : Components.RaidwideCast(module, (uint)AID.Mycocyclone);
 
 class PathogenicPowerAOE(BossModule module) : Components.GenericAOEs(module)
 {
@@ -118,7 +118,7 @@ class PathogenicPowerAOE(BossModule module) : Components.GenericAOEs(module)
             _aoes.RemoveAt(0);
     }
 }
-class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.PathogenicPowerKB), 13f)
+class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.PathogenicPowerKB, 13f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -130,13 +130,13 @@ class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(module,
     }
 }
 
-class SporeBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SporeBurst), 6f);
-class FleshBoilingPunishmentLake(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FleshBoilingPunishmentLake), new AOEShapeDonut(5f, 40f));
-class BlazingBlazeOfGlory(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.BlazingBlazeOfGlory), 6f);
-class MyceliumStomp(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.MyceliumStomp), 6f);
-class SpoilingSmashEnrage(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SpoilingSmashVisual2), "Enrage!", true);
+class SporeBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SporeBurst, 6f);
+class FleshBoilingPunishmentLake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FleshBoilingPunishmentLake, new AOEShapeDonut(5f, 40f));
+class BlazingBlazeOfGlory(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlazingBlazeOfGlory, 6f);
+class MyceliumStomp(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MyceliumStomp, 6f);
+class SpoilingSmashEnrage(BossModule module) : Components.CastHint(module, (uint)AID.SpoilingSmashVisual2, "Enrage!", true);
 
-class Burst(BossModule module) : Components.Exaflare(module, new AOEShapeCircle(6f))
+class Burst(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

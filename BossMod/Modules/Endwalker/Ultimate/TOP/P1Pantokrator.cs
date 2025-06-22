@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P1BallisticImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BallisticImpact), 5);
+class P1BallisticImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallisticImpact, 5);
 
 class P1FlameThrower(BossModule module) : Components.GenericAOEs(module)
 {
@@ -163,7 +163,7 @@ class P1DiffuseWaveCannonKyrios : Components.GenericBaitAway
 {
     private static readonly AOEShape _shape = new AOEShapeCone(60f, 60f.Degrees()); // TODO: verify angle
 
-    public P1DiffuseWaveCannonKyrios(BossModule module) : base(module, ActionID.MakeSpell(AID.DiffuseWaveCannonKyrios))
+    public P1DiffuseWaveCannonKyrios(BossModule module) : base(module, (uint)AID.DiffuseWaveCannonKyrios)
     {
         ForbiddenPlayers = Raid.WithSlot(false, true, true).WhereActor(a => a.Role != Role.Tank).Mask();
     }

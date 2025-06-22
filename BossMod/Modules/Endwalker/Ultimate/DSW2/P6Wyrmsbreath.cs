@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
 // baited cones part of the mechanic
-class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.FlameBreath)) // note: cast is arbitrary
+class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Components.GenericBaitAway(module, (uint)AID.FlameBreath) // note: cast is arbitrary
 {
     public Actor?[] Dragons = [null, null]; // nidhogg & hraesvelgr
     public BitMask Glows;
@@ -95,7 +95,7 @@ class P6Wyrmsbreath1(BossModule module) : P6Wyrmsbreath(module, true);
 class P6Wyrmsbreath2(BossModule module) : P6Wyrmsbreath(module, false);
 
 // note: it is actually symmetrical (both tanks get tankbusters), but that is hard to express, so we select one to show arbitrarily (nidhogg)
-class P6WyrmsbreathTankbusterShared(BossModule module) : Components.GenericSharedTankbuster(module, ActionID.MakeSpell(AID.DarkOrb), 6)
+class P6WyrmsbreathTankbusterShared(BossModule module) : Components.GenericSharedTankbuster(module, (uint)AID.DarkOrb, 6f)
 {
     private readonly P6Wyrmsbreath? _main = module.FindComponent<P6Wyrmsbreath>();
 

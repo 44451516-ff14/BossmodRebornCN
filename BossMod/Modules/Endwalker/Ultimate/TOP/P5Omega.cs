@@ -246,7 +246,7 @@ class P5OmegaBlaster : Components.BaitAwayTethers
 {
     private readonly P5OmegaNearDistantWorld? _ndw;
 
-    public P5OmegaBlaster(BossModule module) : base(module, new AOEShapeCircle(15f), (uint)TetherID.Blaster, ActionID.MakeSpell(AID.OmegaBlasterAOE), centerAtTarget: true)
+    public P5OmegaBlaster(BossModule module) : base(module, 15f, (uint)TetherID.Blaster, (uint)AID.OmegaBlasterAOE)
     {
         ForbiddenPlayers = new(0xFF);
         _ndw = module.FindComponent<P5OmegaNearDistantWorld>();

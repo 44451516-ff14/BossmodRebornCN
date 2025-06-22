@@ -28,12 +28,12 @@ public enum IconID : uint
     ChasingAOE = 197 // player
 }
 
-class WheiMorn(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(6f), ActionID.MakeSpell(AID.WheiMornFirst), ActionID.MakeSpell(AID.WheiMornRest), 6f, 2f, 5, true, (uint)IconID.ChasingAOE);
-class DarkMegaflare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkMegaflare), 6f);
+class WheiMorn(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(6f), (uint)AID.WheiMornFirst, (uint)AID.WheiMornRest, 6f, 2f, 5, true, (uint)IconID.ChasingAOE);
+class DarkMegaflare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkMegaflare, 6f);
 
-class DarkWyrm(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 8f));
-class DarkWyrmwing(BossModule module) : DarkWyrm(module, AID.DarkWyrmwing);
-class DarkWyrmtail(BossModule module) : DarkWyrm(module, AID.DarkWyrmtail);
+class DarkWyrm(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 8f));
+class DarkWyrmwing(BossModule module) : DarkWyrm(module, (uint)AID.DarkWyrmwing);
+class DarkWyrmtail(BossModule module) : DarkWyrm(module, (uint)AID.DarkWyrmtail);
 class CreatureOfDarkness(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 6f)
 {
     private static Actor[] GetVoidzones(BossModule module)

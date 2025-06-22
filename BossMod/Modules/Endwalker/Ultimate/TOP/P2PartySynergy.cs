@@ -166,7 +166,7 @@ class P2PartySynergyOptimizedFire : Components.UniformStackSpread
     }
 }
 
-class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.OpticalLaser))
+class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
 {
     private readonly P2PartySynergy? _synergy = module.FindComponent<P2PartySynergy>();
     private readonly Actor? _source = module.Enemies(OID.OpticalUnit).FirstOrDefault();
@@ -197,21 +197,21 @@ class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(mod
     private WDir AssignedPosition(int slot)
     {
         if (_synergy == null || _source == null || _activation == default)
-            return new();
+            return default;
 
         var ps = _synergy.PlayerStates[slot];
         if (ps.Order == 0 || ps.Group == 0 || _synergy.ActiveGlitch == P2PartySynergy.Glitch.Unknown)
-            return new();
+            return default;
 
         var eyeOffset = _source.Position - Arena.Center;
         var toRelNorth = eyeOffset.Normalized();
         var order = _synergy.GetNorthSouthOrder(ps);
         var centerOffset = _synergy.ActiveGlitch == P2PartySynergy.Glitch.Remote && order is 2 or 3 ? 17.5f : 11;
-        return 10 * (2.5f - order) * toRelNorth + centerOffset * (ps.Group == 1 ? toRelNorth.OrthoL() : toRelNorth.OrthoR());
+        return 10f * (2.5f - order) * toRelNorth + centerOffset * (ps.Group == 1 ? toRelNorth.OrthoL() : toRelNorth.OrthoR());
     }
 }
 
-class P2PartySynergyDischarger(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.Discharger))
+class P2PartySynergyDischarger(BossModule module) : Components.GenericKnockback(module, (uint)AID.Discharger)
 {
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -247,7 +247,7 @@ class P2PartySynergyEfficientBladework : Components.GenericAOEs
             var count = _sources.Count;
             var aoes = new AOEInstance[count];
             for (var i = 0; i < count; ++i)
-                aoes[i] = new(_shape, WPos.ClampToGrid(_sources[i].Position), new(), _activation);
+                aoes[i] = new(_shape, WPos.ClampToGrid(_sources[i].Position), default, _activation);
             return aoes;
         }
         return [];
@@ -329,7 +329,7 @@ class P2PartySynergyEfficientBladework : Components.GenericAOEs
     private WDir AssignedPosition(int slot)
     {
         if (_activation == default || _synergy == null || _sources.Count == 0)
-            return new();
+            return default;
 
         // assumption: first source (F) is our relative north, G1 always goes to relative west, G2 goes to relative S/E depending on glitch
         var relNorth = 1.4f * (_sources[0].Position - Arena.Center);

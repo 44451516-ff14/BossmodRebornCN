@@ -47,9 +47,9 @@ public enum SID : uint
     AboutFace = 1959 // Boss->player, extra=0x0
 }
 
-class DoomImpending(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.DoomImpending), "Heal to full before cast ends!");
-class MarchOfTheDraugar(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.MarchOfTheDraugar), "Summons adds! (Kill with fire!)");
-class NecrobaneVoidzone(BossModule module) : Components.PersistentInvertibleVoidzoneByCast(module, 6f, GetVoidzones, ActionID.MakeSpell(AID.MegaDeath))
+class DoomImpending(BossModule module) : Components.CastHint(module, (uint)AID.DoomImpending, "Heal to full before cast ends!");
+class MarchOfTheDraugar(BossModule module) : Components.CastHint(module, (uint)AID.MarchOfTheDraugar, "Summons adds! (Kill with fire!)");
+class NecrobaneVoidzone(BossModule module) : Components.PersistentInvertibleVoidzoneByCast(module, 6f, GetVoidzones, (uint)AID.MegaDeath)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -70,13 +70,13 @@ class NecrobaneVoidzone(BossModule module) : Components.PersistentInvertibleVoid
     }
 }
 
-class Necrobane(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Necrobane), 6f);
-class HelblarShriek(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HelblarShriek));
-class FuneralPyre(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FuneralPyre));
-class Catapult(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Catapult), 6f);
-class VengefulSoul(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VengefulSoul), 6f);
-class BilrostSquall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BilrostSquall), 10f);
-class Cackle(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.Cackle));
+class Necrobane(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Necrobane, 6f);
+class HelblarShriek(BossModule module) : Components.RaidwideCast(module, (uint)AID.HelblarShriek);
+class FuneralPyre(BossModule module) : Components.RaidwideCast(module, (uint)AID.FuneralPyre);
+class Catapult(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Catapult, 6f);
+class VengefulSoul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VengefulSoul, 6f);
+class BilrostSquall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BilrostSquall, 10f);
+class Cackle(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Cackle);
 
 class Brainstorm(BossModule module) : Components.StatusDrivenForcedMarch(module, 2f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {

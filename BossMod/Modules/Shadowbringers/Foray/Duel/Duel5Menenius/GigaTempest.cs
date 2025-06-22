@@ -64,5 +64,5 @@ abstract class GigaTempest(BossModule module, AOEShapeRect shape, uint aidFirst,
     }
 }
 
-class SmallGigaTempest(BossModule module) : GigaTempest(module, new AOEShapeRect(10f, 6.5f), (uint)AID.GigaTempestSmallStart, (uint)AID.GigaTempestSmallMove);
-class LargeGigaTempest(BossModule module) : GigaTempest(module, new AOEShapeRect(35f, 6.5f), (uint)AID.GigaTempestLargeStart, (uint)AID.GigaTempestLargeMove);
+sealed class SmallGigaTempest(BossModule module) : GigaTempest(module, new AOEShapeRect(10f, 6.5f), (uint)AID.GigaTempestSmallStart, (uint)AID.GigaTempestSmallMove);
+sealed class LargeGigaTempest(BossModule module) : GigaTempest(module, new AOEShapeRect(35f, 6.5f), (uint)AID.GigaTempestLargeStart, (uint)AID.GigaTempestLargeMove);

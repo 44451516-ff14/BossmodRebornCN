@@ -132,7 +132,7 @@ class Gravitons(BossModule module) : Components.Voidzone(module, 1f, GetVoidzone
 }
 
 class AetherialPull(BossModule module) : Components.StretchTetherDuo(module, 33f, 7.9f, tetherIDGood: (uint)TetherID.AetherialPullGood, knockbackImmunity: true);
-class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(3f), ActionID.MakeSpell(AID.CoffinScratchFirst), ActionID.MakeSpell(AID.CoffinScratchRest), 6f, 1, 5, true, (uint)IconID.ChasingAOE)
+class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(3f), (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1, 5, true, (uint)IconID.ChasingAOE)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -153,13 +153,13 @@ class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 
     }
 }
 
-class PhantomPain(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PhantomPain), new AOEShapeRect(20f, 10f));
-class PaterPatriaeAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PaterPatriaeAOE), new AOEShapeRect(60f, 4f));
-class CharnelClaw(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CharnelClaw), new AOEShapeRect(40f, 2.5f), 5);
-class ErruptingPain(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.EruptingPain), 6f);
-class ObliviatingClawSpawnAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ObliviatingClawSpawnAOE), 3f);
-class Oblivion(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OblivionVisual), "Raidwide x16");
-class MegaGraviton(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MegaGraviton));
+class PhantomPain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PhantomPain, new AOEShapeRect(20f, 10f));
+class PaterPatriaeAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PaterPatriaeAOE, new AOEShapeRect(60f, 4f));
+class CharnelClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CharnelClaw, new AOEShapeRect(40f, 2.5f), 5);
+class ErruptingPain(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.EruptingPain, 6f);
+class ObliviatingClawSpawnAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ObliviatingClawSpawnAOE, 3f);
+class Oblivion(BossModule module) : Components.RaidwideCast(module, (uint)AID.OblivionVisual, "Raidwide x16");
+class MegaGraviton(BossModule module) : Components.RaidwideCast(module, (uint)AID.MegaGraviton);
 
 class D023AnimaStates : StateMachineBuilder
 {

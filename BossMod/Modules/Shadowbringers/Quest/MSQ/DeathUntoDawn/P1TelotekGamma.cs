@@ -14,8 +14,8 @@ enum OID : uint
 }
 
 class AlisaieAI(BossModule module) : QuestBattle.RotationModule<AutoAlisaie>(module);
-class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AntiPersonnelMissile), 6f);
-class MRVMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MRVMissile), 12f, 6);
+class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AntiPersonnelMissile, 6f);
+class MRVMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MRVMissile, 12f, 6);
 
 public class TelotekGammaStates : StateMachineBuilder
 {

@@ -19,39 +19,9 @@ public enum AID : uint
     BurningBolt = 40591 // Helper->player, 5.0s cast, single-target
 }
 
-class Fireflow(BossModule module) : Components.GenericAOEs(module)
-{
-    private static readonly AOEShapeCone cone = new(60f, 22.5f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(8);
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var max = count > 4 ? 4 : count;
-        return CollectionsMarshal.AsSpan(_aoes)[..max];
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID is (uint)AID.Fireflow1 or (uint)AID.Fireflow2)
-        {
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            if (_aoes.Count == 8)
-                _aoes.SortBy(x => x.Activation);
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.Fireflow1 or (uint)AID.Fireflow2)
-            _aoes.RemoveAt(0);
-    }
-}
-
-class BurningBolt(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.BurningBolt));
-class FireII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FireII), 5f);
+class Fireflow(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Fireflow1, (uint)AID.Fireflow2], new AOEShapeCone(60f, 22.5f.Degrees()), 4, 8);
+class BurningBolt(BossModule module) : Components.SingleTargetCast(module, (uint)AID.BurningBolt);
+class FireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireII, 5f);
 
 class D041FiremaneStates : StateMachineBuilder
 {

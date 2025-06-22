@@ -23,9 +23,9 @@ public enum AID : uint
     PunitiveLight = 16815, // ForgivenPrejudice->self, 5.0s cast, range 20 circle
 }
 
-class PunitiveLight(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.PunitiveLight), true, true, "Raidwide", true);
-class Sanctification(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sanctification), new AOEShapeCone(12f, 45f.Degrees()));
-class EarthShaker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EarthShaker2), new AOEShapeCone(60f, 30f.Degrees()));
+class PunitiveLight(BossModule module) : Components.CastInterruptHint(module, (uint)AID.PunitiveLight, true, true, "Raidwide", true);
+class Sanctification(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sanctification, new AOEShapeCone(12f, 45f.Degrees()));
+class EarthShaker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthShaker2, new AOEShapeCone(60f, 30f.Degrees()));
 
 class D052ForgivenApathyStates : StateMachineBuilder
 {

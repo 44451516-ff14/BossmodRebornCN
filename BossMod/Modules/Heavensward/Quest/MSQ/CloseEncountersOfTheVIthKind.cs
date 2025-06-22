@@ -25,13 +25,13 @@ class RegulaVanHydrusStates : StateMachineBuilder
     }
 }
 
-class HandOfTheEmpire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HandOfTheEmpire), 2f);
+class HandOfTheEmpire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HandOfTheEmpire, 2f);
 class Voidzone(BossModule module) : Components.Voidzone(module, 8f, GetPuddles)
 {
     private static List<Actor> GetPuddles(BossModule module) => module.Enemies((uint)OID.Puddle);
 }
 
-class TerminusEst(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.TerminusEstAOE))
+class TerminusEst(BossModule module) : Components.GenericAOEs(module, (uint)AID.TerminusEstAOE)
 {
     private bool _active;
     private static readonly AOEShapeRect rect = new(40, 2);

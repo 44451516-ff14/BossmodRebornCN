@@ -29,9 +29,9 @@ public enum AID : uint
     MovementMagick = 18713 // Boss->self, 3.0s cast, single-target
 }
 
-class ImmortalAnathema(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ImmortalAnathema));
-class Shadowbolt(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Shadowbolt));
-class Tribulation(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.Tribulation), GetVoidzones, 0.1f)
+class ImmortalAnathema(BossModule module) : Components.RaidwideCast(module, (uint)AID.ImmortalAnathema);
+class Shadowbolt(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Shadowbolt);
+class Tribulation(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.Tribulation, GetVoidzones, 0.1f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -52,9 +52,9 @@ class Tribulation(BossModule module) : Components.VoidzoneAtCastTarget(module, 6
     }
 }
 
-class DarkPulse(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.DarkPulse), 6f, 4, 4);
-class DarkWell(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.DarkWell), 5f);
-class DarkShock(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkShock), 6f);
+class DarkPulse(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.DarkPulse, 6f, 4, 4);
+class DarkWell(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkWell, 5f);
+class DarkShock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkShock, 6f);
 class MagickedBroom(BossModule module) : Components.Voidzone(module, 3.125f, GetVoidzones, 10f)
 {
     private static Actor[] GetVoidzones(BossModule module)

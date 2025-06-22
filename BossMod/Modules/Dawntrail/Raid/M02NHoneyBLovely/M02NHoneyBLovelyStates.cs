@@ -1,16 +1,14 @@
 ﻿namespace BossMod.Dawntrail.Raid.M02NHoneyBLovely;
 
-class M02NHoneyBLovelyStates : StateMachineBuilder
+sealed class M02NHoneyBLovelyStates : StateMachineBuilder
 {
     public M02NHoneyBLovelyStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<CallMeHoney>()
             .ActivateOnEnter<SweetheartsN>()
-            .ActivateOnEnter<TemptingTwist1>()
-            .ActivateOnEnter<TemptingTwist2>()
-            .ActivateOnEnter<HoneyBeeline1>()
-            .ActivateOnEnter<HoneyBeeline2>()
+            .ActivateOnEnter<TemptingTwist>()
+            .ActivateOnEnter<HoneyBeeline>()
             .ActivateOnEnter<HoneyedBreeze>()
             .ActivateOnEnter<HoneyBLive>()
             .ActivateOnEnter<Heartsore>()

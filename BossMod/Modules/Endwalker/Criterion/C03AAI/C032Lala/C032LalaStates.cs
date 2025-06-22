@@ -30,24 +30,24 @@ class C032LalaStates : StateMachineBuilder
 
     private State InfernoTheorem(uint id, float delay)
     {
-        return Cast(id, _savage ? AID.SInfernoTheorem : AID.NInfernoTheorem, delay, 5, "Raidwide")
+        return Cast(id, _savage ? (uint)AID.SInfernoTheorem : (uint)AID.NInfernoTheorem, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void StrategicStrike(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SStrategicStrike : AID.NStrategicStrike, delay, 5, "Tankbuster")
+        Cast(id, _savage ? (uint)AID.SStrategicStrike : (uint)AID.NStrategicStrike, delay, 5, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private void AngularAddition(uint id, float delay)
     {
-        CastMulti(id, [_savage ? AID.SAngularAdditionThree : AID.NAngularAdditionThree, _savage ? AID.SAngularAdditionFive : AID.NAngularAdditionFive], delay, 3);
+        CastMulti(id, [_savage ? (uint)AID.SAngularAdditionThree : (uint)AID.NAngularAdditionThree, _savage ? (uint)AID.SAngularAdditionFive : (uint)AID.NAngularAdditionFive], delay, 3);
     }
 
     private State ArcaneBlight(uint id, float delay)
     {
-        return CastMulti(id, [_savage ? AID.SArcaneBlightFront : AID.NArcaneBlightFront, _savage ? AID.SArcaneBlightBack : AID.NArcaneBlightBack, _savage ? AID.SArcaneBlightLeft : AID.NArcaneBlightLeft, _savage ? AID.SArcaneBlightRight : AID.NArcaneBlightRight], delay, 6, "Cleave")
+        return CastMulti(id, [_savage ? (uint)AID.SArcaneBlightFront : (uint)AID.NArcaneBlightFront, _savage ? (uint)AID.SArcaneBlightBack : (uint)AID.NArcaneBlightBack, _savage ? (uint)AID.SArcaneBlightLeft : (uint)AID.NArcaneBlightLeft, _savage ? (uint)AID.SArcaneBlightRight : (uint)AID.NArcaneBlightRight], delay, 6, "Cleave")
             .ActivateOnEnter<NArcaneBlight>(!_savage)
             .ActivateOnEnter<SArcaneBlight>(_savage)
             .DeactivateOnExit<ArcaneBlight>();
@@ -61,9 +61,9 @@ class C032LalaStates : StateMachineBuilder
 
     private void Analysis(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SAnalysis : AID.NAnalysis, delay, 3)
+        Cast(id, _savage ? (uint)AID.SAnalysis : (uint)AID.NAnalysis, delay, 3)
             .ActivateOnEnter<Analysis>();
-        Cast(id + 0x10, _savage ? AID.SArcaneArray1 : AID.NArcaneArray1, 2.1f, 3)
+        Cast(id + 0x10, _savage ? (uint)AID.SArcaneArray1 : (uint)AID.NArcaneArray1, 2.1f, 3)
             .ActivateOnEnter<ArcaneArray>()
             .ActivateOnEnter<AnalysisRadiance>();
         AngularAddition(id + 0x20, 2.1f);
@@ -72,7 +72,7 @@ class C032LalaStates : StateMachineBuilder
         ComponentCondition<AnalysisRadiance>(id + 0x32, 0.2f, comp => comp.NumCasts > 0, "Orb 1 gaze");
         ArcaneBlight(id + 0x40, 0.1f)
             .ActivateOnEnter<TargetedLight>();
-        CastStart(id + 0x50, _savage ? AID.STargetedLight : AID.NTargetedLight, 3.2f);
+        CastStart(id + 0x50, _savage ? (uint)AID.STargetedLight : (uint)AID.NTargetedLight, 3.2f);
         ComponentCondition<ArcaneArray>(id + 0x51, 0.1f, comp => comp.NumCasts >= 20);
         ComponentCondition<AnalysisRadiance>(id + 0x52, 0.2f, comp => comp.NumCasts > 1, "Orb 2 gaze")
             .DeactivateOnExit<AnalysisRadiance>();
@@ -86,13 +86,13 @@ class C032LalaStates : StateMachineBuilder
 
     private void PlanarTactics(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SPlanarTactics : AID.NPlanarTactics, delay, 5)
+        Cast(id, _savage ? (uint)AID.SPlanarTactics : (uint)AID.NPlanarTactics, delay, 5)
             .ActivateOnEnter<PlanarTactics>(); // debuffs appear ~0.9s after cast end
-        Cast(id + 0x10, _savage ? AID.SArcaneMine : AID.NArcaneMine, 2.1f, 13.1f)
+        Cast(id + 0x10, _savage ? (uint)AID.SArcaneMine : (uint)AID.NArcaneMine, 2.1f, 13.1f)
             .ActivateOnEnter<PlanarTacticsForcedMarch>(); // icons appear ~4.8s into cast
         ComponentCondition<PlanarTacticsForcedMarch>(id + 0x20, 1.7f, comp => comp.NumActiveForcedMarches > 0, "Forced march")
             .DeactivateOnExit<PlanarTactics>();
-        CastStart(id + 0x30, _savage ? AID.SInfernoTheorem : AID.NInfernoTheorem, 5.4f)
+        CastStart(id + 0x30, _savage ? (uint)AID.SInfernoTheorem : (uint)AID.NInfernoTheorem, 5.4f)
             .ActivateOnEnter<SymmetricSurge>();
         ComponentCondition<SymmetricSurge>(id + 0x31, 0.7f, comp => !comp.Active, "Stack")
             .DeactivateOnExit<PlanarTacticsForcedMarch>()
@@ -103,8 +103,8 @@ class C032LalaStates : StateMachineBuilder
 
     private void SpatialTactics(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SSpatialTactics : AID.NSpatialTactics, delay, 5);
-        Cast(id + 0x10, _savage ? AID.SArcaneArray2 : AID.NArcaneArray2, 2.1f, 3)
+        Cast(id, _savage ? (uint)AID.SSpatialTactics : (uint)AID.NSpatialTactics, delay, 5);
+        Cast(id + 0x10, _savage ? (uint)AID.SArcaneArray2 : (uint)AID.NArcaneArray2, 2.1f, 3)
             .ActivateOnEnter<ArcaneArray>()
             .ActivateOnEnter<SpatialTactics>();
         ComponentCondition<ArcaneArray>(id + 0x20, 5.8f, comp => comp.NumCasts >= 2);
@@ -123,19 +123,19 @@ class C032LalaStates : StateMachineBuilder
 
     private void SymmetricSurge(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SSymmetricSurge : AID.NSymmetricSurge, delay, 5);
-        Cast(id + 0x10, _savage ? AID.SConstructiveFigure : AID.NConstructiveFigure, 2.1f, 3)
+        Cast(id, _savage ? (uint)AID.SSymmetricSurge : (uint)AID.NSymmetricSurge, delay, 5);
+        Cast(id + 0x10, _savage ? (uint)AID.SConstructiveFigure : (uint)AID.NConstructiveFigure, 2.1f, 3)
             .ActivateOnEnter<NConstructiveFigure>(!_savage)
             .ActivateOnEnter<SConstructiveFigure>(_savage);
-        Cast(id + 0x20, _savage ? AID.SArcanePlot : AID.NArcanePlot, 2.1f, 3);
+        Cast(id + 0x20, _savage ? (uint)AID.SArcanePlot : (uint)AID.NArcanePlot, 2.1f, 3);
         ComponentCondition<ArcanePlot>(id + 0x30, 5.8f, comp => comp.NumCasts > 0)
             .ActivateOnEnter<ArcanePlot>()
             .ActivateOnEnter<ArcanePoint>();
-        Cast(id + 0x40, _savage ? AID.SArcanePoint : AID.NArcanePoint, 3.4f, 5);
+        Cast(id + 0x40, _savage ? (uint)AID.SArcanePoint : (uint)AID.NArcanePoint, 3.4f, 5);
         ComponentCondition<ConstructiveFigure>(id + 0x50, 0.5f, comp => comp.NumCasts > 0, "Lines")
             .DeactivateOnExit<ConstructiveFigure>();
         ComponentCondition<ArcanePoint>(id + 0x51, 0.2f, comp => comp.NumCasts > 0);
-        Cast(id + 0x60, _savage ? AID.SExplosiveTheorem : AID.NExplosiveTheorem, 3.4f, 5, "Spread")
+        Cast(id + 0x60, _savage ? (uint)AID.SExplosiveTheorem : (uint)AID.NExplosiveTheorem, 3.4f, 5, "Spread")
             .ActivateOnEnter<NExplosiveTheorem>(!_savage)
             .ActivateOnEnter<SExplosiveTheorem>(_savage)
             .DeactivateOnExit<ExplosiveTheorem>()

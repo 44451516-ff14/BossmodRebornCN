@@ -21,7 +21,7 @@ public enum AID : uint
     TheLastSong = 4995 // ChymeOfTheMountain->self, 12.0s cast, range 60 circle
 }
 
-class ThirdLegForward(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ThirdLegForward), new AOEShapeCone(10.9f, 60f.Degrees()))
+class ThirdLegForward(BossModule module) : Components.Cleave(module, (uint)AID.ThirdLegForward, new AOEShapeCone(10.9f, 60f.Degrees()))
 {
     private readonly MadDashStack _stack = module.FindComponent<MadDashStack>()!;
 
@@ -44,10 +44,10 @@ class ThirdLegForward(BossModule module) : Components.Cleave(module, ActionID.Ma
     }
 }
 
-class RazorScales(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RazorScales), new AOEShapeCone(64.9f, 30f.Degrees()));
-class PrimordialRoar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PrimordialRoar));
-class MadDashSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.MadDash), 6f);
-class MadDashStack(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.MadDashStack), 6f, 4, 4);
+class RazorScales(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RazorScales, new AOEShapeCone(64.9f, 30f.Degrees()));
+class PrimordialRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.PrimordialRoar);
+class MadDashSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MadDash, 6f);
+class MadDashStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MadDashStack, 6f, 4, 4);
 
 class D022MyathStates : StateMachineBuilder
 {

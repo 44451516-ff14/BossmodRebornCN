@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
-class AutoAttacksCube(BossModule module) : Components.GenericBaitAway(module)
+sealed class AutoAttacksCube(BossModule module) : Components.GenericBaitAway(module)
 {
     private readonly List<Actor> targets = new(3);
     private static readonly AOEShapeRect rect = new(40.5f, 2f);
@@ -51,11 +51,9 @@ class AutoAttacksCube(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(4f);
-    private static readonly AOEShapeRect rect = new(100f, 5f);
-    private static readonly Angle a120 = 120f.Degrees(), am120 = -120f.Degrees();
     private readonly List<Actor> players = [];
     private bool active;
 
@@ -64,9 +62,7 @@ class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(module,
     {
         if (active)
         {
-            List<Actor> actorsP1 = [];
-            List<Actor> actorsP2 = [];
-            List<Actor> actorsP3 = [];
+            List<Actor>[] platformActors = [new(20), new(20), new(20)];
             CurrentBaits.Clear();
 
             var primaryPos = Module.PrimaryActor.Position;
@@ -74,48 +70,46 @@ class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(module,
             if (countP == 0)
             {
                 foreach (var a in Module.WorldState.Actors.Actors.Values)
-                    if (a.OID == 0)
+                    if (a.OID == default)
                         players.Add(a);
             }
 
             for (var i = 0; i < countP; ++i)
             {
                 var a = players[i];
-                var pos = a.Position;
-                if (rect.Check(pos, primaryPos, default))
-                    actorsP1.Add(a);
-                else if (rect.Check(pos, primaryPos, a120))
-                    actorsP2.Add(a);
-                else if (rect.Check(pos, primaryPos, am120))
-                    actorsP3.Add(a);
-            }
-
-            var countp1 = actorsP1.Count;
-            var countp2 = actorsP2.Count;
-            var countp3 = actorsP3.Count;
-
-            SortActors(ref actorsP1);
-            SortActors(ref actorsP2);
-            SortActors(ref actorsP3);
-
-            var t1 = countp1 != 0 ? actorsP1[countp1 - 1] : null;
-            var t2 = countp2 != 0 ? actorsP2[countp2 - 1] : null;
-            var t3 = countp3 != 0 ? actorsP3[countp3 - 1] : null;
-            AddBait(ref t1);
-            AddBait(ref t2);
-            AddBait(ref t3);
-            void AddBait(ref Actor? t)
-            {
-                if (t != null)
-                    CurrentBaits.Add(new(Module.PrimaryActor, t, circle));
-            }
-            void SortActors(ref List<Actor> actors)
-            => actors.Sort((a, b) =>
+                if (a.IsDead)
+                    continue;
+                for (var j = 0; j < 3; j++)
                 {
-                    var distA = (a.Position - primaryPos).LengthSq();
-                    var distB = (b.Position - primaryPos).LengthSq();
-                    return distA.CompareTo(distB);
-                });
+                    if (a.Position.InRect(primaryPos, BA4ProtoOzma.Directions[j], 100f, default, 5f))
+                    {
+                        platformActors[j].Add(a);
+                        break;
+                    }
+                }
+            }
+
+            for (var i = 0; i < 3; ++i)
+            {
+                Actor? closest = null;
+                var minDistSq = float.MaxValue;
+                var rect = platformActors[i];
+                var count = rect.Count;
+                for (var j = 0; j < count; ++j)
+                {
+                    var actor = rect[j];
+                    var distSq = (actor.Position - primaryPos).LengthSq();
+                    if (distSq < minDistSq)
+                    {
+                        minDistSq = distSq;
+                        closest = actor;
+                    }
+                }
+                if (closest != null)
+                {
+                    CurrentBaits.Add(new(Module.PrimaryActor, closest, circle));
+                }
+            }
         }
     }
 
@@ -140,17 +134,13 @@ class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(module,
 class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
 {
     private bool active;
-    private static readonly Angle a120 = 120f.Degrees(), am120 = -120f.Degrees();
     private readonly List<Actor> players = [];
-    private static readonly AOEShapeRect rect = new(100f, 5f);
 
     public override void Update()
     {
         if (active)
         {
-            List<Actor> actorsP1 = [];
-            List<Actor> actorsP2 = [];
-            List<Actor> actorsP3 = [];
+            List<Actor>[] platformActors = [new(20), new(20), new(20)];
             Stacks.Clear();
 
             var primaryPos = Module.PrimaryActor.Position;
@@ -158,48 +148,46 @@ class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
             if (countP == 0)
             {
                 foreach (var a in Module.WorldState.Actors.Actors.Values)
-                    if (a.OID == 0)
+                    if (a.OID == default)
                         players.Add(a);
             }
 
             for (var i = 0; i < countP; ++i)
             {
                 var a = players[i];
-                var pos = a.Position;
-                if (rect.Check(pos, primaryPos, default))
-                    actorsP1.Add(a);
-                else if (rect.Check(pos, primaryPos, a120))
-                    actorsP2.Add(a);
-                else if (rect.Check(pos, primaryPos, am120))
-                    actorsP3.Add(a);
-            }
-
-            var countp1 = actorsP1.Count;
-            var countp2 = actorsP2.Count;
-            var countp3 = actorsP3.Count;
-
-            SortActors(ref actorsP1);
-            SortActors(ref actorsP2);
-            SortActors(ref actorsP3);
-
-            var t1 = countp1 != 0 ? actorsP1[0] : null;
-            var t2 = countp2 != 0 ? actorsP2[0] : null;
-            var t3 = countp3 != 0 ? actorsP3[0] : null;
-            AddBait(ref t1);
-            AddBait(ref t2);
-            AddBait(ref t3);
-            void AddBait(ref Actor? t)
-            {
-                if (t != null)
-                    Stacks.Add(new(t, 6f, 2, 24));
-            }
-            void SortActors(ref List<Actor> actors)
-            => actors.Sort((a, b) =>
+                if (a.IsDead)
+                    continue;
+                for (var j = 0; j < 3; j++)
                 {
-                    var distA = (a.Position - primaryPos).LengthSq();
-                    var distB = (b.Position - primaryPos).LengthSq();
-                    return distA.CompareTo(distB);
-                });
+                    if (a.Position.InRect(primaryPos, BA4ProtoOzma.Directions[j], 100f, default, 5f))
+                    {
+                        platformActors[j].Add(a);
+                        break;
+                    }
+                }
+            }
+
+            for (var i = 0; i < 3; ++i)
+            {
+                Actor? closest = null;
+                var minDistSq = float.MaxValue;
+                var rect = platformActors[i];
+                var count = rect.Count;
+                for (var j = 0; j < count; ++j)
+                {
+                    var actor = rect[j];
+                    var distSq = (actor.Position - primaryPos).LengthSq();
+                    if (distSq < minDistSq)
+                    {
+                        minDistSq = distSq;
+                        closest = actor;
+                    }
+                }
+                if (closest != null)
+                {
+                    Stacks.Add(new(closest, 6f, 8, 24));
+                }
+            }
         }
     }
 

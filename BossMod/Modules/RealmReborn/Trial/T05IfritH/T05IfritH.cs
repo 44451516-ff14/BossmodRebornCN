@@ -40,10 +40,10 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Incinerate(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Incinerate), new AOEShapeCone(15f, 60f.Degrees()));
-class Eruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EruptionAOE), 8f);
+class Incinerate(BossModule module) : Components.Cleave(module, (uint)AID.Incinerate, new AOEShapeCone(15f, 60f.Degrees()));
+class Eruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EruptionAOE, 8f);
 
-class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.CrimsonCyclone))
+class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrimsonCyclone)
 {
     private readonly List<Actor> _casters = [];
 
@@ -71,12 +71,12 @@ class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, ActionI
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _casters.Remove(caster);
     }
 }
 
-class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RadiantPlumeAOE), 8f);
+class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8f);
 
 class T05IfritHStates : StateMachineBuilder
 {

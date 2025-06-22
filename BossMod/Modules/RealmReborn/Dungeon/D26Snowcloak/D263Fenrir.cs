@@ -21,10 +21,10 @@ public enum AID : uint
     PillarShatter1 = 29648, // Icicle->self, 6.0s cast, range 8 circle
     PillarShatter2 = 29601, // Icicle->self, 2.0s cast, range 8 circle
     EclipticBite = 29596, // Boss->player, 5.0s cast, single-target
-    HeavenswardRoar = 29593, // Boss->self, 5.0s cast, range 50 60-degree cone
+    HeavenswardRoar = 29593 // Boss->self, 5.0s cast, range 50 60-degree cone
 }
 
-class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.LunarCry), 80f)
+class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.LunarCry, 80f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {
@@ -43,9 +43,9 @@ class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, Action
     }
 }
 
-class PillarImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarImpact), 4f);
+class PillarImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarImpact, 4f);
 
-class PillarShatter1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarShatter1), 8f);
+class PillarShatter1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarShatter1, 8f);
 class PillarShatter2(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
@@ -71,9 +71,9 @@ class PillarShatter2(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class HeavenswardRoar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavenswardRoar), new AOEShapeCone(50f, 30f.Degrees()));
-class EclipticBite(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.EclipticBite));
-class ThousandYearStorm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ThousandYearStorm));
+class HeavenswardRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavenswardRoar, new AOEShapeCone(50f, 30f.Degrees()));
+class EclipticBite(BossModule module) : Components.SingleTargetCast(module, (uint)AID.EclipticBite);
+class ThousandYearStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThousandYearStorm);
 
 class D263FenrirStates : StateMachineBuilder
 {

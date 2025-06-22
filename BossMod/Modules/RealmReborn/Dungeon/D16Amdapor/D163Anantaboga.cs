@@ -29,16 +29,16 @@ public enum TetherID : uint
     PlagueDance = 1 // Boss->player
 }
 
-class TheLook(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.TheLook), new AOEShapeCone(11.5f, 45f.Degrees())); // TODO: verify angle
-class RottenBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RottenBreath), new AOEShapeCone(11.5f, 45f.Degrees())); // TODO: verify angle
-class TailDrive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TailDrive), new AOEShapeCone(35.5f, 45f.Degrees()));
+class TheLook(BossModule module) : Components.Cleave(module, (uint)AID.TheLook, new AOEShapeCone(11.5f, 45f.Degrees())); // TODO: verify angle
+class RottenBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottenBreath, new AOEShapeCone(11.5f, 45f.Degrees())); // TODO: verify angle
+class TailDrive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailDrive, new AOEShapeCone(35.5f, 45f.Degrees()));
 
-class ImminentCatastrophe(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.ImminentCatastrophe), 100f, true)
+class ImminentCatastrophe(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.ImminentCatastrophe, 100f, true)
 {
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(((D163Anantaboga)Module).ActivePillars());
 }
 
-class TerrorEye(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TerrorEye), 6f);
+class TerrorEye(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TerrorEye, 6f);
 
 class PlagueDance(BossModule module) : BossComponent(module)
 {
@@ -52,11 +52,11 @@ class PlagueDance(BossModule module) : BossComponent(module)
         if (actor == _target)
         {
             foreach (var p in ((D163Anantaboga)Module).ActivePillars())
-                hints.AddForbiddenZone(_shape, p.Position, new(), _activation);
+                hints.AddForbiddenZone(_shape, p.Position, default, _activation);
         }
         else if (_target != null)
         {
-            hints.AddForbiddenZone(_shape, _target.Position, new(), _activation);
+            hints.AddForbiddenZone(_shape, _target.Position, default, _activation);
         }
     }
 

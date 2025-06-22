@@ -4,11 +4,10 @@ class A11ByregotStates : StateMachineBuilder
 {
     public A11ByregotStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase)
+        DeathPhase(default, SinglePhase)
             .ActivateOnEnter<ArenaChanges>()
             .ActivateOnEnter<ByregotWard>()
             .ActivateOnEnter<ByregotStrikeJump>()
-            .ActivateOnEnter<ByregotStrikeJumpCone>()
             .ActivateOnEnter<ByregotStrikeKnockback>()
             .ActivateOnEnter<ByregotStrikeCone>()
             .ActivateOnEnter<DestroySideTiles>()
@@ -42,13 +41,13 @@ class A11ByregotStates : StateMachineBuilder
 
     private void OrdealOfThunder(uint id, float delay)
     {
-        Cast(id, AID.OrdealOfThunder, delay, 5f, "Raidwide")
+        Cast(id, (uint)AID.OrdealOfThunder, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void ByregotWard(uint id, float delay)
     {
-        Cast(id, AID.ByregotWard, delay, 5f);
+        Cast(id, (uint)AID.ByregotWard, delay, 5f);
         ComponentCondition<ByregotWard>(id + 2u, 0.1f, comp => comp.NumCasts != 0, "Tankbuster")
             .ResetComp<ByregotWard>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -56,18 +55,18 @@ class A11ByregotStates : StateMachineBuilder
 
     private void ByregotStrikeSimple(uint id, float delay)
     {
-        Cast(id, AID.ByregotStrikeJump, delay, 6f);
+        Cast(id, (uint)AID.ByregotStrikeJump, delay, 6f);
         ComponentCondition<ByregotStrikeKnockback>(id + 2u, 1f, comp => comp.NumCasts != 0, "Knockback")
             .ResetComp<ByregotStrikeKnockback>();
     }
 
     private void ByregotStrikeCones(uint id, float delay)
     {
-        Cast(id, AID.BuilderBuild, delay, 3f);
-        Cast(id + 0x10, AID.ByregotStrikeJumpCone, 2.6f, 6f);
-        ComponentCondition<ByregotStrikeCone>(id + 0x20u, 0.9f, comp => comp.NumCasts != 0, "Cones")
-            .ResetComp<ByregotStrikeCone>();
+        Cast(id, (uint)AID.BuilderBuild, delay, 3f);
+        Cast(id + 0x10, (uint)AID.ByregotStrikeJumpCone, 2.6f, 6f);
+        ComponentCondition<ByregotStrikeCone>(id + 0x20u, 0.9f, comp => comp.NumCasts != 0, "Cones");
         ComponentCondition<ByregotStrikeKnockback>(id + 0x21u, 0.1f, comp => comp.NumCasts != 0, "Knockback")
+            .ResetComp<ByregotStrikeCone>()
             .ResetComp<ByregotStrikeKnockback>();
     }
 
@@ -85,7 +84,7 @@ class A11ByregotStates : StateMachineBuilder
 
     private void Reproduce(uint id, float delay)
     {
-        Cast(id, AID.Reproduce, delay, 3f);
+        Cast(id, (uint)AID.Reproduce, delay, 3f);
         ComponentCondition<Reproduce>(id + 0x10u, 5f, comp => comp.Active);
         ComponentCondition<Reproduce>(id + 0x20u, 7f, comp => comp.NumCasts > 0, "Exaflares start");
         ComponentCondition<Reproduce>(id + 0x30u, 6.6f, comp => !comp.Active, "Exaflares resolve")

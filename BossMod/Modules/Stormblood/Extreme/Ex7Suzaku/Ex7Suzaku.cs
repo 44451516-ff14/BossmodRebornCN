@@ -1,14 +1,14 @@
 namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
-class Rout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Rout), new AOEShapeRect(55f, 3f));
-class FleetingSummer(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FleetingSummer), new AOEShapeCone(40f, 45f.Degrees()));
-class WellOfFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WellOfFlame), new AOEShapeRect(41f, 10f));
-class ScathingNet(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.ScathingNet), 6f, 5.1f, 8);
-class PhantomFlurryTB(BossModule module) : Components.TankSwap(module, ActionID.MakeSpell(AID.PhantomFlurryVisual), ActionID.MakeSpell(AID.PhantomFlurryTB), ActionID.MakeSpell(AID.AutoAttack2), 3.5f);
-class PhantomFlurryAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PhantomFlurryAOE), new AOEShapeCone(41f, 90f.Degrees()));
+sealed class Rout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rout, new AOEShapeRect(55f, 3f));
+sealed class FleetingSummer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FleetingSummer, new AOEShapeCone(40f, 45f.Degrees()));
+sealed class WellOfFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WellOfFlame, new AOEShapeRect(41f, 10f));
+sealed class ScathingNet(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.ScathingNet, 6f, 5.1f, 8, 8);
+sealed class PhantomFlurryTB(BossModule module) : Components.TankSwap(module, (uint)AID.PhantomFlurryVisual, (uint)AID.PhantomFlurryTB, (uint)AID.AutoAttack2, 3.5f);
+sealed class PhantomFlurryAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PhantomFlurryAOE, new AOEShapeCone(41f, 90f.Degrees()));
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus), Kismet", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 597, NameID = 7702, PlanLevel = 70)]
-public class Ex7Suzaku(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, Phase1Bounds)
+public sealed class Ex7Suzaku(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, Phase1Bounds)
 {
     public static readonly WPos ArenaCenter = new(100f, 100f);
     public static readonly ArenaBoundsComplex Phase1Bounds = new([new Polygon(ArenaCenter, 19.5f, 80)]);

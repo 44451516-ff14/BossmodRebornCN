@@ -4,7 +4,7 @@ using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
 
-public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan<AID, TraitID>(manager, player)
+public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan<AID, TraitID>(manager, player, PotionType.Dexterity)
 {
     public enum Track { Partner = SharedTrack.Count }
     public enum PartnerStrategy { Automatic, Manual }
@@ -141,7 +141,7 @@ public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan
             return;
         }
 
-        if (ShouldTechStep(strategy) && ReadyIn(AID.TechnicalStep) <= GCD)
+        if (ShouldTechStep(strategy) && ReadyIn(AID.TechnicalStep) <= GCDLength)
             PushGCD(AID.TechnicalStep, Player);
 
         var shouldStdStep = ShouldStdStep(strategy);
@@ -162,6 +162,9 @@ public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan
         if (canSymmetry && SymmetryLeft <= GCDLength)
             PushGCD(symmetryCombo, primaryTarget);
 
+        if (FinishingMoveLeft > GCDLength && NumDanceTargets > 0)
+            PushGCD(AID.FinishingMove, Player);
+
         if (DanceOfTheDawnLeft > GCD && Esprit >= 50)
             PushGCD(AID.DanceOfTheDawn, BestRangedAOETarget);
 
@@ -171,9 +174,6 @@ public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan
         // TODO combine this with above
         if (canStarfall)
             PushGCD(AID.StarfallDance, BestStarfallTarget);
-
-        if (FinishingMoveLeft > GCD && NumDanceTargets > 0)
-            PushGCD(AID.FinishingMove, Player);
 
         if (LastDanceLeft > GCD)
             PushGCD(AID.LastDance, BestRangedAOETarget);
@@ -253,7 +253,7 @@ public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan
 
     private bool ShouldStdStep(StrategyValues strategy)
     {
-        if (ReadyIn(AID.StandardStep) > GCD)
+        if (ReadyIn(AID.StandardStep) > GCDLength)
             return false;
 
         var stdFinishCast = GCD + 3.5f;

@@ -19,9 +19,9 @@ public enum AID : uint
     LeftWingbladeRepeat = 37172 // Boss->self, no cast, range 25 90 degree cone
 }
 
-class LaughingLeap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LaughingLeap), new AOEShapeRect(15f, 2.5f));
+sealed class LaughingLeap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LaughingLeap, new AOEShapeRect(15f, 2.5f));
 
-class Wingblade(BossModule module) : Components.GenericAOEs(module)
+sealed class Wingblade(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(3);
     private readonly List<Angle> offsets = new(3);
@@ -121,7 +121,7 @@ class Wingblade(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class RraxYityaStates : StateMachineBuilder
+sealed class RraxYityaStates : StateMachineBuilder
 {
     public RraxYityaStates(BossModule module) : base(module)
     {
@@ -132,4 +132,4 @@ class RraxYityaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 12753)]
-public class RraxYitya(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class RraxYitya(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

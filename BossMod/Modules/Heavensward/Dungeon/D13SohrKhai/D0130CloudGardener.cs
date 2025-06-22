@@ -23,10 +23,10 @@ public enum AID : uint
     DarkBlizzardIII = 6236, // Boss->location, 3.0s cast, range 5 circle
 }
 
-class RiseAndFall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RiseAndFall), new AOEShapeCone(9f, 135f.Degrees()));
-class TightTornado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TightTornado), new AOEShapeRect(18f, 2f));
-class Venom(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Venom), new AOEShapeCone(10.9f, 60f.Degrees()), [(uint)OID.SanctuarySkipper]);
-class DarkBlizzardIII(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkBlizzardIII), 5f);
+class RiseAndFall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RiseAndFall, new AOEShapeCone(9f, 135f.Degrees()));
+class TightTornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TightTornado, new AOEShapeRect(18f, 2f));
+class Venom(BossModule module) : Components.Cleave(module, (uint)AID.Venom, new AOEShapeCone(10.9f, 60f.Degrees()), [(uint)OID.SanctuarySkipper]);
+class DarkBlizzardIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkBlizzardIII, 5f);
 
 class D130CloudGardenerStates : StateMachineBuilder
 {

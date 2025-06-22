@@ -14,10 +14,10 @@ public enum AID : uint
     Flood = 17369 // Boss->self, no cast, range 8 circle
 }
 
-class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrocannon), 8f);
-class AetherialSpark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherialSpark), new AOEShapeRect(12f, 2f));
+class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrocannon, 8f);
+class AetherialSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialSpark, new AOEShapeRect(12f, 2f));
 
-class AetherialPull(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AetherialPull), 30f, shape: new AOEShapeCircle(30f), kind: Kind.TowardsOrigin)
+class AetherialPull(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AetherialPull, 30f, shape: new AOEShapeCircle(30f), kind: Kind.TowardsOrigin)
 {
     private readonly Flood _aoe = module.FindComponent<Flood>()!;
 

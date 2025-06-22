@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C023Moko;
 
-abstract class AzureAuspice(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(6f, 40f)); // TODO: verify inner radius
-class NAzureAuspice(BossModule module) : AzureAuspice(module, AID.NAzureAuspice);
-class SAzureAuspice(BossModule module) : AzureAuspice(module, AID.SAzureAuspice);
+abstract class AzureAuspice(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(6f, 40f)); // TODO: verify inner radius
+class NAzureAuspice(BossModule module) : AzureAuspice(module, (uint)AID.NAzureAuspice);
+class SAzureAuspice(BossModule module) : AzureAuspice(module, (uint)AID.SAzureAuspice);
 
-abstract class BoundlessAzure(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(60f, 5f));
-class NBoundlessAzure(BossModule module) : BoundlessAzure(module, AID.NBoundlessAzureAOE);
-class SBoundlessAzure(BossModule module) : BoundlessAzure(module, AID.SBoundlessAzureAOE);
+abstract class BoundlessAzure(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 5f));
+class NBoundlessAzure(BossModule module) : BoundlessAzure(module, (uint)AID.NBoundlessAzureAOE);
+class SBoundlessAzure(BossModule module) : BoundlessAzure(module, (uint)AID.SBoundlessAzureAOE);
 
 // note: each initial line sends out two 'exaflares' to the left & right
 // each subsequent exaflare moves by distance 5, and happen approximately 2s apart

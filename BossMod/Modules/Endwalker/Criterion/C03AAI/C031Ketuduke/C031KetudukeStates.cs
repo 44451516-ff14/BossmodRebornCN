@@ -21,12 +21,12 @@ class C031KetudukeStates : StateMachineBuilder
         FlukeGale(id + 0x60000, 5.7f);
         StrewnBubbles(id + 0x70000, 4.9f);
         TidalRoar(id + 0x80000, 5.5f);
-        Cast(id + 0x90000, AID.Enrage, 7, 10, "Enrage");
+        Cast(id + 0x90000, (uint)AID.Enrage, 7, 10, "Enrage");
     }
 
     private void TidalRoar(uint id, float delay)
     {
-        Cast(id, AID.TidalRoar, delay, 5);
+        Cast(id, (uint)AID.TidalRoar, delay, 5);
         ComponentCondition<TidalRoar>(id + 0x10, 1, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<NTidalRoar>(!_savage)
             .ActivateOnEnter<STidalRoar>(_savage)
@@ -36,7 +36,7 @@ class C031KetudukeStates : StateMachineBuilder
 
     private State BubbleNet(uint id, float delay, bool variant2)
     {
-        Cast(id, variant2 ? AID.BubbleNet2 : AID.BubbleNet1, delay, 4.1f);
+        Cast(id, variant2 ? (uint)AID.BubbleNet2 : (uint)AID.BubbleNet1, delay, 4.1f);
         return ComponentCondition<BubbleNet>(id + 2, 0.9f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<NBubbleNet1>(!variant2 && !_savage)
             .ActivateOnEnter<SBubbleNet1>(!variant2 && _savage)
@@ -48,13 +48,13 @@ class C031KetudukeStates : StateMachineBuilder
 
     private void FlukeGale(uint id, float delay)
     {
-        Cast(id, AID.SpringCrystals, delay, 2.2f)
+        Cast(id, (uint)AID.SpringCrystals, delay, 2.2f)
             .ActivateOnEnter<SpringCrystalsRectMove>();
         BubbleNet(id + 0x10, 3, false)
             .ActivateOnEnter<FlukeGale>();
-        CastMulti(id + 0x20, [AID.Hydrofall, AID.Hydrobullet], 2.2f, 4)
+        CastMulti(id + 0x20, [(uint)AID.Hydrofall, (uint)AID.Hydrobullet], 2.2f, 4)
             .ActivateOnEnter<HydrofallHydrobullet>();
-        Cast(id + 0x30, AID.FlukeGale, 6.2f, 3);
+        Cast(id + 0x30, (uint)AID.FlukeGale, 6.2f, 3);
         ComponentCondition<FlukeGale>(id + 0x40, 2.1f, comp => comp.Gales.Count > 0)
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<FlukeGale>(id + 0x50, 8, comp => comp.NumCasts >= 2, "Knockbacks 1");
@@ -70,13 +70,13 @@ class C031KetudukeStates : StateMachineBuilder
 
     private void BlowingBubbles(uint id, float delay)
     {
-        CastMulti(id, [AID.Hydrofall, AID.Hydrobullet], delay, 4)
+        CastMulti(id, [(uint)AID.Hydrofall, (uint)AID.Hydrobullet], delay, 4)
             .ActivateOnEnter<HydrofallHydrobullet>()
             .ExecOnEnter<HydrofallHydrobullet>(comp => comp.Activate(0));
         ComponentCondition<HydrofallHydrobullet>(id + 0x10, 3.1f, comp => comp.Mechanics.Count > 1);
-        Cast(id + 0x20, AID.BlowingBubbles, 3.1f, 4.2f)
+        Cast(id + 0x20, (uint)AID.BlowingBubbles, 3.1f, 4.2f)
             .ActivateOnEnter<BlowingBubbles>();
-        Cast(id + 0x30, AID.Hydrobomb, 5.0f, 2.2f);
+        Cast(id + 0x30, (uint)AID.Hydrobomb, 5.0f, 2.2f);
         ComponentCondition<Hydrobomb>(id + 0x40, 1.1f, comp => comp.Casters.Count > 0, "Puddles bait")
             .ActivateOnEnter<NHydrobomb>(!_savage)
             .ActivateOnEnter<SHydrobomb>(_savage)
@@ -92,12 +92,12 @@ class C031KetudukeStates : StateMachineBuilder
 
     private void StrewnBubbles(uint id, float delay)
     {
-        Cast(id, AID.Hydrofall, delay, 4)
+        Cast(id, (uint)AID.Hydrofall, delay, 4)
             .ActivateOnEnter<HydrofallHydrobullet>()
             .ExecOnEnter<HydrofallHydrobullet>(comp => comp.Activate(0));
-        Cast(id + 0x10, AID.StrewnBubbles, 3.2f, 2.2f)
+        Cast(id + 0x10, (uint)AID.StrewnBubbles, 3.2f, 2.2f)
             .ActivateOnEnter<StrewnBubbles>(); // first set appears ~1.4s after cast end
-        CastStartMulti(id + 0x20, [_savage ? AID.SRecedingTwintides : AID.NRecedingTwintides, _savage ? AID.SEncroachingTwintides : AID.NEncroachingTwintides], 6.5f)
+        CastStartMulti(id + 0x20, [_savage ? (uint)AID.SRecedingTwintides : (uint)AID.NRecedingTwintides, _savage ? (uint)AID.SEncroachingTwintides : (uint)AID.NEncroachingTwintides], 6.5f)
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 0x21, 5, "In/out")
             .ActivateOnEnter<RecedingEncroachingTwintides>();
@@ -113,12 +113,12 @@ class C031KetudukeStates : StateMachineBuilder
 
     private void Roar(uint id, float delay)
     {
-        Cast(id, AID.Hydrobullet, delay, 4)
+        Cast(id, (uint)AID.Hydrobullet, delay, 4)
             .ActivateOnEnter<HydrofallHydrobullet>()
             .ExecOnEnter<HydrofallHydrobullet>(comp => comp.Activate(0));
-        Cast(id + 0x10, AID.Roar, 3.2f, 3)
+        Cast(id + 0x10, (uint)AID.Roar, 3.2f, 3)
             .ActivateOnEnter<Roar>(); // zaratans spawn ~1.2s after cast ends
-        Cast(id + 0x20, AID.SpringCrystals, 2.6f, 2.2f)
+        Cast(id + 0x20, (uint)AID.SpringCrystals, 2.6f, 2.2f)
             .ActivateOnEnter<SpringCrystalsRectStay>();
         BubbleNet(id + 0x30, 6.0f, true)
             .SetHint(StateMachine.StateHint.PositioningStart);
@@ -126,7 +126,7 @@ class C031KetudukeStates : StateMachineBuilder
             .DeactivateOnExit<HydrofallHydrobullet>();
         ComponentCondition<SpringCrystalsRect>(id + 0x41, 0.6f, comp => comp.NumCasts > 0)
             .DeactivateOnExit<SpringCrystalsRect>();
-        Cast(id + 0x50, AID.Updraft, 1.0f, 4.2f)
+        Cast(id + 0x50, (uint)AID.Updraft, 1.0f, 4.2f)
             .ExecOnEnter<Roar>(comp => comp.Active = true);
         ComponentCondition<Roar>(id + 0x60, 2.6f, comp => comp.NumCasts > 0, "Bait resolve")
             .DeactivateOnExit<Roar>()
@@ -135,11 +135,11 @@ class C031KetudukeStates : StateMachineBuilder
 
     private void AngrySeas(uint id, float delay)
     {
-        CastMulti(id, [AID.Hydrofall, AID.Hydrobullet], delay, 4)
+        CastMulti(id, [(uint)AID.Hydrofall, (uint)AID.Hydrobullet], delay, 4)
             .ActivateOnEnter<HydrofallHydrobullet>()
             .ExecOnEnter<HydrofallHydrobullet>(comp => comp.Activate(0));
         ComponentCondition<HydrofallHydrobullet>(id + 0x10, 3.1f, comp => comp.Mechanics.Count > 1);
-        Cast(id + 0x20, AID.AngrySeas, 3.1f, 4.2f)
+        Cast(id + 0x20, (uint)AID.AngrySeas, 3.1f, 4.2f)
             .ActivateOnEnter<AngrySeasAOE>()
             .ActivateOnEnter<AngrySeasKnockback>()
             .SetHint(StateMachine.StateHint.PositioningStart);
@@ -147,7 +147,7 @@ class C031KetudukeStates : StateMachineBuilder
             .DeactivateOnExit<AngrySeasKnockback>();
         ComponentCondition<HydrofallHydrobullet>(id + 0x30, 1.2f, comp => comp.ActiveMechanic > 0, "Stack/spread");
 
-        Cast(id + 0x40, AID.SpringCrystals, 0.9f, 2.2f)
+        Cast(id + 0x40, (uint)AID.SpringCrystals, 0.9f, 2.2f)
             .ActivateOnEnter<SpringCrystalsSphere>();
         ComponentCondition<HydrofallHydrobullet>(id + 0x50, 2.0f, comp => comp.ActiveMechanic > 1, "Spread/stack")
             .DeactivateOnExit<HydrofallHydrobullet>()
@@ -155,7 +155,7 @@ class C031KetudukeStates : StateMachineBuilder
         BubbleNet(id + 0x60, 0.9f, false)
             .ActivateOnEnter<FlukeTyphoonBurst>();
 
-        Cast(id + 0x100, AID.FlukeTyphoon, 2.2f, 3, "Bubbles");
+        Cast(id + 0x100, (uint)AID.FlukeTyphoon, 2.2f, 3, "Bubbles");
         ComponentCondition<FlukeTyphoon>(id + 0x110, 6.1f, comp => comp.NumCasts > 0)
             .ActivateOnEnter<FlukeTyphoon>()
             .DeactivateOnExit<FlukeTyphoon>();

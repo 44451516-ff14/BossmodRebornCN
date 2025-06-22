@@ -35,12 +35,13 @@ public enum AID : uint
     SoulDouse = 40651, // Helper->players, 5.0s cast, range 6 circle
 }
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donutSmall = new(5f, 15f), donutBig = new(15f, 20f);
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FreeSpirits)
@@ -52,23 +53,23 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x07)
+        if (index != 0x07u)
             return;
         switch (state)
         {
-            case 0x00020001:
+            case 0x00020001u:
                 SetArena(D092OverseerKanilokka.DefaultArena);
                 break;
-            case 0x00200010:
+            case 0x00200010u:
                 SetArena(D092OverseerKanilokka.TinyArena);
                 break;
-            case 0x00800040:
+            case 0x00800040u:
                 SetArena(D092OverseerKanilokka.ArenaENVC00800040);
                 break;
-            case 0x02000100:
+            case 0x02000100u:
                 SetArena(D092OverseerKanilokka.ArenaENVC02000100);
                 break;
-            case 0x00080004:
+            case 0x00080004u:
                 SetArena(D092OverseerKanilokka.StartingBounds);
                 break;
         }
@@ -82,7 +83,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Soulweave(BossModule module) : Components.GenericAOEs(module)
+sealed class Soulweave(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(28f, 32f);
     private readonly List<AOEInstance> _aoes = new(10);
@@ -124,46 +125,45 @@ class Soulweave(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FreeSpirits(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.FreeSpirits));
-class Bloodburst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Bloodburst));
-class DarkSouls(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DarkSouls));
-class TelltaleTears(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.TelltaleTears), 5f);
-class SoulDouse(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.SoulDouse), 6f, 4, 4);
-class LostHope(BossModule module) : Components.TemporaryMisdirection(module, ActionID.MakeSpell(AID.LostHope));
-class Necrohazard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Necrohazard), 18f);
+sealed class FreeSpirits(BossModule module) : Components.RaidwideCast(module, (uint)AID.FreeSpirits);
+sealed class Bloodburst(BossModule module) : Components.RaidwideCast(module, (uint)AID.Bloodburst);
+sealed class DarkSouls(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DarkSouls);
+sealed class TelltaleTears(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TelltaleTears, 5f);
+sealed class SoulDouse(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.SoulDouse, 6f, 4, 4);
 
-class DarkII(BossModule module) : Components.GenericAOEs(module)
+sealed class LostHope(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.LostHope)
 {
-    private static readonly AOEShapeCone cone = new(35f, 15f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(12);
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var max = count > 6 ? 6 : count;
-        return CollectionsMarshal.AsSpan(_aoes)[..max];
-    }
+    private bool prepare;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.DarkII1 or (uint)AID.DarkII2)
+        if (spell.Action.ID == (uint)AID.LostHope)
         {
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            if (_aoes.Count == 12)
-                _aoes.SortBy(x => x.Activation);
+            prepare = true;
         }
     }
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    public override void OnEventEnvControl(byte index, uint state)
     {
-        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.DarkII1 or (uint)AID.DarkII2)
-            _aoes.RemoveAt(0);
+        if (index != 0x07u)
+            return;
+        prepare = false;
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+        if (prepare)
+        {
+            hints.GoalZones.Add(hints.GoalSingleTarget(Arena.Center, 1f, 9f));
+        }
     }
 }
 
-class D092OverseerKanilokkaStates : StateMachineBuilder
+sealed class Necrohazard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Necrohazard, 18f);
+sealed class DarkII(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DarkII1, (uint)AID.DarkII2], new AOEShapeCone(35f, 15f.Degrees()), 6, 12);
+
+sealed class D092OverseerKanilokkaStates : StateMachineBuilder
 {
     public D092OverseerKanilokkaStates(BossModule module) : base(module)
     {
@@ -182,7 +182,7 @@ class D092OverseerKanilokkaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13634, SortOrder = 6)]
-public class D092OverseerKanilokka(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
+public sealed class D092OverseerKanilokka(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     private const int Edges = 64;
     public static readonly WPos ArenaCenter = new(116f, -66f);

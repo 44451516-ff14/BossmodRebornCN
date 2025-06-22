@@ -17,9 +17,9 @@ public enum AID : uint
     FearItself = 7141 // Boss->self, 2.0s cast, range 54+R circle
 }
 
-class Dissever(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Dissever), new AOEShapeCone(10.8f, 45f.Degrees()), activeWhileCasting: false);
+class Dissever(BossModule module) : Components.Cleave(module, (uint)AID.Dissever, new AOEShapeCone(10.8f, 45f.Degrees()), activeWhileCasting: false);
 
-abstract class Voidzones(BossModule module, AID aid, uint oid) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(aid), m => GetVoidzones(m, oid), 2.1f)
+abstract class Voidzones(BossModule module, uint aid, uint oid) : Components.VoidzoneAtCastTarget(module, 6f, aid, m => GetVoidzones(m, oid), 2.1f)
 {
     private static Actor[] GetVoidzones(BossModule module, uint oid)
     {
@@ -39,10 +39,10 @@ abstract class Voidzones(BossModule module, AID aid, uint oid) : Components.Void
         return voidzones[..index];
     }
 }
-class BallofFire(BossModule module) : Voidzones(module, AID.BallOfFire, (uint)OID.FireVoidzone);
-class BallofIce(BossModule module) : Voidzones(module, AID.BallOfIce, (uint)OID.IceVoidzone);
+class BallofFire(BossModule module) : Voidzones(module, (uint)AID.BallOfFire, (uint)OID.FireVoidzone);
+class BallofIce(BossModule module) : Voidzones(module, (uint)AID.BallOfIce, (uint)OID.IceVoidzone);
 
-class FearItself(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FearItself), new AOEShapeDonut(5f, 50f));
+class FearItself(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FearItself, new AOEShapeDonut(5f, 50f));
 
 class Hints(BossModule module) : BossComponent(module)
 {

@@ -27,16 +27,16 @@ public enum AID : uint
     Scoop = 21768 // KeeperOfKeys->self, 4.0s cast, range 15 120-degree cone
 }
 
-class Gust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Gust), 6f);
-class ChangelessWinds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ChangelessWinds), new AOEShapeRect(40f, 4f));
-class Whipwind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Whipwind), new AOEShapeRect(55f, 20f));
-class GentleBreeze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GentleBreeze), new AOEShapeRect(15f, 2f));
-class WhirlingGaol(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WhirlingGaol), "Raidwide + Knockback");
-class WhirlingGaolKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.WhirlingGaol), 25f, stopAtWall: true);
+class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 6f);
+class ChangelessWinds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ChangelessWinds, new AOEShapeRect(40f, 4f));
+class Whipwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Whipwind, new AOEShapeRect(55f, 20f));
+class GentleBreeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GentleBreeze, new AOEShapeRect(15f, 2f));
+class WhirlingGaol(BossModule module) : Components.RaidwideCast(module, (uint)AID.WhirlingGaol, "Raidwide + Knockback");
+class WhirlingGaolKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.WhirlingGaol, 25f, stopAtWall: true);
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretDjinnStates : StateMachineBuilder
 {

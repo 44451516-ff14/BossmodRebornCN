@@ -34,7 +34,7 @@ public enum IconID : uint
 
 class Throttle(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(5);
     private static readonly AOEShapeRect rectSmall = new(50f, 1.5f);
     private static readonly AOEShapeRect rectBig = new(50f, 2.5f);
 
@@ -51,7 +51,7 @@ class Throttle(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count; ++i)
             {
                 var e = enemies[i];
-                if (e.EventState != 1)
+                if (e.ModelState.AnimState1 != 1)
                     _aoes.Add(new(rectSmall, WPos.ClampToGrid(e.Position), e.Rotation, activation));
             }
             var offset = _aoes[0].Origin.X < 0 ? -1 : 1;
@@ -66,10 +66,10 @@ class Throttle(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AetherochemicalFlame(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AetherochemicalFlame));
-class AetherochemicalResidue(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(5), (uint)IconID.Baitaway, ActionID.MakeSpell(AID.AetherochemicalResidue), 4.1f, true);
-class AditDriver(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AditDriver), new AOEShapeRect(33f, 3f));
-class AetherochemicalCoil(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.AetherochemicalCoil));
+class AetherochemicalFlame(BossModule module) : Components.RaidwideCast(module, (uint)AID.AetherochemicalFlame);
+class AetherochemicalResidue(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.Baitaway, (uint)AID.AetherochemicalResidue, 4.1f);
+class AditDriver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AditDriver, new AOEShapeRect(33f, 3f));
+class AetherochemicalCoil(BossModule module) : Components.SingleTargetCast(module, (uint)AID.AetherochemicalCoil);
 class SludgeVoidzone(BossModule module) : Components.Voidzone(module, 2.5f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)

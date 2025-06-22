@@ -9,7 +9,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module) // arena 
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00)
+        if (index == 0x00u)
         {
             if (state == 0x00020001u)
             {
@@ -19,9 +19,10 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module) // arena 
             else if (state == 0x00080004u)
                 Arena.Bounds = A11Byregot.StartingBounds;
         }
-        else if (index == 0x4F && state == 0x00080004u)
+        else if (index == 0x4Fu && state == 0x00080004u)
         {
             Arena.Bounds = A11Byregot.StartingBounds;
+            Arena.Center = A11Byregot.ArenaCenter;
             AddAOE(WorldState.FutureTime(10.6d));
         }
     }

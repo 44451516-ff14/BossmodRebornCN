@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P3Earthshaker(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.EarthShakerAOE))
+class P3Earthshaker(BossModule module) : Components.GenericAOEs(module, (uint)AID.EarthShakerAOE)
 {
     private BitMask _targets;
 

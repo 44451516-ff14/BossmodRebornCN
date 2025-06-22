@@ -34,20 +34,16 @@ public enum AID : uint
     Telega = 9630 // GymnasiouLyssa/Mandragoras->self, no cast, single-target, bonus add disappear
 }
 
-class PelagicCleaver(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PelagicCleaver), new AOEShapeCone(40f, 30f.Degrees()));
-class FoulWaters(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, ActionID.MakeSpell(AID.FoulWaters), GetVoidzones, 1.4f)
+class PelagicCleaver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PelagicCleaver, new AOEShapeCone(40f, 30f.Degrees()));
+class FoulWaters(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.FoulWaters, GetVoidzones, 1.4f)
 {
     private static List<Actor> GetVoidzones(BossModule module) => module.Enemies((uint)OID.Bubble);
 }
-class AquaticLance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AquaticLance), 13f);
-class ProtolithicPuncture(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ProtolithicPuncture));
+class AquaticLance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaticLance, 13f);
+class ProtolithicPuncture(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ProtolithicPuncture);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
 class GymnasiouTritonStates : StateMachineBuilder
 {
@@ -58,11 +54,7 @@ class GymnasiouTritonStates : StateMachineBuilder
             .ActivateOnEnter<FoulWaters>()
             .ActivateOnEnter<AquaticLance>()
             .ActivateOnEnter<ProtolithicPuncture>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(GymnasiouTriton.All);

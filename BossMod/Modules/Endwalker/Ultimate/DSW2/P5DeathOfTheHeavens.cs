@@ -2,7 +2,7 @@
 
 class P5DeathOfTheHeavensHeavyImpact(BossModule module) : HeavyImpact(module, 10.5f);
 
-class P5DeathOfTheHeavensGaze(BossModule module) : DragonsGaze(module, OID.BossP5);
+class P5DeathOfTheHeavensGaze(BossModule module) : DragonsGaze(module, OID.BossP5, 23.5f);
 
 // TODO: make more meaningful somehow
 class P5DeathOfTheHeavensDooms(BossModule module) : BossComponent(module)
@@ -38,7 +38,7 @@ class P5DeathOfTheHeavensLightningStorm : Components.UniformStackSpread
     }
 }
 
-class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.HeavensflameAOE))
+class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKnockback(module, (uint)AID.HeavensflameAOE)
 {
     public bool KnockbackDone;
     private readonly WPos[] _playerAdjustedPositions = new WPos[PartyState.MaxPartySize];
@@ -168,6 +168,7 @@ class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKno
 
     // note: assumes LPDU strat (circles on E/W cleanses, triangles on SE/NW, crosses on N/S, squares on SW/NE)
     // TODO: handle bad cleanse placements somehow? or even deaths?
+    // TODO: support dooms plant strat (APD) - doom shapes don't move, partners adjust to opposite side
     private List<WPos> PositionHints(int slot)
     {
         var icon = _playerIcons[slot];

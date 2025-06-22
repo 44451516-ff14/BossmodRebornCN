@@ -6,7 +6,7 @@ public enum OID : uint
     MorbolFruit = 0x5BC, // R0.6-1.8
     Plume1 = 0x5CA, // R0.5
     Plume2 = 0x603, // R1.5
-    MorbolSeedling = 0x5BB, // R0.9
+    MorbolSeedling = 0x5BB // R0.9
 }
 
 public enum AID : uint
@@ -24,9 +24,9 @@ public enum AID : uint
     Germinate = 1040 // MorbolFruit->self, 15.0s cast, single-target
 }
 
-class VineProbeCleave(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.VineProbe), new AOEShapeRect(9.85f, 4f), activeWhileCasting: false);
-class VineProbe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VineProbe), new AOEShapeRect(9.85f, 4f));
-class BadBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BadBreath), new AOEShapeCone(16f, 60f.Degrees()));
+class VineProbeCleave(BossModule module) : Components.Cleave(module, (uint)AID.VineProbe, new AOEShapeRect(9.85f, 4f), activeWhileCasting: false);
+class VineProbe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VineProbe, new AOEShapeRect(9.85f, 4f));
+class BadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BadBreath, new AOEShapeCone(16f, 60f.Degrees()));
 
 class GoldBilePlume(BossModule module) : Components.GenericAOEs(module)
 {

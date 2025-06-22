@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P4ViscousAetheroplasmApply(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ViscousAetheroplasmApply), new AOEShapeCircle(2), [(uint)OID.UltimaWeapon], originAtTarget: true);
+class P4ViscousAetheroplasmApply(BossModule module) : Components.Cleave(module, (uint)AID.ViscousAetheroplasmApply, new AOEShapeCircle(2f), [(uint)OID.UltimaWeapon], originAtTarget: true);
 
 // TODO: if aetheroplasm target is the same as homing laser target, assume it is being soaked solo; consider merging these two components
 class P4ViscousAetheroplasmResolve(BossModule module) : Components.UniformStackSpread(module, 4f, default, 7)
@@ -10,7 +10,7 @@ class P4ViscousAetheroplasmResolve(BossModule module) : Components.UniformStackS
         if (spell.Action.ID == (uint)AID.HomingLasers)
         {
             // update avoid target to homing laser target
-            BitMask avoid = new();
+            BitMask avoid = default;
             avoid.Set(Raid.FindSlot(spell.TargetID));
             foreach (ref var s in Stacks.AsSpan())
                 s.ForbiddenPlayers = avoid;
@@ -47,7 +47,7 @@ class P5ViscousAetheroplasmTriple(BossModule module) : Components.UniformStackSp
         if (status.ID == (uint)SID.ViscousAetheroplasm)
         {
             _aetheroplasms.Add((actor, status.ExpireAt));
-            _aetheroplasms.SortBy(x => x.resolve);
+            _aetheroplasms.Sort((a, b) => a.resolve.CompareTo(b.resolve));
             UpdateStackTargets();
         }
     }

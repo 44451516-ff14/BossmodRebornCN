@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class BladeOfDarkness(BossModule module) : Components.GenericAOEs(module)
+sealed class BladeOfDarkness(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
 

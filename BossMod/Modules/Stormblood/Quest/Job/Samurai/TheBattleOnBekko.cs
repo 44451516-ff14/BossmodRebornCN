@@ -23,14 +23,14 @@ public enum AID : uint
     KuruiKasha1 = 8448, // UgetsuSlayerOfAThousandSouls->self, 2.5s cast, range 8+R ?-degree cone
 }
 
-class KuruiGekko(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.KuruiGekko1));
-class KuruiKasha(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KuruiKasha1), new AOEShapeDonutSector(4.5f, 8.5f, 45.Degrees()));
-class KuruiYukikaze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KuruiYukikaze), new AOEShapeRect(44, 2), 8);
-class HissatsuKyuten(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HissatsuKyuten), 5.5f);
-class TenkaGoken(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TenkaGoken), new AOEShapeCone(8.5f, 60.Degrees()));
-class ShinGetsubaku(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ShinGetsubaku), 6);
+class KuruiGekko(BossModule module) : Components.RaidwideCast(module, (uint)AID.KuruiGekko1);
+class KuruiKasha(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KuruiKasha1, new AOEShapeDonutSector(4.5f, 8.5f, 45.Degrees()));
+class KuruiYukikaze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KuruiYukikaze, new AOEShapeRect(44, 2), 8);
+class HissatsuKyuten(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HissatsuKyuten, 5.5f);
+class TenkaGoken(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenkaGoken, new AOEShapeCone(8.5f, 60.Degrees()));
+class ShinGetsubaku(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ShinGetsubaku, 6);
 class ShinGetsubakuVoidzone(BossModule module) : Components.Voidzone(module, 4, m => m.Enemies(OID.Voidzone).Where(e => e.EventState != 7));
-class MijinGiri(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MijinGiri), new AOEShapeRect(80.5f, 5));
+class MijinGiri(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MijinGiri, new AOEShapeRect(80.5f, 5));
 
 class Ugetsuzan(BossModule module) : Components.ConcentricAOEs(module, sectors)
 {

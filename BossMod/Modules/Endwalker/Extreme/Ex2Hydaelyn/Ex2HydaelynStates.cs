@@ -95,7 +95,7 @@ class Ex2HydaelynStates : StateMachineBuilder
         SwitchWeapon(id + 0x160000, 1.3f, false, true);
         CrystallizeAureole(id + 0x170000, 7.3f, false);
         SwitchWeapon(id + 0x180000, 1.3f, true, true);
-        Cast(id + 0x190000, AID.HerosRadianceEnrage, 9.5f, 10, "Enrage");
+        Cast(id + 0x190000, (uint)AID.HerosRadianceEnrage, 9.5f, 10, "Enrage");
     }
 
     private void Intermission(uint id, float delay)
@@ -120,12 +120,12 @@ class Ex2HydaelynStates : StateMachineBuilder
 
     private void Lightwave1(uint id, float delay)
     {
-        Cast(id, AID.LightwaveSword, delay, 4, "Lightwave1");
+        Cast(id, (uint)AID.LightwaveSword, delay, 4, "Lightwave1");
         ComponentCondition<Lightwave1>(id + 0x1000, 12.1f, comp => comp.NumCasts > 0, "Crystal1")
             .ActivateOnEnter<Lightwave1>()
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<Lightwave1>(id + 0x2000, 2.1f, comp => comp.NumCasts > 1, "Crystal2");
-        CastStart(id + 0x3000, AID.InfralateralArc, 1.3f)
+        CastStart(id + 0x3000, (uint)AID.InfralateralArc, 1.3f)
             .ActivateOnEnter<InfralateralArc>();
         CastEnd(id + 0x3001, 4.9f, "InfralateralArc");
         ComponentCondition<Lightwave1>(id + 0x4000, 1.3f, comp => comp.NumCasts > 2, "Crystal3")
@@ -137,15 +137,15 @@ class Ex2HydaelynStates : StateMachineBuilder
 
     private void Lightwave2(uint id, float delay)
     {
-        Cast(id, AID.LightwaveSword, delay, 4, "Lightwave2");
-        Cast(id + 0x1000, AID.HerosGlory, 4.7f, 5, "Glory1")
+        Cast(id, (uint)AID.LightwaveSword, delay, 4, "Lightwave2");
+        Cast(id + 0x1000, (uint)AID.HerosGlory, 4.7f, 5, "Glory1")
             .ActivateOnEnter<Lightwave2>() // note that we don't show any hints until first glory starts casting, since it's a bit misleading...
             .SetHint(StateMachine.StateHint.PositioningStart);
         ComponentCondition<Lightwave2>(id + 0x2000, 4.6f, comp => comp.NumCasts > 0, "Crystal1");
         ComponentCondition<Lightwave2>(id + 0x3000, 3.0f, comp => comp.NumCasts > 1);
         ComponentCondition<Lightwave2>(id + 0x4000, 2.9f, comp => comp.NumCasts > 2);
         ComponentCondition<Lightwave2>(id + 0x5000, 3.0f, comp => comp.NumCasts > 3);
-        Cast(id + 0x6000, AID.HerosGlory, 0.5f, 5, "Glory2");
+        Cast(id + 0x6000, (uint)AID.HerosGlory, 0.5f, 5, "Glory2");
         ComponentCondition<Lightwave2>(id + 0x7000, 1.3f, comp => comp.NumCasts > 4, "Resolve")
             .DeactivateOnExit<Lightwave2>()
             .SetHint(StateMachine.StateHint.PositioningEnd);
@@ -154,8 +154,8 @@ class Ex2HydaelynStates : StateMachineBuilder
     // note: keeps Lightwave3 component active, since it is relevant for next mechanic
     private void Lightwave3(uint id, float delay)
     {
-        CastMulti(id, [AID.LightwaveSword, AID.LightwaveStaff, AID.LightwaveChakram], delay, 4, "Lightwave");
-        CastStartMulti(id + 0x1000, [AID.EchoesSword, AID.EchoesStaff, AID.EchoesChakram], 15.2f)
+        CastMulti(id, [(uint)AID.LightwaveSword, (uint)AID.LightwaveStaff, (uint)AID.LightwaveChakram], delay, 4, "Lightwave");
+        CastStartMulti(id + 0x1000, [(uint)AID.EchoesSword, (uint)AID.EchoesStaff, (uint)AID.EchoesChakram], 15.2f)
             .ActivateOnEnter<Lightwave3>()
             .ActivateOnEnter<Echoes>(); // note that icon appears slightly before cast start...
         CastEnd(id + 0x1001, 5, "Stack");
@@ -171,19 +171,19 @@ class Ex2HydaelynStates : StateMachineBuilder
 
     private void HerosRadiance(uint id, float delay)
     {
-        Cast(id, AID.HerosRadiance, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.HerosRadiance, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void MagosRadiance(uint id, float delay)
     {
-        Cast(id, AID.MagosRadiance, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.MagosRadiance, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void MousaScorn(uint id, float delay)
     {
-        Cast(id, AID.MousaScorn, delay, 5, "Shared Tankbuster")
+        Cast(id, (uint)AID.MousaScorn, delay, 5, "Shared Tankbuster")
             .ActivateOnEnter<MousaScorn>()
             .DeactivateOnExit<MousaScorn>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -191,19 +191,19 @@ class Ex2HydaelynStates : StateMachineBuilder
 
     private void Halo(uint id, float delay)
     {
-        Cast(id, AID.Halo, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.Halo, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void RadiantHalo(uint id, float delay)
     {
-        Cast(id, AID.RadiantHalo, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.RadiantHalo, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void HerosSundering(uint id, float delay)
     {
-        Cast(id, AID.HerosSundering, delay, 5, "AOE Tankbuster")
+        Cast(id, (uint)AID.HerosSundering, delay, 5, "AOE Tankbuster")
             .ActivateOnEnter<HerosSundering>()
             .DeactivateOnExit<HerosSundering>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -212,7 +212,7 @@ class Ex2HydaelynStates : StateMachineBuilder
     private void ShiningSaber(uint id, float delay)
     {
         // note: resolve happens slightly after cast, but variance is too large (0.2-0.5s), so just ignore it...
-        Cast(id, AID.ShiningSaber, delay, 4.9f, "Stack")
+        Cast(id, (uint)AID.ShiningSaber, delay, 4.9f, "Stack")
             .ActivateOnEnter<ShiningSaber>()
             .DeactivateOnExit<ShiningSaber>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -221,23 +221,15 @@ class Ex2HydaelynStates : StateMachineBuilder
     private State Aureole(uint id, float delay)
     {
         // note: what is the difference between aureole spells? seems to be determined by weapon?..
-        CastMulti(id, [AID.Aureole1, AID.Aureole2, AID.LateralAureole1, AID.LateralAureole2], delay, 5)
-            .ActivateOnEnter<Aureole>()
-            .ActivateOnEnter<Aureole1>()
-            .ActivateOnEnter<Aureole2>()
-            .ActivateOnEnter<LateralAureole1>()
-            .ActivateOnEnter<LateralAureole2>();
-        return ComponentCondition<Aureole>(id + 2, 0.5f, comp => comp.Done, "Aureole")
-            .DeactivateOnExit<Aureole>()
-            .DeactivateOnExit<Aureole1>()
-            .DeactivateOnExit<Aureole2>()
-            .DeactivateOnExit<LateralAureole1>()
-            .DeactivateOnExit<LateralAureole2>();
+        CastMulti(id, [(uint)AID.Aureole1, (uint)AID.Aureole2, (uint)AID.LateralAureole1, (uint)AID.LateralAureole2], delay, 5f)
+            .ActivateOnEnter<Aureole>();
+        return ComponentCondition<Aureole>(id + 2, 0.5f, comp => comp.NumCasts != 0, "Aureole")
+            .DeactivateOnExit<Aureole>();
     }
 
     private void ParhelicCircle(uint id, float delay)
     {
-        Cast(id, AID.ParhelicCircle, delay, 6, "Orbs")
+        Cast(id, (uint)AID.ParhelicCircle, delay, 6, "Orbs")
             .ActivateOnEnter<ParhelicCircle>();
         ComponentCondition<ParhelicCircle>(id + 0x10, 1.9f, comp => comp.NumCasts > 0, "Orbs resolve")
             .DeactivateOnExit<ParhelicCircle>();
@@ -253,7 +245,7 @@ class Ex2HydaelynStates : StateMachineBuilder
     private State CrystallizeCast(uint id, float delay, string name = "Crystallize")
     {
         // note: there are several crystallize spells, concrete is determined by element and current weapon; weapon to switch to doesn't seem to matter
-        return CastMulti(id, [AID.CrystallizeSwordStaffWater, AID.CrystallizeStaffEarth, AID.CrystallizeStaffIce, AID.CrystallizeChakramIce, AID.CrystallizeChakramEarth, AID.CrystallizeChakramWater], delay, 4, name)
+        return CastMulti(id, [(uint)AID.CrystallizeSwordStaffWater, (uint)AID.CrystallizeStaffEarth, (uint)AID.CrystallizeStaffIce, (uint)AID.CrystallizeChakramIce, (uint)AID.CrystallizeChakramEarth, (uint)AID.CrystallizeChakramWater], delay, 4, name)
             .ActivateOnEnter<Crystallize>()
             .SetHint(StateMachine.StateHint.PositioningStart);
     }
@@ -283,10 +275,10 @@ class Ex2HydaelynStates : StateMachineBuilder
 
     private void ParhelionCrystallizeAureole(uint id, float delay)
     {
-        Cast(id, AID.Parhelion, delay, 5, "Parhelion")
+        Cast(id, (uint)AID.Parhelion, delay, 5, "Parhelion")
             .ActivateOnEnter<Parhelion>();
         CrystallizeCast(id + 0x1000, 4.8f, "Crystallize (water)");
-        Cast(id + 0x2000, AID.Subparhelion, 3.2f, 5, "Subparhelion");
+        Cast(id + 0x2000, (uint)AID.Subparhelion, 3.2f, 5, "Subparhelion");
         CrystallizeResolve(id + 0x2800, 2, "Water resolve");
         Aureole(id + 0x3000, 3.3f) // note that aureole cast starts slightly before last subparhelion resolves
             .DeactivateOnExit<Parhelion>(); // note that last beacon happens slightly after cast start

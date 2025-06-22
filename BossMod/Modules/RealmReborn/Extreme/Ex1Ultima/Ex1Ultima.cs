@@ -1,15 +1,15 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RadiantPlume), 8);
-class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WeightOfTheLand), 6);
-class Eruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Eruption), 8);
+class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlume, 8);
+class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLand, 6);
+class Eruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Eruption, 8);
 
-abstract class MagitekRay(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40, 3));
-class MagitekRayCenter(BossModule module) : MagitekRay(module, AID.MagitekRayCenter);
-class MagitekRayLeft(BossModule module) : MagitekRay(module, AID.MagitekRayLeft);
-class MagitekRayRight(BossModule module) : MagitekRay(module, AID.MagitekRayRight);
+abstract class MagitekRay(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40, 3));
+class MagitekRayCenter(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayCenter);
+class MagitekRayLeft(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayLeft);
+class MagitekRayRight(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayRight);
 
-class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AssaultCannon), new AOEShapeRect(45, 1));
+class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCannon, new AOEShapeRect(45, 1));
 
 // TODO: homing lasers & ceruleum vent? do we care? damage is not high, and visual clutter sucks
 // TODO: diffractive laser cleave? do we care?.. it's a bit problematic, since it shouldn't be active when many other mechanics are in progress, and it doesn't really add much value...

@@ -3,7 +3,7 @@
 namespace BossMod.Components;
 
 // generic knockback/attract component; it's a cast counter for convenience
-public abstract class GenericKnockback(BossModule module, ActionID aid = new(), bool ignoreImmunes = false, int maxCasts = int.MaxValue, bool stopAtWall = false, bool stopAfterWall = false, List<SafeWall>? safeWalls = null) : CastCounter(module, aid)
+public abstract class GenericKnockback(BossModule module, uint aid = default, bool ignoreImmunes = false, int maxCasts = int.MaxValue, bool stopAtWall = false, bool stopAfterWall = false, List<SafeWall>? safeWalls = null) : CastCounter(module, aid)
 {
     public enum Kind
     {
@@ -71,14 +71,28 @@ public abstract class GenericKnockback(BossModule module, ActionID aid = new(), 
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (CalculateMovements(slot, actor).Any(e => DestinationUnsafe(slot, actor, e.to)))
-            hints.Add("About to be knocked into danger!");
+        var movements = CalculateMovements(slot, actor);
+        var count = movements.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var movement = movements[i];
+            if (DestinationUnsafe(slot, actor, movement.to))
+            {
+                hints.Add("About to be knocked into danger!");
+                break;
+            }
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var e in CalculateMovements(pcSlot, pc))
+        var movements = CalculateMovements(pcSlot, pc);
+        var count = movements.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var e = movements[i];
             DrawKnockback(e.from, e.to, pc.Rotation, Arena);
+        }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
@@ -87,16 +101,16 @@ public abstract class GenericKnockback(BossModule module, ActionID aid = new(), 
         if (slot >= 0)
             switch (status.ID)
             {
-                case 3054: //Guard in PVP
+                case 3054u: //Guard in PVP
                 case (uint)WHM.SID.Surecast:
                 case (uint)WAR.SID.ArmsLength:
                     PlayerImmunes[slot].RoleBuffExpire = status.ExpireAt;
                     break;
-                case 1722: //Bluemage Diamondback
+                case 1722u: //Bluemage Diamondback
                 case (uint)WAR.SID.InnerStrength:
                     PlayerImmunes[slot].JobBuffExpire = status.ExpireAt;
                     break;
-                case 2345: //Lost Manawall in Bozja
+                case 2345u: //Lost Manawall in Bozja
                     PlayerImmunes[slot].DutyBuffExpire = status.ExpireAt;
                     break;
             }
@@ -108,17 +122,17 @@ public abstract class GenericKnockback(BossModule module, ActionID aid = new(), 
         if (slot >= 0)
             switch (status.ID)
             {
-                case 3054: //Guard in PVP
+                case 3054u: //Guard in PVP
                 case (uint)WHM.SID.Surecast:
                 case (uint)WAR.SID.ArmsLength:
-                    PlayerImmunes[slot].RoleBuffExpire = new();
+                    PlayerImmunes[slot].RoleBuffExpire = default;
                     break;
-                case 1722: //Bluemage Diamondback
+                case 1722u: //Bluemage Diamondback
                 case (uint)WAR.SID.InnerStrength:
-                    PlayerImmunes[slot].JobBuffExpire = new();
+                    PlayerImmunes[slot].JobBuffExpire = default;
                     break;
-                case 2345: //Lost Manawall in Bozja
-                    PlayerImmunes[slot].DutyBuffExpire = new();
+                case 2345u: //Lost Manawall in Bozja
+                    PlayerImmunes[slot].DutyBuffExpire = default;
                     break;
             }
     }
@@ -130,8 +144,11 @@ public abstract class GenericKnockback(BossModule module, ActionID aid = new(), 
         var movements = new List<(WPos, WPos)>();
         var from = actor.Position;
         var count = 0;
-        foreach (var s in ActiveKnockbacks(slot, actor))
+        var activeKnockbacks = ActiveKnockbacks(slot, actor);
+        var len = activeKnockbacks.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var s = activeKnockbacks[i];
             if (IsImmune(slot, s.Activation))
                 continue; // this source won't affect player due to immunity
             if (s.Shape != null && !s.Shape.Check(from, s.Origin, s.Direction))
@@ -173,9 +190,9 @@ public abstract class GenericKnockback(BossModule module, ActionID aid = new(), 
             if (countW != 0)
             {
                 var distanceToWall = float.MaxValue;
-                for (var i = 0; i < countW; ++i)
+                for (var j = 0; j < countW; ++j)
                 {
-                    var wall = walls[i];
+                    var wall = walls[j];
                     var t = Intersect.RaySegment(from, dir, wall.Vertex1, wall.Vertex2);
                     if (t < distanceToWall && t <= s.Distance)
                         distanceToWall = t;
@@ -199,7 +216,7 @@ public abstract class GenericKnockback(BossModule module, ActionID aid = new(), 
 
 // generic 'knockback from/attract to cast target' component
 // TODO: knockback is really applied when effectresult arrives rather than when actioneffect arrives, this is important for ai hints (they can reposition too early otherwise)
-public class SimpleKnockbacks(BossModule module, ActionID aid, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = 0, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false, List<SafeWall>? safeWalls = null)
+public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false, List<SafeWall>? safeWalls = null)
     : GenericKnockback(module, aid, ignoreImmunes, maxCasts, stopAtWall, stopAfterWall, safeWalls)
 {
     public readonly float Distance = distance;
@@ -214,12 +231,12 @@ public class SimpleKnockbacks(BossModule module, ActionID aid, float distance, b
         var count = Casters.Count;
         if (count == 0)
             return [];
-        var knockbacks = new Knockback[count];
+        Span<Knockback> knockbacks = new Knockback[count];
         for (var i = 0; i < count; ++i)
         {
             var c = Casters[i];
             // note that majority of knockback casts are self-targeted
-            var minDist = MinDistance + (MinDistanceBetweenHitboxes ? actor.HitboxRadius + c.HitboxRadius : 0);
+            var minDist = MinDistance + (MinDistanceBetweenHitboxes ? actor.HitboxRadius + c.HitboxRadius : default);
             if (c.CastInfo!.TargetID == c.InstanceID)
             {
                 knockbacks[i] = new(c.CastInfo.LocXZ, Distance, Module.CastFinishAt(c.CastInfo), Shape, c.CastInfo.Rotation, KnockbackKind, minDist);
@@ -235,13 +252,59 @@ public class SimpleKnockbacks(BossModule module, ActionID aid, float distance, b
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Casters.Add(caster);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Casters.Remove(caster);
+    }
+}
+
+public class SimpleKnockbackGroups(BossModule module, uint[] aids, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false, List<SafeWall>? safeWalls = null) : SimpleKnockbacks(module, default, distance, ignoreImmunes, maxCasts, shape, kind, minDistance, minDistanceBetweenHitboxes, stopAtWall, stopAfterWall, safeWalls)
+{
+    protected readonly uint[] AIDs = aids;
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        var len = AIDs.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            if (spell.Action.ID == AIDs[i])
+            {
+                Casters.Add(caster);
+                return;
+            }
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        // we probably dont need to check for AIDs here since actorID should already be unique to any active spell
+        var count = Casters.Count;
+        var id = caster.InstanceID;
+        for (var i = 0; i < count; ++i)
+        {
+            if (Casters[i].InstanceID == id)
+            {
+                Casters.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        var len = AIDs.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            if (spell.Action.ID == AIDs[i])
+            {
+                ++NumCasts;
+                return;
+            }
+        }
     }
 }

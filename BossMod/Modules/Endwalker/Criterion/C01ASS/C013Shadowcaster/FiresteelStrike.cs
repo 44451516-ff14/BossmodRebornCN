@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C01ASS.C013Shadowcaster;
 
-class FiresteelStrike : Components.UniformStackSpread
+sealed class FiresteelStrike : Components.UniformStackSpread
 {
     public int NumJumps;
     public int NumCleaves;
@@ -44,7 +44,7 @@ class FiresteelStrike : Components.UniformStackSpread
         if (NumJumps >= 2 && NumCleaves < _jumpTargets.Count)
         {
             var target = _jumpTargets[NumCleaves];
-            _cleaveShape.Draw(Arena, Module.PrimaryActor.Position, Angle.FromDirection(target.Position - Module.PrimaryActor.Position), target == pc || _interceptors.Contains(pc) ? Colors.SafeFromAOE : Colors.AOE);
+            _cleaveShape.Draw(Arena, Module.PrimaryActor.Position, Angle.FromDirection(target.Position - Module.PrimaryActor.Position), target == pc || _interceptors.Contains(pc) ? Colors.SafeFromAOE : default);
         }
     }
 

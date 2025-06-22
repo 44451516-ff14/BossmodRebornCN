@@ -1,8 +1,8 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class ElectrifyingWitchHuntBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElectrifyingWitchHuntBurst), new AOEShapeRect(40f, 8f));
+sealed class ElectrifyingWitchHuntBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectrifyingWitchHuntBurst, new AOEShapeRect(40f, 8f));
 
-class ElectrifyingWitchHuntSpread(BossModule module) : Components.UniformStackSpread(module, default, 6f)
+sealed class ElectrifyingWitchHuntSpread(BossModule module) : Components.UniformStackSpread(module, default, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -17,7 +17,7 @@ class ElectrifyingWitchHuntSpread(BossModule module) : Components.UniformStackSp
     }
 }
 
-class ElectrifyingWitchHuntResolve(BossModule module) : Components.GenericStackSpread(module)
+sealed class ElectrifyingWitchHuntResolve(BossModule module) : Components.GenericStackSpread(module)
 {
     public enum Mechanic { None, Near, Far }
 

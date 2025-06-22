@@ -19,8 +19,8 @@ public enum AID : uint
     Icestorm = 33991, // Boss->self, 3.0s cast, range 16 90-degree cone
 }
 
-class AquaticLance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AquaticLance), 8);
-class Icestorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Icestorm), new AOEShapeCone(16, 45.Degrees()));
+class AquaticLance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaticLance, 8);
+class Icestorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icestorm, new AOEShapeCone(16, 45.Degrees()));
 
 class D120HaamOtodusStates : StateMachineBuilder
 {

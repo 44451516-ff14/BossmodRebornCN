@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
-class FlareTowers(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.FlareAOE), 5f, 4, 4);
+class FlareTowers(BossModule module) : Components.CastTowers(module, (uint)AID.FlareAOE, 5f, 4, 4);
 
 class FlareScald(BossModule module) : Components.GenericAOEs(module)
 {
@@ -25,12 +25,12 @@ class FlareScald(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ProminenceSpine(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ProminenceSpine), new AOEShapeRect(60f, 5f));
-class SparklingBrandingFlare(BossModule module) : Components.CastStackSpread(module, ActionID.MakeSpell(AID.BrandingFlareAOE), ActionID.MakeSpell(AID.SparkingFlareAOE), 4f, 4f);
+class ProminenceSpine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProminenceSpine, new AOEShapeRect(60f, 5f));
+class SparklingBrandingFlare(BossModule module) : Components.CastStackSpread(module, (uint)AID.BrandingFlareAOE, (uint)AID.SparkingFlareAOE, 4f, 4f);
 
 class Nox : Components.StandardChasingAOEs
 {
-    public Nox(BossModule module) : base(module, new AOEShapeCircle(10f), ActionID.MakeSpell(AID.NoxAOEFirst), ActionID.MakeSpell(AID.NoxAOERest), 5.5f, 1.6f, 5)
+    public Nox(BossModule module) : base(module, new AOEShapeCircle(10f), (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6f, 5)
     {
         ExcludedTargets = Raid.WithSlot(true, true, true).Mask();
     }

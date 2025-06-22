@@ -12,14 +12,19 @@ class TOPStates : StateMachineBuilder
         SimplePhase(0, Phase1, "P1: Beetle")
             .Raw.Update = () => Module.PrimaryActor.IsDestroyed || !Module.PrimaryActor.IsTargetable;
         SimplePhase(1, Phase2, "P2: M/F")
+            .SetHint(StateMachine.PhaseHint.StartWithDowntime)
             .Raw.Update = () => (_module.OpticalUnit()?.IsDestroyed ?? true) || IsEffectivelyDead(_module.BossP2M()) && IsEffectivelyDead(_module.BossP2F());
         SimplePhase(2, Phase3, "P3: Final")
+            .SetHint(StateMachine.PhaseHint.StartWithDowntime)
             .Raw.Update = () => (_module.OpticalUnit()?.IsDestroyed ?? true) || IsEffectivelyDead(_module.BossP3());
         SimplePhase(3, Phase4, "P4: Blue Screen")
+            .SetHint(StateMachine.PhaseHint.StartWithDowntime)
             .Raw.Update = () => (_module.OpticalUnit()?.IsDestroyed ?? true) || _module.FindComponent<P4BlueScreen>()?.NumCasts > 0;
         SimplePhase(4, Phase5, "P5: M/F Repeat")
+            .SetHint(StateMachine.PhaseHint.StartWithDowntime)
             .Raw.Update = () => (_module.OpticalUnit()?.IsDestroyed ?? true) || (_module.FindComponent<P5BlindFaith>()?.Active ?? false);
         SimplePhase(5, Phase6, "P6: Alpha")
+            .SetHint(StateMachine.PhaseHint.StartWithDowntime)
             .Raw.Update = () => _module.OpticalUnit()?.IsDestroyed ?? true;
     }
 
@@ -28,7 +33,7 @@ class TOPStates : StateMachineBuilder
         P1ProgramLoop(id, 10.2f);
         P1Pantokrator(id + 0x10000, 8.2f);
         P1WaveCannons(id + 0x20000, 6.7f);
-        ActorCast(id + 0x30000, _module.BossP1, AID.AtomicRay, 5.8f, 5, true, "Enrage");
+        ActorCast(id + 0x30000, _module.BossP1, (uint)AID.AtomicRay, 5.8f, 5, true, "Enrage");
     }
 
     private void Phase2(uint id)
@@ -43,7 +48,7 @@ class TOPStates : StateMachineBuilder
         P3Intermission(id, 9.3f);
         P3HelloWorld(id + 0x10000, 4.2f);
         P3OversampledWaveCannon(id + 0x20000, 11.5f);
-        ActorCast(id + 0x30000, _module.BossP3, AID.IonEfflux, 6.0f, 10, true, "Enrage");
+        ActorCast(id + 0x30000, _module.BossP3, (uint)AID.IonEfflux, 6.0f, 10, true, "Enrage");
     }
 
     private void Phase4(uint id)
@@ -54,7 +59,8 @@ class TOPStates : StateMachineBuilder
 
     private void Phase5(uint id)
     {
-        ActorTargetable(id, _module.BossP5, true, 15.5f, "Boss appears");
+        ActorTargetable(id, _module.BossP5, true, 15.5f, "Boss appears")
+            .SetHint(StateMachine.StateHint.DowntimeEnd);
         P5SolarRay(id + 0x10000, 3.1f, false);
         P5RunMiDelta(id + 0x20000, 8.4f);
         P5SolarRay(id + 0x30000, 9.2f, false);
@@ -62,7 +68,7 @@ class TOPStates : StateMachineBuilder
         P5SolarRay(id + 0x50000, 4.1f, true);
         P5RunMiOmega(id + 0x60000, 8.5f);
         P5SolarRay(id + 0x70000, 4.1f, true);
-        ActorCast(id + 0x80000, _module.BossP5, AID.BlindFaith, 8.9f, 10, true, "Enrage")
+        ActorCast(id + 0x80000, _module.BossP5, (uint)AID.BlindFaith, 8.9f, 10, true, "Enrage")
             .ActivateOnEnter<P5BlindFaith>();
     }
 
@@ -84,9 +90,9 @@ class TOPStates : StateMachineBuilder
 
     private void P1ProgramLoop(uint id, float delay)
     {
-        ActorCast(id, _module.BossP1, AID.ProgramLoop, delay, 4, true)
+        ActorCast(id, _module.BossP1, (uint)AID.ProgramLoop, delay, 4, true)
             .ActivateOnEnter<P1ProgramLoop>();
-        ActorCast(id + 0x10, _module.BossP1, AID.Blaster, 6.2f, 7.9f, true);
+        ActorCast(id + 0x10, _module.BossP1, (uint)AID.Blaster, 6.2f, 7.9f, true);
         // note: tethers explode ~0.1s after each tower set
         ComponentCondition<P1ProgramLoop>(id + 0x20, 0.1f, comp => comp.NumTowersDone >= 2, "Towers 1/tethers 3");
         ComponentCondition<P1ProgramLoop>(id + 0x30, 9.0f, comp => comp.NumTowersDone >= 4, "Towers 2/tethers 4");
@@ -97,7 +103,7 @@ class TOPStates : StateMachineBuilder
 
     private void P1Pantokrator(uint id, float delay)
     {
-        ActorCast(id, _module.BossP1, AID.Pantokrator, delay, 5, true);
+        ActorCast(id, _module.BossP1, (uint)AID.Pantokrator, delay, 5, true);
         ComponentCondition<P1Pantokrator>(id + 0x10, 12.1f, comp => comp.NumSpreadsDone >= 2, "Spread 1/stack 3")
             .ActivateOnEnter<P1Pantokrator>()
             .ActivateOnEnter<P1BallisticImpact>()
@@ -128,9 +134,10 @@ class TOPStates : StateMachineBuilder
 
     private void P2FirewallSolarRay(uint id, float delay)
     {
-        ActorTargetable(id, _module.BossP2M, true, delay, "M/F appear");
-        ActorCast(id + 0x10, _module.BossP2M, AID.FirewallM, 1.2f, 3);
-        ActorCast(id + 0x20, _module.BossP2M, AID.SolarRayM, 3.2f, 5, false, "Tankbusters")
+        ActorTargetable(id, _module.BossP2M, true, delay, "M/F appear")
+            .SetHint(StateMachine.StateHint.DowntimeEnd);
+        ActorCast(id + 0x10, _module.BossP2M, (uint)AID.FirewallM, 1.2f, 3);
+        ActorCast(id + 0x20, _module.BossP2M, (uint)AID.SolarRayM, 3.2f, 5, false, "Tankbusters")
             .ActivateOnEnter<SolarRayM>()
             .ActivateOnEnter<SolarRayF>()
             .DeactivateOnExit<SolarRayM>()
@@ -140,7 +147,7 @@ class TOPStates : StateMachineBuilder
 
     private void P2PartySynergy(uint id, float delay)
     {
-        ActorCast(id, _module.BossP2M, AID.PartySynergyM, delay, 3);
+        ActorCast(id, _module.BossP2M, (uint)AID.PartySynergyM, delay, 3);
         ActorTargetable(id + 0x10, _module.BossP2M, false, 3.1f, "M/F disappear")
             .ActivateOnEnter<P2PartySynergy>()
             .SetHint(StateMachine.StateHint.DowntimeStart);
@@ -177,9 +184,9 @@ class TOPStates : StateMachineBuilder
 
     private void P2LimitlessSynergy(uint id, float delay)
     {
-        ActorCast(id, _module.BossP2F, AID.SyntheticShield, delay, 1, true);
-        ActorCast(id + 0x10, _module.BossP2M, AID.LimitlessSynergyF, 5.3f, 5, true, "Remove debuffs");
-        ActorCastStart(id + 0x20, _module.BossP2M, AID.LaserShower, 5.0f, false, "F invincible")
+        ActorCast(id, _module.BossP2F, (uint)AID.SyntheticShield, delay, 1, true);
+        ActorCast(id + 0x10, _module.BossP2M, (uint)AID.LimitlessSynergyF, 5.3f, 5, true, "Remove debuffs");
+        ActorCastStart(id + 0x20, _module.BossP2M, (uint)AID.LaserShower, 5.0f, false, "F invincible")
             .ActivateOnEnter<P2OptimizedPassageOfArms>();
         ComponentCondition<P2OptimizedBladedance>(id + 0x30, 8.4f, comp => comp.NumCasts > 0, "Baited rect + Tankbusters")
             .ActivateOnEnter<P2OptimizedBladedance>()
@@ -229,41 +236,42 @@ class TOPStates : StateMachineBuilder
             .DeactivateOnExit<P3ColossalBlow>();
 
         ActorTargetable(id + 0x100, _module.BossP3, true, 3.5f, "Boss reappears")
+            .SetHint(StateMachine.StateHint.DowntimeEnd)
             .DeactivateOnExit<P3IntermissionVoidzone>(); // voidzone disappears ~1.6s before boss appears
     }
 
     private void P3HelloWorld(uint id, float delay)
     {
-        ActorCast(id, _module.BossP3, AID.HelloWorld, delay, 5, true, "Hello World start + Raidwide")
+        ActorCast(id, _module.BossP3, (uint)AID.HelloWorld, delay, 5, true, "Hello World start + Raidwide")
             .ActivateOnEnter<P3HelloWorld>()
             .SetHint(StateMachine.StateHint.Raidwide);
         // +3.0s: initial smells -> bugs
 
-        ActorCast(id + 0x10, _module.BossP3, AID.LatentDefect, 14.2f, 9, true); // ~0.1s before this cast ends first tethers are activated
+        ActorCast(id + 0x10, _module.BossP3, (uint)AID.LatentDefect, 14.2f, 9, true); // ~0.1s before this cast ends first tethers are activated
         ComponentCondition<P3HelloWorld>(id + 0x12, 1, comp => comp.NumCasts > 0, "Towers 1");
         ComponentCondition<P3HelloWorld>(id + 0x13, 6, comp => comp.NumRotExplodes > 0);
         // +3.0s: tether break deadline
 
-        ActorCast(id + 0x20, _module.BossP3, AID.LatentDefect, 5.1f, 9, true);
+        ActorCast(id + 0x20, _module.BossP3, (uint)AID.LatentDefect, 5.1f, 9, true);
         ComponentCondition<P3HelloWorld>(id + 0x22, 1, comp => comp.NumCasts > 4, "Towers 2");
         //ComponentCondition<P3HelloWorld>(id + 0x23, 6, comp => comp.NumRotExplodes > 4, "Rots 2"); // note: rot 2+ explosion depends on how fast people pick it up
 
-        ActorCast(id + 0x30, _module.BossP3, AID.LatentDefect, 11.1f, 9, true);
+        ActorCast(id + 0x30, _module.BossP3, (uint)AID.LatentDefect, 11.1f, 9, true);
         ComponentCondition<P3HelloWorld>(id + 0x32, 1, comp => comp.NumCasts > 8, "Towers 3");
         //ComponentCondition<P3HelloWorld>(id + 0x33, 6, comp => comp.NumRotExplodes > 8, "Rots 3");
 
-        ActorCast(id + 0x40, _module.BossP3, AID.LatentDefect, 11.1f, 9, true);
+        ActorCast(id + 0x40, _module.BossP3, (uint)AID.LatentDefect, 11.1f, 9, true);
         ComponentCondition<P3HelloWorld>(id + 0x42, 1, comp => comp.NumCasts > 12, "Towers 4");
         //ComponentCondition<P3HelloWorld>(id + 0x43, 6, comp => comp.NumRotExplodes > 12, "Rots 4");
 
-        ActorCast(id + 0x50, _module.BossP3, AID.CriticalError, 13.2f, 8, true, "Hello World resolve + Raidwide")
+        ActorCast(id + 0x50, _module.BossP3, (uint)AID.CriticalError, 13.2f, 8, true, "Hello World resolve + Raidwide")
             .DeactivateOnExit<P3HelloWorld>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P3OversampledWaveCannon(uint id, float delay)
     {
-        ActorCastMulti(id, _module.BossP3, [AID.OversampledWaveCannonR, AID.OversampledWaveCannonL], delay, 10, true)
+        ActorCastMulti(id, _module.BossP3, [(uint)AID.OversampledWaveCannonR, (uint)AID.OversampledWaveCannonL], delay, 10, true)
             .ActivateOnEnter<P3OversampledWaveCannon>()
             .ActivateOnEnter<P3OversampledWaveCannonSpread>()
             .DeactivateOnExit<P3OversampledWaveCannon>();
@@ -273,8 +281,9 @@ class TOPStates : StateMachineBuilder
 
     private void P4WaveCannon(uint id, float delay)
     {
-        ActorTargetable(id, _module.BossP3, true, delay, "Boss reappear");
-        ActorCast(id + 0x10, _module.BossP3, AID.P4WaveCannonVisualStart, 9.3f, 5, true)
+        ActorTargetable(id, _module.BossP3, true, delay, "Boss reappear")
+            .SetHint(StateMachine.StateHint.DowntimeEnd);
+        ActorCast(id + 0x10, _module.BossP3, (uint)AID.P4WaveCannonVisualStart, 9.3f, 5, true)
             .ActivateOnEnter<P4WaveCannonProtean>()
             .ActivateOnEnter<P4WaveCannonStack>(); // ~2.5s into cast: targets for stacks 1
         // +0.1s: baits
@@ -316,7 +325,7 @@ class TOPStates : StateMachineBuilder
 
     private void P4BlueScreen(uint id, float delay)
     {
-        ActorCast(id, _module.BossP3, AID.BlueScreen, delay, 8, true);
+        ActorCast(id, _module.BossP3, (uint)AID.BlueScreen, delay, 8, true);
         ComponentCondition<P4BlueScreen>(id + 2, 1, comp => comp.NumCasts > 0, "Enrage", 100)
             .ActivateOnEnter<P4BlueScreen>()
             .DeactivateOnExit<P4BlueScreen>();
@@ -324,7 +333,7 @@ class TOPStates : StateMachineBuilder
 
     private void P5SolarRay(uint id, float delay, bool afterModelChange)
     {
-        ActorCast(id, _module.BossP5, afterModelChange ? AID.P5SolarRayF : AID.P5SolarRayM, delay, 5, true, "Tankbuster 1")
+        ActorCast(id, _module.BossP5, afterModelChange ? (uint)AID.P5SolarRayF : (uint)AID.P5SolarRayM, delay, 5, true, "Tankbuster 1")
             .ActivateOnEnter<P5SolarRay>()
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<P5SolarRay>(id + 2, 3.2f, comp => comp.NumCasts > 1, "Tankbuster 2")
@@ -334,7 +343,7 @@ class TOPStates : StateMachineBuilder
 
     private void P5RunMiDelta(uint id, float delay)
     {
-        ActorCast(id, _module.BossP5, AID.RunMiDeltaVersion, delay, 5, true, "Trio 1 raidwide")
+        ActorCast(id, _module.BossP5, (uint)AID.RunMiDeltaVersion, delay, 5, true, "Trio 1 raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ActorTargetable(id + 0x10, _module.BossP5, false, 3.1f, "Boss disappears")
             .ActivateOnEnter<P5DeltaOpticalLaser>()
@@ -350,7 +359,7 @@ class TOPStates : StateMachineBuilder
             .DeactivateOnExit<P5DeltaOpticalLaser>();
         ComponentCondition<P5DeltaExplosion>(id + 0x51, 0.1f, comp => comp.Casters.Count > 0, "Puddles bait");
 
-        ActorCastStart(id + 0x60, _module.BossP5, AID.BeyondDefense, 0.3f, true) // note: monitors status + cast start happen right before, but we don't care yet...
+        ActorCastStart(id + 0x60, _module.BossP5, (uint)AID.BeyondDefense, 0.3f, true) // note: monitors status + cast start happen right before, but we don't care yet...
             .ActivateOnEnter<P5DeltaHyperPulse>();
         // second tether break happens somewhere here (outer blue)
         ComponentCondition<P5DeltaExplosion>(id + 0x61, 2.7f, comp => comp.NumCasts > 0)
@@ -385,7 +394,7 @@ class TOPStates : StateMachineBuilder
 
     private void P5RunMiSigma(uint id, float delay)
     {
-        ActorCast(id, _module.BossP5, AID.RunMiSigmaVersion, delay, 5, true, "Trio 2 raidwide")
+        ActorCast(id, _module.BossP5, (uint)AID.RunMiSigmaVersion, delay, 5, true, "Trio 2 raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ActorTargetable(id + 0x10, _module.BossP5, false, 3.1f, "Boss disappears")
             .ActivateOnEnter<P5Sigma>() // icons/tethers/statuses appear right as boss disappears
@@ -431,7 +440,7 @@ class TOPStates : StateMachineBuilder
 
     private void P5RunMiOmega(uint id, float delay)
     {
-        ActorCast(id, _module.BossP5, AID.RunMiOmegaVersion, delay, 5, true, "Trio 3 raidwide")
+        ActorCast(id, _module.BossP5, (uint)AID.RunMiOmegaVersion, delay, 5, true, "Trio 3 raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<P5OmegaNearDistantWorld>(id + 0x10, 3.1f, comp => comp.HaveDebuffs)
             .ActivateOnEnter<P5OmegaNearDistantWorld>();
@@ -478,21 +487,22 @@ class TOPStates : StateMachineBuilder
 
     private void P6CosmoMemory(uint id, float delay)
     {
-        ActorTargetable(id, _module.BossP6, true, delay, "Boss appears");
-        ActorCast(id + 0x1000, _module.BossP6, AID.P6CosmoMemory, 7.2f, 6, true, "Raidwide (tank LB3)")
+        ActorTargetable(id, _module.BossP6, true, delay, "Boss appears")
+            .SetHint(StateMachine.StateHint.DowntimeEnd);
+        ActorCast(id + 0x1000, _module.BossP6, (uint)AID.P6CosmoMemory, 7.2f, 6, true, "Raidwide (tank LB3)")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P6CosmoArrowCosmoDive(uint id, float delay)
     {
-        ActorCast(id, _module.BossP6, AID.CosmoArrow, delay, 6, true)
+        ActorCast(id, _module.BossP6, (uint)AID.CosmoArrow, delay, 6, true)
             .ActivateOnEnter<P6CosmoArrow>();
         ComponentCondition<P6CosmoArrow>(id + 0x10, 2, comp => comp.NumCasts > 0, "Exasquare 1");
         ComponentCondition<P6CosmoArrow>(id + 0x11, 2, comp => comp.NumCasts >= 10, "Exasquare 2");
         ComponentCondition<P6CosmoArrow>(id + 0x12, 2, comp => comp.NumCasts >= 18, "Exasquare 3");
         ComponentCondition<P6CosmoArrow>(id + 0x13, 2, comp => comp.NumCasts >= 26, "Exasquare 4");
 
-        ActorCastStart(id + 0x20, _module.BossP6, AID.CosmoDive, 1.1f, true);
+        ActorCastStart(id + 0x20, _module.BossP6, (uint)AID.CosmoDive, 1.1f, true);
         ComponentCondition<P6CosmoArrow>(id + 0x21, 0.9f, comp => comp.NumCasts >= (comp.CurPattern == P6CosmoArrow.Pattern.OutIn ? 34 : 30), "Exasquare 5") // depending on pattern, lines expanding outwards could have finished
             .ActivateOnEnter<P6CosmoDive>();
         ComponentCondition<P6CosmoArrow>(id + 0x22, 2, comp => comp.NumCasts >= (comp.CurPattern == P6CosmoArrow.Pattern.OutIn ? 38 : 34), "Exasquare 6");
@@ -507,14 +517,14 @@ class TOPStates : StateMachineBuilder
 
     private void P6UnlimitedWaveCannon(uint id, float delay)
     {
-        ActorCast(id, _module.BossP6, AID.UnlimitedWaveCannon, delay, 5, true)
+        ActorCast(id, _module.BossP6, (uint)AID.UnlimitedWaveCannon, delay, 5, true)
             .ActivateOnEnter<P6WaveCannonExaflare>();
         ComponentCondition<P6WaveCannonPuddle>(id + 0x10, 5, comp => comp.Casters.Count > 0, "Puddles bait")
             .ActivateOnEnter<P6WaveCannonPuddle>();
         ComponentCondition<P6WaveCannonExaflare>(id + 0x11, 2, comp => comp.NumCasts > 0, "Exaflares start");
         // new puddles are baited every 2s, exaflares have 1s delay between lines
 
-        ActorCastStart(id + 0x100, _module.BossP6, AID.P6WaveCannonProtean, 11.2f, true)
+        ActorCastStart(id + 0x100, _module.BossP6, (uint)AID.P6WaveCannonProtean, 11.2f, true)
             .DeactivateOnExit<P6WaveCannonPuddle>()
             .DeactivateOnExit<P6WaveCannonExaflare>(); // these resolve just before cast start
         ComponentCondition<P6WaveCannonProteans>(id + 0x101, 3, comp => comp.NumCasts > 0, "Proteans 1")
@@ -530,12 +540,12 @@ class TOPStates : StateMachineBuilder
 
     private void P6CosmoArrowWaveCannon(uint id, float delay)
     {
-        ActorCast(id, _module.BossP6, AID.CosmoArrow, delay, 6, true)
+        ActorCast(id, _module.BossP6, (uint)AID.CosmoArrow, delay, 6, true)
             .ActivateOnEnter<P6CosmoArrow>();
         ComponentCondition<P6CosmoArrow>(id + 0x10, 2, comp => comp.NumCasts > 0, "Exasquare 1");
         ComponentCondition<P6CosmoArrow>(id + 0x11, 2, comp => comp.NumCasts >= 10, "Exasquare 2");
         ComponentCondition<P6CosmoArrow>(id + 0x12, 2, comp => comp.NumCasts >= 18, "Exasquare 3");
-        ActorCastStart(id + 0x100, _module.BossP6, AID.P6WaveCannonProtean, 2, true, "Exasquare 4"); // cast starts at the same time as 4th exasquares
+        ActorCastStart(id + 0x100, _module.BossP6, (uint)AID.P6WaveCannonProtean, 2, true, "Exasquare 4"); // cast starts at the same time as 4th exasquares
         ComponentCondition<P6WaveCannonProteans>(id + 0x101, 3, comp => comp.NumCasts > 0, "Proteans 1")
             .ActivateOnEnter<P6WaveCannonProteans>();
         ComponentCondition<P6WaveCannonProteans>(id + 0x102, 2, comp => comp.NumCasts > 4, "Proteans 2")
@@ -550,13 +560,13 @@ class TOPStates : StateMachineBuilder
 
     private void P6UnlimitedWaveCannonCosmoDive(uint id, float delay)
     {
-        ActorCast(id, _module.BossP6, AID.UnlimitedWaveCannon, delay, 5, true)
+        ActorCast(id, _module.BossP6, (uint)AID.UnlimitedWaveCannon, delay, 5, true)
             .ActivateOnEnter<P6WaveCannonExaflare>();
         ComponentCondition<P6WaveCannonPuddle>(id + 0x10, 5, comp => comp.Casters.Count > 0, "Puddles bait")
             .ActivateOnEnter<P6WaveCannonPuddle>();
         ComponentCondition<P6WaveCannonExaflare>(id + 0x11, 2, comp => comp.NumCasts > 0, "Exaflares start");
 
-        ActorCast(id + 0x20, _module.BossP6, AID.CosmoDive, 6.2f, 5.6f, true)
+        ActorCast(id + 0x20, _module.BossP6, (uint)AID.CosmoDive, 6.2f, 5.6f, true)
             .ActivateOnEnter<P6CosmoDive>();
         ComponentCondition<P6CosmoDive>(id + 0x30, 2.5f, comp => !comp.Active, "Tankbusters + Stack")
             .DeactivateOnExit<P6CosmoDive>()
@@ -567,7 +577,7 @@ class TOPStates : StateMachineBuilder
 
     private void P6CosmoMeteor(uint id, float delay)
     {
-        ActorCast(id, _module.BossP6, AID.CosmoMeteor, delay, 5, true);
+        ActorCast(id, _module.BossP6, (uint)AID.CosmoMeteor, delay, 5, true);
         ComponentCondition<P6CosmoMeteorPuddles>(id + 0x10, 0.1f, comp => comp.Casters.Count > 0, "Puddles bait")
             .ActivateOnEnter<P6CosmoMeteorPuddles>();
         ComponentCondition<P6CosmoMeteorPuddles>(id + 0x20, 4.0f, comp => comp.NumCasts > 0)
@@ -590,9 +600,9 @@ class TOPStates : StateMachineBuilder
 
     private void P6MagicNumbers(uint id, float delay)
     {
-        ActorCast(id, _module.BossP6, AID.MagicNumber, delay, 5, true, "Tank+Heal LB 1");
-        ActorCast(id + 0x1000, _module.BossP6, AID.MagicNumber, 11.2f, 5, true, "Tank+Heal LB 2");
-        ActorCast(id + 0x2000, _module.BossP6, AID.RunMi, 9.1f, 16, true);
+        ActorCast(id, _module.BossP6, (uint)AID.MagicNumber, delay, 5, true, "Tank+Heal LB 1");
+        ActorCast(id + 0x1000, _module.BossP6, (uint)AID.MagicNumber, 11.2f, 5, true, "Tank+Heal LB 2");
+        ActorCast(id + 0x2000, _module.BossP6, (uint)AID.RunMi, 9.1f, 16, true);
         Timeout(id + 0x2010, 14, "Enrage"); // effect-result is extremely delayed...
     }
 }

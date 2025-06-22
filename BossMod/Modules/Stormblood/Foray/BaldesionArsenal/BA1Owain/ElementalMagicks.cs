@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA1Owain;
 
-class ElementalMagicks(BossModule module) : Components.GenericAOEs(module)
+sealed class ElementalMagicks(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(13f);
     public readonly List<AOEInstance> AOEs = new(5);

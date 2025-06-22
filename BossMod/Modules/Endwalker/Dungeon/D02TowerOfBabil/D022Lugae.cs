@@ -109,10 +109,10 @@ class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ThermalSuppression(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ThermalSuppression));
-class MightyRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), new AOEShapeRect(50f, 3f));
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), new AOEShapeCross(40f, 4f));
-class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SurfaceMissile), 6f);
+class ThermalSuppression(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThermalSuppression);
+class MightyRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(50f, 3f));
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeCross(40f, 4f));
+class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile, 6f);
 
 class D022LugaeStates : StateMachineBuilder
 {

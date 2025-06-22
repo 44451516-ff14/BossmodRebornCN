@@ -1,23 +1,23 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-abstract class LariatOut(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10);
-class OctupleLariatOut(BossModule module) : LariatOut(module, AID.OctupleLariatOutAOE);
-class QuadrupleLariatOut(BossModule module) : LariatOut(module, AID.QuadrupleLariatOutAOE);
+abstract class LariatOut(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f);
+sealed class OctupleLariatOut(BossModule module) : LariatOut(module, (uint)AID.OctupleLariatOutAOE);
+sealed class QuadrupleLariatOut(BossModule module) : LariatOut(module, (uint)AID.QuadrupleLariatOutAOE);
 
-abstract class LariatIn(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(10, 60));
-class OctupleLariatIn(BossModule module) : LariatIn(module, AID.OctupleLariatInAOE);
-class QuadrupleLariatIn(BossModule module) : LariatIn(module, AID.QuadrupleLariatInAOE);
+abstract class LariatIn(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(10f, 60f));
+sealed class OctupleLariatIn(BossModule module) : LariatIn(module, (uint)AID.OctupleLariatInAOE);
+sealed class QuadrupleLariatIn(BossModule module) : LariatIn(module, (uint)AID.QuadrupleLariatInAOE);
 
 // TODO: generalize to a conal stack/spread with role-based targets
-class BlazingLariat(BossModule module) : Components.CastCounter(module, default)
+sealed class BlazingLariat(BossModule module) : Components.CastCounter(module, default)
 {
     private Actor? _source;
     private bool _stack;
 
     private AOEShape ActiveShape => _stack ? _shapePairs : _shapeSpread;
 
-    private static readonly AOEShapeCone _shapeSpread = new(40, 22.5f.Degrees());
-    private static readonly AOEShapeCone _shapePairs = new(40, 10.Degrees());
+    private static readonly AOEShapeCone _shapeSpread = new(40f, 22.5f.Degrees());
+    private static readonly AOEShapeCone _shapePairs = new(40f, 10f.Degrees());
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -45,22 +45,22 @@ class BlazingLariat(BossModule module) : Components.CastCounter(module, default)
         if (_source != null)
         {
             var pcDir = Angle.FromDirection(pc.Position - _source.Position);
-            ActiveShape.Outline(Arena, _source.Position, pcDir, _stack ? Colors.Safe : Colors.Danger);
+            ActiveShape.Outline(Arena, _source.Position, pcDir, _stack ? Colors.Safe : default);
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.OctupleLariatIn or AID.OctupleLariatOut or AID.QuadrupleLariatIn or AID.QuadrupleLariatOut)
+        if (spell.Action.ID is (uint)AID.OctupleLariatIn or (uint)AID.OctupleLariatOut or (uint)AID.QuadrupleLariatIn or (uint)AID.QuadrupleLariatOut)
         {
             _source = caster;
-            _stack = (AID)spell.Action.ID is AID.QuadrupleLariatIn or AID.QuadrupleLariatOut;
+            _stack = spell.Action.ID is (uint)AID.QuadrupleLariatIn or (uint)AID.QuadrupleLariatOut;
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.BlazingLariatSpread or AID.BlazingLariatPair)
+        if (spell.Action.ID is (uint)AID.BlazingLariatSpread or (uint)AID.BlazingLariatPair)
         {
             ++NumCasts;
             _source = null;

@@ -39,6 +39,7 @@ public enum AID : uint
 
     Inhale = 38280, // UolonOfFortune->self, 0.5s cast, range 27 120-degree cone
     Spin = 38279, // UolonOfFortune->self, 3.0s cast, range 11 circle
+    Scoop = 38278, // UolonOfFortune->self, 4.0s cast, range 15 120-degree cone
     RottenSpores = 38277, // UolonOfFortune->location, 3.0s cast, range 6 circle
     TearyTwirl = 32301, // TuraliOnion->self, 3.5s cast, range 7 circle
     HeirloomScream = 32304, // TuraliTomato->self, 3.5s cast, range 7 circle
@@ -48,59 +49,40 @@ public enum AID : uint
     Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
-abstract class CircleLoc6(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f);
-class Lumisphere(BossModule module) : CircleLoc6(module, AID.Lumisphere);
-class Tornado(BossModule module) : CircleLoc6(module, AID.Tornado);
-class RootsOfAtopy(BossModule module) : CircleLoc6(module, AID.RootsOfAtopy);
-class RottenSpores(BossModule module) : CircleLoc6(module, AID.RottenSpores);
+sealed class LumisphereTornadoRootsOfAtopyRottenSpores(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Lumisphere, (uint)AID.Tornado, (uint)AID.RootsOfAtopy, (uint)AID.RottenSpores], 6f);
+sealed class AetherialBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialBlast, new AOEShapeRect(20f, 2f));
+sealed class SerratedSpin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SerratedSpin, 8f);
+sealed class SyrupSpout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SyrupSpout, new AOEShapeCone(10f, 60f.Degrees()));
+sealed class SpinningAttack(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningAttack, new AOEShapeRect(10f, 2f));
+sealed class OdiousAir(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OdiousAir, new AOEShapeCone(12f, 60f.Degrees()));
+sealed class Wingblade(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftWingblade, (uint)AID.RightWingblade], new AOEShapeCone(8f, 90f.Degrees()));
 
-class AetherialBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherialBlast), new AOEShapeRect(20f, 2f));
-class SerratedSpin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SerratedSpin), 8f);
-class SyrupSpout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SyrupSpout), new AOEShapeCone(10f, 60f.Degrees()));
-class SpinningAttack(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpinningAttack), new AOEShapeRect(10f, 2f));
-class OdiousAir(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OdiousAir), new AOEShapeCone(12f, 60f.Degrees()));
+sealed class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+sealed class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
+sealed class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
 
-abstract class Wingblade(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(8f, 90f.Degrees()));
-class LeftWingblade(BossModule module) : Wingblade(module, AID.LeftWingblade);
-class RightWingblade(BossModule module) : Wingblade(module, AID.RightWingblade);
-
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 7f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
-
-class Room4States : StateMachineBuilder
+sealed class Room4States : StateMachineBuilder
 {
     public Room4States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Lumisphere>()
+            .ActivateOnEnter<LumisphereTornadoRootsOfAtopyRottenSpores>()
             .ActivateOnEnter<AetherialBlast>()
             .ActivateOnEnter<SerratedSpin>()
-            .ActivateOnEnter<RootsOfAtopy>()
+            .ActivateOnEnter<Wingblade>()
             .ActivateOnEnter<SyrupSpout>()
             .ActivateOnEnter<SpinningAttack>()
-            .ActivateOnEnter<Tornado>()
-            .ActivateOnEnter<LeftWingblade>()
-            .ActivateOnEnter<RightWingblade>()
             .ActivateOnEnter<OdiousAir>()
             .ActivateOnEnter<Spin>()
-            .ActivateOnEnter<RottenSpores>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
-            .Raw.Update = () => module.PrimaryActor.IsDestroyed || module.PrimaryActor.EventState == 7;
+            .ActivateOnEnter<Scoop>()
+            .ActivateOnEnter<MandragoraAOEs>()
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || module.PrimaryActor.EventState == 7u;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 993, NameID = 5057)]
-public class Room4(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
+public sealed class Room4(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
 {
     private static readonly WPos arenaCenter = new(-197f, -145f);
     private static readonly Angle a135 = 135.Degrees();

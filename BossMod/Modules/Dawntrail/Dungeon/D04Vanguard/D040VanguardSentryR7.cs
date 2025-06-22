@@ -15,11 +15,11 @@ public enum AID : uint
     SpinningAxle = 39018, // Boss->self, 4.0s cast, range 6 circle
 }
 
-class Swoop(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.Swoop), 2.5f);
-class FloaterTurn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FloaterTurn), new AOEShapeDonut(4f, 10f));
-class SpinningAxle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpinningAxle), 6f);
+sealed class Swoop(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Swoop, 2.5f);
+sealed class FloaterTurn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FloaterTurn, new AOEShapeDonut(4f, 10f));
+sealed class SpinningAxle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningAxle, 6f);
 
-class D040VanguardSentryR7States : StateMachineBuilder
+sealed class D040VanguardSentryR7States : StateMachineBuilder
 {
     public D040VanguardSentryR7States(BossModule module) : base(module)
     {
@@ -43,7 +43,7 @@ class D040VanguardSentryR7States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12778, SortOrder = 2)]
-public class D040VanguardSentryR7(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D040VanguardSentryR7(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-93.53f, 262.87f), new(-91.94f, 262.9f), new(-90.82f, 263.02f), new(-90.31f, 263.21f), new(-90.22f, 263.86f),
     new(-89.91f, 264.43f), new(-89.93f, 278.76f), new(-90.12f, 279.4f), new(-89.96f, 280.02f), new(-89.56f, 280.42f),

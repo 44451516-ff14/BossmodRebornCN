@@ -58,7 +58,7 @@ class OldMagicArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x0A)
+        if (state == 0x00020001u && index == 0x0Au)
         {
             Arena.Bounds = D133Durante.DefaultBounds;
             _aoe = null;
@@ -66,9 +66,9 @@ class OldMagicArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class OldMagic(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OldMagic));
-class ArcaneEdge(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ArcaneEdge));
-class Contrapasso(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Contrapasso));
+class OldMagic(BossModule module) : Components.RaidwideCast(module, (uint)AID.OldMagic);
+class ArcaneEdge(BossModule module) : Components.RaidwideCast(module, (uint)AID.ArcaneEdge);
+class Contrapasso(BossModule module) : Components.RaidwideCast(module, (uint)AID.Contrapasso);
 
 class DuplicitousBattery(BossModule module) : Components.GenericAOEs(module)
 {
@@ -80,13 +80,15 @@ class DuplicitousBattery(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var max = count > 16 ? 16 : count;
         var color = Colors.Danger;
-        for (var i = 0; i < count; ++i)
+        for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
-            var isRisky = i < 16;
-            aoes[i] = aoe with { Color = isRisky ? color : 0, Risky = isRisky };
+            ref var aoe = ref aoes[i];
+            if (count > 16 && i < 16)
+                aoe.Color = color;
+            aoe.Risky = true;
         }
         return aoes;
     }
@@ -94,7 +96,7 @@ class DuplicitousBattery(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DuplicitousBatteryTelegraph)
-            _aoes.Add(new(circle, spell.LocXZ, default, WorldState.FutureTime(6.5f)));
+            _aoes.Add(new(circle, spell.LocXZ, default, WorldState.FutureTime(6.5d), Risky: false));
 
     }
 
@@ -105,15 +107,15 @@ class DuplicitousBattery(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Explosion1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion1), 11f);
-class Explosion2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion2), 9f);
-class FallenGrace(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FallenGrace), 6f);
-class AntipodalAssault(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.AntipodalAssaultMarker), ActionID.MakeSpell(AID.AntipodalAssault), 5.4f, markerIsFinalTarget: false);
-class HardSlash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HardSlash), new AOEShapeCone(50f, 45f.Degrees()));
-class TwilightPhase(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwilightPhase), new AOEShapeRect(60f, 10f));
-class DarkImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DarkImpact), 25f);
-class DeathsJourneyCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DeathsJourneyCircle), 8f);
-class DeathsJourneyCone(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DeathsJourneyCone), new AOEShapeCone(30f, 15f.Degrees()));
+class Explosion1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion1, 11f);
+class Explosion2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion2, 9f);
+class FallenGrace(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FallenGrace, 6f);
+class AntipodalAssault(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.AntipodalAssaultMarker, (uint)AID.AntipodalAssault, 5.4f, markerIsFinalTarget: false);
+class HardSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HardSlash, new AOEShapeCone(50f, 45f.Degrees()));
+class TwilightPhase(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwilightPhase, new AOEShapeRect(60f, 10f));
+class DarkImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkImpact, 25f);
+class DeathsJourneyCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathsJourneyCircle, 8f);
+class DeathsJourneyCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathsJourneyCone, new AOEShapeCone(30f, 15f.Degrees()));
 
 class D133DuranteStates : StateMachineBuilder
 {

@@ -103,17 +103,17 @@ class Fetters(BossModule module) : BossComponent(module)
     }
 }
 
-class DeafeningBellow(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DeafeningBellow));
+class DeafeningBellow(BossModule module) : Components.RaidwideCast(module, (uint)AID.DeafeningBellow);
 
-class HotTail(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HotTail), new AOEShapeRect(68f, 8f));
-class HotWing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HotWing), new AOEShapeRect(30f, 34f));
-class Cauterize(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Cauterize), new AOEShapeRect(80f, 11f));
-class HorridRoarSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HorridRoarSpread), 6f);
-class HorridRoar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HorridRoar), 6f);
-class HorridBlaze(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.HorridBlaze), 6f, 4, 4);
-class Massacre(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Massacre));
-class TheScarletPrice(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.TheScarletPrice));
-class Roast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Roast), new AOEShapeRect(30f, 4f));
+class HotTail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HotTail, new AOEShapeRect(68f, 8f));
+class HotWing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HotWing, new AOEShapeRect(30f, 34f));
+class Cauterize(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Cauterize, new AOEShapeRect(80f, 11f));
+class HorridRoarSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HorridRoarSpread, 6f);
+class HorridRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HorridRoar, 6f);
+class HorridBlaze(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HorridBlaze, 6f, 4, 4);
+class Massacre(BossModule module) : Components.RaidwideCast(module, (uint)AID.Massacre);
+class TheScarletPrice(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.TheScarletPrice);
+class Roast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Roast, new AOEShapeRect(30f, 4f));
 
 class D033NidhoggStates : StateMachineBuilder
 {

@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 
-public class WickedCannon(BossModule module) : Components.GenericAOEs(module)
+sealed class WickedCannon(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(5);
     private static readonly AOEShapeRect rect = new(40f, 5f);
@@ -15,15 +15,14 @@ public class WickedCannon(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
-        {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
-        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
+
+        ref var aoe = ref aoes[0];
+
+        if (count > 1)
+            aoe.Color = Colors.Danger;
+        aoe.Risky = true;
+
         return aoes;
     }
 
@@ -48,7 +47,7 @@ public class WickedCannon(BossModule module) : Components.GenericAOEs(module)
                 0x2D4 => Angle.AnglesCardinals[1],
                 _ => default
             };
-            _aoes.Add(new(rect, Module.PrimaryActor.Position, rotation, WorldState.FutureTime(currentDelays[_aoes.Count])));
+            _aoes.Add(new(rect, Module.PrimaryActor.Position, rotation, WorldState.FutureTime(currentDelays[_aoes.Count]), Risky: false));
         }
         if (status.ID == (uint)SID.WickedCannon && currentDelays.Length > _aoes.Count)
             AddAOE(status.Extra);

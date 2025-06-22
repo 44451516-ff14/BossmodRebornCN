@@ -28,11 +28,11 @@ public enum TetherID : uint
     StatueActivate = 37 // 28E8->Boss
 }
 
-class TectonicShift(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TectonicShift), 8f);
-class BoulderToss(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.BoulderToss));
-class SunToss(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SunToss), 6f);
+sealed class TectonicShift(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TectonicShift, 8f);
+sealed class BoulderToss(BossModule module) : Components.SingleTargetCast(module, (uint)AID.BoulderToss);
+sealed class SunToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SunToss, 6f);
 
-class AncientWrath(BossModule module) : Components.GenericAOEs(module)
+sealed class AncientWrath(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(6);
     private static readonly AOEShapeRect rectShort = new(12f, 4f);
@@ -72,7 +72,7 @@ class AncientWrath(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D073YokHuyAttestantStates : StateMachineBuilder
+sealed class D073YokHuyAttestantStates : StateMachineBuilder
 {
     public D073YokHuyAttestantStates(BossModule module) : base(module)
     {
@@ -85,7 +85,7 @@ class D073YokHuyAttestantStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12801)]
-public class D073YokHuyAttestant(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D073YokHuyAttestant(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices1 = [new(-134.226f, -482.956f), new(-134.105f, -483.161f), new(-134.227f, -484.617f), new(-134.259f, -486.314f), new(-134.168f, -488.471f),
     new(-134.361f, -489.473f), new(-135.919f, -489.514f), new(-135.919f, -483.988f), new(-136.099f, -483.434f), new(-135.750f, -482.812f)];

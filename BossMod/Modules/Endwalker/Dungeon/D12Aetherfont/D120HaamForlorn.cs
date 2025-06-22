@@ -16,7 +16,7 @@ public enum AID : uint
     AetherialSpark = 33996, // Boss->self, 3.0s cast, range 12 width 4 rect
 }
 
-class AetherialSpark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherialSpark), new AOEShapeRect(12, 2));
+class AetherialSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialSpark, new AOEShapeRect(12, 2));
 
 class D120HaamForlornStates : StateMachineBuilder
 {

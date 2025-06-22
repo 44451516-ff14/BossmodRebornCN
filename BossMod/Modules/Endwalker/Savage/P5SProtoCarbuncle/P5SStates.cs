@@ -35,18 +35,18 @@ class P5SStates : StateMachineBuilder
         ClawTail(id + 0x170000, 0.5f);
         VenomousMassToxicCrunch(id + 0x180000, 4.4f); // this delay is sometimes 0.6s less (claw/tail?)
         SonicShatter(id + 0x190000, 9.1f);
-        Cast(id + 0x1A0000, AID.AcidicSlaver, 15.3f, 5, "Enrage");
+        Cast(id + 0x1A0000, (uint)AID.AcidicSlaver, 15.3f, 5, "Enrage");
     }
 
     private void VenomousMassToxicCrunch(uint id, float delay, bool endRubyGlow = false)
     {
-        Cast(id, AID.VenomousMass, delay, 5)
+        Cast(id, (uint)AID.VenomousMass, delay, 5)
             .ActivateOnEnter<VenomousMass>()
             .DeactivateOnExit<RubyGlowCommon>(endRubyGlow);
         ComponentCondition<VenomousMass>(id + 2, 0.8f, comp => comp.NumCasts > 0, "Tankbuster 1")
             .DeactivateOnExit<VenomousMass>();
 
-        Cast(id + 0x1000, AID.ToxicCrunch, 1.3f, 5)
+        Cast(id + 0x1000, (uint)AID.ToxicCrunch, 1.3f, 5)
             .ActivateOnEnter<ToxicCrunch>();
         ComponentCondition<ToxicCrunch>(id + 0x1002, 0.3f, comp => comp.NumCasts > 0, "Tankbuster 2")
             .DeactivateOnExit<ToxicCrunch>();
@@ -54,14 +54,14 @@ class P5SStates : StateMachineBuilder
 
     private void SonicHowl(uint id, float delay, bool endRubyGlow = false)
     {
-        Cast(id, AID.SonicHowl, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.SonicHowl, delay, 5, "Raidwide")
             .DeactivateOnExit<RubyGlowCommon>(endRubyGlow)
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private State RubyGlow(uint id, float delay)
     {
-        return Cast(id, AID.RubyGlow, delay, 5, "Raidwide")
+        return Cast(id, (uint)AID.RubyGlow, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -70,7 +70,7 @@ class P5SStates : StateMachineBuilder
         // ruby glow 1: 2x2 cells, 2 magic, 2 poison - need to find a safespot
         RubyGlow(id, delay)
             .ActivateOnEnter<RubyGlow1>();
-        Cast(id + 0x1000, AID.TopazStones, 3.2f, 4);
+        Cast(id + 0x1000, (uint)AID.TopazStones, 3.2f, 4);
         ComponentCondition<RubyGlow1>(id + 0x1010, 0.5f, comp => comp.MagicStones.Count != 0);
         ComponentCondition<RubyGlow1>(id + 0x1020, 13.5f, comp => comp.MagicStones.Count == 0, "Cells");
         // note: poison disappears later, during next mechanic...
@@ -81,7 +81,7 @@ class P5SStates : StateMachineBuilder
         // ruby glow 2: diagonal line, 1 magic, 1 poison, charge - need to avoid first charge and then avoid magic
         RubyGlow(id, delay)
             .ActivateOnEnter<RubyGlow2>();
-        Cast(id + 0x1000, AID.TopazStones, 3.2f, 4);
+        Cast(id + 0x1000, (uint)AID.TopazStones, 3.2f, 4);
         DoubleRush(id + 0x1010, 4.5f);
         ComponentCondition<RubyGlow2>(id + 0x1020, 1.5f, comp => comp.MagicStones.Count == 0, "Cells");
         // note: poison disappears later, during next mechanic...
@@ -92,7 +92,7 @@ class P5SStates : StateMachineBuilder
         // ruby glow 3: 2x2 cells, 2+2+3+3 magic - need to move between safespots
         RubyGlow(id, delay)
             .ActivateOnEnter<RubyGlow3>();
-        Cast(id + 0x1000, AID.TopazCluster, 2.1f, 4);
+        Cast(id + 0x1000, (uint)AID.TopazCluster, 2.1f, 4);
         ComponentCondition<RubyGlow3>(id + 0x1010, 11.1f, comp => comp.NumCasts >= 2, "Cells 1");
         ComponentCondition<RubyGlow3>(id + 0x1011, 2.5f, comp => comp.NumCasts >= 4, "Cells 2");
         ComponentCondition<RubyGlow3>(id + 0x1012, 2.5f, comp => comp.NumCasts >= 7, "Cells 3");
@@ -105,11 +105,11 @@ class P5SStates : StateMachineBuilder
         // ruby glow 4: diagonal line, 2+3 magic, 2 venom pools - need to recolor 2 magic to poison and then avoid ray/claw while avoiding poison
         RubyGlow(id, delay)
             .ActivateOnEnter<RubyGlow4>();
-        Cast(id + 0x1000, AID.TopazStones, 2.1f, 4);
-        Cast(id + 0x1010, AID.VenomPoolRecolor, 2.1f, 5);
+        Cast(id + 0x1000, (uint)AID.TopazStones, 2.1f, 4);
+        Cast(id + 0x1010, (uint)AID.VenomPoolRecolor, 2.1f, 5);
         ComponentCondition<RubyGlow4>(id + 0x1020, 3.9f, comp => comp.NumCasts > 0, "Recolor");
         ComponentCondition<RubyGlow4>(id + 0x1030, 3, comp => comp.MagicStones.Count == 0, "Cells");
-        CastMulti(id + 0x2000, [AID.SearingRay, AID.RagingClaw], 0.2f, 5, "Searing ray / Raging claw");
+        CastMulti(id + 0x2000, [(uint)AID.SearingRay, (uint)AID.RagingClaw], 0.2f, 5, "Searing ray / Raging claw");
         // note: poison disappears later, during next mechanic...
         // note: raging claw continues hitting for ~2.5s, searing ray resolves immediately - next mechanic is fixed relative to cast end
     }
@@ -119,10 +119,10 @@ class P5SStates : StateMachineBuilder
         // ruby glow 5: 2x2 cells, 2 magic, 2 poison, spread - need to avoid magic and then spread while avoiding poison
         RubyGlow(id, delay)
             .ActivateOnEnter<RubyGlow5>();
-        Cast(id + 0x1000, AID.TopazStones, 3.1f, 4);
+        Cast(id + 0x1000, (uint)AID.TopazStones, 3.1f, 4);
         ComponentCondition<RubyGlow5>(id + 0x1010, 0.5f, comp => comp.MagicStones.Count != 0);
         // note: we next part is same as venom squall/surge, except that order is fixed; magic explosion happens ~0.1s before squall cast end
-        CastStart(id + 0x1020, AID.VenomSquall, 8.6f);
+        CastStart(id + 0x1020, (uint)AID.VenomSquall, 8.6f);
         ComponentCondition<RubyGlow5>(id + 0x1021, 4.9f, comp => comp.MagicStones.Count == 0, "Cells");
         CastEnd(id + 0x1022, 0.1f)
             .ActivateOnEnter<VenomSquallSurge>(); // note: activating only after cells resolve to reduce visual clutter
@@ -141,8 +141,8 @@ class P5SStates : StateMachineBuilder
         // ruby glow 6: 2x2 cells, 3+2+2+2 magic, venom pools - need to recolor 2 magic to poison and then avoid charges while avoiding poison
         RubyGlow(id, delay)
             .ActivateOnEnter<RubyGlow6>();
-        Cast(id + 0x1000, AID.TopazStones, 2.1f, 4);
-        Cast(id + 0x1010, AID.VenomPoolRecolor, 2.1f, 5);
+        Cast(id + 0x1000, (uint)AID.TopazStones, 2.1f, 4);
+        Cast(id + 0x1010, (uint)AID.VenomPoolRecolor, 2.1f, 5);
         ComponentCondition<RubyGlow6>(id + 0x1020, 3.9f, comp => comp.NumCasts > 0, "Recolor");
         ComponentCondition<RubyGlow6>(id + 0x1030, 3, comp => comp.MagicStones.Count == 0, "Cells");
         DoubleRush(id + 0x1040, 4);
@@ -151,7 +151,7 @@ class P5SStates : StateMachineBuilder
 
     private void DoubleRush(uint id, float delay)
     {
-        Cast(id, AID.DoubleRush, delay, 6, "Charge 1")
+        Cast(id, (uint)AID.DoubleRush, delay, 6, "Charge 1")
             .ActivateOnEnter<DoubleRush>()
             .DeactivateOnExit<DoubleRush>();
         ComponentCondition<DoubleRushReturn>(id + 2, 2.1f, comp => comp.NumCasts > 0, "Charge 2")
@@ -161,7 +161,7 @@ class P5SStates : StateMachineBuilder
 
     private void VenomSquallSurge(uint id, float delay)
     {
-        CastMulti(id, [AID.VenomSquall, AID.VenomSurge], delay, 5)
+        CastMulti(id, [(uint)AID.VenomSquall, (uint)AID.VenomSurge], delay, 5)
             .ActivateOnEnter<VenomSquallSurge>();
         ComponentCondition<VenomSquallSurge>(id + 2, 3.8f, comp => comp.Progress > 0, "Spread/stack");
         ComponentCondition<VenomSquallSurge>(id + 3, 3, comp => comp.Progress > 1, "Mid bait");
@@ -183,7 +183,7 @@ class P5SStates : StateMachineBuilder
     private void ClawTail(uint id, float delay)
     {
         // note: tail to claw is ~0.5s shorter (and next state is longer), but other timings are unaffected
-        CastStartMulti(id, [AID.ClawToTail, AID.TailToClaw], delay);
+        CastStartMulti(id, [(uint)AID.ClawToTail, (uint)AID.TailToClaw], delay);
         ComponentCondition<ClawTail>(id + 1, 6, comp => comp.Progress > 0, "Claw/tail hit 1")
             .ActivateOnEnter<ClawTail>()
             .SetHint(StateMachine.StateHint.BossCastEnd);
@@ -195,7 +195,7 @@ class P5SStates : StateMachineBuilder
     {
         ComponentCondition<VenomTowers>(id, delay, comp => comp.Active)
             .ActivateOnEnter<VenomTowers>();
-        CastStartMulti(id + 1, [AID.ClawToTail, AID.TailToClaw], 12.2f);
+        CastStartMulti(id + 1, [(uint)AID.ClawToTail, (uint)AID.TailToClaw], 12.2f);
         ComponentCondition<VenomTowers>(id + 2, 0.8f, comp => !comp.Active, "Towers")
             .DeactivateOnExit<VenomTowers>();
         ComponentCondition<ClawTail>(id + 3, 5.2f, comp => comp.Progress > 0, "Claw/tail hit 1")
@@ -223,7 +223,7 @@ class P5SStates : StateMachineBuilder
 
     private void SonicShatter(uint id, float delay)
     {
-        Cast(id, AID.SonicShatter, delay, 5, "Raidwide hit 1")
+        Cast(id, (uint)AID.SonicShatter, delay, 5, "Raidwide hit 1")
             .SetHint(StateMachine.StateHint.Raidwide);
         ComponentCondition<SonicShatter>(id + 2, 3.1f, comp => comp.NumCasts >= 1, "Hit 2")
             .ActivateOnEnter<SonicShatter>()

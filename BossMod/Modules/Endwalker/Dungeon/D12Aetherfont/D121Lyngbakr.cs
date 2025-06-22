@@ -33,14 +33,14 @@ class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(mod
         var count = _aoes.Count;
         if (count == 0)
             return [];
-
-        var deadline = _aoes[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && _aoes[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(_aoes)[..index];
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -55,7 +55,7 @@ class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(mod
         {
             _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
             if (_aoes.Count == 11)
-                _aoes.SortBy(x => x.Activation);
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
@@ -75,12 +75,12 @@ class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(mod
     }
 }
 
-class SonicBloop(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SonicBloop));
-class Waterspout(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Waterspout), 5f);
-class TidalBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TidalBreath), new AOEShapeCone(40f, 90f.Degrees()));
-class Tidalspout(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Tidalspout), 6f, 4, 4);
-class Upsweep(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Upsweep));
-class BodySlam(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BodySlam));
+class SonicBloop(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SonicBloop);
+class Waterspout(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Waterspout, 5f);
+class TidalBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TidalBreath, new AOEShapeCone(40f, 90f.Degrees()));
+class Tidalspout(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Tidalspout, 6f, 4, 4);
+class Upsweep(BossModule module) : Components.RaidwideCast(module, (uint)AID.Upsweep);
+class BodySlam(BossModule module) : Components.RaidwideCast(module, (uint)AID.BodySlam);
 
 class D121LyngbakrStates : StateMachineBuilder
 {

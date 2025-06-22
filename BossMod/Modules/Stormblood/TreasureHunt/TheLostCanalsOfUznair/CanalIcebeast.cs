@@ -28,13 +28,13 @@ public enum AID : uint
     Telega = 9630 // Abharamu->self, no cast, single-target, bonus adds disappear
 }
 
-class Eyeshine(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.Eyeshine));
-class AbsoluteZero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AbsoluteZero), new AOEShapeCone(45.5f, 45f.Degrees()));
-class Freezeover(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Freezeover), 6f);
-class PlainPound(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PlainPound), 4.56f);
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.Abharamu]);
+class Eyeshine(BossModule module) : Components.CastGaze(module, (uint)AID.Eyeshine);
+class AbsoluteZero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbsoluteZero, new AOEShapeCone(45.5f, 45f.Degrees()));
+class Freezeover(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Freezeover, 6f);
+class PlainPound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PlainPound, 4.56f);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.Abharamu]);
 
 class CanalIcebeastStates : StateMachineBuilder
 {

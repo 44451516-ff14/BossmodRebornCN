@@ -5,7 +5,7 @@ using ImGuiNET;
 namespace BossMod.ReplayVisualization;
 
 // TODO: currently it assumes that there's only one instance that can edit db, it won't refresh if plan is edited and saved in a different instance...
-public class ColumnPlayerDetails : Timeline.ColumnGroup
+public sealed class ColumnPlayerDetails : Timeline.ColumnGroup
 {
     private readonly StateMachineTree _tree;
     private readonly List<int> _phaseBraches;

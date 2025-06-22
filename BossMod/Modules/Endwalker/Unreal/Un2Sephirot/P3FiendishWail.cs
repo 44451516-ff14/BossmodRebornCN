@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class P3FiendishWail(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.FiendishWailAOE))
+class P3FiendishWail(BossModule module) : Components.CastCounter(module, (uint)AID.FiendishWailAOE)
 {
     private BitMask _physResistMask;
     private readonly List<Actor> _towers = [];
@@ -36,13 +36,13 @@ class P3FiendishWail(BossModule module) : Components.CastCounter(module, ActionI
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _towers.Add(caster);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _towers.Remove(caster);
     }
 }

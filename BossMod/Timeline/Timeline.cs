@@ -1,9 +1,10 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Interface.Utility;
+using ImGuiNET;
 
 namespace BossMod;
 
 // utility for drawing time-related data
-public class Timeline
+public sealed class Timeline
 {
     // definition of a timeline column
     public class Column(Timeline timeline)
@@ -93,23 +94,23 @@ public class Timeline
     public float MinTime;
     public float MaxTime;
     public float? CurrentTime;
-    public float PixelsPerSecond = 10;
-    public float TopMargin = 20;
-    public float BottomMargin = 5;
+    public float PixelsPerSecond = 10f * ImGuiHelpers.GlobalScale;
+    public float TopMargin = 20f * ImGuiHelpers.GlobalScale;
+    public float BottomMargin = 5f * ImGuiHelpers.GlobalScale;
     public ColumnGroup Columns;
 
     private float _tickFrequency = 5;
-    private readonly float _timeAxisWidth = 35;
+    private readonly float _timeAxisWidth = 35 * ImGuiHelpers.GlobalScale;
 
     // these fields are transient and reinitialized on each draw
     private float _curColumnOffset;
     private Vector2 _screenClientTL;
     private readonly List<List<string>> _tooltip = [];
     private readonly List<(float t, uint color)> _highlightTime = [];
-    public float MinVisibleTime { get; private set; }
+    public float MinVisibleTime;
     public float MaxVisibleTime => MinVisibleTime + Height / PixelsPerSecond;
 
-    public float Height { get; private set; }
+    public float Height;
     public Vector2 ScreenClientTL => _screenClientTL;
 
     public Timeline()

@@ -5,7 +5,7 @@
 // if there are <= 12 players alive, everyone will be hit by the first wave, and the second wave will never happen
 // so for safety we just show larger radius around everyone
 // TODO: show second wave for players not hit by first wave
-class DiffusiveForceParticleBeam(BossModule module) : Components.UniformStackSpread(module, 0, 7)
+sealed class DiffusiveForceParticleBeam(BossModule module) : Components.UniformStackSpread(module, default, 7f)
 {
     public int NumCasts;
 

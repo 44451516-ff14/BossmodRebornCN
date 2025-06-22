@@ -32,7 +32,7 @@ public enum IconID : uint
     Meteor = 7 // player
 }
 
-class HeavensfallBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(5), (uint)IconID.Comet, ActionID.MakeSpell(AID.Heavensfall1), 3.1f, true)
+class HeavensfallBait(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.Comet, (uint)AID.Heavensfall1, 3.1f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -49,7 +49,7 @@ class HeavensfallBait(BossModule module) : Components.BaitAwayIcon(module, new A
     }
 }
 
-class Meteor(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCircle(20), (uint)IconID.Meteor, ActionID.MakeSpell(AID.MeteorImpactVisual), 8.1f, true)
+class Meteor(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)IconID.Meteor, (uint)AID.MeteorImpactVisual, 8.1f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -67,7 +67,7 @@ class Meteor(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCi
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             CurrentBaits.Clear();
     }
 
@@ -94,12 +94,12 @@ class MeteorImpact(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DarkStar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.DarkStar));
-class ChaosBlastCircle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ChaosBlastCircle), 2f);
-class ChaosBlastRect(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ChaosBlastRect), new AOEShapeRect(50.5f, 2f));
-class AbyssicBuster(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.AbyssicBuster), new AOEShapeCone(31.84f, 45f.Degrees()));
-class Comet(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Comet), 4f);
-class Heavensfall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Heavensfall2), 5f);
+class DarkStar(BossModule module) : Components.RaidwideCast(module, (uint)AID.DarkStar);
+class ChaosBlastCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ChaosBlastCircle, 2f);
+class ChaosBlastRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ChaosBlastRect, new AOEShapeRect(50.5f, 2f));
+class AbyssicBuster(BossModule module) : Components.Cleave(module, (uint)AID.AbyssicBuster, new AOEShapeCone(31.84f, 45f.Degrees()));
+class Comet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Comet, 4f);
+class Heavensfall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Heavensfall2, 5f);
 
 class D023TiomanStates : StateMachineBuilder
 {

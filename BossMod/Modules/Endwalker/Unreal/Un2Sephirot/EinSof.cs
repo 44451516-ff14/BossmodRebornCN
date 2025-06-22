@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un2Sephirot;
 
-class EinSof(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.EinSofAOE))
+class EinSof(BossModule module) : Components.GenericAOEs(module, (uint)AID.EinSofAOE)
 {
     private readonly List<Actor> _active = [];
 

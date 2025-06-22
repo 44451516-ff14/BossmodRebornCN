@@ -1,8 +1,6 @@
-﻿using BossMod.Shadowbringers.Foray.CriticalEngagement.CE14VigilForLost;
+﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
-
-class BarbarousBarrageTowers(BossModule module) : Components.GenericTowers(module)
+sealed class BarbarousBarrageTowers(BossModule module) : Components.GenericTowers(module)
 {
     public enum State { None, NextNS, NextEW, NextCorners, NextCenter, Done }
 
@@ -23,8 +21,8 @@ class BarbarousBarrageTowers(BossModule module) : Components.GenericTowers(modul
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (CurState == State.None && index is 14 or 15)
-            SetState(index == 14 ? State.NextNS : State.NextEW, 4, 10.1f);
+        if (CurState == State.None && index is 0x0E or 0x0F)
+            SetState(index == 0x0Eu ? State.NextNS : State.NextEW, 4, 10.1f);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -63,18 +61,18 @@ class BarbarousBarrageTowers(BossModule module) : Components.GenericTowers(modul
         switch (state)
         {
             case State.NextNS:
-                towers.Add(pos + new WDir(0, -11));
-                towers.Add(pos + new WDir(0, +11));
+                towers.Add(pos + new WDir(default, -11f));
+                towers.Add(pos + new WDir(default, +11f));
                 break;
             case State.NextEW:
-                towers.Add(pos + new WDir(-11, 0));
-                towers.Add(pos + new WDir(+11, 0));
+                towers.Add(pos + new WDir(-11f, default));
+                towers.Add(pos + new WDir(+11f, default));
                 break;
             case State.NextCorners:
-                towers.Add(pos + new WDir(-11, -11));
-                towers.Add(pos + new WDir(-11, +11));
-                towers.Add(pos + new WDir(+11, -11));
-                towers.Add(pos + new WDir(+11, +11));
+                towers.Add(pos + new WDir(-11f, -11f));
+                towers.Add(pos + new WDir(-11f, +11f));
+                towers.Add(pos + new WDir(+11f, -11f));
+                towers.Add(pos + new WDir(+11f, +11f));
                 break;
             case State.NextCenter:
                 towers.Add(pos);
@@ -84,7 +82,7 @@ class BarbarousBarrageTowers(BossModule module) : Components.GenericTowers(modul
     }
 }
 
-class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback(module)
+sealed class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly BarbarousBarrageTowers? _towers = module.FindComponent<BarbarousBarrageTowers>();
     private static readonly AOEShapeCircle _shape = new(4f);
@@ -95,7 +93,7 @@ class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback
         {
             var towers = _towers.Towers;
             var count = towers.Count;
-            var sources = new Knockback[count];
+            Span<Knockback> sources = new Knockback[count];
             for (var i = 0; i < count; ++i)
             {
                 var t = towers[i];
@@ -114,9 +112,9 @@ class BarbarousBarrageKnockback(BossModule module) : Components.GenericKnockback
     }
 }
 
-class BarbarousBarrageMurderousMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BarbarousBarrageMurderousMist), new AOEShapeCone(40f, 135f.Degrees()));
+sealed class BarbarousBarrageMurderousMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbarousBarrageMurderousMist, new AOEShapeCone(40f, 135f.Degrees()));
 
-class BarbarousBarrageLariatCombo(BossModule module) : Components.GenericAOEs(module)
+sealed class BarbarousBarrageLariatCombo(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     public static readonly Angle a90 = 90.Degrees();
@@ -141,8 +139,8 @@ class BarbarousBarrageLariatCombo(BossModule module) : Components.GenericAOEs(mo
             var offset = 0.6667f * (to - from);
             var dir1 = Angle.FromDirection(offset);
             var dir2 = dir1 + 180.Degrees();
-            _aoes.Add(new(_shape, from - offset + 12 * (dir1 + off1).ToDirection(), dir1, Module.CastFinishAt(spell, 1.2f)));
-            _aoes.Add(new(_shape, to + offset + 12 * (dir2 + off2).ToDirection(), dir2, Module.CastFinishAt(spell, 5.6f)));
+            _aoes.Add(new(_shape, from - offset + 12f * (dir1 + off1).ToDirection(), dir1, Module.CastFinishAt(spell, 1.2f)));
+            _aoes.Add(new(_shape, to + offset + 12f * (dir2 + off2).ToDirection(), dir2, Module.CastFinishAt(spell, 5.6f)));
         }
     }
 

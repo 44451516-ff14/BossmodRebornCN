@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex4Barbariccia;
 
 // TODO: not sure how 'spiral arms' are really implemented
-class WindingGale(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.WindingGale))
+class WindingGale(BossModule module) : Components.GenericAOEs(module, (uint)AID.WindingGale)
 {
     private readonly List<Actor> _casters = [];
 
@@ -23,13 +23,13 @@ class WindingGale(BossModule module) : Components.GenericAOEs(module, ActionID.M
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _casters.Add(caster);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _casters.Remove(caster);
     }
 }

@@ -22,10 +22,10 @@ public enum AID : uint
     WheelOfSuffering = 28481 // Boss->self, 3.5s cast, range 7 circle aoe (knockback 12)
 }
 
-class IronUprising(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronUprising), new AOEShapeCone(7, 60.Degrees()));
-class SpineShatter(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.SpineShatter));
+class IronUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronUprising, new AOEShapeCone(7, 60.Degrees()));
+class SpineShatter(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SpineShatter);
 
-class AugmentedSuffering(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.AugmentedSuffering), 12)
+class AugmentedSuffering(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AugmentedSuffering, 12)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -34,9 +34,9 @@ class AugmentedSuffering(BossModule module) : Components.SimpleKnockbacks(module
     }
 }
 
-class AugmentedShatter(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.AugmentedShatter), 6, 4, 4);
-class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AugmentedUprising), new AOEShapeCone(45, 45.Degrees()));
-class WheelOfSuffering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WheelOfSuffering), 7);
+class AugmentedShatter(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AugmentedShatter, 6, 4, 4);
+class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedUprising, new AOEShapeCone(45, 45.Degrees()));
+class WheelOfSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WheelOfSuffering, 7);
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {

@@ -6,7 +6,7 @@ public static class ActorEnumeration
     // build a mask with set bits corresponding to slots in range
     public static BitMask Mask(this IEnumerable<(int, Actor)> range)
     {
-        BitMask mask = new();
+        BitMask mask = default;
         foreach ((var i, _) in range)
             mask.Set(i);
         return mask;

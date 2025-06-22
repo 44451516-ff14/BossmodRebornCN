@@ -13,7 +13,7 @@ static class SlipperySoap
     };
 }
 
-class SlipperySoapCharge(BossModule module) : Components.GenericKnockback(module)
+sealed class SlipperySoapCharge(BossModule module) : Components.GenericKnockback(module)
 {
     private Actor? _chargeTarget;
     private Angle _chargeDir;
@@ -100,7 +100,7 @@ class SlipperySoapCharge(BossModule module) : Components.GenericKnockback(module
     }
 }
 
-class SlipperySoapAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class SlipperySoapAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private SlipperySoap.Color _color;
 
@@ -121,7 +121,7 @@ class SlipperySoapAOE(BossModule module) : Components.GenericAOEs(module)
                 var primaryPos = Module.PrimaryActor.Position;
                 var primaryRot = Module.PrimaryActor.Rotation;
                 for (var i = 0; i < 4; ++i)
-                    aoes[i] = new AOEInstance(C011Silkie.ShapeYellow, primaryPos, primaryRot + (45f + i + 90f).Degrees());
+                    aoes[i] = new AOEInstance(C011Silkie.ShapeYellow, primaryPos, primaryRot + (45f + i * 90f).Degrees());
                 return aoes;
             default:
                 return [];
@@ -155,7 +155,7 @@ class SlipperySoapAOE(BossModule module) : Components.GenericAOEs(module)
 }
 
 // note: we don't wait for forked lightning statuses to appear
-class SoapsudStatic(BossModule module) : Components.UniformStackSpread(module, 0, 5)
+sealed class SoapsudStatic(BossModule module) : Components.UniformStackSpread(module, default, 5f)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {

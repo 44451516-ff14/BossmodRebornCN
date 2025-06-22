@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class ThunderousBreath : Components.CastCounter
+sealed class ThunderousBreath : Components.CastCounter
 {
-    public ThunderousBreath(BossModule module) : base(module, ActionID.MakeSpell(AID.ThunderousBreathAOE))
+    public ThunderousBreath(BossModule module) : base(module, (uint)AID.ThunderousBreathAOE)
     {
         var platform = module.FindComponent<ThunderPlatform>();
         if (platform != null)
@@ -10,12 +10,15 @@ class ThunderousBreath : Components.CastCounter
             var party = module.Raid.WithSlot(true, true, true);
             var len = party.Length;
             for (var i = 0; i < len; ++i)
-                platform.RequireHint[i] = platform.RequireLevitating[i] = true;
+            {
+                var slot = party[i].Item1;
+                platform.RequireHint[slot] = platform.RequireLevitating[slot] = true;
+            }
         }
     }
 }
 
-class ArcaneLighning(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.ArcaneLightning))
+sealed class ArcaneLighning(BossModule module) : Components.GenericAOEs(module, (uint)AID.ArcaneLightning)
 {
     public readonly List<AOEInstance> AOEs = [];
 

@@ -2,7 +2,7 @@
 
 class RoaringBlaze(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(2);
 
     private static readonly AOEShapeCone _shape = new(50f, 90f.Degrees());
 
@@ -12,15 +12,26 @@ class RoaringBlaze(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.RoaringBlazeFirst or (uint)AID.RoaringBlazeSecond or (uint)AID.RoaringBlazeSolo)
         {
-            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
             if (_aoes.Count > 1)
-                _aoes.SortBy(x => x.Activation);
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.RoaringBlazeFirst or (uint)AID.RoaringBlazeSecond or (uint)AID.RoaringBlazeSolo)
-            _aoes.RemoveAll(aoe => aoe.Origin.AlmostEqual(caster.Position, 1));
+        {
+            var count = _aoes.Count;
+            var id = caster.InstanceID;
+            for (var i = 0; i < count; ++i)
+            {
+                if (_aoes[i].ActorID == id)
+                {
+                    _aoes.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 }

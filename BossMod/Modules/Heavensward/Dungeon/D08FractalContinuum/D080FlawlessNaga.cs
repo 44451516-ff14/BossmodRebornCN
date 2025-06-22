@@ -23,16 +23,16 @@ public enum AID : uint
     TheDragonsVoice = 2145 // FlawlessChimera->self, 4.0s cast, range 4+R-30 donut
 }
 
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheDragonsVoice), new AOEShapeDonut(7.7f, 30f));
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheRamsVoice), 9.7f);
-class CalcifyingMist(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CalcifyingMist), new AOEShapeCone(7.35f, 45f.Degrees()));
-class TheLionsBreath(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.TheLionsBreath), new AOEShapeCone(9.7f, 60f.Degrees()), [(uint)OID.FlawlessChimera], activeWhileCasting: false);
+class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(7.7f, 30f));
+class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9.7f);
+class CalcifyingMist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CalcifyingMist, new AOEShapeCone(7.35f, 45f.Degrees()));
+class TheLionsBreath(BossModule module) : Components.Cleave(module, (uint)AID.TheLionsBreath, new AOEShapeCone(9.7f, 60f.Degrees()), [(uint)OID.FlawlessChimera], activeWhileCasting: false);
 
-abstract class InterruptHints(BossModule module, AID aid) : Components.CastInterruptHint(module, ActionID.MakeSpell(aid), showNameInHint: true, canBeStunned: true);
-class TheRamsVoiceHint(BossModule module) : InterruptHints(module, AID.TheRamsVoice);
-class TheDragonsVoiceHint(BossModule module) : InterruptHints(module, AID.TheDragonsVoice);
-class Furore(BossModule module) : InterruptHints(module, AID.Furore);
-class BalefulRoar(BossModule module) : InterruptHints(module, AID.BalefulRoar);
+abstract class InterruptHints(BossModule module, uint aid) : Components.CastInterruptHint(module, aid, showNameInHint: true, canBeStunned: true);
+class TheRamsVoiceHint(BossModule module) : InterruptHints(module, (uint)AID.TheRamsVoice);
+class TheDragonsVoiceHint(BossModule module) : InterruptHints(module, (uint)AID.TheDragonsVoice);
+class Furore(BossModule module) : InterruptHints(module, (uint)AID.Furore);
+class BalefulRoar(BossModule module) : InterruptHints(module, (uint)AID.BalefulRoar);
 
 class D080FlawlessNagaStates : StateMachineBuilder
 {

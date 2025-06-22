@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(module)
 {
     public struct PlayerState
     {
@@ -11,7 +11,7 @@ class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(module)
     private readonly PlayerState[] _states = new PlayerState[PartyState.MaxAllianceSize];
 
     private static readonly AOEShapeRect _shapeForward = new(8f, 4f);
-    private static readonly AOEShapeRect _shapeBackward = new(0f, 4f, 8f);
+    private static readonly AOEShapeRect _shapeBackward = new(default, 4f, 8f);
 
     public override void Update()
     {
@@ -65,4 +65,4 @@ class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class GrimEmbraceAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrimEmbraceAOE), new AOEShapeRect(8f, 4f));
+sealed class GrimEmbraceAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrimEmbraceAOE, new AOEShapeRect(8f, 4f));

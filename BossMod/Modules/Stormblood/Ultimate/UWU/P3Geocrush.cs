@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P3Geocrush1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Geocrush1), 18f);
+class P3Geocrush1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geocrush1, 18f);
 
 // TODO: add prediction after PATE xxx - need non-interpolated actor rotation for that...
-class P3Geocrush2(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Geocrush2))
+class P3Geocrush2(BossModule module) : Components.GenericAOEs(module, (uint)AID.Geocrush2)
 {
     private Actor? _caster;
     private AOEShapeDonut? _shapeReduced;
@@ -22,7 +22,7 @@ class P3Geocrush2(BossModule module) : Components.GenericAOEs(module, ActionID.M
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _caster = caster;
             _shapeReduced = new(NumCasts == 0 ? 16 : 12, Arena.Bounds.Radius); // TODO: verify second radius
@@ -31,7 +31,7 @@ class P3Geocrush2(BossModule module) : Components.GenericAOEs(module, ActionID.M
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _caster = null;
         }

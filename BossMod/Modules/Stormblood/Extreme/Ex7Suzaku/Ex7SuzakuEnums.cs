@@ -41,7 +41,6 @@ public enum AID : uint
     ScreamsOfTheDamned = 13010, // Boss->self, 3s cast, range 40 circle raidwide
     ScarletFever = 13017, // Helper1->self, 7s cast, range 41 circle raidwide, arena change
     SouthronStar = 13023, // Boss->self, 4s cast, range 41 circle raidwide
-    HotspotsEnd = 12858, // Boss->self, no cast, single-target
 
     Rout = 13040, // Boss->self, 3s cast, range 55 width 6 rect
 
@@ -73,6 +72,7 @@ public enum AID : uint
     PhantomFlurryAOE = 13022, // Helper->self, 6s cast, range 41 180-degree cone
 
     Hotspot = 13026, // Helper->self, 0.9s cast, range 21 90-degree cone
+    HotspotsEnd = 12858, // Boss->self, no cast, single-target
 
     CloseQuarterCrescendo = 13028, // Boss->self, 4s cast, single-target
     PayThePiperNorth = 13031, // NorthernPyre->player, no cast, single-target
@@ -81,8 +81,8 @@ public enum AID : uint
     PayThePiperWest = 13033, // WesternPyre->player, no cast, single-target
 
     IncandescentInterlude = 12860, // Boss->self, 4.0s cast, single-target
-    Immolate = 13030, // Helper->self, no cast, range 41 circle
-    Burn = 13029, // Helper->self, no cast, range 4 circle
+    Immolate = 13030, // Helper->self, no cast, range 41 circle, tower fail
+    Burn = 13029, // Helper->self, no cast, range 4 circle, tower success
 
     EnrageSouthronStar = 13036, // Boss->self, 39.0s cast, range 41 circle
     HotspotEnrage = 14067 // Helper->self, 0.9s cast, range 21 90-degree cone
@@ -91,30 +91,17 @@ public enum AID : uint
 public enum SID : uint
 {
     PrimaryTarget = 1689, // ScarletLady->player, extra=0x0
-    Burns = 530, // ScarletLady->player, extra=0x1/0x3/0x4/0x2
-    HPBoost = 586, // none->ScarletLady, extra=0x1/0x2/0xE/0x10/0xF
-    Suppuration = 375, // ScarletLady->player, extra=0x1/0x2/0x4/0x5
-    VulnerabilityDown = 350, // none->ScarletLady, extra=0x0
-    LovesTrueForm = 1630, // Boss->Boss, extra=0xC6
-    DamageUp = 505, // RapturousEcho->player, extra=0x1/0x2/0x3/0x4/0x5/0x6/0x7/0x8/0x9/0xA
-    PhysicalVulnerabilityUp = 695, // Helper->player, extra=0x0
-    VulnerabilityUp = 202, // Helper/Boss->player, extra=0x1/0x2/0x3/0x4
-    Stun = 149, // Helper->player, extra=0x0
-    LoomingCrescendo = 1699, // none->player, extra=0x0
-    PayingThePiper = 1681, // WesternPyre/EasternPyre/SouthernPyre->player, extra=0x8/0x4/0x2/0x1
-    DamageDown = 1016, // Helper->player, extra=0x3
-    FireResistanceDownII = 1255, // Helper->player, extra=0x0
+    PayingThePiper = 1681 // WesternPyre/EasternPyre/SouthernPyre->player, extra=0x8/0x4/0x2/0x1
 }
 
 public enum IconID : uint
 {
     Spreadmarker = 139, // player
-    Stackmarker = 161, // player
+    Stackmarker = 161 // player
 }
 
 public enum TetherID : uint
 {
     Birds = 14, // ScarletLady->ScarletLady
-    PayThePiper = 79, // Helper2/WesternPyre/EasternPyre/SouthernPyre/NorthernPyre->Boss/player
+    PayThePiper = 79 // Helper2/WesternPyre/EasternPyre/SouthernPyre/NorthernPyre->Boss/player
 }
-

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P6Touchdown(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.TouchdownAOE))
+class P6Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.TouchdownAOE)
 {
     private static readonly AOEShapeCircle _shape = new(20f); // TODO: verify falloff
 
@@ -25,17 +25,20 @@ class P6TouchdownCauterize(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var nidhoggSide = actor.Position.X < Arena.Center.X; // note: assume nidhogg cleaves whole left side, hraes whole right side
+        // note: dragons can be in either configuration, LR or RL
+        var nidhoggSide = NidhoggSide(actor);
         var forbiddenMask = nidhoggSide ? _boiling : _freezing;
         if (forbiddenMask[slot])
             hints.Add("GTFO from wrong side!");
 
         // note: assume both dragons are always at north side
-        var isClosest = Raid.WithoutSlot(false, true, true).Where(p => (p.Position.X < Arena.Center.X) == nidhoggSide).MinBy(p => p.PosRot.Z) == actor;
-        var shouldBeClosest = actor.Role == Role.Tank;
+        bool isClosest = Raid.WithoutSlot(false, true, true).Where(p => NidhoggSide(p) == nidhoggSide).MinBy(p => p.PosRot.Z) == actor;
+        bool shouldBeClosest = actor.Role == Role.Tank;
         if (isClosest != shouldBeClosest)
             hints.Add(shouldBeClosest ? "Move closer to dragons!" : "Move away from dragons!");
     }
+
+    private bool NidhoggSide(Actor p) => p.DistanceToHitbox(_nidhogg) < p.DistanceToHitbox(_hraesvelgr);
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
@@ -69,5 +72,20 @@ class P6TouchdownCauterize(BossModule module) : BossComponent(module)
                 _hraesvelgr = caster;
                 break;
         }
+    }
+}
+
+class P6TouchdownPyretic(BossModule module) : Components.StayMove(module)
+{
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        if ((SID)status.ID == SID.Boiling)
+            SetState(Raid.FindSlot(actor.InstanceID), new(Requirement.Stay, status.ExpireAt));
+    }
+
+    public override void OnStatusLose(Actor actor, ActorStatus status)
+    {
+        if ((SID)status.ID == SID.Pyretic)
+            ClearState(Raid.FindSlot(actor.InstanceID));
     }
 }

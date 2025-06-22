@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M03NBruteBomber;
 
-class FireSpin(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class FireSpin(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 30f.Degrees());
 

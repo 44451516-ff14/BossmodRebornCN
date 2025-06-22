@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class UmbraSmash(BossModule module) : Components.Exaflare(module, new AOEShapeRect(5f, 30f))
+sealed class UmbraSmash(BossModule module) : Components.Exaflare(module, new AOEShapeRect(5f, 30f))
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

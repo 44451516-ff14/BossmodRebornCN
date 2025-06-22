@@ -15,4 +15,4 @@ class BlizzardSphere(BossModule module) : Components.StretchTetherSingle(module,
     }
 }
 
-class FinRays(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.FinRays), new AOEShapeCone(11.8f, 60f.Degrees()), [(uint)OID.AzureGuard]);
+class FinRays(BossModule module) : Components.Cleave(module, (uint)AID.FinRays, new AOEShapeCone(11.8f, 60f.Degrees()), [(uint)OID.AzureGuard]);

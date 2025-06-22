@@ -27,16 +27,16 @@ public enum AID : uint
     ToTheSlaughter = 17559, // Boss->self, 4.0s cast, range 40 180-degree cone
 }
 
-class ScaldingTank(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ScaldingTank1), 6f);
-class ToTheSlaughter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ToTheSlaughter), new AOEShapeCone(40f, 90f.Degrees()));
-class Exsanguination1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exsanguination1), new AOEShapeDonutSector(2f, 7f, 90f.Degrees()));
-class Exsanguination2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exsanguination2), new AOEShapeDonutSector(7f, 12f, 90f.Degrees()));
-class Exsanguination3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Exsanguination3), new AOEShapeDonutSector(12f, 17f, 90f.Degrees()));
-class CaptiveBolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CaptiveBolt), new AOEShapeRect(50f, 5f), 4);
-class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherochemicalGrenado), 8f);
-class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DiffractiveLaser), new AOEShapeRect(45f, 2f));
-class SnakeShot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SnakeShot), new AOEShapeCone(20f, 120f.Degrees()));
-class CullingBlade(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CullingBlade1), new AOEShapeCone(60f, 15f.Degrees()));
+class ScaldingTank(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ScaldingTank1, 6f);
+class ToTheSlaughter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ToTheSlaughter, new AOEShapeCone(40f, 90f.Degrees()));
+class Exsanguination1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exsanguination1, new AOEShapeDonutSector(2f, 7f, 90f.Degrees()));
+class Exsanguination2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exsanguination2, new AOEShapeDonutSector(7f, 12f, 90f.Degrees()));
+class Exsanguination3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exsanguination3, new AOEShapeDonutSector(12f, 17f, 90f.Degrees()));
+class CaptiveBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CaptiveBolt, new AOEShapeRect(50f, 5f), 4);
+class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherochemicalGrenado, 8f);
+class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DiffractiveLaser, new AOEShapeRect(45f, 2f));
+class SnakeShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SnakeShot, new AOEShapeCone(20f, 120f.Degrees()));
+class CullingBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CullingBlade1, new AOEShapeCone(60f, 15f.Degrees()));
 
 class TerminusEst(BossModule module) : Components.GenericAOEs(module)
 {

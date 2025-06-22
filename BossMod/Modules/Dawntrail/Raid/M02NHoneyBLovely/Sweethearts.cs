@@ -58,4 +58,4 @@ abstract class Sweethearts(BossModule module, uint oid, uint aid) : Components.G
     }
 }
 
-class SweetheartsN(BossModule module) : Sweethearts(module, (uint)OID.Sweetheart, (uint)AID.SweetheartTouch);
+sealed class SweetheartsN(BossModule module) : Sweethearts(module, (uint)OID.Sweetheart, (uint)AID.SweetheartTouch);

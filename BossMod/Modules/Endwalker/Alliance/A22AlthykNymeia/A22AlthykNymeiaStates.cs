@@ -14,7 +14,7 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void SinglePhase(uint id)
     {
-        ActorCast(id, _module.Nymeia, AID.SpinnersWheel, 10.3f, 4.5f);
+        ActorCast(id, _module.Nymeia, (uint)AID.SpinnersWheel, 10.3f, 4.5f);
         Dictionary<SpinnersWheelSelect.Branch, (uint seqID, Action<uint> buildState)> dispatch = new()
         {
             [SpinnersWheelSelect.Branch.Gaze] = ((id >> 24) + 1, ForkGaze),
@@ -62,18 +62,18 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void MythrilGreataxe(uint id, float delay)
     {
-        ActorCast(id, _module.Althyk, AID.MythrilGreataxe, delay, 7, false, "Cleave")
+        ActorCast(id, _module.Althyk, (uint)AID.MythrilGreataxe, delay, 7, false, "Cleave")
             .ActivateOnEnter<MythrilGreataxe>()
             .DeactivateOnExit<MythrilGreataxe>();
     }
 
     private void Hydrorythmos(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.Hydrorythmos, delay, 5, false, "Line 1")
+        ActorCast(id, _module.Nymeia, (uint)AID.Hydrorythmos, delay, 5, false, "Line 1")
             .ActivateOnEnter<Hydrorythmos>();
         ComponentCondition<Hydrorythmos>(id + 0x10, 2.1f, comp => comp.NumCasts > 1);
         ComponentCondition<Hydrorythmos>(id + 0x11, 2.1f, comp => comp.NumCasts > 3);
-        ActorCastStart(id + 0x20, _module.Althyk, AID.MythrilGreataxe, 0.7f);
+        ActorCastStart(id + 0x20, _module.Althyk, (uint)AID.MythrilGreataxe, 0.7f);
         ComponentCondition<Hydrorythmos>(id + 0x30, 1.4f, comp => comp.NumCasts > 5)
             .ActivateOnEnter<MythrilGreataxe>();
         ComponentCondition<Hydrorythmos>(id + 0x31, 2.1f, comp => comp.NumCasts > 7)
@@ -106,7 +106,7 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void SpinnersWheelStayMoveResolveMythrilGreataxe(uint id, float delay)
     {
-        ActorCastStart(id, _module.Althyk, AID.MythrilGreataxe, delay)
+        ActorCastStart(id, _module.Althyk, (uint)AID.MythrilGreataxe, delay)
             .ActivateOnEnter<SpinnersWheelStayMove>();
         ComponentCondition<SpinnersWheelStayMove>(id + 1, 5.2f, comp => comp.ActiveDebuffs > 0, "Stay/move")
             .ActivateOnEnter<MythrilGreataxe>();
@@ -118,16 +118,16 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void SpinnersWheelGazeMythrilGreataxe(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.SpinnersWheel, delay, 4.5f);
+        ActorCast(id, _module.Nymeia, (uint)AID.SpinnersWheel, delay, 4.5f);
         SpinnersWheelGazeResolveMythrilGreataxe(id + 0x1000, 21);
     }
 
     private void SpinnersWheelStayMoveMythrilGreataxe(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.SpinnersWheel, delay, 4.5f);
+        ActorCast(id, _module.Nymeia, (uint)AID.SpinnersWheel, delay, 4.5f);
         ComponentCondition<SpinnersWheelStayMove>(id + 0x10, 20.9f, comp => comp.ActiveDebuffs > 0, "Stay/move")
             .ActivateOnEnter<SpinnersWheelStayMove>();
-        ActorCastStart(id + 0x11, _module.Althyk, AID.MythrilGreataxe, 0.9f);
+        ActorCastStart(id + 0x11, _module.Althyk, (uint)AID.MythrilGreataxe, 0.9f);
         ComponentCondition<SpinnersWheelStayMove>(id + 0x12, 1.1f, comp => comp.ActiveDebuffs == 0, "Stay/move resolve")
             .ActivateOnEnter<MythrilGreataxe>()
             .DeactivateOnExit<SpinnersWheelStayMove>();
@@ -137,28 +137,28 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void SpinnersWheelGazeTimeAndTide(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.SpinnersWheel, delay, 4.5f)
+        ActorCast(id, _module.Nymeia, (uint)AID.SpinnersWheel, delay, 4.5f)
             .ActivateOnEnter<SpinnersWheelArcaneAttraction>()
             .ActivateOnEnter<SpinnersWheelAttractionReversed>();
-        ActorCast(id + 0x10, _module.Althyk, AID.TimeAndTide, 1.7f, 10);
+        ActorCast(id + 0x10, _module.Althyk, (uint)AID.TimeAndTide, 1.7f, 10);
         SpinnersWheelGazeResolve(id + 0x20, 2.7f);
     }
 
     private void SpinnersWheelStayMoveTimeAndTide(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.SpinnersWheel, delay, 4.5f)
+        ActorCast(id, _module.Nymeia, (uint)AID.SpinnersWheel, delay, 4.5f)
             .ActivateOnEnter<SpinnersWheelStayMove>();
-        ActorCast(id + 0x10, _module.Althyk, AID.TimeAndTide, 1.7f, 10);
+        ActorCast(id + 0x10, _module.Althyk, (uint)AID.TimeAndTide, 1.7f, 10);
         SpinnersWheelStayMoveResolve(id + 0x20, 2.7f);
     }
 
     private void SpinnersWheelGazeHydrorythmosTimeAndTide(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.SpinnersWheel, delay, 4.5f);
-        ActorCastStart(id + 0x10, _module.Althyk, AID.TimeAndTide, 1.5f)
+        ActorCast(id, _module.Nymeia, (uint)AID.SpinnersWheel, delay, 4.5f);
+        ActorCastStart(id + 0x10, _module.Althyk, (uint)AID.TimeAndTide, 1.5f)
             .ActivateOnEnter<SpinnersWheelArcaneAttraction>()
             .ActivateOnEnter<SpinnersWheelAttractionReversed>();
-        ActorCast(id + 0x20, _module.Nymeia, AID.Hydrorythmos, 0.6f, 5, false, "Line 1")
+        ActorCast(id + 0x20, _module.Nymeia, (uint)AID.Hydrorythmos, 0.6f, 5, false, "Line 1")
             .ActivateOnEnter<Hydrorythmos>();
         ComponentCondition<Hydrorythmos>(id + 0x30, 2.1f, comp => comp.NumCasts > 1);
         ComponentCondition<Hydrorythmos>(id + 0x31, 2.1f, comp => comp.NumCasts > 3);
@@ -172,26 +172,26 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void Axioma(uint id, float delay)
     {
-        ActorCast(id, _module.Althyk, AID.Axioma, delay, 5, false, "Raidwide")
+        ActorCast(id, _module.Althyk, (uint)AID.Axioma, delay, 5, false, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Hydroptosis(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.Hydroptosis, delay, 5, false, "Spread")
+        ActorCast(id, _module.Nymeia, (uint)AID.Hydroptosis, delay, 5, false, "Spread")
             .ActivateOnEnter<Hydroptosis>()
             .DeactivateOnExit<Hydroptosis>();
     }
 
     private void InexorablePull(uint id, float delay)
     {
-        ActorCast(id, _module.Althyk, AID.InexorablePull, delay, 6);
+        ActorCast(id, _module.Althyk, (uint)AID.InexorablePull, delay, 6);
         ComponentCondition<Axioma>(id + 0x10, 0.7f, comp => !comp.ShouldBeInZone, "Kick up");
     }
 
     private void Petrai(uint id, float delay)
     {
-        ActorCast(id, _module.Althyk, AID.Petrai, delay, 5)
+        ActorCast(id, _module.Althyk, (uint)AID.Petrai, delay, 5)
             .ActivateOnEnter<Petrai>();
         ComponentCondition<Petrai>(id + 0x10, 1, comp => comp.NumCasts > 0, "Shared tankbuster")
             .DeactivateOnExit<Petrai>()
@@ -200,7 +200,7 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void HydrostasisPetrai(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.Hydrostasis, delay, 4)
+        ActorCast(id, _module.Nymeia, (uint)AID.Hydrostasis, delay, 4)
             .ActivateOnEnter<Petrai>();
         ActorCastEnd(id + 2, _module.Althyk, 1.1f); // this cast ends and tower knockback casts start at the same time
         ComponentCondition<Petrai>(id + 0x10, 1, comp => comp.NumCasts > 0, "Shared tankbuster")
@@ -216,10 +216,10 @@ class A22AlthykNymeiaStates : StateMachineBuilder
 
     private void HydrostasisTimeAndTide(uint id, float delay)
     {
-        ActorCast(id, _module.Nymeia, AID.Hydrostasis, delay, 4);
+        ActorCast(id, _module.Nymeia, (uint)AID.Hydrostasis, delay, 4);
         ComponentCondition<Hydrostasis>(id + 0x10, 2.0f, comp => comp.Active)
             .ActivateOnEnter<Hydrostasis>();
-        ActorCast(id + 0x20, _module.Althyk, AID.TimeAndTide, 0.1f, 10); // TODO: boss often dies here...
+        ActorCast(id + 0x20, _module.Althyk, (uint)AID.TimeAndTide, 0.1f, 10); // TODO: boss often dies here...
         ComponentCondition<Hydrostasis>(id + 0x30, 2, comp => comp.NumCasts >= 1, "Knockback 1")
             .SetHint(StateMachine.StateHint.Knockback);
         ComponentCondition<Hydrostasis>(id + 0x31, 3, comp => comp.NumCasts >= 2, "Knockback 2");

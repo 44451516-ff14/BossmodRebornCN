@@ -49,9 +49,9 @@ public enum IconID : uint
     Megaflare = 62, // player
 }
 
-class BlizzardBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BlizzardBreath), new AOEShapeCone(60, 22.5f.Degrees()));
-class FlamesOfTheApocalypse(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlamesOfTheApocalypse), new AOEShapeDonut(15, 30));
-class MindBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MindBlast), 21);
+class BlizzardBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlizzardBreath, new AOEShapeCone(60, 22.5f.Degrees()));
+class FlamesOfTheApocalypse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlamesOfTheApocalypse, new AOEShapeDonut(15, 30));
+class MindBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MindBlast, 21);
 
 // note: helpers target their corresponding target for the duration of their life
 class Megaflare(BossModule module) : Components.UniformStackSpread(module, 6, 0)
@@ -78,19 +78,19 @@ class Megaflare(BossModule module) : Components.UniformStackSpread(module, 6, 0)
     }
 }
 
-class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.TidalWaveVisual), 48, kind: Kind.DirForward);
-class WindSlash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WindSlashAOE), 8);
+class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TidalWaveVisual, 48, kind: Kind.DirForward);
+class WindSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindSlashAOE, 8);
 class Windwinder(BossModule module) : Components.Voidzone(module, 5, m => m.Enemies(OID.Twister).Where(a => !a.IsDead));
 
-abstract class CivilizationBuster(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(62, 7.5f));
-class CivilizationBuster1(BossModule module) : CivilizationBuster(module, AID.CivilizationBuster1);
-class CivilizationBuster2(BossModule module) : CivilizationBuster(module, AID.CivilizationBuster2);
+abstract class CivilizationBuster(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(62, 7.5f));
+class CivilizationBuster1(BossModule module) : CivilizationBuster(module, (uint)AID.CivilizationBuster1);
+class CivilizationBuster2(BossModule module) : CivilizationBuster(module, (uint)AID.CivilizationBuster2);
 
-class Touchdown(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Touchdown), 30); // TODO: verify falloff
-class PillarImpact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarImpact), 7);
-class PillarPierce(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PillarPierce), new AOEShapeRect(65, 4));
+class Touchdown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Touchdown, 30); // TODO: verify falloff
+class PillarImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarImpact, 7);
+class PillarPierce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarPierce, new AOEShapeRect(65, 4));
 class AncientAevis(BossModule module) : Components.Adds(module, (uint)OID.AncientAevis);
-class HeadlongRush(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeadlongRush), new AOEShapeRect(13.2f, 5));
+class HeadlongRush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeadlongRush, new AOEShapeRect(13.2f, 5));
 class Aether(BossModule module) : Components.Adds(module, (uint)OID.Aether);
 
 class ArchaeotaniaStates : StateMachineBuilder

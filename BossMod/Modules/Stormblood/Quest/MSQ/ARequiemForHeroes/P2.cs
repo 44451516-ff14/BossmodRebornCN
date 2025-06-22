@@ -29,16 +29,16 @@ class StormUnbound(BossModule module) : Components.Exaflare(module, 5)
     }
 }
 
-class LightlessSpark2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightlessSparkAdds), new AOEShapeCone(40f, 45f.Degrees()));
+class LightlessSpark2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightlessSparkAdds, new AOEShapeCone(40f, 45f.Degrees()));
 
-class ArtOfTheStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArtOfTheStorm), 8f);
-class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EntropicFlame), new AOEShapeRect(50f, 4f));
+class ArtOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArtOfTheStorm, 8f);
+class EntropicFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EntropicFlame, new AOEShapeRect(50f, 4f));
 
-class FloodOfDarkness(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FloodOfDarkness), 6f);
-class VeinSplitter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VeinSplitter), 10f);
-class LightlessSpark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightlessSpark), new AOEShapeCone(40f, 45f.Degrees()));
-class SwellUnbound(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheSwellUnbound), new AOEShapeDonut(8f, 20f));
-class Swell(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.ArtOfTheSwell), 8f)
+class FloodOfDarkness(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FloodOfDarkness, 6f);
+class VeinSplitter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VeinSplitter, 10f);
+class LightlessSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightlessSpark, new AOEShapeCone(40f, 45f.Degrees()));
+class SwellUnbound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheSwellUnbound, new AOEShapeDonut(8f, 20f));
+class Swell(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.ArtOfTheSwell, 8f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -47,10 +47,10 @@ class Swell(BossModule module) : Components.SimpleKnockbacks(module, ActionID.Ma
     }
 }
 
-abstract class ArtOfTheSword(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 3f));
-class ArtOfTheSword1(BossModule module) : ArtOfTheSword(module, AID.ArtOfTheSword1);
-class ArtOfTheSword2(BossModule module) : ArtOfTheSword(module, AID.ArtOfTheSword2);
-class ArtOfTheSword3(BossModule module) : ArtOfTheSword(module, AID.ArtOfTheSword3);
+abstract class ArtOfTheSword(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 3f));
+class ArtOfTheSword1(BossModule module) : ArtOfTheSword(module, (uint)AID.ArtOfTheSword1);
+class ArtOfTheSword2(BossModule module) : ArtOfTheSword(module, (uint)AID.ArtOfTheSword2);
+class ArtOfTheSword3(BossModule module) : ArtOfTheSword(module, (uint)AID.ArtOfTheSword3);
 
 class DarkAether(BossModule module) : Components.Voidzone(module, 1.5f, GetVoidzones, 3f)
 {

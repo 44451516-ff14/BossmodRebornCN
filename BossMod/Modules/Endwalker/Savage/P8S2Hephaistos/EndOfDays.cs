@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S2;
 
-class EndOfDays(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.EndOfDays))
+class EndOfDays(BossModule module) : Components.GenericAOEs(module, (uint)AID.EndOfDays)
 {
     public List<(Actor caster, DateTime finish)> Casters = [];
 
@@ -29,7 +29,7 @@ class EndOfDays(BossModule module) : Components.GenericAOEs(module, ActionID.Mak
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Casters.RemoveAll(c => c.caster == caster);
     }
 

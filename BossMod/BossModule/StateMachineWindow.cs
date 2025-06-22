@@ -2,12 +2,12 @@
 
 namespace BossMod;
 
-public class StateMachineWindow : UIWindow
+public sealed class StateMachineWindow : UIWindow
 {
     private readonly Timeline _timeline = new();
     private readonly ColumnStateMachineTree _col;
 
-    public StateMachineWindow(BossModule module) : base($"{module.GetType().Name} timeline", true, new(600, 600))
+    public StateMachineWindow(BossModule module) : base($"{module.GetType().Name} timeline", true, new(600f, 600f))
     {
         _col = _timeline.Columns.Add(new ColumnStateMachineTree(_timeline, new(module.StateMachine), module.StateMachine));
         _timeline.MaxTime = _col.Tree.TotalMaxTime;

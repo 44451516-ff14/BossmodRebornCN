@@ -2,11 +2,10 @@
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using ImGuiNET;
 using System.Globalization;
-using System.Runtime.InteropServices;
 
 namespace BossMod;
 
-unsafe class DebugEnvControl
+sealed unsafe class DebugEnvControl
 {
     private delegate void ProcessEnvControlDelegate(void* self, uint index, ushort s1, ushort s2);
     private readonly ProcessEnvControlDelegate ProcessEnvControl = Marshal.GetDelegateForFunctionPointer<ProcessEnvControlDelegate>(Service.SigScanner.ScanText("48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 8B FA 41 0F B7 E8"));
@@ -37,6 +36,12 @@ unsafe class DebugEnvControl
 
         _history.Remove(_current);
         _history.Insert(0, _current);
-        ProcessEnvControl(EventFramework.Instance()->DirectorModule.ActiveContentDirector, index, (ushort)(state & 0xFFFF), (ushort)(state >> 16));
+        var director = EventFramework.Instance()->DirectorModule.ActiveContentDirector;
+        if (director == null)
+        {
+            Service.Log("No active content director, doing nothing");
+            return;
+        }
+        ProcessEnvControl(director, index, (ushort)(state & 0xFFFF), (ushort)(state >> 16));
     }
 }

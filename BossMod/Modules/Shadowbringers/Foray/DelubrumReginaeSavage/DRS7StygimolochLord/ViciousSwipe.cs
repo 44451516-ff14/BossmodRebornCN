@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS7StygimolochLord;
 
-class ViciousSwipe(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.ViciousSwipe))
+sealed class ViciousSwipe(BossModule module) : Components.GenericKnockback(module, (uint)AID.ViciousSwipe)
 {
     private Knockback? _source = new(module.PrimaryActor.Position, 15, module.WorldState.FutureTime(module.StateMachine.ActiveState?.Duration ?? 0), _shape);
 

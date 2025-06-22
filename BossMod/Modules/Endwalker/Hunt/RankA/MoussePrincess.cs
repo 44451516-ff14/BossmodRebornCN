@@ -72,10 +72,10 @@ class PrincessThrenody(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class WhimsyAlaMode(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.WhimsyAlaMode), "Select direction");
-class AmorphicFlail(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AmorphicFlail), 9f);
-class PrincessCacophony(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrincessCacophony), 12f);
-class Banish(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Banish));
+class WhimsyAlaMode(BossModule module) : Components.CastHint(module, (uint)AID.WhimsyAlaMode, "Select direction");
+class AmorphicFlail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AmorphicFlail, 9f);
+class PrincessCacophony(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrincessCacophony, 12f);
+class Banish(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Banish);
 
 class MoussePrincessStates : StateMachineBuilder
 {

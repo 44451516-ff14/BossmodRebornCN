@@ -19,9 +19,9 @@ public enum AID : uint
     Sanctification = 16814 // Boss->self, 5.0s cast, range 12 90-degree cone
 }
 
-class SanctifiedAero(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedAero), new AOEShapeRect(40, 4));
-class PunitiveLight(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.PunitiveLight), true, true, "Raidwide", true);
-class Sanctification(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sanctification), new AOEShapeCone(12, 45.Degrees()));
+class SanctifiedAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedAero, new AOEShapeRect(40, 4));
+class PunitiveLight(BossModule module) : Components.CastInterruptHint(module, (uint)AID.PunitiveLight, true, true, "Raidwide", true);
+class Sanctification(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sanctification, new AOEShapeCone(12, 45.Degrees()));
 
 class D050ForgivenPrejudiceStates : StateMachineBuilder
 {

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class P3Burst(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.Burst))
+class P3Burst(BossModule module) : Components.GenericAOEs(module, (uint)AID.Burst)
 {
     private readonly List<Actor> _bombs = module.Enemies((uint)OID.BombBoulder);
     private readonly Dictionary<ulong, DateTime?> _bombActivation = [];
@@ -38,7 +38,7 @@ class P3Burst(BossModule module) : Components.GenericAOEs(module, ActionID.MakeS
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _bombActivation[caster.InstanceID] = null;
     }
 }

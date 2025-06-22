@@ -34,26 +34,26 @@ public enum AID : uint
     MercilessRight2 = 16284, // 29FE->self, 4.2s cast, range 40 120-degree cone
 }
 
-class UnceremoniousBeheading(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.UnceremoniousBeheading), 10);
-class KatunCycle(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.KatunCycle), new AOEShapeDonut(5, 40));
+class UnceremoniousBeheading(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnceremoniousBeheading, 10);
+class KatunCycle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KatunCycle, new AOEShapeDonut(5, 40));
 
-abstract class Cleaves(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(40, 60.Degrees()));
-class MercilessRight(BossModule module) : Cleaves(module, AID.MercilessRight1);
-class MercilessRight1(BossModule module) : Cleaves(module, AID.MercilessRight2);
-class MercilessLeft(BossModule module) : Cleaves(module, AID.MercilessLeft1);
-class MercilessLeft1(BossModule module) : Cleaves(module, AID.MercilessLeft2);
-class Evisceration(BossModule module) : Cleaves(module, AID.Evisceration);
+abstract class Cleaves(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40, 60.Degrees()));
+class MercilessRight(BossModule module) : Cleaves(module, (uint)AID.MercilessRight1);
+class MercilessRight1(BossModule module) : Cleaves(module, (uint)AID.MercilessRight2);
+class MercilessLeft(BossModule module) : Cleaves(module, (uint)AID.MercilessLeft1);
+class MercilessLeft1(BossModule module) : Cleaves(module, (uint)AID.MercilessLeft2);
+class Evisceration(BossModule module) : Cleaves(module, (uint)AID.Evisceration);
 
-class HotPursuit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HotPursuit1), 5);
+class HotPursuit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HotPursuit1, 5);
 
-abstract class NoT(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(45, 2.5f));
-class NexusOfThunder1(BossModule module) : NoT(module, AID.NexusOfThunder1);
-class NexusOfThunder2(BossModule module) : NoT(module, AID.NexusOfThunder2);
+abstract class NoT(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(45, 2.5f));
+class NexusOfThunder1(BossModule module) : NoT(module, (uint)AID.NexusOfThunder1);
+class NexusOfThunder2(BossModule module) : NoT(module, (uint)AID.NexusOfThunder2);
 
-class Burn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burn), 8, 5);
-class Spiritcall(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.Spiritcall), 20, stopAtWall: true);
+class Burn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burn, 8, 5);
+class Spiritcall(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Spiritcall, 20, stopAtWall: true);
 
-class Electrocution(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Electrocution), 6)
+class Electrocution(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrocution, 6)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

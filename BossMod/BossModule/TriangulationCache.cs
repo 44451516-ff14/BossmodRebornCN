@@ -15,9 +15,10 @@ public sealed class TriangulationCache
     public static int GetKeyHash(int keyType, params object[] keyParts)
     {
         var hash = keyType;
-        for (var i = 0; i < keyParts.Length; ++i)
+        var len = keyParts.Length;
+        for (var i = 0; i < len; ++i)
         {
-            hash = hash * 31 + (keyParts[i]?.GetHashCode() ?? 0);
+            hash = hash * 31 + keyParts[i].GetHashCode();
         }
         return hash;
     }
@@ -50,8 +51,8 @@ public sealed class TriangulationCache
             else
                 kvp.Value.IsCurrent = false;
         }
-
-        for (var i = 0; i < keysToRemove.Count; ++i)
+        var count = keysToRemove.Count;
+        for (var i = 0; i < count; ++i)
             _cache.Remove(keysToRemove[i]);
     }
 

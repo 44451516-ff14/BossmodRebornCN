@@ -33,12 +33,12 @@ class Ex6ByakkoStates : StateMachineBuilder
         StormPulseDouble(id + 0x110000, 10.5f);
         HundredfoldHavoc1(id + 0x120000, 6.1f);
         StormPulseQuadruple(id + 0x130000, 11.5f);
-        Cast(id + 0x140000, AID.StormPulseEnrage, 2.1f, 8, "Enrage");
+        Cast(id + 0x140000, (uint)AID.StormPulseEnrage, 2.1f, 8, "Enrage");
     }
 
     private State StormPulse(uint id, float delay, string name = "Raidwide")
     {
-        return Cast(id, AID.StormPulse, delay, 4, name)
+        return Cast(id, (uint)AID.StormPulse, delay, 4, name)
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -66,7 +66,7 @@ class Ex6ByakkoStates : StateMachineBuilder
 
     private State HeavenlyStrike(uint id, float delay)
     {
-        return Cast(id, AID.HeavenlyStrike, delay, 4, "Tankbuster")
+        return Cast(id, (uint)AID.HeavenlyStrike, delay, 4, "Tankbuster")
             .ActivateOnEnter<HeavenlyStrike>()
             .DeactivateOnExit<HeavenlyStrike>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -74,24 +74,24 @@ class Ex6ByakkoStates : StateMachineBuilder
 
     private void DistantClap(uint id, float delay)
     {
-        Cast(id, AID.DistantClap, delay, 5, "Donut")
+        Cast(id, (uint)AID.DistantClap, delay, 5, "Donut")
             .ActivateOnEnter<DistantClap>()
             .DeactivateOnExit<DistantClap>();
     }
 
     private void StateOfShock(uint id, float delay)
     {
-        Cast(id, AID.StateOfShock, delay, 4);
+        Cast(id, (uint)AID.StateOfShock, delay, 4);
         ComponentCondition<StateOfShock>(id + 0x10, 0.9f, comp => comp.NumStuns > 0, "Grab tank")
             .ActivateOnEnter<StateOfShock>()
             .ActivateOnEnter<HighestStakes>();
-        Cast(id + 0x20, AID.HighestStakes, 1.5f, 5);
+        Cast(id + 0x20, (uint)AID.HighestStakes, 1.5f, 5);
         ComponentCondition<HighestStakes>(id + 0x30, 0.8f, comp => comp.NumCasts > 0, "Tower 1")
             .DeactivateOnExit<StateOfShock>();
         ComponentCondition<StateOfShock>(id + 0x40, 2, comp => comp.NumCasts > 0)
             .ActivateOnEnter<StateOfShock>();
         ComponentCondition<StateOfShock>(id + 0x41, 0.9f, comp => comp.NumStuns > 0, "Grab tank");
-        Cast(id + 0x50, AID.HighestStakes, 1.2f, 5);
+        Cast(id + 0x50, (uint)AID.HighestStakes, 1.2f, 5);
         ComponentCondition<HighestStakes>(id + 0x60, 0.8f, comp => comp.NumCasts > 1, "Tower 2")
             .DeactivateOnExit<StateOfShock>()
             .DeactivateOnExit<HighestStakes>();
@@ -99,11 +99,11 @@ class Ex6ByakkoStates : StateMachineBuilder
 
     private void UnrelentingAnguish1(uint id, float delay)
     {
-        Cast(id, AID.UnrelentingAnguish, delay, 3, "Orbs start");
+        Cast(id, (uint)AID.UnrelentingAnguish, delay, 3, "Orbs start");
         StormPulse(id + 0x10, 2.2f);
         ComponentCondition<OminousWind>(id + 0x20, 2.9f, comp => comp.Targets.Any())
             .ActivateOnEnter<OminousWind>();
-        Cast(id + 0x30, AID.FireAndLightningBoss, 4.5f, 4, "Line")
+        Cast(id + 0x30, (uint)AID.FireAndLightningBoss, 4.5f, 4, "Line")
             .ActivateOnEnter<FireAndLightningBoss>()
             .DeactivateOnExit<FireAndLightningBoss>();
         ComponentCondition<OminousWind>(id + 0x40, 1.5f, comp => comp.Targets.None(), "Orbs end")
@@ -120,7 +120,7 @@ class Ex6ByakkoStates : StateMachineBuilder
             .ActivateOnEnter<SteelClaw>()
             .DeactivateOnExit<AratamaPuddleBait>();
         ComponentCondition<SteelClaw>(id + 0x30, 0.1f, comp => comp.NumCasts > 0, "Cleave 1");
-        CastStart(id + 0x40, AID.HeavenlyStrike, 6);
+        CastStart(id + 0x40, (uint)AID.HeavenlyStrike, 6);
         ComponentCondition<SteelClaw>(id + 0x41, 0.1f, comp => comp.NumCasts > 1, "Cleave 2")
             .ActivateOnEnter<HeavenlyStrike>()
             .DeactivateOnExit<SteelClaw>();
@@ -131,7 +131,7 @@ class Ex6ByakkoStates : StateMachineBuilder
 
         ComponentCondition<WhiteHerald>(id + 0x60, 0.7f, comp => comp.Active)
             .ActivateOnEnter<WhiteHerald>();
-        CastStart(id + 0x61, AID.DistantClap, 2.4f);
+        CastStart(id + 0x61, (uint)AID.DistantClap, 2.4f);
         ComponentCondition<WhiteHerald>(id + 0x62, 2.7f, comp => comp.NumFinishedSpreads > 0, "Flare")
             .ActivateOnEnter<DistantClap>()
             .DeactivateOnExit<WhiteHerald>();
@@ -148,7 +148,7 @@ class Ex6ByakkoStates : StateMachineBuilder
     private void Intermission(uint id, float delay)
     {
         ActorTargetable(id, _module.Boss, false, delay, "Boss disappears");
-        ActorCast(id + 0x10, _module.Hakutei, AID.RoarOfThunder, 4.4f, 20, true, "Add enrage") // note: pretty large variance here
+        ActorCast(id + 0x10, _module.Hakutei, (uint)AID.RoarOfThunder, 4.4f, 20, true, "Add enrage") // note: pretty large variance here
             .ActivateOnEnter<VoiceOfThunder>()
             .DeactivateOnExit<VoiceOfThunder>()
             .SetHint(StateMachine.StateHint.Raidwide | StateMachine.StateHint.DowntimeStart);
@@ -181,33 +181,33 @@ class Ex6ByakkoStates : StateMachineBuilder
     {
         ComponentCondition<HundredfoldHavoc>(id, delay, comp => comp.Active)
             .ActivateOnEnter<HundredfoldHavoc>();
-        CastStart(id + 1, AID.StateOfShock, 2.1f);
+        CastStart(id + 1, (uint)AID.StateOfShock, 2.1f);
         ComponentCondition<HundredfoldHavoc>(id + 2, 2.9f, comp => comp.NumCasts > 0, "Exaflares start");
         CastEnd(id + 3, 1.1f);
 
         ComponentCondition<StateOfShock>(id + 0x10, 0.9f, comp => comp.NumStuns > 0, "Grab tank")
             .ActivateOnEnter<StateOfShock>()
             .ActivateOnEnter<HighestStakes>();
-        Cast(id + 0x20, AID.HighestStakes, 1.5f, 5)
+        Cast(id + 0x20, (uint)AID.HighestStakes, 1.5f, 5)
             .DeactivateOnExit<HundredfoldHavoc>();
         ComponentCondition<HighestStakes>(id + 0x30, 0.8f, comp => comp.NumCasts > 0, "Tower 1")
             .DeactivateOnExit<StateOfShock>();
         ComponentCondition<StateOfShock>(id + 0x40, 2, comp => comp.NumCasts > 0)
             .ActivateOnEnter<StateOfShock>();
         ComponentCondition<StateOfShock>(id + 0x41, 0.9f, comp => comp.NumStuns > 0, "Grab tank");
-        Cast(id + 0x50, AID.HighestStakes, 1.3f, 5);
+        Cast(id + 0x50, (uint)AID.HighestStakes, 1.3f, 5);
         ComponentCondition<HighestStakes>(id + 0x60, 0.8f, comp => comp.NumCasts > 1, "Tower 2")
             .DeactivateOnExit<StateOfShock>()
             .DeactivateOnExit<HighestStakes>();
 
-        Cast(id + 0x1000, AID.SweepTheLegBoss, 1.9f, 4, "Wide cone")
+        Cast(id + 0x1000, (uint)AID.SweepTheLegBoss, 1.9f, 4, "Wide cone")
             .ActivateOnEnter<SweepTheLegBoss>()
             .DeactivateOnExit<SweepTheLegBoss>();
     }
 
     private void UnrelentingAnguish2(uint id, float delay)
     {
-        Cast(id, AID.UnrelentingAnguish, delay, 3, "Orbs start");
+        Cast(id, (uint)AID.UnrelentingAnguish, delay, 3, "Orbs start");
         StormPulseDouble(id + 0x10, 2.1f);
 
         ComponentCondition<GaleForce>(id + 0x20, 2, comp => comp.CurrentBaits.Count > 0)
@@ -218,13 +218,13 @@ class Ex6ByakkoStates : StateMachineBuilder
         ComponentCondition<GaleForce>(id + 0x22, 1.2f, comp => comp.NumCasts > 0, "Baits")
             .DeactivateOnExit<GaleForce>();
 
-        Cast(id + 0x30, AID.FireAndLightningBoss, 3.4f, 4, "Line")
+        Cast(id + 0x30, (uint)AID.FireAndLightningBoss, 3.4f, 4, "Line")
             .ActivateOnEnter<FireAndLightningBoss>()
             .DeactivateOnExit<FireAndLightningBoss>();
         ComponentCondition<OminousWind>(id + 0x40, 1.5f, comp => comp.Targets.None(), "Orbs end")
             .DeactivateOnExit<OminousWind>();
 
-        Cast(id + 0x50, AID.FireAndLightningBoss, 3.4f, 4, "Line")
+        Cast(id + 0x50, (uint)AID.FireAndLightningBoss, 3.4f, 4, "Line")
             .ActivateOnEnter<FireAndLightningBoss>()
             .DeactivateOnExit<FireAndLightningBoss>();
         ComponentCondition<VacuumClaw>(id + 0x60, 0.7f, comp => !comp.Active, "Voidzones end")
@@ -242,7 +242,7 @@ class Ex6ByakkoStates : StateMachineBuilder
 
         ComponentCondition<WhiteHerald>(id + 0x30, 0.7f, comp => comp.Active)
             .ActivateOnEnter<WhiteHerald>();
-        CastStart(id + 0x31, AID.DistantClap, 2.4f);
+        CastStart(id + 0x31, (uint)AID.DistantClap, 2.4f);
         ComponentCondition<WhiteHerald>(id + 0x32, 2.7f, comp => comp.NumFinishedSpreads > 0, "Flare")
             .ActivateOnEnter<DistantClap>()
             .DeactivateOnExit<WhiteHerald>();
@@ -250,7 +250,7 @@ class Ex6ByakkoStates : StateMachineBuilder
         CastEnd(id + 0x34, 0.3f, "Donut 1")
             .DeactivateOnExit<DistantClap>();
 
-        CastStart(id + 0x40, AID.DistantClap, 3.2f)
+        CastStart(id + 0x40, (uint)AID.DistantClap, 3.2f)
             .ActivateOnEnter<FireAndLightningAdd>();
         ComponentCondition<FireAndLightningAdd>(id + 0x41, 0.7f, comp => comp.NumCasts > 0, "Line 1")
             .ActivateOnEnter<DistantClap>()
@@ -265,7 +265,7 @@ class Ex6ByakkoStates : StateMachineBuilder
             .ActivateOnEnter<SteelClaw>()
             .DeactivateOnExit<SteelClaw>();
 
-        ActorCastStart(id + 0x200, _module.Hakutei, AID.RoarOfThunder, 10.6f, false)
+        ActorCastStart(id + 0x200, _module.Hakutei, (uint)AID.RoarOfThunder, 10.6f, false)
             .ActivateOnEnter<VoiceOfThunder>()
             .DeactivateOnExit<AratamaPuddleVoidzone>();
         StormPulseDouble(id + 0x210, 5.6f);
@@ -273,7 +273,7 @@ class Ex6ByakkoStates : StateMachineBuilder
             .DeactivateOnExit<VoiceOfThunder>()
             .SetHint(StateMachine.StateHint.Raidwide);
 
-        Cast(id + 0x300, AID.FireAndLightningBoss, 8.3f, 4, "Line")
+        Cast(id + 0x300, (uint)AID.FireAndLightningBoss, 8.3f, 4, "Line")
             .ActivateOnEnter<FireAndLightningBoss>()
             .DeactivateOnExit<FireAndLightningBoss>();
     }
@@ -285,7 +285,7 @@ class Ex6ByakkoStates : StateMachineBuilder
 
         ComponentCondition<HundredfoldHavoc>(id + 0x10, 2.2f, comp => comp.Active)
             .ActivateOnEnter<HundredfoldHavoc>();
-        CastStart(id + 0x11, AID.StateOfShock, 4.6f);
+        CastStart(id + 0x11, (uint)AID.StateOfShock, 4.6f);
         ComponentCondition<HundredfoldHavoc>(id + 0x12, 0.4f, comp => comp.NumCasts > 0, "Exaflares start");
         ComponentCondition<GaleForce>(id + 0x13, 0.9f, comp => comp.NumCasts > 0, "Baits")
             .ActivateOnEnter<VacuumClaw>()
@@ -295,20 +295,20 @@ class Ex6ByakkoStates : StateMachineBuilder
         ComponentCondition<StateOfShock>(id + 0x20, 0.9f, comp => comp.NumStuns > 0, "Grab tank")
             .ActivateOnEnter<StateOfShock>()
             .ActivateOnEnter<HighestStakes>();
-        Cast(id + 0x30, AID.HighestStakes, 1.3f, 5)
+        Cast(id + 0x30, (uint)AID.HighestStakes, 1.3f, 5)
             .DeactivateOnExit<HundredfoldHavoc>();
         ComponentCondition<HighestStakes>(id + 0x40, 0.8f, comp => comp.NumCasts > 0, "Tower 1")
             .DeactivateOnExit<StateOfShock>();
         ComponentCondition<StateOfShock>(id + 0x50, 2, comp => comp.NumCasts > 0)
             .ActivateOnEnter<StateOfShock>();
         ComponentCondition<StateOfShock>(id + 0x51, 0.9f, comp => comp.NumStuns > 0, "Grab tank");
-        Cast(id + 0x60, AID.HighestStakes, 1.2f, 5)
+        Cast(id + 0x60, (uint)AID.HighestStakes, 1.2f, 5)
             .DeactivateOnExit<VacuumClaw>();
         ComponentCondition<HighestStakes>(id + 0x70, 0.8f, comp => comp.NumCasts > 1, "Tower 2")
             .DeactivateOnExit<StateOfShock>()
             .DeactivateOnExit<HighestStakes>();
 
-        Cast(id + 0x1000, AID.SweepTheLegBoss, 1.9f, 4, "Wide cone")
+        Cast(id + 0x1000, (uint)AID.SweepTheLegBoss, 1.9f, 4, "Wide cone")
             .ActivateOnEnter<SweepTheLegBoss>()
             .DeactivateOnExit<SweepTheLegBoss>();
     }

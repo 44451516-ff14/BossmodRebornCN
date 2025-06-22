@@ -6,11 +6,11 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 
 namespace BossMod;
 
-class DebugTeleport
+sealed class DebugTeleport
 {
     private bool EnableNoClip;
     private float NoClipSpeed = 0.001f;
-    private Vector3 inputCoordinates = new(0, 0, 0);
+    private Vector3 inputCoordinates;
 
     public unsafe void Draw()
     {

@@ -1,6 +1,6 @@
-﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.Normal.DRN1TrinitySeeker;
+﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN1TrinitySeeker;
 
-class IronSplitter(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.IronSplitter))
+sealed class IronSplitter(BossModule module) : Components.GenericAOEs(module, (uint)AID.IronSplitter)
 {
     private readonly List<AOEInstance> _aoes = new(3);
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(4f), new AOEShapeDonut(8f, 12f), new AOEShapeDonut(16f, 20f),
@@ -10,29 +10,28 @@ class IronSplitter(BossModule module) : Components.GenericAOEs(module, ActionID.
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             var distance = (caster.Position - Arena.Center).Length();
             var activation = Module.CastFinishAt(spell);
             var pos = WPos.ClampToGrid(Arena.Center);
             if (distance is < 3 or > 9 and < 11 or > 17 and < 19) // tiles
             {
-                _aoes.Add(new(_shapes[0], pos, default, activation));
-                _aoes.Add(new(_shapes[1], pos, default, activation));
-                _aoes.Add(new(_shapes[2], pos, default, activation));
+                for (var i = 0; i < 3; ++i)
+                    AddAOE(i);
             }
             else
             {
-                _aoes.Add(new(_shapes[3], pos, default, activation));
-                _aoes.Add(new(_shapes[4], pos, default, activation));
-                _aoes.Add(new(_shapes[5], pos, default, activation));
+                for (var i = 3; i < 6; ++i)
+                    AddAOE(i);
             }
+            void AddAOE(int index) => _aoes.Add(new(_shapes[index], pos, default, activation));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _aoes.Clear();
     }
 }

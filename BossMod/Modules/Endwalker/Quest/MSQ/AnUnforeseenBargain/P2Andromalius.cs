@@ -45,10 +45,10 @@ public enum AID : uint
     VoidcluserVisual = 32932, // Voidcluster->self, no cast, single-target
 }
 
-class Voidblood(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Voidblood), 6f);
-class VoidSlash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VoidSlash), new AOEShapeCone(9.7f, 45f.Degrees()));
-class EvilMist(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.EvilMist));
-class VoidEvocation(BossModule module) : Components.RaidwideInstant(module, ActionID.MakeSpell(AID.VoidEvocation), 5.1f)
+class Voidblood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Voidblood, 6f);
+class VoidSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidSlash, new AOEShapeCone(9.7f, 45f.Degrees()));
+class EvilMist(BossModule module) : Components.RaidwideCast(module, (uint)AID.EvilMist);
+class VoidEvocation(BossModule module) : Components.RaidwideInstant(module, (uint)AID.VoidEvocation, 5.1f)
 {
     public override void OnActorCreated(Actor actor)
     {
@@ -57,9 +57,9 @@ class VoidEvocation(BossModule module) : Components.RaidwideInstant(module, Acti
     }
 }
 
-class Explosion(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.Explosion), 5f);
-class Dark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Dark), 10f);
-class Hellsnap(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.Hellsnap), 6f);
+class Explosion(BossModule module) : Components.CastTowers(module, (uint)AID.Explosion, 5f);
+class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 10f);
+class Hellsnap(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Hellsnap, 6f);
 
 class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
 {
@@ -103,7 +103,7 @@ class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Decay(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Decay), "Kill the Voidskipper!", true)
+class Decay(BossModule module) : Components.CastHint(module, (uint)AID.Decay, "Kill the Voidskipper!", true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -111,7 +111,7 @@ class Decay(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(
         for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            if (e.Actor.CastInfo?.Action == WatchedAction)
+            if (e.Actor.CastInfo?.Action.ID == WatchedAction)
                 e.Priority = 5;
         }
     }

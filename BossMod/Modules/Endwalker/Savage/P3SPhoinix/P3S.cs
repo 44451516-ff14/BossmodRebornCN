@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Savage.P3SPhoinix;
 
-class HeatOfCondemnation(BossModule module) : Components.TankbusterTether(module, ActionID.MakeSpell(AID.HeatOfCondemnationAOE), (uint)TetherID.HeatOfCondemnation, 6);
-class TrailOfCondemnationAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TrailOfCondemnationAOE), new AOEShapeRect(40, 7.5f));
-class SearingBreeze(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SearingBreezeAOE), 6);
+class HeatOfCondemnation(BossModule module) : Components.TankbusterTether(module, (uint)AID.HeatOfCondemnationAOE, (uint)TetherID.HeatOfCondemnation, 6);
+class TrailOfCondemnationAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrailOfCondemnationAOE, new AOEShapeRect(40, 7.5f));
+class SearingBreeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SearingBreezeAOE, 6);
 
-abstract class Cinderwing(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(60, 90.Degrees()));
-class LeftCinderwing(BossModule module) : Cinderwing(module, AID.LeftCinderwing);
-class RightCinderwing(BossModule module) : Cinderwing(module, AID.RightCinderwing);
+abstract class Cinderwing(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(60, 90.Degrees()));
+class LeftCinderwing(BossModule module) : Cinderwing(module, (uint)AID.LeftCinderwing);
+class RightCinderwing(BossModule module) : Cinderwing(module, (uint)AID.RightCinderwing);
 
 class DevouringBrand(BossModule module) : Components.GenericAOEs(module)
 {

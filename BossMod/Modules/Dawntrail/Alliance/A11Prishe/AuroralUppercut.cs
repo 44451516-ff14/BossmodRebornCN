@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A11Prishe;
 
-class AuroralUppercut(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class AuroralUppercut(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
 {
     private Knockback? _source;
 
@@ -29,7 +29,7 @@ class AuroralUppercut(BossModule module) : Components.GenericKnockback(module, i
     }
 }
 
-class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(module)
+sealed class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Angle a45 = 45f.Degrees(), a135 = 135f.Degrees(), a44 = 44f.Degrees(), a13 = 12.5f.Degrees(), a59 = 59f.Degrees();
     private static readonly WPos center = A11Prishe.ArenaCenter;
@@ -64,34 +64,30 @@ class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(module)
         {
             case 12f:
                 if (Arena.Bounds == ArenaChanges.ArenaENVC00020001)
-                    SetAOE(hintENVC00020001KB12, spell);
+                    SetAOE(hintENVC00020001KB12);
                 else if (Arena.Bounds == ArenaChanges.ArenaENVC02000100)
-                    SetAOE(hintENVC02000100KB12, spell);
+                    SetAOE(hintENVC02000100KB12);
                 break;
             case 25f:
                 if (Arena.Bounds == ArenaChanges.ArenaENVC00020001)
-                    SetAOE(hintENVC00020001KB25, spell);
+                    SetAOE(hintENVC00020001KB25);
                 else if (Arena.Bounds == ArenaChanges.ArenaENVC02000100)
-                    SetAOE(hintENVC02000100KB25, spell);
+                    SetAOE(hintENVC02000100KB25);
                 break;
             case 38f:
                 if (Arena.Bounds == ArenaChanges.ArenaENVC00020001)
-                    SetAOE(hintENVC00020001KB38, spell);
+                    SetAOE(hintENVC00020001KB38);
                 else if (Arena.Bounds == ArenaChanges.ArenaENVC02000100)
-                    SetAOE(hintENVC02000100KB38, spell);
+                    SetAOE(hintENVC02000100KB38);
                 break;
         }
+        void SetAOE(AOEShapeCustom shape) => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 1.6f), Colors.SafeFromAOE);
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (_aoe != null && status.ID == (uint)SID.Knockback)
             _aoe = null;
-    }
-
-    private void SetAOE(AOEShapeCustom shape, ActorCastInfo spell)
-    {
-        _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 1.6f), Colors.SafeFromAOE);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints) { }

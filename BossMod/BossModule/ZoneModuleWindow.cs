@@ -2,7 +2,7 @@
 
 namespace BossMod;
 
-public class ZoneModuleWindow : UIWindow
+public sealed class ZoneModuleWindow : UIWindow
 {
     private readonly ZoneModuleManager _zmm;
 

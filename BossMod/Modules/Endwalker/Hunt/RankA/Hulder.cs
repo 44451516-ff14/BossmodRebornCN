@@ -16,11 +16,11 @@ public enum AID : uint
     StormOfColor = 27078 // Boss->player, 4.0s cast, single-target
 }
 
-class LayOfMislaidMemory(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LayOfMislaidMemory), new AOEShapeCone(30, 60.Degrees()));
-class TempestuousWrath(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.TempestuousWrath), 4);
-class RottingElegy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RottingElegy), new AOEShapeDonut(5, 50));
-class OdeToLostLove(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.OdeToLostLove));
-class StormOfColor(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.StormOfColor));
+class LayOfMislaidMemory(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LayOfMislaidMemory, new AOEShapeCone(30, 60.Degrees()));
+class TempestuousWrath(BossModule module) : Components.ChargeAOEs(module, (uint)AID.TempestuousWrath, 4);
+class RottingElegy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottingElegy, new AOEShapeDonut(5, 50));
+class OdeToLostLove(BossModule module) : Components.RaidwideCast(module, (uint)AID.OdeToLostLove);
+class StormOfColor(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StormOfColor);
 
 class HulderStates : StateMachineBuilder
 {

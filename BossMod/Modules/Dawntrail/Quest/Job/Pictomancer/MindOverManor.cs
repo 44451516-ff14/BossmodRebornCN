@@ -9,21 +9,18 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 6499, // Boss->player, no cast, single-target
+
     GyratingGlare = 37511, // Boss->self, 7.0s cast, range 40 circle
     RubbleRouse = 37512, // Boss->location, 4.0s cast, range 10 circle
     RockAndRefrainVisual = 37514, // Boss->location, no cast, range 10 circle
     RockAndRefrain1 = 37513, // Boss->location, 12.0s cast, range 10 circle
     RockAndRefrain2 = 37515, // Helper->location, 12.8s cast, range 10 circle
-    JitteringGlare = 37516, // Boss->self, 4.0s cast, range 40 30-degree cone
+    JitteringGlare = 37516 // Boss->self, 4.0s cast, range 40 30-degree cone
 }
 
-class JitteringGlare(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.JitteringGlare), new AOEShapeCone(40, 15.Degrees()));
-class GyratingGlare(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GyratingGlare));
-
-abstract class Rubble(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10);
-class RubbleRouse(BossModule module) : Rubble(module, AID.RubbleRouse);
-class RockAndRefrain1(BossModule module) : Rubble(module, AID.RockAndRefrain1);
-class RockAndRefrain2(BossModule module) : Rubble(module, AID.RockAndRefrain2);
+class JitteringGlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.JitteringGlare, new AOEShapeCone(40f, 15f.Degrees()));
+class GyratingGlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.GyratingGlare);
+class RubbleRouseRockAndRefrain(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RubbleRouse, (uint)AID.RockAndRefrain1, (uint)AID.RockAndRefrain2], 10f);
 
 class MindOverManorStates : StateMachineBuilder
 {
@@ -32,9 +29,7 @@ class MindOverManorStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<JitteringGlare>()
             .ActivateOnEnter<GyratingGlare>()
-            .ActivateOnEnter<RubbleRouse>()
-            .ActivateOnEnter<RockAndRefrain1>()
-            .ActivateOnEnter<RockAndRefrain2>();
+            .ActivateOnEnter<RubbleRouseRockAndRefrain>();
     }
 }
 

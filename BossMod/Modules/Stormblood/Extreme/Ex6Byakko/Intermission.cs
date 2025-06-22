@@ -63,7 +63,7 @@ class Intermission(BossModule module) : BossComponent(module)
     }
 }
 
-class IntermissionOrbAratama(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.IntermissionOrbAratama))
+class IntermissionOrbAratama(BossModule module) : Components.GenericAOEs(module, (uint)AID.IntermissionOrbAratama)
 {
     public readonly List<AOEInstance> AOEs = [];
 
@@ -95,6 +95,6 @@ class IntermissionOrbAratama(BossModule module) : Components.GenericAOEs(module,
     }
 }
 
-class IntermissionSweepTheLeg(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IntermissionSweepTheLeg), new AOEShapeDonut(5f, 25f));
-class ImperialGuard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ImperialGuard), new AOEShapeRect(44.75f, 2.5f));
-class FellSwoop(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.FellSwoop));
+class IntermissionSweepTheLeg(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IntermissionSweepTheLeg, new AOEShapeDonut(5f, 25f));
+class ImperialGuard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ImperialGuard, new AOEShapeRect(44.75f, 2.5f));
+class FellSwoop(BossModule module) : Components.CastCounter(module, (uint)AID.FellSwoop);

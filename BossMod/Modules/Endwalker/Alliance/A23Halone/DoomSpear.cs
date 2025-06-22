@@ -8,7 +8,7 @@ class DoomSpear(BossModule module) : Components.GenericTowers(module)
         {
             Towers.Add(new(spell.LocXZ, 6f, 8, 8));
             if (Towers.Count == 3)
-                Towers.SortBy(aoe => aoe.Activation);
+                Towers.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

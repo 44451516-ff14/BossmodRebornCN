@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Quest.MSQ.Endwalker;
 
-class AkhMorn(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class AkhMorn(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private DateTime _activation;
     private static readonly AOEShapeCircle circle = new(4f);
@@ -14,7 +14,7 @@ class AkhMorn(BossModule module) : Components.GenericBaitAway(module, centerAtTa
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (_activation != default)
-            hints.PredictedDamage.Add((new(1), _activation));
+            hints.AddPredictedDamage(new(1), _activation);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

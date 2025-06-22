@@ -3,13 +3,13 @@
 public enum OID : uint
 {
     Boss = 0x42C6, // R5.016-6.270, x1
-    Helper = 0x233C, // R0.500, x35 (spawn during fight), Helper type
     LitFuse = 0x42C7, // R1.200, x8
     LariatComboHelper = 0x42C9, // R1.000, x4
     Refbot = 0x42C8, // R3.360, x0 (spawn during fight)
     BruteDistortion = 0x42CB, // R5.016, x0 (spawn during fight), clone with chains
     TagTeamHelper = 0x43F5, // R0.100, x0 (spawn during fight), chain hand?..
     SinisterSpark = 0x42CA, // R1.000, x0 (spawn during fight), Helper type
+    Helper = 0x233C
 }
 
 public enum AID : uint

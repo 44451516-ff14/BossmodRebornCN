@@ -27,24 +27,24 @@ class C021ShishioStates : StateMachineBuilder
         StormcloudSummonsRokujoRevel(id + 0xB0000, 7.4f);
         StormcloudSummonsLightningBolt(id + 0xC0000, 4.7f); // note: delay could be 6.1 or 9.7, depending on breath-in count; always 2 or 3 breath-ins?
         UnnaturalWailEyeVortex(id + 0xD0000, 0.6f); // note: delay could be 2.9, depending on breath-in count
-        Cast(id + 0xE0000, _savage ? AID.SEnrage : AID.NEnrage, 5.2f, 10, "Enrage");
+        Cast(id + 0xE0000, _savage ? (uint)AID.SEnrage : (uint)AID.NEnrage, 5.2f, 10, "Enrage");
     }
 
     private void Enkyo(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SEnkyo : AID.NEnkyo, delay, 5, "Raidwide")
+        Cast(id, _savage ? (uint)AID.SEnkyo : (uint)AID.NEnkyo, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void StormcloudSummonsRokujoRevel(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SStormcloudSummons : AID.NStormcloudSummons, delay, 3);
+        Cast(id, _savage ? (uint)AID.SStormcloudSummons : (uint)AID.NStormcloudSummons, delay, 3);
         // +0.7s: envc 34/35 - circular arena?
         // +1.0s: spawn 18x raiun
-        Cast(id + 0x10, _savage ? AID.SSmokeaterFirst : AID.NSmokeaterFirst, 2.2f, 2.5f)
+        Cast(id + 0x10, _savage ? (uint)AID.SSmokeaterFirst : (uint)AID.NSmokeaterFirst, 2.2f, 2.5f)
             .ActivateOnEnter<RokujoRevel>();
         // +1.5s: first absorbs
-        CastStart(id + 0x20, _savage ? AID.SRokujoRevelFirst : AID.NRokujoRevelFirst, 2.1f) // note: delay could be 4.2 or 6.3, depending on breath-in count
+        CastStart(id + 0x20, _savage ? (uint)AID.SRokujoRevelFirst : (uint)AID.NRokujoRevelFirst, 2.1f) // note: delay could be 4.2 or 6.3, depending on breath-in count
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 0x21, 7.5f);
         // subsequent revel casts start with 2.5s delay
@@ -56,12 +56,12 @@ class C021ShishioStates : StateMachineBuilder
 
     private void StormcloudSummonsLightningBolt(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SStormcloudSummons : AID.NStormcloudSummons, delay, 3);
+        Cast(id, _savage ? (uint)AID.SStormcloudSummons : (uint)AID.NStormcloudSummons, delay, 3);
         // +0.7s: envc 34/35 - circular arena?
         // +1.0s: spawn 18x raiun
-        Cast(id + 0x10, _savage ? AID.SSmokeaterFirst : AID.NSmokeaterFirst, 2.2f, 2.5f);
+        Cast(id + 0x10, _savage ? (uint)AID.SSmokeaterFirst : (uint)AID.NSmokeaterFirst, 2.2f, 2.5f);
         // +1.5s: first absorbs
-        Cast(id + 0x20, _savage ? AID.SLightningBolt : AID.NLightningBolt, 2.1f, 3) // note: delay could be 4.2 or 6.3, depending on breath-in count
+        Cast(id + 0x20, _savage ? (uint)AID.SLightningBolt : (uint)AID.NLightningBolt, 2.1f, 3) // note: delay could be 4.2 or 6.3, depending on breath-in count
             .ActivateOnEnter<NLightningBolt>(!_savage)
             .ActivateOnEnter<SLightningBolt>(_savage);
         ComponentCondition<LightningBolt>(id + 0x30, 1.0f, comp => comp.NumCasts > 0, "Lines start")
@@ -76,19 +76,19 @@ class C021ShishioStates : StateMachineBuilder
 
     private void SplittingCrySlither(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SSplittingCry : AID.NSplittingCry, delay, 5, "Tankbuster")
+        Cast(id, _savage ? (uint)AID.SSplittingCry : (uint)AID.NSplittingCry, delay, 5, "Tankbuster")
             .ActivateOnEnter<NSplittingCry>(!_savage)
             .ActivateOnEnter<SSplittingCry>(_savage)
             .ActivateOnEnter<Slither>()
             .DeactivateOnExit<SplittingCry>()
             .SetHint(StateMachine.StateHint.Tankbuster);
-        Cast(id + 0x10, _savage ? AID.SSlither : AID.NSlither, 2.2f, 2, "Back cleave")
+        Cast(id + 0x10, _savage ? (uint)AID.SSlither : (uint)AID.NSlither, 2.2f, 2, "Back cleave")
             .DeactivateOnExit<Slither>();
     }
 
     private void NoblePursuit(uint id, float delay)
     {
-        CastStart(id, _savage ? AID.SNoblePursuitFirst : AID.NNoblePursuitFirst, delay)
+        CastStart(id, _savage ? (uint)AID.SNoblePursuitFirst : (uint)AID.NNoblePursuitFirst, delay)
             .SetHint(StateMachine.StateHint.PositioningStart);
         CastEnd(id + 1, 8, "Charge 1")
             .ActivateOnEnter<NoblePursuit>();
@@ -104,9 +104,9 @@ class C021ShishioStates : StateMachineBuilder
 
     private void UnnaturalWailHauntingCry(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SUnnaturalWail : AID.NUnnaturalWail, delay, 3)
+        Cast(id, _savage ? (uint)AID.SUnnaturalWail : (uint)AID.NUnnaturalWail, delay, 3)
             .ActivateOnEnter<UnnaturalWail>(); // debuffs are assigned 0.9s after cast ends
-        Cast(id + 0x10, _savage ? AID.SHauntingCry : AID.NHauntingCry, 2.2f, 3);
+        Cast(id + 0x10, _savage ? (uint)AID.SHauntingCry : (uint)AID.NHauntingCry, 2.2f, 3);
         ComponentCondition<HauntingCrySwipes>(id + 0x20, 12, comp => comp.NumCasts > 0, "Swipes")
             .ActivateOnEnter<HauntingCrySwipes>();
         ComponentCondition<UnnaturalWail>(id + 0x21, 0.9f, comp => comp.NumMechanics > 0, "Spread/stack 1");
@@ -118,9 +118,9 @@ class C021ShishioStates : StateMachineBuilder
 
     private void UnnaturalWailEyeVortex(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SUnnaturalWail : AID.NUnnaturalWail, delay, 3)
+        Cast(id, _savage ? (uint)AID.SUnnaturalWail : (uint)AID.NUnnaturalWail, delay, 3)
             .ActivateOnEnter<UnnaturalWail>(); // debuffs are assigned 0.9s after cast ends
-        CastMulti(id + 0x10, [_savage ? AID.SEyeOfTheThunderVortexFirst : AID.NEyeOfTheThunderVortexFirst, _savage ? AID.SVortexOfTheThunderEyeFirst : AID.NVortexOfTheThunderEyeFirst], 2.2f, 5.2f, "In/out")
+        CastMulti(id + 0x10, [_savage ? (uint)AID.SEyeOfTheThunderVortexFirst : (uint)AID.NEyeOfTheThunderVortexFirst, _savage ? (uint)AID.SVortexOfTheThunderEyeFirst : (uint)AID.NVortexOfTheThunderEyeFirst], 2.2f, 5.2f, "In/out")
             .ActivateOnEnter<EyeThunderVortex>();
         ComponentCondition<UnnaturalWail>(id + 0x20, 0.6f, comp => comp.NumMechanics > 0, "Spread/stack 1");
         ComponentCondition<EyeThunderVortex>(id + 0x30, 3.4f, comp => comp.NumCasts > 1, "Out/in")
@@ -131,11 +131,11 @@ class C021ShishioStates : StateMachineBuilder
 
     private void HauntingCryAddsTowers(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SHauntingCry : AID.NHauntingCry, delay, 3)
+        Cast(id, _savage ? (uint)AID.SHauntingCry : (uint)AID.NHauntingCry, delay, 3)
             .ActivateOnEnter<HauntingCryReisho>();
         // +0.9s: tethers appear
         ComponentCondition<HauntingCryReisho>(id + 0x10, 6.0f, comp => comp.NumCasts > 0, "Ghost aoes start");
-        CastStart(id + 0x20, _savage ? AID.SVengefulSouls : AID.NVengefulSouls, 1.5f);
+        CastStart(id + 0x20, _savage ? (uint)AID.SVengefulSouls : (uint)AID.NVengefulSouls, 1.5f);
         ComponentCondition<HauntingCryReisho>(id + 0x30, 0.5f, comp => comp.NumCasts > 1)
             .ActivateOnEnter<NHauntingCryVermilionAura>(!_savage)
             .ActivateOnEnter<NHauntingCryStygianAura>(!_savage)
@@ -155,7 +155,7 @@ class C021ShishioStates : StateMachineBuilder
 
     private void ThunderVortex(uint id, float delay)
     {
-        Cast(id, _savage ? AID.SThunderVortex : AID.NThunderVortex, delay, 5, "In")
+        Cast(id, _savage ? (uint)AID.SThunderVortex : (uint)AID.NThunderVortex, delay, 5, "In")
             .ActivateOnEnter<NThunderVortex>(!_savage)
             .ActivateOnEnter<SThunderVortex>(_savage)
             .DeactivateOnExit<ThunderVortex>();

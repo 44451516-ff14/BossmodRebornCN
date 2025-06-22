@@ -1,6 +1,4 @@
-﻿using BossMod.QuestBattle;
-
-namespace BossMod.Shadowbringers.Quest.Role.TheLostAndTheFound.Yxtlilton;
+﻿namespace BossMod.Shadowbringers.Quest.Role.TheLostAndTheFound.Yxtlilton;
 
 public enum OID : uint
 {
@@ -14,8 +12,8 @@ public enum AID : uint
     TheCodexOfGravity = 17014, // Boss->player, 4.5s cast, range 6 circle
 }
 
-class CodexOfDarknessII(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TheCodexOfDarknessII));
-class CodexOfGravity(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.TheCodexOfGravity), 6)
+class CodexOfDarknessII(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheCodexOfDarknessII);
+class CodexOfGravity(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TheCodexOfGravity, 6f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -25,7 +23,7 @@ class CodexOfGravity(BossModule module) : Components.StackWithCastTargets(module
     }
 }
 
-class LamittAI(WorldState ws) : UnmanagedRotation(ws, 25)
+class LamittAI(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
@@ -46,15 +44,15 @@ class LamittAI(WorldState ws) : UnmanagedRotation(ws, 25)
             return count;
         });
 
-        var lowest = party.MinBy(p => p.PredictedHPRatio)!;
+        var lowest = party.MinBy(p => p.PendingHPRatio)!;
         var esunable = party.FirstOrDefault(x => x.FindStatus(482) != null);
         var doomed = party.FirstOrDefault(x => x.FindStatus(1769) != null);
-        var partyHealth = party.Average(p => p.PredictedHPRatio);
+        var partyHealth = party.Average(p => p.PendingHPRatio);
 
         // pre heal during doom cast since it does insane damage for some reason
         if (primaryTarget.CastInfo is { Action.ID: 17011 } ci && ci.TargetID == Player.InstanceID)
         {
-            if (Player.PredictedHPRatio <= 0.8f)
+            if (Player.PendingHPRatio <= 0.8f)
                 UseAction(Roleplay.AID.RonkanCureII, Player);
         }
 
@@ -77,7 +75,7 @@ class LamittAI(WorldState ws) : UnmanagedRotation(ws, 25)
     }
 }
 
-class AutoLamitt(BossModule module) : RotationModule<LamittAI>(module);
+class AutoLamitt(BossModule module) : QuestBattle.RotationModule<LamittAI>(module);
 
 class YxtliltonStates : StateMachineBuilder
 {
@@ -91,7 +89,7 @@ class YxtliltonStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68806, NameID = 8393)]
-public class Yxtlilton(WorldState ws, Actor primary) : BossModule(ws, primary, new(-120, -770), new ArenaBoundsCircle(20))
+public class Yxtlilton(WorldState ws, Actor primary) : BossModule(ws, primary, new(-120f, -770f), new ArenaBoundsCircle(20f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(WorldState.Actors.Where(x => !x.IsAlly));
 }

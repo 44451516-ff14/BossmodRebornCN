@@ -28,9 +28,9 @@ public enum AID : uint
     Pteraspit3 = 38640, // Boss->self, 0.8s cast, range 40 150-degree cone, turn right -> front
 }
 
-class WhirlingOmenRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.WhirlingOmenRaidwide), "Raidwide, no turn buffs this time!");
+sealed class WhirlingOmenRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.WhirlingOmenRaidwide, "Raidwide, no turn buffs this time!");
 
-class WhirlingOmen(BossModule module) : Components.GenericAOEs(module)
+sealed class WhirlingOmen(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private List<Angle> offsets = new(2);
@@ -108,7 +108,7 @@ class WhirlingOmen(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class YehehetoauapyoStates : StateMachineBuilder
+sealed class YehehetoauapyoStates : StateMachineBuilder
 {
     public YehehetoauapyoStates(BossModule module) : base(module)
     {
@@ -119,4 +119,4 @@ class YehehetoauapyoStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13400)]
-public class Yehehetoauapyo(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Yehehetoauapyo(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

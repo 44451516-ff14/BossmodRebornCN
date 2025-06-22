@@ -6,7 +6,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.System.Input;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using ImGuiNET;
-using System.Runtime.InteropServices;
 
 namespace BossMod;
 
@@ -32,9 +31,6 @@ public sealed unsafe class MovementOverride : IDisposable
 
     private readonly IDalamudPluginInterface _dalamud;
     private readonly ActionTweaksConfig _tweaksConfig = Service.Config.Get<ActionTweaksConfig>();
-#pragma warning disable IDE0032
-    private bool _movementBlocked;
-#pragma warning restore IDE0032
     private bool? _forcedControlState;
     private bool _legacyMode;
     private bool[]? _navmeshPathIsRunning;
@@ -53,8 +49,8 @@ public sealed unsafe class MovementOverride : IDisposable
 
     public bool MovementBlocked
     {
-        get => _movementBlocked && !IsForceUnblocked();
-        set => _movementBlocked = value;
+        get => field && !IsForceUnblocked();
+        set;
     }
 
     public static readonly float* ForcedMovementDirection = (float*)Service.SigScanner.GetStaticAddressFromSig("F3 0F 11 0D ?? ?? ?? ?? 48 85 DB");
@@ -96,7 +92,7 @@ public sealed unsafe class MovementOverride : IDisposable
     {
         _dalamud.RelinquishData("vnav.PathIsRunning");
         Service.GameConfig.UiControlChanged -= OnConfigChanged;
-        _movementBlocked = false;
+        MovementBlocked = false;
         _mcIsInputActiveHook.Dispose();
         _rmiWalkHook.Dispose();
         _rmiFlyHook.Dispose();

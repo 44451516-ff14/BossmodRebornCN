@@ -29,8 +29,8 @@ public enum SID : uint
     AetherochemicalBomb = 723, // none->player, extra=0x0
 }
 
-class SeedOfTheRivers(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SeedOfTheRivers), 5f);
-class Sanctification(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Sanctification), new AOEShapeCone(16.5f, 60f.Degrees()), activeWhileCasting: false);
+class SeedOfTheRivers(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeedOfTheRivers, 5f);
+class Sanctification(BossModule module) : Components.Cleave(module, (uint)AID.Sanctification, new AOEShapeCone(16.5f, 60f.Degrees()), activeWhileCasting: false);
 
 class Educator(BossModule module) : Components.GenericAOEs(module)
 {
@@ -182,45 +182,7 @@ class AetherochemicalMine(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AetherochemicalBombStatus(BossModule module) : BossComponent(module)
-{
-    private Actor? _bomb;
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.AetherochemicalBomb)
-            _bomb = actor;
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.AetherochemicalBomb)
-            _bomb = null;
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        if (_bomb != null)
-        {
-            var roles = actor.Role == Role.Healer || actor.Class == Class.BRD;
-            if (_bomb == actor)
-                hints.Add(!roles ? "Bomb on you! Get cleansed fast." : "Cleanse yourself! (Bomb).");
-            else if (roles)
-                hints.Add($"Cleanse {_bomb.Name}! (Bomb)");
-        }
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (_bomb is Actor bomb)
-        {
-            if (actor.Role == Role.Healer)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), bomb, ActionQueue.Priority.High);
-            else if (actor.Class == Class.BRD)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), bomb, ActionQueue.Priority.High);
-        }
-    }
-}
+class AetherochemicalBombStatus(BossModule module) : Components.CleansableDebuff(module, (uint)SID.AetherochemicalBomb, "Bomb", "targeted");
 
 class AetherochemicalBomb(BossModule module) : Components.GenericStackSpread(module)
 {

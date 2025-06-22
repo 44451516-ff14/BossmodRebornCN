@@ -52,10 +52,10 @@ class WallRemoval(BossModule module) : BossComponent(module)
     }
 }
 
-class TheWoodRemembers(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheWoodRemembers), new AOEShapeCone(7.85f, 60f.Degrees()));
-class MindOfItsOwn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MindOfItsOwn), new AOEShapeCone(9f, 60f.Degrees()));
-class Canopy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Canopy), new AOEShapeCone(7.7f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
+class TheWoodRemembers(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheWoodRemembers, new AOEShapeCone(7.85f, 60f.Degrees()));
+class MindOfItsOwn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MindOfItsOwn, new AOEShapeCone(9f, 60f.Degrees()));
+class Canopy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Canopy, new AOEShapeCone(7.7f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
 
 class D090TangledNarbrooiStates : StateMachineBuilder
 {

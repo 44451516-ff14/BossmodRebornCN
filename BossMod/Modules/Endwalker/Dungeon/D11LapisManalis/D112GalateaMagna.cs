@@ -57,14 +57,12 @@ class ScarecrowChase(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
+        ref var aoe0 = ref aoes[0];
+        aoe0.Risky = true;
+        if (count > 1)
         {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
+            aoe0.Color = Colors.Danger;
         }
         return aoes;
     }
@@ -73,11 +71,11 @@ class ScarecrowChase(BossModule module) : Components.GenericAOEs(module)
     {
         if (iconID is >= (uint)IconID.Icon1 and <= (uint)IconID.Icon4)
         {
-            _aoes.Add(new(cross, WPos.ClampToGrid(actor.Position), Angle.AnglesIntercardinals[1], WorldState.FutureTime(9.9d).AddSeconds((-(uint)IconID.Icon1 + iconID) * 3d)));
+            _aoes.Add(new(cross, WPos.ClampToGrid(actor.Position), Angle.AnglesIntercardinals[1], WorldState.FutureTime(9.9d + (-(uint)IconID.Icon1 + iconID) * 3d), Risky: false));
             if (_aoes.Count is var count && (count == 4 || count == 2 && first))
             {
                 first = false;
-                _aoes.SortBy(x => x.Activation);
+                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
             }
         }
     }
@@ -145,7 +143,7 @@ class GlassyEyed(BossModule module) : Components.GenericGaze(module)
         var count = _affected.Count;
         if (count == 0 || WorldState.CurrentTime < _activation.AddSeconds(-10d))
             return [];
-        var eyes = new Eye[count];
+        Span<Eye> eyes = new Eye[count];
         for (var i = 0; i < count; ++i)
             eyes[i] = new(_affected[i].Position, _activation);
         return eyes;
@@ -171,7 +169,7 @@ public class TenebrismTowers(BossModule module) : Components.GenericTowers(modul
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00010008)
+        if (state == 0x00010008u)
         {
             WPos position = index switch
             {
@@ -201,57 +199,9 @@ public class TenebrismTowers(BossModule module) : Components.GenericTowers(modul
     }
 }
 
-class Doom(BossModule module) : BossComponent(module)
-{
-    private readonly List<Actor> _doomed = new(4);
+class Doom(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Doom);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Doom)
-            _doomed.Add(actor);
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Doom)
-            _doomed.Remove(actor);
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        var count = _doomed.Count;
-        if (count == 0)
-            return;
-        if (_doomed.Contains(actor) && !(actor.Role == Role.Healer || actor.Class == Class.BRD))
-            hints.Add("You were doomed! Get cleansed fast.");
-        if (!(actor.Role == Role.Healer || actor.Class == Class.BRD))
-            return;
-        if (_doomed.Contains(actor))
-            hints.Add("Cleanse yourself! (Doom).");
-        for (var i = 0; i < count; ++i)
-        {
-            var doom = _doomed[i];
-            if (!_doomed.Contains(actor))
-                hints.Add($"Cleanse {doom.Name} (Doom)");
-        }
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = _doomed.Count;
-        if (count != 0)
-            for (var i = 0; i < count; ++i)
-            {
-                var doom = _doomed[i];
-                if (actor.Role == Role.Healer)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), doom, ActionQueue.Priority.High, castTime: 1);
-                else if (actor.Class == Class.BRD)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), doom, ActionQueue.Priority.High);
-            }
-    }
-}
-
-class SoulScythe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SoulScythe), 18f);
+class SoulScythe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SoulScythe, 18f);
 
 class D112GalateaMagnaStates : StateMachineBuilder
 {

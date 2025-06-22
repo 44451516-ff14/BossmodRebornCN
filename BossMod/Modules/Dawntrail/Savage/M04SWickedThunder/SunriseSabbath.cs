@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class SunriseSabbath(BossModule module) : BossComponent(module)
+sealed class SunriseSabbath(BossModule module) : BossComponent(module)
 {
     public BitMask Positron;
     public int[] BaitOrder = new int[PartyState.MaxPartySize];
@@ -21,14 +21,14 @@ class SunriseSabbath(BossModule module) : BossComponent(module)
     }
 }
 
-class SunriseSabbathSoaringSoulpress(BossModule module) : Components.GenericTowers(module)
+sealed class SunriseSabbathSoaringSoulpress(BossModule module) : Components.GenericTowers(module)
 {
     private readonly SunriseSabbath? _sabbath = module.FindComponent<SunriseSabbath>();
     private readonly List<Actor> _birds = [];
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.WickedReplica && id == 0x11D5)
+        if (actor.OID == (uint)OID.WickedReplica && id == 0x11D5u)
         {
             _birds.Add(actor);
             AddTower(actor, 1);
@@ -54,14 +54,14 @@ class SunriseSabbathSoaringSoulpress(BossModule module) : Components.GenericTowe
 
     private void AddTower(Actor bird, int forbiddenOrder)
     {
-        var intercard = ((int)Math.Round(bird.Rotation.Deg / 45) & 1) != 0;
+        var intercard = ((int)Math.Round(bird.Rotation.Deg / 45f) & 1) != 0;
         var pos = bird.Position + bird.Rotation.ToDirection() * (intercard ? 21.21320344f : 30f);
         var forbidden = _sabbath != null ? Raid.WithSlot(true, true, true).WhereSlot(i => _sabbath.BaitOrder[i] == forbiddenOrder).Mask() : default;
         Towers.Add(new(pos, 3.6f, 2, 2, forbiddenSoakers: forbidden));
     }
 }
 
-class SunriseSabbathElectronStream(BossModule module) : Components.GenericBaitAway(module)
+sealed class SunriseSabbathElectronStream(BossModule module) : Components.GenericBaitAway(module)
 {
     public readonly List<(Actor cannon, bool positron)> Cannons = [];
     private readonly SunriseSabbath? _sabbath = module.FindComponent<SunriseSabbath>();

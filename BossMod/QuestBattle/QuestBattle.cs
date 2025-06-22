@@ -4,7 +4,6 @@ using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Ipc;
 using ImGuiNET;
-using System.Runtime.InteropServices;
 
 namespace BossMod.QuestBattle;
 
@@ -21,7 +20,7 @@ public enum NavigationStrategy
 }
 
 // TODO: get rid of this (runtime dependency on vnav)
-class PathfindNoop : ICallGateSubscriber<Vector3, Vector3, bool, Task<List<Vector3>>?>
+sealed class PathfindNoop : ICallGateSubscriber<Vector3, Vector3, bool, Task<List<Vector3>>?>
 {
     bool ICallGateSubscriber.HasAction => false;
     bool ICallGateSubscriber.HasFunction => true;
@@ -31,7 +30,7 @@ class PathfindNoop : ICallGateSubscriber<Vector3, Vector3, bool, Task<List<Vecto
     public void Unsubscribe(Action<Vector3, Vector3, bool> action) { }
 }
 
-class PathReadyNoop : ICallGateSubscriber<bool>
+sealed class PathReadyNoop : ICallGateSubscriber<bool>
 {
     bool ICallGateSubscriber.HasAction => false;
     bool ICallGateSubscriber.HasFunction => true;
@@ -41,7 +40,7 @@ class PathReadyNoop : ICallGateSubscriber<bool>
     public void Unsubscribe(Action action) { }
 }
 
-public class QuestObjective(WorldState ws)
+public sealed class QuestObjective(WorldState ws)
 {
     public readonly WorldState World = ws;
     public string Name { get; private set; } = "";
@@ -345,7 +344,7 @@ public abstract class QuestBattle : ZoneModule
 
     public override void CalculateAIHints(int playerSlot, Actor player, AIHints hints)
     {
-        if (AI.AIManager.Instance?.Beh == null || !_config.EnableQuestBattles)
+        if (AI.AIManager.Instance?.Beh == null && Autorotation.MiscAI.NormalMovement.Instance == null || !_config.EnableQuestBattles)
             return;
         var restartPathfind = false;
 

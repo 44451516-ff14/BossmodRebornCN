@@ -1,12 +1,12 @@
 namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
-class DamningStrikes(BossModule module) : Components.GenericTowers(module)
+sealed class DamningStrikes(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.DamningStrikesImpact1 or (uint)AID.DamningStrikesImpact2 or (uint)AID.DamningStrikesImpact3)
         {
-            Towers.Add(new(spell.LocXZ, 3f, 8, 8, default, Module.CastFinishAt(spell)));
+            Towers.Add(new(spell.LocXZ, 3f, 8, 8, default, Module.CastFinishAt(spell), caster.InstanceID));
         }
     }
 
@@ -15,13 +15,41 @@ class DamningStrikes(BossModule module) : Components.GenericTowers(module)
         if (spell.Action.ID is (uint)AID.DamningStrikesImpact1 or (uint)AID.DamningStrikesImpact2 or (uint)AID.DamningStrikesImpact3)
         {
             ++NumCasts;
-            Towers.RemoveAll(t => t.Position == caster.Position);
-            var forbidden = Raid.WithSlot(false, false, true).WhereActor(a => spell.Targets.Any(t => t.ID == a.InstanceID)).Mask();
-            for (var i = 0; i < Towers.Count; ++i)
+
+            var count = Towers.Count;
+            var id = caster.InstanceID;
+            for (var i = 0; i < count; ++i)
             {
-                var tower = Towers[i];
-                tower.ForbiddenSoakers |= forbidden;
-                Towers[i] = tower;
+                if (Towers[i].ActorID == id)
+                {
+                    Towers.RemoveAt(i);
+                    break;
+                }
+            }
+
+            var party = Raid.WithSlot(false, false, true);
+            var lenP = party.Length;
+            BitMask forbidden = default;
+            var targets = spell.Targets;
+            var countT = targets.Count;
+            for (var i = 0; i < countT; ++i)
+            {
+                for (var j = 0; j < lenP; ++j)
+                {
+                    ref readonly var p = ref party[j];
+                    if (targets[i].ID == p.Item2.InstanceID)
+                    {
+                        forbidden[p.Item1] = true;
+                        break;
+                    }
+                }
+            }
+
+            var towers = CollectionsMarshal.AsSpan(Towers);
+            var len = towers.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                towers[i].ForbiddenSoakers |= forbidden;
             }
         }
     }

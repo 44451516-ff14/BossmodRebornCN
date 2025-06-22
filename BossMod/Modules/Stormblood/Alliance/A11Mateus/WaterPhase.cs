@@ -73,7 +73,7 @@ class Froth(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Snowpierce(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.Snowpierce), 1.5f)
+class Snowpierce(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.Snowpierce, 1.5f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

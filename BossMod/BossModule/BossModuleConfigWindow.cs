@@ -2,7 +2,7 @@
 
 namespace BossMod;
 
-public class BossModuleConfigWindow : UIWindow
+public sealed class BossModuleConfigWindow : UIWindow
 {
     private readonly ConfigNode? _node;
     private readonly PartyRolesConfig _prc = Service.Config.Get<PartyRolesConfig>();

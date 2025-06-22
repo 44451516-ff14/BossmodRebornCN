@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-class Rampage(BossModule module) : Components.GenericAOEs(module)
+sealed class Rampage(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(5);
 
@@ -11,7 +11,7 @@ class Rampage(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        Span<AOEInstance> aoes = new AOEInstance[count];
         var color = Colors.Danger;
         for (var i = 0; i < count; ++i)
         {

@@ -22,10 +22,14 @@ public sealed class UITabs
         using var tabs = ImRaii.TabBar("Tabs");
         if (!tabs)
             return;
-        foreach (var t in _tabs)
-            using (var tab = ImRaii.TabItem(t.Name, t.Name == _forceSelect ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None))
-                if (tab)
-                    t.Tab();
+        var count = _tabs.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var t = _tabs[i];
+            using var tab = ImRaii.TabItem(t.Name, t.Name == _forceSelect ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None);
+            if (tab)
+                t.Tab();
+        }
         _forceSelect = "";
     }
 }

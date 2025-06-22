@@ -101,11 +101,11 @@ public unsafe struct ActionEffect
     public byte Param4;
     public ushort Value;
 
-    public readonly bool FromTarget => (Param4 & 0x20) != 0;
-    public readonly bool AtSource => (Param4 & 0x80) != 0;
+    public readonly bool FromTarget => (Param4 & 0x20) != default;
+    public readonly bool AtSource => (Param4 & 0x80) != default;
     public readonly DamageType DamageType => (DamageType)(Param1 & 0x0F); // for various damage effects
     public readonly DamageElementType DamageElement => (DamageElementType)(Param1 >> 4); // for various damage effects
-    public readonly int DamageHealValue => Value + ((Param4 & 0x40) != 0 ? Param3 * 0x10000 : 0); // for damage/heal effects
+    public readonly int DamageHealValue => Value + ((Param4 & 0x40) != default ? Param3 * 0x10000 : default); // for damage/heal effects
 }
 
 // TODO: convert to inline array
@@ -159,15 +159,15 @@ public static class ActionEffectParser
                 // param4: bit1 = ? (seen when part of damage is absorbed by BLM manaward), bit2 = partial absorb? (seen when part of damage is absorbed by SMN succor), bit4 = immune (e.g. because of transcendent after raise),
                 //         bit5 = originating from target (e.g. retaliation damage from vengeance), bit 6 = large value, bit 7 = applied to source, others unused
                 res.Append($"amount={eff.DamageHealValue} {eff.DamageType} {eff.DamageElement} ({(sbyte)eff.Param2}% bonus)");
-                if ((eff.Param0 & 0x20) != 0)
+                if ((eff.Param0 & 0x20) != default)
                     res.Append(", crit");
-                if ((eff.Param0 & 0x40) != 0)
+                if ((eff.Param0 & 0x40) != default)
                     res.Append(", dhit");
-                if ((eff.Param4 & 2) != 0)
+                if ((eff.Param4 & 2) != default)
                     res.Append(", manaward absorb?");
-                if ((eff.Param4 & 4) != 0)
+                if ((eff.Param4 & 4) != default)
                     res.Append(", partially absorbed?");
-                if ((eff.Param4 & 0x10) != 0)
+                if ((eff.Param4 & 0x10) != default)
                     res.Append(", immune");
                 break;
             case ActionEffectType.Heal:
@@ -177,16 +177,16 @@ public static class ActionEffectParser
                 // param3: third (high) byte of value (if bit 6 in param4 is set), 0 otherwise
                 // param4: bit 6 = large value, bit 7 = applied to source, others unused
                 res.Append($"amount={eff.DamageHealValue}");
-                if ((eff.Param1 & 0x20) != 0)
+                if ((eff.Param1 & 0x20) != default)
                     res.Append(", crit");
-                if ((eff.Param0 & 1) != 0)
+                if ((eff.Param0 & 1) != default)
                     res.Append(", lifedrain?");
-                if ((eff.Param0 & 2) != 0)
+                if ((eff.Param0 & 2) != default)
                     res.Append(", nascent flash?");
                 break;
             case ActionEffectType.Invulnerable:
                 // value: either 0 or status id
-                if (eff.Value != 0)
+                if (eff.Value != default)
                     res.Append($"status {Utils.StatusString(eff.Value)}");
                 break;
             case ActionEffectType.MpGain:
@@ -258,25 +258,25 @@ public static class ActionEffectParser
             case ActionEffectType.FailMissingStatus: // e.g. deployment tactics or bane when target doesn't have required status
             case ActionEffectType.Interrupt:
                 // so far never seen any non-zero params
-                return eff.Param0 != 0 || eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0 || eff.Value != 0 ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default || eff.Value != default ? "non-zero params" : "";
             case ActionEffectType.NoEffectText: // e.g. taunt immune
                 // so far never seen any non-zero params, except for 'source' flag
-                return eff.Param0 != 0 || eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || (eff.Param4 & ~0x80) != 0 || eff.Value != 0 ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default || eff.Value != default ? "non-zero params" : "";
             case ActionEffectType.Damage:
             case ActionEffectType.BlockedDamage:
             case ActionEffectType.ParriedDamage:
-                return (eff.Param0 & ~0x60) != 0 ? $"param0={eff.Param0 & ~0x60:X2}"
-                    : eff.Param3 != 0 && (eff.Param4 & 0x40) == 0 ? "non-zero param3 while large-value bit is unset"
-                    : (eff.Param4 & ~0xF0) != 0 ? $"param4={eff.Param4 & ~0xF0:X2}"
-                    : (eff.Param4 & 0x10) != 0 && eff.Value != 0 ? $"immune bit set but value is non-zero"
+                return (eff.Param0 & ~0x60) != default ? $"param0={eff.Param0 & ~0x60:X2}"
+                    : eff.Param3 != default && (eff.Param4 & 0x40) == default ? "non-zero param3 while large-value bit is unset"
+                    : (eff.Param4 & ~0xF0) != default ? $"param4={eff.Param4 & ~0xF0:X2}"
+                    : (eff.Param4 & 0x10) != default && eff.Value != default ? $"immune bit set but value is non-zero"
                     : "";
             case ActionEffectType.Heal:
-                return (eff.Param0 & ~3) != 0 ? $"param0={eff.Param0 & ~3:X2}"
-                    : (eff.Param1 & ~0x20) != 0 ? $"param1={eff.Param1 & ~0x20:X2}"
-                    : eff.Param2 != 0 ? $"param2={eff.Param2}"
-                    : eff.Param3 != 0 && (eff.Param4 & 0x40) == 0 ? "non-zero param3 while large-value bit is unset"
+                return (eff.Param0 & ~3) != default ? $"param0={eff.Param0 & ~3:X2}"
+                    : (eff.Param1 & ~0x20) != default ? $"param1={eff.Param1 & ~0x20:X2}"
+                    : eff.Param2 != default ? $"param2={eff.Param2}"
+                    : eff.Param3 != default && (eff.Param4 & 0x40) == default ? "non-zero param3 while large-value bit is unset"
                     : (eff.Param4 & ~0xC0) != 0 ? $"param4={eff.Param4 & ~0xC0:X2}"
-                    : eff.Param0 != 0 && (eff.Param4 & 0x80) == 0 ? "lifedrain bits set while source bit is unset"
+                    : eff.Param0 != default && (eff.Param4 & 0x80) == default ? "lifedrain bits set while source bit is unset"
                     : "";
             case ActionEffectType.Invulnerable:
             case ActionEffectType.MpGain:
@@ -285,10 +285,10 @@ public static class ActionEffectParser
             case ActionEffectType.FullResistStatus:
             case ActionEffectType.SetHP:
                 // so far only seen 'source' flag and non-zero values
-                return eff.Param0 != 0 || eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || (eff.Param4 & ~0x80) != 0 ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default ? "non-zero params" : "";
             case ActionEffectType.ApplyStatusEffectTarget:
             case ActionEffectType.ApplyStatusEffectSource:
-                if (eff.Param3 != 0 || (eff.Param4 & ~0xA0) != 0)
+                if (eff.Param3 != default || (eff.Param4 & ~0xA0) != default)
                     return "non-zero param3/4";
                 else
                     return "TODO investigate param0/1";// $"{Utils.StatusString(eff.Value)} {eff.Param0:X2}{eff.Param1:X2}"; - these are often non-zero, but I have no idea what they mean...
@@ -296,43 +296,43 @@ public static class ActionEffectParser
             case ActionEffectType.LoseStatusEffectTarget:
             case ActionEffectType.LoseStatusEffectSource:
             case ActionEffectType.StatusNoEffect:
-                if (eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || (eff.Param4 & ~0x80) != 0)
+                if (eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default)
                     return "non-zero params";
-                else if (eff.Param0 != 0)
+                else if (eff.Param0 != default)
                     return $"param0={eff.Param0}"; // this has some meaning, TODO investigate
                 else
                     return "";
             case ActionEffectType.ThreatPosition:
             case ActionEffectType.EnmityAmountUp:
-                if (eff.Param0 != 0 || eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0)
+                if (eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default)
                     return "non-zero params";
                 else
                     return $"value={eff.Value}"; // this has some meaning, TODO investigate
             case ActionEffectType.Retaliation:
-                if (eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0)
+                if (eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default)
                     return "non-zero params";
                 else
                     return $"param0={eff.Param0}, value={eff.Value}"; // this has some meaning, TODO investigate
             case ActionEffectType.Knockback:
-                return eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0 ? "non-zero params" : "";
+                return eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "";
             case ActionEffectType.Attract1:
             case ActionEffectType.Attract2:
-                return eff.Param0 != 0 || eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0 ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "";
             case ActionEffectType.AttractCustom1:
             case ActionEffectType.AttractCustom2:
             case ActionEffectType.AttractCustom3:
-                return eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0 ? "non-zero params" : "";
+                return eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "";
             case ActionEffectType.Mount:
-                if (eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0)
+                if (eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default)
                     return "non-zero params";
                 else
                     return $"param0={eff.Param0}"; // 0 or 1, TODO investigate
             case ActionEffectType.ReviveLB:
-                return eff.Param0 != 0 || eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0 || eff.Value != 1 ? "unknown payload" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default || eff.Value != 1 ? "unknown payload" : "";
             case ActionEffectType.Resource:
                 return (ActionResourceType)eff.Value switch
                 {
-                    ActionResourceType.WARGauge => eff.Param1 != 0 || eff.Param2 != 0 || eff.Param3 != 0 || eff.Param4 != 0 ? "non-zero params" : "",
+                    ActionResourceType.WARGauge => eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "",
                     _ => $"unknown value {eff.Value}",
                 };
             default:

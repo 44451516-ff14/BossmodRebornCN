@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Dawntrail.Savage.M03SBruteBomber;
 
-abstract class Proximity(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 20);  // TODO: verify falloff
-class OctoboomDiveProximity(BossModule module) : Proximity(module, AID.OctoboomDiveProximityAOE);
-class QuadroboomDiveProximity(BossModule module) : Proximity(module, AID.QuadroboomDiveProximityAOE);
+abstract class Proximity(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 20);  // TODO: verify falloff
+sealed class OctoboomDiveProximity(BossModule module) : Proximity(module, (uint)AID.OctoboomDiveProximityAOE);
+sealed class QuadroboomDiveProximity(BossModule module) : Proximity(module, (uint)AID.QuadroboomDiveProximityAOE);
 
-abstract class DiveKB(BossModule module, AID aid) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(aid), 25);
-class OctoboomDiveKnockback(BossModule module) : DiveKB(module, AID.OctoboomDiveKnockbackAOE);
-class QuadroboomDiveKnockback(BossModule module) : DiveKB(module, AID.QuadroboomDiveKnockbackAOE);
+abstract class DiveKB(BossModule module, uint aid) : Components.SimpleKnockbacks(module, aid, 25);
+sealed class OctoboomDiveKnockback(BossModule module) : DiveKB(module, (uint)AID.OctoboomDiveKnockbackAOE);
+sealed class QuadroboomDiveKnockback(BossModule module) : DiveKB(module, (uint)AID.QuadroboomDiveKnockbackAOE);
 
 class Diveboom(BossModule module) : Components.UniformStackSpread(module, 5f, 5f, 2, 2, alwaysShowSpreads: true)
 {

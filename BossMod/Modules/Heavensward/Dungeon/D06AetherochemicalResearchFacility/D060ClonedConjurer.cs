@@ -15,7 +15,7 @@ public enum AID : uint
     Drain = 2339 // ClonedThaumaturge->player, 4.0s cast, single-target
 }
 
-class Tornado(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.Tornado), 6f);
+class Tornado(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Tornado, 6f);
 
 class D060ClonedConjurerStates : StateMachineBuilder
 {

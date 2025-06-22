@@ -11,8 +11,9 @@ sealed class AIManagementWindow : UIWindow
     private readonly EventSubscriptions _subscriptions;
     private const string _title = $"AI: off{_windowID}";
     private const string _windowID = "###AI debug window";
+    private static readonly string[] positionals = Enum.GetNames<Positional>();
 
-    public AIManagementWindow(AIManager manager) : base(_windowID, false, new(100, 100))
+    public AIManagementWindow(AIManager manager) : base(_windowID, false, new(100f, 100f))
     {
         WindowName = _title;
         _manager = manager;
@@ -66,7 +67,7 @@ sealed class AIManagementWindow : UIWindow
 
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
-        ImGui.SetNextWindowSizeConstraints(new Vector2(0, 0), new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
+        ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50f));
         if (ImRaii.Combo("##Leader", _manager.Beh == null ? "<idle>" : _manager.WorldState.Party[_manager.MasterSlot]?.Name ?? "<unknown>"))
         {
             if (ImGui.Selectable("<idle>", _manager.Beh == null))
@@ -85,10 +86,9 @@ sealed class AIManagementWindow : UIWindow
         ImGui.Separator();
         ImGui.Text("期望站位-Desired positional");
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
-        var positionalOptions = Enum.GetNames(typeof(Positional));
+        ImGui.SetNextItemWidth(100f);
         var positionalIndex = (int)_config.DesiredPositional;
-        if (ImGui.Combo("##DesiredPositional", ref positionalIndex, positionalOptions, 4))
+        if (ImGui.Combo("##DesiredPositional", ref positionalIndex, positionals, 4))
         {
             _config.DesiredPositional = (Positional)positionalIndex;
             configModified = true;
@@ -98,7 +98,7 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100);
         var maxDistanceTargetStr = _config.MaxDistanceToTarget.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MaxDistanceToTarget", ref maxDistanceTargetStr, 64))
+        if (ImGui.InputText("##MaxDistanceToTarget", ref maxDistanceTargetStr, 64u))
         {
             maxDistanceTargetStr = maxDistanceTargetStr.Replace(',', '.');
             if (float.TryParse(maxDistanceTargetStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var maxDistance))
@@ -110,9 +110,9 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.Text("- to slots");
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
+        ImGui.SetNextItemWidth(100f);
         var maxDistanceSlotStr = _config.MaxDistanceToSlot.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MaxDistanceToSlot", ref maxDistanceSlotStr, 64))
+        if (ImGui.InputText("##MaxDistanceToSlot", ref maxDistanceSlotStr, 64u))
         {
             maxDistanceSlotStr = maxDistanceSlotStr.Replace(',', '.');
             if (float.TryParse(maxDistanceSlotStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var maxDistance))
@@ -124,9 +124,9 @@ sealed class AIManagementWindow : UIWindow
 
         ImGui.Text("移动决策延迟-Movement decision delay");
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(100);
+        ImGui.SetNextItemWidth(100f);
         var movementDelayStr = _config.MoveDelay.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MovementDelay", ref movementDelayStr, 64))
+        if (ImGui.InputText("##MovementDelay", ref movementDelayStr, 64u))
         {
             movementDelayStr = movementDelayStr.Replace(',', '.');
             if (float.TryParse(movementDelayStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var delay))
@@ -138,8 +138,8 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.Text("Autorotation AI preset");
         ImGui.SameLine();
-        ImGui.SetNextItemWidth(250);
-        ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50));
+        ImGui.SetNextItemWidth(250f);
+        ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50f));
         var aipreset = _config.AIAutorotPresetName;
         var presets = _manager.Autorot.Database.Presets.VisiblePresets;
 
@@ -160,7 +160,6 @@ sealed class AIManagementWindow : UIWindow
             if (selectedIndex == countnames - 1 && aipreset != null)
             {
                 _manager.SetAIPreset(null);
-                _config.AIAutorotPresetName = null;
                 configModified = true;
                 selectedIndex = -1;
             }
@@ -168,7 +167,6 @@ sealed class AIManagementWindow : UIWindow
             {
                 var selectedPreset = presets[selectedIndex];
                 _manager.SetAIPreset(selectedPreset);
-                _config.AIAutorotPresetName = selectedPreset.Name;
                 configModified = true;
             }
         }

@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
-class FulminousField(BossModule module) : Components.GenericAOEs(module)
+sealed class FulminousField(BossModule module) : Components.GenericAOEs(module)
 {
     private Angle _dir;
     private DateTime _activation;
@@ -13,7 +13,7 @@ class FulminousField(BossModule module) : Components.GenericAOEs(module)
     {
         if (Active)
         {
-            var aoes = new AOEInstance[8];
+            Span<AOEInstance> aoes = new AOEInstance[8];
             for (var i = 0; i < 8; ++i)
                 aoes[i] = new(_shape, _pos, _dir + i * 45f.Degrees(), _activation);
             return aoes;
@@ -42,7 +42,7 @@ class FulminousField(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ConductionPoint : Components.UniformStackSpread
+sealed class ConductionPoint : Components.UniformStackSpread
 {
     public ConductionPoint(BossModule module) : base(module, default, 6f)
     {
@@ -50,9 +50,9 @@ class ConductionPoint : Components.UniformStackSpread
     }
 }
 
-class ForkedFissures : Components.GenericWildCharge
+sealed class ForkedFissures : Components.GenericWildCharge
 {
-    public ForkedFissures(BossModule module) : base(module, 5f, ActionID.MakeSpell(AID.ForkedFissures), 40f)
+    public ForkedFissures(BossModule module) : base(module, 5f, (uint)AID.ForkedFissures, 40f)
     {
         Array.Fill(PlayerRoles, PlayerRole.Share);
     }

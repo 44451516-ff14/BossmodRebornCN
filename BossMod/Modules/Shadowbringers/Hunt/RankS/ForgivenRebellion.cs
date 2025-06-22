@@ -99,7 +99,7 @@ class SanctifiedBlizzardChain(BossModule module) : Components.GenericRotatingAOE
     }
 }
 
-class SanctifiedBlizzardChainHint(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SanctifiedBlizzardChain), "Rotation direction undeterminable until start of the 2nd cast");
+class SanctifiedBlizzardChainHint(BossModule module) : Components.RaidwideCast(module, (uint)AID.SanctifiedBlizzardChain, "Rotation direction undeterminable until start of the 2nd cast");
 
 class HeavenlyCyclone(BossModule module) : Components.GenericRotatingAOE(module)
 {
@@ -150,11 +150,11 @@ class HeavenlyCyclone(BossModule module) : Components.GenericRotatingAOE(module)
     }
 }
 
-class HeavenlyScythe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HeavenlyScythe), 10f);
-class RagingFire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RagingFire), new AOEShapeDonut(5f, 40f));
-class Interference(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Interference), new AOEShapeCone(28f, 90f.Degrees()));
-class SanctifiedBlizzard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SanctifiedBlizzard), SanctifiedBlizzardChain.Cone);
-class RoyalDecree(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RoyalDecree));
+class HeavenlyScythe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavenlyScythe, 10f);
+class RagingFire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RagingFire, new AOEShapeDonut(5f, 40f));
+class Interference(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Interference, new AOEShapeCone(28f, 90f.Degrees()));
+class SanctifiedBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedBlizzard, SanctifiedBlizzardChain.Cone);
+class RoyalDecree(BossModule module) : Components.RaidwideCast(module, (uint)AID.RoyalDecree);
 
 class MindJack(BossModule module) : Components.StatusDrivenForcedMarch(module, 2f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {

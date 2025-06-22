@@ -56,17 +56,17 @@ class SparkingCurrent(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class ThunderII(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.ThunderII), 5f);
-class FireII(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.FireII), 5f, 4, 4);
-class BlizzardII(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.BlizzardII), 5f);
-class IceGrid(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IceGrid), new AOEShapeRect(40f, 2f), 10);
-class Triflame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Triflame), new AOEShapeCone(60f, 30f.Degrees()), 3);
-class ElementalOverload1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElementalOverload1));
-class ElementalOverload2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElementalOverload2));
-class ElementalOverload3(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElementalOverload3));
-class ElementalOverload4(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElementalOverload4));
-class ElementalOverload5(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElementalOverload5));
-class ElementalOverload6(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.ElementalOverload6));
+class ThunderII(BossModule module) : Components.CastTowers(module, (uint)AID.ThunderII, 5f);
+class FireII(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FireII, 5f, 4, 4);
+class BlizzardII(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlizzardII, 5f);
+class IceGrid(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceGrid, new AOEShapeRect(40f, 2f), 10);
+class Triflame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Triflame, new AOEShapeCone(60f, 30f.Degrees()), 3);
+class ElementalOverload1(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload1);
+class ElementalOverload2(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload2);
+class ElementalOverload3(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload3);
+class ElementalOverload4(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload4);
+class ElementalOverload5(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload5);
+class ElementalOverload6(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElementalOverload6);
 
 class D052SubjectNumberXXIVStates : StateMachineBuilder
 {

@@ -11,12 +11,12 @@ public enum AID : uint
 
     Rake = 901, // Boss->player, no cast, extra attack on tank
     LionsBreath = 902, // Boss->self, 1.0s cast, range 6+R 120-degree cone
-    Swinge = 903, // Boss->self, 4.0s cast, range 40+R 60-degree cone
+    Swinge = 903 // Boss->self, 4.0s cast, range 40+R 60-degree cone
 }
 
-class LionsBreathCleave(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.24f, 60.Degrees()), activeWhileCasting: false);
-class LionsBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(10.24f, 60.Degrees()));
-class Swinge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Swinge), new AOEShapeCone(44.24f, 30.Degrees()));
+class LionsBreathCleave(BossModule module) : Components.Cleave(module, (uint)AID.LionsBreath, new AOEShapeCone(10.24f, 60.Degrees()), activeWhileCasting: false);
+class LionsBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LionsBreath, new AOEShapeCone(10.24f, 60.Degrees()));
+class Swinge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swinge, new AOEShapeCone(44.24f, 30.Degrees()));
 
 class D101ChudoYudoStates : StateMachineBuilder
 {

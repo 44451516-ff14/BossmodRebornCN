@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
-class OneTwoPaw(BossModule module) : Components.GenericAOEs(module)
+sealed class OneTwoPaw(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private enum Pattern { None, WestEast, EastWest }
@@ -14,14 +14,18 @@ class OneTwoPaw(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
+            {
+                if (count == 2)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
             else
-                aoes[i] = aoe with { Risky = false };
+                aoe.Risky = false;
         }
         return aoes;
     }
@@ -37,23 +41,23 @@ class OneTwoPaw(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.OneTwoPaw1:
-            case AID.OneTwoPaw2:
-            case AID.OneTwoPaw3:
-            case AID.OneTwoPaw4:
+            case (uint)AID.OneTwoPaw1:
+            case (uint)AID.OneTwoPaw2:
+            case (uint)AID.OneTwoPaw3:
+            case (uint)AID.OneTwoPaw4:
                 _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
                 if (_aoes.Count == 2)
-                    _aoes.SortBy(x => x.Activation);
+                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
-            case AID.LeapingOneTwoPawVisual1:
-            case AID.LeapingOneTwoPawVisual3:
+            case (uint)AID.LeapingOneTwoPawVisual1:
+            case (uint)AID.LeapingOneTwoPawVisual3:
                 _currentPattern = Pattern.EastWest;
                 InitIfReady();
                 break;
-            case AID.LeapingOneTwoPawVisual2:
-            case AID.LeapingOneTwoPawVisual4:
+            case (uint)AID.LeapingOneTwoPawVisual2:
+            case (uint)AID.LeapingOneTwoPawVisual4:
                 _currentPattern = Pattern.WestEast;
                 InitIfReady();
                 break;

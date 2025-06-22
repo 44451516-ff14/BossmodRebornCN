@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.QuadrupedalImpactAOE), true)
+class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuadrupedalImpactAOE, true)
 {
     private WPos? _source;
 
@@ -18,7 +18,7 @@ class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module,
     }
 }
 
-class QuadrupedalCrush(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.QuadrupedalCrushAOE))
+class QuadrupedalCrush(BossModule module) : Components.GenericAOEs(module, (uint)AID.QuadrupedalCrushAOE)
 {
     private WPos? _source;
     private DateTime _activation;
@@ -28,7 +28,7 @@ class QuadrupedalCrush(BossModule module) : Components.GenericAOEs(module, Actio
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_source != null)
-            return new AOEInstance[1] { new(_shape, _source.Value, new(), _activation) };
+            return new AOEInstance[1] { new(_shape, _source.Value, default, _activation) };
         return [];
     }
 

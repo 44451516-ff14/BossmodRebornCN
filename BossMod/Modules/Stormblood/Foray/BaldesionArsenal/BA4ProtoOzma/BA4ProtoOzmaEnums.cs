@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
 public enum OID : uint
 {
-    Boss = 0x25E8, // R13.500, x1
+    Boss = 0x25E8, // R13.5
     BlackHoleBuffer = 0x1EA1A1, // R2.0
     Shadow = 0x25E9, // R13.5
     Ozmasphere = 0x25EA, // R1.0

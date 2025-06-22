@@ -7,10 +7,10 @@ namespace BossMod;
 
 public sealed class AboutTab(DirectoryInfo? replayDir)
 {
-    private static readonly Color TitleColor = Color.FromComponents(255, 165, 0);
-    private static readonly Color SectionBgColor = Color.FromComponents(38, 38, 38);
-    private static readonly Color BorderColor = Color.FromComponents(178, 178, 178, 204);
-    private static readonly Color DiscordColor = Color.FromComponents(88, 101, 242);
+    private static readonly Color TitleColor = Color.FromComponents(255u, 165u, default);
+    private static readonly Color SectionBgColor = Color.FromComponents(38u, 38u, 38u);
+    private static readonly Color BorderColor = Color.FromComponents(178u, 178u, 178u, 204u);
+    private static readonly Color DiscordColor = Color.FromComponents(88u, 101u, 242u);
 
     private string _lastErrorMessage = "";
 

@@ -36,7 +36,7 @@ class LevinstrikeSummoningIcemeld(BossModule module) : Components.GenericBaitAwa
 
 // TODO: positioning hints for next baiter
 // TODO: or is it a spread?.. one thing i like about bait-away better here is that it better distinguishes bait vs avoid
-class LevinstrikeSummoningFiremeld(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.Firemeld), centerAtTarget: true)
+class LevinstrikeSummoningFiremeld(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Firemeld, centerAtTarget: true)
 {
     private readonly Actor?[] _baitOrder = [null, null, null, null];
 
@@ -61,7 +61,7 @@ class LevinstrikeSummoningFiremeld(BossModule module) : Components.GenericBaitAw
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             InitBaits();

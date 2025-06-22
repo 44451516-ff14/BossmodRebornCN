@@ -19,7 +19,7 @@ public enum AID : uint
     CoilingIvy = 8901 // Boss->self, 3.0s cast, single-target
 }
 
-class FeedingTime(BossModule module) : Components.InterceptTether(module, ActionID.MakeSpell(AID.FeedingTime))
+class FeedingTime(BossModule module) : Components.InterceptTether(module, (uint)AID.FeedingTime)
 {
     private DateTime _activation;
     public override void OnActorCreated(Actor actor)
@@ -39,7 +39,7 @@ class FeedingTime(BossModule module) : Components.InterceptTether(module, Action
     }
 }
 
-class Tiiimbeeer(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Tiiimbeeer));
+class Tiiimbeeer(BossModule module) : Components.RaidwideCast(module, (uint)AID.Tiiimbeeer);
 class Swinge(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;

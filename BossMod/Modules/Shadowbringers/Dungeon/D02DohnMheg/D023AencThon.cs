@@ -35,11 +35,11 @@ public enum AID : uint
     FinaleEnrage = 13520 // Boss->self, 60.0s cast, range 80+R circle
 }
 
-class VirtuosicCapriccio(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.VirtuosicCapriccio), "Raidwide + Bleed");
-class CripplingBlow(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CripplingBlow));
-class ImpChoir(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.ImpChoir));
-class ToadChoir(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ToadChoir), new AOEShapeCone(19.5f, 75f.Degrees()));
-class BileBombardment(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BileBombardment), 8f);
+class VirtuosicCapriccio(BossModule module) : Components.RaidwideCast(module, (uint)AID.VirtuosicCapriccio, "Raidwide + Bleed");
+class CripplingBlow(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CripplingBlow);
+class ImpChoir(BossModule module) : Components.CastGaze(module, (uint)AID.ImpChoir);
+class ToadChoir(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ToadChoir, new AOEShapeCone(19.5f, 75f.Degrees()));
+class BileBombardment(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BileBombardment, 8f);
 
 class FunambulistsFantasia(BossModule module) : BossComponent(module)
 {
@@ -61,7 +61,7 @@ class FunambulistsFantasia(BossModule module) : BossComponent(module)
     }
 }
 
-class Finale(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Finale), "Enrage, destroy the Liar's Lyre!", true);
+class Finale(BossModule module) : Components.CastHint(module, (uint)AID.Finale, "Enrage, destroy the Liar's Lyre!", true);
 
 class CorrosiveBile(BossModule module) : Components.GenericAOEs(module)
 {

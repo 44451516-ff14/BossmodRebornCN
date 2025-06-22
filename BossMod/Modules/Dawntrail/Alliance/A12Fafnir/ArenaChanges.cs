@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Alliance.A12Fafnir;
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(30f, 35f);
     private AOEInstance? _aoe;
@@ -23,7 +23,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DragonBreathArenaChange(BossModule module) : BossComponent(module)
+sealed class DragonBreathArenaChange(BossModule module) : BossComponent(module)
 {
     public override bool KeepOnPhaseChange => true;
 
@@ -35,9 +35,9 @@ class DragonBreathArenaChange(BossModule module) : BossComponent(module)
     {
         if (actor.OID == (uint)OID.FireVoidzone)
         {
-            if (state == 0x00010002) // outer arena starts to turn unsafe
+            if (state == 0x00010002u) // outer arena starts to turn unsafe
                 Arena.Bounds = A12Fafnir.FireArena;
-            else if (state == 0x00040008) // outer arena starts to turn safe again
+            else if (state == 0x00040008u) // outer arena starts to turn safe again
             {
                 initialRot = actor.Rotation;
                 started = WorldState.CurrentTime;

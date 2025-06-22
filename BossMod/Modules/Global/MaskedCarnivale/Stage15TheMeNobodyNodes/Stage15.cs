@@ -29,7 +29,7 @@ public enum AID : uint
     Disseminate = 14899 // Serpent->self, 2.0s cast, range 6+R circle, casts on death of serpents
 }
 
-class HighVoltage(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.HighVoltage));
+class HighVoltage(BossModule module) : Components.CastInterruptHint(module, (uint)AID.HighVoltage);
 
 class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, true)
 {
@@ -58,11 +58,11 @@ class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, tr
     }
 }
 
-class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PiercingLaser), new AOEShapeRect(32.3f, 4f));
-class RepellingCannons(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RepellingCannons), 12.3f);
-class Superstorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Superstorm2), new AOEShapeDonut(8f, 20f));
-class Spellsword(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spellsword), new AOEShapeCone(7.1f, 60f.Degrees()));
-class Disseminate(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Disseminate), 7.2f);
+class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PiercingLaser, new AOEShapeRect(32.3f, 4f));
+class RepellingCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RepellingCannons, 12.3f);
+class Superstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Superstorm2, new AOEShapeDonut(8f, 20f));
+class Spellsword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spellsword, new AOEShapeCone(7.1f, 60f.Degrees()));
+class Disseminate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Disseminate, 7.2f);
 
 class Hints(BossModule module) : BossComponent(module)
 {

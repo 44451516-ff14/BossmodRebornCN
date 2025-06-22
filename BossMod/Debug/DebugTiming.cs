@@ -2,7 +2,7 @@
 
 namespace BossMod;
 
-public class DebugTiming
+public sealed class DebugTiming
 {
     uint _prevFrameCounter;
     long _prevQPC;

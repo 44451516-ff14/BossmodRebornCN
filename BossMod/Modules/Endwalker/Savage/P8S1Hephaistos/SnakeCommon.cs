@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class SnakingKick(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.SnakingKick))
+class SnakingKick(BossModule module) : Components.GenericAOEs(module, (uint)AID.SnakingKick)
 {
     private static readonly AOEShapeCircle _shape = new(10f);
 
@@ -11,7 +11,7 @@ class SnakingKick(BossModule module) : Components.GenericAOEs(module, ActionID.M
 }
 
 // snake 'priority' depends on position, CW from N: N is 0, NE is 1, and so on
-abstract class PetrifactionCommon(BossModule module) : Components.GenericGaze(module, ActionID.MakeSpell(AID.PetrifactionAOE))
+abstract class PetrifactionCommon(BossModule module) : Components.GenericGaze(module, (uint)AID.PetrifactionAOE)
 {
     public int NumEyeCasts;
     public int NumBloodCasts;

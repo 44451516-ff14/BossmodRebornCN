@@ -59,7 +59,7 @@ public sealed class PartyState
         {
             for (var i = 0; i < MaxPartySize; ++i)
             {
-                ref var player = ref _actors[i];
+                ref readonly var player = ref _actors[i];
                 if (player == null || !includeDead && player.IsDead)
                     continue;
 
@@ -68,7 +68,7 @@ public sealed class PartyState
             if (!excludeNPCs)
                 for (var i = MaxAllianceSize; i < limit; ++i)
                 {
-                    ref var player = ref _actors[i];
+                    ref readonly var player = ref _actors[i];
                     if (player == null || !includeDead && player.IsDead)
                         continue;
 
@@ -79,7 +79,7 @@ public sealed class PartyState
         {
             for (var i = 0; i < limit; ++i)
             {
-                ref var player = ref _actors[i];
+                ref readonly var player = ref _actors[i];
                 if (player == null || !includeDead && player.IsDead)
                     continue;
 
@@ -99,16 +99,15 @@ public sealed class PartyState
         {
             for (var i = 0; i < MaxPartySize; ++i)
             {
-                ref var player = ref _actors[i];
+                ref readonly var player = ref _actors[i];
                 if (player == null || !includeDead && player.IsDead)
                     continue;
-
                 result[count++] = (i, player);
             }
             if (!excludeNPCs)
                 for (var i = MaxAllianceSize; i < limit; ++i)
                 {
-                    ref var player = ref _actors[i];
+                    ref readonly var player = ref _actors[i];
                     if (player == null || !includeDead && player.IsDead)
                         continue;
 
@@ -119,7 +118,7 @@ public sealed class PartyState
         {
             for (var i = 0; i < limit; ++i)
             {
-                ref var player = ref _actors[i];
+                ref readonly var player = ref _actors[i];
                 if (player == null || !includeDead && player.IsDead)
                     continue;
 
@@ -130,7 +129,18 @@ public sealed class PartyState
     }
 
     // find a slot index containing specified player (by instance ID); returns -1 if not found
-    public int FindSlot(ulong instanceID) => instanceID != 0 ? Array.FindIndex(Members, m => m.InstanceId == instanceID) : -1;
+    public int FindSlot(ulong instanceID)
+    {
+        if (instanceID == 0)
+            return -1;
+        var len = Members.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            if (Members[i].InstanceId == instanceID)
+                return i;
+        }
+        return -1;
+    }
 
     // find a slot index containing specified player (by name); returns -1 if not found
     public int FindSlot(ReadOnlySpan<char> name, StringComparison cmp = StringComparison.CurrentCultureIgnoreCase)
@@ -158,7 +168,7 @@ public sealed class PartyState
     public Event<OpModify> Modified = new();
     public sealed record class OpModify(int Slot, Member Member) : WorldState.Operation
     {
-        protected override void Exec(ref WorldState ws)
+        protected override void Exec(WorldState ws)
         {
             if (Slot >= 0 && Slot < ws.Party.Members.Length)
             {
@@ -177,7 +187,7 @@ public sealed class PartyState
     public Event<OpLimitBreakChange> LimitBreakChanged = new();
     public sealed record class OpLimitBreakChange(int Cur, int Max) : WorldState.Operation
     {
-        protected override void Exec(ref WorldState ws)
+        protected override void Exec(WorldState ws)
         {
             ws.Party.LimitBreakCur = Cur;
             ws.Party.LimitBreakMax = Max;

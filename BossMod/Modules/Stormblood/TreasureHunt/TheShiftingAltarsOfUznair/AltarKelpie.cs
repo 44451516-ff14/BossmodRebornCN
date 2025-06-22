@@ -38,8 +38,8 @@ public enum AID : uint
     Telega = 9630 // AltarMatanga/Mandragoras->self, no cast, single-target, bonus adds disappear
 }
 
-class Innocence(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Innocence), 5f);
-class HydroPush(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HydroPush), new AOEShapeRect(49.4f, 22f));
+class Innocence(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Innocence, 5f);
+class HydroPush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HydroPush, new AOEShapeRect(49.4f, 22f));
 
 class BloodyPuddle(BossModule module) : Components.GenericAOEs(module)
 {
@@ -61,10 +61,10 @@ class BloodyPuddle(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Torpedo(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Torpedo));
-class RisingSeas(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RisingSeas));
+class Torpedo(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Torpedo);
+class RisingSeas(BossModule module) : Components.RaidwideCast(module, (uint)AID.RisingSeas);
 
-class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.RisingSeas), 20f, stopAtWall: true)
+class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.RisingSeas, 20f, stopAtWall: true)
 {
     private readonly BloodyPuddle _aoe = module.FindComponent<BloodyPuddle>()!;
     private static readonly Angle cone = 37.5f.Degrees();
@@ -97,16 +97,12 @@ class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, Acti
     }
 }
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
 class AltarKelpieStates : StateMachineBuilder
 {
@@ -122,11 +118,7 @@ class AltarKelpieStates : StateMachineBuilder
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(AltarKelpie.All);

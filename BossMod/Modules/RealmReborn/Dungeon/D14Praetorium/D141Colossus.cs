@@ -20,11 +20,11 @@ public enum AID : uint
     GrandSword = 28473 // Boss->self, 5.0s cast, range 25 90-degree cone aoe
 }
 
-class CeruleumVent(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CeruleumVent));
-class PrototypeLaserAlpha1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronKissAlpha1), 6);
-class PrototypeLaserAlpha2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IronKissAlpha2), 6);
-class PrototypeLaserBeta(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.IronKissBeta), 5);
-class GrandSword(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrandSword), new AOEShapeCone(25, 45.Degrees()));
+class CeruleumVent(BossModule module) : Components.RaidwideCast(module, (uint)AID.CeruleumVent);
+class PrototypeLaserAlpha1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronKissAlpha1, 6);
+class PrototypeLaserAlpha2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronKissAlpha2, 6);
+class PrototypeLaserBeta(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.IronKissBeta, 5);
+class GrandSword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandSword, new AOEShapeCone(25, 45.Degrees()));
 
 class D141ColossusStates : StateMachineBuilder
 {

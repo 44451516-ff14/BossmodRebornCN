@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Autorotation.xan;
 
-public class DeepDungeonAI(RotationModuleManager manager, Actor player) : AIBase(manager, player)
+public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) : AIBase(manager, player)
 {
     public enum Track { Potion, Kite }
 
@@ -127,17 +127,17 @@ public class DeepDungeonAI(RotationModuleManager manager, Actor player) : AIBase
         if (primaryTarget.CastInfo != null)
             return;
 
-        float maxRange = 25;
-        float maxKite = 9;
+        var maxRange = 25f;
+        var maxKite = 9f;
 
         var primaryPos = primaryTarget.Position;
         var total = maxRange + Player.HitboxRadius + primaryTarget.HitboxRadius;
         var totalKite = maxKite + Player.HitboxRadius + primaryTarget.HitboxRadius;
-        float goalFactor = 0.05f;
+        var goalFactor = 0.05f;
         Hints.GoalZones.Add(pos =>
         {
             var dist = (pos - primaryPos).Length();
-            return dist <= total && dist >= totalKite ? goalFactor : 0;
+            return dist <= total && dist >= totalKite ? goalFactor : default;
         });
     }
 
@@ -154,25 +154,25 @@ public class DeepDungeonAI(RotationModuleManager manager, Actor player) : AIBase
         switch (t)
         {
             case Transformation.Manticore:
-                goal = Hints.GoalSingleTarget(primaryTarget, 3);
+                goal = Hints.GoalSingleTarget(primaryTarget, 3f);
                 numTargets = 1;
                 attack = ActionID.MakeSpell(Roleplay.AID.Pummel);
                 break;
             case Transformation.Succubus:
-                goal = Hints.GoalSingleTarget(primaryTarget, 25);
-                numTargets = Hints.NumPriorityTargetsInAOECircle(primaryTarget.Position, 5);
+                goal = Hints.GoalSingleTarget(primaryTarget, 25f);
+                numTargets = Hints.NumPriorityTargetsInAOECircle(primaryTarget.Position, 5f);
                 attack = ActionID.MakeSpell(Roleplay.AID.VoidFireII);
                 castTime = 2.5f;
                 break;
             case Transformation.Kuribu:
                 // heavenly judge is ground targeted
-                goal = Hints.GoalSingleTarget(primaryTarget.Position, 25);
-                numTargets = Hints.NumPriorityTargetsInAOECircle(primaryTarget.Position, 6);
+                goal = Hints.GoalSingleTarget(primaryTarget.Position, 25f);
+                numTargets = Hints.NumPriorityTargetsInAOECircle(primaryTarget.Position, 6f);
                 attack = ActionID.MakeSpell(Roleplay.AID.HeavenlyJudge);
                 castTime = 2.5f;
                 break;
             case Transformation.Dreadnaught:
-                goal = Hints.GoalSingleTarget(primaryTarget, 3);
+                goal = Hints.GoalSingleTarget(primaryTarget, 3f);
                 numTargets = 1;
                 attack = ActionID.MakeSpell(Roleplay.AID.Rotosmash);
                 break;
@@ -193,6 +193,6 @@ public class DeepDungeonAI(RotationModuleManager manager, Actor player) : AIBase
             return false;
 
         var ratio = Player.ClassCategory is ClassCategory.Tank ? 0.4f : 0.6f;
-        return Player.PredictedHPRatio < ratio && Player.FindStatus(648) == null && Player.InCombat;
+        return Player.PendingHPRatio < ratio && Player.FindStatus(648u) == null && Player.InCombat;
     }
 }

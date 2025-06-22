@@ -1,20 +1,19 @@
-using BossMod.Dawntrail.Alliance.A12Fafnir;
-
 namespace BossMod.Endwalker.Trial.T08Asura;
 
-class LowerRealm(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.LowerRealm));
-class Ephemerality(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Ephemerality));
+class LowerRealm(BossModule module) : Components.RaidwideCast(module, (uint)AID.LowerRealm);
+class Ephemerality(BossModule module) : Components.RaidwideCast(module, (uint)AID.Ephemerality);
 
-class CuttingJewel(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.CuttingJewel), new AOEShapeCircle(4f), true, tankbuster: true);
+class CuttingJewel(BossModule module) : Components.BaitAwayCast(module, (uint)AID.CuttingJewel, 4f, tankbuster: true);
 
-class IconographyPedestalPurge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyPedestalPurge), 10f);
-class PedestalPurge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PedestalPurge), 60f);
-class IconographyWheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyWheelOfDeincarnation), new AOEShapeDonut(8f, 40f));
-class WheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WheelOfDeincarnation), new AOEShapeDonut(48f, 96f));
-class IconographyBladewise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.IconographyBladewise), new AOEShapeRect(50f, 3f));
-class Bladewise(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Bladewise), new AOEShapeRect(100f, 14f));
-class Scattering(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scattering), new AOEShapeRect(20f, 3f));
-class OrderedChaos(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.OrderedChaos), 5f);
+class IconographyPedestalPurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IconographyPedestalPurge, 10f);
+class PedestalPurge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PedestalPurge, 60f);
+class IconographyWheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IconographyWheelOfDeincarnation, new AOEShapeDonut(8f, 40f));
+class WheelOfDeincarnation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WheelOfDeincarnation, new AOEShapeDonut(48f, 96f));
+class IconographyBladewise(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IconographyBladewise, new AOEShapeRect(50f, 3f));
+class Bladewise(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bladewise, new AOEShapeRect(100f, 14f));
+class Scattering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scattering, new AOEShapeRect(20f, 3f));
+class OrderedChaos(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.OrderedChaos, 5f);
+class MyriadAspects(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MyriadAspects1, (uint)AID.MyriadAspects2], new AOEShapeCone(40f, 15f.Degrees()), 6, 12);
 
 class T08AsuraStates : StateMachineBuilder
 {

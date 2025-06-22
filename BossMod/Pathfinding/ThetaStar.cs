@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Pathfinding;
 
-public class ThetaStar
+public sealed class ThetaStar
 {
     public enum Score
     {
@@ -39,7 +39,7 @@ public class ThetaStar
 
     private float _mapResolution;
     private float _mapHalfResolution;
-    private int _startNodeIndex;
+    public int StartNodeIndex;
     private float _startMaxG;
     private float _startPrio;
     private Score _startScore;
@@ -73,27 +73,27 @@ public class ThetaStar
 
         var startFrac = map.WorldToGridFrac(startPos);
         var start = map.ClampToGrid(Map.FracToGrid(startFrac));
-        _startNodeIndex = _bestIndex = _fallbackIndex = _map.GridToIndex(start.x, start.y);
-        _startMaxG = _map.PixelMaxG[_startNodeIndex];
-        _startPrio = _map.PixelPriority[_startNodeIndex];
+        StartNodeIndex = _bestIndex = _fallbackIndex = _map.GridToIndex(start.x, start.y);
+        _startMaxG = _map.PixelMaxG[StartNodeIndex];
+        _startPrio = _map.PixelPriority[StartNodeIndex];
         //if (_startMaxG < 0)
         //    _startMaxG = float.MaxValue; // TODO: this is a hack that allows navigating outside the obstacles, reconsider...
-        _startScore = CalculateScore(_startMaxG, _startMaxG, _startMaxG, _startNodeIndex);
+        _startScore = CalculateScore(_startMaxG, _startMaxG, _startMaxG, StartNodeIndex);
         NumSteps = NumReopens = 0;
 
         startFrac.X -= start.x + 0.5f;
         startFrac.Y -= start.y + 0.5f;
-        ref var startNode = ref _nodes[_startNodeIndex];
+        ref var startNode = ref _nodes[StartNodeIndex];
         startNode = new()
         {
             GScore = 0f,
             HScore = startNode.HScore, //HeuristicDistance(start.x, start.y),
-            ParentIndex = _startNodeIndex, // start's parent is self
+            ParentIndex = StartNodeIndex, // start's parent is self
             PathLeeway = _startMaxG,
             PathMinG = _startMaxG,
             Score = _startScore,
         };
-        AddToOpen(_startNodeIndex);
+        AddToOpen(StartNodeIndex);
     }
 
     // returns whether search is to be terminated; on success, first node of the open list would contain found goal
@@ -111,7 +111,7 @@ public class ThetaStar
         // update our best indices
         if (CompareNodeScores(ref nextNode, ref _nodes[_bestIndex]) < 0)
             _bestIndex = nextNodeIndex;
-        if (nextNode.Score == Score.UltimatelySafe && (_fallbackIndex == _startNodeIndex || CompareNodeScores(ref nextNode, ref _nodes[_fallbackIndex]) < 0))
+        if (nextNode.Score == Score.UltimatelySafe && (_fallbackIndex == StartNodeIndex || CompareNodeScores(ref nextNode, ref _nodes[_fallbackIndex]) < 0))
             _fallbackIndex = nextNodeIndex;
 
         var haveN = nextNodeY > 0;
@@ -143,7 +143,7 @@ public class ThetaStar
 
     public int Execute()
     {
-        while (_nodes[_bestIndex].HScore > 0f && _fallbackIndex == _startNodeIndex && ExecuteStep())
+        while (_nodes[_bestIndex].HScore > 0f && _fallbackIndex == StartNodeIndex && ExecuteStep())
             ;
         return BestIndex();
     }
@@ -153,7 +153,7 @@ public class ThetaStar
         if (_nodes[_bestIndex].Score > _startScore)
             return _bestIndex; // we've found something better than start
 
-        if (_fallbackIndex != _startNodeIndex)
+        if (_fallbackIndex != StartNodeIndex)
         {
             // find first parent of best-among-worst that is at least as good as start
             var destIndex = _fallbackIndex;
@@ -491,13 +491,13 @@ public class ThetaStar
 
     private void PercolateUp(int heapIndex)
     {
-        var openSpan = _openList.AsSpan();
-        int nodeIndex = openSpan[heapIndex];
+        var openSpan = CollectionsMarshal.AsSpan(_openList);
+        var nodeIndex = openSpan[heapIndex];
         ref var node = ref _nodes[nodeIndex];
         while (heapIndex > 0)
         {
-            int parentHeapIndex = (heapIndex - 1) >> 1;
-            ref int parentNodeIndex = ref openSpan[parentHeapIndex];
+            var parentHeapIndex = (heapIndex - 1) >> 1;
+            ref var parentNodeIndex = ref openSpan[parentHeapIndex];
             ref var parent = ref _nodes[parentNodeIndex];
             if (CompareNodeScores(ref node, ref parent) >= 0)
                 break; // parent is 'less' (same/better), stop
@@ -512,24 +512,24 @@ public class ThetaStar
 
     private void PercolateDown(int heapIndex)
     {
-        var openSpan = _openList.AsSpan();
-        int nodeIndex = openSpan[heapIndex];
+        var openSpan = CollectionsMarshal.AsSpan(_openList);
+        var nodeIndex = openSpan[heapIndex];
         ref var node = ref _nodes[nodeIndex];
 
-        int maxSize = openSpan.Length;
+        var maxSize = openSpan.Length;
         while (true)
         {
             // find 'better' child
-            int childHeapIndex = (heapIndex << 1) + 1;
+            var childHeapIndex = (heapIndex << 1) + 1;
             if (childHeapIndex >= maxSize)
                 break; // node is already a leaf
 
-            int childNodeIndex = openSpan[childHeapIndex];
+            var childNodeIndex = openSpan[childHeapIndex];
             ref var child = ref _nodes[childNodeIndex];
-            int altChildHeapIndex = childHeapIndex + 1;
+            var altChildHeapIndex = childHeapIndex + 1;
             if (altChildHeapIndex < maxSize)
             {
-                int altChildNodeIndex = openSpan[altChildHeapIndex];
+                var altChildNodeIndex = openSpan[altChildHeapIndex];
                 ref var altChild = ref _nodes[altChildNodeIndex];
                 if (CompareNodeScores(ref altChild, ref child) < 0)
                 {

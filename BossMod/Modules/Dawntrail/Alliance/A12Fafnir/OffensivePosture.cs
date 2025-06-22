@@ -1,11 +1,11 @@
 namespace BossMod.Dawntrail.Alliance.A12Fafnir;
 
-class SpikeFlail(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpikeFlail), new AOEShapeCone(80f, 135f.Degrees()))
+sealed class SpikeFlail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpikeFlail, new AOEShapeCone(80f, 135f.Degrees()))
 {
     public override bool KeepOnPhaseChange => true;
 }
 
-class Touchdown(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Touchdown), 24f)
+sealed class Touchdown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Touchdown, 24f)
 {
     public override bool KeepOnPhaseChange => true;
 
@@ -15,7 +15,7 @@ class Touchdown(BossModule module) : Components.SimpleAOEs(module, ActionID.Make
     }
 }
 
-class DragonBreath(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.DragonBreath))
+sealed class DragonBreath(BossModule module) : Components.GenericAOEs(module, (uint)AID.DragonBreath)
 {
     public override bool KeepOnPhaseChange => true;
     public AOEInstance? AOE;
@@ -35,7 +35,7 @@ class DragonBreath(BossModule module) : Components.GenericAOEs(module, ActionID.
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.FireVoidzone && state == 0x00040008)
+        if (actor.OID == (uint)OID.FireVoidzone && state == 0x00040008u)
             AOE = null;
     }
 }

@@ -27,7 +27,7 @@ class Thundercall(BossModule module) : Components.GenericAOEs(module)
         {
             _orbs.AddRange(Module.Enemies((uint)OID.NBallOfLevin));
             _orbs.AddRange(Module.Enemies((uint)OID.SBallOfLevin));
-            WDir center = new();
+            WDir center = default;
             var count = _orbs.Count;
             for (var i = 0; i < count; ++i)
                 center += _orbs[i].Position - Arena.Center;

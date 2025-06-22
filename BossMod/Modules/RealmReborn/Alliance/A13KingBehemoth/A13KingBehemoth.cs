@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Alliance.A13KingBehemoth;
 
-class EclipticMeteor(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.EclipticMeteor), 60f)
+class EclipticMeteor(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.EclipticMeteor, 60f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {
@@ -18,8 +18,8 @@ class EclipticMeteor(BossModule module) : Components.CastLineOfSightAOE(module, 
         return CollectionsMarshal.AsSpan(actors);
     }
 }
-class SelfDestruct(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SelfDestruct), 8.4f);
-class CharybdisAOE(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, ActionID.MakeSpell(AID.CharybdisAOE), GetVoidzones, 0.1f)
+class SelfDestruct(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDestruct, 8.4f);
+class CharybdisAOE(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.CharybdisAOE, GetVoidzones, 0.1f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

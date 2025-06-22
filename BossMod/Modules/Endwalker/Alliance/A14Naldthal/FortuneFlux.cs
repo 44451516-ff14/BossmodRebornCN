@@ -4,10 +4,11 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
 {
     public enum Mechanic { None, AOE, Knockback }
 
-    public List<(WPos source, Mechanic mechanic, DateTime activation)> Mechanics = [];
+    public List<(WPos source, Mechanic mechanic, DateTime activation, Angle rotation)> Mechanics = new(3);
     public int NumComplete;
-    private WPos _currentTethered;
+    private Actor? _currentTethered;
     private Mechanic _currentMechanic;
+    private DateTime activation;
 
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -29,7 +30,7 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
     {
         if (tether.ID == (uint)TetherID.FiredUp)
         {
-            _currentTethered = source.Position;
+            _currentTethered = source;
             TryAdd();
         }
     }
@@ -80,10 +81,12 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
 
     private void TryAdd()
     {
-        if (_currentTethered != default && _currentMechanic != Mechanic.None)
+        if (_currentTethered != null && _currentMechanic != Mechanic.None)
         {
-            Mechanics.Add((_currentTethered, _currentMechanic, DateTime.MaxValue));
-            _currentTethered = default;
+            if (activation == default)
+                activation = WorldState.FutureTime(100d);
+            Mechanics.Add((_currentTethered.Position, _currentMechanic, activation, _currentTethered.Rotation));
+            _currentTethered = null;
             _currentMechanic = Mechanic.None;
         }
     }
@@ -109,7 +112,7 @@ class FortuneFluxOrder(BossModule module) : BossComponent(module)
             m.source = spell.LocXZ;
         }
 
-        if (m.activation != DateTime.MaxValue)
+        if (m.activation != activation)
         {
             ReportError($"Several cast-start for #{order}");
         }
@@ -155,6 +158,7 @@ class FortuneFluxAOE(BossModule module) : Components.GenericAOEs(module)
 class FortuneFluxKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly FortuneFluxOrder? _order = module.FindComponent<FortuneFluxOrder>();
+    private static readonly Angle a45 = 45f.Degrees(), a180 = 180f.Degrees();
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -186,5 +190,34 @@ class FortuneFluxKnockback(BossModule module) : Components.GenericKnockback(modu
         }
 
         return sources;
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (_order == null || _order.Mechanics.Count <= _order.NumComplete)
+            return;
+        var mechanics = _order.Mechanics;
+        var countM = mechanics.Count;
+        for (var i = _order.NumComplete; i < countM; ++i)
+        {
+            var m = _order.Mechanics[i];
+            if (m.mechanic == FortuneFluxOrder.Mechanic.Knockback)
+            {
+                var act = m.activation;
+                if (!IsImmune(slot, act))
+                {
+                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(m.source, 5f, m.rotation + a180, a45), act);
+                    for (var j = _order.NumComplete; j < countM; ++j)
+                    {
+                        var mj = _order.Mechanics[j];
+                        if (mj.mechanic == FortuneFluxOrder.Mechanic.AOE)
+                        {
+                            hints.AddForbiddenZone(ShapeDistance.Cone(m.source, 100f, Angle.FromDirection(m.source - mj.source), Angle.Asin(20f / (mj.source - m.source).Length())), act.AddSeconds(1d));
+                        }
+                    }
+                    return;
+                }
+            }
+        }
     }
 }

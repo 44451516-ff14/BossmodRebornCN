@@ -151,7 +151,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P1DeathSentence(uint id, float delay)
     {
-        ActorCast(id, _module.Twintania, AID.DeathSentence, delay, 4, true, "Tankbuster")
+        ActorCast(id, _module.Twintania, (uint)AID.DeathSentence, delay, 4, true, "Tankbuster")
             .ActivateOnEnter<P1DeathSentence>()
             .DeactivateOnExit<P1DeathSentence>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -165,7 +165,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P1Twister(uint id, float delay, bool withFireball = false)
     {
-        ActorCastStart(id, _module.Twintania, AID.Twister, delay, true)
+        ActorCastStart(id, _module.Twintania, (uint)AID.Twister, delay, true)
             .ActivateOnEnter<P1Fireball>(withFireball); // icon appears ~0.1s before cast start
         ActorCastEnd(id + 1, _module.Twintania, 2, true);
         ComponentCondition<P1Twister>(id + 2, 0.3f, comp => comp.Active, "Twisters");
@@ -196,7 +196,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P1Generate(uint id, float delay)
     {
-        ActorCast(id, _module.Twintania, AID.Generate, delay, 3, true, "Hatch"); // icon appears ~0.1s before cast start
+        ActorCast(id, _module.Twintania, (uint)AID.Generate, delay, 3, true, "Hatch"); // icon appears ~0.1s before cast start
     }
 
     private void P1GenerateTwister(uint id, float delay)
@@ -215,7 +215,7 @@ class UCOBStates : StateMachineBuilder
 
     private State P2Ravensbeak(uint id, float delay)
     {
-        return ActorCast(id, _module.Nael, AID.Ravensbeak, delay, 4, true, "Tankbuster")
+        return ActorCast(id, _module.Nael, (uint)AID.Ravensbeak, delay, 4, true, "Tankbuster")
             .ActivateOnEnter<P2Ravensbeak>()
             .DeactivateOnExit<P2Ravensbeak>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -260,7 +260,7 @@ class UCOBStates : StateMachineBuilder
     private void P2BahamutsFavor(uint id, float delay)
     {
         // there are 24 iceballs total; first 4 groups of 4 are 2s apart, and have fireball after each one; then the last 8 are fired in quick succession (1s apart)
-        ActorCast(id, _module.Nael, AID.BahamutsFavor, delay, 3, true);
+        ActorCast(id, _module.Nael, (uint)AID.BahamutsFavor, delay, 3, true);
         ComponentCondition<P2BahamutsFavorChainLightning>(id + 0x10, 8, comp => comp.ActiveOrSkipped())
             .ActivateOnEnter<Quote>()
             .ActivateOnEnter<P2BahamutsFavorChainLightning>();
@@ -471,19 +471,19 @@ class UCOBStates : StateMachineBuilder
 
     private State P3Flatten(uint id, float delay)
     {
-        return ActorCast(id, _module.BahamutPrime, AID.Flatten, delay, 4, true, "Tankbuster")
+        return ActorCast(id, _module.BahamutPrime, (uint)AID.Flatten, delay, 4, true, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
     private State P3Gigaflare(uint id, float delay)
     {
-        return ActorCast(id, _module.BahamutPrime, AID.Gigaflare, delay, 6, true, "Raidwide")
+        return ActorCast(id, _module.BahamutPrime, (uint)AID.Gigaflare, delay, 6, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P3QuickmarchTrio(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.QuickmarchTrio, delay, 4, true);
+        ActorCast(id, _module.BahamutPrime, (uint)AID.QuickmarchTrio, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BahamutPrime, false, 2.1f, "Boss disappears (quickmarch trio)")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ComponentCondition<P3QuickmarchTrio>(id + 0x20, 1.2f, comp => comp.Active)
@@ -532,7 +532,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P3BlackfireTrio(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.BlackfireTrio, delay, 4, true);
+        ActorCast(id, _module.BahamutPrime, (uint)AID.BlackfireTrio, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BahamutPrime, false, 2.1f, "Boss disappears (blackfire trio)")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ComponentCondition<P3BlackfireTrio>(id + 0x20, 1.2f, comp => comp.Active)
@@ -578,7 +578,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P3FellruinTrio(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.FellruinTrio, delay, 4, true);
+        ActorCast(id, _module.BahamutPrime, (uint)AID.FellruinTrio, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BahamutPrime, false, 2.1f, "Boss disappears (fellruin trio)")
             .SetHint(StateMachine.StateHint.DowntimeStart);
 
@@ -603,7 +603,7 @@ class UCOBStates : StateMachineBuilder
             .ExecOnEnter<Hatch>(comp => comp.Active = true)
             .ActivateOnEnter<QuoteMeteorStream>()
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ActorCastStart(id + 0x101, _module.BahamutPrime, AID.Gigaflare, 0.1f, true);
+        ActorCastStart(id + 0x101, _module.BahamutPrime, (uint)AID.Gigaflare, 0.1f, true);
         ComponentCondition<Quote>(id + 0x102, 1.2f, comp => comp.PendingMechanics.Count == 0, "Spread")
             .DeactivateOnExit<QuoteMeteorStream>()
             .DeactivateOnExit<Quote>();
@@ -617,7 +617,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P3HeavensfallTrio(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.HeavensfallTrio, delay, 4, true);
+        ActorCast(id, _module.BahamutPrime, (uint)AID.HeavensfallTrio, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BahamutPrime, false, 2.1f, "Boss disappears (heavensfall trio)")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ComponentCondition<P3HeavensfallTrio>(id + 0x20, 1.2f, comp => comp.Active)
@@ -665,7 +665,7 @@ class UCOBStates : StateMachineBuilder
         ActorTargetable(id + 0x170, _module.BahamutPrime, true, 1.4f, "Boss reappears")
             .ExecOnEnter<Hatch>(comp => comp.Active = true)
             .SetHint(StateMachine.StateHint.DowntimeEnd);
-        ActorCastStart(id + 0x171, _module.BahamutPrime, AID.Gigaflare, 0.1f, true);
+        ActorCastStart(id + 0x171, _module.BahamutPrime, (uint)AID.Gigaflare, 0.1f, true);
         ComponentCondition<P3HeavensfallFireball>(id + 0x172, 1.2f, comp => comp.NumFinishedStacks > 0, "Stack")
             .DeactivateOnExit<P3HeavensfallFireball>();
         ActorCastEnd(id + 0x173, _module.BahamutPrime, 4.8f, true, "Raidwide")
@@ -680,17 +680,17 @@ class UCOBStates : StateMachineBuilder
 
     private void P3TenstrikeTrio(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.TenstrikeTrio, delay, 4, true);
+        ActorCast(id, _module.BahamutPrime, (uint)AID.TenstrikeTrio, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BahamutPrime, false, 2.1f, "Boss disappears (tenstrike trio)")
             .SetHint(StateMachine.StateHint.DowntimeStart);
 
         ComponentCondition<Hatch>(id + 0x20, 2.2f, comp => comp.NumTargetsAssigned > 0)
             .ExecOnEnter<Hatch>(comp => comp.Reset())
             .ActivateOnEnter<P2MeteorStream>();
-        ActorCast(id + 0x30, _module.Twintania, AID.Generate, 0.1f, 3, true, "Hatch 1");
+        ActorCast(id + 0x30, _module.Twintania, (uint)AID.Generate, 0.1f, 3, true, "Hatch 1");
         ComponentCondition<P2MeteorStream>(id + 0x40, 0.9f, comp => comp.NumCasts > 0);
         ComponentCondition<Hatch>(id + 0x41, 0.1f, comp => comp.NumTargetsAssigned > 3);
-        ActorCastStart(id + 0x50, _module.Twintania, AID.Generate, 0.1f, true);
+        ActorCastStart(id + 0x50, _module.Twintania, (uint)AID.Generate, 0.1f, true);
         ComponentCondition<P2MeteorStream>(id + 0x51, 0.8f, comp => comp.NumCasts > 1);
         ComponentCondition<P2MeteorStream>(id + 0x52, 1.0f, comp => comp.NumCasts > 2); // first set of hatches explode around this point
         ComponentCondition<P2MeteorStream>(id + 0x53, 1.0f, comp => comp.NumCasts > 3);
@@ -718,7 +718,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P3GrandOctet(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.GrandOctet, delay, 4, true);
+        ActorCast(id, _module.BahamutPrime, (uint)AID.GrandOctet, delay, 4, true);
         ActorTargetable(id + 0x10, _module.BahamutPrime, false, 2.1f, "Boss disappears (grand octet)")
             .SetHint(StateMachine.StateHint.DowntimeStart);
         ComponentCondition<P3GrandOctet>(id + 0x20, 1.2f, comp => comp.Casters.Count == 8)
@@ -775,13 +775,13 @@ class UCOBStates : StateMachineBuilder
 
     private void P4Twister(uint id, float delay)
     {
-        ActorCast(id, _module.Twintania, AID.Twister, delay, 2, true); // icon appears ~0.1s before cast start
+        ActorCast(id, _module.Twintania, (uint)AID.Twister, delay, 2, true); // icon appears ~0.1s before cast start
         ComponentCondition<Twister>(id + 2, 0.3f, comp => comp.Active, "Twisters");
     }
 
     private void P4GenerateTwister(uint id, float delay)
     {
-        ActorCast(id, _module.Twintania, AID.Generate, delay, 3, true, "Hatch"); // icon appears ~0.1s before cast start
+        ActorCast(id, _module.Twintania, (uint)AID.Generate, delay, 3, true, "Hatch"); // icon appears ~0.1s before cast start
         P4Twister(id + 0x100, 2.2f);
     }
 
@@ -804,13 +804,13 @@ class UCOBStates : StateMachineBuilder
 
     private void P4Megaflare(uint id, float delay)
     {
-        ActorCast(id, _module.Nael, AID.MegaflareRaidwide, delay, 5, true, "Raidwide")
+        ActorCast(id, _module.Nael, (uint)AID.MegaflareRaidwide, delay, 5, true, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void P4DeathSentenceRavensbeak(uint id, float delay)
     {
-        ActorCast(id, _module.Nael, AID.Ravensbeak, delay, 4, true, "Tank swap") // both bosses cast at the same time
+        ActorCast(id, _module.Nael, (uint)AID.Ravensbeak, delay, 4, true, "Tank swap") // both bosses cast at the same time
             .ActivateOnEnter<P1DeathSentence>()
             .ActivateOnEnter<P2Ravensbeak>()
             .DeactivateOnExit<P1DeathSentence>()
@@ -836,7 +836,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P5MornAfah(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.MornAfah, delay, 6, true, "Stack")
+        ActorCast(id, _module.BahamutPrime, (uint)AID.MornAfah, delay, 6, true, "Stack")
             .ActivateOnEnter<P5MornAfah>()
             .DeactivateOnExit<P5MornAfah>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -844,7 +844,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P5AhkMorn(uint id, float delay, int count)
     {
-        ActorCast(id, _module.BahamutPrime, AID.AkhMorn, delay, 4, true, "Tankbuster hit 1")
+        ActorCast(id, _module.BahamutPrime, (uint)AID.AkhMorn, delay, 4, true, "Tankbuster hit 1")
             .ActivateOnEnter<P5AhkMorn>()
             .SetHint(StateMachine.StateHint.Tankbuster);
         ComponentCondition<P5AhkMorn>(id + 0x10, 2.1f, comp => comp.NumCasts >= 2)
@@ -856,7 +856,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P5Exaflare(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.Exaflare, delay, 4, true)
+        ActorCast(id, _module.BahamutPrime, (uint)AID.Exaflare, delay, 4, true)
             .ExecOnEnter<P5Exaflare>(comp => comp.Reset()); // first pair of exaflares start ~2s into cast, 3s delay between lines
         ComponentCondition<P5Exaflare>(id + 0x10, 2, comp => comp.NumCasts >= 2, "Exaflares 1");
         ComponentCondition<P5Exaflare>(id + 0x20, 3, comp => comp.NumCasts >= 8, "Exaflares 2");
@@ -866,7 +866,7 @@ class UCOBStates : StateMachineBuilder
 
     private void P5Enrage(uint id, float delay)
     {
-        ActorCast(id, _module.BahamutPrime, AID.Enrage, delay, 10, true, "Enrage")
+        ActorCast(id, _module.BahamutPrime, (uint)AID.Enrage, delay, 10, true, "Enrage")
             .ActivateOnEnter<P5Enrage>();
         // second hit after 2.2s, then every ~1.2s
     }

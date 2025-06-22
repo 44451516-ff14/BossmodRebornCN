@@ -42,7 +42,7 @@ public enum AID : uint
     WhorlOfTheMind = 36438 // Helper->player, 5.0s cast, range 5 circle
 }
 
-class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom rect = new([new Rectangle(D053Ambrose.ArenaCenter, 33f, 24f)], [new Rectangle(D053Ambrose.ArenaCenter, 15f, 19.5f)]);
     private AOEInstance? _aoe;
@@ -57,7 +57,7 @@ class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x28)
+        if (state == 0x00020001u && index == 0x28u)
         {
             Arena.Bounds = D053Ambrose.DefaultBounds;
             _aoe = null;
@@ -65,10 +65,10 @@ class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PsychicWave(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PsychicWave));
-class Psychokinesis(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Psychokinesis), new AOEShapeRect(70f, 6.5f));
+sealed class PsychicWave(BossModule module) : Components.RaidwideCast(module, (uint)AID.PsychicWave);
+sealed class Psychokinesis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Psychokinesis, new AOEShapeRect(70f, 6.5f));
 
-class ExtrasensoryExpulsion(BossModule module) : Components.GenericKnockback(module, maxCasts: 1)
+sealed class ExtrasensoryExpulsion(BossModule module) : Components.GenericKnockback(module, maxCasts: 1)
 {
     public readonly List<Knockback> Sourcez = new(4);
     public static readonly AOEShapeRect RectNS = new(20f, 7.5f);
@@ -120,12 +120,11 @@ class ExtrasensoryExpulsion(BossModule module) : Components.GenericKnockback(mod
     }
 }
 
-class VoltaicSlash(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.VoltaicSlash));
+sealed class VoltaicSlash(BossModule module) : Components.SingleTargetCast(module, (uint)AID.VoltaicSlash);
 
-class OverwhelmingCharge(BossModule module) : Components.GenericAOEs(module)
+sealed class OverwhelmingCharge(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ExtrasensoryExpulsion _kb = module.FindComponent<ExtrasensoryExpulsion>()!;
-    private const string Hint = "Wait inside safespot for knockback!";
     private static readonly AOEShapeCone cone = new(26f, 90f.Degrees());
     private static readonly AOEShapeRect rectAdj = new(19f, 7f); // the knockback rectangles are placed poorly with significant error from visuals plus half height of the arena is smaller than 20 knockback distance
 
@@ -204,15 +203,15 @@ class OverwhelmingCharge(BossModule module) : Components.GenericAOEs(module)
                     break;
                 }
             }
-            hints.Add(Hint, !actorInSafespot);
+            hints.Add("Wait inside safespot for knockback!", !actorInSafespot);
         }
     }
 }
 
-class Electrolance(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Electrolance), 22f);
-class WhorlOfTheMind(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.WhorlOfTheMind), 5f);
+sealed class Electrolance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrolance, 22f);
+sealed class WhorlOfTheMind(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.WhorlOfTheMind, 5f);
 
-class Rush(BossModule module) : Components.GenericAOEs(module)
+sealed class Rush(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(33f, 5f);
     private readonly List<AOEInstance> _aoes = new(7);
@@ -222,12 +221,9 @@ class Rush(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = _aoes[i];
-            aoes[i] = i == 0 ? count > 1 ? aoe with { Color = Colors.Danger } : aoe : aoe;
-        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
+            aoes[0].Color = Colors.Danger;
         return aoes;
     }
 
@@ -252,7 +248,7 @@ class Rush(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D053AmbroseStates : StateMachineBuilder
+sealed class D053AmbroseStates : StateMachineBuilder
 {
     public D053AmbroseStates(BossModule module) : base(module)
     {
@@ -270,7 +266,7 @@ class D053AmbroseStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12695, SortOrder = 4)]
-public class D053Ambrose(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D053Ambrose(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(190f, default);
     public static readonly ArenaBoundsRect StartingBounds = new(32.5f, 24f);

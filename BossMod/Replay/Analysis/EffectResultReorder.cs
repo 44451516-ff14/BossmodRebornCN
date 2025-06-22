@@ -1,6 +1,6 @@
 ﻿namespace BossMod.ReplayAnalysis;
 
-class EffectResultReorder
+sealed class EffectResultReorder
 {
     private readonly List<(Replay r, Replay.Participant p, Replay.Action prev, Replay.Action next, bool prevHeal, bool nextHeal)> _reordered = [];
 

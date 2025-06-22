@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S2PallasAthena;
 
-abstract class Ekpyrosis(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 19f); // TODO: verify falloff
-class EkpyrosisProximityV(BossModule module) : Ekpyrosis(module, AID.EkpyrosisProximityV);
-class EkpyrosisProximityH(BossModule module) : Ekpyrosis(module, AID.EkpyrosisProximityH);
+abstract class Ekpyrosis(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 19f); // TODO: verify falloff
+class EkpyrosisProximityV(BossModule module) : Ekpyrosis(module, (uint)AID.EkpyrosisProximityV);
+class EkpyrosisProximityH(BossModule module) : Ekpyrosis(module, (uint)AID.EkpyrosisProximityH);
 
 class EkpyrosisExaflare(BossModule module) : Components.Exaflare(module, 6f)
 {

@@ -17,9 +17,9 @@ public enum AID : uint
     MagitekSpread = 6027, // Boss->self, 3.0s cast, range 20+R 240-degree cone
 }
 
-class MagitekSlug(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekSlug), new AOEShapeRect(60, 2));
-class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherochemicalGrenado), 8);
-class SelfDetonate(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.SelfDetonate), "Kill turret before detonation!", true)
+class MagitekSlug(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekSlug, new AOEShapeRect(60f, 2f));
+class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherochemicalGrenado, 8f);
+class SelfDetonate(BossModule module) : Components.CastHint(module, (uint)AID.SelfDetonate, "Kill turret before detonation!", true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -27,12 +27,12 @@ class SelfDetonate(BossModule module) : Components.CastHint(module, ActionID.Mak
         for (var i = 0; i < count; ++i)
         {
             var h = hints.PotentialTargets[i];
-            if (h.Actor.CastInfo?.Action == WatchedAction)
+            if (h.Actor.CastInfo?.Action.ID == WatchedAction)
                 h.Priority = 5;
         }
     }
 }
-class MagitekSpread(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekSpread), new AOEShapeCone(20.55f, 120.Degrees()));
+class MagitekSpread(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekSpread, new AOEShapeCone(20.55f, 120f.Degrees()));
 
 class RegulaVanHydrusStates : StateMachineBuilder
 {
@@ -49,7 +49,7 @@ class RegulaVanHydrusStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 173, NameID = 3818)]
 public class RegulaVanHydrus(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(230, 79), 20.256f, 24)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(230f, 79f), 20.256f, 24)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

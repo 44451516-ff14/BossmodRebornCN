@@ -39,7 +39,7 @@ namespace Clipper2Lib
     LocalMin = 8
   };
 
-  internal class Vertex
+  internal sealed class Vertex
   {
     public readonly Point64 pt;
     public Vertex? next;
@@ -115,7 +115,7 @@ namespace Clipper2Lib
   }
 
   // OutPt: vertex data structure for clipping solutions
-  internal class OutPt
+  internal sealed class OutPt
   {
     public Point64 pt;
     public OutPt? next;
@@ -138,7 +138,7 @@ namespace Clipper2Lib
 
 
   // OutRec: path data structure for clipping solutions
-  internal class OutRec
+  internal sealed class OutRec
   {
     public int idx;
     public OutRec? owner;
@@ -153,7 +153,7 @@ namespace Clipper2Lib
     public OutRec? recursiveSplit;
   };
 
-  internal class HorzSegment
+  internal sealed class HorzSegment
   {
     public OutPt? leftOp;
     public OutPt? rightOp;
@@ -166,7 +166,7 @@ namespace Clipper2Lib
     }
   }
 
-  internal class HorzJoin
+  internal sealed class HorzJoin
   {
     public OutPt? op1;
     public OutPt? op2;
@@ -182,7 +182,7 @@ namespace Clipper2Lib
   // displays, which is the orientation used in Clipper's development.
   ///////////////////////////////////////////////////////////////////
 
-  internal class Active
+  internal sealed class Active
   {
     public Point64 bot;
     public Point64 top;
@@ -326,7 +326,7 @@ namespace Clipper2Lib
     }
   }
 
-  public class ReuseableDataContainer64
+  public sealed class ReuseableDataContainer64
   {
     internal readonly List<LocalMinima> _minimaList;
     internal readonly List<Vertex> _vertexList;
@@ -366,14 +366,14 @@ namespace Clipper2Lib
     private bool _hasOpenPaths;
     internal bool _using_polytree;
     internal bool _succeeded;
-    public bool PreserveCollinear { get; set; }
-    public bool ReverseSolution { get; set; }
+    public bool PreserveCollinear;
+    public bool ReverseSolution;
 
 #if USINGZ
     public delegate void ZCallback64(Point64 bot1, Point64 top1,
         Point64 bot2, Point64 top2, ref Point64 intersectPt);
 
-    public long DefaultZ { get; set; }
+    public long DefaultZ;
     protected ZCallback64? _zCallback;
 #endif
     public ClipperBase()
@@ -3253,7 +3253,7 @@ private void DoHorizontal(Active horz)
 
   } // Clipper64 class
 
-  public class ClipperD : ClipperBase
+  public sealed class ClipperD : ClipperBase
   {
     private readonly string precision_range_error = "Error: Precision is out of range.";
 
@@ -3264,7 +3264,7 @@ private void DoHorizontal(Active horz)
     public delegate void ZCallbackD(PointD bot1, PointD top1,
         PointD bot2, PointD top2, ref PointD intersectPt);
 
-    public ZCallbackD? ZCallback { get; set; }
+    public ZCallbackD? ZCallback;
 
     private void CheckZCallback()
     {
@@ -3538,7 +3538,7 @@ private void DoHorizontal(Active horz)
 
 public class PolyPath64 : PolyPathBase
   {
-    public Path64? Polygon { get; private set; } // polytree root's polygon == null
+    public Path64? Polygon; // polytree root's polygon == null
 
     public PolyPath64(PolyPathBase? parent = null) : base(parent) {}
 
@@ -3583,8 +3583,8 @@ public class PolyPath64 : PolyPathBase
   }
   public class PolyPathD : PolyPathBase
   {
-    internal double Scale { get; set; }
-    public PathD? Polygon { get; private set; }
+    internal double Scale;
+    public PathD? Polygon;
 
     public PolyPathD(PolyPathBase? parent = null) : base(parent) {}
 
@@ -3631,14 +3631,14 @@ public class PolyPath64 : PolyPathBase
     }
   }
 
-  public class PolyTree64 : PolyPath64 {}
+  public sealed class PolyTree64 : PolyPath64 {}
 
-  public class PolyTreeD : PolyPathD
+  public sealed class PolyTreeD : PolyPathD
   {
     public new double Scale => base.Scale;
   }
 
-  public class ClipperLibException : Exception
+  public sealed class ClipperLibException : Exception
   {
     public ClipperLibException(string description) : base(description) {}
   }

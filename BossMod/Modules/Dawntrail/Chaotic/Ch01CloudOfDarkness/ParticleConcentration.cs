@@ -44,7 +44,7 @@
 // 47-56 = 1-man tower falling orb
 // 57-66 = 2-man tower falling orb
 // 67-6E = 3-man tower falling orb
-class ParticleConcentration(BossModule module) : Components.GenericTowers(module)
+sealed class ParticleConcentration(BossModule module) : Components.GenericTowers(module)
 {
     private BitMask _innerPlayers;
     private BitMask _outerPlayers;
@@ -53,42 +53,42 @@ class ParticleConcentration(BossModule module) : Components.GenericTowers(module
     public void ShowOuterTowers()
     {
         var activation = Towers.Count != 0 ? Towers[0].Activation : default;
-        for (var i = 0; i < _outerTowers.Count; ++i)
+        var count = _outerTowers.Count;
+        for (var i = 0; i < count; ++i)
         {
-            var newTower = new Tower(_outerTowers[i], 3, 3, 3, _innerPlayers, activation);
-            Towers.Add(newTower);
+            Towers.Add(new(_outerTowers[i], 3f, 3, 3, _innerPlayers, activation));
         }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.InnerDarkness:
-                _innerPlayers.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.InnerDarkness:
+                _innerPlayers[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.OuterDarkness:
-                _outerPlayers.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.OuterDarkness:
+                _outerPlayers[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
         }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.InnerDarkness:
-                _innerPlayers.Clear(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.InnerDarkness:
+                _innerPlayers[Raid.FindSlot(actor.InstanceID)] = false;
                 break;
-            case SID.OuterDarkness:
-                _outerPlayers.Clear(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.OuterDarkness:
+                _outerPlayers[Raid.FindSlot(actor.InstanceID)] = false;
                 break;
         }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state != 0x00020001) // appear
+        if (state != 0x00020001u) // appear
             return;
 
         var (offset, count) = index switch

@@ -34,10 +34,10 @@ public enum SID : uint
     Concussion = 3513 // Boss->player, extra=0xF43
 }
 
-abstract class WaterBomb(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f);
-class WaterBomb1(BossModule module) : WaterBomb(module, AID.WaterBomb1);
-class WaterBomb2(BossModule module) : WaterBomb(module, AID.WaterBomb2);
-class WaterBomb3(BossModule module) : WaterBomb(module, AID.WaterBomb3);
+abstract class WaterBomb(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6f);
+class WaterBomb1(BossModule module) : WaterBomb(module, (uint)AID.WaterBomb1);
+class WaterBomb2(BossModule module) : WaterBomb(module, (uint)AID.WaterBomb2);
+class WaterBomb3(BossModule module) : WaterBomb(module, (uint)AID.WaterBomb3);
 
 class OdiousCroak(BossModule module) : Components.GenericAOEs(module)
 {
@@ -81,45 +81,9 @@ class DiscordantHarmony(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class ToyHammer(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.ToyHammer));
+class ToyHammer(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ToyHammer);
 
-class Concussion(BossModule module) : BossComponent(module)
-{
-    private Actor? _concussion;
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Concussion)
-            _concussion = actor;
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Concussion)
-            _concussion = null;
-    }
-
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        if (_concussion == null || !(actor.Role == Role.Healer || actor.Class == Class.BRD))
-            return;
-        if (_concussion == actor)
-            hints.Add("Cleanse your concussion.");
-        else
-            hints.Add($"Cleanse {_concussion.Name}! (Concussion))");
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (_concussion != null)
-        {
-            if (actor.Role == Role.Healer)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Esuna), _concussion, ActionQueue.Priority.High);
-            else if (actor.Class == Class.BRD)
-                hints.ActionsToExecute.Push(ActionID.MakeSpell(BRD.AID.WardensPaean), _concussion, ActionQueue.Priority.High);
-        }
-    }
-}
+class Concussion(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Concussion, "Concussion", "concussed");
 
 class FrogSong(BossModule module) : BossComponent(module)
 {

@@ -177,21 +177,21 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreI
     }
 }
 
-class Cleave(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(40f, 3f));
-class ElectromagneticRelease1(BossModule module) : Cleave(module, AID.ElectromagneticRelease1);
-class GroundAndPound1(BossModule module) : Cleave(module, AID.GroundAndPound1);
-class GroundAndPound2(BossModule module) : Cleave(module, AID.GroundAndPound2);
-class DynamicPoundMinus(BossModule module) : Cleave(module, AID.DynamicPoundMinus);
-class DynamicPoundPlus(BossModule module) : Cleave(module, AID.DynamicPoundPlus);
+class Cleave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 3f));
+class ElectromagneticRelease1(BossModule module) : Cleave(module, (uint)AID.ElectromagneticRelease1);
+class GroundAndPound1(BossModule module) : Cleave(module, (uint)AID.GroundAndPound1);
+class GroundAndPound2(BossModule module) : Cleave(module, (uint)AID.GroundAndPound2);
+class DynamicPoundMinus(BossModule module) : Cleave(module, (uint)AID.DynamicPoundMinus);
+class DynamicPoundPlus(BossModule module) : Cleave(module, (uint)AID.DynamicPoundPlus);
 
-class Circles(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 8f);
-class ElectromagneticRelease2(BossModule module) : Circles(module, AID.ElectromagneticRelease2);
-class DynamicScraplineMinus(BossModule module) : Circles(module, AID.DynamicScraplineMinus);
-class DynamicScraplinePlus(BossModule module) : Circles(module, AID.DynamicScraplinePlus);
-class RollingScrapline(BossModule module) : Circles(module, AID.RollingScrapline);
-class Shock(BossModule module) : Circles(module, AID.Shock);
+class Circles(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 8f);
+class ElectromagneticRelease2(BossModule module) : Circles(module, (uint)AID.ElectromagneticRelease2);
+class DynamicScraplineMinus(BossModule module) : Circles(module, (uint)AID.DynamicScraplineMinus);
+class DynamicScraplinePlus(BossModule module) : Circles(module, (uint)AID.DynamicScraplinePlus);
+class RollingScrapline(BossModule module) : Circles(module, (uint)AID.RollingScrapline);
+class Shock(BossModule module) : Circles(module, (uint)AID.Shock);
 
-class ShockingForce(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ShockingForce), 6f, 4, 4);
+class ShockingForce(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ShockingForce, 6f, 4, 4);
 
 class D021BarnabasStates : StateMachineBuilder
 {

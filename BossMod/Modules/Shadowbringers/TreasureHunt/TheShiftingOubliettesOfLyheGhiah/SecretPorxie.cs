@@ -45,9 +45,9 @@ public enum AID : uint
     PungentPirouette = 6450 // SecretGarlic->self, 3.5s cast, range 6+R circle
 }
 
-class BrewingStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BrewingStorm), new AOEShapeCone(5f, 30f.Degrees()));
-class HarrowingDream(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HarrowingDream), 6f);
-class BecloudingDust(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BecloudingDust), 6f);
+class BrewingStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrewingStorm, new AOEShapeCone(5f, 30f.Degrees()));
+class HarrowingDream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HarrowingDream, 6f);
+class BecloudingDust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BecloudingDust, 6f);
 
 class Sweep(BossModule module) : Components.Exaflare(module, 6f)
 {
@@ -78,16 +78,12 @@ class Sweep(BossModule module) : Components.Exaflare(module, 6f)
     }
 }
 
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
-abstract class Mandragoras(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6.84f);
-class PluckAndPrune(BossModule module) : Mandragoras(module, AID.PluckAndPrune);
-class TearyTwirl(BossModule module) : Mandragoras(module, AID.TearyTwirl);
-class HeirloomScream(BossModule module) : Mandragoras(module, AID.HeirloomScream);
-class PungentPirouette(BossModule module) : Mandragoras(module, AID.PungentPirouette);
-class Pollen(BossModule module) : Mandragoras(module, AID.Pollen);
+class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
+(uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
 
 class SecretPorxieStates : StateMachineBuilder
 {
@@ -101,11 +97,7 @@ class SecretPorxieStates : StateMachineBuilder
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Mash>()
             .ActivateOnEnter<Scoop>()
-            .ActivateOnEnter<PluckAndPrune>()
-            .ActivateOnEnter<TearyTwirl>()
-            .ActivateOnEnter<HeirloomScream>()
-            .ActivateOnEnter<PungentPirouette>()
-            .ActivateOnEnter<Pollen>()
+            .ActivateOnEnter<MandragoraAOEs>()
             .Raw.Update = () =>
             {
                 var enemies = module.Enemies(SecretPorxie.All);

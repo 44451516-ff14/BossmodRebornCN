@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M02NHoneyBLovely;
 
-class Splinter(BossModule module) : Components.GenericAOEs(module)
+sealed class Splinter(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
     private readonly List<AOEInstance> _aoes = new(8);

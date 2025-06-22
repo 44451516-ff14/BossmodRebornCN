@@ -1,5 +1,3 @@
-using BossMod.Global.MaskedCarnivale.Stage07.Act2;
-
 namespace BossMod.Global.MaskedCarnivale.Stage07.Act1;
 
 public enum OID : uint

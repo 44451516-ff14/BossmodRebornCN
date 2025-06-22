@@ -19,11 +19,11 @@ public enum AID : uint
     LightShot = 16251 // Brightsphere->self, 4.0s cast, range 40 width 4 rect
 }
 
-abstract class Palm(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(30f, 7.5f));
-class LeftPalm(BossModule module) : Palm(module, AID.LeftPalm);
-class RightPalm(BossModule module) : Palm(module, AID.RightPalm);
+abstract class Palm(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(30f, 7.5f));
+class LeftPalm(BossModule module) : Palm(module, (uint)AID.LeftPalm);
+class RightPalm(BossModule module) : Palm(module, (uint)AID.RightPalm);
 
-class LightShot(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightShot), new AOEShapeRect(40f, 2f));
+class LightShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightShot, new AOEShapeRect(40f, 2f));
 
 class D054ForgivenRevelryStates : StateMachineBuilder
 {

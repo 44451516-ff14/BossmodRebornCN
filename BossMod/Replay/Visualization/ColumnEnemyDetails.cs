@@ -3,7 +3,7 @@
 namespace BossMod.ReplayVisualization;
 
 // a set of columns describing various properties of a single enemy (casts, target, statuses, etc.)
-public class ColumnEnemyDetails : Timeline.ColumnGroup
+public sealed class ColumnEnemyDetails : Timeline.ColumnGroup
 {
     private readonly Replay.Participant _enemy;
     private readonly ColumnEnemyCasts _casts;

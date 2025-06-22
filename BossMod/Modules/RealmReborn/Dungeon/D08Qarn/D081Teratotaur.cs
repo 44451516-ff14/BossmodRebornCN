@@ -2,33 +2,40 @@
 
 public enum OID : uint
 {
-    Boss = 0x6D9, // x1
-    DungWespe = 0x6DA, // spawn during fight
+    // Boss
+    Boss = 0x477A, // x1
+
+    // Trash
+    DungWespe = 0x477B, // spawn during fight
+
+    // EventObj
     Platform1 = 0x1E87E2, // x1, EventObj type; eventstate 0 if active, 7 if inactive
     Platform2 = 0x1E87E3, // x1, EventObj type; eventstate 0 if active, 7 if inactive
-    Platform3 = 0x1E87E4, // x1, EventObj type; eventstate 0 if active, 7 if inactive
+    Platform3 = 0x1E87E4 // x1, EventObj type; eventstate 0 if active, 7 if inactive
 }
 
 public enum AID : uint
 {
+    // Boss
     AutoAttackBoss = 870, // Boss->player, no cast
-    Triclip = 1414, // Boss->self, no cast, range 5.25 width 4 rect cleave
-    Mow = 1413, // Boss->self, 2.5s cast, range 8.25 120-degree cone aoe
-    FrightfulRoar = 933, // Boss->self, 3.0s cast, range 8.25 aoe
-    MortalRay = 934, // Boss->self, 1.5s cast, raidwide doom debuff
+    Triclip = 42231, // Boss->player, 5.0s cast, tankbuster
+    Mow = 42232, // Boss->self, 2.5s cast, range 8.25 120-degree cone aoe
+    FrightfulRoar = 42233, // Boss->self, 3.0s cast, range 6.0 aoe
+    MortalRay = 42229, // Boss->self, 3.0s cast, raidwide doom debuff
 
+    // DungWespe
     AutoAttackWespe = 871, // DungWespe->player, no cast
-    FinalSting = 919 // DungWespe->player, 3.0s cast
+    FinalSting = 42230 // DungWespe->player, 3.0s cast
 }
 
 public enum SID : uint
 {
-    Doom = 210 // Boss->player, extra=0x0
+    Doom = 1970 // Boss->player, extra=0x0
 }
 
-class Triclip(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Triclip), new AOEShapeRect(5.25f, 2f));
-class Mow(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mow), new AOEShapeCone(8.25f, 60f.Degrees()));
-class FrightfulRoar(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FrightfulRoar), 8.25f);
+class Triclip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Triclip);
+class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new AOEShapeCone(8.25f, 60f.Degrees()));
+class FrightfulRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrightfulRoar, 6.0f);
 
 class MortalRay(BossModule module) : BossComponent(module)
 {
@@ -95,7 +102,7 @@ class D081TeratotaurStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 9, NameID = 1567)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "Malediktus, Chuggalo", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 9, NameID = 1567)]
 public class D081Teratotaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly PolygonCustom[] shape = [new ([new(-94.9f, -59f), new(-70.2f, -46.1f), new(-55.3f, -46.6f),

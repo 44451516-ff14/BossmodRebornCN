@@ -30,7 +30,7 @@ class NitrospinArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorEState(Actor actor, ushort state)
     {
-        if (state == 0x001)
+        if (state == 0x001u)
         {
             Arena.Bounds = D152Prometheus.DefaultArena;
             Arena.Center = D152Prometheus.ArenaCenter;
@@ -40,25 +40,25 @@ class NitrospinArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.Nitrospin && Arena.Bounds == D152Prometheus.StartingArena)
+        if (spell.Action.ID == (uint)AID.Nitrospin && Arena.Bounds == D152Prometheus.StartingArena)
             _aoe = new(donut, D152Prometheus.ArenaCenter, default, Module.CastFinishAt(spell, 0.8f));
     }
 }
 
 class Heat(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(107.8f, 8);
+    private static readonly AOEShapeRect rect = new(107.8f, 8f);
 
     private static readonly Dictionary<Angle, (WPos origin, Angle rotation)> aoeSources = new()
     {
-        {68.Degrees(), (new(79.481f, -57.598f), 67.482f.Degrees())},
-        {-113.Degrees(), (new(188.498f, -12.441f), -112.488f.Degrees())},
-        {113.Degrees(), (new(79.481f, -12.441f), 112.477f.Degrees())},
-        {23.Degrees(), (new(111.411f, -89.528f), 22.498f.Degrees())},
-        {157.Degrees(), (new(111.411f, 19.489f), 157.483f.Degrees())},
-        {-157.Degrees(), (new(156.568f, 19.489f), -157.505f.Degrees())},
-        {-23.Degrees(), (new(156.568f, -89.528f), -22.487f.Degrees())},
-        {-68.Degrees(), (new(188.498f, -57.598f), -67.482f.Degrees())},
+        {68f.Degrees(), (new(79.481f, -57.598f), 67.482f.Degrees())},
+        {-113f.Degrees(), (new(188.498f, -12.441f), -112.488f.Degrees())},
+        {113f.Degrees(), (new(79.481f, -12.441f), 112.477f.Degrees())},
+        {23f.Degrees(), (new(111.411f, -89.528f), 22.498f.Degrees())},
+        {157f.Degrees(), (new(111.411f, 19.489f), 157.483f.Degrees())},
+        {-157f.Degrees(), (new(156.568f, 19.489f), -157.505f.Degrees())},
+        {-23f.Degrees(), (new(156.568f, -89.528f), -22.487f.Degrees())},
+        {-68f.Degrees(), (new(188.498f, -57.598f), -67.482f.Degrees())},
     };
 
     private AOEInstance? _aoe;
@@ -67,7 +67,7 @@ class Heat(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008 && (OID)actor.OID == OID.TunnelHelper)
+        if (state == 0x00040008u && actor.OID == (uint)OID.TunnelHelper)
         {
             foreach (var r in aoeSources.Keys)
                 if (actor.Rotation.AlmostEqual(r, Angle.DegToRad))
@@ -80,7 +80,7 @@ class Heat(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.Heat)
+        if (spell.Action.ID == (uint)AID.Heat)
         {
             if (++NumCasts == 5)
             {
@@ -91,11 +91,11 @@ class Heat(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Nitrospin(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Nitrospin));
-class UnbreakableCermetDrill(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.UnbreakableCermetDrill));
-class OilShower(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OilShower), new AOEShapeCone(47.8f, 135.Degrees()));
-class NeedleGun(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.NeedleGun), new AOEShapeCone(47.8f, 45.Degrees()));
-class FreezingMissile(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FreezingMissile), 8);
+class Nitrospin(BossModule module) : Components.RaidwideCast(module, (uint)AID.Nitrospin);
+class UnbreakableCermetDrill(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.UnbreakableCermetDrill);
+class OilShower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OilShower, new AOEShapeCone(47.8f, 135f.Degrees()));
+class NeedleGun(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NeedleGun, new AOEShapeCone(47.8f, 45f.Degrees()));
+class FreezingMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FreezingMissile, 8f);
 
 class D152PrometheusStates : StateMachineBuilder
 {
@@ -115,7 +115,7 @@ class D152PrometheusStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 611, NameID = 7856, SortOrder = 2)]
 public class D152Prometheus(WorldState ws, Actor primary) : BossModule(ws, primary, StartingArena.Center, StartingArena)
 {
-    public static readonly WPos ArenaCenter = new(134, -35);
+    public static readonly WPos ArenaCenter = new(134f, -35f);
     private static readonly WPos[] vertices = [new(126.83f, -71.81f), new(130.07f, -71.6f), new(130.64f, -71.54f), new(131.12f, -71.34f), new(131.69f, -71.16f),
     new(132.23f, -71.05f), new(133.32f, -70.96f), new(133.83f, -71.2f), new(134.32f, -71.37f), new(134.88f, -71.38f),
     new(138.75f, -71.64f), new(139.81f, -71.43f), new(141.47f, -70.96f), new(141.98f, -71.04f), new(142.53f, -71.21f),

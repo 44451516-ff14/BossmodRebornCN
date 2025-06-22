@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class FeintParticleBeam : Components.StandardChasingAOEs
+sealed class FeintParticleBeam : Components.StandardChasingAOEs
 {
-    public FeintParticleBeam(BossModule module) : base(module, new AOEShapeCircle(3f), ActionID.MakeSpell(AID.FeintParticleBeamAOEFirst), ActionID.MakeSpell(AID.FeintParticleBeamAOERest), 2.1f, 0.4f, 18)
+    public FeintParticleBeam(BossModule module) : base(module, new AOEShapeCircle(3f), (uint)AID.FeintParticleBeamAOEFirst, (uint)AID.FeintParticleBeamAOERest, 2.1f, 0.4f, 18)
     {
         ExcludedTargets = new(~0u);
     }

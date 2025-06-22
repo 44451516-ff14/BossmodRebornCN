@@ -11,14 +11,10 @@ class LovesLight(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(AOEs)[..max];
+        if (count > 1)
         {
-            var aoe = AOEs[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            aoes[0].Color = Colors.Danger;
         }
         return aoes;
     }
@@ -28,7 +24,7 @@ class LovesLight(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID is (uint)AID.FirstBlush1 or (uint)AID.FirstBlush2 or (uint)AID.FirstBlush3 or (uint)AID.FirstBlush4)
         {
             AOEs.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            AOEs.SortBy(x => x.Activation);
+            AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 

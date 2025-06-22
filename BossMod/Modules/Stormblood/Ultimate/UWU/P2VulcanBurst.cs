@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class VulcanBurst(BossModule module, AID aid, Actor? source) : Components.GenericKnockback(module, ActionID.MakeSpell(aid))
+class VulcanBurst(BossModule module, uint aid, Actor? source) : Components.GenericKnockback(module, aid)
 {
     protected Actor? SourceActor = source;
 
@@ -12,5 +12,5 @@ class VulcanBurst(BossModule module, AID aid, Actor? source) : Components.Generi
     }
 }
 
-class P2VulcanBurst(BossModule module) : VulcanBurst(module, AID.VulcanBurst, ((UWU)module).Ifrit());
-class P4VulcanBurst(BossModule module) : VulcanBurst(module, AID.VulcanBurstUltima, ((UWU)module).Ultima());
+class P2VulcanBurst(BossModule module) : VulcanBurst(module, (uint)AID.VulcanBurst, ((UWU)module).Ifrit());
+class P4VulcanBurst(BossModule module) : VulcanBurst(module, (uint)AID.VulcanBurstUltima, ((UWU)module).Ultima());

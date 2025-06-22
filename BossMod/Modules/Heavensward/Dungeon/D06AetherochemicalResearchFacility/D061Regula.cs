@@ -33,14 +33,14 @@ public enum TetherID : uint
     BaitAway = 17 // MagitekTurretI->player
 }
 
-class SelfDetonate(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SelfDetonate));
-class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherochemicalGrenado), 8f);
-class AetherochemicalLaser(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50, 2), (uint)TetherID.BaitAway, ActionID.MakeSpell(AID.AetherochemicalLaser));
-class AetherochemicalLaserAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AetherochemicalLaser), new AOEShapeRect(50f, 2f));
+class SelfDetonate(BossModule module) : Components.RaidwideCast(module, (uint)AID.SelfDetonate);
+class AetherochemicalGrenado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherochemicalGrenado, 8f);
+class AetherochemicalLaser(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 2f), (uint)TetherID.BaitAway, (uint)AID.AetherochemicalLaser);
+class AetherochemicalLaserAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherochemicalLaser, new AOEShapeRect(50f, 2f));
 
-class JudgmentAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.JudgmentAOE), 8f);
-class MagitekSlug(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekSlug), new AOEShapeRect(61.65f, 2f));
-class MagitekSpread(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekSpread), new AOEShapeCone(31.65f, 120f.Degrees()));
+class JudgmentAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.JudgmentAOE, 8f);
+class MagitekSlug(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekSlug, new AOEShapeRect(61.65f, 2f));
+class MagitekSpread(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekSpread, new AOEShapeCone(31.65f, 120f.Degrees()));
 
 class D061RegulaStates : StateMachineBuilder
 {

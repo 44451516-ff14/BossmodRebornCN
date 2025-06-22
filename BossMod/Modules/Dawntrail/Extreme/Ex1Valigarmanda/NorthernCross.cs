@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class NorthernCross(BossModule module) : Components.GenericAOEs(module)
+sealed class NorthernCross(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance? AOE;
 

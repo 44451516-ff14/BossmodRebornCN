@@ -4,8 +4,8 @@ class WickedStep(BossModule module) : Components.GenericKnockback(module, ignore
 {
     private readonly Actor?[] _towers = [null, null];
 
-    private const float _towerRadius = 4;
-    private const float _knockbackRadius = 36;
+    private const float _towerRadius = 4f;
+    private const float _knockbackRadius = 36f;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -45,7 +45,7 @@ class WickedStep(BossModule module) : Components.GenericKnockback(module, ignore
             return;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var t = ref _towers[i];
+            ref var t = ref _towers[i];
             if (t != null)
                 Components.GenericTowers.DrawTower(Arena, t.Position, _towerRadius, pc.Role == Role.Tank);
         }

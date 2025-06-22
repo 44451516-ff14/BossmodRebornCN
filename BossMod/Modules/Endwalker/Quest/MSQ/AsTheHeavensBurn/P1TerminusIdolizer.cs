@@ -37,68 +37,25 @@ public enum TetherID : uint
     BombTether = 17 // TerminusDetonator->Estinien
 }
 
-class DeadlyCharge(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.DeadlyCharge), 5f);
-class GriefOfParting(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.GriefOfParting));
-class DeadlyTentaclesTB(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.DeadlyTentaclesTB));
-
-class TentacleWhip(BossModule module) : Components.GenericAOEs(module)
+class DeadlyCharge(BossModule module) : Components.ChargeAOEs(module, (uint)AID.DeadlyCharge, 5f);
+class GriefOfParting(BossModule module) : Components.RaidwideCast(module, (uint)AID.GriefOfParting);
+class DeadlyTentaclesTB(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DeadlyTentaclesTB);
+class TentacleWhip : Components.SimpleAOEGroups
 {
-    private readonly List<AOEInstance> _aoes = new(2);
-    private static readonly AOEShapeCone cone = new(60f, 90f.Degrees());
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public TentacleWhip(BossModule module) : base(module, [(uint)AID.TentacleWhipRFirst, (uint)AID.TentacleWhipRSecond,
+    (uint)AID.TentacleWhipLFirst, (uint)AID.TentacleWhipLSecond], new AOEShapeCone(60f, 90f.Degrees()), expectedNumCasters: 2)
     {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
-        }
-        return aoes;
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        switch (spell.Action.ID)
-        {
-            case (uint)AID.TentacleWhipRFirst:
-            case (uint)AID.TentacleWhipRSecond:
-            case (uint)AID.TentacleWhipLSecond:
-            case (uint)AID.TentacleWhipLFirst:
-                _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-                if (_aoes.Count == 2)
-                    _aoes.Sort((x, y) => x.Activation.CompareTo(y.Activation));
-                break;
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (_aoes.Count != 0)
-            switch (spell.Action.ID)
-            {
-                case (uint)AID.TentacleWhipRFirst:
-                case (uint)AID.TentacleWhipRSecond:
-                case (uint)AID.TentacleWhipLSecond:
-                case (uint)AID.TentacleWhipLFirst:
-                    _aoes.RemoveAt(0);
-                    break;
-            }
+        MaxDangerColor = 1;
+        MaxRisky = 1;
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (_aoes.Count != 2)
+        if (Casters.Count != 2)
             return;
         // make ai stay close to boss to ensure successfully dodging the combo
-        var aoe = _aoes[0];
+        var aoe = Casters[0];
         hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 20f), aoe.Activation);
     }
 }
@@ -122,8 +79,8 @@ class SelfDestruct(BossModule module) : Components.GenericStackSpread(module)
         }
     }
 }
-class Petrifaction(BossModule module) : Components.CastGaze(module, ActionID.MakeSpell(AID.Petrifaction));
-class Whack(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Whack));
+class Petrifaction(BossModule module) : Components.CastGaze(module, (uint)AID.Petrifaction);
+class Whack(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Whack);
 
 class AutoAlphinaud(BossModule module) : QuestBattle.RotationModule<AlphinaudAI>(module);
 

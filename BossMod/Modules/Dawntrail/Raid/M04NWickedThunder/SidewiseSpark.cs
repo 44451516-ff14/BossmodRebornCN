@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 
-class SidewiseSpark(BossModule module) : Components.GenericAOEs(module)
+sealed class SidewiseSpark(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(60f, 90f.Degrees());
     private static readonly AOEShapeRect rect = new(40f, 8f);

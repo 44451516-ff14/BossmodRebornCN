@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
-public class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module)
+sealed class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(8);
     private static readonly AOEShapeCone cone = new(60f, 22.5f.Degrees());
@@ -13,14 +13,19 @@ public class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
+
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i < 4)
-                aoes[i] = count > 4 ? aoe with { Color = Colors.Danger } : aoe;
+            {
+                if (count == 8)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
+            }
             else
-                aoes[i] = aoe with { Risky = false };
+                aoe.Risky = false;
         }
         return aoes;
     }
@@ -32,14 +37,15 @@ public class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
             case (uint)AID.BlackCatCrossingFirst:
             case (uint)AID.BlackCatCrossingRest:
                 _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-                _aoes.SortBy(x => x.Activation);
+                if (_aoes.Count == 8)
+                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
         }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if (status.Extra != 0x307 && _currentPattern == Pattern.None)
+        if (status.Extra != 0x307u && _currentPattern == Pattern.None)
         {
             switch (status.ID)
             {

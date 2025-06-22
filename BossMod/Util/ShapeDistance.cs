@@ -622,28 +622,44 @@ public static class ShapeDistance
         };
     }
 
-    public static Func<WPos, float> ConvexPolygon(List<(WPos, WPos)> edges, bool cw)
+    public static Func<WPos, float> ConvexPolygon((WPos, WPos)[] edges, bool cw)
     {
-        Func<WPos, float> edge((WPos p1, WPos p2) e)
+        return point =>
         {
-            if (e.p1.Equals(e.p2))
+            var minDistance = float.MaxValue;
+            var inside = true;
+            var len = edges.Length;
+            for (var i = 0; i < len; ++i)
             {
-                return _ => float.MinValue;
-            }
-            var dir = (e.p2 - e.p1).Normalized();
-            var normal = cw ? dir.OrthoL() : dir.OrthoR();
-            return (WPos p) => normal.Dot(p - e.p1);
-        }
+                var edge = edges[i];
+                var a = edge.Item1;
+                var b = edge.Item2;
+                var ab = b - a;
+                var ap = point - a;
+                var distance = (ab.X * ap.Z - ab.Z * ap.X) / ab.Length();
 
-        List<Func<WPos, float>> edgeFunctions = [];
-        foreach (var e in edges)
-        {
-            edgeFunctions.Add(edge(e));
-        }
-        return Intersection(edgeFunctions);
+                if (cw && distance > 0 || !cw && distance < 0)
+                {
+                    inside = false;
+                }
+                minDistance = Math.Min(minDistance, Math.Abs(distance));
+            }
+            return inside ? -minDistance : minDistance;
+        };
     }
 
-    public static Func<WPos, float> ConvexPolygon(ReadOnlySpan<WPos> vertices, bool cw) => ConvexPolygon(PolygonUtil.EnumerateEdges(vertices), cw);
+    public static Func<WPos, float> ConvexPolygon(ReadOnlySpan<WPos> vertices, bool cw)
+    {
+        var len = vertices.Length;
+        var edges = new (WPos, WPos)[len];
+        for (var i = 0; i < len; ++i)
+        {
+            var a = vertices[i];
+            var b = vertices[(i + 1) % len];
+            edges[i] = (a, b);
+        }
+        return ConvexPolygon(edges, cw);
+    }
 
     public static Func<WPos, float> Intersection(List<Func<WPos, float>> funcs) // max distance func
     {

@@ -31,7 +31,7 @@ public enum SID : uint
     WhoIsShe2 = 2654 // none->BerserkerSphere, extra=0x1A8
 }
 
-class IsitvaSiddhi(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.IsitvaSiddhi));
+class IsitvaSiddhi(BossModule module) : Components.SingleTargetCast(module, (uint)AID.IsitvaSiddhi);
 
 class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
@@ -71,10 +71,10 @@ class SphereShatter(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PraptiSiddhi(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PraptiSiddhi), new AOEShapeRect(40f, 2f));
-class PrakamyaSiddhi(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrakamyaSiddhi), 5f);
-class ManusyaConfuse(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.ManusyaConfuse), "Applies Manyusa Confusion");
-class ManusyaStop(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.ManusyaStop), "Applies Manyusa Stop");
+class PraptiSiddhi(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PraptiSiddhi, new AOEShapeRect(40f, 2f));
+class PrakamyaSiddhi(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrakamyaSiddhi, 5f);
+class ManusyaConfuse(BossModule module) : Components.CastHint(module, (uint)AID.ManusyaConfuse, "Applies Manyusa Confusion");
+class ManusyaStop(BossModule module) : Components.CastHint(module, (uint)AID.ManusyaStop, "Applies Manyusa Stop");
 
 class D012SanduruvaStates : StateMachineBuilder
 {
@@ -90,8 +90,8 @@ class D012SanduruvaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "dhoggpt, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 783, NameID = 10257)]
-public class D012Sanduruva(WorldState ws, Actor primary) : BossModule(ws, primary, new(-258, -26), new ArenaBoundsCircle(20))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "dhoggpt, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 783, NameID = 10257)]
+public class D012Sanduruva(WorldState ws, Actor primary) : BossModule(ws, primary, new(-258f, -26f), new ArenaBoundsCircle(20f))
 {
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

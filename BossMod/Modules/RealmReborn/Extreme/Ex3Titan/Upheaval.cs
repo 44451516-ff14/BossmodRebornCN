@@ -1,7 +1,7 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex3Titan;
 
 // TODO: most of what's here should be handled by SimpleKnockbacks component...
-class Upheaval(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.Upheaval))
+class Upheaval(BossModule module) : Components.GenericKnockback(module, (uint)AID.Upheaval)
 {
     private DateTime _remainInPosition;
 
@@ -25,13 +25,13 @@ class Upheaval(BossModule module) : Components.GenericKnockback(module, ActionID
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _remainInPosition = Module.CastFinishAt(spell, 1); // TODO: just wait for effectresult instead...
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _remainInPosition = WorldState.FutureTime(1d); // TODO: just wait for effectresult instead...
     }
 }

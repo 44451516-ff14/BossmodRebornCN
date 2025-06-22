@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P3Geirskogul(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Geirskogul), new AOEShapeRect(62, 4))
+class P3Geirskogul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geirskogul, new AOEShapeRect(62, 4))
 {
     private readonly List<Actor> _predicted = [];
 
@@ -18,7 +18,7 @@ class P3Geirskogul(BossModule module) : Components.SimpleAOEs(module, ActionID.M
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _predicted.Clear();
     }
 
@@ -72,7 +72,7 @@ class P3GnashAndLash(BossModule module) : Components.GenericAOEs(module)
 // 2. if there are forward/backward jumps at given order, forward takes W spot, backward takes E spot (center takes S) - this can be changed by config
 // 3. otherwise, no specific assignments are assumed until player baits or soaks the tower
 // TODO: split into towers & bait-away?
-class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.DarkdragonDive), 5f)
+class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, (uint)AID.DarkdragonDive, 5f)
 {
     private struct PlayerState
     {
@@ -126,13 +126,24 @@ class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, ActionI
             hints.Add($"Arrows for: {(_ordersWithArrows.Any() ? string.Join(", ", _ordersWithArrows.SetBits()) : "none")}");
     }
 
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+
+        // TODO: forbidden directions
+    }
+
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => _playerStates[playerSlot].JumpOrder == CurrentBaitOrder() ? PlayerPriority.Interesting : PlayerPriority.Normal;
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
-        foreach (var t in _predictedTowers)
-            DrawTower(Arena, t.Position, t.Radius, !t.ForbiddenSoakers[pcSlot]);
+        var count = _predictedTowers.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var t = _predictedTowers[i];
+            DrawTower(Arena, ref t, !t.ForbiddenSoakers[pcSlot]);
+        }
 
         // draw baited jumps
         var baitOrder = CurrentBaitOrder();
@@ -176,7 +187,7 @@ class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, ActionI
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _predictedTowers.Clear();
             Towers.Add(CreateTower(caster.Position));
@@ -197,7 +208,7 @@ class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, ActionI
             case (uint)AID.DarkElusiveJump:
                 ++NumJumps;
                 AssignLateSpot(spell.MainTargetID, caster.Position);
-                var offset = spell.Action.ID != (uint)AID.DarkHighJump ? _towerOffset * caster.Rotation.ToDirection() : new();
+                var offset = spell.Action.ID != (uint)AID.DarkHighJump ? _towerOffset * caster.Rotation.ToDirection() : default;
                 _predictedTowers.Add(CreateTower(caster.Position + offset));
                 break;
         }

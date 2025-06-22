@@ -1,20 +1,17 @@
 ﻿namespace BossMod.Stormblood.Trial.T07Byakko;
 
-class StormPulse(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.StormPulse));
-class HeavenlyStrike(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.HeavenlyStrike));
-class HeavenlyStrikeSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.HeavenlyStrike), 3f);
-class SweepTheLeg1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SweepTheLeg1), new AOEShapeCone(28.5f, 135f.Degrees()));
-class SweepTheLeg3(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SweepTheLeg3), new AOEShapeDonut(5f, 30f));
-class TheRoarOfThunder(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TheRoarOfThunder));
-class ImperialGuard(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ImperialGuard), new AOEShapeRect(44.75f, 2.5f));
+class StormPulse(BossModule module) : Components.RaidwideCast(module, (uint)AID.StormPulse);
+class HeavenlyStrike(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HeavenlyStrike);
+class HeavenlyStrikeSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HeavenlyStrike, 3f);
+class SweepTheLeg1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SweepTheLeg1, new AOEShapeCone(28.5f, 135f.Degrees()));
+class SweepTheLeg3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SweepTheLeg3, new AOEShapeDonut(5f, 30f));
+class TheRoarOfThunder(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheRoarOfThunder);
+class ImperialGuard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ImperialGuard, new AOEShapeRect(44.75f, 2.5f));
+class FireAndLightning(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FireAndLightning1, (uint)AID.FireAndLightning2], new AOEShapeRect(50f, 10f));
 
-abstract class FireAndLightning(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50f, 10f));
-class FireAndLightning1(BossModule module) : FireAndLightning(module, AID.FireAndLightning1);
-class FireAndLightning2(BossModule module) : FireAndLightning(module, AID.FireAndLightning2);
+class DistantClap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DistantClap, new AOEShapeDonut(5f, 3f));
 
-class DistantClap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DistantClap), new AOEShapeDonut(5f, 3f));
-
-class HighestStakes(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.HighestStakes2), 6f, 5f, 7, 7);
+class HighestStakes(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.HighestStakes2, 6f, 5f, 7, 7);
 
 class AratamaForce(BossModule module) : Components.Voidzone(module, 2f, GetVoidzones, 2)
 {

@@ -15,11 +15,11 @@ public enum AID : uint
     LightningBolt = 14717 // Helper->location, 3.0s cast, range 3 circle
 }
 
-class AquaBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AquaBreath), new AOEShapeCone(13.1f, 45f.Degrees()));
-class Megavolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Megavolt), 11.1f);
-class Waterspout(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Waterspout), 4f);
-class LightningBolt(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightningBolt), 3f);
-class ImpSong(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.ImpSong));
+class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13.1f, 45f.Degrees()));
+class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11.1f);
+class Waterspout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Waterspout, 4f);
+class LightningBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBolt, 3f);
+class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong);
 
 class Hints(BossModule module) : BossComponent(module)
 {

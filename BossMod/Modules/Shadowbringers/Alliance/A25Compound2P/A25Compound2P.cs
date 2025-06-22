@@ -1,17 +1,17 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A25Compound2P;
 
-class CentrifugalSlice(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CentrifugalSlice));
-class PrimeBladeAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrimeBladeAOE), 20);
-class PrimeBladeFront(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrimeBladeFront), new AOEShapeRect(85, 10));
-class PrimeBladeDonut1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrimeBladeDonut1), new AOEShapeDonut(7, 43));
-class PrimeBladeDonut2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrimeBladeDonut2), new AOEShapeDonut(7, 43));
-class RelentlessSpiralLocAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RelentlessSpiralLocAOE), 8);
-class RelentlessSpiralAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RelentlessSpiralAOE), 8);
-class ThreePartsDisdainStack(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.ThreePartsDisdainStack), 6, 8);
-class R012LaserLoc(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.R012LaserLoc), 6);
-class R012LaserSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.R012LaserSpread), 6);
-class R012LaserTankBuster(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.R012LaserTankBuster), 6);
-class R011LaserLine(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.R011LaserLine), new AOEShapeRect(70, 7.5f));
+class CentrifugalSlice(BossModule module) : Components.RaidwideCast(module, (uint)AID.CentrifugalSlice);
+class PrimeBladeAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrimeBladeAOE, 20);
+class PrimeBladeFront(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrimeBladeFront, new AOEShapeRect(85, 10));
+class PrimeBladeDonut1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrimeBladeDonut1, new AOEShapeDonut(7, 43));
+class PrimeBladeDonut2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrimeBladeDonut2, new AOEShapeDonut(7, 43));
+class RelentlessSpiralLocAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RelentlessSpiralLocAOE, 8);
+class RelentlessSpiralAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RelentlessSpiralAOE, 8);
+class ThreePartsDisdainStack(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ThreePartsDisdainStack, 6, 8);
+class R012LaserLoc(BossModule module) : Components.SimpleAOEs(module, (uint)AID.R012LaserLoc, 6);
+class R012LaserSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.R012LaserSpread, 6);
+class R012LaserTankBuster(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.R012LaserTankBuster, 6);
+class R011LaserLine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.R011LaserLine, new AOEShapeRect(70, 7.5f));
 
 class EnergyCompression(BossModule module) : Components.GenericTowers(module)
 {

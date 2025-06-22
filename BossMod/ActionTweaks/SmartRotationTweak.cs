@@ -20,9 +20,9 @@ class SmartRotationConfig : ConfigNode
 // - when gaze is imminent (with some configurable short leeway) and it's not possible to hit target without being hit by a gaze, block casts and attacks
 public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
 {
-    private readonly SmartRotationConfig _config = Service.Config.Get<SmartRotationConfig>();
+    private static readonly SmartRotationConfig _config = Service.Config.Get<SmartRotationConfig>();
     private readonly DisjointSegmentList _forbidden = new();
-    private static readonly Angle _minWindow = 5.Degrees();
+    private static readonly Angle _minWindow = 5f.Degrees();
     public bool Enabled => _config.Enabled;
 
     // return 'ideal orientation' for a spell, or null if spell is not oriented (self-targeted or does not require facing)

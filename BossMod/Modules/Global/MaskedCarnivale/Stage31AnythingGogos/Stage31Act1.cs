@@ -37,20 +37,20 @@ public enum SID : uint
     CriticalStrikes = 1797 // Boss->Boss, extra=0x0
 }
 
-class Mimic(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.Mimic), "Stop attacking when cast ends");
-class MimickedSap1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MimickedSap1), 8f);
-class MimickedSap2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MimickedSap3), 8f);
-class MimickedDoomImpending(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.MimickedDoomImpending), "Heal to full before cast ends!");
-class MimickedProteanWave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MimickedProteanWave2), new AOEShapeCone(50f, 15f.Degrees()));
-class MimickedFireBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MimickedFireBlast2), new AOEShapeRect(70.5f, 2f));
-class MimickedImpSong(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.MimickedImpSong));
-class MimickedRawInstinct(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.MimickedRawInstinct), "Applies buff, dispel it");
+class Mimic(BossModule module) : Components.CastHint(module, (uint)AID.Mimic, "Stop attacking when cast ends");
+class MimickedSap1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MimickedSap1, 8f);
+class MimickedSap2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MimickedSap3, 8f);
+class MimickedDoomImpending(BossModule module) : Components.CastHint(module, (uint)AID.MimickedDoomImpending, "Heal to full before cast ends!");
+class MimickedProteanWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MimickedProteanWave2, new AOEShapeCone(50f, 15f.Degrees()));
+class MimickedFireBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MimickedFireBlast2, new AOEShapeRect(70.5f, 2f));
+class MimickedImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MimickedImpSong);
+class MimickedRawInstinct(BossModule module) : Components.CastHint(module, (uint)AID.MimickedRawInstinct, "Applies buff, dispel it");
 
-abstract class DiamondBackHint(BossModule module, AID aid) : Components.RaidwideCast(module, ActionID.MakeSpell(aid), "Use Diamondback!");
-class MimickedFlare(BossModule module) : DiamondBackHint(module, AID.MimickedFlare);
-class MimickedHoly(BossModule module) : DiamondBackHint(module, AID.MimickedHoly);
-class MimickedCriticalHit(BossModule module) : DiamondBackHint(module, AID.MimickedCriticalHit);
-class MimickedPowerfulHit(BossModule module) : DiamondBackHint(module, AID.MimickedPowerfulHit);
+abstract class DiamondBackHint(BossModule module, uint aid) : Components.RaidwideCast(module, aid, "Use Diamondback!");
+class MimickedFlare(BossModule module) : DiamondBackHint(module, (uint)AID.MimickedFlare);
+class MimickedHoly(BossModule module) : DiamondBackHint(module, (uint)AID.MimickedHoly);
+class MimickedCriticalHit(BossModule module) : DiamondBackHint(module, (uint)AID.MimickedCriticalHit);
+class MimickedPowerfulHit(BossModule module) : DiamondBackHint(module, (uint)AID.MimickedPowerfulHit);
 
 class Hints2(BossModule module) : BossComponent(module)
 {

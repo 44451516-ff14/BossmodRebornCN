@@ -31,9 +31,9 @@ public enum IconID : uint
     Stackmarker = 62 // player
 }
 
-class MagitekMissile(BossModule module) : Components.CastTowers(module, ActionID.MakeSpell(AID.MagitekMissiles), 6f);
-class CircleOfDeath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CircleOfDeath), 8.24f);
-class TwoTonzeMagitekMissile(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.TwoTonzeMagitekMissile), 6f, 5.1f, 4, 4);
+class MagitekMissile(BossModule module) : Components.CastTowers(module, (uint)AID.MagitekMissiles, 6f);
+class CircleOfDeath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleOfDeath, 8.24f);
+class TwoTonzeMagitekMissile(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.TwoTonzeMagitekMissile, 6f, 5.1f, 4, 4);
 class ChainMine(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];

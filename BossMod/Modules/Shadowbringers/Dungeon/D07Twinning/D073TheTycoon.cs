@@ -26,12 +26,12 @@ public enum AID : uint
     HighTensionDischarger = 15868, // Boss->self, 3.0s cast, range 40 circle
 }
 
-class HighTensionDischarger(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HighTensionDischarger));
-class RailCannon(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.RailCannon));
-class HighGravity(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HighGravity), 8f);
-class ShatteredCrystal(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.ShatteredCrystal), 5f);
+sealed class HighTensionDischarger(BossModule module) : Components.RaidwideCast(module, (uint)AID.HighTensionDischarger);
+sealed class RailCannon(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RailCannon);
+sealed class HighGravity(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HighGravity, 8f);
+sealed class ShatteredCrystal(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ShatteredCrystal, 5f);
 
-class TemporalParadoxMagitekRay(BossModule module) : Components.GenericAOEs(module)
+sealed class TemporalParadoxMagitekRay(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rectShort = new(10f, 4f);
     private static readonly AOEShapeRect rectLong = new(40f, 4f);
@@ -66,7 +66,7 @@ class TemporalParadoxMagitekRay(BossModule module) : Components.GenericAOEs(modu
     }
 }
 
-class D073TheTycoonStates : StateMachineBuilder
+sealed class D073TheTycoonStates : StateMachineBuilder
 {
     public D073TheTycoonStates(BossModule module) : base(module)
     {
@@ -80,7 +80,7 @@ class D073TheTycoonStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 655, NameID = 8167)]
-public class D073TheTycoon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D073TheTycoon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(0, -329), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(0, -309), 20, 1.25f)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(default, -329f), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(default, -309f), 20, 1.25f)]);
 }

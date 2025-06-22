@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Savage.P9SKokytos;
 
-class ArchaicRockbreakerCenter(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArchaicRockbreakerCenter), 6f);
+class ArchaicRockbreakerCenter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArchaicRockbreakerCenter, 6f);
 
-class ArchaicRockbreakerShockwave(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.ArchaicRockbreakerShockwave), true)
+class ArchaicRockbreakerShockwave(BossModule module) : Components.GenericKnockback(module, (uint)AID.ArchaicRockbreakerShockwave, true)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(6.5d);
     private static readonly SafeWall[] Walls0 = [new(new(93f, 117.5f), new(108f, 117.5f)), new(new(82.5f, 93f), new(82.5f, 108f)),
@@ -52,7 +52,7 @@ class ArchaicRockbreakerPairs : Components.UniformStackSpread
     }
 }
 
-class ArchaicRockbreakerLine(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ArchaicRockbreakerLine), 8f, maxCasts: 8);
+class ArchaicRockbreakerLine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArchaicRockbreakerLine, 8f, maxCasts: 8);
 
 class ArchaicRockbreakerCombination(BossModule module) : Components.GenericAOEs(module)
 {

@@ -29,15 +29,15 @@ public enum AID : uint
     Scoop = 21768 // KeeperOfKeys->self, 4.0s cast, range 15 120-degree cone
 }
 
-class ElectricWhorl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SeventhWave), 11f);
-class PrevailingCurrent(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PrevailingCurrent), new AOEShapeRect(24f, 3f));
-class SeventhWave(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ElectricWhorl), new AOEShapeDonut(8f, 60f));
-class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrocannon2), 8f);
-class Ceras(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Ceras));
-class BodySlam(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BodySlam), 10f);
-class Spin(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Spin), 11f);
-class Mash(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Mash), new AOEShapeRect(13f, 2f));
-class Scoop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Scoop), new AOEShapeCone(15f, 60f.Degrees()));
+class ElectricWhorl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeventhWave, 11f);
+class PrevailingCurrent(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PrevailingCurrent, new AOEShapeRect(24f, 3f));
+class SeventhWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ElectricWhorl, new AOEShapeDonut(8f, 60f));
+class Hydrocannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrocannon2, 8f);
+class Ceras(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Ceras);
+class BodySlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BodySlam, 10f);
+class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 class SecretSwallowStates : StateMachineBuilder
 {

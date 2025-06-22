@@ -4,7 +4,7 @@ class SpearmanOrdersFast(BossModule module) : Components.Exaflare(module, new AO
 {
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.AshigaruSoheiFast && id == 0x25E9)
+        if (actor.OID == (uint)OID.AshigaruSoheiFast && id == 0x25E9u)
             Lines.Add(new() { Next = actor.Position, Advance = 3.474f * actor.Rotation.ToDirection(), NextExplosion = WorldState.FutureTime(7.8f), TimeToMove = 0.6f, ExplosionsLeft = 12, MaxShownExplosions = 4 });
     }
 
@@ -33,7 +33,7 @@ class SpearmanOrdersSlow(BossModule module) : Components.Exaflare(module, new AO
 {
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.AshigaruSoheiSlow && id == 0x25E9)
+        if (actor.OID == (uint)OID.AshigaruSoheiSlow && id == 0x25E9u)
             Lines.Add(new() { Next = actor.Position, Advance = 2.316f * actor.Rotation.ToDirection(), NextExplosion = WorldState.FutureTime(7.8f), TimeToMove = 0.6f, ExplosionsLeft = 18, MaxShownExplosions = 2 });
     }
 

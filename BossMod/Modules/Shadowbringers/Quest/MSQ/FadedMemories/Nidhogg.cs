@@ -15,8 +15,8 @@ public enum AID : uint
     Geirskogul = 21098 // Clone/Boss->self, 4.0s cast, range 62 width 8 rect
 }
 
-class HighJump(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HighJump), 8f);
-class Geirskogul(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Geirskogul), new AOEShapeRect(62f, 4f));
+class HighJump(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HighJump, 8f);
+class Geirskogul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geirskogul, new AOEShapeRect(62f, 4f));
 
 class NidhoggStates : StateMachineBuilder
 {

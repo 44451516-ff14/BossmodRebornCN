@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex2ZoraalJa;
 
-class AeroIII(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class AeroIII(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
 {
     public readonly List<Actor> Voidzones = module.Enemies((uint)OID.BitingWind);
 
@@ -11,7 +11,7 @@ class AeroIII(BossModule module) : Components.GenericKnockback(module, ignoreImm
         var count = Voidzones.Count;
         if (count == 0)
             return [];
-        var sources = new Knockback[count];
+        Span<Knockback> sources = new Knockback[count];
         for (var i = 0; i < count; ++i)
             sources[i] = new(Voidzones[i].Position, 25f, Shape: _shape);
         return sources;

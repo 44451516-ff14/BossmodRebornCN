@@ -26,16 +26,19 @@ public enum IconID : uint
     Stackmarker = 62 // player
 }
 
-class Landsblood(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.LandsbloodFirst), "Raidwides + Geysers");
-class CandyCane(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.CandyCane));
-class Hydrofall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hydrofall), 6f);
-class LaughingLeap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LaughingLeapAOE), 4f);
-class LaughingLeapStack(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, ActionID.MakeSpell(AID.LaughingLeapStack), 4f, 5.1f, 4, 4);
+class Landsblood(BossModule module) : Components.RaidwideCast(module, (uint)AID.LandsbloodFirst, "Raidwides + Geysers");
+class CandyCane(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CandyCane);
+class Hydrofall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrofall, 6f);
+class LaughingLeap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LaughingLeapAOE, 4f);
+class LaughingLeapStack(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.LaughingLeapStack, 4f, 5.1f, 4, 4);
 
 class Geyser(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
     private readonly List<AOEInstance> _aoes = new(14);
+
+    private readonly WDir[] geysers1 = [new(-9f, 15f), new(default, -16f)];
+    private readonly WDir[] geysers2 = [new(-9f, -15f), new(default, 5f), new(7f, -7f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -63,39 +66,22 @@ class Geyser(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00100020)
+        if (state == 0x00100020u)
         {
-            var rotation = (int)actor.Rotation.Deg;
-            if (actor.OID == (uint)OID.GeyserHelper1)
+            var positions = actor.OID switch
             {
-                WPos[] positions = rotation switch
-                {
-                    0 => [new(default, 14.16f), new(-9f, 45.16f)],
-                    -180 => [new(9f, 15.16f), new(default, 46.16f)],
-                    -90 => [new(-15f, 21.16f), new(16f, 30.16f)],
-                    89 => [new(-16f, 30.16f), new(15f, 39.16f)],
-                    _ => []
-                };
-                AddAOEs(positions);
-            }
-            else if (actor.OID == (uint)OID.GeyserHelper2)
+                (uint)OID.GeyserHelper1 => geysers1,
+                (uint)OID.GeyserHelper2 => geysers2,
+                _ => []
+            };
+            var len = positions.Length;
+            var rot = actor.Rotation;
+            var origin = actor.Position;
+            var activation = WorldState.FutureTime(5.1d);
+            for (var i = 0; i < len; ++i)
             {
-                WPos[] positions = rotation switch
-                {
-                    0 => [new(default, 35.16f), new(-9f, 15.16f), new(7f, 23.16f)],
-                    -180 => [new(-15f, 39.16f), new(-7f, 23.16f), new(5f, 30.16f)],
-                    -90 => [new(9f, 45.16f), new(-7f, 37.16f), new(default, 25.16f)],
-                    89 => [new(7f, 37.16f), new(15f, 21.16f), new(-5f, 30.16f)],
-                    _ => []
-                };
-                AddAOEs(positions);
-            }
-            void AddAOEs(WPos[] positions)
-            {
-                var len = positions.Length;
-                var activation = WorldState.FutureTime(5.1d);
-                for (var i = 0; i < len; ++i)
-                    _aoes.Add(new(circle, WPos.ClampToGrid(positions[i]), default, activation));
+                var pos = positions[i].Rotate(rot) + origin;
+                _aoes.Add(new(circle, WPos.ClampToGrid(pos), default, activation));
             }
         }
     }

@@ -222,7 +222,7 @@ class P4CrystallizeTimeDragonHead(BossModule module) : BossComponent(module)
     }
 }
 
-class P4CrystallizeTimeMaelstrom(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.CrystallizeTimeMaelstrom))
+class P4CrystallizeTimeMaelstrom(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrystallizeTimeMaelstrom)
 {
     public readonly List<AOEInstance> AOEs = [];
 
@@ -245,7 +245,7 @@ class P4CrystallizeTimeMaelstrom(BossModule module) : Components.GenericAOEs(mod
         if (actor.OID == (uint)OID.SorrowsHourglass)
         {
             AOEs.Add(new(_shape, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(13.2d)));
-            AOEs.SortBy(aoe => aoe.Activation);
+            AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
@@ -267,7 +267,7 @@ class P4CrystallizeTimeMaelstrom(BossModule module) : Components.GenericAOEs(mod
                 if (aoe.Origin.AlmostEqual(pos, 1f))
                 {
                     AOEs.Ref(i).Activation = WorldState.FutureTime(delay);
-                    AOEs.SortBy(aoe => aoe.Activation);
+                    AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                     return;
                 }
             }
@@ -276,7 +276,7 @@ class P4CrystallizeTimeMaelstrom(BossModule module) : Components.GenericAOEs(mod
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             var count = AOEs.Count;
@@ -329,7 +329,7 @@ class P4CrystallizeTimeDarkWater(BossModule module) : Components.UniformStackSpr
     }
 }
 
-class P4CrystallizeTimeDarkEruption(BossModule module) : Components.GenericBaitAway(module, ActionID.MakeSpell(AID.DarkEruption))
+class P4CrystallizeTimeDarkEruption(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DarkEruption)
 {
     private static readonly AOEShapeCircle _shape = new(6f);
 
@@ -344,7 +344,7 @@ class P4CrystallizeTimeDarkEruption(BossModule module) : Components.GenericBaitA
     }
 }
 
-class P4CrystallizeTimeDarkAero(BossModule module) : Components.GenericKnockback(module, ActionID.MakeSpell(AID.CrystallizeTimeDarkAero)) // TODO: not sure whether it actually ignores immunes, if so need to warn about immunity
+class P4CrystallizeTimeDarkAero(BossModule module) : Components.GenericKnockback(module, (uint)AID.CrystallizeTimeDarkAero) // TODO: not sure whether it actually ignores immunes, if so need to warn about immunity
 {
     private readonly List<Actor> _sources = [];
     private DateTime _activation;
@@ -453,7 +453,7 @@ class P4CrystallizeTimeTidalLight : Components.Exaflare
     }
 }
 
-class P4CrystallizeTimeQuietus(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.Quietus));
+class P4CrystallizeTimeQuietus(BossModule module) : Components.CastCounter(module, (uint)AID.Quietus);
 
 class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
 {
@@ -681,9 +681,9 @@ class P4CrystallizeTimeRewind(BossModule module) : Components.GenericKnockback(m
         if (!RewindDone && _ct != null && _exalines != null && _ct.Cleansed[slot])
         {
             var players = Raid.WithoutSlot(false, true, true);
-            players.SortBy(p => p.Position.X);
+            players.Sort((a, b) => a.Position.X.CompareTo(b.Position.X));
             var xOrder = Array.IndexOf(players, actor);
-            players.SortBy(p => p.Position.Z);
+            players.Sort((a, b) => a.Position.Z.CompareTo(b.Position.Z));
             var zOrder = Array.IndexOf(players, actor);
             if (xOrder >= 0 && zOrder >= 0)
             {

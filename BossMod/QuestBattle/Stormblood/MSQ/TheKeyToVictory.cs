@@ -21,7 +21,7 @@ public sealed class TheKeyToVictory(WorldState ws) : QuestBattle(ws)
                 .Hints((player, hints) =>
                 {
                     // eventobj doesn't spawn until all the npcs are out of combat - way faster to kill all the soblyns than to wait
-                    hints.PrioritizeTargetsByOID(OID.Soblyn);
+                    hints.PrioritizeTargetsByOID((uint)OID.Soblyn);
                 })
                 .WithInteract(OID.QueerDevice)
                 .CompleteOnTargetable((uint)OID.QueerDevice, false),

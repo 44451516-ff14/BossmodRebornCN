@@ -1,7 +1,7 @@
 ﻿namespace BossMod;
 
 // a disjoint set of circle arcs; useful for e.g. selecting a bunch of safe spots at max melee or arena edge or whatever
-public class ArcList(WPos center, float radius)
+public sealed class ArcList(WPos center, float radius)
 {
     public WPos Center = center;
     public float Radius = radius;

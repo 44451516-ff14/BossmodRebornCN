@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Extreme.Ex6Byakko;
 
-class StateOfShock(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.StateOfShockSecond))
+class StateOfShock(BossModule module) : Components.CastCounter(module, (uint)AID.StateOfShockSecond)
 {
     public int NumStuns;
 
@@ -17,7 +17,7 @@ class StateOfShock(BossModule module) : Components.CastCounter(module, ActionID.
     }
 }
 
-class HighestStakes(BossModule module) : Components.GenericTowers(module, ActionID.MakeSpell(AID.HighestStakesAOE))
+class HighestStakes(BossModule module) : Components.GenericTowers(module, (uint)AID.HighestStakesAOE)
 {
     private BitMask _forbidden;
 
@@ -31,7 +31,7 @@ class HighestStakes(BossModule module) : Components.GenericTowers(module, Action
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
             Towers.Clear();

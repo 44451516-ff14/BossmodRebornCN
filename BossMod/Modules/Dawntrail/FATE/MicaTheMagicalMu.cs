@@ -187,7 +187,7 @@ class FlourishingBow(BossModule module) : Components.GenericAOEs(module)
         if (shape != null)
         {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.SortBy(aoe => aoe.Activation);
+            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
@@ -199,39 +199,7 @@ class FlourishingBow(BossModule module) : Components.GenericAOEs(module)
         }
     }
 }
-
-class DoubleMisdirect(BossModule module) : Components.GenericAOEs(module)
-{
-    private readonly List<AOEInstance> _aoes = [];
-
-    private static readonly AOEShapeCone _shape = new(40f, 30f.Degrees());
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = _aoes.Count;
-        if (count == 0)
-            return [];
-        var max = count > 3 ? 3 : count;
-        return CollectionsMarshal.AsSpan(_aoes)[..max];
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID is (uint)AID.DoubleMisdirectAOELong or (uint)AID.DoubleMisdirectAOEShort)
-        {
-            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.SortBy(aoe => aoe.Activation);
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.DoubleMisdirectAOELong or (uint)AID.DoubleMisdirectAOEShort)
-        {
-            _aoes.RemoveAt(0);
-        }
-    }
-}
+class DoubleMisdirect(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DoubleMisdirectAOELong, (uint)AID.DoubleMisdirectAOEShort], new AOEShapeCone(40f, 30f.Degrees()), 3, 6);
 
 class RollingStarlight(BossModule module) : Components.GenericAOEs(module)
 {
@@ -266,10 +234,10 @@ class RollingStarlight(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MagicalHat(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TwinkleToss), new AOEShapeRect(42f, 2.5f), 4);
-class Shimmerstorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ShimmerstormAOE), 6f);
-class Shimmerstrike(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.ShimmerstrikeAOE), new AOEShapeCircle(6f), true, tankbuster: true);
-class SparkOfImagination(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SparkOfImaginationAOE));
+class MagicalHat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwinkleToss, new AOEShapeRect(42f, 2.5f), 4);
+class Shimmerstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ShimmerstormAOE, 6f);
+class Shimmerstrike(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ShimmerstrikeAOE, 6f, tankbuster: true);
+class SparkOfImagination(BossModule module) : Components.RaidwideCast(module, (uint)AID.SparkOfImaginationAOE);
 
 class MicaTheMagicalMuStates : StateMachineBuilder
 {

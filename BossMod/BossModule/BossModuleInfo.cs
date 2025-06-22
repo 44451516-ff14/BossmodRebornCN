@@ -60,10 +60,14 @@ public static class BossModuleInfo
         MaskedCarnivale, // group id is ContentFinderCondition row
         RemovedUnreal, // group id is ContentFinderCondition row
         BaldesionArsenal, // group id is ContentFinderCondition row
+        CastrumLacusLitore, // group id is ContentFinderCondition row
+        TheDaldriada, // group id is ContentFinderCondition row
+        TheForkedTowerBlood, // group id is ContentFinderCondition row
+        ForayFATE, // group id is Fate row
         Quest, // group id is Quest row
         Fate, // group id is Fate row
         Hunt, // group id is HuntRank
-        BozjaCE, // group id is ContentFinderCondition row, name id is DynamicEvent row
+        CriticalEngagement, // group id is ContentFinderCondition row, name id is DynamicEvent row
         BozjaDuel, // group id is ContentFinderCondition row, name id is DynamicEvent row
         EurekaNM, // group id is ContentFinderCondition row, name id is Fate row
         GoldSaucer, // group id is GoldSaucerTextData row

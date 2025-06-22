@@ -15,14 +15,14 @@ public enum AID : uint
     UnbridledWrath = 18036, // 299E->self, 5.5s cast, range 90 width 90 rect
 }
 
-class HotPursuit(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HotPursuit1), 5);
+class HotPursuit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HotPursuit1, 5);
 
-abstract class NoT(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(60.5f, 2.5f));
-class NexusOfThunder1(BossModule module) : NoT(module, AID.NexusOfThunder1);
-class NexusOfThunder2(BossModule module) : NoT(module, AID.NexusOfThunder2);
+abstract class NoT(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60.5f, 2.5f));
+class NexusOfThunder1(BossModule module) : NoT(module, (uint)AID.NexusOfThunder1);
+class NexusOfThunder2(BossModule module) : NoT(module, (uint)AID.NexusOfThunder2);
 
-class Burn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burn), 8, 8);
-class UnbridledWrath(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.UnbridledWrath), 20, kind: Kind.DirForward, stopAtWall: true);
+class Burn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burn, 8, 8);
+class UnbridledWrath(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.UnbridledWrath, 20, kind: Kind.DirForward, stopAtWall: true);
 
 class RanjitStates : StateMachineBuilder
 {

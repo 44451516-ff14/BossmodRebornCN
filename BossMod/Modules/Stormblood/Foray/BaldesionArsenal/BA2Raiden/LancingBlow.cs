@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA2Raiden;
 
-class LancingBlowSpread(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, ActionID.MakeSpell(AID.LancingBlow), 10f, 6f)
+sealed class LancingBlowSpread(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.LancingBlow, 10f, 6f)
 {
     public override void OnActorCreated(Actor actor)
     {
@@ -9,7 +9,7 @@ class LancingBlowSpread(BossModule module) : Components.SpreadFromIcon(module, (
     }
 }
 
-class LancingBlowAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class LancingBlowAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(10f);
     public readonly List<AOEInstance> AOEs = new(6);

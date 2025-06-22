@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS3Dahu;
 
-class SpitFlame(BossModule module) : Components.UniformStackSpread(module, 0, 4, alwaysShowSpreads: true, raidwideOnResolve: false)
+sealed class SpitFlame(BossModule module) : Components.UniformStackSpread(module, default, 4f, alwaysShowSpreads: true, raidwideOnResolve: false)
 {
     private readonly Actor?[] _targets = [null, null, null, null];
-    private readonly List<Actor> _adds = module.Enemies(OID.Marchosias);
+    private readonly List<Actor> _adds = module.Enemies((uint)OID.Marchosias);
 
     public override void Update()
     {
@@ -30,12 +30,12 @@ class SpitFlame(BossModule module) : Components.UniformStackSpread(module, 0, 4,
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        var order = (IconID)iconID switch
+        var order = iconID switch
         {
-            IconID.SpitFlame1 => 1,
-            IconID.SpitFlame2 => 2,
-            IconID.SpitFlame3 => 3,
-            IconID.SpitFlame4 => 4,
+            (uint)IconID.SpitFlame1 => 1,
+            (uint)IconID.SpitFlame2 => 2,
+            (uint)IconID.SpitFlame3 => 3,
+            (uint)IconID.SpitFlame4 => 4,
             _ => 0
         };
         if (order > 0)
@@ -47,7 +47,7 @@ class SpitFlame(BossModule module) : Components.UniformStackSpread(module, 0, 4,
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.SpitFlameAOE)
+        if (spell.Action.ID == (uint)AID.SpitFlameAOE)
             Spreads.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
     }
 }

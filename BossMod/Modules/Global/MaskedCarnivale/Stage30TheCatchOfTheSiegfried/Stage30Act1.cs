@@ -27,10 +27,10 @@ public enum SID : uint
     Bind = 564 // Boss->player, extra=0x0, dispellable
 }
 
-class MagicDrain(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.MagicDrain), "Reflect magic damage for 30s");
-class HyperdriveFirst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HyperdriveFirst), 5f);
-class HyperdriveRest(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HyperdriveRest), 5f);
-class AnkleGraze(BossModule module) : Components.CastHint(module, ActionID.MakeSpell(AID.AnkleGraze), "Applies bind, prepare to use Excuviation!");
+class MagicDrain(BossModule module) : Components.CastHint(module, (uint)AID.MagicDrain, "Reflect magic damage for 30s");
+class HyperdriveFirst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HyperdriveFirst, 5f);
+class HyperdriveRest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HyperdriveRest, 5f);
+class AnkleGraze(BossModule module) : Components.CastHint(module, (uint)AID.AnkleGraze, "Applies bind, prepare to use Excuviation!");
 
 class RubberBullet(BossModule module) : Components.GenericKnockback(module)
 {

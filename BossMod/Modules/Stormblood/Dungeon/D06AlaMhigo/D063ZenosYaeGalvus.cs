@@ -90,7 +90,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class UnmovingTroikaFirst(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.UnmovingTroikaFirst), new AOEShapeCone(9.96f, 60f.Degrees()))
+class UnmovingTroikaFirst(BossModule module) : Components.Cleave(module, (uint)AID.UnmovingTroikaFirst, new AOEShapeCone(9.96f, 60f.Degrees()))
 {
     private bool imminent;
 
@@ -125,19 +125,19 @@ class UnmovingTroikaFirst(BossModule module) : Components.Cleave(module, ActionI
     }
 }
 
-abstract class UnmovingTroika(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(9.96f, 60f.Degrees()));
-class UnmovingTroikaSecond(BossModule module) : UnmovingTroika(module, AID.UnmovingTroikaSecond);
-class UnmovingTroikaLast(BossModule module) : UnmovingTroika(module, AID.UnmovingTroikaLast);
+abstract class UnmovingTroika(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(9.96f, 60f.Degrees()));
+class UnmovingTroikaSecond(BossModule module) : UnmovingTroika(module, (uint)AID.UnmovingTroikaSecond);
+class UnmovingTroikaLast(BossModule module) : UnmovingTroika(module, (uint)AID.UnmovingTroikaLast);
 
-abstract class ArtOfTheStorm(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 8f);
-class ArtOfTheStorm1(BossModule module) : ArtOfTheStorm(module, AID.ArtOfTheStorm1);
-class ArtOfTheStorm2(BossModule module) : ArtOfTheStorm(module, AID.ArtOfTheStorm2);
+abstract class ArtOfTheStorm(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 8f);
+class ArtOfTheStorm1(BossModule module) : ArtOfTheStorm(module, (uint)AID.ArtOfTheStorm1);
+class ArtOfTheStorm2(BossModule module) : ArtOfTheStorm(module, (uint)AID.ArtOfTheStorm2);
 
-abstract class VeinSplitter(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 10f);
-class VeinSplitter1(BossModule module) : VeinSplitter(module, AID.VeinSplitter1);
-class VeinSplitter2(BossModule module) : VeinSplitter(module, AID.VeinSplitter2);
+abstract class VeinSplitter(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f);
+class VeinSplitter1(BossModule module) : VeinSplitter(module, (uint)AID.VeinSplitter1);
+class VeinSplitter2(BossModule module) : VeinSplitter(module, (uint)AID.VeinSplitter2);
 
-abstract class ArtOfTheSwell(BossModule module, AID aid) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(aid), 15f)
+abstract class ArtOfTheSwell(BossModule module, uint aid) : Components.SimpleKnockbacks(module, aid, 15f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -145,8 +145,8 @@ abstract class ArtOfTheSwell(BossModule module, AID aid) : Components.SimpleKnoc
             hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 5f), Module.CastFinishAt(Casters[0].CastInfo));
     }
 }
-class ArtOfTheSwell1(BossModule module) : ArtOfTheSwell(module, AID.ArtOfTheSwell1);
-class ArtOfTheSwell2(BossModule module) : ArtOfTheSwell(module, AID.ArtOfTheSwell2);
+class ArtOfTheSwell1(BossModule module) : ArtOfTheSwell(module, (uint)AID.ArtOfTheSwell1);
+class ArtOfTheSwell2(BossModule module) : ArtOfTheSwell(module, (uint)AID.ArtOfTheSwell2);
 
 class ArtOfTheSword(BossModule module) : Components.GenericBaitAway(module)
 {
@@ -170,7 +170,7 @@ class ArtOfTheSword(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class LightlessSparkBaitaway(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(40.96f, 45f.Degrees()), (uint)TetherID.BaitAway, ActionID.MakeSpell(AID.LightlessSpark), activationDelay: 8)
+class LightlessSparkBaitaway(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(40.96f, 45f.Degrees()), (uint)TetherID.BaitAway, (uint)AID.LightlessSpark, activationDelay: 8f)
 {
     private readonly ArtOfTheSwell1 _kb = module.FindComponent<ArtOfTheSwell1>()!;
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -187,9 +187,9 @@ class LightlessSparkBaitaway(BossModule module) : Components.BaitAwayTethers(mod
     }
 }
 
-class LightlessSparkAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LightlessSpark), new AOEShapeCone(40.96f, 45f.Degrees()));
+class LightlessSparkAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightlessSpark, new AOEShapeCone(40.96f, 45f.Degrees()));
 
-class Concentrativity(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Concentrativity));
+class Concentrativity(BossModule module) : Components.RaidwideCast(module, (uint)AID.Concentrativity);
 
 class D063ZenosYaeGalvusStates : StateMachineBuilder
 {

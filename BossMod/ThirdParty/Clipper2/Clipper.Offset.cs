@@ -31,10 +31,10 @@ namespace Clipper2Lib
     Round
   };
 
-  public class ClipperOffset
+  public sealed class ClipperOffset
   {
 
-    private class Group
+    private sealed class Group
     {
       internal Paths64 inPaths;
       internal JoinType joinType;
@@ -86,15 +86,15 @@ namespace Clipper2Lib
     private double _stepCos;
     private JoinType _joinType;
     private EndType _endType;
-    public double ArcTolerance { get; set; }
-    public bool MergeGroups { get; set; }
-    public double MiterLimit { get; set; }
-    public bool PreserveCollinear { get; set; }
-    public bool ReverseSolution { get; set; }
+    public double ArcTolerance;
+    public bool MergeGroups;
+    public double MiterLimit;
+    public bool PreserveCollinear;
+    public bool ReverseSolution;
 
     public delegate double DeltaCallback64(Path64 path,
       PathD path_norms, int currPt, int prevPt);
-    public ClipperOffset.DeltaCallback64? DeltaCallback { get; set; }
+    public ClipperOffset.DeltaCallback64? DeltaCallback;
 
 #if USINGZ
     internal void ZCB(Point64 bot1, Point64 top1,
@@ -106,7 +106,7 @@ namespace Clipper2Lib
       else if (top1.Z != 0 && top1.Z == top2.Z) ip.Z = top1.Z;
       else ZCallback?.Invoke(bot1, top1, bot2, top2, ref ip);
     }
-    public ClipperBase.ZCallback64? ZCallback { get; set; }
+    public ClipperBase.ZCallback64? ZCallback;
 #endif
     public ClipperOffset(double miterLimit = 2.0,
       double arcTolerance = 0.0, bool

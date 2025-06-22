@@ -36,16 +36,16 @@ public enum IconID : uint
     KanRhai = 260 // player->self
 }
 
-class Upburst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Upburst), 2f);
-class BigBurst(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.BigBurst), 9f);
-class PerigeanBreath(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PerigeanBreath), new AOEShapeCone(30f, 45f.Degrees()));
-class MegaflareAOE(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MegaflareAOE), 6f);
-class MegaflareSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.MegaflareSpread), 5f);
-class MegaflareDive(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MegaflareDive), new AOEShapeRect(41f, 6f));
-class LunarFlareBig(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LunarFlareBig), 11f);
-class LunarFlareSmall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.LunarFlareSmall), 6f);
-class Gigaflare(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Gigaflare));
-class Flatten(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.Flatten));
+class Upburst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Upburst, 2f);
+class BigBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BigBurst, 9f);
+class PerigeanBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PerigeanBreath, new AOEShapeCone(30f, 45f.Degrees()));
+class MegaflareAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareAOE, 6f);
+class MegaflareSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MegaflareSpread, 5f);
+class MegaflareDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareDive, new AOEShapeRect(41f, 6f));
+class LunarFlareBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarFlareBig, 11f);
+class LunarFlareSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarFlareSmall, 6f);
+class Gigaflare(BossModule module) : Components.RaidwideCast(module, (uint)AID.Gigaflare);
+class Flatten(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Flatten);
 
 class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4f, default, 4, 4)
 {

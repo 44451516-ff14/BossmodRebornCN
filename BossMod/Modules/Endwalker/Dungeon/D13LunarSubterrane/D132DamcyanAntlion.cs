@@ -26,7 +26,7 @@ public enum AID : uint
     PoundSand = 34443 // Boss->location, 6.0s cast, range 12 circle
 }
 
-class Sandblast(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Sandblast));
+class Sandblast(BossModule module) : Components.RaidwideCast(module, (uint)AID.Sandblast);
 
 class SandblastVoidzone(BossModule module) : Components.GenericAOEs(module)
 {
@@ -104,7 +104,7 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class EarthenGeyser(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.EarthenGeyser), 10f, 4, 4);
+class EarthenGeyser(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.EarthenGeyser, 10f, 4, 4);
 class QuicksandVoidzone(BossModule module) : Components.Voidzone(module, 10f, GetVoidzone)
 {
     private static Actor[] GetVoidzone(BossModule module)
@@ -115,7 +115,7 @@ class QuicksandVoidzone(BossModule module) : Components.Voidzone(module, 10f, Ge
         return [];
     }
 }
-class PoundSand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PoundSand), 12f);
+class PoundSand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoundSand, 12f);
 
 class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
 {

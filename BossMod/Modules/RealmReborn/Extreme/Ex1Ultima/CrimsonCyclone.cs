@@ -1,6 +1,6 @@
 ﻿namespace BossMod.RealmReborn.Extreme.Ex1Ultima;
 
-class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.CrimsonCyclone))
+class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, (uint)AID.CrimsonCyclone)
 {
     private Actor? _ifrit; // non-null while mechanic is active
     private DateTime _resolve;
@@ -18,7 +18,7 @@ class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, ActionI
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _ifrit = caster;
             _resolve = Module.CastFinishAt(spell);
@@ -27,7 +27,7 @@ class CrimsonCyclone(BossModule module) : Components.GenericAOEs(module, ActionI
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             _ifrit = null;
     }
 

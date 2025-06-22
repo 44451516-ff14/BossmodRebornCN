@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Stormblood.Extreme.Ex6Byakko;
 
-class AratamaPuddleBait(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.AratamaPuddle, ActionID.MakeSpell(AID.AratamaPuddle), 4f, 5.1f)
+class AratamaPuddleBait(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.AratamaPuddle, (uint)AID.AratamaPuddle, 4f, 5.1f)
 {
     private DateTime _nextSpread;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == SpreadAction && WorldState.CurrentTime > _nextSpread)
+        if (spell.Action.ID == SpreadAction && WorldState.CurrentTime > _nextSpread)
         {
             if (++NumFinishedSpreads >= 3)
                 Spreads.Clear();

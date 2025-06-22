@@ -1,22 +1,22 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex2ZoraalJa;
 
-class DrumOfVollokPlatforms(BossModule module) : BossComponent(module)
+sealed class DrumOfVollokPlatforms(BossModule module) : BossComponent(module)
 {
     public bool Active;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 11)
+        if (index != 0x0Bu)
             return;
 
         switch (state)
         {
-            case 0x00800040:
+            case 0x00800040u:
                 Arena.Bounds = Ex2ZoraalJa.NWPlatformBounds;
                 Arena.Center += 15f * 135f.Degrees().ToDirection();
                 Active = true;
                 break;
-            case 0x02000100:
+            case 0x02000100u:
                 Arena.Bounds = Ex2ZoraalJa.NEPlatformBounds;
                 Arena.Center += 15f * (-135f).Degrees().ToDirection();
                 Active = true;
@@ -25,9 +25,9 @@ class DrumOfVollokPlatforms(BossModule module) : BossComponent(module)
     }
 }
 
-class DrumOfVollok(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.DrumOfVollokAOE), 4f, 2, 2);
+sealed class DrumOfVollok(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.DrumOfVollokAOE, 4f, 2, 2);
 
-class DrumOfVollokKnockback(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class DrumOfVollokKnockback(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
 {
     private readonly DrumOfVollok? _main = module.FindComponent<DrumOfVollok>();
 

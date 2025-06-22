@@ -20,11 +20,11 @@ public enum AID : uint
     ZoomIn = 14980 // Adulator->location, 3.0s cast, width 8 rect charge
 }
 
-class W11TonzeSwipe(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.W11TonzeSwipe), new AOEShapeCone(9f, 60f.Degrees()));
-class W111TonzeSwing(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.W111TonzeSwing), 13f);
-class W111TonzeSwingAdds(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.W111TonzeSwingAdds), 13f);
-class W111TonzeSwingBig(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.W111TonzeSwingBig), 20f);
-class ZoomIn(BossModule module) : Components.ChargeAOEs(module, ActionID.MakeSpell(AID.ZoomIn), 4f);
+class W11TonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.W11TonzeSwipe, new AOEShapeCone(9f, 60f.Degrees()));
+class W111TonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.W111TonzeSwing, 13f);
+class W111TonzeSwingAdds(BossModule module) : Components.SimpleAOEs(module, (uint)AID.W111TonzeSwingAdds, 13f);
+class W111TonzeSwingBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.W111TonzeSwingBig, 20f);
+class ZoomIn(BossModule module) : Components.ChargeAOEs(module, (uint)AID.ZoomIn, 4f);
 
 class MolechStates : StateMachineBuilder
 {
@@ -40,7 +40,7 @@ class MolechStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "xan, Malediktus", GroupType = BossModuleInfo.GroupType.EurekaNM, GroupID = 639, NameID = 1414, SortOrder = 3)]
-public class Molech(WorldState ws, Actor primary) : BossModule(ws, primary, new(-676.8632f, -441.8009f), SharedBounds.Circle)
+public class Molech(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

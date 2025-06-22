@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C021Shishio;
 
-abstract class SplittingCry(BossModule module, AID aid) : Components.BaitAwayCast(module, ActionID.MakeSpell(aid), new AOEShapeRect(60f, 7f));
-class NSplittingCry(BossModule module) : SplittingCry(module, AID.NSplittingCry);
-class SSplittingCry(BossModule module) : SplittingCry(module, AID.SSplittingCry);
+abstract class SplittingCry(BossModule module, uint aid) : Components.BaitAwayCast(module, aid, new AOEShapeRect(60f, 7f));
+class NSplittingCry(BossModule module) : SplittingCry(module, (uint)AID.NSplittingCry);
+class SSplittingCry(BossModule module) : SplittingCry(module, (uint)AID.SSplittingCry);
 
-abstract class ThunderVortex(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeDonut(8f, 30f));
-class NThunderVortex(BossModule module) : ThunderVortex(module, AID.NThunderVortex);
-class SThunderVortex(BossModule module) : ThunderVortex(module, AID.SThunderVortex);
+abstract class ThunderVortex(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(8f, 30f));
+class NThunderVortex(BossModule module) : ThunderVortex(module, (uint)AID.NThunderVortex);
+class SThunderVortex(BossModule module) : ThunderVortex(module, (uint)AID.SThunderVortex);
 
 public abstract class C021Shishio(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {

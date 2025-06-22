@@ -18,8 +18,8 @@ public enum AID : uint
     Levinfang = 40594 // Boss->player, 5.0s cast, single-target
 }
 
-class Levinfang(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Levinfang));
-class Electrify(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Electrify), 6f);
+class Levinfang(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Levinfang);
+class Electrify(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrify, 6f);
 class HydroelectricShock(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;

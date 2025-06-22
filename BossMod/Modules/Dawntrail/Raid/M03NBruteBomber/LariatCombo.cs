@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Raid.M03NBruteBomber;
 
-class LariatCombo(BossModule module) : Components.GenericAOEs(module)
+sealed class LariatCombo(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 

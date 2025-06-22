@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C031Ketuduke;
 
-class FlukeTyphoon(BossModule module) : Components.CastCounter(module, ActionID.MakeSpell(AID.FlukeTyphoonAOE));
+class FlukeTyphoon(BossModule module) : Components.CastCounter(module, (uint)AID.FlukeTyphoonAOE);
 
 class FlukeTyphoonBurst(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001)
+        if (state == 0x00020001u)
         {
             WDir offset = index switch
             {
@@ -19,13 +19,13 @@ class FlukeTyphoonBurst(BossModule module) : Components.GenericTowers(module)
                 _ => default
             };
             if (offset != default)
-                Towers.Add(new(Arena.Center + offset, 4));
+                Towers.Add(new(Arena.Center + offset, 4f));
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.NBurst or AID.SBurst or AID.NBigBurst or AID.SBigBurst)
+        if (spell.Action.ID is (uint)AID.NBurst or (uint)AID.SBurst or (uint)AID.NBigBurst or (uint)AID.SBigBurst)
         {
             Towers.Clear();
             ++NumCasts;

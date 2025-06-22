@@ -34,7 +34,7 @@ class OrdealOfPurgation(BossModule module) : Components.GenericAOEs(module)
                 aoes.Add(aoe1.Value);
             if (_dirInnerExtra != _dirInner && AOEFromDirection(_dirInnerExtra) is var aoe2 && aoe2 != null)
                 aoes.Add(aoe2.Value);
-            CollectionsMarshal.AsSpan(aoes);
+            return CollectionsMarshal.AsSpan(aoes);
         }
         return [];
     }

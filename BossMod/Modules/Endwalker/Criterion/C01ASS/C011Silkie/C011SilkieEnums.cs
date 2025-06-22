@@ -10,7 +10,7 @@ public enum OID : uint
     SSilkenPuff = 0x39F6, // R1.000, x15
     SEasternEwer = 0x39F7, // R2.400, x5
 
-    Helper = 0x233C, // R0.500, x15
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -94,7 +94,7 @@ public enum AID : uint
     Enrage = 31200, // NBoss->self, 10.0s cast, wipe
     Enrage2 = 31225, // NBoss->self, no cast, range 100 circle ???
     NBuffetedPuffs = 30697, // NSilkenPuff->self, no cast, single-target, visual (puffs merge if too close)
-    NBuffetedPuffsAOE = 30698, // Helper->self, no cast, raidwide wipe
+    NBuffetedPuffsAOE = 30698 // Helper->self, no cast, raidwide wipe
 }
 
 public enum SID : uint
@@ -106,6 +106,4 @@ public enum SID : uint
     BracingSudsPuff = 3305, // none->SilkenPuff, extra=0x0
     ChillingSudsPuff = 3306, // none->SilkenPuff, extra=0x0
     FizzlingSudsPuff = 3307, // none->SilkenPuff, extra=0x0
-
-    ForkedLightning = 587, // Boss->player, extra=0x0, spread
 }

@@ -1,5 +1,5 @@
 ﻿namespace BossMod.RealmReborn.Dungeon.D09CuttersCry.D093Chimera;
-
+// TODO: Revist when it gets duty support to finish.
 public enum OID : uint
 {
     Boss = 0x64C, // R=3.7
@@ -22,15 +22,15 @@ public enum AID : uint
     ChaoticChorus = 1108 // Cacophony->self, no cast, range 6 aoe
 }
 
-class LionsBreath(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.LionsBreath), new AOEShapeCone(9.7f, 60f.Degrees())); // TODO: verify angle
+class LionsBreath(BossModule module) : Components.Cleave(module, (uint)AID.LionsBreath, new AOEShapeCone(9.7f, 60f.Degrees())); // TODO: verify angle
 
-abstract class Breath(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(9.7f, 60f.Degrees()));
-class RamsBreath(BossModule module) : Breath(module, AID.RamsBreath);
-class DragonsBreath(BossModule module) : Breath(module, AID.DragonsBreath);
+abstract class Breath(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(9.7f, 60f.Degrees()));
+class RamsBreath(BossModule module) : Breath(module, (uint)AID.RamsBreath);
+class DragonsBreath(BossModule module) : Breath(module, (uint)AID.DragonsBreath);
 
-class RamsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RamsVoice), 9.7f);
-class DragonsVoice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DragonsVoice), new AOEShapeDonut(8f, 30f));
-class RamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, ActionID.MakeSpell(AID.RamsKeeper), GetVoidzones, 0.8f)
+class RamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RamsVoice, 9.7f);
+class DragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DragonsVoice, new AOEShapeDonut(8f, 30f));
+class RamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.RamsKeeper, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

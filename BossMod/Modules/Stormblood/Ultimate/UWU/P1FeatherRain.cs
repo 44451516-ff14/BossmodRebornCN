@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
 // predict puddles under all players until actual casts start
-class P1FeatherRain(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.FeatherRain))
+class P1FeatherRain(BossModule module) : Components.GenericAOEs(module, (uint)AID.FeatherRain)
 {
     private readonly List<WPos> _predicted = new(8);
     private readonly List<AOEInstance> _aoes = new(8);
@@ -50,7 +50,7 @@ class P1FeatherRain(BossModule module) : Components.GenericAOEs(module, ActionID
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _predicted.Clear();
             _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell)));
@@ -59,7 +59,7 @@ class P1FeatherRain(BossModule module) : Components.GenericAOEs(module, ActionID
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
         {
             _aoes.RemoveAt(0);
         }

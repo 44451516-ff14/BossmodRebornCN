@@ -58,12 +58,12 @@ class Ex4BarbaricciaStates : StateMachineBuilder
         SavageBarberyHairRaid(id + 0x430000, 3.3f);
         VoidAeroRaidwide(id + 0x440000, 3.9f);
         RagingStorm(id + 0x450000, 2.1f);
-        Cast(id + 0x460000, AID.Maelstrom, 3.4f, 9, "Enrage");
+        Cast(id + 0x460000, (uint)AID.Maelstrom, 3.4f, 9, "Enrage");
     }
 
     private void VoidAeroTankbuster(uint id, float delay)
     {
-        Cast(id, AID.VoidAeroTankbuster, delay, 5, "Tankbuster")
+        Cast(id, (uint)AID.VoidAeroTankbuster, delay, 5, "Tankbuster")
             .ActivateOnEnter<VoidAeroTankbuster>()
             .DeactivateOnExit<VoidAeroTankbuster>()
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -71,7 +71,7 @@ class Ex4BarbaricciaStates : StateMachineBuilder
 
     private void VoidAeroRaidwide(uint id, float delay)
     {
-        Cast(id, AID.VoidAeroRaidwide, delay, 5, "Raidwide")
+        Cast(id, (uint)AID.VoidAeroRaidwide, delay, 5, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -85,7 +85,7 @@ class Ex4BarbaricciaStates : StateMachineBuilder
 
     private void CurlingIron(uint id, float delay)
     {
-        Cast(id, AID.CurlingIron, delay, 5);
+        Cast(id, (uint)AID.CurlingIron, delay, 5);
         ComponentCondition<CurlingIron>(id + 0x10, 8.2f, comp => comp.NumCasts > 0, "Raidwide")
             .ActivateOnEnter<CurlingIron>()
             .DeactivateOnExit<CurlingIron>()
@@ -135,13 +135,13 @@ class Ex4BarbaricciaStates : StateMachineBuilder
 
     private void SavageBarberyHairRaid(uint id, float delay, bool fast = false)
     {
-        CastMulti(id, [AID.SavageBarberyDonut1, AID.SavageBarberyDonut2, AID.SavageBarberyDonut3, AID.SavageBarberyDonut4, AID.SavageBarberyRect1, AID.SavageBarberyRect2], delay, 6)
+        CastMulti(id, [(uint)AID.SavageBarberyDonut1, (uint)AID.SavageBarberyDonut2, (uint)AID.SavageBarberyDonut3, (uint)AID.SavageBarberyDonut4, (uint)AID.SavageBarberyRect1, (uint)AID.SavageBarberyRect2], delay, 6)
             .ActivateOnEnter<SavageBarbery>();
         ComponentCondition<SavageBarbery>(id + 0x10, 1, comp => comp.NumActiveCasts < 2, "Donut/rect");
         ComponentCondition<SavageBarbery>(id + 0x20, 2.1f, comp => comp.NumActiveCasts == 0, "Sword")
             .DeactivateOnExit<SavageBarbery>();
 
-        CastMulti(id + 0x1000, [AID.HairRaidCone, AID.HairRaidDonut], fast ? 1 : 4.2f, 6)
+        CastMulti(id + 0x1000, [(uint)AID.HairRaidCone, (uint)AID.HairRaidDonut], fast ? 1 : 4.2f, 6)
             .ActivateOnEnter<HairRaid>()
             .ActivateOnEnter<HairSprayDeadlyTwist>();
         ComponentCondition<HairRaid>(id + 0x1010, 2, comp => comp.NumActiveCasts == 0, "Donut/cone")
@@ -272,13 +272,13 @@ class Ex4BarbaricciaStates : StateMachineBuilder
 
     private void TeasingTangles1(uint id, float delay)
     {
-        Cast(id, AID.TeasingTangles1, delay, 4)
+        Cast(id, (uint)AID.TeasingTangles1, delay, 4)
             .ActivateOnEnter<Tangle>();
         ComponentCondition<Tangle>(id + 2, 0.6f, comp => comp.NumCasts != 0, "Tangles 1 start");
         ComponentCondition<Tangle>(id + 0x10, 0.6f, comp => comp.NumTethers != 0);
         ComponentCondition<HairFlayUpbraid>(id + 0x20, 2.8f, comp => comp.Active)
             .ActivateOnEnter<HairFlayUpbraid>();
-        Cast(id + 0x30, AID.SecretBreeze, 4.5f, 3)
+        Cast(id + 0x30, (uint)AID.SecretBreeze, 4.5f, 3)
             .ActivateOnEnter<SecretBreezeCones>();
         ComponentCondition<HairFlayUpbraid>(id + 0x40, 0.5f, comp => !comp.Active, "Stack/spread")
             .DeactivateOnExit<HairFlayUpbraid>();
@@ -333,10 +333,10 @@ class Ex4BarbaricciaStates : StateMachineBuilder
     private void EntanglementSecretBreeze(uint id, float delay)
     {
         // TODO: component?..
-        Cast(id, AID.Entanglement, delay, 4, "Playstation");
+        Cast(id, (uint)AID.Entanglement, delay, 4, "Playstation");
         // +1.2s: tethers appear
 
-        Cast(id + 0x10, AID.SecretBreeze, 6.5f, 3)
+        Cast(id + 0x10, (uint)AID.SecretBreeze, 6.5f, 3)
             .ActivateOnEnter<SecretBreezeCones>();
         ComponentCondition<SecretBreezeCones>(id + 0x12, 1, comp => comp.NumCasts != 0, "Cones")
             .DeactivateOnExit<SecretBreezeCones>();
@@ -348,7 +348,7 @@ class Ex4BarbaricciaStates : StateMachineBuilder
     private void EntanglementUpbraid(uint id, float delay)
     {
         // TODO: component?..
-        Cast(id, AID.Entanglement, delay, 4, "Playstation");
+        Cast(id, (uint)AID.Entanglement, delay, 4, "Playstation");
         // +1.2s: tethers appear
 
         ComponentCondition<HairFlayUpbraid>(id + 0x10, 6, comp => comp.Active)

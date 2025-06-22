@@ -75,10 +75,10 @@ class SwiftSpillRotation(BossModule module) : Components.GenericRotatingAOE(modu
     }
 }
 
-class Efface(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.Efface));
-class HighPressureRaidwide(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HighPressure));
-class HighPressureKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.HighPressure), 20f, stopAtWall: true);
-class GeyserEruption(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GeyserEruption), 8f);
+class Efface(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Efface);
+class HighPressureRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.HighPressure);
+class HighPressureKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HighPressure, 20f, stopAtWall: true);
+class GeyserEruption(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GeyserEruption, 8f);
 class Geysers(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
@@ -99,7 +99,7 @@ class Geysers(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones)
         return voidzones[..index];
     }
 }
-class Wellbore(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Wellbore), 15);
+class Wellbore(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wellbore, 15);
 
 class D042AmphibiousTalosStates : StateMachineBuilder
 {

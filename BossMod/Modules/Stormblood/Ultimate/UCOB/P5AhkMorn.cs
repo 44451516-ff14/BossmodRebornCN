@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UCOB;
 
-class P5AhkMorn(BossModule module) : Components.CastSharedTankbuster(module, ActionID.MakeSpell(AID.AkhMorn), 4f)
+class P5AhkMorn(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.AkhMorn, 4f)
 {
     // cast is only a first hit, don't deactivate
     public override void OnCastFinished(Actor caster, ActorCastInfo spell) { }

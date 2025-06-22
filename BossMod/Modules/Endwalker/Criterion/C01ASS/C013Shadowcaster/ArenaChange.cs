@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.VariantCriterion.C01ASS.C013Shadowcaster;
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom rect = new([new Rectangle(C013Shadowcaster.ArenaCenter, 25f, 30f)], [new Rectangle(C013Shadowcaster.ArenaCenter, 15f, 20f)]);
 
@@ -15,7 +15,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00080004 && index == 0x02)
+        if (state == 0x00080004u && index == 0x02u)
         {
             Arena.Bounds = C013Shadowcaster.DefaultBounds;
             _aoe = null;

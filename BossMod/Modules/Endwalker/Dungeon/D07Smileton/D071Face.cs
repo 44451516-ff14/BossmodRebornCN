@@ -49,10 +49,10 @@ public enum TetherID : uint
 {
     Tether169 = 169, // 34D0->Boss
 }
-class OffMyLawnKnockback(BossModule module) : Components.SimpleKnockbacks(module, ActionID.MakeSpell(AID.OffMyLawnKnockback), 8, kind: Kind.DirForward, stopAtWall: true);
-class TemperTemperSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.TemperTemperSpread), 5);
+class OffMyLawnKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.OffMyLawnKnockback, 8, kind: Kind.DirForward, stopAtWall: true);
+class TemperTemperSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TemperTemperSpread, 5);
 
-class TempersFlare(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TempersFlare));
+class TempersFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.TempersFlare);
 
 class D071FaceStates : StateMachineBuilder
 {

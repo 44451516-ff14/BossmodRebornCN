@@ -15,7 +15,7 @@ class PredatoryAvarice(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        _playersInTides = _playersInDepths = new();
+        _playersInTides = _playersInDepths = default;
         if (!Active)
             return;
 

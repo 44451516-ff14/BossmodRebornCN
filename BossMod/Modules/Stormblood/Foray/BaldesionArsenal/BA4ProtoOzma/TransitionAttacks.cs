@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
-class TransitionAttacks(BossModule module) : Components.GenericAOEs(module)
+sealed class TransitionAttacks(BossModule module) : Components.GenericAOEs(module)
 {
     public static readonly AOEShapeCircle Circle = new(27f);
     public static readonly AOEShapeDonut Donut = new(17.5f, 38.5f);
@@ -13,14 +13,14 @@ class TransitionAttacks(BossModule module) : Components.GenericAOEs(module)
         var count = AOEs.Count;
         if (count == 0)
             return [];
-
-        var deadline = AOEs[0].Activation.AddSeconds(1d);
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && AOEs[index].Activation < deadline)
+        while (index < count && aoes[index].Activation < deadline)
             ++index;
 
-        return CollectionsMarshal.AsSpan(AOEs)[..index];
+        return aoes[..index];
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -31,7 +31,7 @@ class TransitionAttacks(BossModule module) : Components.GenericAOEs(module)
                 AddAOE(rect, angles[i], new(-17f, 29.012f));
         }
         void AddAOE(AOEShape shape, Angle rotation = default, WPos position = default)
-        => AOEs.Add(new(shape, WPos.ClampToGrid(position == default ? caster.Position : position), rotation, WorldState.FutureTime(7.8)));
+        => AOEs.Add(new(shape, WPos.ClampToGrid(position == default ? caster.Position : position), rotation, WorldState.FutureTime(7.8d)));
         void TransfigurationCounter()
         {
             if (caster == Module.PrimaryActor)
@@ -61,10 +61,10 @@ class TransitionAttacks(BossModule module) : Components.GenericAOEs(module)
                             AddAOE(rect, 59.995f.Degrees());
                             break;
                         case -17:
-                            AddAOE(rect, 180.Degrees());
+                            AddAOE(rect, 180f.Degrees());
                             break;
                         case 24:
-                            AddAOE(rect, -60.Degrees());
+                            AddAOE(rect, -60f.Degrees());
                             break;
                     }
                 break;

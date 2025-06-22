@@ -36,7 +36,7 @@ class VisceralWhirl(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MiasmicBlast(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MiasmicBlast), new AOEShapeCross(60f, 5f));
+class MiasmicBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MiasmicBlast, new AOEShapeCross(60f, 5f));
 
 class VoidBio(BossModule module) : Components.GenericAOEs(module)
 {

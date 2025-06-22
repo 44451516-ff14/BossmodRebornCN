@@ -41,52 +41,53 @@ public enum AID : uint
     Setback2 = 19317 // Unknown->self, 3.0s cast, range 9 120-degree cone
 }
 
-class Inscrutability1(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Inscrutability1));
-class Inscrutability2(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Inscrutability2));
-class FetidFang1(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.FetidFang1));
-class FetidFang2(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.FetidFang2));
+class Inscrutability1(BossModule module) : Components.RaidwideCast(module, (uint)AID.Inscrutability1);
+class Inscrutability2(BossModule module) : Components.RaidwideCast(module, (uint)AID.Inscrutability2);
+class FetidFang1(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.FetidFang1);
+class FetidFang2(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.FetidFang2);
 
-abstract class Deg120Cone(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeCone(9, 60.Degrees()));
-class Setback1(BossModule module) : Deg120Cone(module, AID.Setback1);
-class Setback2(BossModule module) : Deg120Cone(module, AID.Setback2);
-class Clearout1(BossModule module) : Deg120Cone(module, AID.Clearout1);
-class Clearout2(BossModule module) : Deg120Cone(module, AID.Clearout2);
+abstract class Deg120Cone(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(9f, 60f.Degrees()));
+class Setback1(BossModule module) : Deg120Cone(module, (uint)AID.Setback1);
+class Setback2(BossModule module) : Deg120Cone(module, (uint)AID.Setback2);
+class Clearout1(BossModule module) : Deg120Cone(module, (uint)AID.Clearout1);
+class Clearout2(BossModule module) : Deg120Cone(module, (uint)AID.Clearout2);
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Explosion), 8);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 8f);
 
-abstract class LuminousRay(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), new AOEShapeRect(50, 4));
-class LuminousRay1(BossModule module) : LuminousRay(module, AID.LuminousRay1);
-class LuminousRay2(BossModule module) : LuminousRay(module, AID.LuminousRay2);
+abstract class LuminousRay(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50f, 4f));
+class LuminousRay1(BossModule module) : LuminousRay(module, (uint)AID.LuminousRay1);
+class LuminousRay2(BossModule module) : LuminousRay(module, (uint)AID.LuminousRay2);
 
 class Reflection(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCone cone = new(40, 22.5f.Degrees());
+    private static readonly AOEShapeCone cone = new(40f, 22.5f.Degrees());
     private AOEInstance? _aoe;
-    private static readonly Dictionary<uint, Angle> stateToAngle = new()
-    {
-        { 0x00041000, Angle.AnglesIntercardinals[3] },
-        { 0x00042000, Angle.AnglesIntercardinals[2] },
-        { 0x00044000, Angle.AnglesCardinals[1] }
-    };
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (stateToAngle.TryGetValue(state, out var angle))
-            _aoe = new(cone, actor.Position, angle, WorldState.FutureTime(14.4f));
+        var angle = state switch
+        {
+            0x00041000u => Angle.AnglesIntercardinals[3],
+            0x00042000u => Angle.AnglesIntercardinals[2],
+            0x00044000u => Angle.AnglesCardinals[1],
+            _ => default
+        };
+        if (angle != default)
+            _aoe = new(cone, WPos.ClampToGrid(actor.Position), angle, WorldState.FutureTime(14.4f));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.Reflection)
+        if (spell.Action.ID == (uint)AID.Reflection)
             _aoe = null;
     }
 }
 
-abstract class EctoplasmicRay(BossModule module, AID aid1, AID aid2) : Components.LineStack(module, ActionID.MakeSpell(aid1), ActionID.MakeSpell(aid2), 5.2f);
-class EctoplasmicRay1(BossModule module) : EctoplasmicRay(module, AID.EctoplasmicRayMarker1, AID.EctoplasmicRay1);
-class EctoplasmicRay2(BossModule module) : EctoplasmicRay(module, AID.EctoplasmicRayMarker2, AID.EctoplasmicRay2);
+abstract class EctoplasmicRay(BossModule module, uint aid1, uint aid2) : Components.LineStack(module, aidMarker: aid1, aid2, 5.2f);
+class EctoplasmicRay1(BossModule module) : EctoplasmicRay(module, (uint)AID.EctoplasmicRayMarker1, (uint)AID.EctoplasmicRay1);
+class EctoplasmicRay2(BossModule module) : EctoplasmicRay(module, (uint)AID.EctoplasmicRayMarker2, (uint)AID.EctoplasmicRay2);
 
 class D101UnknownStates : StateMachineBuilder
 {

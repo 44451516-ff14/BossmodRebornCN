@@ -7,7 +7,7 @@ public enum OID : uint
     CopyCat = 0x432A, // R3.993, x1, mouser clone
     LeapTarget = 0x432B, // R1.000, x0 (spawn during fight)
     Soulshade = 0x432C, // R5.610, x3, boss clone
-    Helper = 0x233C // R0.500, x50, Helper type
+    Helper = 0x233C
 }
 
 public enum AID : uint

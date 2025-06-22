@@ -3,7 +3,7 @@ using ImGuiNET;
 
 namespace BossMod;
 
-public class BossModuleMainWindow : UIWindow
+public sealed class BossModuleMainWindow : UIWindow
 {
     private readonly BossModuleManager _mgr;
     private readonly ZoneModuleManager _zmm;
@@ -77,7 +77,8 @@ public class BossModuleMainWindow : UIWindow
         }
         else
         {
-            for (var i = 0; i < _mgr.LoadedModules.Count; ++i)
+            var count = _mgr.LoadedModules.Count;
+            for (var i = 0; i < count; ++i)
             {
                 var m = _mgr.LoadedModules[i];
                 var oidType = BossModuleRegistry.FindByOID(m.PrimaryActor.OID)?.ObjectIDType;

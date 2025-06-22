@@ -35,7 +35,7 @@ public enum SID : uint
     Pyretic = 960 // none->player, extra=0x0
 }
 
-class Boiling(BossModule module) : Components.StayMove(module)
+sealed class Boiling(BossModule module) : Components.StayMove(module)
 {
     private BitMask _boiling;
 
@@ -70,7 +70,7 @@ class Boiling(BossModule module) : Components.StayMove(module)
     }
 }
 
-class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
+sealed class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 90f.Degrees());
     private static readonly AOEShapeDonut donut = new(10f, 40f);
@@ -93,7 +93,7 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
                     aoe.Color = Colors.Danger;
                 aoe.Risky = true;
             }
-            else if (aoe.Shape != cone)
+            else if (aoe.Shape == aoes[0].Shape)
                 aoe.Risky = false;
         }
         return aoes[..max];
@@ -119,10 +119,12 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
         void AddAOEs(AOEShape? secondaryShape)
         {
             var position = spell.LocXZ;
-            _aoes.Add(new(cone, position, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.Add(new(cone, position, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 2.3f)));
+            var rotation = spell.Rotation;
+            AddAOE(cone);
+            AddAOE(cone, 180f.Degrees(), 2.3f);
             if (secondaryShape != null)
-                _aoes.Add(new(secondaryShape, position, default, Module.CastFinishAt(spell, 4.5f)));
+                AddAOE(secondaryShape, default, 4.5f);
+            void AddAOE(AOEShape shape, Angle offset = default, float delay = default) => _aoes.Add(new(shape, position, rotation + offset, Module.CastFinishAt(spell, delay)));
         }
     }
 
@@ -143,14 +145,13 @@ class TwinscorchedHaloVeil(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class HaloOfHeat1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HaloOfHeat1), new AOEShapeDonut(10f, 40f));
-class VeilOfHeat1(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.VeilOfHeat1), 15f);
-class FiresDomain(BossModule module) : Components.BaitAwayChargeCast(module, ActionID.MakeSpell(AID.FiresDomain), 3f);
-class CaptiveBolt(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.CaptiveBolt), 6f, 8);
-class PyreOfRebirth(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.PyreOfRebirth));
-class CullingBlade(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.CullingBlade));
+sealed class HaloOfHeat1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HaloOfHeat1, new AOEShapeDonut(10f, 40f));
+sealed class VeilOfHeat1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VeilOfHeat1, 15f);
+sealed class FiresDomain(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.FiresDomain, 3f);
+sealed class CaptiveBolt(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.CaptiveBolt, 6f, 8);
+sealed class PyreOfRebirthCullingBlade(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.PyreOfRebirth, (uint)AID.CullingBlade]);
 
-class SansheyaStates : StateMachineBuilder
+sealed class SansheyaStates : StateMachineBuilder
 {
     public SansheyaStates(BossModule module) : base(module)
     {
@@ -159,12 +160,11 @@ class SansheyaStates : StateMachineBuilder
             .ActivateOnEnter<VeilOfHeat1>()
             .ActivateOnEnter<TwinscorchedHaloVeil>()
             .ActivateOnEnter<FiresDomain>()
-            .ActivateOnEnter<PyreOfRebirth>()
-            .ActivateOnEnter<CullingBlade>()
+            .ActivateOnEnter<PyreOfRebirthCullingBlade>()
             .ActivateOnEnter<CaptiveBolt>()
             .ActivateOnEnter<Boiling>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 13399)]
-public class Sansheya(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Sansheya(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

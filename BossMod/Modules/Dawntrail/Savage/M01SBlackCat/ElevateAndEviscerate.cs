@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M01SBlackCat;
 
-class ElevateAndEviscerateShockwave(BossModule module) : Components.GenericAOEs(module, default, "GTFO from shockwave!")
+sealed class ElevateAndEviscerateShockwave(BossModule module) : Components.GenericAOEs(module, default, "GTFO from shockwave!")
 {
     private AOEInstance? aoe;
     private static readonly AOEShapeCross cross = new(60f, 5f);
@@ -38,7 +38,7 @@ class ElevateAndEviscerateShockwave(BossModule module) : Components.GenericAOEs(
     }
 }
 
-class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true, stopAfterWall: true)
+sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true, stopAfterWall: true)
 {
     private Actor? _nextTarget; // target selection icon appears before cast start
     public Actor? CurrentTarget; // for current mechanic
@@ -129,7 +129,7 @@ class ElevateAndEviscerate(BossModule module) : Components.GenericKnockback(modu
     }
 }
 
-class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(module)
+sealed class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ElevateAndEviscerate _kb = module.FindComponent<ElevateAndEviscerate>()!;
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;

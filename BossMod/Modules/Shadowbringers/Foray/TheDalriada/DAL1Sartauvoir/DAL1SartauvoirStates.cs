@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL1Sartauvoir;
 
-class DAL1SartauvoirStates : StateMachineBuilder
+sealed class DAL1SartauvoirStates : StateMachineBuilder
 {
     public DAL1SartauvoirStates(BossModule module) : base(module)
     {
@@ -11,11 +11,11 @@ class DAL1SartauvoirStates : StateMachineBuilder
             .ActivateOnEnter<GrandCrossflameAOE>()
             .ActivateOnEnter<Flamedive>()
             .ActivateOnEnter<BurningBlade>()
-            .ActivateOnEnter<MannatheihwonFlame2>()
-            .ActivateOnEnter<MannatheihwonFlame3>()
-            .ActivateOnEnter<MannatheihwonFlame4>()
-            .ActivateOnEnter<LeftBrand>()
-            .ActivateOnEnter<RightBrand>()
+            .ActivateOnEnter<MannatheihwonFlameRW>()
+            .ActivateOnEnter<MannatheihwonFlameRect>()
+            .ActivateOnEnter<MannatheihwonFlameCircle>()
+            .ActivateOnEnter<Brand>()
+            .ActivateOnEnter<Pyroclysm>()
             .ActivateOnEnter<Pyrocrisis>()
             .ActivateOnEnter<Pyrodoxy>();
     }

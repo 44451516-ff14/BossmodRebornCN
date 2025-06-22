@@ -29,7 +29,7 @@ public enum AID : uint
     Overcharge = 1435 // SixthCohortVanguard->self, 2.5s cast, range 8+R 120-degree cone
 }
 
-class GarleanFire(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, ActionID.MakeSpell(AID.GarleanFire), GetVoidzones, 0.2f)
+class GarleanFire(BossModule module) : Components.VoidzoneAtCastTarget(module, 8f, (uint)AID.GarleanFire, GetVoidzones, 0.2f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -49,9 +49,9 @@ class GarleanFire(BossModule module) : Components.VoidzoneAtCastTarget(module, 8
         return voidzones[..index];
     }
 }
-class DrillCannons(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.DrillCannons), new AOEShapeRect(32.8f, 2.5f));
-class CarpetBomb(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CarpetBomb), 5f);
-class Overcharge(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Overcharge), new AOEShapeCone(10.8f, 60f.Degrees()));
+class DrillCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DrillCannons, new AOEShapeRect(32.8f, 2.5f));
+class CarpetBomb(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CarpetBomb, 5f);
+class Overcharge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overcharge, new AOEShapeCone(10.8f, 60f.Degrees()));
 
 class Flamethrower(BossModule module) : Components.GenericAOEs(module)
 {

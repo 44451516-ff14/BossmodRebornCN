@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex2ZoraalJa;
 
-class ProjectionOfTriumph(BossModule module) : Components.GenericAOEs(module)
+sealed class ProjectionOfTriumph(BossModule module) : Components.GenericAOEs(module)
 {
     private record struct Line(WDir Direction, AOEShape Shape);
 

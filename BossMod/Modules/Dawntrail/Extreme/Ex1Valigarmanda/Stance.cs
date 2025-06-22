@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Extreme.Ex1Valigarmanda;
 
-class Stance(BossModule module) : Components.GenericAOEs(module)
+sealed class Stance(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
 
@@ -30,7 +30,7 @@ class Stance(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class CharringCataclysm(BossModule module) : Components.UniformStackSpread(module, 4f, default, 2, 2)
+sealed class CharringCataclysm(BossModule module) : Components.UniformStackSpread(module, 4f, default, 2, 2)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -48,7 +48,7 @@ class CharringCataclysm(BossModule module) : Components.UniformStackSpread(modul
     }
 }
 
-class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module, ActionID.MakeSpell(AID.ChillingCataclysmAOE))
+sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module, (uint)AID.ChillingCataclysmAOE)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -68,4 +68,4 @@ class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module, Acti
     }
 }
 
-class CracklingCataclysm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CracklingCataclysm), 6f);
+sealed class CracklingCataclysm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CracklingCataclysm, 6f);

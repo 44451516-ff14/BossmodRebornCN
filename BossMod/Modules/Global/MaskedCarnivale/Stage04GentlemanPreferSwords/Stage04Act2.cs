@@ -17,9 +17,9 @@ public enum AID : uint
     MagitekRay = 14368 // Boss->location, 3.0s cast, range 6 circle
 }
 
-class GrandStrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GrandStrike), new AOEShapeRect(77.5f, 2f));
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.MagitekRay), 6f);
-class MagitekField(BossModule module) : Components.CastInterruptHint(module, ActionID.MakeSpell(AID.MagitekField));
+class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandStrike, new AOEShapeRect(77.5f, 2f));
+class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, 6f);
+class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
 
 class Hints(BossModule module) : BossComponent(module)
 {

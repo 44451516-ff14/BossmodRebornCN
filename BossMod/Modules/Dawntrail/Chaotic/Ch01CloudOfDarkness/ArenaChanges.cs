@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private static readonly Square[] DefaultPolygon = [new(Ch01CloudOfDarkness.DefaultCenter, 40f)];
@@ -12,23 +12,23 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00)
+        if (index == 0x00u)
             switch (state)
             {
-                case 0x00200010:
+                case 0x00200010u:
                     SetAOE(P1Transition);
                     break;
-                case 0x00020001:
+                case 0x00020001u:
                     SetAOE(P2Transition);
                     break;
             }
-        else if (index == 0x02)
+        else if (index == 0x02u)
             switch (state)
             {
-                case 0x00020001:
+                case 0x00020001u:
                     SetArena(Ch01CloudOfDarkness.Phase2BoundsND);
                     break;
-                case 0x00080004:
+                case 0x00080004u:
                     SetArena(Ch01CloudOfDarkness.Phase2BoundsWD);
                     break;
             }

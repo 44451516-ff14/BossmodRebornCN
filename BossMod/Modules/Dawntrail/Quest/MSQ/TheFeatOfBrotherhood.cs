@@ -93,21 +93,14 @@ class DualPyresSteelfoldStrike(BossModule module) : Components.GenericAOEs(modul
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
-        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        aoes[0].Risky = true;
         return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), _aoes.Count == 0 ? Colors.Danger : default, false));
         switch (spell.Action.ID)
         {
             case (uint)AID.DualPyres1:
@@ -116,7 +109,7 @@ class DualPyresSteelfoldStrike(BossModule module) : Components.GenericAOEs(modul
             case (uint)AID.DualPyres4:
                 AddAOE(cone);
                 if (_aoes.Count == 2)
-                    _aoes.SortBy(x => x.Activation);
+                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
             case (uint)AID.SteelfoldStrike:
                 AddAOE(cross);
@@ -236,19 +229,19 @@ class LayOfTheSun(BossModule module) : Components.UniformStackSpread(module, 6f,
     }
 }
 
-class RoaringStar(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.RoaringStarRaidwide));
-class CoiledStrike(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.CoiledStrike), new AOEShapeCone(30f, 75f.Degrees()));
-class Burn(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Burn), new AOEShapeRect(46f, 2.5f), 8);
-class FallenStar(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.FallenStar), 6f);
-class FirstLight(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FirstLight), 6f);
-class InnerWake(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.InnerWake), 10f);
-class OuterWake(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.OuterWake), new AOEShapeDonut(6f, 40f));
-class BattleBreaker(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.BattleBreaker));
-class HeartOfTuralRaidwides(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.HeartOfTural), "Raidwides x7");
+class RoaringStar(BossModule module) : Components.RaidwideCast(module, (uint)AID.RoaringStarRaidwide);
+class CoiledStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CoiledStrike, new AOEShapeCone(30f, 75f.Degrees()));
+class Burn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Burn, new AOEShapeRect(46f, 2.5f), 8);
+class FallenStar(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FallenStar, 6f);
+class FirstLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FirstLight, 6f);
+class InnerWake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InnerWake, 10f);
+class OuterWake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OuterWake, new AOEShapeDonut(6f, 40f));
+class BattleBreaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BattleBreaker);
+class HeartOfTuralRaidwides(BossModule module) : Components.RaidwideCast(module, (uint)AID.HeartOfTural, "Raidwides x7");
 
 class HeartOfTural : Components.SimpleAOEs
 {
-    public HeartOfTural(BossModule module) : base(module, ActionID.MakeSpell(AID.HeartOfTural), new AOEShapeRect(20f, 20f, InvertForbiddenZone: true)) { Color = Colors.SafeFromAOE; }
+    public HeartOfTural(BossModule module) : base(module, (uint)AID.HeartOfTural, new AOEShapeRect(20f, 20f, InvertForbiddenZone: true)) { Color = Colors.SafeFromAOE; }
 
     private const string hint = "Wait in safe area!";
     public override void AddHints(int slot, Actor actor, TextHints hints)

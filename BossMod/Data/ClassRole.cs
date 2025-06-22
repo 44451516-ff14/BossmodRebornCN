@@ -91,4 +91,16 @@ public static class ClassRole
 
     public static bool IsSupport(this Class cls) => cls.GetClassCategory() is ClassCategory.Tank or ClassCategory.Healer;
     public static bool IsDD(this Class cls) => cls.GetClassCategory() is ClassCategory.Melee or ClassCategory.PhysRanged or ClassCategory.Caster;
+    public static bool IsSameRole(Actor actor1, Actor actor2)
+    {
+        var class1 = actor1.Class.GetClassCategory();
+        var class2 = actor2.Class.GetClassCategory();
+        if (class1 == ClassCategory.Tank && class2 == ClassCategory.Tank)
+            return true;
+        if (class1 == ClassCategory.Healer && class2 == ClassCategory.Healer)
+            return true;
+        if (actor1.Class.IsDD() && actor2.Class.IsDD())
+            return true;
+        return false;
+    }
 }

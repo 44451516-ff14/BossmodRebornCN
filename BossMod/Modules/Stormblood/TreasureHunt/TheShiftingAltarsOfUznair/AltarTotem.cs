@@ -33,11 +33,11 @@ public enum IconID : uint
     Baitaway = 23 // player
 }
 
-class FlurryOfRage(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FlurryOfRage), new AOEShapeCone(13.06f, 60f.Degrees()));
-class WaveOfMalice(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WaveOfMalice), 5f);
-class WhorlOfFrenzy(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.WhorlOfFrenzy), 11.06f);
-class TheWardensVerdict(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheWardensVerdict), new AOEShapeRect(45.06f, 2f));
-class FlamesOfFury(BossModule module) : Components.VoidzoneAtCastTarget(module, 10f, ActionID.MakeSpell(AID.FlamesOfFury), GetVoidzones, 1.2f)
+class FlurryOfRage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlurryOfRage, new AOEShapeCone(13.06f, 60f.Degrees()));
+class WaveOfMalice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaveOfMalice, 5f);
+class WhorlOfFrenzy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WhorlOfFrenzy, 11.06f);
+class TheWardensVerdict(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheWardensVerdict, new AOEShapeRect(45.06f, 2f));
+class FlamesOfFury(BossModule module) : Components.VoidzoneAtCastTarget(module, 10f, (uint)AID.FlamesOfFury, GetVoidzones, 1.2f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -97,9 +97,9 @@ class FlamesOfFuryBait(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.RaucousScritch), new AOEShapeCone(8.42f, 60f.Degrees()));
-class Hurl(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hurl), 6f);
-class Spin(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Spin), new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
+class RaucousScritch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RaucousScritch, new AOEShapeCone(8.42f, 60f.Degrees()));
+class Hurl(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hurl, 6f);
+class Spin(BossModule module) : Components.Cleave(module, (uint)AID.Spin, new AOEShapeCone(9.42f, 60f.Degrees()), [(uint)OID.AltarMatanga]);
 
 class AltarTotemStates : StateMachineBuilder
 {

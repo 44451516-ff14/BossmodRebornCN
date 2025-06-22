@@ -97,7 +97,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
     }
 }
 
-class ShieldSkewer(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.ShieldSkewer), new AOEShapeRect(40f, 7f))
+class ShieldSkewer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ShieldSkewer, new AOEShapeRect(40f, 7f))
 {
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;
 
@@ -205,10 +205,10 @@ class Shrapnel(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Impact(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Impact), new AOEShapeRect(14f, 20f));
-class TartareanSpark(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TartareanSpark), new AOEShapeRect(40f, 3f));
-class AnvilOfTartarus(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.AnvilOfTartarus));
-class TartareanImpact(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.TartareanImpact));
+class Impact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Impact, new AOEShapeRect(14f, 20f));
+class TartareanSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TartareanSpark, new AOEShapeRect(40f, 3f));
+class AnvilOfTartarus(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.AnvilOfTartarus);
+class TartareanImpact(BossModule module) : Components.RaidwideCast(module, (uint)AID.TartareanImpact);
 
 class D052RhitahtynStates : StateMachineBuilder
 {

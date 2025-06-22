@@ -56,10 +56,10 @@ public enum TetherID : uint
     BombTether = 97 // Grenade2->Alphinaud
 }
 
-class TenTrolleyTorque(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TenTrolleyTorque), 16f);
-class TenTrolleyTap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TenTrolleyTap), new AOEShapeCone(8f, 60f.Degrees()));
-class TenTrolleyWallop(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TenTrolleyWallop), new AOEShapeCone(40f, 30f.Degrees()));
-class SelfDestruct2(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SelfDestruct2), 10f);
+class TenTrolleyTorque(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTrolleyTorque, 16f);
+class TenTrolleyTap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTrolleyTap, new AOEShapeCone(8f, 60f.Degrees()));
+class TenTrolleyWallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTrolleyWallop, new AOEShapeCone(40f, 30f.Degrees()));
+class SelfDestruct2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDestruct2, 10f);
 
 class Breakthrough(BossModule module) : Components.GenericAOEs(module)
 {
@@ -154,7 +154,7 @@ class Bulldoze(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TunnelShaker(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TunnelShaker1), new AOEShapeCone(60f, 15f.Degrees()));
+class TunnelShaker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TunnelShaker1, new AOEShapeCone(60f, 15f.Degrees()));
 class Uplift(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -179,7 +179,7 @@ class Uplift(BossModule module) : Components.ConcentricAOEs(module, [new AOEShap
     }
 }
 
-class BombTether(BossModule module) : Components.InterceptTetherAOE(module, ActionID.MakeSpell(AID.SelfDestruct1), (uint)TetherID.BombTether, 6, [(uint)OID.Alphinaud])
+class BombTether(BossModule module) : Components.InterceptTetherAOE(module, (uint)AID.SelfDestruct1, (uint)TetherID.BombTether, 6, [(uint)OID.Alphinaud])
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -205,7 +205,7 @@ class BombTether(BossModule module) : Components.InterceptTetherAOE(module, Acti
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action == WatchedAction)
+        if (spell.Action.ID == WatchedAction)
             Activation = default;
     }
 }

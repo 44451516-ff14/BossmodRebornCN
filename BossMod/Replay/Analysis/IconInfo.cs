@@ -3,7 +3,7 @@ using Lumina.Excel.Sheets;
 
 namespace BossMod.ReplayAnalysis;
 
-class IconInfo : CommonEnumInfo
+sealed class IconInfo : CommonEnumInfo
 {
     private class IconData
     {
@@ -75,7 +75,9 @@ class IconInfo : CommonEnumInfo
 
     private string EnumMemberString(uint iid, IconData data)
     {
-        var name = _iidType?.GetEnumName(iid) ?? $"_Gen_Icon_{iid}";
+        string generateIconName() => Service.LuminaRow<Lockon>(iid)?.Unknown0.ToString() ?? iid.ToString();
+
+        var name = _iidType?.GetEnumName(iid) ?? $"_Gen_Icon_{generateIconName()}";
         return $"{name} = {iid}, // {OIDListString(data.SourceOIDs)}->{(data.TargetOIDs.Count == 0 ? "???" : data.SeenTargetNonSelf ? OIDListString(data.TargetOIDs) : "self")}";
     }
 }

@@ -76,7 +76,7 @@ class BallisticMissile(BossModule module) : Components.GenericAOEs(module)
         {
             case (uint)AID.BallisticMissileCircleWarning:
             case (uint)AID.BallisticMissileDonutWarning:
-                _activeLocation = _activeTarget?.Position ?? new();
+                _activeLocation = _activeTarget?.Position ?? default;
                 _activeTarget = null;
                 break;
             case (uint)AID.BallisticMissileCircle:
@@ -87,9 +87,9 @@ class BallisticMissile(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Hyperflame(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Hyperflame), new AOEShapeCone(60f, 30f.Degrees()));
-class SonicAmplifier(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.SonicAmplifier));
-class HammerKnuckles(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.HammerKnuckles));
+class Hyperflame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hyperflame, new AOEShapeCone(60f, 30f.Degrees()));
+class SonicAmplifier(BossModule module) : Components.RaidwideCast(module, (uint)AID.SonicAmplifier);
+class HammerKnuckles(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HammerKnuckles);
 
 class MinervaStates : StateMachineBuilder
 {

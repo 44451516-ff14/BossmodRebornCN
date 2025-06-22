@@ -22,7 +22,7 @@ class SettingTheScene(BossModule module) : BossComponent(module)
             Corner.SE => new(+1, +1),
             Corner.SW => new(-1, +1),
             Corner.NW => new(-1, -1),
-            _ => new()
+            _ => default
         };
     }
 
@@ -36,18 +36,18 @@ class SettingTheScene(BossModule module) : BossComponent(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         // this is a fallback in case env-control assignment doesn't work for some reason...
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.PinaxAcid:
+            case (uint)AID.PinaxAcid:
                 AssignFromCast(Element.Acid, caster.Position);
                 break;
-            case AID.PinaxLava:
+            case (uint)AID.PinaxLava:
                 AssignFromCast(Element.Fire, caster.Position);
                 break;
-            case AID.PinaxWell:
+            case (uint)AID.PinaxWell:
                 AssignFromCast(Element.Water, caster.Position);
                 break;
-            case AID.PinaxLevinstrike:
+            case (uint)AID.PinaxLevinstrike:
                 AssignFromCast(Element.Lightning, caster.Position);
                 break;
         }
@@ -80,7 +80,7 @@ class SettingTheScene(BossModule module) : BossComponent(module)
         // 18 => SE water?
         // 19 => SW water?
         // 20 => NW water
-        if (state == 0x00020001 && index >= 5 && index <= 20)
+        if (state == 0x00020001u && index >= 5 && index <= 20)
         {
             var i = index - 5;
             _assignments[i >> 2] = (Corner)(1 + (i & 3));

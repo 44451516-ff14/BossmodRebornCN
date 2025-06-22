@@ -45,14 +45,14 @@ public enum TetherID : uint
     Mudball = 7 // MudBubble1->player
 }
 
-class StoneAge(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.StoneAge));
-class HardRock(BossModule module) : Components.SingleTargetCast(module, ActionID.MakeSpell(AID.HardRock));
+class StoneAge(BossModule module) : Components.RaidwideCast(module, (uint)AID.StoneAge);
+class HardRock(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HardRock);
 class MudVoidzone(BossModule module) : Components.Voidzone(module, 5f, GetVoidzone)
 {
     private static List<Actor> GetVoidzone(BossModule module) => module.Enemies((uint)OID.MudVoidzone);
 }
-class Quagmire(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Quagmire), 6f);
-class FallingRock(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.FallingRock), 6f, 4, 4);
+class Quagmire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Quagmire, 6f);
+class FallingRock(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FallingRock, 6f, 4, 4);
 
 class BrittleBreccia(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
@@ -140,11 +140,12 @@ class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
         var count = CurrentBaits.Count;
         if (count == 0)
             return;
+        var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+        var activation = WorldState.FutureTime(9.7d);
 
         for (var i = 0; i < count; ++i)
         {
-            var b = CurrentBaits[i];
-            var activation = WorldState.FutureTime(9.7d);
+            ref var b = ref baits[i];
             if (b.Source.HitboxRadius is > 2 and <= 3 && b.Shape == rect1)
             {
                 b.Shape = rect2;
@@ -155,7 +156,6 @@ class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
                 b.Shape = rect3;
                 b.Activation = activation;
             }
-            CurrentBaits[i] = b;
         }
     }
 
@@ -174,7 +174,7 @@ class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
         if (count == 0)
             return;
         var actHolesCount = activeHoles.Count;
-        var forbidden = new Func<WPos, float>[count];
+        var forbidden = new Func<WPos, float>[actHolesCount];
         var b = baits[0];
         for (var i = 0; i < actHolesCount; ++i)
             forbidden[i] = ShapeDistance.InvertedRect(b.Source.Position, activeHoles[i], 1f);

@@ -21,9 +21,9 @@ public enum AID : uint
 }
 
 class GreyBomb(BossModule module) : Components.Adds(module, (uint)OID.GreyBomb, 5);
-class Burst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.Burst), "Kill the Grey Bomb! or take 80% of your Max HP");
+class Burst(BossModule module) : Components.RaidwideCast(module, (uint)AID.Burst, "Kill the Grey Bomb! or take 80% of your Max HP");
 // future thing to do: maybe add a tether between bomb/boss to show it needs to show the aoe needs to explode on them. . . 
-class HypothermalCombustion(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.HypothermalCombustion), 7.2f)
+class HypothermalCombustion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HypothermalCombustion, 7.2f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -63,9 +63,9 @@ class GiddyBomb(BossModule module) : BossComponent(module)
         hints.GoalZones.Add(hints.PullTargetToLocation(Module.PrimaryActor, nextBombSpot));
     }
 }
-class MassiveBurst(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.MassiveBurst), "Knock the Giddy bomb into the boss and let it explode on the boss. \n or else take 99% damage!");
-class Sap(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Sap), 8f);
-class ScaldingScolding(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.ScaldingScolding), new AOEShapeCone(11.75f, 45f.Degrees()))
+class MassiveBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.MassiveBurst, "Knock the Giddy bomb into the boss and let it explode on the boss. \n or else take 99% damage!");
+class Sap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sap, 8f);
+class ScaldingScolding(BossModule module) : Components.Cleave(module, (uint)AID.ScaldingScolding, new AOEShapeCone(11.75f, 45f.Degrees()))
 {
     private readonly MassiveBurst _raidwide1 = module.FindComponent<MassiveBurst>()!;
     private readonly Sap _locationaoe1 = module.FindComponent<Sap>()!;

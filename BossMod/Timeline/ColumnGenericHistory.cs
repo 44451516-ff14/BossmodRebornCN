@@ -6,7 +6,7 @@ namespace BossMod;
 // entry is attached to a node (this is important if timings are adjusted for any reason)
 public class ColumnGenericHistory : Timeline.Column
 {
-    public class Entry(Entry.Type type, StateMachineTree.Node attachNode, float delay, float duration, string name, Color color, float widthRel = 1.0f)
+    public sealed class Entry(Entry.Type type, StateMachineTree.Node attachNode, float delay, float duration, string name, Color color, float widthRel = 1.0f)
     {
         public enum Type { Dot, Line, Range }
 
@@ -23,14 +23,14 @@ public class ColumnGenericHistory : Timeline.Column
         public float TimeSinceGlobalStart(StateMachineTree tree) => tree.Phases[AttachNode.PhaseID].StartTime + TimeSincePhaseStart();
     }
 
-    public const float DefaultWidth = 10;
+    public const float DefaultWidth = 10f;
 
     public List<Entry> Entries = [];
-    public StateMachineTree Tree { get; private init; }
-    public List<int> PhaseBranches { get; private init; }
+    public StateMachineTree Tree;
+    public List<int> PhaseBranches;
 
-    private readonly float _trackHalfWidth = 5;
-    private readonly float _eventRadius = 4;
+    private readonly float _trackHalfWidth = 5f;
+    private readonly float _eventRadius = 4f;
 
     public ColumnGenericHistory(Timeline timeline, StateMachineTree tree, List<int> phaseBranches, string name = "")
         : base(timeline)
@@ -53,13 +53,15 @@ public class ColumnGenericHistory : Timeline.Column
         return branchID >= e.AttachNode.BranchID && branchID < e.AttachNode.BranchID + e.AttachNode.NumBranches;
     }
 
+    protected virtual Color GetBackgroundColor() => Timeline.Colors.PlannerBackground;
+
     protected void DrawEntries()
     {
         var drawlist = ImGui.GetWindowDrawList();
 
         var trackMin = Timeline.ColumnCoordsToScreenCoords(Width / 2 - _trackHalfWidth, Timeline.MinVisibleTime);
         var trackMax = Timeline.ColumnCoordsToScreenCoords(Width / 2 + _trackHalfWidth, Timeline.MaxVisibleTime);
-        drawlist.AddRectFilled(trackMin, trackMax, Timeline.Colors.PlannerBackground.ABGR);
+        drawlist.AddRectFilled(trackMin, trackMax, GetBackgroundColor().ABGR);
 
         foreach (var e in Entries.Where(e => e.EntryType == Entry.Type.Range && IsEntryVisible(e)))
         {

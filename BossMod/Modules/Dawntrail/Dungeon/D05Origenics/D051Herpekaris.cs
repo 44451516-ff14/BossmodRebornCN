@@ -39,11 +39,11 @@ public enum AID : uint
     ConvulsiveCrush = 36518, // Boss->player, 5.0s cast, single-target, tb
 }
 
-class CollectiveAgony(BossModule module) : Components.LineStack(module, ActionID.MakeSpell(AID.CollectiveAgonyMarker), ActionID.MakeSpell(AID.CollectiveAgony), 5.6f);
-class StridentShriek(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.StridentShriek));
-class ConvulsiveCrush(BossModule module) : Components.SingleTargetDelayableCast(module, ActionID.MakeSpell(AID.ConvulsiveCrush));
-class PoisonHeartSpread(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.PoisonHeartSpread), 5f);
-class PoisonHeartVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 2f, ActionID.MakeSpell(AID.PoisonHeartVoidzone), GetVoidzones, 0.9f)
+sealed class CollectiveAgony(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.CollectiveAgonyMarker, (uint)AID.CollectiveAgony, 5.6f);
+sealed class StridentShriek(BossModule module) : Components.RaidwideCast(module, (uint)AID.StridentShriek);
+sealed class ConvulsiveCrush(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.ConvulsiveCrush);
+sealed class PoisonHeartSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.PoisonHeartSpread, 5f);
+sealed class PoisonHeartVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 2f, (uint)AID.PoisonHeartVoidzone, GetVoidzones, 0.9f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -64,11 +64,9 @@ class PoisonHeartVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(m
     }
 }
 
-abstract class PodBurst(BossModule module, AID aid) : Components.SimpleAOEs(module, ActionID.MakeSpell(aid), 6f);
-class PodBurst1(BossModule module) : PodBurst(module, AID.PodBurst1);
-class PodBurst2(BossModule module) : PodBurst(module, AID.PodBurst2);
+sealed class PodBurst(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PodBurst1, (uint)AID.PodBurst2], 6f);
 
-class WrithingRiot(BossModule module) : Components.GenericAOEs(module)
+sealed class WrithingRiot(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(3);
     private static readonly AOEShapeCone coneLeftRight = new(25f, 105f.Degrees());
@@ -80,18 +78,20 @@ class WrithingRiot(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        for (var i = 0; i < max; ++i)
         {
-            for (var i = 0; i < max; ++i)
+            ref var aoe = ref aoes[i];
+            if (i == 0)
             {
-                var aoe = _aoes[i];
-                if (i == 0)
-                    aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-                else
-                    aoes[i] = aoe with { Risky = aoes[0].Shape != aoe.Shape };
+                if (count > 1)
+                    aoe.Color = Colors.Danger;
+                aoe.Risky = true;
             }
+            else if (aoe.Shape == aoes[0].Shape)
+                aoe.Risky = false;
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -134,7 +134,7 @@ class WrithingRiot(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D051HerpekarisStates : StateMachineBuilder
+sealed class D051HerpekarisStates : StateMachineBuilder
 {
     public D051HerpekarisStates(BossModule module) : base(module)
     {
@@ -143,12 +143,11 @@ class D051HerpekarisStates : StateMachineBuilder
             .ActivateOnEnter<StridentShriek>()
             .ActivateOnEnter<PoisonHeartSpread>()
             .ActivateOnEnter<PoisonHeartVoidzone>()
-            .ActivateOnEnter<PodBurst1>()
-            .ActivateOnEnter<PodBurst2>()
+            .ActivateOnEnter<PodBurst>()
             .ActivateOnEnter<WrithingRiot>()
             .ActivateOnEnter<ConvulsiveCrush>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12741, SortOrder = 1)]
-public class D051Herpekaris(WorldState ws, Actor primary) : BossModule(ws, primary, new(-88f, -180f), new ArenaBoundsSquare(17.5f));
+public sealed class D051Herpekaris(WorldState ws, Actor primary) : BossModule(ws, primary, new(-88f, -180f), new ArenaBoundsSquare(17.5f));

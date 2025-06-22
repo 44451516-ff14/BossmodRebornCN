@@ -8,7 +8,7 @@
 // - goal: destination with X priority (X > 0); 'default' is considered a goal with priority 0
 // - goal and danger are mutually exclusive, 'danger' overriding 'goal' state
 // typically we try to find a path to goal with highest priority; if that fails, try lower priorities; if no paths can be found (e.g. we're currently inside an imminent aoe) we find direct path to closest safe pixel
-public class Map
+public sealed class Map
 {
     public float Resolution; // pixel size, in world units
     public int Width; // always even
@@ -96,6 +96,7 @@ public class Map
     }
 
     public int GridToIndex(int x, int y) => y * Width + x;
+    public int GridToIndex((int x, int y) p) => GridToIndex(p.x, p.y);
     public (int x, int y) IndexToGrid(int index) => (index % Width, index / Width);
     public static (int x, int y) FracToGrid(Vector2 frac) => ((int)MathF.Floor(frac.X), (int)MathF.Floor(frac.Y));
     public (int x, int y) WorldToGrid(WPos world) => FracToGrid(WorldToGridFrac(world));

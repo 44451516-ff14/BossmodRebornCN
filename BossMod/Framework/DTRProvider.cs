@@ -14,7 +14,7 @@ internal sealed class DTRProvider : IDisposable
     private readonly AIManager _ai;
     private readonly IDtrBarEntry _autorotationEntry = Service.DtrBar.Get("bmr-autorotation");
     private readonly IDtrBarEntry _aiEntry = Service.DtrBar.Get("bmr-ai");
-    private readonly AIConfig _aiConfig = Service.Config.Get<AIConfig>();
+    private static readonly AIConfig _aiConfig = Service.Config.Get<AIConfig>();
     private bool _wantOpenPopup;
 
     public DTRProvider(RotationModuleManager manager, AIManager ai)
@@ -39,9 +39,9 @@ internal sealed class DTRProvider : IDisposable
 
     public void Update()
     {
-        _autorotationEntry.Shown = _mgr.Config.ShowDTR != AutorotationConfig.DtrStatus.None;
+        _autorotationEntry.Shown = RotationModuleManager.Config.ShowDTR != AutorotationConfig.DtrStatus.None;
         var (icon, name) = _mgr.Preset == null ? (BitmapFontIcon.SwordSheathed, "Idle") : _mgr.Preset == RotationModuleManager.ForceDisable ? (BitmapFontIcon.SwordSheathed, "Disabled") : (BitmapFontIcon.SwordUnsheathed, _mgr.Preset.Name);
-        Payload prefix = _mgr.Config.ShowDTR == AutorotationConfig.DtrStatus.TextOnly ? new TextPayload("bmr: ") : new IconPayload(icon);
+        Payload prefix = RotationModuleManager.Config.ShowDTR == AutorotationConfig.DtrStatus.TextOnly ? new TextPayload("bmr: ") : new IconPayload(icon);
         _autorotationEntry.Text = new SeString(prefix, new TextPayload(name));
 
         _aiEntry.Shown = _aiConfig.ShowDTR;

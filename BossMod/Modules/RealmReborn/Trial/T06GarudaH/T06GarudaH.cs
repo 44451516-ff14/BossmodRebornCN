@@ -50,22 +50,22 @@ class Friction(BossModule module) : BossComponent(module)
     }
 }
 
-class Downburst(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.Downburst), new AOEShapeCone(11.7f, 60f.Degrees()));
-class Slipstream(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Slipstream), new AOEShapeCone(11.7f, 45f.Degrees()));
+class Downburst(BossModule module) : Components.Cleave(module, (uint)AID.Downburst, new AOEShapeCone(11.7f, 60f.Degrees()));
+class Slipstream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Slipstream, new AOEShapeCone(11.7f, 45f.Degrees()));
 
-class MistralShriek(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.MistralShriek), 24.7f, true)
+class MistralShriek(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.MistralShriek, 24.7f, true)
 {
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(((T06GarudaH)Module).ActiveMonoliths);
 }
 
-class MistralSong(BossModule module) : Components.CastLineOfSightAOE(module, ActionID.MakeSpell(AID.MistralSong), 31.7f, true)
+class MistralSong(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.MistralSong, 31.7f, true)
 {
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(((T06GarudaH)Module).ActiveMonoliths);
 }
 
-class AerialBlast(BossModule module) : Components.RaidwideCast(module, ActionID.MakeSpell(AID.AerialBlast));
-class GreatWhirlwind(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.GreatWhirlwind), 8f);
-class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.EyeOfTheStorm), new AOEShapeDonut(12f, 25f));
+class AerialBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.AerialBlast);
+class GreatWhirlwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GreatWhirlwind, 8f);
+class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheStorm, new AOEShapeDonut(12f, 25f));
 
 class T06GarudaHStates : StateMachineBuilder
 {

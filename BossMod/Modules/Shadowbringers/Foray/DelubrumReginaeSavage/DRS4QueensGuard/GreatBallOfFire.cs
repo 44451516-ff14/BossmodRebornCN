@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS4QueensGuard;
 
-class GreatBallOfFire(BossModule module) : Components.GenericAOEs(module)
+sealed class GreatBallOfFire(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor> _smallFlames = module.Enemies((uint)OID.RagingFlame);
     private readonly List<Actor> _bigFlames = module.Enemies((uint)OID.ImmolatingFlame);

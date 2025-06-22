@@ -25,11 +25,11 @@ public enum AID : uint
     SelfDetonate = 3078 // ClockworkReservoir->player, no cast, single-target
 }
 
-class PassiveInfraredGuidanceSystem(BossModule module) : Components.Cleave(module, ActionID.MakeSpell(AID.PassiveInfraredGuidanceSystem), new AOEShapeCircle(6f), [(uint)OID.RetooledEnforcementDroid], originAtTarget: true);
-class TheHand(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.TheHand), new AOEShapeCone(7.5f, 60f.Degrees()));
-class Shred(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.Shred), new AOEShapeRect(5.5f, 2f));
-class SpawnReservoir(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.SpawnReservoir), 3f);
-class AutoCannons(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.AutoCannons), new AOEShapeRect(42f, 2.5f));
+class PassiveInfraredGuidanceSystem(BossModule module) : Components.Cleave(module, (uint)AID.PassiveInfraredGuidanceSystem, new AOEShapeCircle(6f), [(uint)OID.RetooledEnforcementDroid], originAtTarget: true);
+class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(7.5f, 60f.Degrees()));
+class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(5.5f, 2f));
+class SpawnReservoir(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpawnReservoir, 3f);
+class AutoCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AutoCannons, new AOEShapeRect(42f, 2.5f));
 
 class D080CrimsonControlUnitStates : StateMachineBuilder
 {
@@ -43,7 +43,7 @@ class D080CrimsonControlUnitStates : StateMachineBuilder
             .ActivateOnEnter<SpawnReservoir>()
             .ActivateOnEnter<PassiveInfraredGuidanceSystem>()
             .ActivateOnEnter<D080EmeraldControlUnit.ClockworkReservoir>()
-            .Raw.Update = () => module.PrimaryActor.EventState == 7;
+            .Raw.Update = () => module.PrimaryActor.EventState == 7u;
     }
 }
 
@@ -83,17 +83,7 @@ public class D080CrimsonControlUnit(WorldState ws, Actor primary) : BossModule(w
     private static readonly uint[] trash = [(uint)OID.ImmortalizedDeathClaw, (uint)OID.RetooledEnforcementDroid, (uint)OID.ClockworkPredator, (uint)OID.ClockworkReservoir,
     (uint)OID.ImmortalizedInterceptorDrone];
 
-    public override bool CheckReset()
-    {
-        var enemies = Enemies(trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            if (enemies[i].IsTargetable)
-                return false;
-        }
-        return true;
-    }
+    public override bool CheckReset() => !Raid.Player()!.Position.InSquare(Arena.Center, 70f);
 
     protected override bool CheckPull()
     {

@@ -37,11 +37,11 @@ public enum AID : uint
     Visual = 37473 // Boss->self, no cast, single-target
 }
 
-class FledglingFury(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.FledglingFury), 4f);
-class PromisedFall(BossModule module) : Components.SimpleAOEs(module, ActionID.MakeSpell(AID.PromisedFall), 13f);
-class GoldDust(BossModule module) : Components.StackWithCastTargets(module, ActionID.MakeSpell(AID.GoldDust), 8f, 2, 2);
-class AcidRain(BossModule module) : Components.SpreadFromCastTargets(module, ActionID.MakeSpell(AID.AcidRain), 8f);
-class UnboundArrow(BossModule module) : Components.BaitAwayCast(module, ActionID.MakeSpell(AID.UnboundArrow), new AOEShapeCircle(5f), true, tankbuster: true);
+class FledglingFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FledglingFury, 4f);
+class PromisedFall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PromisedFall, 13f);
+class GoldDust(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.GoldDust, 8f, 2, 2);
+class AcidRain(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AcidRain, 8f);
+class UnboundArrow(BossModule module) : Components.BaitAwayCast(module, (uint)AID.UnboundArrow, 5f, tankbuster: true);
 
 class ForeseenFlurry(BossModule module) : Components.Exaflare(module, 4f)
 {

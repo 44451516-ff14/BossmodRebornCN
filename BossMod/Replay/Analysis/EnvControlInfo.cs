@@ -1,6 +1,6 @@
 ﻿namespace BossMod.ReplayAnalysis;
 
-class EnvControlInfo
+sealed class EnvControlInfo
 {
     private readonly Dictionary<byte, Dictionary<uint, List<(Replay r, Replay.Encounter enc, DateTime ts)>>> _data = [];
 

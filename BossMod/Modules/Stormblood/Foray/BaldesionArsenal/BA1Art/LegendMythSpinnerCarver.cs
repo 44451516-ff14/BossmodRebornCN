@@ -1,6 +1,6 @@
 namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA1Art;
 
-class LegendMythSpinnerCarver(BossModule module) : Components.GenericAOEs(module)
+sealed class LegendMythSpinnerCarver(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(15f);
     private static readonly AOEShapeDonut donut = new(7f, 22f);
@@ -12,14 +12,10 @@ class LegendMythSpinnerCarver(BossModule module) : Components.GenericAOEs(module
         var count = AOEs.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        if (count == 5)
         {
-            var aoe = AOEs[i];
-            if (count == 5 && i == 0)
-                aoes[i] = aoe with { Color = Colors.Danger };
-            else
-                aoes[i] = aoe;
+            aoes[0].Color = Colors.Danger;
         }
         return aoes;
     }
