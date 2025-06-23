@@ -125,7 +125,7 @@ public class JsonPlanConverter : JsonConverter<Plan>
                 var cfg = md.Definition.Configs[iTrack];
                 foreach (var js in jt.Value.EnumerateArray())
                 {
-                    var s = new Plan.Entry(default);
+                    var s = new Plan.Entry(new());
                     var optionName = js.GetProperty(nameof(StrategyValue.Option)).GetString() ?? "";
                     s.Value.Option = cfg.Options.FindIndex(o => o.InternalName == optionName);
                     if (s.Value.Option < 0)
@@ -140,7 +140,7 @@ public class JsonPlanConverter : JsonConverter<Plan>
         }
         foreach (var jt in jdoc.RootElement.GetProperty(nameof(Plan.Targeting)).EnumerateArray())
         {
-            var s = new Plan.Entry(default);
+            var s = new Plan.Entry(new());
             ReadEntryFields(ref s, in jt);
             res.Targeting.Add(s);
         }

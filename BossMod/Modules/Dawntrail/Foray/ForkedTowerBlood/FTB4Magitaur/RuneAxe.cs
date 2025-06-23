@@ -3,33 +3,31 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
 {
     private int numStatuses;
-    public readonly List<(int Order, Actor Actor)> StatusBig = [];
-    public readonly List<(int Order, Actor Actor)> StatusSmall = [];
+    public readonly List<(int Order, Actor Actor, DateTime expireAt)> StatusBig = [];
+    public readonly List<(int Order, Actor Actor, DateTime expireAt)> StatusSmall = [];
     public int CurrentOrder;
-    public BitMask IsTarget;
+    public BitMask IsTargetAny;
+    public BitMask IsTargetSmall;
     public int NumCasts;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.RuinousRuneBig or (uint)AID.RuinousRuneSmall)
         {
-            var countStatusSmall = StatusSmall.Count;
             var curOrder = 3;
-            for (var i = 0; i < countStatusSmall; ++i)
+            UpdateCurrentOrder(StatusSmall);
+            UpdateCurrentOrder(StatusBig);
+
+            void UpdateCurrentOrder(List<(int Order, Actor, DateTime)> list)
             {
-                var order = StatusSmall[i].Order;
-                if (curOrder > order)
+                var count = list.Count;
+                for (var i = 0; i < count; ++i)
                 {
-                    curOrder = order;
-                }
-            }
-            var countStatusBig = StatusBig.Count;
-            for (var i = 0; i < countStatusBig; ++i)
-            {
-                var order = StatusBig[i].Order;
-                if (curOrder > order)
-                {
-                    curOrder = order;
+                    var order = list[i].Order;
+                    if (curOrder > order)
+                    {
+                        curOrder = order;
+                    }
                 }
             }
             ++NumCasts;
@@ -39,7 +37,8 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var order = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds switch
+        var expire = status.ExpireAt;
+        var order = (expire - WorldState.CurrentTime).TotalSeconds switch
         {
             < 10d => 0,
             < 15d => 1,
@@ -52,13 +51,14 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
                 break;
             case (uint)SID.PreyLesserAxebit:
                 AddTarget(StatusSmall);
+                IsTargetSmall[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
         }
-        void AddTarget(List<(int, Actor)> list)
+        void AddTarget(List<(int, Actor, DateTime)> list)
         {
-            list.Add((order, actor));
+            list.Add((order, actor, expire));
             ++numStatuses;
-            IsTarget[Raid.FindSlot(actor.InstanceID)] = true;
+            IsTargetAny[Raid.FindSlot(actor.InstanceID)] = true;
         }
     }
 
@@ -71,9 +71,10 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
                 break;
             case (uint)SID.PreyLesserAxebit:
                 RemoveStatus(StatusSmall);
+                IsTargetSmall[Raid.FindSlot(actor.InstanceID)] = false;
                 break;
         }
-        void RemoveStatus(List<(int, Actor)> list)
+        void RemoveStatus(List<(int, Actor, DateTime)> list)
         {
             var count = list.Count;
             for (var i = 0; i < count; ++i)
@@ -81,7 +82,7 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
                 if (list[i].Item2 == actor)
                 {
                     list.RemoveAt(i);
-                    IsTarget[Raid.FindSlot(actor.InstanceID)] = false;
+                    IsTargetAny[Raid.FindSlot(actor.InstanceID)] = false;
                     return;
                 }
             }
@@ -104,7 +105,6 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
     private readonly List<AOEInstance>[] _aoeHintsForStatus = [new(3), new(1), new(3), new(1)];
     private readonly List<AOEInstance>[] _aoeHintsNoStatus = [new(1), new(1)];
     private bool prepare;
-    private static readonly AOEShapeRect square = new(15.5f, 15.5f, 15.5f);
     public bool Show = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -118,27 +118,24 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
             return Utils.ZeroOrOne(ref _aoePrepare);
         }
 
-        if (_status.IsTarget[slot])
+        if (_status.IsTargetAny[slot])
         {
-            var countStatusSmall = _status.StatusSmall.Count;
             var playerOrder = 3;
-            var isSmall = false;
-            for (var i = 0; i < countStatusSmall; ++i)
+            var isSmall = _status.IsTargetSmall[slot];
+            if (isSmall)
             {
-                var s = _status.StatusSmall[i];
-                if (s.Actor == actor)
-                {
-                    playerOrder = s.Order;
-                    isSmall = true;
-                    break;
-                }
+                CheckListForOrder(_status.StatusSmall);
             }
-            if (!isSmall) // not found in first list, checking next
+            else
             {
-                var countStatusBig = _status.StatusBig.Count;
-                for (var i = 0; i < countStatusBig; ++i)
+                CheckListForOrder(_status.StatusBig);
+            }
+            void CheckListForOrder(List<(int Order, Actor Actor, DateTime)> list)
+            {
+                var count = list.Count;
+                for (var i = 0; i < count; ++i)
                 {
-                    var s = _status.StatusBig[i];
+                    var s = list[i];
                     if (s.Actor == actor)
                     {
                         playerOrder = s.Order;
@@ -172,14 +169,9 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
             var actOrder1 = act.AddSeconds(10.2d);
             var actOrder2 = act.AddSeconds(14.2d);
             var actOrder3 = act.AddSeconds(22.2d);
-            for (var i = 0; i < 3; ++i)
-            {
-                var pos = FTB4Magitaur.SquarePositions[i];
-                var rot = FTB4Magitaur.SquareAngles[i];
-                AddAOE(_aoeHintsForStatus[0], square, pos, actOrder1, rot);
-                AddAOE(_aoeHintsForStatus[2], square, pos, actOrder2, rot);
-            }
 
+            AddAOE(_aoeHintsForStatus[0], FTB4Magitaur.BigSpreadMinkowskiSum, center, actOrder1);
+            AddAOE(_aoeHintsForStatus[2], FTB4Magitaur.BigSpreadMinkowskiSum, center, actOrder3);
             AddAOE(_aoeHintsNoStatus[0], FTB4Magitaur.CircleMinusSquares, center, actOrder1);
             AddAOE(_aoeHintsNoStatus[1], FTB4Magitaur.CircleMinusSquares, center, actOrder3);
             AddAOE(_aoeHintsForStatus[1], FTB4Magitaur.CircleMinusSquaresSpread, center, actOrder2);
@@ -194,6 +186,93 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
         {
             prepare = false;
             _aoePrepare = null;
+        }
+    }
+}
+
+sealed class RuneAxeSmallSpreadAOEs(BossModule module) : Components.GenericAOEs(module)
+{
+    private readonly RuneAxeStatus _status = module.FindComponent<RuneAxeStatus>()!;
+    public bool Show = true;
+    private static readonly AOEShapeRect square = new(5f, 5f, 5f);
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        if (!Show)
+        {
+            return [];
+        }
+        if (_status.IsTargetSmall[slot])
+        {
+            var playerOrder = 3;
+            var count = _status.StatusSmall.Count;
+            DateTime act = default;
+
+            for (var i = 0; i < count; ++i)
+            {
+                var s = _status.StatusSmall[i];
+                if (s.Actor == actor)
+                {
+                    playerOrder = s.Order;
+                    act = s.expireAt;
+                    break;
+                }
+            }
+            if (_status.CurrentOrder != playerOrder)
+            {
+                return [];
+            }
+            var playersWithSameOrder = new List<Actor>();
+            for (var i = 0; i < count; ++i)
+            {
+                var s = _status.StatusSmall[i];
+                if (s.Order == playerOrder)
+                {
+                    playersWithSameOrder.Add(s.Actor);
+                }
+            }
+
+            var aoes = new List<AOEInstance>(3);
+            var countP = playersWithSameOrder.Count;
+            for (var i = 0; i < countP; ++i)
+            {
+                var a = playersWithSameOrder[i];
+                if (a == actor)
+                {
+                    continue;
+                }
+                for (var j = 0; j < 3; j++)
+                {
+                    if (a.Position.InSquare(FTB4Magitaur.SquarePositions[j], 10f, FTB4Magitaur.SquareDirs[j]))
+                    {
+                        aoes.Add(new(square, FTB4Magitaur.SquarePositions[j], FTB4Magitaur.SquareAngles[j], act));
+                        break;
+                    }
+                }
+            }
+            return CollectionsMarshal.AsSpan(aoes);
+        }
+        else
+        {
+            var aoes = new List<AOEInstance>(3);
+            var countP = _status.StatusSmall.Count;
+            for (var i = 0; i < countP; ++i)
+            {
+                var a = _status.StatusSmall[i];
+                if (a.Order != _status.CurrentOrder)
+                {
+                    continue;
+                }
+                for (var j = 0; j < 3; j++)
+                {
+                    if (a.Actor.Position.InSquare(FTB4Magitaur.SquarePositions[j], 10f, FTB4Magitaur.SquareDirs[j]))
+                    {
+                        aoes.Add(new(FTB4Magitaur.Square, FTB4Magitaur.SquarePositions[j], FTB4Magitaur.SquareAngles[j], a.expireAt));
+                        break;
+                    }
+                }
+            }
+            return CollectionsMarshal.AsSpan(aoes);
         }
     }
 }

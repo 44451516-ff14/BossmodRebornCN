@@ -301,7 +301,7 @@ public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
         return result;
     }
 
-    private void BuildResultFromPaths(RelSimplifiedComplexPolygon result, Paths64 paths)
+    public void BuildResultFromPaths(RelSimplifiedComplexPolygon result, Paths64 paths)
     {
         var c = new Clipper64();
         c.AddPaths(paths, PathType.Subject);
@@ -313,9 +313,9 @@ public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
 
     private static Path64 ToPath64(ReadOnlySpan<WDir> vertices)
     {
-        var count = vertices.Length;
-        var path = new Path64(count);
-        for (var i = 0; i < count; ++i)
+        var len = vertices.Length;
+        var path = new Path64(len);
+        for (var i = 0; i < len; ++i)
         {
             var vertex = vertices[i];
             path.Add(new(vertex.X * PolygonClipper.Scale, vertex.Z * PolygonClipper.Scale));
@@ -331,7 +331,7 @@ public sealed class PolygonClipper
     public const float InvScale = 1f / Scale;
 
     // reusable representation of the complex polygon ready for boolean operations
-    public record class Operand
+    public sealed class Operand
     {
         public Operand() { }
         public Operand(ReadOnlySpan<WDir> contour, bool isOpen = false) => AddContour(contour, isOpen);
@@ -368,6 +368,94 @@ public sealed class PolygonClipper
         public void Assign(Clipper64 clipper, PathType role) => clipper.AddReuseableData(_data, role);
 
         private void AddContour(Path64 contour, bool isOpen) => _data.AddPaths([contour], PathType.Subject, isOpen);
+
+        // Compute Minkowski Sum of two polygons, useful to get the area where shape B can not intersect shape A
+        public static RelSimplifiedComplexPolygon MinkowskiSum(List<WDir> shapeA, List<WDir> shapeB, bool isClosed = true)
+        {
+            var pathA = ToPath64(shapeA);
+            var pathB = ToPath64(shapeB);
+
+            var result = Clipper.MinkowskiSum(pathB, pathA, isClosed);
+            var simplified = new RelSimplifiedComplexPolygon();
+            simplified.BuildResultFromPaths(simplified, result);
+
+            return simplified;
+        }
+
+        public static RelSimplifiedComplexPolygon MinkowskiSum(RelSimplifiedComplexPolygon shapeA, List<WDir> shapeB, bool isClosed = true)
+        {
+            var pathB = ToPath64(shapeB);
+            var count = shapeA.Parts.Count;
+            var resultPaths = new Paths64(count);
+            for (var i = 0; i < count; ++i)
+            {
+                var part = shapeA.Parts[i];
+                var exterior = part.Exterior;
+                var len = exterior.Length;
+                Path64 subjectPath = new(len);
+                for (var j = 0; j < len; ++j)
+                {
+                    ref readonly var p = ref exterior[j];
+                    subjectPath.Add(new Point64(p.X * Scale, p.Z * Scale));
+                }
+                var minkowski = Clipper.MinkowskiSum(pathB, subjectPath, isClosed);
+                resultPaths.AddRange(minkowski);
+            }
+
+            var simplified = new RelSimplifiedComplexPolygon();
+            simplified.BuildResultFromPaths(simplified, resultPaths);
+            return simplified;
+        }
+
+        // Compute Minkowski Difference of two polygons, useful to get the area where shape B will intersect shape A
+        public static RelSimplifiedComplexPolygon MinkowskiDifference(List<WDir> shapeA, List<WDir> shapeB, bool isClosed = true)
+        {
+            var pathA = ToPath64(shapeA);
+            var pathB = ToPath64(shapeB);
+
+            var result = Clipper.MinkowskiDiff(pathB, pathA, isClosed);
+            var simplified = new RelSimplifiedComplexPolygon();
+            simplified.BuildResultFromPaths(simplified, result);
+
+            return simplified;
+        }
+
+        public static RelSimplifiedComplexPolygon MinkowskiDifference(RelSimplifiedComplexPolygon shapeA, List<WDir> shapeB, bool isClosed = true)
+        {
+            var pathB = ToPath64(shapeB);
+            var count = shapeA.Parts.Count;
+            var resultPaths = new Paths64(count);
+            for (var i = 0; i < count; ++i)
+            {
+                var part = shapeA.Parts[i];
+                var exterior = part.Exterior;
+                var len = exterior.Length;
+                Path64 subjectPath = new(len);
+                for (var j = 0; j < len; ++j)
+                {
+                    ref readonly var p = ref exterior[j];
+                    subjectPath.Add(new Point64(p.X * Scale, p.Z * Scale));
+                }
+                var minkowski = Clipper.MinkowskiDiff(pathB, subjectPath, isClosed);
+                resultPaths.AddRange(minkowski);
+            }
+
+            var simplified = new RelSimplifiedComplexPolygon();
+            simplified.BuildResultFromPaths(simplified, resultPaths);
+            return simplified;
+        }
+
+        private static Path64 ToPath64(List<WDir> vertices)
+        {
+            var count = vertices.Count;
+            var path = new Path64(count);
+            for (var i = 0; i < count; ++i)
+            {
+                var vertex = vertices[i];
+                path.Add(new(vertex.X * Scale, vertex.Z * Scale));
+            }
+            return path;
+        }
     }
 
     private readonly Clipper64 _clipper = new() { PreserveCollinear = false };
@@ -553,7 +641,7 @@ public sealed class SpatialIndex
         }
     }
 
-    public ReadOnlySpan<int> Query(float px, float py)
+    public int[] Query(float px, float py)
     {
         var cellX = (int)MathF.Floor(px * InvGridSize) - _minX;
         var cellY = (int)MathF.Floor(py * InvGridSize) - _minY;

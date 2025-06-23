@@ -43,7 +43,7 @@ class P6CosmoArrow(BossModule module) : Components.GenericAOEs(module)
             var act = Module.CastFinishAt(spell);
             var rot = spell.Rotation;
             var pos = caster.Position;
-            if (offsetAbs.X < 5)
+            if (offsetAbs.X < 5f)
             {
                 // central vertical
                 _lines.Add(new(_shapeFirst, pos, rot, new(1, 0), act, 4));
@@ -51,7 +51,7 @@ class P6CosmoArrow(BossModule module) : Components.GenericAOEs(module)
                 if (CurPattern == Pattern.Unknown)
                     CurPattern = Pattern.InOut;
             }
-            else if (offsetAbs.Z < 5)
+            else if (offsetAbs.Z < 5f)
             {
                 // central horizontal
                 _lines.Add(new(_shapeFirst, pos, rot, new(0, 1), act, 4));
@@ -59,14 +59,14 @@ class P6CosmoArrow(BossModule module) : Components.GenericAOEs(module)
                 if (CurPattern == Pattern.Unknown)
                     CurPattern = Pattern.InOut;
             }
-            else if (offsetAbs.X < 18)
+            else if (offsetAbs.X < 18f)
             {
                 // side vertical
                 _lines.Add(new(_shapeFirst, pos, rot, new(offset.X < 0 ? 1 : -1, 0), act, 7));
                 if (CurPattern == Pattern.Unknown)
                     CurPattern = Pattern.OutIn;
             }
-            else if (offsetAbs.Z < 18)
+            else if (offsetAbs.Z < 18f)
             {
                 // side horizontal
                 _lines.Add(new(_shapeFirst, pos, rot, new(0, offset.Z < 0 ? 1 : -1), act, 7));

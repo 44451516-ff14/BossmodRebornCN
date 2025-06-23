@@ -18,24 +18,33 @@ namespace Clipper2Lib
     {
       int delta = isClosed ? 0 : 1;
       int patLen = pattern.Count, pathLen = path.Count;
-      Paths64 tmp = new Paths64(pathLen);
-
-      foreach (Point64 pathPt in path)
+      var tmp = new Paths64(pathLen);
+      var pathC = path.Count;
+      var patternC = pattern.Count;
+      if (isSum)
       {
-        Path64 path2 = new Path64(patLen);
-        if (isSum)
+        for (var i = 0; i < pathC; ++i)
         {
-          foreach (Point64 basePt in pattern)
-            path2.Add(pathPt + basePt);
+          var path2 = new Path64(patLen);
+          for (var j = 0; j < patternC; ++j)
+          {
+            path2.Add(path[i] + pattern[j]);
+          }
+          tmp.Add(path2);
         }
-        else
-        {
-          foreach (Point64 basePt in pattern)
-            path2.Add(pathPt - basePt);
-        }
-        tmp.Add(path2);
       }
-
+      else
+      {
+        for (var i = 0; i < pathC; ++i)
+        {
+          var path2 = new Path64(patLen);
+          for (var j = 0; j < patternC; ++j)
+          {
+            path2.Add(path[i] - pattern[j]);
+          }
+          tmp.Add(path2);
+        }
+      }
       Paths64 result = new Paths64((pathLen - delta) * patLen);
       int g = isClosed ? pathLen - 1 : 0;
 

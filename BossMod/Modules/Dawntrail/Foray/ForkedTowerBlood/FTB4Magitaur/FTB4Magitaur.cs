@@ -13,6 +13,17 @@ public sealed class FTB4Magitaur(WorldState ws, Actor primary) : BossModule(ws, 
     public static readonly WDir[] SquareDirs = [SquareAngles[0].ToDirection(), SquareAngles[1].ToDirection(), SquareAngles[2].ToDirection()];
     public static readonly AOEShapeCustom CircleMinusSquares = new(baseArena, [new Square(SquarePositions[0], 10f, SquareAngles[0]),
     new Square(SquarePositions[1], 10f, SquareAngles[1]), new Square(SquarePositions[2], 10f, SquareAngles[2])]);
+    public static readonly AOEShapeCustom BigSpreadMinkowskiSum = GenerateMinkowskiSum();
     public static readonly AOEShapeCustom CircleMinusSquaresSpread = new(baseArena, [new Square(SquarePositions[0], 5f, SquareAngles[0]),
     new Square(SquarePositions[1], 5f, SquareAngles[1]), new Square(SquarePositions[2], 5f, SquareAngles[2])]);
+    public static readonly AOEShapeRect Square = new(10f, 10f, 10f);
+
+    private static AOEShapeCustom GenerateMinkowskiSum()
+    {
+        var shape = new AOEShapeCustom([new Square(SquarePositions[0], 10f, SquareAngles[0]),
+        new Square(SquarePositions[1], 10f, SquareAngles[1]), new Square(SquarePositions[2], 10f, SquareAngles[2])]);
+        var minkowski = PolygonClipper.Operand.MinkowskiSum(shape.GetCombinedPolygon(ArenaCenter), new Polygon(default, 11f, 64).Contour(default));
+        shape.Polygon = minkowski;
+        return shape;
+    }
 }

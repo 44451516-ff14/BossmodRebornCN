@@ -150,16 +150,20 @@ sealed class FTB4MagitaurStates : StateMachineBuilder
     {
         ComponentCondition<RuneAxeStatus>(id, delay, comp => comp.StatusSmall.Count != 0, "Apply spread statuses")
             .ActivateOnEnter<RuneAxeStatus>()
+            .ActivateOnEnter<RuneAxeSmallSpreadAOEs>()
             .ActivateOnEnter<RuneAxeAOEs>();
         ComponentCondition<RuneAxeStatus>(id + 0x10u, 9.1f, comp => comp.NumCasts != 0, "Big spread 1");
         ComponentCondition<RuneAxeStatus>(id + 0x20u, 3.9f, comp => comp.NumCasts > 2, "Small spreads 1")
+            .ExecOnExit<RuneAxeSmallSpreadAOEs>(comp => comp.Show = false)
             .ExecOnExit<RuneAxeAOEs>(comp => comp.Show = false);
         ComponentCondition<CriticalAxeLanceBlow>(id + 0x30u, 2.6f, comp => comp.NumCasts == 4, "Donut and square AOEs")
             .ActivateOnEnter<CriticalAxeLanceBlow>()
+            .ExecOnExit<RuneAxeSmallSpreadAOEs>(comp => comp.Show = true)
             .ExecOnExit<RuneAxeAOEs>(comp => comp.Show = true)
             .DeactivateOnExit<CriticalAxeLanceBlow>();
         ComponentCondition<RuneAxeStatus>(id + 0x40u, 5.4f, comp => comp.StatusBig.Count == 0 && comp.StatusSmall.Count == 0, "Remaining spreads")
             .DeactivateOnExit<RuneAxeAOEs>()
+            .DeactivateOnExit<RuneAxeSmallSpreadAOEs>()
             .DeactivateOnExit<RuneAxeStatus>();
     }
 }

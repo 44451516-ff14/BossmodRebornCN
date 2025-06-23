@@ -104,7 +104,7 @@ public class JsonPresetConverter : JsonConverter<Preset>
             var m = res.Modules[mi];
             foreach (var js in jm.Value.EnumerateArray())
             {
-                var s = new Preset.ModuleSetting() { Value = default };
+                var s = new Preset.ModuleSetting() { Value = new() };
 
                 var trackName = js.GetProperty(nameof(Preset.ModuleSetting.Track)).GetString() ?? "";
                 s.Track = md.Definition.Configs.FindIndex(s => s.InternalName == trackName);
