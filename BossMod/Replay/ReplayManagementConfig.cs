@@ -2,49 +2,44 @@
 
 public record struct ReplayMemory(string Path, bool IsOpen, DateTime PlaybackPosition);
 
-
 [ConfigDisplay(Name = "录像设置", Order = 0)]
-
 public sealed class ReplayManagementConfig : ConfigNode
-
 {
-     [PropertyDisplay("显示录像管理界面")]
+    [PropertyDisplay("显示录像管理界面")]
     public bool ShowUI = false;
 
     [PropertyDisplay("副本开始自动录像")]
     public bool AutoRecord = false;
-    
 
-    [PropertyDisplay("Auto record in Duty Recorder replays", tooltip: "Requires auto-record to be turned on")]
+    [PropertyDisplay("职责记录器重放时自动录像", tooltip: "需要启用自动录像功能")]
     public bool AutoARR = false;
 
-    
-    [PropertyDisplay("最大录像数量")]
+    [PropertyDisplay("最大保存录像数量")]
     [PropertySlider(0, 1000)]
     public int MaxReplays = 0;
 
     [PropertyDisplay("在录像中记录和存储服务器数据包")]
     public bool RecordServerPackets = false;
 
-    [PropertyDisplay("Dump server packets into dalamud.log")]
+    [PropertyDisplay("将服务器数据包导出到dalamud.log")]
     public bool DumpServerPackets = false;
 
-    [PropertyDisplay("Ignore packets for other players when dumping to dalamud.log")]
+    [PropertyDisplay("导出到dalamud.log时忽略其他玩家的数据包")]
     public bool DumpServerPacketsPlayerOnly = false;
 
-    [PropertyDisplay("Dump client packets into dalamud.log")]
+    [PropertyDisplay("将客户端数据包导出到dalamud.log")]
     public bool DumpClientPackets = false;
 
-    [PropertyDisplay("Format for recorded logs")]
+    [PropertyDisplay("录制日志的格式")]
     public ReplayLogFormat WorldLogFormat = ReplayLogFormat.BinaryCompressed;
 
-    [PropertyDisplay("Open previously open replays on plugin reload")]
+    [PropertyDisplay("插件重载时打开之前打开的录像")]
     public bool RememberReplays;
 
-    [PropertyDisplay("Remember playback position for previously opened replays")]
+    [PropertyDisplay("记住先前打开录像的播放位置")]
     public bool RememberReplayTimes;
 
-    // TODO: this should not be part of the actual config! figure out where to store transient user preferences...
+    // TODO: 这不应是实际配置的一部分！需确定临时用户偏好的存储位置...
     public List<ReplayMemory> ReplayHistory = [];
 
     public string ReplayFolder = "";

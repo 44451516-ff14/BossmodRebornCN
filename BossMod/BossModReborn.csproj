@@ -1,98 +1,117 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Authors></Authors>
-    <Company></Company>
-    <Version>7.2.5.41</Version>
-    <Description>Boss mod.</Description>
-    <Copyright></Copyright>
-    <PackageProjectUrl></PackageProjectUrl>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Authors></Authors>
+        <Company></Company>
+        <Version>7.2.4.41</Version>
+        <Description>Boss mod.</Description>
+        <Copyright></Copyright>
+        <PackageProjectUrl></PackageProjectUrl>
+    </PropertyGroup>
 
-<PropertyGroup>
-  <AssemblyName>BossModReborn</AssemblyName>
-</PropertyGroup>
+    <PropertyGroup>
+        <AssemblyName>BossModReborn</AssemblyName>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
-    <Platforms>x64</Platforms>
-    <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <Platforms>x64</Platforms>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Using Include="System" />
-    <Using Include="System.Collections" />
-    <Using Include="System.Collections.Concurrent" />
-    <Using Include="System.Collections.Generic" />
-    <Using Include="System.Collections.Immutable" />
-    <Using Include="System.Runtime.InteropServices" />
-    <Using Include="System.Linq" />
-    <Using Include="System.Numerics" />
-    <Using Include="System.Threading.Tasks;" />
-    <Using Include="System.Text" />
-  </ItemGroup>
 
-  <PropertyGroup>
-<!--    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>-->
-    <DalamudLibPath>F:\FFXIV\dalamud\12.0.1.4-2-g13306e24\</DalamudLibPath>
-  </PropertyGroup>
+    <!-- run analyzers only for release builds, since they are too expensive to run every build when iterating (1-2 mins) -->
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <OutputPath>..\release</OutputPath>
+        <!--    <AnalysisMode>All</AnalysisMode>-->
+        <!--    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>-->
+        <!--    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
+    </PropertyGroup>
 
-  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
-    <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
-  </PropertyGroup>
+    <ItemGroup>
+        <Using Include="System"/>
+        <Using Include="System.Collections"/>
+        <Using Include="System.Collections.Concurrent"/>
+        <Using Include="System.Collections.Generic"/>
+        <Using Include="System.Collections.Immutable"/>
+        <Using Include="System.Runtime.InteropServices"/>
+        <Using Include="System.Linq"/>
+        <Using Include="System.Numerics"/>
+        <Using Include="System.Threading.Tasks;"/>
+        <Using Include="System.Text"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="12.0.0" />
-    <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-    <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj" />
+    <PropertyGroup>
+        <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
+    </PropertyGroup>
 
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud.Common">
-      <HintPath>$(DalamudLibPath)Dalamud.Common.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina.Excel">
-      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D11">
-      <HintPath>$(DalamudLibPath)SharpDX.Direct3D11.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="PInvoke.User32">
-      <HintPath>$(DalamudLibPath)PInvoke.User32.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
+    <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
+        <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <None Update="DefaultRotationPresets.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="DalamudPackager" Version="12.0.0"/>
+        <PackageReference Include="SharpDX.Mathematics" Version="4.2.0"/>
+<!--        <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj"/>-->
 
-  <ItemGroup>
-    <EmbeddedResource Include="Pathfinding\ObstacleMaps\*" />
-  </ItemGroup>
+        <Reference Include="Dalamud">
+            <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Dalamud.Common">
+            <HintPath>$(DalamudLibPath)Dalamud.Common.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="ImGui.NET">
+            <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="ImGuiScene">
+            <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Lumina">
+            <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Lumina.Excel">
+            <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="SharpDX.Direct3D11">
+            <HintPath>$(DalamudLibPath)SharpDX.Direct3D11.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="PInvoke.User32">
+            <HintPath>$(DalamudLibPath)PInvoke.User32.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+
+
+        <Reference Include="FFXIVClientStructs">
+            <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+
+        <Reference Include="InteropGenerator.Runtime">
+            <HintPath>$(DalamudLibPath)InteropGenerator.Runtime.dll</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="DefaultRotationPresets.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Pathfinding\ObstacleMaps\*"/>
+    </ItemGroup>
 </Project>
