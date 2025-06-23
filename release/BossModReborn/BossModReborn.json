@@ -2,7 +2,7 @@
   "Author": "The Combat Reborn Team",
   "Name": "Bossmod Reborn",
   "InternalName": "BossModReborn",
-  "AssemblyVersion": "7.2.4.41",
+  "AssemblyVersion": "7.2.4.42",
   "Description": "A bunch of utilities to simplify bosses.",
   "ApplicableVersion": "any",
   "RepoUrl": "https://github.com/FFXIV-CombatReborn/BossmodReborn",
