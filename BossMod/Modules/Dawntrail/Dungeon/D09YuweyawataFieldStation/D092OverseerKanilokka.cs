@@ -44,17 +44,24 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.FreeSpirits)
+        var id = spell.Action.ID;
+        if (id == (uint)AID.FreeSpirits)
+        {
             AddAOE(donutBig);
-        else if (spell.Action.ID == (uint)AID.PhantomFlood)
+        }
+        else if (id == (uint)AID.PhantomFlood)
+        {
             AddAOE(donutSmall);
-        void AddAOE(AOEShape shape) => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell));
+        }
+        void AddAOE(AOEShape shape) => _aoe = new(shape, Arena.Center.Quantized(), default, Module.CastFinishAt(spell));
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x07u)
+        if (index != 0x07)
+        {
             return;
+        }
         switch (state)
         {
             case 0x00020001u:
@@ -73,13 +80,13 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 SetArena(D092OverseerKanilokka.StartingBounds);
                 break;
         }
-        _aoe = null;
-    }
 
-    private void SetArena(ArenaBoundsComplex bounds)
-    {
-        Arena.Bounds = bounds;
-        Arena.Center = bounds.Center;
+        void SetArena(ArenaBoundsComplex bounds)
+        {
+            Arena.Bounds = bounds;
+            Arena.Center = bounds.Center;
+            _aoe = null;
+        }
     }
 }
 
@@ -92,10 +99,14 @@ sealed class Soulweave(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var deadline = aoes[0].Activation.AddSeconds(1.3d);
-        var isNotLastSet = aoes[^1].Activation > deadline;
+        ref var aoe0 = ref aoes[0];
+        ref var aoeL = ref aoes[^1];
+        var deadline = aoe0.Activation.AddSeconds(1.3d);
+        var isNotLastSet = aoeL.Activation > deadline;
         var color = Colors.Danger;
         for (var i = 0; i < count; ++i)
         {
@@ -106,8 +117,6 @@ sealed class Soulweave(BossModule module) : Components.GenericAOEs(module)
                     aoe.Color = color;
                 aoe.Risky = true;
             }
-            else
-                aoe.Risky = false;
         }
         return aoes;
     }
@@ -115,13 +124,17 @@ sealed class Soulweave(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.Soulweave1 or (uint)AID.Soulweave2)
-            _aoes.Add(new(donut, spell.LocXZ, default, Module.CastFinishAt(spell)));
+        {
+            _aoes.Add(new(donut, spell.LocXZ, default, Module.CastFinishAt(spell), risky: false));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.Soulweave1 or (uint)AID.Soulweave2)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -145,8 +158,11 @@ sealed class LostHope(BossModule module) : Components.TemporaryMisdirection(modu
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x07u)
+        if (index != 0x07)
+        {
             return;
+        }
+
         prepare = false;
     }
 

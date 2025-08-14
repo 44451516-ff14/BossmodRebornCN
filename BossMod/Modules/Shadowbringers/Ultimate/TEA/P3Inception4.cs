@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // TODO: assign positions?
-class P3Inception4Cleaves(BossModule module) : Components.GenericBaitAway(module, (uint)AID.AlphaSwordP3)
+sealed class P3Inception4Cleaves(BossModule module) : Components.GenericBaitAway(module, (uint)AID.AlphaSwordP3)
 {
-    private static readonly AOEShapeCone _shape = new(30, 45.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shape = new(30f, 45f.Degrees()); // TODO: verify angle
 
     public override void Update()
     {

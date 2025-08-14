@@ -1,3 +1,5 @@
+using BossMod.Network.ServerIPC;
+
 namespace BossMod.Endwalker.DeepDungeon.EurekaOrthos.DD40TwintaniasClone;
 
 public enum OID : uint
@@ -66,7 +68,7 @@ class TwistingDive(BossModule module) : Components.GenericAOEs(module)
             if (id == 0x1E3A)
                 preparing = true;
             else if (preparing && id == 0x1E43)
-                _aoe = new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(6.9d));
+                _aoe = new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.9d));
         }
     }
 
@@ -89,15 +91,16 @@ class Turbine(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var component = _aoe.Sources(Module).ToList();
-            var forbidden = new List<Func<WPos, float>>
+            ref readonly var c = ref Casters.Ref(0);
+            var component = _aoe.ActiveAOEs(slot, actor);
+            var len = component.Length;
+            var forbidden = new Func<WPos, float>[len + 1];
+            forbidden[len] = ShapeDistance.InvertedCircle(Arena.Center, 5f);
+            for (var i = 0; i < len; ++i)
             {
-                ShapeDistance.InvertedCircle(Arena.Center, 5f)
-            };
-            for (var i = 0; i < component.Count; ++i)
-                forbidden.Add(ShapeDistance.Cone(Arena.Center, 20f, Angle.FromDirection(component[i].Position - Arena.Center), a20));
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(source.CastInfo));
+                forbidden[i] = ShapeDistance.Cone(Arena.Center, 20f, Angle.FromDirection(component[i].Origin - Arena.Center), a20);
+            }
+            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), c.Activation);
         }
     }
 
@@ -107,8 +110,11 @@ class Turbine(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }

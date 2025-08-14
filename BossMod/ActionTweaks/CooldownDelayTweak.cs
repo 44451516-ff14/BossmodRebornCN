@@ -10,7 +10,7 @@ public sealed class CooldownDelayTweak
 {
     private readonly ActionTweaksConfig _config = Service.Config.Get<ActionTweaksConfig>();
 
-    public float Adjustment { get; private set; } // if >0 while using an action, cooldown/anim lock will be reduced by this amount as if action was used a bit in the past
+    public float Adjustment; // if >0 while using an action, cooldown/anim lock will be reduced by this amount as if action was used a bit in the past
 
     public void StartAdjustment(float prevAnimLock, float prevRemainingCooldown, float dt) => Adjustment = CalculateAdjustment(prevAnimLock, prevRemainingCooldown, dt);
     public void StopAdjustment() => Adjustment = 0;

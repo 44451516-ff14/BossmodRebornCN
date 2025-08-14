@@ -4,12 +4,13 @@ public enum OID : uint
 {
     Boss = 0x2730, //R=3.7
     ArenaImp = 0x2731, //R=0.45
-    Voidzone = 0x1E972A,
+    Voidzone = 0x1E972A
 }
 
 public enum AID : uint
 {
     AutoAttack = 6497, // Boss->player, no cast, single-target
+
     Blizzard = 14267, // Imp->player, 1.0s cast, single-target
     VoidBlizzard = 15063, // Imp->player, 6.0s cast, single-target
     Icefall = 15064, // Imp->location, 2.5s cast, range 5 circle
@@ -18,7 +19,7 @@ public enum AID : uint
     TheRamsKeeper = 15081 // Boss->location, 6.0s cast, range 9 circle
 }
 
-class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, (uint)AID.TheRamsKeeper, GetVoidzones, 0.9f)
+sealed class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module, 9f, (uint)AID.TheRamsKeeper, GetVoidzones, 0.9d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -33,18 +34,20 @@ class TheRamsKeeper(BossModule module) : Components.VoidzoneAtCastTarget(module,
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
-class TheRamsKeeperHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheRamsKeeper);
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9f);
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(8f, 30f));
-class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
-class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
+sealed class TheRamsKeeperHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TheRamsKeeper);
+sealed class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 9f);
+sealed class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(8f, 30f));
+sealed class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
+sealed class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -52,13 +55,14 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
         var imps = Module.Enemies((uint)OID.ArenaImp);
         var count = imps.Count;
         if (count != 0)
+        {
             for (var i = 0; i < count; ++i)
             {
                 if (!imps[i].IsDead)
@@ -67,10 +71,11 @@ class Hints2(BossModule module) : BossComponent(module)
                     return;
                 }
             }
+        }
     }
 }
 
-class Stage21Act2States : StateMachineBuilder
+sealed class Stage21Act2States : StateMachineBuilder
 {
     public Stage21Act2States(BossModule module) : base(module)
     {
@@ -87,7 +92,7 @@ class Stage21Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 631, NameID = 8121, SortOrder = 2)]
-public class Stage21Act2 : BossModule
+public sealed class Stage21Act2 : BossModule
 {
     public Stage21Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

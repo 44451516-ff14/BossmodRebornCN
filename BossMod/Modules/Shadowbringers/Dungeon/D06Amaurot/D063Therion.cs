@@ -44,7 +44,7 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
     private static readonly WPos[] positions = [new(-12f, -71f), new(12f, -71f), new(-12f, -51f),
     new(12f, -51f), new(-12f, -31f), new(12f, -31f), new(-12f, -17f), new(12f, -17f), new(default, -65f), new(default, -45f)];
 
-    private static readonly Rectangle[] alcoves = Squares();
+    private static readonly Square[] alcoves = Squares();
     private static readonly Square[] differences = [new(positions[8], 10.01f), new(positions[9], 10.01f)];
 
     private static readonly Rectangle[] rect = [new(new(default, -45f), 10f, 30f)];
@@ -52,12 +52,13 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
     private readonly List<Shape> difference = new(8);
     public static readonly ArenaBoundsComplex DefaultArena = new([.. Union()], Offset: -1f);
 
-    private static Rectangle[] Squares()
+    private static Square[] Squares()
     {
-        var squares = new Rectangle[8];
+        var squares = new Square[8];
+        var square = new Square(default, 2f);
         for (var i = 0; i < 8; ++i)
         {
-            squares[i] = new Rectangle(positions[i], 2f, 2f);
+            squares[i] = square with { Center = positions[i] };
         }
         return squares;
     }
@@ -66,7 +67,9 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
     {
         var union = new List<Shape>(rect);
         for (var i = 0; i < 8; ++i)
+        {
             union.Add(alcoves[i]);
+        }
         return union;
     }
 
@@ -74,7 +77,9 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
     {
         var count = BreakingPlatforms.Count;
         if (count == 0)
+        {
             return [];
+        }
         _aoe ??= Module.FindComponent<Apokalypsis>();
         var aoes = CollectionsMarshal.AsSpan(BreakingPlatforms);
         for (var i = 0; i < count; ++i)
@@ -103,7 +108,7 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
                         Arena.Bounds = arena;
                         Arena.Center = arena.Center;
                     }
-                    BreakingPlatforms.Remove(new(_square, positions[i], Color: Colors.FutureVulnerable));
+                    BreakingPlatforms.Remove(new(_square, positions[i], color: Colors.FutureVulnerable));
                 }
             }
         }
@@ -112,7 +117,7 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
             for (var i = 0; i < 8; ++i)
             {
                 if (actor.Position.AlmostEqual(positions[i], MaxError))
-                    BreakingPlatforms.Add(new(_square, positions[i], Color: Colors.FutureVulnerable));
+                    BreakingPlatforms.Add(new(_square, positions[i], color: Colors.FutureVulnerable));
             }
         }
     }
@@ -209,7 +214,7 @@ sealed class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
                 {
                     var f = faces[i];
                     var isFirstSet = f.Rotation == caster.Rotation;
-                    _aoes.Add(new(_rect, WPos.ClampToGrid(f.Position), f.Rotation, !isFirstSet ? WorldState.FutureTime(8.5d) : default, isFirstSet ? Colors.Danger : default, isFirstSet));
+                    _aoes.Add(new(_rect, f.Position.Quantized(), f.Rotation, !isFirstSet ? WorldState.FutureTime(8.5d) : default, isFirstSet ? Colors.Danger : default, isFirstSet));
                     _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 }
             }
@@ -221,7 +226,7 @@ sealed class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin.AlmostEqual(pos, 0.1f))
                 {
-                    if (++aoe.ActorID == 5u)
+                    if (++aoe.ActorID == 5ul)
                     {
                         _aoes.RemoveAt(i);
                     }

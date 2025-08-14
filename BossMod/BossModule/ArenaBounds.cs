@@ -2,7 +2,7 @@
 // radius is the largest horizontal/vertical dimension: radius for circle, max of width/height for rect
 // note: this class to represent *relative* arena bounds (relative to arena center) - the reason being that in some cases effective center moves every frame, and bounds caches a lot (clip poly & base map for pathfinding)
 // note: if arena bounds are changed, new instance is recreated; max approx error can change without recreating the instance
-public abstract record class ArenaBounds(float Radius, float MapResolution, float ScaleFactor = 1, bool AllowObstacleMap = false)
+public abstract record class ArenaBounds(float Radius, float MapResolution, float ScaleFactor = 1f, bool AllowObstacleMap = false)
 {
     // fields below are used for clipping & drawing borders
     public readonly PolygonClipper Clipper = new();

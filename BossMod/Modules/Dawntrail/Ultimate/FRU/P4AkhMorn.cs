@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
 // TODO: can target change if boss is provoked mid cast?
-class P4AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4, 0, 4)
+sealed class P4AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4, 0, 4)
 {
     public int NumCasts;
 

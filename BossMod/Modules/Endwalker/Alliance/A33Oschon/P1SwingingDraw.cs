@@ -18,7 +18,7 @@ class P1SwingingDraw(BossModule module) : Components.GenericAOEs(module, (uint)A
         if (dir != default)
         {
             dir += Angle.FromDirection(caster.Position - Arena.Center);
-            AOEs.Add(new(_shape, WPos.ClampToGrid(Arena.Center + 25f * dir.ToDirection()), dir + 180f.Degrees(), Module.CastFinishAt(spell, 6.2f)));
+            AOEs.Add(new(_shape, (Arena.Center + 25f * dir.ToDirection()).Quantized(), dir + 180f.Degrees(), Module.CastFinishAt(spell, 6.2d)));
         }
     }
 }

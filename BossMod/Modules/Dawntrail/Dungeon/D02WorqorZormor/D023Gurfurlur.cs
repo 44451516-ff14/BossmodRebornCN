@@ -1,4 +1,6 @@
-﻿namespace BossMod.Dawntrail.Dungeon.D02WorqorZormor.D023Gurfurlur;
+﻿using BossMod.Autorotation.xan;
+
+namespace BossMod.Dawntrail.Dungeon.D02WorqorZormor.D023Gurfurlur;
 
 public enum OID : uint
 {
@@ -49,15 +51,18 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HeavingHaymaker && Arena.Bounds == D023Gurfurlur.StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.6f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.6d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x18)
+        if (index == 0x18 && state == 0x00020001u)
         {
             Arena.Bounds = D023Gurfurlur.DefaultBounds;
             _aoe = null;
@@ -151,10 +156,12 @@ sealed class GreatFlood(BossModule module) : Components.SimpleKnockbacks(module,
         if (Casters.Count == 0)
             return;
 
-        var source = Casters[0];
         var component = _aoe.AOEs;
         if (_aoe.AOEs.Count == 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(source.Position, source.Rotation, 15f, default, 20f), Module.CastFinishAt(source.CastInfo));
+        {
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedRect(c.Origin, c.Direction, 15f, default, 20f), c.Activation);
+        }
     }
 }
 
@@ -242,8 +249,8 @@ sealed class Windswrath1(BossModule module) : Windswrath(module, (uint)AID.Winds
     {
         if (Casters.Count == 0)
             return;
-        var source = Casters[0];
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 5f), Module.CastFinishAt(source.CastInfo));
+        ref readonly var c = ref Casters.Ref(0);
+        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 5f), c.Activation);
     }
 }
 
@@ -259,9 +266,13 @@ sealed class Windswrath2(BossModule module) : Windswrath(module, (uint)AID.Winds
         if (actor.OID == (uint)OID.BitingWind)
         {
             if (actor.Position.Z == -180f)
+            {
                 CurrentPattern = Pattern.EWEW;
+            }
             else if (actor.Position.Z == -210f)
+            {
                 CurrentPattern = Pattern.WEWE;
+            }
         }
     }
 
@@ -271,8 +282,11 @@ sealed class Windswrath2(BossModule module) : Windswrath(module, (uint)AID.Winds
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -287,19 +301,22 @@ sealed class Windswrath2(BossModule module) : Windswrath(module, (uint)AID.Winds
 
         if (_aoe.ActiveAOEs(slot, actor).Length != 0)
         {
-            var act = Module.CastFinishAt(source.CastInfo);
-            var timespan = (act - WorldState.CurrentTime).TotalSeconds;
-            if (timespan <= 3d)
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
+
+            if ((act - WorldState.CurrentTime).TotalSeconds <= 3d)
             {
                 var patternWEWE = CurrentPattern == Pattern.WEWE;
-                var origin = source.Position;
+                var origin = c.Origin;
                 forbidden.Add(ShapeDistance.InvertedCone(origin, 5f, patternWEWE ? a15 : -a15, a15));
                 forbidden.Add(ShapeDistance.InvertedCone(origin, 5f, patternWEWE ? -a165 : a165, a15));
                 forbidden.Add(ShapeDistance.InvertedCone(origin, 5f, patternWEWE ? a105 : -a105, a15));
                 forbidden.Add(ShapeDistance.InvertedCone(origin, 5f, patternWEWE ? -a75 : a75, a15));
             }
             else
-                forbidden.Add(ShapeDistance.InvertedCircle(source.Position, 8f));
+            {
+                forbidden.Add(ShapeDistance.InvertedCircle(c.Origin, 8f));
+            }
             hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
         }
     }

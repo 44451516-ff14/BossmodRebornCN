@@ -11,11 +11,13 @@ class P2WanderingShot(BossModule module) : Components.GenericAOEs(module, (uint)
     {
         var coords = spell.Action.ID switch
         {
-            (uint)AID.WanderingShotN or (uint)AID.WanderingVolleyN => WPos.ClampToGrid(new(default, 740f)),
-            (uint)AID.WanderingShotS or (uint)AID.WanderingVolleyS => WPos.ClampToGrid(new(default, 760f)),
+            (uint)AID.WanderingShotN or (uint)AID.WanderingVolleyN => new WPos(default, 740f).Quantized(),
+            (uint)AID.WanderingShotS or (uint)AID.WanderingVolleyS => new WPos(default, 760f).Quantized(),
             _ => default
         };
         if (coords != default)
-            _aoe = new(_shape, coords, default, Module.CastFinishAt(spell, 3.6f));
+        {
+            _aoe = new(_shape, coords, default, Module.CastFinishAt(spell, 3.6d));
+        }
     }
 }

@@ -1,18 +1,18 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P2SanctityOfTheWard1Gaze : DragonsGaze
+sealed class P2SanctityOfTheWard1Gaze : DragonsGaze
 {
-    public P2SanctityOfTheWard1Gaze(BossModule module) : base(module, OID.BossP2, 9.4f)
+    public P2SanctityOfTheWard1Gaze(BossModule module) : base(module, (uint)OID.BossP2, 9.4d)
     {
         EnableHints = true;
     }
 }
 
 // sacred sever - distance-based shared damage on 1/2/1/2 markers
-class P2SanctityOfTheWard1Sever(BossModule module) : Components.UniformStackSpread(module, 6, 0, 4)
+sealed class P2SanctityOfTheWard1Sever(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4)
 {
     public int NumCasts;
-    public Actor? Source = module.Enemies(OID.SerZephirin).FirstOrDefault();
+    public Actor? Source = module.Enemies((uint)OID.SerZephirin).FirstOrDefault();
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -21,24 +21,24 @@ class P2SanctityOfTheWard1Sever(BossModule module) : Components.UniformStackSpre
         if (Stacks.Count == 2 && Source != null)
         {
             Arena.Actor(Source, Colors.Enemy, true);
-            Arena.AddLine(Source.Position, Stacks[NumCasts % 2].Target.Position, Colors.Danger);
+            Arena.AddLine(Source.Position, Stacks[NumCasts & 1].Target.Position);
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.SacredSever && ++NumCasts >= 4)
+        if (spell.Action.ID == (uint)AID.SacredSever && ++NumCasts >= 4)
             Stacks.Clear();
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        switch ((IconID)iconID)
+        switch (iconID)
         {
-            case IconID.SacredSever1:
+            case (uint)IconID.SacredSever1:
                 Stacks.Insert(0, new(actor, StackRadius, MinStackSize, MaxStackSize));
                 break;
-            case IconID.SacredSever2:
+            case (uint)IconID.SacredSever2:
                 AddStack(actor);
                 break;
         }
@@ -46,7 +46,7 @@ class P2SanctityOfTheWard1Sever(BossModule module) : Components.UniformStackSpre
 }
 
 // shining blade (charges that leave orbs) + flares (their explosions)
-class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(module, (uint)AID.BrightFlare, "GTFO from charges and spheres!")
+sealed class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(module, (uint)AID.BrightFlare, "GTFO from charges and spheres!")
 {
     public class ChargeInfo(Actor source)
     {
@@ -58,7 +58,7 @@ class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(mod
     public List<ChargeInfo> Charges = [];
     public Angle ChargeAngle; // 0 if charges are not active or on failure, <0 if CW, >0 if CCW
 
-    private const float _chargeHalfWidth = 3;
+    private const float _chargeHalfWidth = 3f;
     private static readonly AOEShapeCircle _brightflareShape = new(9);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -120,7 +120,7 @@ class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(mod
                 break;
             case (uint)AID.BrightFlare:
                 foreach (var c in Charges)
-                    c.Spheres.RemoveAll(s => s.AlmostEqual(caster.Position, 2));
+                    c.Spheres.RemoveAll(s => s.AlmostEqual(caster.Position, 2f));
                 ++NumCasts;
                 break;
         }
@@ -153,19 +153,19 @@ class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(mod
             return default;
 
         // so far I've only seen both enemies starting at (+-5, 0)
-        if (!Utils.AlmostEqual(actor.Position.Z, Arena.Center.Z, 1))
+        if (!Utils.AlmostEqual(actor.Position.Z, Arena.Center.Z, 1f))
             return default;
-        if (!Utils.AlmostEqual(Math.Abs(actor.Position.X - Arena.Center.X), 5, 1))
+        if (!Utils.AlmostEqual(Math.Abs(actor.Position.X - Arena.Center.X), 5f, 1f))
             return default;
 
         var right = actor.Position.X > Arena.Center.X;
-        var facingSouth = Utils.AlmostEqual(actor.Rotation.Rad, 0, 0.1f);
+        var facingSouth = Utils.AlmostEqual(actor.Rotation.Rad, default, 0.1f);
         var cw = right == facingSouth;
         var res = new ChargeInfo(actor);
         var firstPointDir = actor.Rotation;
-        var angleBetweenPoints = (cw ? -1 : 1) * 112.5f.Degrees();
+        var angleBetweenPoints = (cw ? -1f : 1f) * 112.5f.Degrees();
 
-        WPos posAt(Angle dir) => Arena.Center + 21 * dir.ToDirection();
+        WPos posAt(Angle dir) => Arena.Center + 21f * dir.ToDirection();
         var p0 = actor.Position;
         var p1 = posAt(firstPointDir);
         var p2 = posAt(firstPointDir + angleBetweenPoints);
@@ -192,7 +192,7 @@ class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericAOEs(mod
 }
 
 // hints & assignments
-class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module)
+sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module)
 {
     private readonly P2SanctityOfTheWard1Sever? _sever = module.FindComponent<P2SanctityOfTheWard1Sever>();
     private readonly P2SanctityOfTheWard1Flares? _flares = module.FindComponent<P2SanctityOfTheWard1Flares>();

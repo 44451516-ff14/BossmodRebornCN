@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
 class GoldenTenet(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.GoldenTenetAOE, 6f);
-class StygianTenet(BossModule module) : Components.BaitAwayCast(module, (uint)AID.StygianTenetAOE, 3f, true, tankbuster: true);
+class StygianTenet(BossModule module) : Components.BaitAwayCast(module, (uint)AID.StygianTenetAOE, 3f, true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class HellOfFire(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HellOfFireFrontAOE, (uint)AID.HellOfFireBackAOE], new AOEShapeCone(60f, 90f.Degrees()));
 

@@ -78,7 +78,7 @@ public sealed record class Minimap(DeepDungeonState State, Actor Player, int Cur
             var pos = ImGui.GetCursorPos();
             var tile = (byte)State.Rooms[i] & 0xF;
             var row = tile / 4;
-            var col = tile % 4;
+            var col = tile & 3;
 
             var xoff = 0.0104f + col * 0.25f;
             var yoff = 0.0104f + row * 0.25f;

@@ -80,7 +80,7 @@ sealed class BA1ArtStates : StateMachineBuilder
     private void LegendaryGeas(uint id, float delay)
     {
         Cast(id, (uint)AID.LegendaryGeas, delay, 4f, "Circle AOE + stop moving");
-        ComponentCondition<LegendaryGeasStay>(id + 0x10u, 3f, comp => comp.PlayerStates[0] == default, "Can move again + cross");
+        ComponentCondition<LegendaryGeasStay>(id + 0x10u, 3f, comp => comp.PlayerStates[0].Requirement == Components.StayMove.Requirement.None, "Can move again + cross");
         ComponentCondition<DefilersDeserts>(id + 0x20u, 0.5f, comp => comp.Casters.Count != 0, "Crosses");
     }
 

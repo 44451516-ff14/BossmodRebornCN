@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // note: boss moves to position around the component activation time
-class P3Inception3Sacrament(BossModule module) : Components.GenericAOEs(module, (uint)AID.SacramentInception)
+sealed class P3Inception3Sacrament(BossModule module) : Components.GenericAOEs(module, (uint)AID.SacramentInception)
 {
     public bool Active => _source != null;
 
@@ -17,7 +17,7 @@ class P3Inception3Sacrament(BossModule module) : Components.GenericAOEs(module, 
     }
 }
 
-class P3Inception3Debuffs(BossModule module) : Components.GenericStackSpread(module)
+sealed class P3Inception3Debuffs(BossModule module) : Components.GenericStackSpread(module)
 {
     private Actor? _sharedSentence;
     private BitMask _avoid;

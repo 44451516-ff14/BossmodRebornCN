@@ -51,15 +51,18 @@ sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOE
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.MaliciousMist && Arena.Bounds == D081HisRoyalHeadnessLeonoggI.StartingBounds)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x00u)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D081HisRoyalHeadnessLeonoggI.DefaultBounds;
             _aoe = null;
@@ -78,15 +81,19 @@ sealed class LoomingNightmare(BossModule module) : Components.StandardChasingAOE
         {
             ++totalChasers;
             if (totalChasers > 1)
+            {
                 MaxCasts = 4;
+            }
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Actors.Contains(actor))
+        if (Targets[slot])
+        {
             hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 13.5f), Activation);
+        }
     }
 }
 
@@ -99,14 +106,18 @@ sealed class FallingNightmare(BossModule module) : Components.GenericAOEs(module
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.NobleNoggin && id == 0x11D1u)
+        if (id == 0x11D1 && actor.OID == (uint)OID.NobleNoggin)
+        {
             _aoes.Add(new(circle, actor.Position, default, WorldState.FutureTime(3d))); // can be 3 or 4 seconds depending on mechanic
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count > 0 && spell.Action.ID is (uint)AID.FallingNightmare1 or (uint)AID.FallingNightmare2)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -120,7 +131,7 @@ sealed class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
         var count = _charges.Count;
         if (count == 0)
             return [];
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var c = _charges[i];
@@ -137,8 +148,10 @@ sealed class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x1E3Cu)
+        if (id == 0x1E3C)
+        {
             _charges.Remove(actor);
+        }
     }
 }
 
@@ -147,7 +160,9 @@ sealed class EvilScheme(BossModule module) : Components.Exaflare(module, 4f)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.EvilSchemeFirst)
-            Lines.Add(new() { Next = caster.Position, Advance = 4f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell, 1.6f), TimeToMove = 1.5f, ExplosionsLeft = 5, MaxShownExplosions = 5 });
+        {
+            Lines.Add(new(caster.Position, 4f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell, 1.6d), 1.5d, 5, 5));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

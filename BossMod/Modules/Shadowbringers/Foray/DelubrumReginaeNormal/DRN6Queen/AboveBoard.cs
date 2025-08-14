@@ -17,7 +17,7 @@ sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
             var activation = Module.CastFinishAt(spell, 15.1f);
             for (var i = 0; i < count; ++i)
             {
-                _aoes.Add(new(circle, WPos.ClampToGrid(bombs[i].Position), default, activation));
+                _aoes.Add(new(circle, bombs[i].Position.Quantized(), default, activation));
             }
         }
     }
@@ -26,7 +26,7 @@ sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.AetherialBolt)
         {
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(21d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(21d)));
         }
     }
 

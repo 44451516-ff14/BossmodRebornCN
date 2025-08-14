@@ -28,7 +28,9 @@ sealed class AlexandrianThunderII(BossModule module) : Components.GenericRotatin
         if (_rotation.Count == 3 && _increment != default)
         {
             for (var i = 0; i < 3; ++i)
-                Sequences.Add(new(_shape, WPos.ClampToGrid(Arena.Center), _rotation[i], _increment, _activation, 1f, 15));
+            {
+                Sequences.Add(new(_shape, Arena.Center.Quantized(), _rotation[i], _increment, _activation, 1d, 15));
+            }
             _rotation.Clear();
             _increment = default;
         }

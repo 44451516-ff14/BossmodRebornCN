@@ -100,6 +100,8 @@ public sealed class ConfigUI : IDisposable
         ( "positional X", "Switch to positional when following targets. (any, rear, flank, front)" ),
         ( "maxdistancetarget X", "Sets max distance to target. (default = 2.6)" ),
         ( "maxdistanceslot X", "Sets max distance to slot. (default = 1)" ),
+        ( "mindistance X", "Sets min distance to hitbox. (default = 0)" ),
+        ( "prefdistance X", "Sets preferred distance to forbidden zones. (default = 0)" ),
         ( "movedelay X", "Sets AI movement decision delay. (default = 0)" ),
         ( "obstaclemaps", "Toggles loading obstacle maps." ),
         ( "obstaclemaps on/off", "Sets the loading of obstacle maps to on or off." ),

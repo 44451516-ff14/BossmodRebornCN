@@ -19,7 +19,7 @@ class Froth(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Froth)
-            _aoes.Add(new(circle, actor.Position, Color: Colors.SafeFromAOE, Risky: false));
+            _aoes.Add(new(circle, actor.Position, color: Colors.SafeFromAOE, risky: false));
     }
 
     public override void OnActorDestroyed(Actor actor)

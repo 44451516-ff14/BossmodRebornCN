@@ -9,12 +9,12 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
     public int NumTelegraphCasts;
     private bool isInit;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => slot is >= 0 and < 8 ? CollectionsMarshal.AsSpan(_aoesPerPlayer[slot]) : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => slot < PartyState.MaxPartySize ? CollectionsMarshal.AsSpan(_aoesPerPlayer[slot]) : [];
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         var id = status.ID;
-        if (NumTelegraphCasts == 0 && id is (uint)SID.NovaOoze or (uint)SID.IceOoze && Raid.FindSlot(actor.InstanceID) is var slot && slot is >= 0 and < 8)
+        if (NumTelegraphCasts == 0 && id is (uint)SID.NovaOoze or (uint)SID.IceOoze && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             playerTemperatures[slot] = (id == (uint)SID.NovaOoze ? 1 : -1) * status.Extra;
         }
@@ -22,7 +22,7 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if (actor.IsDead && status.ID is (uint)SID.NovaOoze or (uint)SID.IceOoze && Raid.FindSlot(actor.InstanceID) is var slot && slot is >= 0 and < 8)
+        if (actor.IsDead && status.ID is (uint)SID.NovaOoze or (uint)SID.IceOoze && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             playerTemperatures[slot] = default;
         }
@@ -80,18 +80,18 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
         var id = spell.Action.ID;
         if (id is (uint)AID.FrozenFalloutBlue or (uint)AID.FrozenFalloutRed)
         {
-            var targets = spell.Targets;
-            var count = targets.Count;
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
             var isBlue = id == (uint)AID.FrozenFalloutBlue;
-            for (var i = 0; i < count; ++i)
+            for (var i = 0; i < len; ++i)
             {
-                var slot = Raid.FindSlot(targets[i].ID);
-                if (slot is >= 0 and < 8)
+                ref readonly var targ = ref targets[i];
+                if (Raid.FindSlot(targ.ID) is var slot && slot >= 0)
                 {
                     playerTemperatures[slot] += isBlue ? -1 : 1;
                 }
             }
-            if (++NumCasts % 4 == 0) // 2 casters for each AOE
+            if ((++NumCasts & 3) == 0) // 2 casters for each AOE
             {
                 Array.Clear(_aoesPerPlayer);
                 isInit = false;
@@ -102,7 +102,7 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (slot is >= 0 and < 8 && playerTemperatures[slot] != 0 && _aoesPerPlayer[slot] != default)
+        if (slot < PartyState.MaxPartySize && playerTemperatures[slot] != 0 && _aoesPerPlayer[slot] != default)
         {
             hints.Add("Get hit by AOE of correct temperature!", !_aoesPerPlayer[slot][0].Check(actor.Position));
         }

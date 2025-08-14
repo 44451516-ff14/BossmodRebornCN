@@ -52,7 +52,7 @@ class PomBom(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.DemoniacalMogcane)
-            _aoe = new(cross, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(6.3d));
+            _aoe = new(cross, actor.Position.Quantized(), default, WorldState.FutureTime(6.3d));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

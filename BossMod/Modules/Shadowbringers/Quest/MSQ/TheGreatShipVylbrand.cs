@@ -71,7 +71,7 @@ class Breakthrough(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.Breakthrough)
         {
             var dir = spell.LocXZ - caster.Position;
-            _aoes.Add(new(new AOEShapeRect(dir.Length(), 4f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(dir), Module.CastFinishAt(spell), Colors.SafeFromAOE));
+            _aoes.Add(new(new AOEShapeRect(dir.Length(), 4f), caster.Position.Quantized(), Angle.FromDirection(dir), Module.CastFinishAt(spell), Colors.SafeFromAOE));
         }
     }
 
@@ -143,7 +143,7 @@ class Bulldoze(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.BulldozeTelegraph2)
         {
             var dir = spell.LocXZ - caster.Position;
-            _aoes.Add(new(new AOEShapeRect(dir.Length(), 3f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(dir), Module.CastFinishAt(spell)));
+            _aoes.Add(new(new AOEShapeRect(dir.Length(), 3f), caster.Position.Quantized(), Angle.FromDirection(dir), Module.CastFinishAt(spell)));
         }
     }
 

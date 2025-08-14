@@ -26,7 +26,7 @@ sealed class WitchHunt(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WitchHuntTelegraph)
-            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 6.3f), Risky: false));
+            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 6.3d), risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

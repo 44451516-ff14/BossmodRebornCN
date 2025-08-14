@@ -179,11 +179,7 @@ sealed class AbilityInfo : CommonEnumInfo
                 {
                     var posRot = target.Target.PosRotAt(i.Action.Timestamp);
                     var toSource = Angle.FromDirection(src - new WPos(posRot.XZ()));
-                    var angle = toSource - posRot.W.Radians();
-                    if (angle.Rad > MathF.PI)
-                        angle.Rad -= Angle.DoublePI;
-                    if (angle.Rad < -MathF.PI)
-                        angle.Rad += Angle.DoublePI;
+                    var angle = (toSource - posRot.W.Radians()).Normalized();
                     var hit = !target.Effects.All(eff => eff.Type is ActionEffectType.Miss or ActionEffectType.StartActionCombo);
                     _points.Add((i, target.Target, angle, hit));
                 }

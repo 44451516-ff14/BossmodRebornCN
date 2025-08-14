@@ -41,6 +41,7 @@ sealed class AIManager : IDisposable
         SwitchToIdle();
         _wndAI.Dispose();
         Service.CommandManager.RemoveHandler("/bmrai");
+        Instance = null;
     }
 
     public void Update()
@@ -189,6 +190,16 @@ sealed class AIManager : IDisposable
                 var cfgMDS = _config.MaxDistanceToSlot;
                 HandleMaxDistanceSlotCommand(messageData);
                 configModified = cfgMDS != _config.MaxDistanceToSlot;
+                break;
+            case "MINDISTANCE":
+                var cfgMinDT = _config.MinDistance;
+                HandleMinDistanceCommand(messageData);
+                configModified = cfgMinDT != _config.MinDistance;
+                break;
+            case "PREFDISTANCE":
+                var cfgPrefDS = _config.PreferredDistance;
+                HandlePrefDistanceCommand(messageData);
+                configModified = cfgPrefDS != _config.PreferredDistance;
                 break;
             case "MOVEDELAY":
                 var cfgMD = _config.MoveDelay;
@@ -525,6 +536,44 @@ sealed class AIManager : IDisposable
 
         _config.MaxDistanceToSlot = distance;
         Service.Log($"[AI] Max distance to slot set to {distance}");
+    }
+
+    private void HandleMinDistanceCommand(string[] messageData)
+    {
+        if (messageData.Length < 2)
+        {
+            Service.ChatGui.Print("[AI] Missing distance value.");
+            return;
+        }
+
+        var distanceStr = messageData[1].Replace(',', '.');
+        if (!float.TryParse(distanceStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var distance))
+        {
+            Service.ChatGui.Print("[AI] Invalid distance value.");
+            return;
+        }
+
+        _config.MinDistance = distance;
+        Service.Log($"[AI] Min distance to slot set to {distance}");
+    }
+
+    private void HandlePrefDistanceCommand(string[] messageData)
+    {
+        if (messageData.Length < 2)
+        {
+            Service.ChatGui.Print("[AI] Missing distance value.");
+            return;
+        }
+
+        var distanceStr = messageData[1].Replace(',', '.');
+        if (!float.TryParse(distanceStr, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var distance))
+        {
+            Service.ChatGui.Print("[AI] Invalid distance value.");
+            return;
+        }
+
+        _config.PreferredDistance = distance;
+        Service.Log($"[AI] Preferred distance to slot set to {distance}");
     }
 
     private void HandleMoveDelayCommand(string[] messageData)

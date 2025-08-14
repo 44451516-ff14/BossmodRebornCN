@@ -82,7 +82,7 @@ class Tideline(BossModule module) : Components.GenericAOEs(module)
                 AddAOE(rect2, initialpos2 + -i * dir, act, rot);
             }
         }
-        void AddAOE(AOEShapeRect shape, WPos position = default, float delay = default, Angle rotation = default) => _aoes.Add(new(shape, WPos.ClampToGrid(position), rotation, Module.CastFinishAt(spell, delay), Risky: false));
+        void AddAOE(AOEShapeRect shape, WPos position = default, float delay = default, Angle rotation = default) => _aoes.Add(new(shape, position.Quantized(), rotation, Module.CastFinishAt(spell, delay), risky: false));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -116,7 +116,7 @@ class TwinTentacle(BossModule module) : Components.GenericAOEs(module)
             AddAOE();
             AddAOE(false);
         }
-        void AddAOE(bool first = true) => _aoes.Add(new(cone, spell.LocXZ, spell.Rotation + (first ? default : 180f.Degrees()), Module.CastFinishAt(spell, first ? default : 2.1f), first ? Colors.Danger : default, first));
+        void AddAOE(bool first = true) => _aoes.Add(new(cone, spell.LocXZ, spell.Rotation + (first ? default : 180f.Degrees()), Module.CastFinishAt(spell, first ? default : 2.1d), first ? Colors.Danger : default, first));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -131,9 +131,12 @@ class TwinTentacle(BossModule module) : Components.GenericAOEs(module)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (_aoes.Count != 2)
+        {
             return;
+        }
         // make ai stay close to boss to ensure successfully dodging the combo
-        var aoe = _aoes[0];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        ref readonly var aoe = ref aoes[0];
         hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 40f), aoe.Activation);
     }
 }
@@ -145,7 +148,9 @@ sealed class RecedingTwinTides(BossModule module) : Components.ConcentricAOEs(mo
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.NearTide1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

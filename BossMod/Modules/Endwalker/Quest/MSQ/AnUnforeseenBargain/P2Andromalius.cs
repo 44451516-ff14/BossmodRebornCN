@@ -83,7 +83,7 @@ class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.StraightSpindleFast or (uint)AID.StraightSpindleSlow or (uint)AID.StraightSpindleAdds)
         {
-            _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             if (_aoes.Count == 6)
                 _aoes.Sort((x, y) => x.Activation.CompareTo(y.Activation));
         }
@@ -128,7 +128,7 @@ class Shield(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.AlphinaudShield)
-            _aoe = new(circle, actor.Position, Color: Colors.SafeFromAOE);
+            _aoe = new(circle, actor.Position, color: Colors.SafeFromAOE);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

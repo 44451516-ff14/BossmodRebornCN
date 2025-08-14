@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2MirrorMirrorReflectedScytheKickBlue : Components.GenericAOEs
+sealed class P2MirrorMirrorReflectedScytheKickBlue : Components.GenericAOEs
 {
     private WDir _blueMirror;
     private BitMask _rangedSpots;
@@ -37,7 +37,7 @@ class P2MirrorMirrorReflectedScytheKickBlue : Components.GenericAOEs
             {
                 // draw preposition hint
                 var distance = _rangedSpots[pcSlot] ? 19f : -11f;
-                Arena.AddCircle(Arena.Center + distance * _blueMirror, 1, Colors.Safe);
+                Arena.AddCircle(Arena.Center + distance * _blueMirror, 1f, Colors.Safe);
             }
         }
     }
@@ -55,7 +55,7 @@ class P2MirrorMirrorReflectedScytheKickBlue : Components.GenericAOEs
     }
 }
 
-class P2MirrorMirrorReflectedScytheKickRed(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ReflectedScytheKickRed, new AOEShapeDonut(4f, 20f))
+sealed class P2MirrorMirrorReflectedScytheKickRed(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ReflectedScytheKickRed, new AOEShapeDonut(4f, 20f))
 {
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -68,7 +68,7 @@ class P2MirrorMirrorReflectedScytheKickRed(BossModule module) : Components.Simpl
     }
 }
 
-class P2MirrorMirrorHouseOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLight)
+sealed class P2MirrorMirrorHouseOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLight)
 {
     public readonly record struct Source(Actor Actor, DateTime Activation);
 
@@ -169,10 +169,10 @@ class P2MirrorMirrorHouseOfLight(BossModule module) : Components.GenericBaitAway
     }
 }
 
-class P2MirrorMirrorBanish : P2Banish
+sealed class P2MirrorMirrorBanish : P2Banish
 {
-    private WPos _anchorMelee;
-    private WPos _anchorRanged;
+    private readonly WPos _anchorMelee;
+    private readonly WPos _anchorRanged;
     private BitMask _aroundRanged;
     private BitMask _closerToCenter;
     private BitMask _leftSide;
@@ -208,14 +208,14 @@ class P2MirrorMirrorBanish : P2Banish
     {
         var prepos = PrepositionLocation(slot, assignment);
         if (prepos != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1), DateTime.MaxValue);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1f), DateTime.MaxValue);
         else
             base.AddAIHints(slot, actor, assignment, hints);
     }
 
     private WPos? PrepositionLocation(int slot, PartyRolesConfig.Assignment assignment)
-        => Stacks.Count > 0 && Stacks[0].Activation > WorldState.FutureTime(2.5d) ? CalculatePrepositionLocation(_aroundRanged[slot], _leftSide[slot], 90f.Degrees())
-        : Spreads.Count > 0 && Spreads[0].Activation > WorldState.FutureTime(2.5d) ? CalculatePrepositionLocation(_aroundRanged[slot], _leftSide[slot], (_closerToCenter[slot] ? 135f : 45f).Degrees())
+        => Stacks.Count > 0 && Stacks.Ref(0).Activation > WorldState.FutureTime(2.5d) ? CalculatePrepositionLocation(_aroundRanged[slot], _leftSide[slot], 90f.Degrees())
+        : Spreads.Count > 0 && Spreads.Ref(0).Activation > WorldState.FutureTime(2.5d) ? CalculatePrepositionLocation(_aroundRanged[slot], _leftSide[slot], (_closerToCenter[slot] ? 135f : 45f).Degrees())
         : null;
 
     private WPos CalculatePrepositionLocation(bool aroundRanged, bool leftSide, Angle angle)

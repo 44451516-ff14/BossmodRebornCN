@@ -7,15 +7,18 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.NFizzlingSuds or (uint)AID.SFizzlingSuds && Arena.Bounds == C011Silkie.StartingBounds)
+        {
             _aoe = new(square, Arena.Center, default, WorldState.FutureTime(3.8d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x01u)
+        if (index == 0x01 && state == 0x00020001u)
         {
             Arena.Bounds = C011Silkie.DefaultBounds;
             _aoe = null;

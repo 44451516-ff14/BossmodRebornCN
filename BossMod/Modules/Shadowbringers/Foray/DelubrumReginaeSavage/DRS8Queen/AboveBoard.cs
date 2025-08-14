@@ -20,7 +20,7 @@ sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
         var count = imminentBombs.Count;
         if (count == 0)
             return [];
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             aoes[i] = new(_shape, imminentBombs[i].Position, default, _activation);

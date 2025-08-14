@@ -137,7 +137,7 @@ sealed class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
     {
         if (spell.Action.ID == (uint)AID.NaturesBlood1)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 6f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 7, MaxShownExplosions = 3 });
+            Lines.Add(new(caster.Position, 6f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 7, 3));
         }
     }
 

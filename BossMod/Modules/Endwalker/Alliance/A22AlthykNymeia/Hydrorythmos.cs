@@ -5,15 +5,15 @@ class Hydrorythmos(BossModule module) : Components.GenericAOEs(module)
     private Angle _dir;
     private DateTime _activation;
 
-    private static readonly AOEShapeRect _shapeFirst = new(25, 5, 25);
-    private static readonly AOEShapeRect _shapeRest = new(25, 2.5f, 25);
+    private static readonly AOEShapeRect _shapeFirst = new(25f, 5f, 25f);
+    private static readonly AOEShapeRect _shapeRest = new(25f, 2.5f, 25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var aoes = new List<AOEInstance>();
         if (NumCasts > 0)
         {
-            var offset = ((NumCasts + 1) >> 1) * 5f * _dir.ToDirection().OrthoL();
+            var offset = (2.5f + ((NumCasts + 1) >> 1) * 5f) * _dir.ToDirection().OrthoL();
             aoes.Add(new(_shapeRest, Arena.Center + offset, _dir, _activation));
             aoes.Add(new(_shapeRest, Arena.Center - offset, _dir, _activation));
         }

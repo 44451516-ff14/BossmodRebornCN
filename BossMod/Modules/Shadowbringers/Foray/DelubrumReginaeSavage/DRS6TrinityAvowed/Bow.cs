@@ -11,7 +11,7 @@ class FlamesOfBozja(BossModule module, bool risky) : Components.GenericAOEs(modu
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
-            AOE = new(TrinityAvowed.ArenaChange2, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), Risky: _risky);
+            AOE = new(TrinityAvowed.ArenaChange2, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: _risky);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -21,14 +21,14 @@ class FlamesOfBozja(BossModule module, bool risky) : Components.GenericAOEs(modu
     }
 }
 
-class ShimmeringShot(BossModule module, float spawnToActivation) : TemperatureAOE(module)
+class ShimmeringShot(BossModule module, double spawnToActivation) : TemperatureAOE(module)
 {
     public enum Pattern { Unknown, EWNormal, EWInverted, WENormal, WEInverted }
 
     private readonly int[] _slotTempAdjustments = new int[5];
     private BitMask _arrowsInited;
     private Pattern _pattern;
-    private readonly float _spawnToActivation = spawnToActivation;
+    private readonly double _spawnToActivation = spawnToActivation;
     private DateTime _activation;
 
     private static readonly AOEShapeRect _shapeCell = new(5f, 5f, 5f);
@@ -97,10 +97,10 @@ class ShimmeringShot(BossModule module, float spawnToActivation) : TemperatureAO
 
     protected int RowIndex(WPos pos) => (pos.Z - TrinityAvowed.ArenaCenter.Z) switch
     {
-        < -15 => 0,
-        < -5 => 1,
-        < 5 => 2,
-        < 15 => 3,
+        < -15f => 0,
+        < -5f => 1,
+        < 5f => 2,
+        < 15f => 3,
         _ => 4
     };
 
@@ -132,7 +132,7 @@ sealed class QuickMarchBow1(BossModule module) : QuickMarch(module)
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => !Module.InBounds(pos) || (_flames?.AOE?.Shape.Check(pos, _flames.AOE.Value.Origin, _flames.AOE.Value.Rotation) ?? false);
 }
 
-sealed class ShimmeringShot1(BossModule module) : ShimmeringShot(module, 12.8f)
+sealed class ShimmeringShot1(BossModule module) : ShimmeringShot(module, 12.8d)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -143,7 +143,7 @@ sealed class ShimmeringShot1(BossModule module) : ShimmeringShot(module, 12.8f)
 
 sealed class FlamesOfBozja2(BossModule module) : FlamesOfBozja(module, true);
 
-sealed class ShimmeringShot2(BossModule module) : ShimmeringShot(module, 14.0f)
+sealed class ShimmeringShot2(BossModule module) : ShimmeringShot(module, 14.0d)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints) { } // no need for hints, quick march handles that
 }

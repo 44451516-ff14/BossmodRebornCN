@@ -15,7 +15,7 @@ class LetsDance(BossModule module) : Components.GenericAOEs(module)
         {
             var sb = new StringBuilder(4 * (count - 1) + 4 * count);
             var aoes = CollectionsMarshal.AsSpan(_aoes);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var roundedrot = (int)aoes[i].Rotation.Deg;
                 var shapeHint = roundedrot switch
@@ -39,7 +39,7 @@ class LetsDance(BossModule module) : Components.GenericAOEs(module)
         {
             var count = _aoes.Count;
             var act = count != 0 ? _aoes[0].Activation.AddSeconds(count * 2.4d) : WorldState.FutureTime(26.1d);
-            _aoes.Add(new(rect, WPos.ClampToGrid(Arena.Center), modelState == 5 ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0], act));
+            _aoes.Add(new(rect, Arena.Center.Quantized(), modelState == 5 ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0], act));
         }
     }
 
@@ -49,7 +49,9 @@ class LetsDance(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 
@@ -57,10 +59,11 @@ class LetsDance(BossModule module) : Components.GenericAOEs(module)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (_aoes.Count < 2)
+        {
             return;
+        }
         // make ai stay close to boss to ensure successfully dodging the combo
-        var aoe = _aoes[0];
-        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 40f), aoe.Activation);
+        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center, new WDir(1f, default), 2f, 2f, 40f), _aoes.Ref(0).Activation);
     }
 }
 
@@ -81,13 +84,18 @@ sealed class LetsDanceRemix(BossModule module) : LetsDance(module)
             if (i == 0)
             {
                 if (count > 1)
+                {
                     aoe.Color = Colors.Danger;
+                }
                 aoe.Risky = true;
             }
             else
             {
-                if (aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad))
+                ref var aoe0 = ref aoes[0];
+                if (aoe0.Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad))
+                {
                     aoe.Risky = false;
+                }
             }
         }
         return aoes[..max];
@@ -100,7 +108,7 @@ sealed class LetsDanceRemix(BossModule module) : LetsDance(module)
         {
             var sb = new StringBuilder(4 * (count - 1) + count * 5);
             var aoes = CollectionsMarshal.AsSpan(_aoes);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var roundedrot = (int)aoes[i].Rotation.Deg;
                 var shapeHint = roundedrot switch
@@ -125,8 +133,8 @@ sealed class LetsDanceRemix(BossModule module) : LetsDance(module)
         if (actor.OID == (uint)OID.Frogtourage && modelState is 5 or 7 or 31 or 32)
         {
             var count = _aoes.Count;
-            var act = count != 0 ? _aoes[0].Activation.AddSeconds(count * 1.5d) : WorldState.FutureTime(26d);
-            _aoes.Add(new(rect, WPos.ClampToGrid(Arena.Center), modelState == 5 ? Angle.AnglesCardinals[3] : modelState == 31 ? Angle.AnglesCardinals[1]
+            var act = count != 0 ? _aoes.Ref(0).Activation.AddSeconds(count * 1.5d) : WorldState.FutureTime(26d);
+            _aoes.Add(new(rect, Arena.Center.Quantized(), modelState == 5 ? Angle.AnglesCardinals[3] : modelState == 31 ? Angle.AnglesCardinals[1]
             : modelState == 32 ? a180 : Angle.AnglesCardinals[0], act));
         }
     }
@@ -137,7 +145,9 @@ sealed class LetsDanceRemix(BossModule module) : LetsDance(module)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 }

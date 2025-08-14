@@ -36,15 +36,18 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HeavyweightNeedlesVisual && Arena.Bounds == D071Barreltender.StartingBounds)
+        {
             _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x03u)
+        if (index == 0x03 && state == 0x00020001u)
         {
             Arena.Bounds = D071Barreltender.DefaultBounds;
             _aoe = null;
@@ -89,11 +92,12 @@ sealed class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(m
 
         var kb = _kb;
         var isKnockback = kb.Casters.Count != 0;
-        var isKnockbackImmune = isKnockback && _kb.IsImmune(slot, Module.CastFinishAt(_kb.Casters[0].CastInfo));
+        var isKnockbackImmune = isKnockback && _kb.IsImmune(slot, _kb.Casters.Ref(0).Activation);
         var isKnockbackButImmune = isKnockback && isKnockbackImmune;
         for (var i = 0; i < max; ++i)
         {
-            aoes[i].Risky = !isKnockback || isKnockbackButImmune;
+            ref var aoe = ref aoes[i];
+            aoe.Risky = !isKnockback || isKnockbackButImmune;
         }
         return aoes[..max];
     }
@@ -107,7 +111,7 @@ sealed class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(m
             _ => null
         };
         if (shape != null)
-            _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position)));
+            _aoes.Add(new(shape, actor.Position.Quantized()));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -122,7 +126,7 @@ sealed class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(m
             for (var i = 0; i < max; ++i)
             {
                 ref var aoe = ref aoes[i];
-                aoe.Activation = Module.CastFinishAt(spell, 13.7f);
+                aoe.Activation = Module.CastFinishAt(spell, 13.7d);
             }
         }
     }
@@ -147,7 +151,7 @@ sealed class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(modu
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.CactusSmall && state == 0x00010002u)
+        if (state == 0x00010002u && actor.OID == (uint)OID.CactusSmall)
         {
             var add = actor.Position.X + actor.Position.Z;
             if (add == 400f) // new WPos(-55f, 455f)
@@ -161,16 +165,14 @@ sealed class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(modu
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
             {
                 var forbidden = new Func<WPos, float>[2];
                 var pattern = CurrentPattern == Pattern.NESW;
-                var castInfo = source.CastInfo;
-                var pos = castInfo!.LocXZ;
-                forbidden[0] = ShapeDistance.InvertedCone(pos, 4f, pattern ? a135 : -a135, a10);
-                forbidden[1] = ShapeDistance.InvertedCone(pos, 4f, pattern ? -a45 : a45, a10);
+                forbidden[0] = ShapeDistance.InvertedCone(c.Origin, 4f, pattern ? a135 : -a135, a10);
+                forbidden[1] = ShapeDistance.InvertedCone(c.Origin, 4f, pattern ? -a45 : a45, a10);
                 hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
             }
         }

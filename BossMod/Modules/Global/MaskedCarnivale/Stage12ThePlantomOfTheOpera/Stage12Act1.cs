@@ -10,7 +10,7 @@ public enum AID : uint
     Seedvolley = 14750 // Boss->player, no cast, single-target
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -18,7 +18,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage12Act1States : StateMachineBuilder
+sealed class Stage12Act1States : StateMachineBuilder
 {
     public Stage12Act1States(BossModule module) : base(module)
     {
@@ -28,7 +28,7 @@ class Stage12Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 622, NameID = 8103, SortOrder = 1)]
-public class Stage12Act1 : BossModule
+public sealed class Stage12Act1 : BossModule
 {
     public Stage12Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

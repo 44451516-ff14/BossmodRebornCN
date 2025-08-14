@@ -7,7 +7,9 @@ sealed class Dragonfall(BossModule module) : Components.UniformStackSpread(modul
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Dragonfall)
+        {
             AddStack(source, WorldState.FutureTime(9.5d));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

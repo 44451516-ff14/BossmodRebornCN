@@ -20,7 +20,7 @@ class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
                 _ => null
             };
             if (shape != null)
-                _aoe = new(shape, WPos.ClampToGrid(Arena.Center), default, WorldState.FutureTime(6d));
+                _aoe = new(shape, Arena.Center.Quantized(), default, WorldState.FutureTime(6d));
         }
     }
 

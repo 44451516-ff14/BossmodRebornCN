@@ -6,11 +6,11 @@ sealed class Soulshock(BossModule module) : Components.CastCounter(module, (uint
 sealed class Impact(BossModule module) : Components.CastCounter(module, (uint)AID.Impact);
 sealed class Cannonbolt(BossModule module) : Components.CastCounter(module, (uint)AID.Cannonbolt);
 
-sealed class CannonboltKB(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class CannonboltKB(BossModule module) : Components.GenericKnockback(module)
 {
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        return new Knockback[1] { new(Module.PrimaryActor.Position, 50f) };
+        return new Knockback[1] { new(Module.PrimaryActor.Position, 50f, ignoreImmunes: true) };
     }
 }
 

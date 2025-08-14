@@ -41,19 +41,22 @@ sealed class GravityTowers(BossModule module) : Components.GenericTowersOpenWorl
     {
         if (spell.Action.ID == (uint)AID.EraseGravity)
         {
-            var targets = spell.Targets;
-            var count = targets.Count;
-            for (var i = 0; i < count; ++i)
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            for (var i = 0; i < len; ++i)
             {
-                var target = WorldState.Actors.Find(targets[i].ID)!;
-                levitatingPlayers.Add(target);
-                groundedPlayers.Remove(target);
+                ref readonly var targ = ref targets[i];
+                if (WorldState.Actors.Find(targ.ID) is Actor t)
+                {
+                    levitatingPlayers.Add(t);
+                    groundedPlayers.Remove(t);
+                }
             }
         }
     }
 }
 
-class EraseGravity(BossModule module) : Components.GenericAOEs(module)
+sealed class EraseGravity(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(4);
     private static readonly AOEShapeCircle circle = new(4);
@@ -64,7 +67,9 @@ class EraseGravity(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.EraseGravity)
+        {
             _aoes.Add(new(circle, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), Colors.SafeFromAOE));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -92,18 +97,23 @@ class EraseGravity(BossModule module) : Components.GenericAOEs(module)
             var len = towers.Length;
             for (var i = 0; i < len; ++i)
             {
-                var t = towers[i];
+                ref readonly var t = ref towers[i];
                 if (t.NumInside(Module) < 8)
                 {
                     return; // there are unfilled ground towers
                 }
             }
             var forbidden = new Func<WPos, float>[count];
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                forbidden[i] = ShapeDistance.InvertedCircle(_aoes[i].Origin, 4f);
+                ref var aoe = ref aoes[i];
+                forbidden[i] = ShapeDistance.InvertedCircle(aoe.Origin, 4f);
             }
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), _aoes[0].Activation);
+            ref var aoe0 = ref aoes[0];
+            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), aoe0.Activation);
         }
     }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints) { }
 }

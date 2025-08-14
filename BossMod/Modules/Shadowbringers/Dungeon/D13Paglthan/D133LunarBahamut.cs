@@ -36,25 +36,27 @@ public enum IconID : uint
     KanRhai = 260 // player->self
 }
 
-class Upburst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Upburst, 2f);
-class BigBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BigBurst, 9f);
-class PerigeanBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PerigeanBreath, new AOEShapeCone(30f, 45f.Degrees()));
-class MegaflareAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareAOE, 6f);
-class MegaflareSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MegaflareSpread, 5f);
-class MegaflareDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareDive, new AOEShapeRect(41f, 6f));
-class LunarFlareBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarFlareBig, 11f);
-class LunarFlareSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarFlareSmall, 6f);
-class Gigaflare(BossModule module) : Components.RaidwideCast(module, (uint)AID.Gigaflare);
-class Flatten(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Flatten);
+sealed class Upburst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Upburst, 2f);
+sealed class BigBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BigBurst, 9f);
+sealed class PerigeanBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PerigeanBreath, new AOEShapeCone(30f, 45f.Degrees()));
+sealed class MegaflareAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareAOE, 6f);
+sealed class MegaflareSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MegaflareSpread, 5f);
+sealed class MegaflareDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MegaflareDive, new AOEShapeRect(41f, 6f));
+sealed class LunarFlareBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarFlareBig, 11f);
+sealed class LunarFlareSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LunarFlareSmall, 6f);
+sealed class Gigaflare(BossModule module) : Components.RaidwideCast(module, (uint)AID.Gigaflare);
+sealed class Flatten(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Flatten);
 
-class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4f, default, 4, 4)
+sealed class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4f, default, 4, 4)
 {
     private int numCasts;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.AkhMornFirst)
+        {
             AddStack(WorldState.Actors.Find(spell.TargetID)!, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -70,30 +72,36 @@ class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4f, def
     }
 }
 
-class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module)
 {
     public static readonly AOEShapeCross Cross = new(15f, 3f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.KanRhai)
+        {
             CurrentBaits.Add(new(actor, actor, Cross, WorldState.FutureTime(5.6d), default));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.KanRhaiVisual2)
+        {
             CurrentBaits.Clear();
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (ActiveBaitsOn(actor).Count != 0)
+        {
             hints.Add("Bait away and move!");
+        }
     }
 }
 
-class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
 
@@ -112,11 +120,13 @@ class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
             }
         }
         else if (spell.Action.ID == (uint)AID.KanRhaiVisual2)
-            _aoes.Add(new(KanRhaiBait.Cross, WPos.ClampToGrid(caster.Position), Angle.AnglesCardinals[1]));
+        {
+            _aoes.Add(new(KanRhaiBait.Cross, caster.Position.Quantized(), Angle.AnglesCardinals[1]));
+        }
     }
 }
 
-class D133LunarBahamutStates : StateMachineBuilder
+sealed class D133LunarBahamutStates : StateMachineBuilder
 {
     public D133LunarBahamutStates(BossModule module) : base(module)
     {
@@ -138,7 +148,7 @@ class D133LunarBahamutStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 777, NameID = 10077)]
-public class D133LunarBahamut(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D133LunarBahamut(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(796.65f, -97.55f), 19.5f * CosPI.Pi40th, 40)], [new Rectangle(new(776f, -97.5f), 1.6f, 20)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(796.65f, -97.55f), 19.5f * CosPI.Pi40th, 40)], [new Rectangle(new(775.84613f, -97.50571f), 9.5f, 1.775f, -89.5f.Degrees())]);
 }

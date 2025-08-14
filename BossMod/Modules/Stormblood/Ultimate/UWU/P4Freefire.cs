@@ -12,7 +12,7 @@ class P4Freefire(BossModule module) : Components.GenericAOEs(module, (uint)AID.F
     {
         if (actor.OID == (uint)OID.Helper && id == 0x0449)
         {
-            _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(5.9d)));
+            _aoes.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(5.9d)));
         }
     }
 }

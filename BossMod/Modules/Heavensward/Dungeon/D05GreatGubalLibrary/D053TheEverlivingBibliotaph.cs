@@ -90,7 +90,7 @@ class VoidSpark(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Voidsphere)
-            _aoes.Add(new(VoidSparkBait.Circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(9.8d)));
+            _aoes.Add(new(VoidSparkBait.Circle, actor.Position.Quantized(), default, WorldState.FutureTime(9.8d)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

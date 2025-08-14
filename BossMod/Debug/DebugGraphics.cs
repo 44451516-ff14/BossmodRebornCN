@@ -219,7 +219,7 @@ sealed class DebugGraphics
                 sb.Append(' ');
             sb.AppendFormat("{0:X8}", w.Data[start++]);
 
-            if ((start % 16) == 0)
+            if ((start & 15) == 0)
             {
                 ImGui.TextUnformatted(sb.ToString());
                 sb.Clear();

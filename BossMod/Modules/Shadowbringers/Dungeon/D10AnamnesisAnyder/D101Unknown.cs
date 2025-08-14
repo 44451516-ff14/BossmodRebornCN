@@ -75,7 +75,7 @@ class Reflection(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         if (angle != default)
-            _aoe = new(cone, WPos.ClampToGrid(actor.Position), angle, WorldState.FutureTime(14.4f));
+            _aoe = new(cone, actor.Position.Quantized(), angle, WorldState.FutureTime(14.4f));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

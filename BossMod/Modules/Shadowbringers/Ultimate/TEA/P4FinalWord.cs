@@ -1,36 +1,36 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P4FinalWordDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
+sealed class P4FinalWordDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
 {
     protected override WDir SafeSpotDirection(int slot) => Debuffs[slot] switch
     {
-        Debuff.LightBeacon => new(0, -15), // N
-        Debuff.DarkBeacon => new(0, 13), // S
-        _ => new(0, 10), // slightly N of dark beacon
+        Debuff.LightBeacon => new(default, -15f), // N
+        Debuff.DarkBeacon => new(default, 13f), // S
+        _ => new(default, 10f), // slightly N of dark beacon
     };
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.FinalWordContactProhibition:
+            case (uint)SID.FinalWordContactProhibition:
                 AssignDebuff(actor, Debuff.LightFollow);
                 break;
-            case SID.FinalWordContactRegulation:
+            case (uint)SID.FinalWordContactRegulation:
                 AssignDebuff(actor, Debuff.LightBeacon);
                 LightBeacon = actor;
                 break;
-            case SID.FinalWordEscapeProhibition:
+            case (uint)SID.FinalWordEscapeProhibition:
                 AssignDebuff(actor, Debuff.DarkFollow);
                 break;
-            case SID.FinalWordEscapeDetection:
+            case (uint)SID.FinalWordEscapeDetection:
                 AssignDebuff(actor, Debuff.DarkBeacon);
                 DarkBeacon = actor;
                 break;
-            case SID.ContactProhibitionOrdained:
-            case SID.ContactRegulationOrdained:
-            case SID.EscapeProhibitionOrdained:
-            case SID.EscapeDetectionOrdained:
+            case (uint)SID.ContactProhibitionOrdained:
+            case (uint)SID.ContactRegulationOrdained:
+            case (uint)SID.EscapeProhibitionOrdained:
+            case (uint)SID.EscapeDetectionOrdained:
                 Done = true;
                 break;
         }
@@ -44,7 +44,7 @@ class P4FinalWordDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
     }
 }
 
-class P4FinalWordStillnessMotion(BossModule module) : Components.StayMove(module)
+sealed class P4FinalWordStillnessMotion(BossModule module) : Components.StayMove(module)
 {
     private Requirement _first;
 
@@ -53,10 +53,10 @@ class P4FinalWordStillnessMotion(BossModule module) : Components.StayMove(module
         if (_first != Requirement.None)
             return; // we've already seen first cast, so we no longer care - we assume stillness is always followed by motion and vice versa
 
-        var req = (AID)spell.Action.ID switch
+        var req = spell.Action.ID switch
         {
-            AID.OrdainedMotion => Requirement.Move,
-            AID.OrdainedStillness => Requirement.Stay,
+            (uint)AID.OrdainedMotion => Requirement.Move,
+            (uint)AID.OrdainedStillness => Requirement.Stay,
             _ => Requirement.None
         };
         if (req != Requirement.None)
@@ -68,12 +68,12 @@ class P4FinalWordStillnessMotion(BossModule module) : Components.StayMove(module
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.OrdainedMotionSuccess or AID.OrdainedMotionFail or AID.OrdainedStillnessSuccess or AID.OrdainedStillnessFail)
+        if (spell.Action.ID is (uint)AID.OrdainedMotionSuccess or (uint)AID.OrdainedMotionFail or (uint)AID.OrdainedStillnessSuccess or (uint)AID.OrdainedStillnessFail)
         {
             var slot = Raid.FindSlot(spell.MainTargetID);
             if (slot >= 0)
             {
-                PlayerStates[slot] = PlayerStates[slot].Requirement != _first ? default : new(_first == Requirement.Move ? Requirement.Stay : Requirement.Move, WorldState.FutureTime(11));
+                PlayerStates[slot] = PlayerStates[slot].Requirement != _first ? default : new(_first == Requirement.Move ? Requirement.Stay : Requirement.Move, WorldState.FutureTime(11d));
             }
         }
     }

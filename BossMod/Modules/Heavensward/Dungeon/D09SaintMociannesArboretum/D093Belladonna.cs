@@ -84,7 +84,7 @@ class Mildew(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.BloatedBulb)
             if (animState1 == 1)
-                _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(10d))); // despite spawning at the same time, there can be multiple seconds difference between explosions, taking a low estimate here
+                _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(10d))); // despite spawning at the same time, there can be multiple seconds difference between explosions, taking a low estimate here
             else
                 _aoes.Clear();
     }

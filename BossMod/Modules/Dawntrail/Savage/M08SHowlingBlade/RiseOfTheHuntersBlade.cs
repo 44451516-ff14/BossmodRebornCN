@@ -44,7 +44,9 @@ sealed class ProwlingGaleLast(BossModule module) : Components.GenericTowers(modu
             _ => default
         };
         if (soakers != default)
+        {
             Towers.Add(new(spell.LocXZ, 2f, soakers, soakers, default, Module.CastFinishAt(spell)));
+        }
     }
 }
 
@@ -56,7 +58,9 @@ sealed class LamentOfTheCloseDistant(BossModule module) : BossComponent(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_partner[slot] != default)
+        {
             hints.Add(_partner[slot].close ? "Stay close to partner!" : "Stay away from partner!");
+        }
     }
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
@@ -82,7 +86,9 @@ sealed class LamentOfTheCloseDistant(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (_partner[pcSlot].Item1 is var partner && partner != default)
+        {
             Arena.AddLine(pc.Position, partner.Position);
+        }
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether)
@@ -98,6 +104,8 @@ sealed class LamentOfTheCloseDistant(BossModule module) : BossComponent(module)
     {
         var slot = Raid.FindSlot(source);
         if (slot >= 0)
+        {
             _partner[slot] = target;
+        }
     }
 }

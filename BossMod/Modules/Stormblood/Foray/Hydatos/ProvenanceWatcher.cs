@@ -83,7 +83,7 @@ class Charybdis(BossModule module) : Components.GenericAOEs(module)
         for (var i = 0; i < count; ++i)
         {
             var c = casters[i];
-            aoes[i] = new(circle, WPos.ClampToGrid(c.Item2), default, c.Item3);
+            aoes[i] = new(circle, c.Item2.Quantized(), default, c.Item3);
         }
         return aoes;
     }
@@ -91,7 +91,7 @@ class Charybdis(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Charybdis)
-            casters.Add((actor.InstanceID, WPos.ClampToGrid(actor.Position), WorldState.FutureTime(4d), 19));
+            casters.Add((actor.InstanceID, actor.Position.Quantized(), WorldState.FutureTime(4d), 19));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

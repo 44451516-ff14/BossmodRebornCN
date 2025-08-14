@@ -31,7 +31,7 @@ sealed class AssassinsDagger(BossModule module) : Components.GenericAOEs(module)
             var dir = spell.LocXZ - caster.Position;
             var rect = new AOEShapeRect(dir.Length(), 3f);
             var angle = Angle.FromDirection(dir);
-            var pos = WPos.ClampToGrid(caster.Position);
+            var pos = caster.Position.Quantized();
             var act = Module.CastFinishAt(spell);
 
             for (var i = 0; i < 6; ++i)

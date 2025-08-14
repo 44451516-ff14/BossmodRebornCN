@@ -53,7 +53,7 @@ sealed class ChainLightning(BossModule module) : Components.GenericAOEs(module)
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.ChainLightning1 or (uint)TetherID.ChainLightning2)
-            _aoes.Add(new(_shape, WPos.ClampToGrid(source.Position))); // TODO: activation
+            _aoes.Add(new(_shape, source.Position.Quantized())); // TODO: activation
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

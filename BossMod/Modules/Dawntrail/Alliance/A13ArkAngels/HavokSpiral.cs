@@ -25,7 +25,7 @@ sealed class HavokSpiral(BossModule module) : Components.GenericRotatingAOE(modu
         if (_rotation.Count == 3 && _increment != default)
         {
             for (var i = 0; i < 3; ++i)
-                Sequences.Add(new(_shape, WPos.ClampToGrid(Arena.Center), _rotation[i], _increment, _activation, 1.2f, 8));
+                Sequences.Add(new(_shape, Arena.Center.Quantized(), _rotation[i], _increment, _activation, 1.2d, 8));
             _rotation.Clear();
             _increment = default;
         }
@@ -52,6 +52,9 @@ sealed class SpiralFinish(BossModule module) : Components.SimpleKnockbacks(modul
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 9f), Module.CastFinishAt(Casters[0].CastInfo));
+        {
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 9f), c.Activation);
+        }
     }
 }

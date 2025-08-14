@@ -8,12 +8,12 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     {
         if (state == 0x00020001u)
         {
-            if (index == 0x00u)
+            if (index == 0x00)
             {
                 Arena.Bounds = RectArena;
                 Arena.Center = FinalCenter;
             }
-            else if (index == 0x01u)
+            else if (index == 0x01)
             {
                 Arena.Bounds = DefaultArena;
             }

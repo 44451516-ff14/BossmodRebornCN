@@ -9,13 +9,22 @@ sealed class BindingSigil(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -24,7 +33,7 @@ sealed class BindingSigil(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.BindingSigilPreview)
         {
-            _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell, 9.6f)));
+            _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell, 9.6d)));
         }
     }
 
@@ -34,7 +43,9 @@ sealed class BindingSigil(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 }

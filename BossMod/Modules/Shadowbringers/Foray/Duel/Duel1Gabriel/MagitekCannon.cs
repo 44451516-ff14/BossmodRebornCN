@@ -42,7 +42,9 @@ sealed class MagitekCannonChase(BossModule module) : Components.StandardChasingA
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Actors.Contains(actor))
+        if (Targets[slot])
+        {
             hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 13.5f));
+        }
     }
 }

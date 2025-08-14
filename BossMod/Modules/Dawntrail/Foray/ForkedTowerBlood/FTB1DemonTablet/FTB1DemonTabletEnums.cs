@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB1DemonTablet;
 
 public enum OID : uint
 {
-    Boss = 0x470A, // R11.0
+    DemonTablet = 0x470A, // R11.0
     TetherHelper = 0x470D, // R1.2
     PortentousCometeor = 0x1EBD76, // R0.5
     AddPortal = 0x1EBD77, // R0.5

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P3SniperCannon(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, alwaysShowSpreads: true)
+sealed class P3SniperCannon(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, alwaysShowSpreads: true)
 {
     enum PlayerRole { None, Stack, Spread }
 
@@ -100,14 +100,16 @@ class P3SniperCannon(BossModule module) : Components.UniformStackSpread(module, 
     private WPos SafeSpotAt(Angle dirIfStacksNorth) => Arena.Center + 19f * (_config.P3IntermissionStacksNorth ? dirIfStacksNorth : 180f.Degrees() - dirIfStacksNorth).ToDirection();
 }
 
-class P3WaveRepeater(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class P3WaveRepeater(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(6f), new AOEShapeDonut(6f, 12f), new AOEShapeDonut(12f, 18f), new AOEShapeDonut(18f, 24f)];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WaveRepeater1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -120,7 +122,7 @@ class P3WaveRepeater(BossModule module) : Components.ConcentricAOEs(module, _sha
             (uint)AID.WaveRepeater4 => 3,
             _ => -1
         };
-        if (!AdvanceSequence(order, caster.Position, WorldState.FutureTime(2.1f)))
+        if (!AdvanceSequence(order, caster.Position, WorldState.FutureTime(2.1d)))
             ReportError($"Unexpected ring {order}");
     }
 }
@@ -146,7 +148,7 @@ class P3IntermissionVoidzone(BossModule module) : Components.Voidzone(module, 6f
     }
 }
 
-class P3ColossalBlow(BossModule module) : Components.GenericAOEs(module)
+sealed class P3ColossalBlow(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> AOEs = [];
 
@@ -164,7 +166,7 @@ class P3ColossalBlow(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (actor.OID is (uint)OID.LeftArmUnit or (uint)OID.RightArmUnit && id is 0x1E43 or 0x1E44)
-            AOEs.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(13.5d)));
+            AOEs.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(13.5d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

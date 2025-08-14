@@ -23,7 +23,7 @@ sealed class ForwardBackwardHalf(BossModule module) : Components.GenericAOEs(mod
             return;
 
         var cleaveDir = spell.Rotation + (front ? 180f : default).Degrees();
-        var pos = WPos.ClampToGrid(caster.Position);
+        var pos = caster.Position.Quantized();
         var act = Module.CastFinishAt(spell);
         _aoes.Add(new(_shapeEdge, pos, cleaveDir, act));
         _aoes.Add(new(_shapeSide, pos, cleaveDir + (left ? 90f : -90f).Degrees(), act));

@@ -49,7 +49,7 @@ class Shatter(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count; ++i)
             {
                 var crystal = crystals[i];
-                _aoes.Add(new(shape, WPos.ClampToGrid(crystal.Position), crystal.Rotation, Module.CastFinishAt(spell, 0.5f)));
+                _aoes.Add(new(shape, crystal.Position.Quantized(), crystal.Rotation, Module.CastFinishAt(spell, 0.5f)));
             }
         }
         switch (spell.Action.ID)

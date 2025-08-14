@@ -145,7 +145,7 @@ sealed class ChainCannonEscort(BossModule module) : Components.GenericAOEs(modul
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin.AlmostEqual(pos, 0.1f))
                 {
-                    if (++aoe.ActorID == 6u)
+                    if (++aoe.ActorID == 6ul)
                     {
                         _aoes.RemoveAt(i);
                     }
@@ -210,7 +210,7 @@ sealed class ChainCannonBoss(BossModule module) : Components.GenericAOEs(module)
             }
             else
             {
-                _aoe = new(ChainCannonEscort.Rect, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(1d));
+                _aoe = new(ChainCannonEscort.Rect, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(1d));
             }
         }
     }

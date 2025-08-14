@@ -2,11 +2,10 @@
 
 public enum OID : uint
 {
-    HanselGretel = 0x18D6, // R0.500, x?
-    Gretel = 0x31A4, // R7.000, x?
-    Hansel = 0x31A5, // R7.000, x?
-    MagicBullet = 0x31A7, // R1.000, x?
-    MagicalConfluence = 0x31A6, // R1.000, x?
+    Gretel = 0x31A4, // R7.0
+    Hansel = 0x31A5, // R7.0
+    MagicBullet = 0x31A7, // R1.0
+    MagicalConfluence = 0x31A6, // R1.0
     Helper = 0x233C
 }
 
@@ -53,14 +52,14 @@ public enum AID : uint
     PassingLance = 23654, // HanselGretel->self, 8.4s cast, range 50 width 24 rect
     Explosion = 23655, // MagicBullet->self, 1.0s cast, range 4 width 50 rect
 
-    WanderingTrail1 = 23642, // Boss->self, 5.0s cast, single-target // Spawns yellow disks
+    WanderingTrail1 = 23642, // Boss->self, 5.0s cast, single-target, spawns yellow disks
     WanderingTrail2 = 23643, // Hansel->self, 5.0s cast, single-target
-    UnevenFooting = 23647, // HanselGretel->self, 9.3s cast, range 50 circle // proximity marker
+    UnevenFooting = 23647, // HanselGretel->self, 9.3s cast, range 50 circle, proximity AOE
 
     HungryLance1 = 23665, // Boss->self, 5.0s cast, range 40 120-degree cone
     HungryLance2 = 23666, // Hansel->self, 5.0s cast, range 40 120-degree cone
 
-    Repay = 23664, // Gretel->player, no cast, single-target
+    Repay = 23664, // Hansel/Gretel->player, no cast, single-target, knockback 5, punishment for attacking parry side
 
     Tandem1 = 23640, // Boss->self, no cast, single-target
     Tandem2 = 23641, // Hansel->self, no cast, single-target
@@ -75,27 +74,11 @@ public enum AID : uint
     SeedOfMagicBetaVisual1 = 23676, // Boss->self, 5.0s cast, single-target
     SeedOfMagicBetaVisual2 = 23677, // Hansel->self, 5.0s cast, single-target
     SeedOfMagicBeta = 23669, // Gretel->location, 5.0s cast, range 5 circle
-    Lamentation = 23667, // Gretel->self, 8.0s cast, range 50 circle
+    Lamentation1 = 23667, // Gretel->self, 8.0s cast, range 50 circle, raidwides as soon as Hansel dies
+    Lamentation2 = 23668 // Hansel->self, 8.0s cast, range 50 circle, raidwides as soon as Gretel dies
 }
 
 public enum SID : uint
 {
-    StrongOfSpear = 2537, // none->Boss/Hansel, extra=0x0
-    UnknownStatus = 2056, // none->Boss/Hansel, extra=0x122/0x125/0x124/0x123/0x11F/0x121
-    StrongOfShield = 2538, // none->Hansel/Boss, extra=0x0
-    DirectionalParry = 680, // none->Hansel/Boss, extra=0xE
     StrongerTogether = 2539 // none->Boss/Hansel, extra=0x0
-}
-
-public enum IconID : uint
-{
-    Tankbuster = 218, // player
-    Icon96 = 96, // player
-    Icon62 = 62, // player
-}
-
-public enum TetherID : uint
-{
-    Tether1 = 1, // Hansel->Boss
-    Tether151 = 151, // Boss->Hansel
 }

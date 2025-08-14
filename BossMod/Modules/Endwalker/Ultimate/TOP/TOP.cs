@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class SolarRayM(BossModule module) : Components.BaitAwayCast(module, (uint)AID.SolarRayM, 5f);
-class SolarRayF(BossModule module) : Components.BaitAwayCast(module, (uint)AID.SolarRayF, 5f);
-class P4BlueScreen(BossModule module) : Components.CastCounter(module, (uint)AID.BlueScreenAOE);
-class P5BlindFaith(BossModule module) : Components.CastHint(module, (uint)AID.BlindFaithSuccess, "Intermission");
+sealed class SolarRayM(BossModule module) : Components.BaitAwayCast(module, (uint)AID.SolarRayM, 5f);
+sealed class SolarRayF(BossModule module) : Components.BaitAwayCast(module, (uint)AID.SolarRayF, 5f);
+sealed class P4BlueScreen(BossModule module) : Components.CastCounter(module, (uint)AID.BlueScreenAOE);
+sealed class P5BlindFaith(BossModule module) : Components.CastHint(module, (uint)AID.BlindFaithSuccess, "Intermission");
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 908, PlanLevel = 90)]
-public class TOP(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
+public sealed class TOP(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
 {
     private Actor? _opticalUnit;
     private Actor? _omegaM;

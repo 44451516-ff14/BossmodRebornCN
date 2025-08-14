@@ -8,7 +8,18 @@
 // - repeat the process until no more actions can be found
 public sealed class ActionQueue
 {
-    public readonly record struct Entry(ActionID Action, Actor? Target, float Priority, float Expire, float Delay, float CastTime, Vector3 TargetPos, Angle? FacingAngle);
+    public readonly struct Entry(ActionID action, Actor? target, float priority, float expire, float delay, float castTime, Vector3 targetPos, Angle? facingAngle, bool manual)
+    {
+        public readonly ActionID Action = action;
+        public readonly Actor? Target = target;
+        public readonly float Priority = priority;
+        public readonly float Expire = expire;
+        public readonly float Delay = delay;
+        public readonly float CastTime = castTime;
+        public readonly Vector3 TargetPos = targetPos;
+        public readonly Angle? FacingAngle = facingAngle;
+        public readonly bool Manual = manual;
+    }
 
     // reference priority guidelines
     // values divisible by 1000 are reserved for standard cooldown planner priorities
@@ -38,15 +49,18 @@ public sealed class ActionQueue
     public readonly List<Entry> Entries = [];
 
     public void Clear() => Entries.Clear();
-    public void Push(ActionID action, Actor? target, float priority, float expire = float.MaxValue, float delay = 0, float castTime = 0, Vector3 targetPos = default, Angle? facingAngle = null) => Entries.Add(new(action, target, priority, expire, delay, castTime, targetPos, facingAngle));
+    public void Push(ActionID action, Actor? target, float priority, float expire = float.MaxValue, float delay = 0, float castTime = 0, Vector3 targetPos = default, Angle? facingAngle = null, bool manual = false) => Entries.Add(new(action, target, priority, expire, delay, castTime, targetPos, facingAngle, manual));
 
     public Entry FindBest(WorldState ws, Actor player, ReadOnlySpan<Cooldown> cooldowns, float animationLock, AIHints hints, float instantAnimLockDelay, bool allowDismount)
     {
         Entries.Sort((b, a) => (a.Priority, -a.Expire).CompareTo((b.Priority, -b.Expire)));
         Entry best = default;
         var deadline = float.MaxValue; // any candidate we consider, if executed, should allow executing next action by this deadline
-        foreach (ref var candidate in Entries.AsSpan())
+        var entries = CollectionsMarshal.AsSpan(Entries);
+        var len = entries.Length;
+        for (var i = 0; i < len; ++i)
         {
+            ref var candidate = ref entries[i];
             if (candidate.Priority < Priority.Minimal)
                 break; // this and further actions are something we don't really want to execute (prio < minimal)
 

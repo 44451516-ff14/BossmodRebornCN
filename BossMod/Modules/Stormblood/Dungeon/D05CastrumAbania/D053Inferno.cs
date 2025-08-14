@@ -73,26 +73,33 @@ class RahuCometKB(BossModule module, uint aid, float distance) : Components.Simp
     {
         if (Casters.Count != 0 && _aoe1.Casters.Count == 0)
         {
-            var source = Casters[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 20f, Angle.FromDirection(Arena.Center - source.Position), 20f.Degrees()), Module.CastFinishAt(source.CastInfo));
+            ref readonly var c = ref Casters.Ref(0);
+            var center = Arena.Center;
+            hints.AddForbiddenZone(ShapeDistance.InvertedCone(center, 20f, Angle.FromDirection(center - c.Origin), 20f.Degrees()), c.Activation);
         }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var count1 = _aoe1.Casters.Count;
+        var aoes1 = CollectionsMarshal.AsSpan(_aoe1.Casters);
         for (var i = 0; i < count1; ++i)
         {
-            var aoe = _aoe1.Casters[i];
+            ref readonly var aoe = ref aoes1[i];
             if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         var count2 = _aoe2.Casters.Count;
+        var aoes2 = CollectionsMarshal.AsSpan(_aoe1.Casters);
         for (var i = 0; i < count2; ++i)
         {
-            var aoe = _aoe2.Casters[i];
+            ref readonly var aoe = ref aoes2[i];
             if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

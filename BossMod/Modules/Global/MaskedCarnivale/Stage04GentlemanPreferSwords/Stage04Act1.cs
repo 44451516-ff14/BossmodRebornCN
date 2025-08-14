@@ -14,7 +14,7 @@ public enum AID : uint
     SanguineBite = 14361, // Boss->self, no cast, range 3+R width 2 rect
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -22,7 +22,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -30,7 +30,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage04Act1States : StateMachineBuilder
+sealed class Stage04Act1States : StateMachineBuilder
 {
     public Stage04Act1States(BossModule module) : base(module)
     {
@@ -53,7 +53,7 @@ class Stage04Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 614, NameID = 8086, SortOrder = 1)]
-public class Stage04Act1 : BossModule
+public sealed class Stage04Act1 : BossModule
 {
     public Stage04Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

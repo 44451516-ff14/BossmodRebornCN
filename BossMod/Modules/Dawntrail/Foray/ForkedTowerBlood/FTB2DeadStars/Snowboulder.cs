@@ -9,15 +9,15 @@ sealed class Snowboulder(BossModule module) : Components.GenericAOEs(module)
     private bool isInit;
     private PolygonWithHolesDistanceFunction distance;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => isInit && slot is >= 0 and < 8 ? CollectionsMarshal.AsSpan(_aoesPerPlayer[slot]) : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => isInit && slot < PartyState.MaxPartySize ? CollectionsMarshal.AsSpan(_aoesPerPlayer[slot]) : [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.SnowBoulderVisual)
         {
             rectangles.Add(new(caster.Position, spell.LocXZ, 5f));
-            activations.Add(Module.CastFinishAt(spell, 0.1f));
-            if (rectangles.Count % 2 == 0)
+            activations.Add(Module.CastFinishAt(spell, 0.1d));
+            if ((rectangles.Count & 1) == 0)
             {
                 ComputeNonOverlappingArea();
             }
@@ -56,19 +56,20 @@ sealed class Snowboulder(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.SnowBoulder)
         {
-            var targets = spell.Targets;
-            var count = targets.Count;
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
             rectangles.RemoveAt(0);
             activations.RemoveAt(0);
-            for (var i = 0; i < count; ++i)
+            for (var i = 0; i < len; ++i)
             {
-                var slot = Raid.FindSlot(targets[i].ID);
-                if (slot is >= 0 and < 8)
+                ref readonly var targ = ref targets[i];
+                var slot = Raid.FindSlot(targ.ID);
+                if (slot < PartyState.MaxPartySize)
                 {
                     Vulnerable[slot] = true;
                 }
             }
-            if (++NumCasts % 2 == 0 && NumCasts < 6)
+            if (((++NumCasts) & 1) == 0 && NumCasts < 6)
             {
                 Array.Clear(_aoesPerPlayer);
                 ComputeNonOverlappingArea();
@@ -78,12 +79,16 @@ sealed class Snowboulder(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!isInit)
+        if (!isInit || slot > PartyState.MaxPartySize)
+        {
             return;
+        }
         var aoes = _aoesPerPlayer[slot];
         var count = aoes.Count;
         if (count == 0)
+        {
             return;
+        }
         if (!Vulnerable[slot])
         {
             var risky = true;
@@ -165,13 +170,30 @@ sealed class SnowBoulderKnockback(BossModule module) : Components.GenericKnockba
     {
         if (!_charge.Vulnerable[slot] && _kbs.Count != 0)
         {
-            var act = _kbs[0].Activation;
+            ref var kb = ref _kbs.Ref(0);
+            var act = kb.Activation;
             if (!IsImmune(slot, act))
             {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 20f), _kbs[0].Activation);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 20f), kb.Activation);
             }
         }
     }
 }
 
 sealed class AvalaunchTether(BossModule module) : Components.StretchTetherDuo(module, 58f, 8f, (uint)TetherID.AvalaunchBad);
+
+sealed class IceboundBuffoonery(BossModule module) : BossComponent(module)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var e = hints.PotentialTargets[i];
+            if (e.Actor.OID != (uint)OID.Nereid)
+            {
+                e.Priority = AIHints.Enemy.PriorityInvincible;
+            }
+        }
+    }
+}

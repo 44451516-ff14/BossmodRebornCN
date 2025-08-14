@@ -77,19 +77,25 @@ class ValfodrKB(BossModule module) : Components.GenericKnockback(module, (uint)A
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoes1 = _aoe1.Casters;
-        var count = aoes1.Count;
+        var aoes1 = CollectionsMarshal.AsSpan(_aoe1.Casters);
+        var count = aoes1.Length;
         for (var i = 0; i < count; ++i)
         {
-            if (aoes1[i].Check(pos))
+            ref readonly var aoe = ref aoes1[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         var aoes2 = _aoe2.ActiveAOEs(slot, actor);
         var len = aoes2.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes2[i].Check(pos))
+            ref readonly var aoe = ref aoes2[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }

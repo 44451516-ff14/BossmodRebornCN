@@ -11,6 +11,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 6497, // Boss->player, no cast, single-target
+
     GrandStrike = 15047, // Boss->self, 1.5s cast, range 75+R width 2 rect
     MagitekField = 15049, // Boss->self, 5.0s cast, single-target, buffs defenses, interruptible
     AutoAttack2 = 6499, // RightClaw/LeftClaw->player, no cast, single-target
@@ -19,9 +20,9 @@ public enum AID : uint
     MagitekRay = 15048 // Boss->location, 3.0s cast, range 6 circle, voidzone, interruptible
 }
 
-class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandStrike, new AOEShapeRect(77.5f, 2f));
-class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
-class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.MagitekRay, GetVoidzones, 1.1f)
+sealed class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandStrike, new AOEShapeRect(77.5f, 2f));
+sealed class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
+sealed class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.MagitekRay, GetVoidzones, 1.1f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -36,21 +37,24 @@ class MagitekRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
-class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
-class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
+sealed class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
+sealed class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
         var clawsL = Module.Enemies((uint)OID.LeftClaw);
         var countL = clawsL.Count;
         if (countL != 0)
+        {
             for (var i = 0; i < countL; ++i)
             {
                 var clawL = clawsL[i];
@@ -60,9 +64,11 @@ class Hints2(BossModule module) : BossComponent(module)
                     break;
                 }
             }
+        }
         var clawsR = Module.Enemies((uint)OID.RightClaw);
         var countR = clawsR.Count;
         if (countR != 0)
+        {
             for (var i = 0; i < countR; ++i)
             {
                 var clawR = clawsR[i];
@@ -72,10 +78,11 @@ class Hints2(BossModule module) : BossComponent(module)
                     return;
                 }
             }
+        }
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -83,7 +90,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage17Act2States : StateMachineBuilder
+sealed class Stage17Act2States : StateMachineBuilder
 {
     public Stage17Act2States(BossModule module) : base(module)
     {
@@ -99,7 +106,7 @@ class Stage17Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 627, NameID = 8087, SortOrder = 2)]
-public class Stage17Act2 : BossModule
+public sealed class Stage17Act2 : BossModule
 {
     public Stage17Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

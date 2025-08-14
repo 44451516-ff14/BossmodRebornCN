@@ -27,39 +27,41 @@ public enum AID : uint
     FrozenSpike = 29592 // Helper->player, 5.0s cast, range 6 circle
 }
 
-class FrozenSpike(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FrozenSpike, 5);
-class HeavySnow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySnow, 15);
-class LightSnow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightSnow, 2);
-class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeCone(12, 60.Degrees()));
+sealed class FrozenSpike(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FrozenSpike, 5f);
+sealed class HeavySnow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavySnow, 15f);
+sealed class LightSnow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightSnow, 2f);
+sealed class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeCone(12f, 60f.Degrees()));
 
-class SpinFrozenCircle(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class SpinFrozenCircle(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(11), new AOEShapeDonut(10, 40)];
+    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(11f), new AOEShapeDonut(10f, 40f)];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.Spin)
+        if (spell.Action.ID == (uint)AID.Spin)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (Sequences.Count != 0)
         {
-            var order = (AID)spell.Action.ID switch
+            var order = spell.Action.ID switch
             {
-                AID.Spin => 0,
-                AID.FrozenCircle => 1,
+                (uint)AID.Spin => 0,
+                (uint)AID.FrozenCircle => 1,
                 _ => -1
             };
-            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(3));
+            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(3d));
         }
     }
 }
 
-class Northerlies(BossModule module) : Components.RaidwideCast(module, (uint)AID.Northerlies);
+sealed class Northerlies(BossModule module) : Components.RaidwideCast(module, (uint)AID.Northerlies);
 
-class D262YetiStates : StateMachineBuilder
+sealed class D262YetiStates : StateMachineBuilder
 {
     public D262YetiStates(BossModule module) : base(module)
     {
@@ -74,16 +76,16 @@ class D262YetiStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3040, SortOrder = 3)]
-public class D262Yeti(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D262Yeti(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly WPos[] vertices = [new(-93.88f, -134.57f), new(-93.31f, -134.48f), new(-88.91f, -132.66f), new(-88.47f, -132.41f), new(-84.85f, -129.63f),
-    new(-84.41f, -129.2f), new(-81.76f, -125.74f), new(-81.45f, -125.31f), new(-79.64f, -120.94f), new(-79.49f, -120.38f),
-    new(-78.85f, -115.5f), new(-78.45f, -115.08f), new(-78.48f, -114.5f), new(-82.26f, -104.43f), new(-82.6f, -103.92f),
-    new(-83.07f, -103.72f), new(-84.41f, -101.97f), new(-84.82f, -101.56f), new(-88.37f, -98.83f), new(-88.85f, -98.53f),
-    new(-92.93f, -96.85f), new(-93.46f, -96.65f), new(-98.26f, -96.02f), new(-98.85f, -96.04f), new(-100.54f, -96.27f),
-    new(-101.13f, -96.33f), new(-101.69f, -96.15f), new(-113.46f, -103.21f), new(-115.39f, -105.75f), new(-117.29f, -110.32f),
-    new(-117.42f, -110.91f), new(-118, -115.26f), new(-118.02f, -115.76f), new(-117.4f, -120.4f), new(-117.25f, -120.96f),
-    new(-115.59f, -124.96f), new(-115.31f, -125.52f), new(-112.33f, -129.4f), new(-108.27f, -132.53f), new(-103.85f, -134.37f),
-    new(-103.33f, -134.53f), new(-98.95f, -135.11f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(-98.24f, -135.15f), new(-93.57f, -134.53f), new(-88.72f, -132.58f),
+    new(-84.62f, -129.45f), new(-81.51f, -125.42f),
+    new(-79.55f, -120.71f), new(-78.84f, -115.47f), new(-78.44f, -115.05f), new(-78.5f, -114.39f), new(-82.38f, -104.18f),
+    new(-82.93f, -103.86f), new(-84.44f, -101.95f), new(-84.91f, -101.5f), new(-88.37f, -98.85f), new(-88.92f, -98.51f),
+    new(-92.98f, -96.83f), new(-93.61f, -96.64f), new(-98.08f, -96.05f), new(-98.74f, -96.04f), new(-100.64f, -96.29f),
+    new(-101.90f, -96.28f), new(-113.24f, -103.09f), new(-113.77f, -103.51f), new(-114.06f, -104.03f), new(-115.22f, -105.55f),
+    new(-115.55f, -106.11f), new(-117.24f, -110.21f), new(-117.41f, -110.84f), new(-118.00f, -115.27f), new(-117.99f, -115.93f),
+    new(-117.41f, -120.35f), new(-117.24f, -120.97f), new(-115.54f, -125.09f), new(-115.22f, -125.64f), new(-112.53f, -129.14f),
+    new(-112.08f, -129.61f), new(-108.50f, -132.36f), new(-107.92f, -132.69f), new(-103.82f, -134.38f), new(-103.16f, -134.56f),
+    new(-98.69f, -135.15f)])]);
 }

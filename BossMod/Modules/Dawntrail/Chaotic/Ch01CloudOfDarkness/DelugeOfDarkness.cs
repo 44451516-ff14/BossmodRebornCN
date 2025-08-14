@@ -32,7 +32,7 @@ sealed class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module
                     }
                 }
                 else
-                    tiles[index++] = new(square, CellCenter(i), Color: Colors.FutureVulnerable);
+                    tiles[index++] = new(square, CellCenter(i), color: Colors.FutureVulnerable);
             }
         }
         return tiles.AsSpan()[..index];
@@ -178,10 +178,10 @@ sealed class Phase2AIHints(BossModule module) : BossComponent(module)
         switch (status.ID)
         {
             case (uint)SID.InnerDarkness:
-                isInside[Raid.FindSlot(actor.InstanceID)] = true;
+                isInside.Set(Raid.FindSlot(actor.InstanceID));
                 break;
             case (uint)SID.OuterDarkness:
-                isInside[Raid.FindSlot(actor.InstanceID)] = false;
+                isInside.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }
     }

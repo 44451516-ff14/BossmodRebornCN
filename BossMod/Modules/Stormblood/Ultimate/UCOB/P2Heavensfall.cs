@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UCOB;
 
-class P2Heavensfall(BossModule module) : Components.GenericKnockback(module, (uint)AID.Heavensfall, true)
+class P2Heavensfall(BossModule module) : Components.GenericKnockback(module, (uint)AID.Heavensfall)
 {
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        return new Knockback[1] { new(Arena.Center, 11f) }; // TODO: activation
+        return new Knockback[1] { new(Arena.Center, 11f, ignoreImmunes: true) }; // TODO: activation
     }
 }
 

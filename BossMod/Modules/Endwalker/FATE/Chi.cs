@@ -50,7 +50,7 @@ public enum AID : uint
     ThermobaricExplosive2 = 25966 // Helper1->location, 10.0s cast, range 55 circle, damage fall off AOE
 }
 
-class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
+sealed class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(9);
     public static readonly AOEShapeRect Square = new(10f, 10f, 10f);
@@ -59,12 +59,16 @@ class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var act0 = aoes[0].Activation;
+        ref var aoe0 = ref aoes[0];
+        ref var aoeL = ref aoes[^1];
+        var act0 = aoe0.Activation;
         var deadline1 = act0.AddSeconds(1d);
         var deadline2 = act0.AddSeconds(2.5d);
-        var isNotLastSet = aoes[^1].Activation > deadline1;
+        var isNotLastSet = aoeL.Activation > deadline1;
         var color = Colors.Danger;
         var index = 0;
         for (var i = 0; i < count; ++i)
@@ -75,11 +79,15 @@ class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
             if (aoe.Activation < deadline1)
             {
                 if (isNotLastSet)
+                {
                     aoe.Color = color;
+                }
                 aoe.Risky = true;
             }
             else
+            {
                 aoe.Risky = false;
+            }
             ++index;
         }
         return aoes[..index];
@@ -94,17 +102,21 @@ class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         if (activation != default)
+        {
             _aoes.Add(new(Square, actor.Position, Angle.AnglesCardinals[1], WorldState.FutureTime(activation)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.BunkerBuster1 or (uint)AID.BunkerBuster2)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
-class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
+sealed class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(15);
 
@@ -115,12 +127,16 @@ class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var act0 = aoes[0].Activation;
+        ref var aoe0 = ref aoes[0];
+        ref var aoeL = ref aoes[^1];
+        var act0 = aoe0.Activation;
         var deadline1 = act0.AddSeconds(1d);
         var deadline2 = act0.AddSeconds(3.5d);
-        var isNotLastSet = aoes[^1].Activation > deadline1;
+        var isNotLastSet = aoeL.Activation > deadline1;
         var color = Colors.Danger;
         var index = 0;
         for (var i = 0; i < count; ++i)
@@ -131,11 +147,15 @@ class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
             if (aoe.Activation < deadline1)
             {
                 if (isNotLastSet)
+                {
                     aoe.Color = color;
+                }
                 aoe.Risky = true;
             }
             else
+            {
                 aoe.Risky = false;
+            }
             ++index;
         }
         return aoes[..index];
@@ -150,17 +170,21 @@ class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         if (activation != default)
+        {
             _aoes.Add(new(Bunkerbuster.Square, actor.Position, Angle.AnglesCardinals[1], WorldState.FutureTime(activation)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.BouncingBombFirst or (uint)AID.BouncingBombRest)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
-class Combos(BossModule module) : Components.GenericAOEs(module)
+sealed class Combos(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
@@ -173,18 +197,12 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < count; ++i)
+        ref var aoe0 = ref aoes[0];
+        if (count > 1)
         {
-            ref var aoe = ref aoes[i];
-            if (i == 0)
-            {
-                if (count > 1)
-                    aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-            else
-                aoe.Risky = false;
+            aoe0.Color = Colors.Danger;
         }
+        aoe0.Risky = true;
         return aoes;
     }
 
@@ -192,8 +210,8 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
     {
         void AddAOEs(AOEShape shape, bool backwards = false)
         {
-            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.Add(new(cone, shape == rect ? caster.Position : spell.LocXZ, spell.Rotation + (backwards ? 180f.Degrees() : default), Module.CastFinishAt(spell, 3.1f)));
+            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: false));
+            _aoes.Add(new(cone, shape == rect ? caster.Position : spell.LocXZ, spell.Rotation + (backwards ? 180f.Degrees() : default), Module.CastFinishAt(spell, 3.1d), risky: false));
         }
 
         switch (spell.Action.ID)
@@ -220,6 +238,7 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.CarapaceForeArms2dot0B:
@@ -233,33 +252,36 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (_aoes.Count != 2)
+        {
             return;
+        }
         // make ai stay close to boss to ensure successfully dodging the combo
-        var aoe = _aoes[0];
+        ref var aoe = ref _aoes.Ref(0);
         hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 40f), aoe.Activation);
     }
 }
 
-class Hellburner(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Hellburner, 5f, tankbuster: true);
+sealed class Hellburner(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Hellburner, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
-class MissileShower(BossModule module) : Components.RaidwideCast(module, (uint)AID.MissileShowerVisual, "Raidwide x2");
-class ThermobaricExplosive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThermobaricExplosive2, 25f);
+sealed class MissileShower(BossModule module) : Components.RaidwideCast(module, (uint)AID.MissileShowerVisual, "Raidwide x2");
+sealed class ThermobaricExplosive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThermobaricExplosive2, 25f);
 
-class AssaultCarapace(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AssaultCarapace1, (uint)AID.AssaultCarapace2], new AOEShapeRect(120f, 16f));
-class AssaultCarapace3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCarapace3, new AOEShapeDonut(16f, 60f));
+sealed class AssaultCarapace(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AssaultCarapace1, (uint)AID.AssaultCarapace2], new AOEShapeRect(120f, 16f));
+sealed class AssaultCarapace3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCarapace3, new AOEShapeDonut(16f, 60f));
 
-class ForeArmsRearGuns(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ForeArms1, (uint)AID.ForeArms2,
+sealed class ForeArmsRearGuns(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ForeArms1, (uint)AID.ForeArms2,
 (uint)AID.RearGuns1, (uint)AID.RearGuns2], new AOEShapeCone(45f, 90f.Degrees()));
 
-class FreeFallBombs(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FreeFallBombs, 6f);
+sealed class FreeFallBombs(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FreeFallBombs, 6f);
 
-class ChiStates : StateMachineBuilder
+sealed class ChiStates : StateMachineBuilder
 {
     public ChiStates(BossModule module) : base(module)
     {
@@ -278,7 +300,7 @@ class ChiStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.Fate, GroupID = 1855, NameID = 10400)]
-public class Chi(WorldState ws, Actor primary) : BossModule(ws, primary, new(650f, 0f), new ArenaBoundsSquare(29.5f))
+public sealed class Chi(WorldState ws, Actor primary) : BossModule(ws, primary, new(650f, default), new ArenaBoundsSquare(29.5f))
 {
     protected override bool CheckPull() => base.CheckPull() && (Center - Raid.Player()!.Position).LengthSq() < 900f;
 }

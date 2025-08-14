@@ -7,7 +7,7 @@ class CloudToGround(BossModule module) : Components.Exaflare(module, 6f)
         if (spell.Action.ID is (uint)AID.NCloudToGroundAOEFirst or (uint)AID.SCloudToGroundAOEFirst)
         {
             // 4 central exaflares (+-6 along one axis, 0 along other) have 3 casts, 4 side exaflares (+-20 along one axis, +-5/15 along other) have 7 casts
-            Lines.Add(new() { Next = caster.Position, Advance = 6f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = (caster.Position - Arena.Center).LengthSq() > 100 ? 7 : 3, MaxShownExplosions = 3 });
+            Lines.Add(new(caster.Position, 6f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, (caster.Position - Arena.Center).LengthSq() > 100 ? 7 : 3, 3));
         }
     }
 

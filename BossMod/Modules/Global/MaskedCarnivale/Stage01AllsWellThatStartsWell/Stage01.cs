@@ -15,9 +15,9 @@ public enum AID : uint
     IronJustice = 14199 // Boss->self, 2.5s cast, range 8+R 120-degree cone
 }
 
-class IronJustice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice, new AOEShapeCone(9.5f, 60f.Degrees()));
+sealed class IronJustice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronJustice, new AOEShapeCone(9.5f, 60f.Degrees()));
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -25,7 +25,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage01States : StateMachineBuilder
+sealed class Stage01States : StateMachineBuilder
 {
     public Stage01States(BossModule module) : base(module)
     {
@@ -48,7 +48,7 @@ class Stage01States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 610, NameID = 8077)]
-public class Stage01 : BossModule
+public sealed class Stage01 : BossModule
 {
     public Stage01(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

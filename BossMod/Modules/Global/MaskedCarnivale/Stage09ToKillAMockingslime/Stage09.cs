@@ -25,8 +25,8 @@ public enum AID : uint
     Water = 14271 // Flan->player, 1.0s cast, single-target
 }
 
-class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
-class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.Dark, GetVoidzones, 1f)
+sealed class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
+sealed class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.Dark, GetVoidzones, 1d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -41,15 +41,17 @@ class DarkVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
 
-class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 5f);
+sealed class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 5f);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -57,7 +59,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage09States : StateMachineBuilder
+sealed class Stage09States : StateMachineBuilder
 {
     public Stage09States(BossModule module) : base(module)
     {
@@ -70,9 +72,9 @@ class Stage09States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 619, NameID = 8099)]
-public class Stage09 : BossModule
+public sealed class Stage09 : BossModule
 {
-    public Stage09(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
+    public Stage09(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {
         ActivateComponent<Hints>();
     }

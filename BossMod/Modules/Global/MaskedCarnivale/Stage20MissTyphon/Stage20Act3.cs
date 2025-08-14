@@ -21,17 +21,19 @@ public enum AID : uint
     ImpSong = 14744 // Ultros->self, 6.0s cast, range 50+R circle
 }
 
-class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13.1f, 45f.Degrees()));
-class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11.1f);
-class Tentacle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tentacle, 8f);
-class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, new AOEShapeRect(57.2f, 5f));
-class WallopKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Wallop, 20f, kind: Kind.AwayFromOrigin); //knockback actually delayed by 0.8s
-class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, 8f);
-class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong, showNameInHint: true);
-class Snort(BossModule module) : Components.CastHint(module, (uint)AID.Snort, "Use Diamondback!");
-class SnortKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Snort, 30f, kind: Kind.AwayFromOrigin);  //knockback actually delayed by 0.7s
+sealed class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13.1f, 45f.Degrees()));
+sealed class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11.1f);
+sealed class TentacleFireball(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Tentacle, (uint)AID.Fireball], 8f);
+sealed class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, Rect)
+{
+    public static readonly AOEShapeRect Rect = new(57.2f, 5f);
+}
+sealed class WallopKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Wallop, 20f, shape: Wallop.Rect);
+sealed class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong, showNameInHint: true);
+sealed class Snort(BossModule module) : Components.CastHint(module, (uint)AID.Snort, "Use Diamondback!");
+sealed class SnortKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Snort, 30f);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -44,26 +46,25 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage20Act3States : StateMachineBuilder
+sealed class Stage20Act3States : StateMachineBuilder
 {
     public Stage20Act3States(BossModule module) : base(module)
     {
         TrivialPhase()
             .DeactivateOnEnter<Hints>()
-            .ActivateOnEnter<Tentacle>()
+            .ActivateOnEnter<TentacleFireball>()
             .ActivateOnEnter<Megavolt>()
             .ActivateOnEnter<AquaBreath>()
             .ActivateOnEnter<ImpSong>()
             .ActivateOnEnter<Wallop>()
             .ActivateOnEnter<WallopKB>()
             .ActivateOnEnter<Snort>()
-            .ActivateOnEnter<SnortKB>()
-            .ActivateOnEnter<Fireball>();
+            .ActivateOnEnter<SnortKB>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 630, NameID = 3046, SortOrder = 3)]
-public class Stage20Act3 : BossModule
+public sealed class Stage20Act3 : BossModule
 {
     public Stage20Act3(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

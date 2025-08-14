@@ -26,7 +26,7 @@ class RokujoRevel(BossModule module) : Components.GenericAOEs(module)
 
         if (countLines > 1)
         {
-            aoes.Add(new(_shapeLine, Arena.Center, _pendingLines[1].dir, _pendingLines[1].activation, Risky: false));
+            aoes.Add(new(_shapeLine, Arena.Center, _pendingLines[1].dir, _pendingLines[1].activation, risky: false));
         }
 
         if (countCircles != 0 && ShapeCircle is var shapeCircle && shapeCircle != null)
@@ -52,7 +52,7 @@ class RokujoRevel(BossModule module) : Components.GenericAOEs(module)
                     var p = _pendingCircles[i];
                     if (p.activation > lastFutureActivation)
                         break;
-                    aoes.Add(new(shapeCircle, p.origin, default, p.activation, Risky: false));
+                    aoes.Add(new(shapeCircle, p.origin, default, p.activation, risky: false));
                 }
             }
             else

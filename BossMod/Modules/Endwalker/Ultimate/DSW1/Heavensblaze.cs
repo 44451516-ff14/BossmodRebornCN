@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
 // TODO: consider adding invuln hint for tether tank?..
-class HolyShieldBash : Components.BaitAwayTethers
+sealed class HolyShieldBash : Components.BaitAwayTethers
 {
     public HolyShieldBash(BossModule module) : base(module, new AOEShapeRect(80f, 4f), (uint)TetherID.HolyBladedance, (uint)AID.HolyShieldBash)
     {
@@ -12,7 +12,7 @@ class HolyShieldBash : Components.BaitAwayTethers
 }
 
 // note: this is not really a 'bait', but component works well enough
-class HolyBladedance(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HolyBladedanceAOE)
+sealed class HolyBladedance(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HolyBladedanceAOE)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -21,7 +21,7 @@ class HolyBladedance(BossModule module) : Components.GenericBaitAway(module, (ui
     }
 }
 
-class Heavensblaze(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Heavensblaze, 4, 7, 7)
+sealed class Heavensblaze(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Heavensblaze, 4f, 7, 7)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {

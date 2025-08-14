@@ -6,7 +6,7 @@ class BladesOfAttis(BossModule module) : Components.Exaflare(module, 7f)
     {
         if (spell.Action.ID == (uint)AID.BladesOfAttisFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 7f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 2f, ExplosionsLeft = 8, MaxShownExplosions = 8 });
+            Lines.Add(new(caster.Position, 7f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 2d, 8, 8));
         }
     }
 

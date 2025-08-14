@@ -2,11 +2,9 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 
 public enum OID : uint
 {
-    Boss = 0x46E3, // R7.0
+    Magitaur = 0x46E3, // R7.0
     AssassinsDagger = 0x46E6, // R1.0
     SagesStaff = 0x46E5, // R1.0
-    _Gen_Actor1ebd90 = 0x1EBD90, // R0.500, x1, EventObj type
-    _Gen_Actor1e8f2f = 0x1E8F2F, // R0.500, x1, EventObj type
     UniversalEmpowermentConduit = 0x46F9, // R4.0
     AxeEmpowermentConduit = 0x46EC, // R4.0
     LanceEmpowermentConduit = 0x46EB, // R4.0
@@ -64,7 +62,6 @@ public enum AID : uint
     CarvingRune = 41554, // Helper->player, no cast, single-target
 
     HolyLance = 41557, // Boss->self, 5.0s cast, single-target
-
     LuminousLanceVisual = 41558, // LuminousLance->self, no cast, single-target
     LancelightRect = 41560, // Helper->self, no cast, range 20 width 20 rect
     LancelightCircle = 41561, // Helper->self, no cast, range 100 circle
@@ -72,13 +69,6 @@ public enum AID : uint
 
     UnsealedAuraEnrageVisual = 41575, // Boss->self, 9.2+0,8s cast, range 100 circle
     UnsealedAuraEnrage = 39912 // Helper->self, 10.0s cast, ???
-}
-
-public enum IconID : uint
-{
-    _Gen_Icon_loc08sp_08a_se_c = 573, // player->self
-    _Gen_Icon_tag_ae5m_8s_0v = 345, // player->self
-    _Gen_Icon_com_share2i = 100, // player->self
 }
 
 public enum SID : uint

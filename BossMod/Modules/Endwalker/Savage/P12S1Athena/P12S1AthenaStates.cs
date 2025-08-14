@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S1Athena;
 
-class P12S1AthenaStates : StateMachineBuilder
+sealed class P12S1AthenaStates : StateMachineBuilder
 {
     public P12S1AthenaStates(BossModule module) : base(module)
     {
@@ -32,13 +32,13 @@ class P12S1AthenaStates : StateMachineBuilder
 
     private State OnTheSoul(uint id, float delay)
     {
-        return Cast(id, (uint)AID.OnTheSoul, delay, 5, "Raidwide")
+        return Cast(id, (uint)AID.OnTheSoul, delay, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Glaukopis(uint id, float delay)
     {
-        Cast(id, (uint)AID.Glaukopis, delay, 5)
+        Cast(id, (uint)AID.Glaukopis, delay, 5f)
             .ActivateOnEnter<Glaukopis>();
         ComponentCondition<Glaukopis>(id + 0x10, 0.1f, comp => comp.NumCasts >= 1, "Tankbuster 1")
             .SetHint(StateMachine.StateHint.Tankbuster);
@@ -49,11 +49,11 @@ class P12S1AthenaStates : StateMachineBuilder
 
     private void Dialogos(uint id, float delay)
     {
-        CastMulti(id, [(uint)AID.Apodialogos, (uint)AID.Peridialogos], delay, 5)
+        CastMulti(id, [(uint)AID.Apodialogos, (uint)AID.Peridialogos], delay, 5f)
             .ActivateOnEnter<Dialogos>();
         ComponentCondition<Dialogos>(id + 0x10, 0.3f, comp => comp.NumCasts >= 1, "Tankbuster in/out")
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ComponentCondition<Dialogos>(id + 0x11, 1, comp => comp.NumCasts >= 2, "Party stack out/in")
+        ComponentCondition<Dialogos>(id + 0x11, 1f, comp => comp.NumCasts >= 2, "Party stack out/in")
             .DeactivateOnExit<Dialogos>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
@@ -61,7 +61,7 @@ class P12S1AthenaStates : StateMachineBuilder
     private void TrinityOfSoulsCast(uint id, float delay)
     {
         // note: icons appear ~1, 4, 7 seconds into cast
-        CastMulti(id, [(uint)AID.TrinityOfSoulsDirectTR, (uint)AID.TrinityOfSoulsDirectTL, (uint)AID.TrinityOfSoulsInvertBR, (uint)AID.TrinityOfSoulsInvertBL], delay, 10, "Wings 1")
+        CastMulti(id, [(uint)AID.TrinityOfSoulsDirectTR, (uint)AID.TrinityOfSoulsDirectTL, (uint)AID.TrinityOfSoulsInvertBR, (uint)AID.TrinityOfSoulsInvertBL], delay, 10f, "Wings 1")
             .ActivateOnEnter<TrinityOfSouls>();
     }
 
@@ -144,15 +144,13 @@ class P12S1AthenaStates : StateMachineBuilder
             .ActivateOnEnter<WhiteFlame>() // PATE happens ~5.1s into cast - record the sources, but don't show hints yet
             .DeactivateOnExit<EngravementOfSouls3Shock>(); // towers resolve at roughly the same time as cast end (sometimes slightly earlier, sometimes slightly later)
         ComponentCondition<EngravementOfSoulsTethers>(id + 0x30, 1.3f, comp => comp.NumCasts > 0, "Destroy platforms + Tethers"); // destroy platforms (sample casts) happens roughly at the same time
-        ComponentCondition<TheosCross>(id + 0x40, 3.7f, comp => comp.Casters.Count > 0, "Cross/plus bait") // TODO: don't show name?
+        ComponentCondition<TheosCrossSaltire>(id + 0x40, 3.7f, comp => comp.Casters.Count > 0, "Cross/plus bait") // TODO: don't show name?
             .ActivateOnEnter<EngravementOfSouls3Spread>()
             .ActivateOnEnter<EngravementOfSoulsTowers>()
-            .ActivateOnEnter<TheosCross>()
-            .ActivateOnEnter<TheosSaltire>();
-        ComponentCondition<TheosCross>(id + 0x41, 3.0f, comp => comp.NumCasts > 0, "Cross/plus resolve") // TODO: don't show name?
+            .ActivateOnEnter<TheosCrossSaltire>();
+        ComponentCondition<TheosCrossSaltire>(id + 0x41, 3.0f, comp => comp.NumCasts > 0, "Cross/plus resolve") // TODO: don't show name?
             .ExecOnEnter<WhiteFlame>(comp => comp.Enable())
-            .DeactivateOnExit<TheosCross>()
-            .DeactivateOnExit<TheosSaltire>();
+            .DeactivateOnExit<TheosCrossSaltire>();
         ComponentCondition<EngravementOfSouls3Spread>(id + 0x42, 0.3f, comp => !comp.Active, "Tower baits")
             .DeactivateOnExit<EngravementOfSouls3Spread>()
             .DeactivateOnExit<EngravementOfSoulsTethers>(); // keep active so that spread component can use it

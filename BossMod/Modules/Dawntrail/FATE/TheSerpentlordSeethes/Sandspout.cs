@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.FATE.Ttokrrone;
 
-class Sandspout(BossModule module) : Components.GenericAOEs(module)
+sealed class Sandspout(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(60f, 45f.Degrees());
     private static readonly AOEShapeCircle circle = new(13f);

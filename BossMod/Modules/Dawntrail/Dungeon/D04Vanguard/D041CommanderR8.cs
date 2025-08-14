@@ -46,15 +46,18 @@ sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds == D041CommanderR8.StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.4f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.4d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x0Au)
+        if (index == 0x0A && state == 0x00020001u)
         {
             Arena.Bounds = D041CommanderR8.DefaultBounds;
             _aoe = null;
@@ -89,6 +92,7 @@ sealed class EnhancedMobility(BossModule module) : Components.GenericAOEs(module
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.EnhancedMobility1:
@@ -102,6 +106,7 @@ sealed class EnhancedMobility(BossModule module) : Components.GenericAOEs(module
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 }
 
@@ -124,7 +129,8 @@ sealed class RapidRotary(BossModule module) : Components.GenericAOEs(module)
         {
             for (var i = 0; i < 2; ++i)
             {
-                aoes[i].Color = Colors.Danger;
+                ref var aoe = ref aoes[i];
+                aoe.Color = Colors.Danger;
             }
         }
         return aoes;
@@ -149,10 +155,10 @@ sealed class RapidRotary(BossModule module) : Components.GenericAOEs(module)
         }
         void AddAOEs(AOEShape shape2, Angle initialAngle)
         {
-            var pos = WPos.ClampToGrid(Arena.Center);
+            var pos = Arena.Center.Quantized();
             for (var i = 0; i < 3; ++i)
             {
-                var activation = Module.CastFinishAt(spell, 1.8f + i * 0.3f);
+                var activation = Module.CastFinishAt(spell, 1.8d + i * 0.3d);
                 var angle = initialAngle - i * a120;
                 _aoes.Add(new(donutSectorSmall, pos, angle, activation));
                 _aoes.Add(new(shape2, pos, angle, activation));

@@ -2,32 +2,129 @@
 
 public enum OID : uint
 {
-    Boss = 0x5BF // x1
+    Boss = 0x5BF, // R4.0
+    MorbolFruit1 = 0x1E8ED9, // R0.5 --
+    MorbolFruit2 = 0x1E8ED7, // R0.5 --
+    MorbolFruit3 = 0x1E8ED8, // R0.5 --
+    MorbolFruit4 = 0x1E878A, // R0.5 --
+}
+
+public enum SID : uint
+{
+    GoldLung = 302 // Boss->player, extra=0x1/0x2/0x3/0x4
 }
 
 public enum AID : uint
 {
     AutoAttack = 1350, // Boss->player, no cast, single-target
-    HundredLashings = 1031, // Boss->self, no cast, range 8+R ?-degree cone
+
+    HundredLashings = 1031, // Boss->self, no cast, range 8+R 120-degree cone
     GoldRush = 1032, // Boss->self, no cast, raidwide
     GoldDust = 1033 // Boss->location, 3.5s cast, range 8 circle
 }
 
-class HundredLashings(BossModule module) : Components.Cleave(module, (uint)AID.HundredLashings, new AOEShapeCone(12f, 45f.Degrees())); // TODO: verify angle
-class GoldDust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldDust, 8f);
+sealed class HundredLashings(BossModule module) : Components.Cleave(module, (uint)AID.HundredLashings, new AOEShapeCone(12f, 60f.Degrees()));
+sealed class GoldDust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldDust, 8f);
 
-class D121LocksmithStates : StateMachineBuilder
+sealed class MorbolFruit(BossModule module) : BossComponent(module)
+{
+    private BitMask goldlung;
+    private readonly List<Actor> _fruits = module.Enemies([(uint)OID.MorbolFruit1, (uint)OID.MorbolFruit2, (uint)OID.MorbolFruit3, (uint)OID.MorbolFruit4]);
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.GoldLung && status.Extra > 0x02)
+        {
+            goldlung.Set(Raid.FindSlot(actor.InstanceID));
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.GoldLung && status.Extra > 0x02)
+        {
+            goldlung.Clear(Raid.FindSlot(actor.InstanceID));
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (!goldlung[slot])
+        {
+            return;
+        }
+
+        Actor? closest = null;
+        var minDistSq = float.MaxValue;
+
+        var count = _fruits.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var fruit = _fruits[i];
+            if (fruit.IsTargetable)
+            {
+                hints.GoalZones.Add(hints.GoalSingleTarget(fruit, 2f, 5f));
+                var distSq = (actor.Position - fruit.Position).LengthSq();
+                if (distSq < minDistSq)
+                {
+                    minDistSq = distSq;
+                    closest = fruit;
+                }
+            }
+        }
+        hints.InteractWithTarget = closest;
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        if (!goldlung[slot])
+        {
+            return;
+        }
+
+        var count = _fruits.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            if (_fruits[i].IsTargetable)
+            {
+                hints.Add("Eat a fruit to cleanse debuff!");
+                return;
+            }
+        }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (!goldlung[pcSlot])
+        {
+            return;
+        }
+
+        var count = _fruits.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var fruit = _fruits[i];
+            if (fruit.IsTargetable)
+            {
+                Arena.AddCircle(fruit.Position, 3f, Colors.Safe);
+            }
+        }
+    }
+}
+
+sealed class D121LocksmithStates : StateMachineBuilder
 {
     public D121LocksmithStates(BossModule module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<MorbolFruit>()
             .ActivateOnEnter<HundredLashings>()
             .ActivateOnEnter<GoldDust>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 5, NameID = 1534)]
-public class D121Locksmith(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D121Locksmith(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(26.26f, -26.39f), new(27.55f, -26.38f), new(28.27f, -26.26f), new(38.31f, -26.38f), new(38.83f, -25.95f),
     new(39.62f, -24.91f), new(40.05f, -24.44f), new(41.3f, -24.3f), new(41.91f, -24.3f), new(43.22f, -24.45f),

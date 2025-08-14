@@ -9,15 +9,24 @@ abstract class BlazingBenifice(BossModule module, uint aid, uint oid) : Componen
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var startTime = WorldState.CurrentTime.AddSeconds(-5d);
         var deadline = aoes[0].Activation.AddSeconds(1d);
         var index = 0;
-
-        while (index < count && aoes[index].Activation >= startTime && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            var act = aoe.Activation;
+            if (act < startTime || act >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -25,14 +34,19 @@ abstract class BlazingBenifice(BossModule module, uint aid, uint oid) : Componen
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == oid)
-            _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(21.7d)));
+        {
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(21.7d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0 && spell.Action.ID == aid)
+        if (spell.Action.ID == aid)
         {
-            _aoes.RemoveAt(0);
+            if (_aoes.Count != 0)
+            {
+                _aoes.RemoveAt(0);
+            }
             ++NumCasts;
         }
     }

@@ -9,7 +9,7 @@ public enum OID : uint
     Helper = 0x233C, // R0.500, x24
     AetherialTear = 0x330F, // R1.000, spawn during fight by Hyperdimensional Slash
     Brightsphere = 0x330E, // R1.000, spawn during fight by Shining Blade
-    SpearOfTheFury = 0x2E22, // R2.000,  during fight (pure-of-heart)
+    SpearOfTheFury = 0x2E22 // R2.000,  during fight (pure-of-heart)
     //_Gen_Haurchefant = 0x333D, // R0.500, x1
     //_Gen_Actorfd8a1 = 0xFD8A1, // R0.500-1.000, x1, EventNpc type
     //_Gen_Actor1eb681 = 0x1EB681, // R0.500, x0, EventObj type, and more spawn during fight
@@ -58,28 +58,25 @@ public enum AID : uint
     PureOfHeart = 25316, // SerCharibert->self, 35.5s cast, raidwide, damage depends on caster hp %?
     Shockwave = 25315, // SpearOfTheFury->self, no cast, raidwide, 7 casts every ~1.1s
     Brightwing = 25369, // Helper->self, no cast, range 18 ?-degree cone, baited on 2 closest targets
-    Skyblind = 25370, // Helper->location, 2.5s cast, range 3 puddle
+    Skyblind = 25370 // Helper->location, 2.5s cast, range 3 puddle
 }
 
 public enum SID : uint
 {
-    None = 0,
-    Skyblind = 2661, // Helper->player, after baiting cones
+    Skyblind = 2661 // Helper->player, after baiting cones
 }
 
 public enum TetherID : uint
 {
-    None = 0,
     HolyBladedance = 84, // SerAdelphel->player
-    Heavensflame = 9, // player->player
+    Heavensflame = 9 // player->player
 }
 
 public enum IconID : uint
 {
-    None = 0,
     HyperdimensionalSlash = 234,
     HeavensflameCircle = 281,
     HeavensflameTriangle = 282,
     HeavensflameSquare = 283,
-    HeavensflameCross = 284,
+    HeavensflameCross = 284
 }

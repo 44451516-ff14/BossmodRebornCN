@@ -34,7 +34,7 @@ class LightlessFlame(BossModule module) : Components.GenericAOEs(module, (uint)A
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.LightlessFlame)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.CurrentTime.AddSeconds(7d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.CurrentTime.AddSeconds(7d)));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

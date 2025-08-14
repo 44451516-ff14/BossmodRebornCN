@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S1Athena;
 
-class EngravementOfSoulsTethers(BossModule module) : Components.GenericBaitAway(module)
+sealed class EngravementOfSoulsTethers(BossModule module) : Components.GenericBaitAway(module)
 {
     public enum TetherType { None, Light, Dark }
 
@@ -36,12 +36,12 @@ class EngravementOfSoulsTethers(BossModule module) : Components.GenericBaitAway(
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        var (type, tooClose) = (TetherID)tether.ID switch
+        var (type, tooClose) = tether.ID switch
         {
-            TetherID.LightNear => (TetherType.Light, true),
-            TetherID.DarkNear => (TetherType.Dark, true),
-            TetherID.LightFar => (TetherType.Light, false),
-            TetherID.DarkFar => (TetherType.Dark, false),
+            (uint)TetherID.LightNear => (TetherType.Light, true),
+            (uint)TetherID.DarkNear => (TetherType.Dark, true),
+            (uint)TetherID.LightFar => (TetherType.Light, false),
+            (uint)TetherID.DarkFar => (TetherType.Dark, false),
             _ => (TetherType.None, false)
         };
         if (type != TetherType.None && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
@@ -68,7 +68,7 @@ class EngravementOfSoulsTethers(BossModule module) : Components.GenericBaitAway(
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.SearingRadiance or AID.Shadowsear)
+        if (spell.Action.ID is (uint)AID.SearingRadiance or (uint)AID.Shadowsear)
         {
             ++NumCasts;
             CurrentBaits.RemoveAll(b => b.Source == caster);
@@ -77,52 +77,52 @@ class EngravementOfSoulsTethers(BossModule module) : Components.GenericBaitAway(
 }
 
 // towers can not be soaked by same colored tilt
-class EngravementOfSoulsTowers(BossModule module) : Components.GenericTowers(module)
+sealed class EngravementOfSoulsTowers(BossModule module) : Components.GenericTowers(module)
 {
-    public bool CastsStarted { get; private set; }
+    public bool CastsStarted;
     private BitMask _globallyForbidden; // these players can't close any of the towers due to vulns
     private BitMask _lightForbidden; // these players can't close light towers due to light debuff
     private BitMask _darkForbidden; // these players can't close light towers due to light debuff
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.UmbralTilt: // light guy can't close light tower
-                _lightForbidden.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.UmbralTilt: // light guy can't close light tower
+                _lightForbidden[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.AstralTilt: // dark guy can't close dark tower
-                _darkForbidden.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.AstralTilt: // dark guy can't close dark tower
+                _darkForbidden[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.UmbralbrightSoul: // dropping a tower causes vuln
-            case SID.AstralbrightSoul:
-            case SID.HeavensflameSoul: // dropping a spread causes vuln
-                _globallyForbidden.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.UmbralbrightSoul: // dropping a tower causes vuln
+            case (uint)SID.AstralbrightSoul:
+            case (uint)SID.HeavensflameSoul: // dropping a spread causes vuln
+                _globallyForbidden[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
         }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.UmbralTilt: // light guy can't close light tower
-                _lightForbidden.Clear(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.UmbralTilt: // light guy can't close light tower
+                _lightForbidden[Raid.FindSlot(actor.InstanceID)] = false;
                 break;
-            case SID.AstralTilt: // dark guy can't close dark tower
-                _darkForbidden.Clear(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.AstralTilt: // dark guy can't close dark tower
+                _darkForbidden[Raid.FindSlot(actor.InstanceID)] = false;
                 break;
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.UmbralAdvance:
+            case (uint)AID.UmbralAdvance:
                 AddTower(spell.LocXZ, true, true);
                 break;
-            case AID.AstralAdvance:
+            case (uint)AID.AstralAdvance:
                 AddTower(spell.LocXZ, false, true);
                 break;
         }
@@ -130,16 +130,16 @@ class EngravementOfSoulsTowers(BossModule module) : Components.GenericTowers(mod
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.UmbralGlow:
+            case (uint)AID.UmbralGlow:
                 AddTower(caster.Position, true, false);
                 break;
-            case AID.AstralGlow:
+            case (uint)AID.AstralGlow:
                 AddTower(caster.Position, false, false);
                 break;
-            case AID.UmbralAdvance:
-            case AID.AstralAdvance:
+            case (uint)AID.UmbralAdvance:
+            case (uint)AID.AstralAdvance:
                 ++NumCasts;
                 Towers.Clear();
                 break;
@@ -162,6 +162,6 @@ class EngravementOfSoulsTowers(BossModule module) : Components.GenericTowers(mod
             }
         }
 
-        Towers.Add(new(pos, 3, forbiddenSoakers: _globallyForbidden | (isLight ? _lightForbidden : _darkForbidden)));
+        Towers.Add(new(pos, 3f, forbiddenSoakers: _globallyForbidden | (isLight ? _lightForbidden : _darkForbidden)));
     }
 }

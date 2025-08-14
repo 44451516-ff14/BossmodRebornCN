@@ -9,7 +9,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance? _aoe;
     private bool lyonDeathwall;
     private bool dawonDeathwall;
-    public bool IsDawonArena = true; // 1 = dawon, 2 = lyon
+    public bool IsDawonArena = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6, 0, 3)
+class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6f, default, 3)
 {
     private BitMask _forbidden;
 
@@ -12,12 +12,12 @@ class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        switch ((IconID)iconID)
+        switch (iconID)
         {
-            case IconID.SteelWeb:
-                AddStack(actor, WorldState.FutureTime(6.1f), _forbidden);
+            case (uint)IconID.SteelWeb:
+                AddStack(actor, WorldState.FutureTime(6.1d), _forbidden);
                 break;
-            case IconID.EntanglingWeb:
+            case (uint)IconID.EntanglingWeb:
                 _forbidden.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }
@@ -25,7 +25,7 @@ class SteelWebStack(BossModule module) : Components.UniformStackSpread(module, 6
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.SteelWebAOE)
+        if (spell.Action.ID == (uint)AID.SteelWebAOE)
             Stacks.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
     }
 }
@@ -42,13 +42,13 @@ class SteelWebTethers(BossModule module) : BossComponent(module)
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID is TetherID.Web or TetherID.WebFail && WorldState.Actors.Find(tether.Target) is var target && target != null)
-            _webs.Add((source, target, (TetherID)tether.ID == TetherID.Web ? Colors.Danger : Colors.Enemy));
+        if (tether.ID is (uint)TetherID.Web or (uint)TetherID.WebFail && WorldState.Actors.Find(tether.Target) is var target && target != null)
+            _webs.Add((source, target, tether.ID == (uint)TetherID.Web ? Colors.Danger : Colors.Enemy));
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID is TetherID.Web or TetherID.WebFail)
+        if (tether.ID is (uint)TetherID.Web or (uint)TetherID.WebFail)
             _webs.RemoveAll(w => w.from == source);
     }
 }

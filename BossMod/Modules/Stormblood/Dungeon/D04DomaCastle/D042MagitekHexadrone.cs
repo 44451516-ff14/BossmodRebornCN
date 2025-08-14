@@ -43,7 +43,7 @@ class ChainMine(BossModule module) : Components.GenericAOEs(module)
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.HexadroneBits)
-            _aoes.Add(new(rect, WPos.ClampToGrid(source.Position), source.Rotation, WorldState.FutureTime(5.6d)));
+            _aoes.Add(new(rect, source.Position.Quantized(), source.Rotation, WorldState.FutureTime(5.6d)));
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether)

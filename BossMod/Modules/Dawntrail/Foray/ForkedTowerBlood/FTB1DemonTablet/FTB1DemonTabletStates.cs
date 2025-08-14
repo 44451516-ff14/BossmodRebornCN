@@ -93,8 +93,7 @@ sealed class FTB1DemonTabletStates : StateMachineBuilder
         ComponentCondition<PortentousCometeorBait>(id, delay, comp => comp.CurrentBaits.Count != 0, "Baited meteors appear")
             .ActivateOnEnter<PortentousCometeorBait>();
         ComponentCondition<LandingSmall>(id + 0x10u, 10.5f, comp => comp.NumCasts != 0, "Rect AOEs + maybe Knockback")
-            .ActivateOnEnter<PortentousComet1>()
-            .ActivateOnEnter<PortentousComet2>()
+            .ActivateOnEnter<PortentousComet>()
             .ActivateOnEnter<RayOfIgnorance>()
             .ActivateOnEnter<LandingKnockback>()
             .ActivateOnEnter<PortentousCometKnockback>()
@@ -107,9 +106,8 @@ sealed class FTB1DemonTabletStates : StateMachineBuilder
         ComponentCondition<PortentousCometeorBait>(id + 0x20u, 1.7f, comp => comp.CurrentBaits.Count == 0, "Baits resolve")
             .ActivateOnEnter<PortentousCometeor>()
             .DeactivateOnExit<PortentousCometeorBait>();
-        ComponentCondition<PortentousComet1>(id + 0x30u, 5f, comp => comp.NumFinishedStacks != 0, "Knockback stacks resolve")
-            .DeactivateOnExit<PortentousComet1>()
-            .DeactivateOnExit<PortentousComet2>()
+        ComponentCondition<PortentousComet>(id + 0x30u, 5f, comp => comp.NumFinishedStacks == 4, "Knockback stacks resolve")
+            .DeactivateOnExit<PortentousComet>()
             .DeactivateOnExit<PortentousCometKnockback>();
         ComponentCondition<PortentousCometeor>(id + 0x40u, 7f, comp => comp.NumCasts != 0, "Comet AOEs resolve")
             .DeactivateOnExit<PortentousCometeor>();

@@ -50,15 +50,18 @@ class OldMagicArenaChange(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OldMagic && Arena.Bounds == D133Durante.StartingBounds)
+        {
             _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x0Au)
+        if (index == 0x0A && state == 0x00020001u)
         {
             Arena.Bounds = D133Durante.DefaultBounds;
             _aoe = null;
@@ -96,7 +99,7 @@ class DuplicitousBattery(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DuplicitousBatteryTelegraph)
-            _aoes.Add(new(circle, spell.LocXZ, default, WorldState.FutureTime(6.5d), Risky: false));
+            _aoes.Add(new(circle, spell.LocXZ, default, WorldState.FutureTime(6.5d), risky: false));
 
     }
 

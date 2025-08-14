@@ -27,15 +27,15 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
         TerrestrialTitans(id + 0x80000u, 14.8f);
         WolvesReign(id + 0x90000u, 0.5f);
         TacticalPack(id + 0xA0000u, 9.2f);
-        TerrestrialRage1(id + 0xB0000u, 14.5f);
+        TerrestrialRage(id + 0xB0000u, 14.5f);
         WolvesReign3(id + 0xC0000u, 4.1f);
         GreatDivide(id + 0xD0000u, 5.4f);
         BeckonMoonlight(id + 0xE0000u, 11.3f);
         WindfangStonefang2(id + 0xF0000u, 3.3f);
         TrackingTremors(id + 0x100000u, 10f);
         ExtraplanarPursuit(id + 0x110000u, 1.8f);
-        ExtraplanarPursuit(id + 0x120000u, 10.8f);
-        SimpleState(id + 0x130000u, 7.4f, "Enrage");
+        ExtraplanarPursuit(id + 0x120000u, 10.8f, true);
+        SimpleState(id + 0x130000u, 1.5f, "Enrage (timing varies)"); // timing varies depending on length of add phase, boss becomes untargetable after 406 seconds
     }
 
     private void Phase2(uint id)
@@ -62,16 +62,21 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
         HerosBlow(id + 0x100000u, 9.4f);
         UltraviolentRay(id + 0x110000u, 12.3f);
         HowlingEight(id + 0x120000u, 16f);
-        SimpleState(id + 0x130000u, 11.3f, "Enrage");
+        SimpleState(id + 0x130000u, 1.5f, "Enrage");
     }
 
-    private void ExtraplanarPursuit(uint id, float delay)
+    private void ExtraplanarPursuit(uint id, float delay, bool last = false)
     {
         Cast(id, (uint)AID.ExtraplanarPursuitVisual, delay, 1.6f)
             .ActivateOnEnter<ExtraplanarPursuit>();
-        ComponentCondition<ExtraplanarPursuit>(id + 0x10u, 2.4f, comp => comp.NumCasts != 0, "Raidwide")
+        var cond = ComponentCondition<ExtraplanarPursuit>(id + 0x10u, 2.4f, comp => comp.NumCasts != 0, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<ExtraplanarPursuit>();
+        if (last)
+        {
+            cond
+                .SetHint(StateMachine.StateHint.GroupWithNext);
+        }
     }
 
     private void GreatDivide(uint id, float delay)
@@ -108,10 +113,10 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
     {
         CastStartMulti(id, [(uint)AID.RevolutionaryReignVisual1, (uint)AID.RevolutionaryReignVisual2, (uint)AID.EminentReignVisual1, (uint)AID.EminentReignVisual2], delay, "Wolvesreign")
             .ActivateOnExit<WolvesReignConeCircle>()
+            .ActivateOnExit<WolvesReignRect>()
             .ActivateOnEnter<WolvesReignCircle>();
         ComponentCondition<WolvesReignCircle>(id + 0x10u, 7f, comp => comp.NumCasts == 4, "Circles resolve")
             .DeactivateOnExit<WolvesReignCircle>()
-            .ActivateOnExit<WolvesReignRect>()
             .ActivateOnExit<ReignsEnd>()
             .ActivateOnExit<SovereignScar>();
         ComponentCondition<WolvesReignRect>(id + 0x20u, 2.5f, comp => comp.NumCasts != 0, "Line AOE")
@@ -201,21 +206,19 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
             .DeactivateOnExit<RavenousSaber>();
     }
 
-    private void TerrestrialRage1(uint id, float delay)
+    private void TerrestrialRage(uint id, float delay)
     {
-        Cast(id, (uint)AID.TerrestrialRage, delay, 3f, "Terrestial Rage 1")
+        Cast(id, (uint)AID.TerrestrialRage, delay, 3f, "Terrestial Rage")
             .ActivateOnExit<FangedCharge>()
-            .ActivateOnExit<Heavensearth>()
-            .ActivateOnExit<SuspendedStone>();
+            .ActivateOnExit<HeavensearthSuspendedStone>();
         ComponentCondition<FangedCharge>(id + 0x10u, 7f, comp => comp.NumCasts != 0, "Line AOEs 1");
-        ComponentCondition<SuspendedStone>(id + 0x20u, 1.3f, comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x20u, 1.3f, comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
         ComponentCondition<FangedCharge>(id + 0x30u, 1.2f, comp => comp.NumCasts > 2, "Line AOEs 2")
             .DeactivateOnExit<FangedCharge>()
             .ActivateOnExit<RoaringWind>()
             .ActivateOnExit<Shadowchase>();
-        ComponentCondition<SuspendedStone>(id + 0x40u, 5.5f, comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
-            .DeactivateOnExit<Heavensearth>()
-            .DeactivateOnExit<SuspendedStone>();
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x40u, 5.5f, comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
+            .DeactivateOnExit<HeavensearthSuspendedStone>();
         ComponentCondition<Shadowchase>(id + 0x50u, 0.4f, comp => comp.NumCasts != 0, "Line AOEs 3")
             .ExecOnExit<RoaringWind>(comp => comp.Draw = true)
             .DeactivateOnExit<Shadowchase>();
@@ -223,14 +226,15 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void WolvesReign3(uint id, float delay)
     {
-        CastStartMulti(id, [(uint)AID.RevolutionaryReignVisual1, (uint)AID.RevolutionaryReignVisual2, (uint)AID.EminentReignVisual1, (uint)AID.EminentReignVisual2], delay, "Wolvesreign")
-            .ActivateOnExit<WolvesReignConeCircle>()
-            .ActivateOnEnter<WolvesReignCircle>();
+        CastStartMulti(id, [(uint)AID.RevolutionaryReignVisual1, (uint)AID.RevolutionaryReignVisual2, (uint)AID.EminentReignVisual1, (uint)AID.EminentReignVisual2], delay, "Wolvesreign");
         ComponentCondition<RoaringWind>(id + 0x10u, 0.5f, comp => comp.NumCasts != 0, "Line AOEs 1")
+            .ActivateOnExit<WolvesReignConeCircle>()
+            .ActivateOnExit<WolvesReignRect>()
+            .ActivateOnExit<WolvesReignCircle>()
+            .ActivateOnExit<WealOfStone>()
             .DeactivateOnExit<RoaringWind>();
         ComponentCondition<WolvesReignCircle>(id + 0x20u, 6.5f, comp => comp.NumCasts == 4, "Circles resolve")
             .DeactivateOnExit<WolvesReignCircle>()
-            .ActivateOnExit<WolvesReignRect>()
             .ActivateOnExit<ReignsEnd>()
             .ActivateOnExit<SovereignScar>();
         ComponentCondition<WolvesReignRect>(id + 0x30u, 2.5f, comp => comp.NumCasts != 0, "Line AOE")
@@ -238,9 +242,9 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
         ComponentCondition<WolvesReignConeCircle>(id + 0x40u, 3.1f, comp => comp.NumCasts != 0, "Baits resolve + cone OR circle")
             .DeactivateOnExit<WolvesReignConeCircle>()
             .DeactivateOnExit<ReignsEnd>()
-            .DeactivateOnExit<SovereignScar>();
+            .DeactivateOnExit<SovereignScar>()
+            .ExecOnExit<WealOfStone>(comp => comp.Draw = true);
         ComponentCondition<WealOfStone>(id + 0x50u, 2.9f, comp => comp.NumCasts != 0, "Line AOEs 2")
-            .ActivateOnEnter<WealOfStone>()
             .DeactivateOnExit<WealOfStone>();
     }
 
@@ -248,22 +252,25 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
     {
         Cast(id, (uint)AID.BeckonMoonlight, delay, 3f, "Beckon Moonlight")
             .ActivateOnExit<MoonbeamsBite>()
-            .ActivateOnExit<Heavensearth>()
-            .ActivateOnExit<SuspendedStone>();
-        ComponentCondition<SuspendedStone>(id + 0x10u, 12.7f, comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
+            .ActivateOnExit<HeavensearthSuspendedStone>();
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x10u, 12.7f, comp => comp.NumFinishedSpreads == 4, "Spreads + Stack 1 resolve");
         for (var i = 1; i <= 4; ++i)
         {
             var offset = id + 0x20u + (uint)((i - 1) * 0x10u);
             var time = i == 1 ? 1.4f : 2f;
             var desc = $"Halfroom cleave {i}";
             var casts = i;
-            ComponentCondition<MoonbeamsBite>(offset, time, comp => comp.NumCasts == casts, desc);
+            var cond = ComponentCondition<MoonbeamsBite>(offset, time, comp => comp.NumCasts == casts, desc);
+            if (i == 4)
+            {
+                cond
+                    .ActivateOnEnter<WealOfStone>();
+            }
         }
-        ComponentCondition<SuspendedStone>(id + 0x60u, 1f, comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
+        ComponentCondition<HeavensearthSuspendedStone>(id + 0x60u, 1f, comp => comp.NumFinishedSpreads == 8, "Spreads + Stack 2 resolve")
             .DeactivateOnEnter<MoonbeamsBite>()
-            .DeactivateOnExit<SuspendedStone>()
-            .ActivateOnExit<WealOfStone>()
-            .DeactivateOnExit<Heavensearth>();
+            .DeactivateOnExit<HeavensearthSuspendedStone>()
+            .ExecOnExit<WealOfStone>(comp => comp.Draw = true);
     }
 
     private void WindfangStonefang2(uint id, float delay)
@@ -291,7 +298,7 @@ sealed class M08SHowlingBladeStates : StateMachineBuilder
 
     private void UltraviolentRay(uint id, float delay)
     {
-        ComponentCondition<UltraviolentRay>(id, delay, comp => comp.NumCasts != 0, "Defamations + Line AOEs")
+        ComponentCondition<GleamingBeam>(id, delay, comp => comp.NumCasts == 5, "Defamations + Line AOEs")
             .ActivateOnEnter<UltraviolentRay>()
             .ActivateOnEnter<GleamingBeam>()
             .DeactivateOnExit<UltraviolentRay>()

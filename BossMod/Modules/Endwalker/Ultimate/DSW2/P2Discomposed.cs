@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P2Discomposed(BossModule module) : BossComponent(module)
+sealed class P2Discomposed(BossModule module) : BossComponent(module)
 {
     public bool Applied;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Discomposed)
+        if (status.ID == (uint)SID.Discomposed)
             Applied = true;
     }
 }

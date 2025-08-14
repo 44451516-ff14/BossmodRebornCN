@@ -42,7 +42,7 @@ sealed class GetDownOutIn(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     public static readonly AOEShapeCone Cone = new(40f, 22.5f.Degrees());
     public bool First = true;
@@ -55,8 +55,8 @@ sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module)
             var len = party.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
-                CurrentBaits.Add(new(Module.PrimaryActor, p, Cone, Module.CastFinishAt(spell, 0.3f)));
+                var p = party[i];
+                CurrentBaits.Add(new(Module.PrimaryActor, p, Cone, Module.CastFinishAt(spell, 0.3d)));
             }
         }
     }
@@ -66,20 +66,22 @@ sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module)
         if (First && status.ID is (uint)SID.WavelengthAlpha or (uint)SID.WavelengthBeta)
         {
             var count = CurrentBaits.Count;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
             for (var i = 0; i < count; ++i)
             {
-                if (CurrentBaits[i].Target == actor)
+                ref var b = ref baits[i];
+                if (b.Target == actor)
                 {
                     CurrentBaits.RemoveAt(i);
                     break;
                 }
             }
-            var remaining = CollectionsMarshal.AsSpan(CurrentBaits);
-            var len = remaining.Length;
+            baits = CollectionsMarshal.AsSpan(CurrentBaits);
+            count = baits.Length;
             var act = WorldState.FutureTime(2.5d);
-            for (var i = 0; i < len; ++i)
+            for (var i = 0; i < count; ++i)
             {
-                ref var b = ref remaining[i];
+                ref var b = ref baits[i];
                 b.Activation = act;
             }
         }
@@ -96,17 +98,20 @@ sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module)
             }
             if (!First)
             {
-                var targets = spell.Targets;
-                var countT = targets.Count;
+                var targets = CollectionsMarshal.AsSpan(spell.Targets);
+                var len = targets.Length;
                 var countB = CurrentBaits.Count;
-                if (countT == 1)
+                var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+                if (len == 1)
                 {
+                    ref readonly var targ0 = ref targets[0];
                     for (var i = 0; i < countB; ++i)
                     {
-                        if (CurrentBaits[i].Target.InstanceID == targets[0].ID)
+                        ref var b = ref baits[i];
+                        if (b.Target.InstanceID == targ0.ID)
                         {
                             CurrentBaits.RemoveAt(i);
-                            break;
+                            return;
                         }
                     }
                 }
@@ -115,9 +120,10 @@ sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module)
                     var closestDiff = new Angle(MathF.PI);
                     Actor? closestActor = null;
 
-                    for (var i = 0; i < countT; ++i)
+                    for (var i = 0; i < len; ++i)
                     {
-                        var actor = WorldState.Actors.Find(targets[i].ID);
+                        ref readonly var targ = ref targets[i];
+                        var actor = WorldState.Actors.Find(targ.ID);
                         if (actor == null)
                             continue;
                         var angleToActor = Angle.FromDirection(actor.Position - Arena.Center);
@@ -132,10 +138,11 @@ sealed class GetDownBait(BossModule module) : Components.GenericBaitAway(module)
 
                     for (var i = 0; i < countB; ++i)
                     {
-                        if (CurrentBaits[i].Target == closestActor)
+                        ref var b = ref baits[i];
+                        if (b.Target == closestActor)
                         {
                             CurrentBaits.RemoveAt(i);
-                            break;
+                            return;
                         }
                     }
                 }

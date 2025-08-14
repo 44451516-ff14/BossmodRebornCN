@@ -49,11 +49,14 @@ class StygianReleaseKB(BossModule module) : Components.SimpleKnockbacks(module, 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var count = _aoe.Casters.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
         for (var i = 0; i < count; ++i)
         {
-            var caster = _aoe.Casters[i];
-            if (caster.Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

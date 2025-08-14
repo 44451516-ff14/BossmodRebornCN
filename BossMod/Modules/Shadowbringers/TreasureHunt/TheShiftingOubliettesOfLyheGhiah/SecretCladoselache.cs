@@ -75,7 +75,7 @@ class PelagicCleaverRotation(BossModule module) : Components.GenericRotatingAOE(
     {
         if (_rotation != default && _increment != default)
         {
-            Sequences.Add(new(_shape, WPos.ClampToGrid(source.Position), _rotation, _increment, _activation, 2.1f, 6));
+            Sequences.Add(new(_shape, source.Position.Quantized(), _rotation, _increment, _activation, 2.1f, 6));
             _rotation = default;
             _increment = default;
         }

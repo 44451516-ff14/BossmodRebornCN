@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P3WormholeLimitCut(BossModule module) : LimitCut(module, 2.7f);
-class P3WormholeSacrament(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SacramentWormhole, new AOEShapeCross(100, 8));
+sealed class P3WormholeLimitCut(BossModule module) : LimitCut(module, 2.7d);
+sealed class P3WormholeSacrament(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SacramentWormhole, new AOEShapeCross(100, 8));
 
-class P3WormholeRepentance(BossModule module) : BossComponent(module)
+sealed class P3WormholeRepentance(BossModule module) : BossComponent(module)
 {
-    public int NumSoaks { get; private set; }
+    public int NumSoaks;
     private bool _chakramsDone;
     private readonly LimitCut? _limitCut = module.FindComponent<LimitCut>();
     private readonly List<WPos> _wormholes = [];
@@ -68,32 +68,32 @@ class P3WormholeRepentance(BossModule module) : BossComponent(module)
         var shouldSoak = ShouldSoakWormhole(pcOrder);
 
         foreach (var w in _wormholes)
-            Arena.AddCircle(w, _radiuses[NumSoaks], shouldSoak && dirToSide.Dot(w - Arena.Center) > 0 ? Colors.Safe : Colors.Danger);
+            Arena.AddCircle(w, _radiuses[NumSoaks], shouldSoak && dirToSide.Dot(w - Arena.Center) > 0f ? Colors.Safe : Colors.Danger);
 
         if (!shouldSoak || !_chakramsDone)
-            Arena.AddCircle(Arena.Center + SafeSpotOffset(pcOrder, dirToAlex, dirToSide), 1, Colors.Safe);
+            Arena.AddCircle(Arena.Center + SafeSpotOffset(pcOrder, dirToAlex, dirToSide), 1f, Colors.Safe);
     }
 
     public override void OnActorCreated(Actor actor)
     {
-        if ((OID)actor.OID == OID.Wormhole1)
+        if (actor.OID == (uint)OID.Wormhole1)
             _wormholes.Add(actor.Position);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.EyeOfTheChakram:
+            case (uint)AID.EyeOfTheChakram:
                 _chakramsDone = true;
                 break;
-            case AID.Repentance1:
+            case (uint)AID.Repentance1:
                 NumSoaks = 1;
                 break;
-            case AID.Repentance2:
+            case (uint)AID.Repentance2:
                 NumSoaks = 2;
                 break;
-            case AID.Repentance3:
+            case (uint)AID.Repentance3:
                 NumSoaks = 3;
                 break;
         }
@@ -123,7 +123,7 @@ class P3WormholeRepentance(BossModule module) : BossComponent(module)
         else if (_chakramsDone)
         {
             // after chakrams are done, assume inactive chill at sides, this avoids sacrament
-            return 19 * dirToSide;
+            return 19f * dirToSide;
         }
         else
         {
@@ -134,9 +134,9 @@ class P3WormholeRepentance(BossModule module) : BossComponent(module)
     }
 }
 
-class P3WormholeIncineratingHeat(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.IncineratingHeat, 5, 8, 8);
+sealed class P3WormholeIncineratingHeat(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.IncineratingHeat, 5f, 8, 8);
 
-class P3WormholeEnumeration(BossModule module) : Components.UniformStackSpread(module, 5, 0, 3, 3, raidwideOnResolve: false) // TODO: verify enumeration radius
+sealed class P3WormholeEnumeration(BossModule module) : Components.UniformStackSpread(module, 5f, default, 3, 3, raidwideOnResolve: false) // TODO: verify enumeration radius
 {
     private BitMask _targets; // we start showing stacks only after incinerating heat is resolved
     private DateTime _activation;
@@ -146,18 +146,18 @@ class P3WormholeEnumeration(BossModule module) : Components.UniformStackSpread(m
         if (iconID == (uint)IconID.Enumeration)
         {
             _targets.Set(Raid.FindSlot(actor.InstanceID));
-            _activation = WorldState.FutureTime(5.1f);
+            _activation = WorldState.FutureTime(5.1d);
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Enumeration:
+            case (uint)AID.Enumeration:
                 Stacks.Clear();
                 break;
-            case AID.IncineratingHeat:
+            case (uint)AID.IncineratingHeat:
                 AddStacks(Raid.WithSlot(true, true, true).IncludedInMask(_targets).Actors(), _activation);
                 break;
         }

@@ -27,7 +27,7 @@ class DoubleSever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.D
         if (count == 0)
             return;
         base.AddAIHints(slot, actor, assignment, hints);
-        var aoe = Casters[0];
+        ref var aoe = ref Casters.Ref(0);
         // stay close to the origin
         hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
     }

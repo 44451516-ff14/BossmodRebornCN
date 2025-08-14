@@ -93,7 +93,7 @@ class CrimsonStreak(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.CrimsonStreakReal)
         {
             var dir = spell.LocXZ - caster.Position;
-            _aoes.Add(new(new AOEShapeRect(dir.Length(), 10f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(dir), Module.CastFinishAt(spell)));
+            _aoes.Add(new(new AOEShapeRect(dir.Length(), 10f), caster.Position.Quantized(), Angle.FromDirection(dir), Module.CastFinishAt(spell)));
         }
     }
 

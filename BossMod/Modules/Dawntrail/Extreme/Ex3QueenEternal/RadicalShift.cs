@@ -14,7 +14,7 @@ sealed class RadicalShift(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x0Cu)
+        if (index == 0x0C)
         {
             var rot = state switch
             {

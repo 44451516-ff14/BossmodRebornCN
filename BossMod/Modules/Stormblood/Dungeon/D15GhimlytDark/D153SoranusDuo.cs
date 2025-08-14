@@ -92,8 +92,11 @@ class CrossbonesKB(BossModule module) : Components.GenericKnockback(module, stop
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -157,7 +160,7 @@ class CeruleumTanks(BossModule module) : Components.GenericAOEs(module)
     {
         if (_aoes.Count == 0 && actor.OID == (uint)OID.CeruleumTank)
         {
-            _aoes.Add(new(circleRoundhouse, WPos.ClampToGrid(new(370.992f, -265.034f)), default, WorldState.FutureTime(3.1d)));
+            _aoes.Add(new(circleRoundhouse, new WPos(370.992f, -265.034f).Quantized(), default, WorldState.FutureTime(3.1d)));
             for (var i = 0; i < 8; ++i)
             {
                 var activation = i switch
@@ -169,7 +172,7 @@ class CeruleumTanks(BossModule module) : Components.GenericAOEs(module)
                     7 => 15.7d,
                     _ => default
                 };
-                _aoes.Add(new(circle, WPos.ClampToGrid(origins[i]), default, WorldState.FutureTime(activation)));
+                _aoes.Add(new(circle, origins[i].Quantized(), default, WorldState.FutureTime(activation)));
             }
         }
     }
@@ -210,7 +213,7 @@ class Crosshatch(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.CrosshatchTelegraph6:
             case (uint)AID.CrosshatchTelegraph7:
             case (uint)AID.CrosshatchTelegraph8:
-                _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, _aoes.Count == 0 ? Module.CastFinishAt(spell, 2.1f) : _aoes[0].Activation.AddSeconds(_aoes.Count * 0.5d)));
+                _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, _aoes.Count == 0 ? Module.CastFinishAt(spell, 2.1d) : _aoes[0].Activation.AddSeconds(_aoes.Count * 0.5d)));
                 break;
         }
     }

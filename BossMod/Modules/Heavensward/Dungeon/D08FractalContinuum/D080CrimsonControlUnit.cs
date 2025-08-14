@@ -43,7 +43,7 @@ class D080CrimsonControlUnitStates : StateMachineBuilder
             .ActivateOnEnter<SpawnReservoir>()
             .ActivateOnEnter<PassiveInfraredGuidanceSystem>()
             .ActivateOnEnter<D080EmeraldControlUnit.ClockworkReservoir>()
-            .Raw.Update = () => module.PrimaryActor.EventState == 7u;
+            .Raw.Update = () => module.PrimaryActor.EventState == 7;
     }
 }
 

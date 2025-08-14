@@ -43,7 +43,7 @@ class DarkCurrent(BossModule module) : Components.GenericAOEs(module)
             // state 00020001 => CW => 00080004 end, 00200010 => CCW => 00800004 end
             var startingAngle = index == 2 ? 90f.Degrees() : default;
             var rotation = state == 0x00020001 ? -22.5f.Degrees() : 22.5f.Degrees();
-            void AddAOE(WDir offset, DateTime act) => _aoes.Add(new(_shape, WPos.ClampToGrid(Arena.Center + offset), default, act));
+            void AddAOE(WDir offset, DateTime act) => _aoes.Add(new(_shape, (Arena.Center + offset).Quantized(), default, act));
             for (var i = 0; i < 8; ++i)
             {
                 var act = WorldState.FutureTime(7.1d + i * 1.1d);

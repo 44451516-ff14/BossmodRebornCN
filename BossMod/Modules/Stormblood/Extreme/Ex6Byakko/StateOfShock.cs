@@ -25,7 +25,7 @@ class HighestStakes(BossModule module) : Components.GenericTowers(module, (uint)
     {
         if (iconID == (uint)IconID.HighestStakes)
         {
-            Towers.Add(new(actor.Position, 6f, 3, 3, _forbidden, WorldState.FutureTime(6.1d)));
+            Towers.Add(new(actor.Position.Quantized(), 6f, 3, 3, _forbidden, WorldState.FutureTime(6.1d)));
         }
     }
 
@@ -35,9 +35,13 @@ class HighestStakes(BossModule module) : Components.GenericTowers(module, (uint)
         {
             ++NumCasts;
             Towers.Clear();
-            var count = spell.Targets.Count;
-            for (var i = 0; i < count; ++i)
-                _forbidden[Raid.FindSlot(spell.Targets[i].ID)] = true;
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var targ = ref targets[i];
+                _forbidden.Set(Raid.FindSlot(targ.ID));
+            }
         }
     }
 }

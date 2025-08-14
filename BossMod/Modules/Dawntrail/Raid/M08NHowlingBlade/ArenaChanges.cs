@@ -33,7 +33,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u)
+        if (index == 0x00)
         {
             if (state == 0x00200010u)
                 _aoe = new(donut, Arena.Center, default, WorldState.FutureTime(11.2d));
@@ -47,7 +47,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         {
             if (state == 0x00020001u)
             {
-                pillars.Add(pillarPolygons[index - 0x08u]);
+                pillars.Add(pillarPolygons[index - 0x08]);
                 if (pillars.Count == 3)
                 {
                     var arena = new ArenaBoundsComplex(M08NHowlingBlade.EndArenaPolygon, [.. pillars]);

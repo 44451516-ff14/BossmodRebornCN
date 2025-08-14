@@ -34,7 +34,7 @@ sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(modul
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u && state is 0x00400004u or 0x00800004u)
+        if (index == 0x00 && state is 0x00400004u or 0x00800004u)
         {
             Arena.Bounds = M04SWickedThunder.P1DefaultBounds;
             Arena.Center = M04SWickedThunder.P1DefaultCenter;
@@ -138,14 +138,14 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
         var len = party.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             switch (_status[i])
             {
                 case (uint)SID.RemoteCurrent:
                     if (_status[slot] == (uint)SID.ColliderConductor && (p.Position.Z - Module.PrimaryActor.Position.Z) * actorOffset < 0)
                         break; // we're gonna bait this
                     if (FindBaitTarget(i, p) is var tf && tf != null)
-                        aoes.Add(new(_shapeBait, p.Position, Angle.FromDirection(tf.Position - p.Position), _activation, Risky: _status[slot] != (uint)SID.RemoteCurrent)); // common strat has two remotes hitting each other, which is fine
+                        aoes.Add(new(_shapeBait, p.Position, Angle.FromDirection(tf.Position - p.Position), _activation, risky: _status[slot] != (uint)SID.RemoteCurrent)); // common strat has two remotes hitting each other, which is fine
                     break;
                 case (uint)SID.ProximateCurrent:
                     if (_status[slot] == (uint)SID.ColliderConductor && (p.Position.Z - Module.PrimaryActor.Position.Z) * actorOffset > 0)

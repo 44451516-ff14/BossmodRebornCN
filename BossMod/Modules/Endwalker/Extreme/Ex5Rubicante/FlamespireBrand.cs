@@ -53,7 +53,7 @@ class Flamerake(BossModule module) : Components.GenericAOEs(module)
 
         if (NumCasts == 0)
         {
-            return new AOEInstance[1] { new(_first, WPos.ClampToGrid(Arena.Center), _offset, _activation) };
+            return new AOEInstance[1] { new(_first, Arena.Center.Quantized(), _offset, _activation) };
         }
         else
         {
@@ -62,7 +62,7 @@ class Flamerake(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < 4; ++i)
             {
                 var dir = i * 90f.Degrees() + _offset;
-                aoes[i] = new(_rest, WPos.ClampToGrid(Arena.Center + offset * dir.ToDirection()), dir, _activation);
+                aoes[i] = new(_rest, (Arena.Center + offset * dir.ToDirection()).Quantized(), dir, _activation);
             }
             return aoes;
         }

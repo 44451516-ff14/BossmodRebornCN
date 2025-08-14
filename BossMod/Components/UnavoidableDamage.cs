@@ -56,9 +56,9 @@ public class RaidwideCasts(BossModule module, uint[] aids, string hint = "Raidwi
 }
 
 // generic unavoidable raidwide, initiated by a custom condition and applied by an instant cast after a delay
-public class RaidwideInstant(BossModule module, uint aid, float delay = default, string hint = "Raidwide") : CastCounter(module, aid)
+public class RaidwideInstant(BossModule module, uint aid, double delay = default, string hint = "Raidwide") : CastCounter(module, aid)
 {
-    public readonly float Delay = delay;
+    public readonly double Delay = delay;
     public readonly string Hint = hint;
     public DateTime Activation; // default if inactive, otherwise expected cast time
 
@@ -85,7 +85,7 @@ public class RaidwideInstant(BossModule module, uint aid, float delay = default,
 }
 
 // generic unavoidable instant raidwide initiated by a cast (usually visual-only)
-public class RaidwideCastDelay(BossModule module, uint actionVisual, uint actionAOE, float delay, string hint = "Raidwide") : RaidwideInstant(module, actionAOE, delay, hint)
+public class RaidwideCastDelay(BossModule module, uint actionVisual, uint actionAOE, double delay, string hint = "Raidwide") : RaidwideInstant(module, actionAOE, delay, hint)
 {
     public uint ActionVisual = actionVisual;
 
@@ -97,7 +97,7 @@ public class RaidwideCastDelay(BossModule module, uint actionVisual, uint action
 }
 
 // generic unavoidable instant raidwide cast initiated by NPC yell
-public class RaidwideAfterNPCYell(BossModule module, uint aid, uint npcYellID, float delay, string hint = "Raidwide") : RaidwideInstant(module, aid, delay, hint)
+public class RaidwideAfterNPCYell(BossModule module, uint aid, uint npcYellID, double delay, string hint = "Raidwide") : RaidwideInstant(module, aid, delay, hint)
 {
     public uint NPCYellID = npcYellID;
 
@@ -171,9 +171,9 @@ public class SingleTargetCasts(BossModule module, uint[] aids, string hint = "Ta
 }
 
 // generic unavoidable single-target damage, initiated by a custom condition and applied by an instant cast after a delay
-public class SingleTargetInstant(BossModule module, uint aid, float delay = 0f, string hint = "Tankbuster", AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Tankbuster) : CastCounter(module, aid)
+public class SingleTargetInstant(BossModule module, uint aid, double delay = default, string hint = "Tankbuster", AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Tankbuster) : CastCounter(module, aid)
 {
-    public readonly float Delay = delay; // delay from visual cast end to cast event
+    public readonly double Delay = delay; // delay from visual cast end to cast event
     public readonly string Hint = hint;
     public readonly List<(int slot, DateTime activation, ulong instanceID)> Targets = [];
 
@@ -200,7 +200,7 @@ public class SingleTargetInstant(BossModule module, uint aid, float delay = 0f, 
 }
 
 // generic unavoidable instant single-target damage initiated by a cast (usually visual-only)
-public class SingleTargetCastDelay(BossModule module, uint actionVisual, uint actionAOE, float delay, string hint = "Tankbuster", AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Tankbuster) : SingleTargetInstant(module, actionAOE, delay, hint, damageType)
+public class SingleTargetCastDelay(BossModule module, uint actionVisual, uint actionAOE, double delay, string hint = "Tankbuster", AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Tankbuster) : SingleTargetInstant(module, actionAOE, delay, hint, damageType)
 {
     public uint ActionVisual = actionVisual;
 
@@ -215,7 +215,7 @@ public class SingleTargetCastDelay(BossModule module, uint actionVisual, uint ac
 }
 
 // generic unavoidable instant single-target damage initiated by a cast (usually visual-only)
-public class SingleTargetEventDelay(BossModule module, uint actionVisual, uint actionAOE, float delay, string hint = "Tankbuster") : SingleTargetInstant(module, actionAOE, delay, hint)
+public class SingleTargetEventDelay(BossModule module, uint actionVisual, uint actionAOE, double delay, string hint = "Tankbuster") : SingleTargetInstant(module, actionAOE, delay, hint)
 {
     public uint ActionVisual = actionVisual;
 

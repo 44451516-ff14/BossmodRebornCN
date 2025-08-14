@@ -18,7 +18,7 @@ sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(modul
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u && state is 0x00200010u or 0x00020001u)
+        if (index == 0x00 && state is 0x00200010u or 0x00020001u)
             _aoe = null;
     }
 }
@@ -36,7 +36,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
         // index 0x00
         // 0x00200010 - west 3/4 disappears
         // 0x00020001 - east 3/4 disappears
-        if (index == 0x00u)
+        if (index == 0x00)
         {
             if (state == 0x00020001u)
             {

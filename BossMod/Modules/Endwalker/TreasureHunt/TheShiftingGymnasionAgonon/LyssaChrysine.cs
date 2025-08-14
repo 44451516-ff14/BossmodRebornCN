@@ -42,7 +42,7 @@ class FrigidNeedle(BossModule module) : Components.ConcentricAOEs(module, _shape
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FrigidNeedleVisual)
-            AddSequence(WPos.ClampToGrid(Arena.Center), Module.CastFinishAt(spell, 0.5f));
+            AddSequence(Arena.Center.Quantized(), Module.CastFinishAt(spell, 0.5f));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -67,7 +67,7 @@ class CircleOfIce(BossModule module) : Components.ConcentricAOEs(module, _shapes
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.CircleOfIceVisual)
-            AddSequence(WPos.ClampToGrid(Arena.Center), Module.CastFinishAt(spell, 0.5f));
+            AddSequence(Arena.Center.Quantized(), Module.CastFinishAt(spell, 0.5f));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -99,7 +99,7 @@ class IcePillar(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.IcePillar)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(3.7d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(3.7d)));
     }
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {

@@ -8,10 +8,10 @@ abstract class P2Banish(BossModule module) : Components.UniformStackSpread(modul
         {
             case (uint)AID.BanishStack:
                 // TODO: this can target either supports or dd
-                AddStacks(Raid.WithoutSlot(true, true, true).Where(p => p.Class.IsSupport()), Module.CastFinishAt(spell, 0.1f));
+                AddStacks(Raid.WithoutSlot(true, true, true).Where(p => p.Class.IsSupport()), Module.CastFinishAt(spell, 0.1d));
                 break;
             case (uint)AID.BanishSpread:
-                AddSpreads(Raid.WithoutSlot(true, true, true), Module.CastFinishAt(spell, 0.1f));
+                AddSpreads(Raid.WithoutSlot(true, true, true), Module.CastFinishAt(spell, 0.1d));
                 break;
         }
     }

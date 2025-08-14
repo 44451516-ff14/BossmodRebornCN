@@ -33,12 +33,14 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.MeaninglessDestruction && Arena.Bounds == D032Wrecker.StartingArena)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x06u)
+        if (index == 0x06 && state == 0x00020001u)
         {
             Arena.Bounds = D032Wrecker.DefaultArena;
             Arena.Center = D032Wrecker.DefaultArena.Center;
@@ -65,7 +67,7 @@ class QueerBubble(BossModule module) : Components.GenericAOEs(module)
         {
             var b = AOEs[i];
             if (!b.IsDead)
-                aoes[index++] = new(circle, b.Position, Color: _aoe.Active ? color : default);
+                aoes[index++] = new(circle, b.Position, color: _aoe.Active ? color : default);
         }
         return aoes.AsSpan()[..index];
     }
@@ -122,8 +124,11 @@ class AetherSprayWaterKB(BossModule module) : Components.SimpleKnockbacks(module
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -132,20 +137,20 @@ class AetherSprayWaterKB(BossModule module) : Components.SimpleKnockbacks(module
     {
         if (Casters.Count != 0 && _aoe.AOEs.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (IsImmune(slot, act))
                 return;
-            var pos = source.CastInfo!.LocXZ;
+            var pos = c.Origin;
             var bubbles = Module.Enemies((uint)OID.QueerBubble);
             var count = bubbles.Count;
             var forbidden = new Func<WPos, float>[count + 1];
-            forbidden[0] = ShapeDistance.InvertedCircle(pos, 7f);
+            forbidden[count] = ShapeDistance.InvertedCircle(pos, 7f);
 
             for (var i = 0; i < count; ++i)
             {
                 var a = bubbles[i].Position;
-                forbidden[i + 1] = ShapeDistance.Cone(pos, 100f, Angle.FromDirection(a - pos), Angle.Asin(2.5f / (a - pos).Length()));
+                forbidden[i] = ShapeDistance.Cone(pos, 100f, Angle.FromDirection(a - pos), Angle.Asin(2.5f / (a - pos).Length()));
             }
             hints.AddForbiddenZone(ShapeDistance.Union(forbidden), act);
         }

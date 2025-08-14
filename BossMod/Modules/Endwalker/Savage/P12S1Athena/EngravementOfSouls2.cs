@@ -1,22 +1,26 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S1Athena;
 
 // TODO: generalize (line stack/spread)
-class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
+sealed class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
 {
-    public int NumCasts { get; private set; }
+    public int NumCasts;
     private Actor? _lightRay;
     private Actor? _darkRay;
     private BitMask _lightCamp;
     private BitMask _darkCamp;
 
-    private static readonly AOEShapeRect _shape = new(100, 3);
+    private static readonly AOEShapeRect _shape = new(100f, 3f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (InAOE(_lightRay, actor) != _darkCamp[slot])
+        {
             hints.Add(_darkCamp[slot] ? "Go to dark camp" : "GTFO from dark camp");
+        }
         if (InAOE(_darkRay, actor) != _lightCamp[slot])
+        {
             hints.Add(_lightCamp[slot] ? "Go to light camp" : "GTFO from light camp");
+        }
     }
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
@@ -32,30 +36,30 @@ class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.UmbralTilt:
-            case SID.UmbralbrightSoul:
-                _lightCamp.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.UmbralTilt:
+            case (uint)SID.UmbralbrightSoul:
+                _lightCamp[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.AstralTilt:
-            case SID.AstralbrightSoul:
-                _darkCamp.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.AstralTilt:
+            case (uint)SID.AstralbrightSoul:
+                _darkCamp[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.UmbralstrongSoul:
+            case (uint)SID.UmbralstrongSoul:
                 _lightRay = actor;
-                _darkCamp.Set(Raid.FindSlot(actor.InstanceID));
+                _darkCamp[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.AstralstrongSoul:
+            case (uint)SID.AstralstrongSoul:
                 _darkRay = actor;
-                _lightCamp.Set(Raid.FindSlot(actor.InstanceID));
+                _lightCamp[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.UmbralImpact or AID.AstralImpact)
+        if (spell.Action.ID is (uint)AID.UmbralImpact or (uint)AID.AstralImpact)
             ++NumCasts;
     }
 
@@ -64,35 +68,39 @@ class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
     private void DrawOutline(Actor? target, bool safe)
     {
         if (target != null)
+        {
             _shape.Outline(Arena, Module.PrimaryActor.Position, Angle.FromDirection(target.Position - Module.PrimaryActor.Position), safe ? Colors.Safe : Colors.Danger);
+        }
     }
 }
 
-class EngrameventOfSouls2Spread(BossModule module) : Components.GenericStackSpread(module, true, false)
+sealed class EngrameventOfSouls2Spread(BossModule module) : Components.GenericStackSpread(module, true, false)
 {
     public int NumCasts;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var radius = (SID)status.ID switch
+        var radius = status.ID switch
         {
-            SID.UmbralbrightSoul or SID.AstralbrightSoul => 3,
-            SID.HeavensflameSoul => 6,
-            _ => 0
+            (uint)SID.UmbralbrightSoul or (uint)SID.AstralbrightSoul => 3f,
+            (uint)SID.HeavensflameSoul => 6f,
+            _ => default
         };
-        if (radius != 0)
+        if (radius != default)
+        {
             Spreads.Add(new(actor, radius)); // TODO: activation
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        var radius = (AID)spell.Action.ID switch
+        var radius = spell.Action.ID switch
         {
-            AID.UmbralGlow or AID.AstralGlow => 3,
-            AID.TheosHoly => 6,
-            _ => 0
+            (uint)AID.UmbralGlow or (uint)AID.AstralGlow => 3f,
+            (uint)AID.TheosHoly => 6f,
+            _ => default
         };
-        if (radius != 0)
+        if (radius != default)
         {
             Spreads.RemoveAll(s => s.Radius == radius);
             ++NumCasts;

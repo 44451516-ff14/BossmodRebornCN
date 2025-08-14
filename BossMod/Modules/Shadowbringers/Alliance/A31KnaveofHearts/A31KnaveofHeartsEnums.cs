@@ -2,12 +2,12 @@
 
 public enum OID : uint
 {
-    Spheroid = 0x322D, // R1.000, x15
-    Ally2B = 0x31A8, // R0.512, x1
-    Boss = 0x31B8, // R30.000, x1
-    CopiedKnave = 0x322C, // R30.000, x2
-    Helper = 0x233C, // R0.500, x15, 523 type
-    Energy = 0x322E, // R1.000, x0 (spawn during fight)
+    Boss = 0x31B8, // R30.0
+    Spheroid = 0x322D, // R1.0
+    CopiedKnave = 0x322C, // R30.0
+    Energy = 0x322E, // R1.0
+    ArenaFeatures = 0x1EA1A1, // R2.0
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -25,15 +25,15 @@ public enum AID : uint
     ColossalImpact1 = 24774, // Helper->self, 9.5s cast, range 61 width 20 rect
     ColossalImpact2 = 24775, // Helper->self, 9.5s cast, range 61 width 20 rect
     ColossalImpact3 = 24776, // Boss->self, 9.5s cast, range 61 width 20 rect
-    ColossalImpactLeft = 24229, // Helper->self, 8.0s cast, range 61 width 20 rect // left
-    ColossalImpactRight = 24230, // Helper->self, 8.0s cast, range 61 width 20 rect // right
-    ColossalImpactCenter = 24231, // Boss/CopiedKnave->self, 8.0s cast, range 61 width 20 rect // middle
+    ColossalImpact4 = 24229, // Helper->self, 8.0s cast, range 61 width 20 rect, left
+    ColossalImpact5 = 24230, // Helper->self, 8.0s cast, range 61 width 20 rect, right
+    ColossalImpact6 = 24231, // Boss/CopiedKnave->self, 8.0s cast, range 61 width 20 rect, middle
 
     MagicArtilleryBetaVisual = 24242, // Boss->self, 3.0s cast, single-target
-    MagicArtilleryBeta = 24243, // Helper->player, 5.0s cast, range 3 circle
+    MagicArtilleryBeta = 24243, // Helper->player, 5.0s cast, range 3 circle, tankbuster
 
     MagicArtilleryAlphaVisual = 24234, // Boss->self, 3.0s cast, single-target
-    MagicArtilleryAlpha = 24235, // Helper->players, 6.0s cast, range 5 circle
+    MagicArtilleryAlpha = 24235, // Helper->players, 6.0s cast, range 5 circle, spread
 
     StackingTheDeckVisual = 24816, // CopiedKnave->self, 6.0s cast, single-target
     StackingTheDeck = 23801, // Boss->self, 6.0s cast, single-target
@@ -47,8 +47,8 @@ public enum AID : uint
     Burst = 24244, // Energy->player, no cast, single-target
     BoxSpawn = 24240, // Helper->self, 4.0s cast, range 8 width 8 rect
 
-    Lunge = 24241, // Boss/CopiedKnave->self, 8.0s cast, range 61 width 60 rect // knockback 60 dirforward
-    MagicBarrage = 24236, // Spheroid->self, 6.0s cast, range 61 width 5 rect
+    Lunge = 24241, // Boss/CopiedKnave->self, 8.0s cast, range 61 width 60 rect, knockback 60 dirforward
+    MagicBarrage = 24236 // Spheroid->self, 6.0s cast, range 61 width 5 rect
 }
 
 public enum SID : uint

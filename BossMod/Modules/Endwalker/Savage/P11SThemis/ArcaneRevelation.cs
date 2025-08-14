@@ -48,7 +48,7 @@ class ArcaneRevelation(BossModule module) : Components.GenericAOEs(module)
             AddAOE(_shapeMirror);
         else if (actor.OID == _activeSpheres)
             AddAOE(_shapeSphere);
-        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(8.7d)));
+        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(8.7d)));
     }
 }
 

@@ -163,30 +163,31 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
         ActivateComponent<DetermineArena>();
     }
 
-    private Actor? _bossHellDiver;
-    public Actor? BossHelldiver() => _bossHellDiver;
+    public Actor? BossHellDiver;
 
     protected override void UpdateModule()
     {
         // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
         // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossHellDiver == null)
+        if (BossHellDiver == null)
         {
             var b = Enemies((uint)OID.FourthLegionHelldiver1);
-            _bossHellDiver = b.Count != 0 ? b[0] : null;
+            BossHellDiver = b.Count != 0 ? b[0] : null;
         }
     }
 
-    protected override bool CheckPull() => base.CheckPull() || (_bossHellDiver?.InCombat ?? false);
+    protected override bool CheckPull() => base.CheckPull() || (BossHellDiver?.InCombat ?? false);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         if (Arena.Center == ArenaCenterTop)
+        {
             Arena.Actor(PrimaryActor);
+        }
         else
         {
             Arena.Actors(Enemies((uint)OID.FourthLegionHelldiver3));
-            Arena.Actor(_bossHellDiver);
+            Arena.Actor(BossHellDiver);
         }
         var skyarmors = Enemies((uint)OID.FourthLegionSkyArmor);
         var count = skyarmors.Count;
@@ -194,7 +195,9 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
         {
             var skyarmor = skyarmors[i];
             if (InBounds(skyarmor.Position))
+            {
                 Arena.Actor(skyarmor);
+            }
         }
     }
 
@@ -210,14 +213,15 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
         var center = Arena.Center;
         for (var i = 0; i < count; ++i)
         {
-            ref readonly var e = ref potHints[i].Actor;
+            var h = potHints[i];
+            var e = h.Actor;
             ref var enemyPrio = ref potHints[i].Priority;
-            ref readonly var oid = ref e.OID;
+            var oid = e.OID;
             if (center == ArenaCenterTop)
             {
                 if (oid == (uint)OID.MagitekCore)
                     enemyPrio = 1;
-                else if (e == PrimaryActor && e.HPRatio - _bossHellDiver?.HPRatio < -0.1f)
+                else if (e == PrimaryActor && e.HPRatio - BossHellDiver?.HPRatio < -0.1f)
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
                 else if (oid == (uint)OID.FourthLegionSkyArmor && InBounds(e.Position))
                     enemyPrio = 0;
@@ -228,7 +232,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
             {
                 if (oid == (uint)OID.FourthLegionHelldiver3)
                     enemyPrio = 1;
-                else if (e == _bossHellDiver && e.HPRatio - PrimaryActor.HPRatio < -0.1f)
+                else if (e == BossHellDiver && e.HPRatio - PrimaryActor.HPRatio < -0.1f)
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
                 else if (oid == (uint)OID.FourthLegionSkyArmor && InBounds(e.Position))
                     enemyPrio = 0;

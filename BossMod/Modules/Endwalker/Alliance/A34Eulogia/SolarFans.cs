@@ -11,30 +11,35 @@ class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
-            return [];
-        var max = count > 4 ? 4 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
-            if (i < 2)
-                aoes[i] = count > 2 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            return [];
         }
-        return aoes;
+        var max = count > 4 ? 4 : count;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 3)
+        {
+            var color = Colors.Danger;
+            for (var i = 0; i < 2; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                aoe.Color = color;
+            }
+        }
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.SolarFansAOE)
+        if (_aoes.Count == 0 && spell.Action.ID == (uint)AID.SolarFansAOE)
         {
             // assumption: flames always move CCW
             var pattern1 = false;
             if ((int)spell.LocXZ.Z == -945f)
+            {
                 pattern1 = true;
+            }
             NumCasts = 0;
-            var activation = Module.CastFinishAt(spell, 2.8f);
+            var activation = Module.CastFinishAt(spell, 2.8d);
             for (var i = 1; i < 5; ++i)
             {
                 var act = activation.AddSeconds(2.1d * (i - 1));
@@ -42,7 +47,7 @@ class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
                 AddAOE(angle, act);
                 AddAOE(angle + 180f.Degrees(), act);
             }
-            void AddAOE(Angle rotation, DateTime activation) => _aoes.Add(new(_shape, WPos.ClampToGrid(Arena.Center), rotation, activation));
+            void AddAOE(Angle rotation, DateTime activation) => _aoes.Add(new(_shape, Arena.Center.Quantized(), rotation, activation));
         }
     }
 
@@ -52,7 +57,9 @@ class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 }
@@ -60,7 +67,7 @@ class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
 class RadiantFlourish(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
-    private static readonly AOEShapeCircle _shape = new(25);
+    private static readonly AOEShapeCircle _shape = new(25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -68,7 +75,9 @@ class RadiantFlourish(BossModule module) : Components.GenericAOEs(module)
     {
         // assumption: we always have 4 moves, so flames finish where they start
         if (spell.Action.ID == (uint)AID.SolarFansAOE)
-            _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell, 13.8f)));
+        {
+            _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell, 13.8d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

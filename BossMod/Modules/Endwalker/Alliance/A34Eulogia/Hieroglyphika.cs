@@ -38,7 +38,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
                 var cellOffset = new WDir(x * 6f, z * 6f);
                 if (!safespots.Any(s => s.AlmostEqual(cellOffset, 1f)))
                 {
-                    AOEs.Add(new(_shape, WPos.ClampToGrid(Arena.Center + cellOffset + new WDir(0f, 6f)), 180f.Degrees(), activation));
+                    AOEs.Add(new(_shape, (Arena.Center + cellOffset + new WDir(default, 6f)).Quantized(), 180f.Degrees(), activation));
                 }
             }
         }

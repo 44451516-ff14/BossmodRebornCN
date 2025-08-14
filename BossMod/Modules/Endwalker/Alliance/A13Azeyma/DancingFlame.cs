@@ -14,15 +14,17 @@ class DancingFlame(BossModule module) : Components.GenericAOEs(module, (uint)AID
     {
         if (spell.Action.ID == (uint)AID.HauteAirFlare)
         {
-            AOEs.Add(new(_shape, WPos.ClampToGrid(caster.Position + 40f * caster.Rotation.ToDirection()), spell.Rotation, Module.CastFinishAt(spell, 1f)));
+            AOEs.Add(new(_shape, (caster.Position + 40f * caster.Rotation.ToDirection()).Quantized(), spell.Rotation, Module.CastFinishAt(spell, 1d)));
             if (AOEs.Count == 6)
+            {
                 AOEs.RemoveRange(0, 4);
+            }
         }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x1Bu)
+        if (index == 0x1B)
         {
             if (state == 0x00080004u)
             {
@@ -33,7 +35,7 @@ class DancingFlame(BossModule module) : Components.GenericAOEs(module, (uint)AID
                 for (var i = 0; i < 4; ++i)
                 {
                     var s = startingRects[i];
-                    AOEs.Add(new(startingRect, WPos.ClampToGrid(s.Item1), s.Item2, WorldState.FutureTime(2d)));
+                    AOEs.Add(new(startingRect, s.Item1.Quantized(), s.Item2, WorldState.FutureTime(2d)));
                 }
             }
         }

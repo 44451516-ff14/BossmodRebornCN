@@ -62,10 +62,10 @@ class AeroAssault(BossModule module) : Components.SimpleKnockbacks(module, (uint
     {
         if (Casters.Count != 0)
         {
-            var c = Casters[0];
-            var act = Module.CastFinishAt(c.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
-                hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Position, 15f, Angle.FromDirection(Arena.Center - c.Position).Normalized(), 45.Degrees()), Module.CastFinishAt(c.CastInfo));
+                hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Origin, 15f, Angle.FromDirection(Arena.Center - c.Origin).Normalized(), 45f.Degrees()), c.Activation);
         }
     }
 }
@@ -76,10 +76,10 @@ class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, (uint)A
     {
         if (Casters.Count != 0)
         {
-            var c = Casters[0];
-            var act = Module.CastFinishAt(c.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
-                hints.AddForbiddenZone(ShapeDistance.Cone(c.CastInfo!.Rotation.AlmostEqual(90f.Degrees(), Angle.DegToRad) ? c.Position - new WDir(-33f, default) : c.Position - new WDir(33, default), 40f, c.Rotation, 135f.Degrees()), Module.CastFinishAt(c.CastInfo));
+                hints.AddForbiddenZone(ShapeDistance.Cone(c.Direction.AlmostEqual(90f.Degrees(), Angle.DegToRad) ? c.Origin - new WDir(-33f, default) : c.Origin - new WDir(33, default), 40f, c.Direction, 135f.Degrees()), act);
         }
     }
 }

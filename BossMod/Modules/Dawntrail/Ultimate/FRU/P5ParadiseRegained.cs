@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P5ParadiseRegainedTowers(BossModule module) : Components.GenericTowers(module, (uint)AID.WingsDarkAndLightExplosion)
+sealed class P5ParadiseRegainedTowers(BossModule module) : Components.GenericTowers(module, (uint)AID.WingsDarkAndLightExplosion)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -9,7 +9,7 @@ class P5ParadiseRegainedTowers(BossModule module) : Components.GenericTowers(mod
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index is >= 51 and <= 53 && state == 0x00020001)
+        if (index is >= 51 and <= 53 && state == 0x00020001u)
         {
             var dir = index switch
             {
@@ -41,7 +41,7 @@ class P5ParadiseRegainedTowers(BossModule module) : Components.GenericTowers(mod
     }
 }
 
-class P5ParadiseRegainedBaits(BossModule module) : Components.GenericBaitAway(module)
+sealed class P5ParadiseRegainedBaits(BossModule module) : Components.GenericBaitAway(module)
 {
     private readonly WDir _relSouth = module.FindComponent<P5ParadiseRegainedTowers>() is var towers && towers?.Towers.Count > 0 ? towers.Towers[0].Position - module.Center : default;
     private Actor? _source;

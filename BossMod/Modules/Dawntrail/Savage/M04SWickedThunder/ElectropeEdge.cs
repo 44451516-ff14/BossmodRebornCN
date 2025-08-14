@@ -143,11 +143,15 @@ sealed class LightningCage(BossModule module) : Components.GenericAOEs(module, (
         {
             case (uint)AID.LightningCageWitchgleamAOE:
                 ++NumGleams;
-                var count = spell.Targets.Count;
-                for (var i = 0; i < count; ++i)
+                var targets = CollectionsMarshal.AsSpan(spell.Targets);
+                var len = targets.Length;
+                for (var i = 0; i < len; ++i)
                 {
-                    if (Raid.FindSlot(spell.Targets[i].ID) is var slot && slot >= 0)
+                    ref readonly var targ = ref targets[i];
+                    if (Raid.FindSlot(targ.ID) is var slot && slot >= 0)
+                    {
                         ++_gleams[slot];
+                    }
                 }
                 break;
             case (uint)AID.LightningCageSpark2:

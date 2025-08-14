@@ -13,7 +13,7 @@ class RhalgrBeaconShock(BossModule module) : Components.GenericAOEs(module, (uin
     {
         if (NumCasts != 7 && actor.OID == (uint)OID.LightningOrb)
         {
-            _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(12.7d), ActorID: actor.InstanceID));
+            _aoes.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(12.7d), actorID: actor.InstanceID));
         }
     }
 
@@ -43,21 +43,33 @@ class RhalgrBeaconShock(BossModule module) : Components.GenericAOEs(module, (uin
     }
 }
 
-class RhalgrBeaconKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.RhalgrsBeaconKnockback, 50f, true, stopAfterWall: true, safeWalls: safewalls)
+class RhalgrBeaconKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.RhalgrsBeaconKnockback, stopAfterWall: true)
 {
+    private Knockback? _kb;
     private static readonly List<SafeWall> safewalls = [new(new(9.09f, 293.91f), new(3.31f, 297.2f)), new(new(-6.23f, 304.72f), new(-13.9f, 303.98f)),
     new(new(-22.35f, 306.16f), new(-31.3f, 304.94f)), new(new(-40.96f, 300.2f), new(-49.39f, 296.73f))];
 
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _kb);
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == WatchedAction)
+        {
+            _kb = new(spell.LocXZ, 50f, Module.CastFinishAt(spell), safeWalls: safewalls, ignoreImmunes: true);
+        }
+    }
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Casters.Count == 0)
+        if (_kb is not Knockback knockback)
+        {
             return;
-
-        var source = Casters[0];
+        }
+        ref readonly var kb = ref knockback;
         var shock = Module.Enemies((uint)OID.LightningOrb);
         var count = shock.Count;
-        var z = source.Position.Z;
-        var forbidden = DetermineForbiddenZones(source.Position, shock, count, z);
+        var z = kb.Origin.Z;
+        var forbidden = DetermineForbiddenZones(kb.Origin, shock, count, z);
 
         hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), DateTime.MaxValue);
     }

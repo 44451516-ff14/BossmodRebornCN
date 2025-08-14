@@ -5,7 +5,7 @@ class StormUnbound(BossModule module) : Components.Exaflare(module, 5)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.TheStormUnboundCast)
-            Lines.Add(new() { Next = caster.Position, Advance = 5f * caster.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1f, ExplosionsLeft = 4, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, 5f * caster.Rotation.ToDirection(), Module.CastFinishAt(spell), 1d, 4, 2));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

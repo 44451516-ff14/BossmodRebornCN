@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T01Valigarmanda;
 
-class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module)
+sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
 
@@ -13,7 +13,7 @@ class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.ArcaneSphere2)
         {
             var activation = WorldState.FutureTime(7.1d);
-            var pos = WPos.ClampToGrid(actor.Position);
+            var pos = actor.Position.Quantized();
             AOEs.Add(new(_shape, pos, Angle.AnglesCardinals[1], activation));
             AOEs.Add(new(_shape, pos, Angle.AnglesIntercardinals[1], activation));
         }
@@ -22,6 +22,8 @@ class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ChillingCataclysm)
+        {
             AOEs.Clear();
+        }
     }
 }

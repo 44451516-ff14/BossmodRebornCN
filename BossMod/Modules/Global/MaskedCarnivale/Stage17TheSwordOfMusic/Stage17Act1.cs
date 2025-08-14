@@ -13,10 +13,10 @@ public enum AID : uint
     Shred = 14759 // Boss/RightClaw->self, 2.5s cast, range 4+R width 4 rect, stuns player
 }
 
-class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
-class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
+sealed class TheHand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheHand, new AOEShapeCone(8f, 60f.Degrees()));
+sealed class Shred(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shred, new AOEShapeRect(6f, 2f));
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -32,7 +32,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -40,7 +40,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage17Act1States : StateMachineBuilder
+sealed class Stage17Act1States : StateMachineBuilder
 {
     public Stage17Act1States(BossModule module) : base(module)
     {
@@ -65,7 +65,7 @@ class Stage17Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 627, NameID = 8115, SortOrder = 1)]
-public class Stage17Act1 : BossModule
+public sealed class Stage17Act1 : BossModule
 {
     public Stage17Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

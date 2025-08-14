@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Heavensward.Extreme.Ex3Thordan;
 
-class DragonsGaze(BossModule module) : Components.GenericGaze(module)
+sealed class DragonsGaze(BossModule module) : Components.GenericGaze(module)
 {
     private readonly List<Eye> _eyes = new(2);
     private WPos _posHint;
@@ -11,7 +11,9 @@ class DragonsGaze(BossModule module) : Components.GenericGaze(module)
     {
         base.DrawArenaForeground(pcSlot, pc);
         if (_posHint != default)
+        {
             Arena.AddCircle(_posHint, 1f, Colors.Safe);
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -26,12 +28,14 @@ class DragonsGaze(BossModule module) : Components.GenericGaze(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.DragonsGaze or (uint)AID.DragonsGlory)
+        {
             _eyes.RemoveAt(0);
+        }
     }
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008 && actor.OID is >= (uint)OID.DragonEyeN and <= (uint)OID.DragonEyeNW)
+        if (state == 0x00040008u && actor.OID is >= (uint)OID.DragonEyeN and <= (uint)OID.DragonEyeNW)
         {
             var index = actor.OID - (uint)OID.DragonEyeN; // 0 = N, then CW
             _posHint = Arena.Center + 19f * (180f - (int)index * 45f).Degrees().ToDirection();

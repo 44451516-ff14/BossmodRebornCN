@@ -7,18 +7,18 @@ sealed class DecisiveBattleStatus(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        ref readonly var assignedSlot = ref AssignedBoss[slot];
-        if (slot < PartyState.MaxPartySize && assignedSlot != null)
+        if (AssignedBoss[slot] is var assignedSlot && assignedSlot != null && WorldState.Actors.Find(actor.TargetID) is Actor target)
         {
-            var target = WorldState.Actors.Find(actor.TargetID);
-            if (target != null && target != assignedSlot && target.OID is (uint)OID.Boss or (uint)OID.Phobos or (uint)OID.Nereid)
+            if (target != assignedSlot && target.OID is (uint)OID.Triton or (uint)OID.Phobos or (uint)OID.Nereid)
+            {
                 hints.Add($"Target {assignedSlot?.Name}!");
+            }
         }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if (tether.ID == (uint)TetherID.DecisiveBattle && Raid.FindSlot(source.InstanceID) is var slot && slot is >= 0 and <= PartyState.MaxPartySize)
+        if (tether.ID == (uint)TetherID.DecisiveBattle && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0)
         {
             AssignedBoss[slot] = WorldState.Actors.Find(tether.Target);
             Active = true;
@@ -27,15 +27,16 @@ sealed class DecisiveBattleStatus(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        ref var assignedSlot = ref AssignedBoss[slot];
-        if (slot < AssignedBoss.Length && assignedSlot != null)
+        if (AssignedBoss[slot] is var assignedSlot && assignedSlot != null)
         {
             var count = hints.PotentialTargets.Count;
             for (var i = 0; i < count; ++i)
             {
                 var enemy = hints.PotentialTargets[i];
                 if (enemy.Actor != assignedSlot)
+                {
                     enemy.Priority = AIHints.Enemy.PriorityInvincible;
+                }
             }
         }
     }

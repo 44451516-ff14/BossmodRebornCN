@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
-class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16)
+sealed class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16f)
 {
-    private WDir _dirToAdelphel = (module.Enemies((uint)OID.SerAdelphel).FirstOrDefault()?.Position ?? module.Center) - module.Center; // we don't want to be knocked near adelphel
+    private readonly WDir _dirToAdelphel = (module.Enemies((uint)OID.SerAdelphel).FirstOrDefault()?.Position ?? module.Center) - module.Center; // we don't want to be knocked near adelphel
     private readonly List<Actor> _tears = module.Enemies((uint)OID.AetherialTear); // we don't want to be knocked into them
 
     private const float _tearRadius = 9f; // TODO: verify
@@ -36,7 +36,7 @@ class ShiningBladeKnockback(BossModule module) : Components.SimpleKnockbacks(mod
     }
 }
 
-class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, (uint)AID.BrightFlare, "GTFO from explosion!")
+sealed class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, (uint)AID.BrightFlare, "GTFO from explosion!")
 {
     private readonly List<WDir> _flares = []; // [0] = initial boss offset from center, [2] = first charge offset, [5] = second charge offset, [7] = third charge offset, [10] = fourth charge offset == [0]
 
@@ -54,7 +54,7 @@ class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, (ui
         var aoes = new AOEInstance[max];
 
         for (var i = 0; i < max; ++i)
-            aoes[i] = new(_shape, WPos.ClampToGrid(Arena.Center + _flares[i])); // TODO: activation
+            aoes[i] = new(_shape, (Arena.Center + _flares[i]).Quantized()); // TODO: activation
 
         return aoes;
     }
@@ -89,13 +89,13 @@ class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, (ui
 
     private void AddShortFlares(WDir startOffset, WDir endOffset)
     {
-        _flares.Add((startOffset + endOffset) / 2f);
+        _flares.Add((startOffset + endOffset) * 0.5f);
         _flares.Add(endOffset);
     }
 
     private void AddLongFlares(WDir startOffset, WDir endOffset)
     {
-        var frac = 7.5f / 22f;
+        const float frac = 7.5f / 22f;
         _flares.Add(startOffset * frac);
         _flares.Add(endOffset * frac);
         _flares.Add(endOffset);
@@ -108,11 +108,11 @@ class ShiningBladeFlares(BossModule module) : Components.GenericAOEs(module, (ui
     }
 }
 
-class ShiningBladeExecution(BossModule module) : Components.CastCounter(module, (uint)AID.Execution)
+sealed class ShiningBladeExecution(BossModule module) : Components.CastCounter(module, (uint)AID.Execution)
 {
     private Actor? _target;
 
-    private const float _executionRadius = 5;
+    private const float _executionRadius = 5f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -136,17 +136,17 @@ class ShiningBladeExecution(BossModule module) : Components.CastCounter(module, 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (_target != null)
-            Arena.AddCircle(_target.Position, _executionRadius, Colors.Danger);
+            Arena.AddCircle(_target.Position, _executionRadius);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.ShiningBlade:
-                _target = WorldState.Actors.Find(Module.Enemies(OID.SerAdelphel).FirstOrDefault()?.TargetID ?? 0);
+            case (uint)AID.ShiningBlade:
+                _target = WorldState.Actors.Find(Module.Enemies((uint)OID.SerAdelphel).FirstOrDefault()?.TargetID ?? 0);
                 break;
-            case AID.Execution:
+            case (uint)AID.Execution:
                 _target = null;
                 ++NumCasts;
                 break;

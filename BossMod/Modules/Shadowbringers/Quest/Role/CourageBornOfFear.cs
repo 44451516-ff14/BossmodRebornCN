@@ -56,7 +56,7 @@ class SanctifiedFireII(BossModule module) : Components.BaitAwayIcon(module, 5f, 
     {
         base.OnEventIcon(actor, iconID, targetID);
         if (iconID == IID)
-            Timeout = WorldState.FutureTime(10);
+            Timeout = WorldState.FutureTime(10d);
     }
 
     public override void OnActorCreated(Actor actor)

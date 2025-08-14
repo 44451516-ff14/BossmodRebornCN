@@ -62,12 +62,14 @@ sealed class DubiousTulidisasterArenaChange(BossModule module) : Components.Gene
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DubiousTulidisaster && Arena.Bounds == D074GreatestSerpentOfTural.StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 4.8f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 4.8d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x00u)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D074GreatestSerpentOfTural.DefaultBounds;
             _aoe = null;
@@ -75,7 +77,7 @@ sealed class DubiousTulidisasterArenaChange(BossModule module) : Components.Gene
     }
 }
 
-sealed class ScreesOfFury(BossModule module) : Components.BaitAwayIcon(module, 3f, (uint)IconID.Tankbuster, (uint)AID.ScreesOfFury, 5.3f, tankbuster: true);
+sealed class ScreesOfFury(BossModule module) : Components.BaitAwayIcon(module, 3f, (uint)IconID.Tankbuster, (uint)AID.ScreesOfFury, 5.3f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class GreatestFlood(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GreatestFlood, 15f)
 {
@@ -85,11 +87,11 @@ sealed class GreatestFlood(BossModule module) : Components.SimpleKnockbacks(modu
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
             {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCone(source.Position, 4f, source.Rotation, a45), act);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Origin, 4f, c.Direction, a45), act);
             }
         }
     }
@@ -127,8 +129,10 @@ sealed class GreatestLabyrinth(BossModule module) : Components.GenericAOEs(modul
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01u)
+        if (index != 0x01)
+        {
             return;
+        }
 
         void AddAOEs(int index)
         {
@@ -173,7 +177,7 @@ abstract class SludgeVoidzone(BossModule module, float radius, uint oid) : Compo
     private static Actor[] GetVoidzones(BossModule module, uint oid)
     {
         var enemies = module.Enemies(oid);
-        if (enemies.Count != 0 && enemies[0].EventState != 7u)
+        if (enemies.Count != 0 && enemies[0].EventState != 7)
             return [enemies[0]];
         return [];
     }

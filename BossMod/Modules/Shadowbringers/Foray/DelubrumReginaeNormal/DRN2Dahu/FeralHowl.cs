@@ -19,7 +19,7 @@ sealed class FeralHowl(BossModule module) : Components.SimpleKnockbacks(module, 
                 var a = aoes[i].Origin;
                 forbidden[i] = ShapeDistance.Cone(pos, 100f, Module.PrimaryActor.AngleTo(a), Angle.Asin(8f / (a - pos).Length()));
             }
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(Casters[0].CastInfo));
+            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
         }
     }
 
@@ -29,8 +29,11 @@ sealed class FeralHowl(BossModule module) : Components.SimpleKnockbacks(module, 
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

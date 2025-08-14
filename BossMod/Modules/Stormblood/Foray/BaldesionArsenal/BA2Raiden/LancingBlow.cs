@@ -19,7 +19,7 @@ sealed class LancingBlowAOE(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.StreakLightning)
-            AOEs.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(1d)));
+            AOEs.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(1d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

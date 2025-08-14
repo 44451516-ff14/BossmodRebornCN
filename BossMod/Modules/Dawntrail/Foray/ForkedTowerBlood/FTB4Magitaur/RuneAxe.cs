@@ -102,7 +102,7 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly RuneAxeStatus _status = module.FindComponent<RuneAxeStatus>()!;
     private AOEInstance? _aoePrepare;
-    private readonly List<AOEInstance>[] _aoeHintsForStatus = [new(3), new(1), new(3), new(1)];
+    private readonly List<AOEInstance>[] _aoeHintsForStatus = [new(1), new(1), new(1), new(1)];
     private readonly List<AOEInstance>[] _aoeHintsNoStatus = [new(1), new(1)];
     private bool prepare;
     public bool Show = true;
@@ -170,8 +170,8 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
             var actOrder2 = act.AddSeconds(14.2d);
             var actOrder3 = act.AddSeconds(22.2d);
 
-            AddAOE(_aoeHintsForStatus[0], FTB4Magitaur.BigSpreadMinkowskiSum, center, actOrder1);
-            AddAOE(_aoeHintsForStatus[2], FTB4Magitaur.BigSpreadMinkowskiSum, center, actOrder3);
+            AddAOE(_aoeHintsForStatus[0], FTB4Magitaur.BigSpreadHint, center, actOrder1);
+            AddAOE(_aoeHintsForStatus[2], FTB4Magitaur.BigSpreadHint, center, actOrder3);
             AddAOE(_aoeHintsNoStatus[0], FTB4Magitaur.CircleMinusSquares, center, actOrder1);
             AddAOE(_aoeHintsNoStatus[1], FTB4Magitaur.CircleMinusSquares, center, actOrder3);
             AddAOE(_aoeHintsForStatus[1], FTB4Magitaur.CircleMinusSquaresSpread, center, actOrder2);
@@ -241,14 +241,7 @@ sealed class RuneAxeSmallSpreadAOEs(BossModule module) : Components.GenericAOEs(
                 {
                     continue;
                 }
-                for (var j = 0; j < 3; j++)
-                {
-                    if (a.Position.InSquare(FTB4Magitaur.SquarePositions[j], 10f, FTB4Magitaur.SquareDirs[j]))
-                    {
-                        aoes.Add(new(square, FTB4Magitaur.SquarePositions[j], FTB4Magitaur.SquareAngles[j], act));
-                        break;
-                    }
-                }
+                InSquare(square, a.Position, aoes, act);
             }
             return CollectionsMarshal.AsSpan(aoes);
         }
@@ -263,16 +256,20 @@ sealed class RuneAxeSmallSpreadAOEs(BossModule module) : Components.GenericAOEs(
                 {
                     continue;
                 }
-                for (var j = 0; j < 3; j++)
-                {
-                    if (a.Actor.Position.InSquare(FTB4Magitaur.SquarePositions[j], 10f, FTB4Magitaur.SquareDirs[j]))
-                    {
-                        aoes.Add(new(FTB4Magitaur.Square, FTB4Magitaur.SquarePositions[j], FTB4Magitaur.SquareAngles[j], a.expireAt));
-                        break;
-                    }
-                }
+                InSquare(FTB4Magitaur.Square, a.Actor.Position, aoes, a.expireAt);
             }
             return CollectionsMarshal.AsSpan(aoes);
+        }
+        static void InSquare(AOEShape shape, WPos position, List<AOEInstance> list, DateTime activation)
+        {
+            for (var j = 0; j < 3; ++j)
+            {
+                if (position.InSquare(FTB4Magitaur.SquarePositions[j], 10f, FTB4Magitaur.SquareDirs[j]))
+                {
+                    list.Add(new(shape, FTB4Magitaur.SquarePositions[j], FTB4Magitaur.SquareAngles[j], activation));
+                    break;
+                }
+            }
         }
     }
 }

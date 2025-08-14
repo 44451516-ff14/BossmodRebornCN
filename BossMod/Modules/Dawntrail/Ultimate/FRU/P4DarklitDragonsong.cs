@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
 // tethers & general assignments
-class P4DarklitDragonsong(BossModule module) : BossComponent(module)
+sealed class P4DarklitDragonsong(BossModule module) : BossComponent(module)
 {
     public BitMask Stacks;
     public BitMask TowerSoakers;
@@ -107,7 +107,7 @@ class P4DarklitDragonsong(BossModule module) : BossComponent(module)
     }
 }
 
-class P4DarklitDragonsongBrightHunger(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
+sealed class P4DarklitDragonsongBrightHunger(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
 {
     private readonly P4DarklitDragonsong? _darklit = module.FindComponent<P4DarklitDragonsong>();
     private int _numTethers;
@@ -143,7 +143,7 @@ class P4DarklitDragonsongBrightHunger(BossModule module) : Components.GenericTow
     }
 }
 
-class P4DarklitDragonsongPathOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.PathOfLightAOE)
+sealed class P4DarklitDragonsongPathOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.PathOfLightAOE)
 {
     private readonly P4DarklitDragonsong? _darklit = module.FindComponent<P4DarklitDragonsong>();
     private Actor? _source;
@@ -174,7 +174,7 @@ class P4DarklitDragonsongPathOfLight(BossModule module) : Components.GenericBait
         {
             if (baitIndex < 0)
                 hints.Add("Stay closer to bait!");
-            else if (PlayersClippedBy(CurrentBaits[baitIndex]).Count != 0)
+            else if (PlayersClippedBy(ref CurrentBaits.Ref(baitIndex)).Count != 0)
                 hints.Add("Bait cone away from raid!");
         }
 
@@ -208,7 +208,7 @@ class P4DarklitDragonsongPathOfLight(BossModule module) : Components.GenericBait
     }
 }
 
-class P4DarklitDragonsongSpiritTaker(BossModule module) : SpiritTaker(module)
+sealed class P4DarklitDragonsongSpiritTaker(BossModule module) : SpiritTaker(module)
 {
     //private readonly P4DarklitDragonsong? _darklit = module.FindComponent<P4DarklitDragonsong>();
 
@@ -249,7 +249,7 @@ class P4DarklitDragonsongSpiritTaker(BossModule module) : SpiritTaker(module)
     //}
 }
 
-class P4DarklitDragonsongDarkWater(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, includeDeadTargets: true)
+sealed class P4DarklitDragonsongDarkWater(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, includeDeadTargets: true)
 {
     private readonly P4DarklitDragonsong? _assignments = module.FindComponent<P4DarklitDragonsong>();
     private bool _resolveImminent;
@@ -311,7 +311,7 @@ class P4DarklitDragonsongDarkWater(BossModule module) : Components.UniformStackS
     }
 }
 
-class P4SomberDance(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class P4SomberDance(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private Actor? _source;

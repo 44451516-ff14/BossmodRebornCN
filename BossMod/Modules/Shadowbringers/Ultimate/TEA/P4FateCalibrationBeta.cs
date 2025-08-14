@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // TODO: consider drawing tethers & shared sentence?..
-class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
+sealed class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
 {
     private enum Color { Unknown, Light, Dark }
 
@@ -72,10 +72,10 @@ class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebuffs(mod
 
     protected override WDir SafeSpotDirection(int slot) => Debuffs[slot] switch
     {
-        Debuff.LightBeacon => new(-8, -16), // between N and NW
-        Debuff.LightFollow => new(11, -2), // slightly N from E
-        Debuff.DarkBeacon => new(14, 0), // E
-        _ => new(11, _nearTethers.Contains(slot) ? -2 : _farTethers.Contains(slot) ? +2 : 0), // around E, depending on tether
+        Debuff.LightBeacon => new(-8f, -16f), // between N and NW
+        Debuff.LightFollow => new(11f, -2f), // slightly N from E
+        Debuff.DarkBeacon => new(14f, default), // E
+        _ => new(11f, _nearTethers.Contains(slot) ? -2 : _farTethers.Contains(slot) ? +2f : default), // around E, depending on tether
     };
 
     private int GuessLightBeacon()
@@ -109,7 +109,7 @@ class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebuffs(mod
     }
 }
 
-class P4FateCalibrationBetaJJump(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class P4FateCalibrationBetaJJump(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private bool _enabled;
     private readonly List<Actor> _jumpers = [];
@@ -147,7 +147,7 @@ class P4FateCalibrationBetaJJump(BossModule module) : Components.GenericBaitAway
     }
 }
 
-class P4FateCalibrationBetaOpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4)
+sealed class P4FateCalibrationBetaOpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4)
 {
     private enum Mechanic { Unknown, Stack, Spread }
 
@@ -199,7 +199,7 @@ class P4FateCalibrationBetaOpticalSight(BossModule module) : Components.UniformS
     }
 }
 
-class P4FateCalibrationBetaRadiantSacrament(BossModule module) : Components.GenericAOEs(module)
+sealed class P4FateCalibrationBetaRadiantSacrament(BossModule module) : Components.GenericAOEs(module)
 {
     private Actor? _caster;
     private bool _enabled;

@@ -9,6 +9,9 @@ public sealed class ReplayManagementConfig : ConfigNode
     public bool ShowUI = false;
 
     [PropertyDisplay("副本开始自动录像")]
+    public bool ImportantDutyAlert = true;
+
+    [PropertyDisplay("Auto record replays on duty start/end or outdoor module start/end")]
     public bool AutoRecord = false;
 
     [PropertyDisplay("职责记录器重放时自动录像", tooltip: "需要启用自动录像功能")]

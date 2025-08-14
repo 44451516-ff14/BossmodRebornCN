@@ -7,7 +7,7 @@ public class AFeastOfLies(WorldState ws) : QuestBattle(ws)
         new QuestObjective(ws)
             .WithConnection(new Vector3(0.02f, 5.96f, -56.50f))
             .Hints((player, hints) => {
-                hints.PathfindMapCenter = player.Position with { X = 0 };
+                hints.PathfindMapCenter = new(default, player.Position.Z);
                 hints.PathfindMapBounds = new ArenaBoundsRect(8, 20);
             })
             .With(obj => {

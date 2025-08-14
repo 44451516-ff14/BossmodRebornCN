@@ -20,7 +20,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module, (u
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01u)
+        if (index != 0x01)
             return;
         switch (state)
         {
@@ -69,7 +69,7 @@ sealed class CrystallineThornsHint(BossModule module) : Components.GenericAOEs(m
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01u)
+        if (index != 0x01)
             return;
         switch (state)
         {

@@ -23,42 +23,45 @@ public enum AID : uint
     TenTonzeWaveDonut = 15268 // Helper->self, 4.6s cast, range 10-20 donut
 }
 
-class OneOneOneOneTonzeSwing(BossModule module) : Components.RaidwideCast(module, (uint)AID.OneOneOneOneTonzeSwing, "Use Diamondback!");
-class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 12f);
-class CryOfRage(BossModule module) : Components.CastGaze(module, (uint)AID.CryOfRage);
+sealed class OneOneOneOneTonzeSwing(BossModule module) : Components.RaidwideCast(module, (uint)AID.OneOneOneOneTonzeSwing, "Use Diamondback!");
+sealed class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 12f);
+sealed class CryOfRage(BossModule module) : Components.CastGaze(module, (uint)AID.CryOfRage);
 
-abstract class TenTonzeCone(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(44f, 30f.Degrees()));
-class TenTonzeSlash(BossModule module) : TenTonzeCone(module, (uint)AID.TenTonzeSlash);
-class TenTonzeWaveCone(BossModule module) : TenTonzeCone(module, (uint)AID.TenTonzeWaveCone);
+sealed class TenTonzeSlashWaveCone(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TenTonzeSlash, (uint)AID.TenTonzeWaveCone], new AOEShapeCone(44f, 30f.Degrees()));
+sealed class TenTonzeWaveDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTonzeWaveDonut, new AOEShapeDonut(10f, 20f));
+sealed class ZoomIn(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.ZoomIn, 4f);
 
-class TenTonzeWaveDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTonzeWaveDonut, new AOEShapeDonut(10f, 20f));
-class ZoomIn(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.ZoomIn, 4f);
-
-class ZoomInKB(BossModule module) : Components.GenericKnockback(module) // actual knockback happens ~0.7s after snapshot
+sealed class ZoomInKB(BossModule module) : Components.GenericKnockback(module)
 {
     private DateTime _activation;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_activation != default)
+        {
             return new Knockback[1] { new(Module.PrimaryActor.Position, 20f, _activation) };
+        }
         return [];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ZoomIn)
+        {
             _activation = Module.CastFinishAt(spell);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ZoomIn)
+        {
             _activation = default;
+        }
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -66,25 +69,24 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage16Act2States : StateMachineBuilder
+sealed class Stage16Act2States : StateMachineBuilder
 {
     public Stage16Act2States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<OneOneOneOneTonzeSwing>()
             .ActivateOnEnter<OneOneOneTonzeSwing>()
-            .ActivateOnEnter<TenTonzeSlash>()
+            .ActivateOnEnter<TenTonzeSlashWaveCone>()
             .ActivateOnEnter<CryOfRage>()
             .ActivateOnEnter<ZoomIn>()
             .ActivateOnEnter<ZoomInKB>()
-            .ActivateOnEnter<TenTonzeWaveCone>()
             .ActivateOnEnter<TenTonzeWaveDonut>()
             .DeactivateOnEnter<Hints>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 626, NameID = 8113, SortOrder = 2)]
-public class Stage16Act2 : BossModule
+public sealed class Stage16Act2 : BossModule
 {
     public Stage16Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

@@ -21,9 +21,9 @@ public enum AID : uint
     SelfDetonate = 15329 // ArenaMagus->player, 3.0s cast, single-target
 }
 
-class MagicHammer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagicHammer, 8f);
-class PageTear(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PageTear, new AOEShapeCone(8f, 45f.Degrees()));
-class VacuumBlade(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones)
+sealed class MagicHammer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagicHammer, 8f);
+sealed class PageTear(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PageTear, new AOEShapeCone(8f, 45f.Degrees()));
+sealed class VacuumBlade(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -44,9 +44,9 @@ class VacuumBlade(BossModule module) : Components.Voidzone(module, 3f, GetVoidzo
     }
 }
 
-class HeadDown(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.HeadDown, 4f);
+sealed class HeadDown(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.HeadDown, 4f);
 
-class HeadDownKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HeadDown, 10f, kind: Kind.DirForward)
+sealed class HeadDownKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HeadDown, 10f, kind: Kind.DirForward)
 {
     private readonly VacuumBlade _aoe = module.FindComponent<VacuumBlade>()!;
 
@@ -56,16 +56,19 @@ class HeadDownKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
 }
 
-class BoneShaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BoneShaker, "Adds + Raidwide");
+sealed class BoneShaker(BossModule module) : Components.RaidwideCast(module, (uint)AID.BoneShaker, "Adds + Raidwide");
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -85,7 +88,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -93,7 +96,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage24Act3States : StateMachineBuilder
+sealed class Stage24Act3States : StateMachineBuilder
 {
     public Stage24Act3States(BossModule module) : base(module)
     {
@@ -110,7 +113,7 @@ class Stage24Act3States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 634, NameID = 8125, SortOrder = 3)]
-public class Stage24Act3 : BossModule
+public sealed class Stage24Act3 : BossModule
 {
     public Stage24Act3(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

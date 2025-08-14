@@ -1,4 +1,5 @@
 ﻿namespace BossMod.Heavensward.Alliance.A33ProtoUltima;
+
 public enum OID : uint
 {
     Boss = 0x1967, // R6.000, x?

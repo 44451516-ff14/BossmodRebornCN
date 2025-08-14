@@ -76,7 +76,7 @@ sealed class Adds(BossModule module) : Components.AddsMulti(module, [(uint)OID.M
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x11D1u)
+        if (id == 0x11D1)
         {
             switch (actor.OID)
             {

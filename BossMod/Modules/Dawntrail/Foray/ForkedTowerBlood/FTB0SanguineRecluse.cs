@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB0SanguineRecluse;
 
 public enum OID : uint
 {
-    Boss = 0x482E,
+    SanguineRecluse = 0x482E,
     ArcapetrifiedNetzach = 0x45DE // R4.505
 }
 
@@ -36,7 +36,7 @@ sealed class Cryptcall(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.TartareanThunder)
         {
-            _aoe = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 3f));
+            _aoe = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 3d));
         }
     }
 
@@ -61,5 +61,5 @@ sealed class FTB0SanguineRecluseStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13868, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.SanguineRecluse, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13868, SortOrder = 1, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
 public sealed class FTB0SanguineRecluse(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

@@ -65,10 +65,10 @@ sealed class ParticleConcentration(BossModule module) : Components.GenericTowers
         switch (status.ID)
         {
             case (uint)SID.InnerDarkness:
-                _innerPlayers[Raid.FindSlot(actor.InstanceID)] = true;
+                _innerPlayers.Set(Raid.FindSlot(actor.InstanceID));
                 break;
             case (uint)SID.OuterDarkness:
-                _outerPlayers[Raid.FindSlot(actor.InstanceID)] = true;
+                _outerPlayers.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }
     }
@@ -78,10 +78,10 @@ sealed class ParticleConcentration(BossModule module) : Components.GenericTowers
         switch (status.ID)
         {
             case (uint)SID.InnerDarkness:
-                _innerPlayers[Raid.FindSlot(actor.InstanceID)] = false;
+                _innerPlayers.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
             case (uint)SID.OuterDarkness:
-                _outerPlayers[Raid.FindSlot(actor.InstanceID)] = false;
+                _outerPlayers.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }
     }
@@ -133,13 +133,17 @@ sealed class ParticleConcentration(BossModule module) : Components.GenericTowers
             0x44 => (new(+22f, 0f), 3),
             0x45 => (new(+26.5f, +4.5f), 3),
             0x46 => (new(+31f, 0f), 3),
-            _ => (default(WDir), 0)
+            _ => ((WDir)default, 0)
         };
 
         if (count == 3)
+        {
             _outerTowers.Add(Arena.Center + offset);
+        }
         else if (count > 0)
+        {
             Towers.Add(new(Arena.Center + offset, 3f, count, count, _outerPlayers, WorldState.FutureTime(10.1d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -149,12 +153,14 @@ sealed class ParticleConcentration(BossModule module) : Components.GenericTowers
             ++NumCasts;
             var count = Towers.Count;
             var pos = caster.Position;
+            var towers = CollectionsMarshal.AsSpan(Towers);
             for (var i = 0; i < count; ++i)
             {
-                if (Towers[i].Position == pos)
+                ref var t = ref towers[i];
+                if (t.Position == pos)
                 {
                     Towers.RemoveAt(i);
-                    break;
+                    return;
                 }
             }
         }

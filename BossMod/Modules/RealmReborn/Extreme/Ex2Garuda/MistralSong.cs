@@ -2,7 +2,7 @@
 
 class MistralSong : Components.GenericLineOfSightAOE
 {
-    private WPos _predictedPosition;
+    private readonly WPos _predictedPosition;
 
     public MistralSong(BossModule module, WPos predictedPosition) : base(module, (uint)AID.MistralSong, 31.7f, true)
     {

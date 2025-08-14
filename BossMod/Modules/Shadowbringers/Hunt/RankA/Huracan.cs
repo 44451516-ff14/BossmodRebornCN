@@ -55,15 +55,17 @@ class Combos(BossModule module) : Components.GenericAOEs(module)
         if (shape != null)
         {
             AddAOE(shape);
-            AddAOE(rect2, 180f.Degrees(), 3.1f);
+            AddAOE(rect2, 180f.Degrees(), 3.1d);
         }
-        void AddAOE(AOEShape shape, Angle offset = default, float delay = default) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, delay), Risky: false));
+        void AddAOE(AOEShape shape, Angle offset = default, double delay = default) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, delay), risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.Windburst or (uint)AID.AutumnWreath or (uint)AID.DawnsEdge or (uint)AID.WinterRain)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 

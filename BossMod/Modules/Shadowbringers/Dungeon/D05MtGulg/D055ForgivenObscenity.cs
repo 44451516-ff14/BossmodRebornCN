@@ -138,7 +138,7 @@ class GoldChaser(BossModule module) : Components.GenericAOEs(module)
                     break;
             }
         }
-        void AddAOE(Actor caster, double delay) => _aoes.Add(new(rect, WPos.ClampToGrid(caster.Position), Angle.AnglesCardinals[2], _activation.AddSeconds(delay)));
+        void AddAOE(Actor caster, double delay) => _aoes.Add(new(rect, caster.Position.Quantized(), Angle.AnglesCardinals[2], _activation.AddSeconds(delay)));
         bool AreCastersInPositions(WPos[] positions)
         {
             var caster0 = _casters[0].Position;

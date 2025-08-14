@@ -6,7 +6,7 @@ sealed class DimensionalDistortion(BossModule module) : Components.Exaflare(modu
     {
         if (spell.Action.ID is (uint)AID.DimensionalDistortionFirst)
         {
-            Lines.Add(new() { Next = spell.LocXZ, Advance = 8.5f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 5, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, 8.5f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 5, 2));
         }
     }
 

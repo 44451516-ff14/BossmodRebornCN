@@ -54,7 +54,7 @@ public sealed class EurekaAI(RotationModuleManager manager, Actor player) : AIBa
             Hints.ActionsToExecute.Push(ActionDefinitions.IDPotionEureka, Player, ActionQueue.Priority.VeryLow);
     }
 
-    private bool HaveLogos(EurekaActionID id) => World.Client.DutyActions.Any(d => d.Action.ID == (uint)id);
+    private bool HaveLogos(EurekaActionID id) => FindDutyActionSlot(id) >= 0;
 
     private bool InEureka => World.CurrentCFCID is 283 or 581 or 598 or 639;
 }

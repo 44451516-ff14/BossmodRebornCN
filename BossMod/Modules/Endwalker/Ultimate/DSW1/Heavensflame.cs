@@ -1,20 +1,26 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
-class HeavensflameAOE(BossModule module) : Components.CastCounter(module, (uint)AID.HeavensflameAOE);
+sealed class HeavensflameAOE(BossModule module) : Components.CastCounter(module, (uint)AID.HeavensflameAOE);
 
-class HeavensflameKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16)
+sealed class HeavensflameKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16f)
 {
     private readonly WPos[] _playerAdjustedPositions = new WPos[PartyState.MaxPartySize];
     private readonly int[] _playerIcons = new int[PartyState.MaxPartySize]; // 0 = unassigned, 1 = circle/red, 2 = triangle/green, 3 = cross/blue, 4 = square/purple
     private BitMask _brokenTethers;
 
-    private const float _aoeRadius = 10;
-    private const float _tetherBreakDistance = 32; // TODO: verify...
+    private const float _aoeRadius = 10f;
+    private const float _tetherBreakDistance = 32f; // TODO: verify...
 
     public override void Update()
     {
+        if (Casters.Count == 0)
+        {
+            return;
+        }
+        ref readonly var c = ref Casters.Ref(0);
+        var origin = c.Origin;
         foreach (var (slot, player) in Raid.WithSlot(false, true, true))
-            _playerAdjustedPositions[slot] = AwayFromSource(player.Position, Casters.FirstOrDefault(), Distance);
+            _playerAdjustedPositions[slot] = AwayFromSource(player.Position, origin, Distance);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -51,7 +57,7 @@ class HeavensflameKnockback(BossModule module) : Components.SimpleKnockbacks(mod
 
         foreach (var hint in PositionHints(pcSlot))
         {
-            Arena.AddCircle(hint, 1, Colors.Safe);
+            Arena.AddCircle(hint, 1f, Colors.Safe);
             //var dir = Vector3.Normalize(pos.Value - _knockbackSource.Position);
             //var adjPos = Arena.ClampToBounds(_knockbackSource.Position + 50 * dir);
             //Arena.AddLine(Arena.Center, adjPos, Colors.Safe);
@@ -64,7 +70,7 @@ class HeavensflameKnockback(BossModule module) : Components.SimpleKnockbacks(mod
         DrawKnockback(pc, _playerAdjustedPositions[pcSlot], Arena);
 
         foreach (var (slot, _) in Raid.WithSlot(false, true, true).Exclude(pc))
-            Arena.AddCircle(_playerAdjustedPositions[slot], _aoeRadius, Colors.Danger);
+            Arena.AddCircle(_playerAdjustedPositions[slot], _aoeRadius);
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether)
@@ -75,12 +81,12 @@ class HeavensflameKnockback(BossModule module) : Components.SimpleKnockbacks(mod
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        var icon = (IconID)iconID switch
+        var icon = iconID switch
         {
-            IconID.HeavensflameCircle => 1,
-            IconID.HeavensflameTriangle => 2,
-            IconID.HeavensflameCross => 3,
-            IconID.HeavensflameSquare => 4,
+            (uint)IconID.HeavensflameCircle => 1,
+            (uint)IconID.HeavensflameTriangle => 2,
+            (uint)IconID.HeavensflameCross => 3,
+            (uint)IconID.HeavensflameSquare => 4,
             _ => 0
         };
         if (icon != 0)
@@ -103,48 +109,50 @@ class HeavensflameKnockback(BossModule module) : Components.SimpleKnockbacks(mod
         return -1;
     }
 
-    private IEnumerable<WPos> PositionHints(int slot)
+    private List<WPos> PositionHints(int slot)
     {
         var icon = _playerIcons[slot];
         if (icon == 0)
-            yield break;
-
+            return [];
+        var hints = new List<WPos>(2);
         switch (Service.Config.Get<DSW1Config>().Heavensflame)
         {
             case DSW1Config.HeavensflameHints.Waymarks:
                 {
-                    if (WorldState.Waymarks[(int)Waymark.A + (icon - 1)] is var alt1 && alt1 != null)
-                        yield return new(alt1.Value.XZ());
-                    if (WorldState.Waymarks[(int)Waymark.N1 + (icon - 1)] is var alt2 && alt2 != null)
-                        yield return new(alt2.Value.XZ());
+                    if (WorldState.Waymarks.GetFieldMark((int)Waymark.A + (icon - 1)) is var alt1 && alt1 != null)
+                        hints.Add(new(alt1.Value.XZ()));
+                    if (WorldState.Waymarks.GetFieldMark((int)Waymark.N1 + (icon - 1)) is var alt2 && alt2 != null)
+                        hints.Add(new(alt2.Value.XZ()));
                 }
                 break;
             case DSW1Config.HeavensflameHints.LPDU:
                 {
-                    var angle = 135.Degrees() - icon * 45.Degrees();
+                    var angle = 135f.Degrees() - icon * 45f.Degrees();
                     var offset = _tetherBreakDistance * 0.5f * angle.ToDirection();
+                    var center = Arena.Center;
                     switch (icon)
                     {
                         case 1: // circle - both on DPS, show both E and W and let players adjust
-                            yield return Arena.Center + offset;
-                            yield return Arena.Center - offset;
+                            hints.Add(center + offset);
+                            hints.Add(center - offset);
                             break;
                         case 2: // triangle - healer SE, dps NW
                         case 3: // cross - healer S, tank N
                             if (Raid[slot]?.Role == Role.Healer)
-                                yield return Arena.Center + offset;
+                                hints.Add(center + offset);
                             else
-                                yield return Arena.Center - offset;
+                                hints.Add(center - offset);
                             break;
                         case 4: // square - tank NE, dps SW
                             if (Raid[slot]?.Role == Role.Tank)
-                                yield return Arena.Center - offset;
+                                hints.Add(center - offset);
                             else
-                                yield return Arena.Center + offset;
+                                hints.Add(center + offset);
                             break;
                     }
                 }
                 break;
         }
+        return hints;
     }
 }

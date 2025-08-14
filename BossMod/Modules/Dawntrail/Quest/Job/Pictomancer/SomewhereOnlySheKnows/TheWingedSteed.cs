@@ -17,10 +17,10 @@ public enum AID : uint
     Nicker = 37518 // Boss->self, 4.0s cast, range 12 circle
 }
 
-class BurningBright(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningBright, new AOEShapeRect(47, 3));
-class Nicker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Nicker, 12);
+sealed class BurningBright(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningBright, new AOEShapeRect(47f, 3f));
+sealed class Nicker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Nicker, 12f);
 
-class TheWingedSteedStates : StateMachineBuilder
+sealed class TheWingedSteedStates : StateMachineBuilder
 {
     public TheWingedSteedStates(BossModule module) : base(module)
     {
@@ -32,7 +32,7 @@ class TheWingedSteedStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70395, NameID = 13033)]
-public class TheWingedSteed(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class TheWingedSteed(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(33.04f, -231.66f), new(33.08f, -231.15f), new(33.25f, -230.68f), new(34.25f, -230.59f), new(34.72f, -230.42f),
     new(34.92f, -229.82f), new(35.25f, -229.42f), new(37.25f, -229.41f), new(37.76f, -229.42f), new(38.09f, -230.23f),

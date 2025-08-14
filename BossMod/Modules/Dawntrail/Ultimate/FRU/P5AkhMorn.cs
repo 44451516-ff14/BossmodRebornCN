@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P5AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4, 0, 4)
+sealed class P5AkhMorn(BossModule module) : Components.UniformStackSpread(module, 4f, 0, 4)
 {
     public Actor? Source;
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();

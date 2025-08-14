@@ -75,7 +75,7 @@ public enum AID : uint
     End = 38710, // Boss->self, no cast, single-target, visual (end fight)
 }
 
-class Draw(BossModule module) : Components.GenericAOEs(module)
+sealed class Draw(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<Actor>[] _cards = [
         module.Enemies((uint)OID.Card1),
@@ -167,7 +167,7 @@ class Draw(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class FlourishingBow(BossModule module) : Components.GenericAOEs(module)
+sealed class FlourishingBow(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -199,9 +199,9 @@ class FlourishingBow(BossModule module) : Components.GenericAOEs(module)
         }
     }
 }
-class DoubleMisdirect(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DoubleMisdirectAOELong, (uint)AID.DoubleMisdirectAOEShort], new AOEShapeCone(40f, 30f.Degrees()), 3, 6);
+sealed class DoubleMisdirect(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DoubleMisdirectAOELong, (uint)AID.DoubleMisdirectAOEShort], new AOEShapeCone(40f, 30f.Degrees()), 3, 6);
 
-class RollingStarlight(BossModule module) : Components.GenericAOEs(module)
+sealed class RollingStarlight(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -234,12 +234,12 @@ class RollingStarlight(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MagicalHat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwinkleToss, new AOEShapeRect(42f, 2.5f), 4);
-class Shimmerstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ShimmerstormAOE, 6f);
-class Shimmerstrike(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ShimmerstrikeAOE, 6f, tankbuster: true);
-class SparkOfImagination(BossModule module) : Components.RaidwideCast(module, (uint)AID.SparkOfImaginationAOE);
+sealed class MagicalHat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwinkleToss, new AOEShapeRect(42f, 2.5f), 4);
+sealed class Shimmerstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ShimmerstormAOE, 6f);
+sealed class Shimmerstrike(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ShimmerstrikeAOE, 6f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
+sealed class SparkOfImagination(BossModule module) : Components.RaidwideCast(module, (uint)AID.SparkOfImaginationAOE);
 
-class MicaTheMagicalMuStates : StateMachineBuilder
+sealed class MicaTheMagicalMuStates : StateMachineBuilder
 {
     public MicaTheMagicalMuStates(BossModule module) : base(module)
     {
@@ -256,7 +256,7 @@ class MicaTheMagicalMuStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.Fate, GroupID = 1922, NameID = 13049)]
-public class MicaTheMagicalMu(WorldState ws, Actor primary) : BossModule(ws, primary, new(791f, 593f), new ArenaBoundsRect(20.5f, 19.5f))
+public sealed class MicaTheMagicalMu(WorldState ws, Actor primary) : BossModule(ws, primary, new(791f, 593f), new ArenaBoundsRect(20.5f, 19.5f))
 {
     protected override bool CheckPull() => base.CheckPull() && (Center - Raid.Player()!.Position).LengthSq() < 420f;
 }

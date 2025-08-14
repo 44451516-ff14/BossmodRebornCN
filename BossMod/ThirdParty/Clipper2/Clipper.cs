@@ -1,14 +1,14 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  10 May 2024                                                     *
-* Website   :  http://www.angusj.com                                           *
-* Copyright :  Angus Johnson 2010-2024                                         *
+* Date      :  5 March 2025                                                    *
+* Website   :  https://www.angusj.com                                          *
+* Copyright :  Angus Johnson 2010-2025                                         *
 * Purpose   :  This module contains simple functions that will likely cover    *
 *              most polygon boolean and offsetting needs, while also avoiding  *
 *              the inherent complexities of the other modules.                 *
 * Thanks    :  Special thanks to Thong Nguyen, Guus Kuiper, Phil Stopford,     *
 *           :  and Daniel Gosnell for their invaluable assistance with C#.     *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #nullable enable
@@ -25,8 +25,8 @@ namespace Clipper2Lib
   public static class Clipper
   {
     private const double DoublePI = 2 * Math.PI;
-    private const double Half = 0.5;
-  
+    private const double HalfPI = 0.5 * Math.PI;
+
     private static Rect64 invalidRect64 = new Rect64(false);
     public static Rect64 InvalidRect64 => invalidRect64;
 
@@ -141,9 +141,9 @@ namespace Clipper2Lib
     }
 
     public static Paths64 InflatePaths(Paths64 paths, double delta, JoinType joinType,
-      EndType endType, double miterLimit = 2.0)
+      EndType endType, double miterLimit = 2.0, double arcTolerance = 0.0)
     {
-      ClipperOffset co = new ClipperOffset(miterLimit);
+      ClipperOffset co = new ClipperOffset(miterLimit, arcTolerance);
       co.AddPaths(paths, joinType, endType);
       Paths64 solution = new Paths64();
       co.Execute(delta, solution);
@@ -151,12 +151,12 @@ namespace Clipper2Lib
     }
 
     public static PathsD InflatePaths(PathsD paths, double delta, JoinType joinType,
-      EndType endType, double miterLimit = 2.0, int precision = 2)
+      EndType endType, double miterLimit = 2.0, int precision = 2, double arcTolerance = 0.0)
     {
       InternalClipper.CheckPrecision(precision);
       double scale = Math.Pow(10, precision);
       Paths64 tmp = ScalePaths64(paths, scale);
-      ClipperOffset co = new ClipperOffset(miterLimit);
+      ClipperOffset co = new ClipperOffset(miterLimit, scale * arcTolerance);
       co.AddPaths(tmp, joinType, endType);
       co.Execute(delta * scale, tmp); // reuse 'tmp' to receive (scaled) solution
       return ScalePathsD(tmp, 1 / scale);
@@ -258,7 +258,7 @@ namespace Clipper2Lib
         a += (double) (prevPt.Y + pt.Y) * (prevPt.X - pt.X);
         prevPt = pt;
       }
-      return a * Half;
+      return a * 0.5;
     }
 
     public static double Area(Paths64 paths)
@@ -280,7 +280,7 @@ namespace Clipper2Lib
         a += (prevPt.y + pt.y) * (prevPt.x - pt.x);
         prevPt = pt;
       }
-      return a * Half;
+      return a * 0.5;
     }
 
     public static double Area(PathsD paths)
@@ -639,7 +639,7 @@ namespace Clipper2Lib
 #if USINGZ
     public static Path64 MakePathZ(long[] arr)
     {
-      int len = arr.Length / 2;
+      int len = arr.Length / 3;
       Path64 p = new Path64(len);
       for (int i = 0; i < len; ++i)
         p.Add(new Point64(arr[i * 3], arr[i * 3 + 1], arr[i * 3 + 2]));
@@ -677,13 +677,13 @@ namespace Clipper2Lib
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Point64 MidPoint(Point64 pt1, Point64 pt2)
     {
-      return new Point64((pt1.X + pt2.X) * Half, (pt1.Y + pt2.Y) * Half);
+      return new Point64((pt1.X + pt2.X) * 0.5d, (pt1.Y + pt2.Y) * 0.5d);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PointD MidPoint(PointD pt1, PointD pt2)
     {
-      return new PointD((pt1.x + pt2.x) * Half, (pt1.y + pt2.y) * Half);
+      return new PointD((pt1.x + pt2.x) * 0.5d, (pt1.y + pt2.y) * 0.5d);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -816,21 +816,31 @@ namespace Clipper2Lib
 
     internal static void RDP(Path64 path, int begin, int end, double epsSqrd, List<bool> flags)
     {
-      int idx = 0;
-      double max_d = 0;
-      while (end > begin && path[begin] == path[end]) flags[end--] = false;
-      for (int i = begin + 1; i < end; ++i)
+      while (true)
       {
-        // PerpendicDistFromLineSqrd - avoids expensive Sqrt()
-        double d = PerpendicDistFromLineSqrd(path[i], path[begin], path[end]);
-        if (d <= max_d) continue;
-        max_d = d;
-        idx = i;
+        int idx = 0;
+        double max_d = 0;
+        while (end > begin && path[begin] == path[end]) flags[end--] = false;
+        for (int i = begin + 1; i < end; ++i)
+        {
+          // PerpendicDistFromLineSqrd - avoids expensive Sqrt()
+          double d = PerpendicDistFromLineSqrd(path[i], path[begin], path[end]);
+          if (d <= max_d) continue;
+          max_d = d;
+          idx = i;
+        }
+
+        if (max_d <= epsSqrd) return;
+        flags[idx] = true;
+        if (idx > begin + 1) RDP(path, begin, idx, epsSqrd, flags);
+        if (idx < end - 1)
+        {
+          begin = idx;
+          continue;
+        }
+
+        break;
       }
-      if (max_d <= epsSqrd) return;
-      flags[idx] = true;
-      if (idx > begin + 1) RDP(path, begin, idx, epsSqrd, flags);
-      if (idx < end - 1) RDP(path, idx, end, epsSqrd, flags);
     }
 
     public static Path64 RamerDouglasPeucker(Path64 path, double epsilon)
@@ -855,21 +865,31 @@ namespace Clipper2Lib
 
     internal static void RDP(PathD path, int begin, int end, double epsSqrd, List<bool> flags)
     {
-      int idx = 0;
-      double max_d = 0;
-      while (end > begin && path[begin] == path[end]) flags[end--] = false;
-      for (int i = begin + 1; i < end; ++i)
+      while (true)
       {
-        // PerpendicDistFromLineSqrd - avoids expensive Sqrt()
-        double d = PerpendicDistFromLineSqrd(path[i], path[begin], path[end]);
-        if (d <= max_d) continue;
-        max_d = d;
-        idx = i;
+        int idx = 0;
+        double max_d = 0;
+        while (end > begin && path[begin] == path[end]) flags[end--] = false;
+        for (int i = begin + 1; i < end; ++i)
+        {
+          // PerpendicDistFromLineSqrd - avoids expensive Sqrt()
+          double d = PerpendicDistFromLineSqrd(path[i], path[begin], path[end]);
+          if (d <= max_d) continue;
+          max_d = d;
+          idx = i;
+        }
+
+        if (max_d <= epsSqrd) return;
+        flags[idx] = true;
+        if (idx > begin + 1) RDP(path, begin, idx, epsSqrd, flags);
+        if (idx < end - 1)
+        {
+          begin = idx;
+          continue;
+        }
+
+        break;
       }
-      if (max_d <= epsSqrd) return;
-      flags[idx] = true;
-      if (idx > begin + 1) RDP(path, begin, idx, epsSqrd, flags);
-      if (idx < end - 1) RDP(path, idx, end, epsSqrd, flags);
     }
 
     public static PathD RamerDouglasPeucker(PathD path, double epsilon)
@@ -924,7 +944,7 @@ namespace Clipper2Lib
 
       bool[] flags = new bool[len];
       double[] dsq = new double[len];
-      int curr = 0, prev, start, next, prior2;
+      int curr = 0;
 
       if (isClosedPath)
       {
@@ -944,7 +964,7 @@ namespace Clipper2Lib
       {
         if (dsq[curr] > epsSqr)
         {
-          start = curr;
+          int start = curr;
           do
           {
             curr = GetNext(curr, high, ref flags);
@@ -952,10 +972,11 @@ namespace Clipper2Lib
           if (curr == start) break;
         }
 
-        prev = GetPrior(curr, high, ref flags);
-        next = GetNext(curr, high, ref flags);
+        int prev = GetPrior(curr, high, ref flags);
+        int next = GetNext(curr, high, ref flags);
         if (next == prev) break;
 
+        int prior2;
         if (dsq[next] < dsq[curr])
         {
           prior2 = prev;
@@ -998,7 +1019,7 @@ namespace Clipper2Lib
 
       bool[] flags = new bool[len];
       double[] dsq = new double[len];
-      int curr = 0, prev, start, next, prior2;
+      int curr = 0;
       if (isClosedPath)
       {
         dsq[0] = PerpendicDistFromLineSqrd(path[0], path[high], path[1]);
@@ -1016,7 +1037,7 @@ namespace Clipper2Lib
       {
         if (dsq[curr] > epsSqr)
         {
-          start = curr;
+          int start = curr;
           do
           {
             curr = GetNext(curr, high, ref flags);
@@ -1024,10 +1045,11 @@ namespace Clipper2Lib
           if (curr == start) break;
         }
 
-        prev = GetPrior(curr, high, ref flags);
-        next = GetNext(curr, high, ref flags);
+        int prev = GetPrior(curr, high, ref flags);
+        int next = GetNext(curr, high, ref flags);
         if (next == prev) break;
 
+        int prior2;
         if (dsq[next] < dsq[curr])
         {
           prior2 = prev;
@@ -1069,7 +1091,7 @@ namespace Clipper2Lib
       {
         while (i < len - 1 && 
           InternalClipper.IsCollinear(path[len - 1], path[i], path[i + 1])) ++i;
-        while (i < len - 1 && InternalClipper.IsCollinear(path[len - 2], path[len - 1], path[i])) --len;
+        while (i < len - 1 && InternalClipper.IsCollinear(path[len - 2], path[len - 1], path[i])) len--;
       }
 
       if (len - i < 3)
@@ -1136,8 +1158,7 @@ namespace Clipper2Lib
       if (radiusX <= 0) return new Path64();
       if (radiusY <= 0) radiusY = radiusX;
       if (steps <= 2)
-        steps = (int) Math.Ceiling(Math.PI * Math.Sqrt((radiusX + radiusY) * Half));
-
+        steps = (int) Math.Ceiling(HalfPI * Math.Sqrt((radiusX + radiusY)));
       var (si, co) = Math.SinCos(DoublePI / steps);
       double dx = co, dy = si;
       Path64 result = new Path64(steps) { new Point64(center.X + radiusX, center.Y) };
@@ -1157,9 +1178,9 @@ namespace Clipper2Lib
       if (radiusX <= 0) return new PathD();
       if (radiusY <= 0) radiusY = radiusX;
       if (steps <= 2)
-        steps = (int) Math.Ceiling(Math.PI * Math.Sqrt((radiusX + radiusY) * Half));
+        steps = (int) Math.Ceiling(HalfPI * Math.Sqrt((radiusX + radiusY)));
 
-      var (si, co) = Math.SinCos(DoublePI / steps);
+      var (si, co) = Math.SinCos(DoublePI / steps);;
       double dx = co, dy = si;
       PathD result = new PathD(steps) { new PointD(center.x + radiusX, center.y) };
       for (int i = 1; i < steps; ++i)
@@ -1182,7 +1203,7 @@ namespace Clipper2Lib
       }
       else
       {
-        Console.WriteLine(spaces + caption + string.Format("({0})", pp.Count));
+        Console.WriteLine(spaces + caption + $"({pp.Count})");
         foreach (PolyPath64 child in pp) { ShowPolyPathStructure(child, level + 1); }
       }
     }
@@ -1203,7 +1224,7 @@ namespace Clipper2Lib
       }
       else
       {
-        Console.WriteLine(spaces + caption + string.Format("({0})", pp.Count));
+        Console.WriteLine(spaces + caption + $"({pp.Count})");
         foreach (PolyPathD child in pp) { ShowPolyPathStructure(child, level + 1); }
       }
     }

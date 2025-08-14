@@ -12,7 +12,7 @@ class RoaringBlaze(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.RoaringBlazeFirst or (uint)AID.RoaringBlazeSecond or (uint)AID.RoaringBlazeSolo)
         {
-            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             if (_aoes.Count > 1)
                 _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }

@@ -51,12 +51,12 @@ public enum AID : uint
     PoisonDaggers = 39046 // Helper->player/TentoawaTheWideEye/LoazenikweTheShutEye, no cast, single-target
 }
 
-class Bladestorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bladestorm, new AOEShapeCone(20f, 45f.Degrees()));
-class KeenTempest(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.KeenTempest], 8f);
+sealed class Bladestorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Bladestorm, new AOEShapeCone(20f, 45f.Degrees()));
+sealed class KeenTempest(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.KeenTempest], 8f);
 
-class AethericBurst(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.AethericBurstVisual, (uint)AID.AethericBurst, 0.9f);
-class AetherialExposure(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AetherialExposure, 6f, 3, 3);
-class Conviction(BossModule module) : Components.CastTowers(module, (uint)AID.Conviction, 4f)
+sealed class AethericBurst(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.AethericBurstVisual, (uint)AID.AethericBurst, 0.9f);
+sealed class AetherialExposure(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AetherialExposure, 6f, 3, 3);
+sealed class Conviction(BossModule module) : Components.CastTowers(module, (uint)AID.Conviction, 4f)
 {
     private readonly AetherialExposure _stack = module.FindComponent<AetherialExposure>()!;
 
@@ -67,25 +67,27 @@ class Conviction(BossModule module) : Components.CastTowers(module, (uint)AID.Co
             return;
 
         var stack = _stack.ActiveStacks.Count != 0;
+        var towers = CollectionsMarshal.AsSpan(Towers);
         for (var i = 0; i < count; ++i)
         {
-            Towers[i] = Towers[i] with { MinSoakers = stack ? 0 : 1, MaxSoakers = stack ? 0 : 1 };
+            ref var t = ref towers[i];
+            t.MinSoakers = t.MaxSoakers = stack ? 0 : 1;
         }
     }
 }
 
-class AetherialRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialRay, new AOEShapeRect(40f, 2f), 10);
-class Aethershot(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Aethershot, 5f);
-class BloodyTrinity(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.BloodyTrinity);
-class PoisonDaggers(BossModule module) : Components.CastInterruptHint(module, (uint)AID.PoisonDaggersVisual);
-class Daggerflight(BossModule module) : Components.InterceptTether(module, (uint)AID.DaggerflightVisual)
+sealed class AetherialRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialRay, new AOEShapeRect(40f, 2f), 10);
+sealed class Aethershot(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Aethershot, 5f);
+sealed class BloodyTrinity(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.BloodyTrinity);
+sealed class PoisonDaggers(BossModule module) : Components.CastInterruptHint(module, (uint)AID.PoisonDaggersVisual);
+sealed class Daggerflight(BossModule module) : Components.InterceptTether(module, (uint)AID.DaggerflightVisual)
 {
     private DateTime _activation;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
         if (spell.Action.ID == (uint)AID.DaggerflightVisual)
-            _activation = Module.CastFinishAt(spell, 0.2f);
+            _activation = Module.CastFinishAt(spell, 0.2d);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -99,7 +101,7 @@ class Daggerflight(BossModule module) : Components.InterceptTether(module, (uint
     }
 }
 
-class CradleOfTheSleepless(BossModule module) : Components.GenericAOEs(module)
+sealed class CradleOfTheSleepless(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
 
@@ -123,7 +125,7 @@ class CradleOfTheSleepless(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DreamsOfANewDayStates : StateMachineBuilder
+abstract class DreamsOfANewDayStates : StateMachineBuilder
 {
     public DreamsOfANewDayStates(BossModule module) : base(module)
     {
@@ -142,10 +144,7 @@ class DreamsOfANewDayStates : StateMachineBuilder
     }
 }
 
-class DreamsOfANewDayP2States(BossModule module) : DreamsOfANewDayStates(module) { }
-
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70359, NameID = 13046, SortOrder = 1)]
-public class DreamsOfANewDay(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public abstract class DreamsOfANewDay(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-757f, -719f), 19.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.UnboundRaider1, (uint)OID.UnboundRaider2, (uint)OID.UnboundRaider3, (uint)OID.UnboundRaider4,
@@ -159,5 +158,11 @@ public class DreamsOfANewDay(WorldState ws, Actor primary) : BossModule(ws, prim
     protected override bool CheckPull() => Raid.Player()!.InCombat;
 }
 
+sealed class DreamsOfANewDayP1States(BossModule module) : DreamsOfANewDayStates(module) { }
+sealed class DreamsOfANewDayP2States(BossModule module) : DreamsOfANewDayStates(module) { }
+
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70359, NameID = 13046, SortOrder = 1)]
+public sealed class DreamsOfANewDayP1(WorldState ws, Actor primary) : DreamsOfANewDay(ws, primary);
+
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.BossP2, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70359, NameID = 13046, SortOrder = 2)]
-public class DreamsOfANewDayP2(WorldState ws, Actor primary) : DreamsOfANewDay(ws, primary);
+public sealed class DreamsOfANewDayP2(WorldState ws, Actor primary) : DreamsOfANewDay(ws, primary);

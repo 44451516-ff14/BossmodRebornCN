@@ -11,14 +11,15 @@ sealed class DonutSectorTowers(BossModule module) : Components.GenericTowers(mod
     {
         if (iconID == (uint)IconID.Emblazon)
         {
-            forbidden[Raid.FindSlot(targetID)] = true;
+            forbidden.Set(Raid.FindSlot(targetID));
             if (++emblazoncounter == 4)
             {
                 var towers = CollectionsMarshal.AsSpan(Towers);
                 var len = towers.Length;
                 for (var i = 0; i < len; ++i)
                 {
-                    towers[i].ForbiddenSoakers = forbidden;
+                    ref var t = ref towers[i];
+                    t.ForbiddenSoakers = forbidden;
                 }
             }
         }
@@ -49,9 +50,9 @@ sealed class DonutSectorTowers(BossModule module) : Components.GenericTowers(mod
         {
             void AddTower(AOEShapeDonutSector shape, byte idx) => Towers.Add(new(Arena.Center, shape, activation: WorldState.FutureTime(13d), rotation: FloorTiles.TileAngles[index - idx]));
             if (index is >= 0x14 and <= 0x1B)
-                AddTower(FloorTiles.DonutS, (byte)0x14u);
+                AddTower(FloorTiles.DonutS, 0x14);
             else if (index is >= 0x2D and <= 0x34)
-                AddTower(FloorTiles.DonutSIn, (byte)0x2Du);
+                AddTower(FloorTiles.DonutSIn, 0x2D);
         }
         else if (state is 0x00800040u or 0x80000040u && ++envccounter == 4)
         {
@@ -106,7 +107,7 @@ sealed class DonutSectorTowers(BossModule module) : Components.GenericTowers(mod
 
                         shapes.Add(shape);
 
-                        var leftright = new int[2] { (j + 7) % 8, (j + 1) % 8 };
+                        var leftright = new int[2] { (j + 7) & 7, (j + 1) & 7 };
                         for (var k = 0; k < 2; ++k)
                         {
                             var n = leftright[k];

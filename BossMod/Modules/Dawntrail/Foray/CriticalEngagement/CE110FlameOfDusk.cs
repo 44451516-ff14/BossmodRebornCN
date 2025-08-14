@@ -128,7 +128,7 @@ sealed class MoltAOEs(BossModule module) : Components.GenericAOEs(module)
                         var husk = husks[i];
                         if (husk.Position.AlmostEqual(position, 1f))
                         {
-                            AOEs.Add(new(mech.shape!, WPos.ClampToGrid(position), husk.Rotation, mech.activation));
+                            AOEs.Add(new(mech.shape!, position.Quantized(), husk.Rotation, mech.activation));
                             if (AOEs.Count == 2)
                             {
                                 AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
@@ -140,7 +140,7 @@ sealed class MoltAOEs(BossModule module) : Components.GenericAOEs(module)
                 }
                 else
                 {
-                    _kb.AddKnockback(WPos.ClampToGrid(position), mech.activation);
+                    _kb.AddKnockback(position.Quantized(), mech.activation);
                     RemovePendingMechanic(position);
                 }
                 void RemovePendingMechanic(WPos position)
@@ -198,7 +198,7 @@ sealed class MoltKB(BossModule module) : Components.GenericKnockback(module)
                 {
                     if ((p + 20f * (p - origin).Normalized()).InCircle(center, 18f))
                         return 1f;
-                    return -1f;
+                    return default;
                 }, act);
             }
         }
@@ -232,7 +232,7 @@ sealed class CE110FlameOfDuskStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 47)]
-public sealed class CE110FlameOfDusk(WorldState ws, Actor primary) : BossModule(ws, primary, WPos.ClampToGrid(new(-570f, -160f)), new ArenaBoundsCircle(20f))
+public sealed class CE110FlameOfDusk(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(-570f, -160f).Quantized(), new ArenaBoundsCircle(20f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
 }

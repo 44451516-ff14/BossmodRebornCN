@@ -8,8 +8,8 @@ sealed class MiasmaCounter(BossModule module) : BossComponent(module)
     public int NumLinesFinished => _exa1.NumLinesFinished + _exa2.NumLinesFinished + _exa3.NumCasts;
 }
 
-sealed class SwirlingMiasma(BossModule module) : Components.SimpleExaflare(module, new AOEShapeDonut(5f, 19f), (uint)AID.SwirlingMiasmaFirst, (uint)AID.SwirlingMiasmaRest, 6f, 1.6f, 8, 2, locationBased: true);
-sealed class LingeringMiasma(BossModule module) : Components.SimpleExaflare(module, 8f, (uint)AID.LingeringMiasmaFirst, (uint)AID.LingeringMiasmaRest, 6f, 1.6f, 8, 2, locationBased: true);
+sealed class SwirlingMiasma(BossModule module) : Components.SimpleExaflare(module, new AOEShapeDonut(5f, 19f), (uint)AID.SwirlingMiasmaFirst, (uint)AID.SwirlingMiasmaRest, 6f, 1.6d, 8, 2, locationBased: true);
+sealed class LingeringMiasma(BossModule module) : Components.SimpleExaflare(module, 8f, (uint)AID.LingeringMiasmaFirst, (uint)AID.LingeringMiasmaRest, 6f, 1.6d, 8, 2, locationBased: true);
 
 sealed class CreepingMiasma(BossModule module) : Components.GenericAOEs(module)
 {
@@ -43,7 +43,7 @@ sealed class CreepingMiasma(BossModule module) : Components.GenericAOEs(module)
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin == pos)
                 {
-                    if (++aoe.ActorID == 3u)
+                    if (++aoe.ActorID == 3ul)
                     {
                         _aoes.RemoveAt(i);
                         ++NumCasts;

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 
-sealed class WickedJolt(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WickedJolt, new AOEShapeRect(60f, 2.5f), endsOnCastEvent: true, tankbuster: true);
+sealed class WickedJolt(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WickedJolt, new AOEShapeRect(60f, 2.5f), endsOnCastEvent: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class WickedBolt(BossModule module) : Components.StackWithIcon(module, (uint)IconID.WickedBolt, (uint)AID.WickedBolt, 5f, 5f, 8, 8, 5);
 sealed class SoaringSoulpress(BossModule module) : Components.StackWithIcon(module, (uint)IconID.SoaringSoulpress, (uint)AID.SoaringSoulpress, 6f, 5.4f, 8, 8);

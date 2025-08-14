@@ -19,7 +19,7 @@ class GaleSphere(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count; ++i)
             {
                 var s = spheres[i];
-                aoes[i] = new(_shape, WPos.ClampToGrid(s.Position), s.CastInfo?.Rotation ?? s.Rotation, Module.CastFinishAt(s.CastInfo));
+                aoes[i] = new(_shape, s.Position.Quantized(), s.CastInfo?.Rotation ?? s.Rotation, Module.CastFinishAt(s.CastInfo));
             }
             return aoes;
         }

@@ -22,8 +22,10 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index > 0x0Fu)
+        if (index > 0x0F)
+        {
             return;
+        }
         switch (state)
         {
             case 0x00020001u: // damage tile (first jump)
@@ -120,7 +122,8 @@ sealed class Mouser(BossModule module) : Components.GenericAOEs(module)
             var color = Colors.Danger;
             for (var i = 0; i < countDanger; ++i)
             {
-                aoes[i].Color = color;
+                ref var aoe = ref aoes[i];
+                aoe.Color = color;
             }
         }
         return aoes;
@@ -136,7 +139,7 @@ sealed class Mouser(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index <= 0x0Fu && state is 0x00020001u or 0x00200010u && _aoes.Count != 0)
+        if (index <= 0x0F && state is 0x00020001u or 0x00200010u && _aoes.Count != 0)
             _aoes.RemoveAt(0);
     }
 

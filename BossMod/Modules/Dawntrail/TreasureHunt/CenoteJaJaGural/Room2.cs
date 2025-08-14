@@ -83,7 +83,7 @@ sealed class Room2States : StateMachineBuilder
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Scoop>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () => module.PrimaryActor.IsDestroyed || module.PrimaryActor.EventState == 7u;
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || module.PrimaryActor.EventState == 7;
     }
 }
 

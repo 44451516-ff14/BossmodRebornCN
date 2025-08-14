@@ -11,7 +11,7 @@ sealed class RedHiddenMines(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.ActivateRedMine)
-            _mines.Add(new(_shapeTrigger, WPos.ClampToGrid(caster.Position), Color: Colors.Trap));
+            _mines.Add(new(_shapeTrigger, caster.Position.Quantized(), color: Colors.Trap));
         else if (spell.Action.ID is (uint)AID.DetonateRedMine or (uint)AID.Explosion)
         {
             var count = _mines.Count;

@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
 // TODO: hints?..
-class P4Hatebound(BossModule module) : BossComponent(module)
+sealed class P4Hatebound(BossModule module) : BossComponent(module)
 {
     public enum Color { None, Red, Blue }
 
@@ -27,7 +27,7 @@ class P4Hatebound(BossModule module) : BossComponent(module)
         {
             Arena.Actor(o.orb, Colors.Object, true);
             if (OrbReady(o.orb))
-                Arena.AddCircle(o.orb.Position, 6, _playerColors[pcSlot] == Color.Red ? Colors.Safe : 0);
+                Arena.AddCircle(o.orb.Position, 6, _playerColors[pcSlot] == Color.Red ? Colors.Safe : default);
         }
     }
 
@@ -67,13 +67,13 @@ class P4Hatebound(BossModule module) : BossComponent(module)
     private bool OrbReady(Actor orb) => orb.HitboxRadius > 1.501f; // TODO: verify...
 }
 
-class P4MirageDive(BossModule module) : Components.CastCounter(module, (uint)AID.MirageDiveAOE)
+sealed class P4MirageDive(BossModule module) : Components.CastCounter(module, (uint)AID.MirageDiveAOE)
 {
     private readonly List<int> _targets = [];
     private BitMask _forbidden;
     private BitMask _baiters;
 
-    private const float _radius = 4;
+    private const float _radius = 4f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -125,7 +125,7 @@ class P4MirageDive(BossModule module) : Components.CastCounter(module, (uint)AID
             var count = _targets.Count;
             var startIndex = Math.Max(0, count - 4);
 
-            for (var i = startIndex; i < count; i++)
+            for (var i = startIndex; i < count; ++i)
             {
                 _forbidden[_targets[i]] = true;
             }

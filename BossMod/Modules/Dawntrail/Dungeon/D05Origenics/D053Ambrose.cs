@@ -52,12 +52,14 @@ sealed class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.PsychicWave && Arena.Bounds == D053Ambrose.StartingBounds)
-            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        {
+            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x28u)
+        if (index == 0x28 && state == 0x00020001u)
         {
             Arena.Bounds = D053Ambrose.DefaultBounds;
             _aoe = null;
@@ -83,7 +85,9 @@ sealed class ExtrasensoryExpulsion(BossModule module) : Components.GenericKnockb
         {
             var activeAOE = aoe.AOE.Value;
             if (activeAOE.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -223,7 +227,10 @@ sealed class Rush(BossModule module) : Components.GenericAOEs(module)
             return [];
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         if (count > 1)
-            aoes[0].Color = Colors.Danger;
+        {
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
+        }
         return aoes;
     }
 
@@ -231,7 +238,7 @@ sealed class Rush(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.RushTelegraph)
         {
-            var activation = Module.CastFinishAt(spell, 6.8f);
+            var activation = Module.CastFinishAt(spell, 6.8d);
             var dir = spell.LocXZ - caster.Position;
 
             if (_aoes.Count < 7)

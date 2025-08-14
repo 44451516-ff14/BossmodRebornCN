@@ -76,7 +76,7 @@ sealed class LeftRightHammer(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.LeftHammer1 or (uint)AID.LeftHammer2 or (uint)AID.RightHammer1 or (uint)AID.RightHammer2)
         {
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
         }
     }
 

@@ -61,7 +61,7 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             .AddAssociatedActions(PhantomID.PhantomAim);
 
         def.AbilityTrack(Track.TimeMage, "TimeMage", "Time Mage: Use Comet ASAP if it will be instant")
-            .AddAssociatedActions(PhantomID.OccultComet);
+            .AddAssociatedActions(PhantomID.OccultComet, PhantomID.OccultQuick);
 
         def.Define(Track.Chemist).As<RaiseStrategy>("Chemist", "Chemist: Raise")
             .AddOption(RaiseStrategy.Never, "Never", "Disabled")
@@ -76,7 +76,7 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             .AddAssociatedActions(PhantomID.OffensiveAria, PhantomID.HerosRime);
 
         def.AbilityTrack(Track.Monk, "Monk", "Monk: Use Kick to maintain buff, use Counterstance during downtime")
-            .AddAssociatedActions(PhantomID.PhantomKick, PhantomID.Counterstance);
+            .AddAssociatedActions(PhantomID.PhantomKick, PhantomID.Counterstance, PhantomID.OccultCounter);
 
         def.Define(Track.Predict).As<PredictStrategy>("Predict", "Oracle: Predict")
             .AddOption(PredictStrategy.AutoConservative, "Use first available damage action that isn't Starfall")
@@ -96,8 +96,44 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
         return def;
     }
 
+    public static readonly uint[] UndeadMobs = [
+        13921u, // caoineag
+        13922u, // crescent ghost
+        13923u, // crescent geshunpest
+        13924u, // crescent armor
+        13925u, // crescent troubadour
+        13926u, // crescent gourmand
+        13927u, // crescent dullahan
+    ];
+
+    public static readonly uint[] UndesirableStatus = [
+        1706, // Evasion Up on Tower Scarab (hallways)
+        2556, // Magic Damage Up on Tower Abyss (bridges)
+        4539, // Invincibility on Guardian Knight (lockwards)
+        // 4458, // Armed to the Teeth on Guardian Weapon, can only be pilfered, not dispelled
+    ];
+
+    public static readonly uint[] SlowableMobs = [
+        0x35de,
+        0x35df,
+        0x35e0,
+        0x35e1,
+        0x35e2,
+        0x35e3,
+        0x35e4,
+        0x35e5,
+        0x35e6,
+        0x35e9,
+        0x35eb,
+        0x35ed,
+        0x35ef
+    ];
+
     public override void Execute(StrategyValues strategy, Actor? primaryTarget, float estimatedAnimLockDelay, bool isMoving)
     {
+        if (World.Client.CountdownRemaining > 0)
+            return;
+
         var isMidCombo = CheckMidCombo();
 
         if (strategy.Enabled(Track.Cannoneer) && !isMidCombo)
@@ -119,15 +155,17 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
                 }
             }
 
-            if (bestTarget != null)
+            if (bestTarget != null && bestCount > 0)
             {
+                var isUndead = UndeadMobs.Contains(bestTarget.NameID);
+
                 UseAction(PhantomID.SilverCannon, bestTarget, prio); // shares CD with holy
                 UseAction(PhantomID.ShockCannon, bestTarget, prio); // shares CD with dark
 
                 // use after silver for the extra damage from silver debuff
                 UseAction(PhantomID.PhantomFire, bestTarget, prio);
 
-                UseAction(PhantomID.HolyCannon, bestTarget, prio);
+                UseAction(PhantomID.HolyCannon, bestTarget, isUndead ? prio + 1 : prio);
                 UseAction(PhantomID.DarkCannon, bestTarget, prio);
             }
         }
@@ -147,6 +185,8 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             var haveSwift = Player.Statuses.Any(s => InstantCastStatus.Contains(s.ID) && s.ExpireAt > nextGCD);
             if (haveSwift)
                 UseAction(PhantomID.OccultComet, primaryTarget, prio);
+
+            UseAction(PhantomID.OccultQuick, Player, prio);
         }
 
         var option = strategy.Option(Track.Chemist);
@@ -192,8 +232,14 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             if (counterLeft <= 30 && !Hints.PriorityTargets.Any())
                 UseAction(PhantomID.Counterstance, Player, prio);
 
-            if (primaryTarget?.IsAlly == false && UseAction(PhantomID.PhantomKick, primaryTarget, prio))
-                Hints.GoalZones.Add(Hints.GoalAOERect(primaryTarget, 15, 3));
+            if (primaryTarget?.IsAlly == false)
+            {
+                if (UseAction(PhantomID.PhantomKick, primaryTarget, prio))
+                    Hints.GoalZones.Add(Hints.GoalAOERect(primaryTarget, 15, 3));
+
+                if (World.Client.ProcTimers[2] > World.Client.AnimationLock && UseAction(PhantomID.OccultCounter, primaryTarget, prio))
+                    Hints.GoalZones.Add(Hints.GoalAOECone(primaryTarget, 6, 60.Degrees()));
+            }
         }
 
         var chakraOpt = strategy.Option(Track.Chakra);
@@ -217,11 +263,11 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
 
         var predictOpt = strategy.Option(Track.Predict);
         var predictStrategy = predictOpt.As<PredictStrategy>();
-        if (predictStrategy != PredictStrategy.Disabled && Player.InCombat)
+        if (predictStrategy != PredictStrategy.Disabled)
         {
-            var pred = GetPrediction();
+            var (pred, flags) = GetPrediction();
 
-            var haveTarget = predictStrategy switch
+            var haveTarget = Player.InCombat && predictStrategy switch
             {
                 PredictStrategy.AutoConservative or PredictStrategy.AutoGreedy or PredictStrategy.AutoSuperGreedy => primaryTarget?.IsAlly == false,
                 PredictStrategy.HealOnly => true,
@@ -234,6 +280,7 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             var isHeal = pred == Prediction.Blessing;
             var isDmg = pred is Prediction.Cleansing or Prediction.Judgment or Prediction.Starfall;
             var isSafe = pred != Prediction.Starfall;
+            var isLastPrediction = flags == 0xF;
 
             var canUse = predictStrategy switch
             {
@@ -244,14 +291,14 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
                 _ => false
             };
 
-            if (canUse && haveTarget)
+            if (canUse && haveTarget || isLastPrediction)
                 UseAction(GetID(pred), Player, predictOpt.Priority(ActionQueue.Priority.High));
         }
     }
 
     private bool EnoughHP => Player.HPMP.MaxHP * 0.9f < Player.HPMP.CurHP + Player.HPMP.Shield;
 
-    private Prediction GetPrediction()
+    private (Prediction pred, int flags) GetPrediction()
     {
         var deadline = World.Client.AnimationLock;
 
@@ -263,13 +310,13 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             switch ((PhantomSID)sid.ID)
             {
                 case PhantomSID.PredictionOfJudgment:
-                    return Prediction.Judgment;
+                    return (Prediction.Judgment, sid.Extra);
                 case PhantomSID.PredictionOfCleansing:
-                    return Prediction.Cleansing;
+                    return (Prediction.Cleansing, sid.Extra);
                 case PhantomSID.PredictionOfBlessing:
-                    return Prediction.Blessing;
+                    return (Prediction.Blessing, sid.Extra);
                 case PhantomSID.PredictionOfStarfall:
-                    return Prediction.Starfall;
+                    return (Prediction.Starfall, sid.Extra);
             }
         }
 
@@ -289,21 +336,22 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
         (uint)ClassShared.SID.Swiftcast,
         (uint)BossMod.RDM.SID.Dualcast,
         (uint)BossMod.BLM.SID.Triplecast,
-        (uint)BossMod.PLD.SID.Requiescat
+        (uint)BossMod.PLD.SID.Requiescat,
+        (uint)PhantomSID.OccultQuick
     ];
 
+    // returns true if the action is ready to be used, so we can add movement hints for e.g. maximizing aoe targets
     private bool UseAction(PhantomID pid, Actor target, float prio, float castTime = 0)
     {
-        var baseAction = (uint)GetBase(pid);
-        if (World.Client.DutyActions.Any(d => d.Action.ID == baseAction) && NextChargeIn(pid) <= GCD)
+        var cd = pid is PhantomID.PhantomJudgment or PhantomID.Cleansing or PhantomID.Blessing or PhantomID.Starfall ? 0 : DutyActionCD(ActionID.MakeSpell(pid));
+
+        if (cd <= GCD)
         {
             Hints.ActionsToExecute.Push(ActionID.MakeSpell(pid), target, prio, castTime: castTime);
             return true;
         }
         return false;
     }
-
-    private PhantomID GetBase(PhantomID input) => input is PhantomID.PhantomJudgment or PhantomID.Cleansing or PhantomID.Blessing or PhantomID.Starfall ? PhantomID.Predict : input;
 
     public static readonly uint[] BreakableComboStatus = [
         (uint)BossMod.NIN.SID.Mudra,

@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors></Authors>
         <Company></Company>
-        <Version>7.2.4.42</Version>
+        <Version>7.2.5.109</Version>
         <Description>Boss mod.</Description>
         <Copyright></Copyright>
         <PackageProjectUrl></PackageProjectUrl>
@@ -26,6 +26,20 @@
     </PropertyGroup>
 
 
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.Collections" />
+    <Using Include="System.Collections.Concurrent" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Collections.Immutable" />
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Numerics" />
+    <Using Include="System.Threading.Tasks;" />
+    <Using Include="System.Text" />
+  </ItemGroup>
+
     <!-- run analyzers only for release builds, since they are too expensive to run every build when iterating (1-2 mins) -->
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <OutputPath>..\release</OutputPath>
@@ -33,20 +47,7 @@
         <!--    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>-->
         <!--    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
     </PropertyGroup>
-
-    <ItemGroup>
-        <Using Include="System"/>
-        <Using Include="System.Collections"/>
-        <Using Include="System.Collections.Concurrent"/>
-        <Using Include="System.Collections.Generic"/>
-        <Using Include="System.Collections.Immutable"/>
-        <Using Include="System.Runtime.InteropServices"/>
-        <Using Include="System.Linq"/>
-        <Using Include="System.Numerics"/>
-        <Using Include="System.Threading.Tasks;"/>
-        <Using Include="System.Text"/>
-    </ItemGroup>
-
+    
     <PropertyGroup>
         <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
     </PropertyGroup>

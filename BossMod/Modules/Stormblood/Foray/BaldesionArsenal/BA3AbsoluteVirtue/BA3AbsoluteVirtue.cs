@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA3AbsoluteVirtue;
 
 sealed class Meteor(BossModule module) : Components.RaidwideCast(module, (uint)AID.Meteor);
 sealed class MedusaJavelin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MedusaJavelin, new AOEShapeCone(65.4f, 45f.Degrees()));
-sealed class AuroralWind(BossModule module) : Components.BaitAwayCast(module, (uint)AID.AuroralWind, 5f, tankbuster: true);
+sealed class AuroralWind(BossModule module) : Components.BaitAwayCast(module, (uint)AID.AuroralWind, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class ExplosiveImpulse(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ExplosiveImpulse1, (uint)AID.ExplosiveImpulse2], 18f);
 sealed class AernsWynavExplosion(BossModule module) : Components.CastHint(module, (uint)AID.ExplosionWyvern, "Aerns Wyvnav is enraging!", true);

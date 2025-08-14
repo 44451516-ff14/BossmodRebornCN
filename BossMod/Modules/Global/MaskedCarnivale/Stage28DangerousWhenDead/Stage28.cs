@@ -47,9 +47,9 @@ public enum SID : uint
     AboutFace = 1959 // Boss->player, extra=0x0
 }
 
-class DoomImpending(BossModule module) : Components.CastHint(module, (uint)AID.DoomImpending, "Heal to full before cast ends!");
-class MarchOfTheDraugar(BossModule module) : Components.CastHint(module, (uint)AID.MarchOfTheDraugar, "Summons adds! (Kill with fire!)");
-class NecrobaneVoidzone(BossModule module) : Components.PersistentInvertibleVoidzoneByCast(module, 6f, GetVoidzones, (uint)AID.MegaDeath)
+sealed class DoomImpending(BossModule module) : Components.CastHint(module, (uint)AID.DoomImpending, "Heal to full before cast ends!");
+sealed class MarchOfTheDraugar(BossModule module) : Components.CastHint(module, (uint)AID.MarchOfTheDraugar, "Summons adds! (Kill with fire!)");
+sealed class NecrobaneVoidzone(BossModule module) : Components.PersistentInvertibleVoidzoneByCast(module, 6f, GetVoidzones, (uint)AID.MegaDeath)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -64,21 +64,20 @@ class NecrobaneVoidzone(BossModule module) : Components.PersistentInvertibleVoid
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
 
-class Necrobane(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Necrobane, 6f);
-class HelblarShriek(BossModule module) : Components.RaidwideCast(module, (uint)AID.HelblarShriek);
-class FuneralPyre(BossModule module) : Components.RaidwideCast(module, (uint)AID.FuneralPyre);
-class Catapult(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Catapult, 6f);
-class VengefulSoul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VengefulSoul, 6f);
-class BilrostSquall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BilrostSquall, 10f);
-class Cackle(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Cackle);
+sealed class NecrobaneCatapultVengefulSoul(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Necrobane, (uint)AID.Catapult, (uint)AID.VengefulSoul], 6f);
+sealed class HelblarShriekFuneralPyre(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.HelblarShriek, (uint)AID.FuneralPyre]);
+sealed class BilrostSquall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BilrostSquall, 10f);
+sealed class Cackle(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Cackle);
 
-class Brainstorm(BossModule module) : Components.StatusDrivenForcedMarch(module, 2f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
+sealed class Brainstorm(BossModule module) : Components.StatusDrivenForcedMarch(module, 2f, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace)
 {
     private readonly BilrostSquall _aoe = module.FindComponent<BilrostSquall>()!;
 
@@ -88,14 +87,17 @@ class Brainstorm(BossModule module) : Components.StatusDrivenForcedMarch(module,
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -103,7 +105,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage28States : StateMachineBuilder
+sealed class Stage28States : StateMachineBuilder
 {
     public Stage28States(BossModule module) : base(module)
     {
@@ -111,11 +113,8 @@ class Stage28States : StateMachineBuilder
             .ActivateOnEnter<Cackle>()
             .ActivateOnEnter<BilrostSquall>()
             .ActivateOnEnter<Brainstorm>()
-            .ActivateOnEnter<VengefulSoul>()
-            .ActivateOnEnter<Catapult>()
-            .ActivateOnEnter<FuneralPyre>()
-            .ActivateOnEnter<HelblarShriek>()
-            .ActivateOnEnter<Necrobane>()
+            .ActivateOnEnter<NecrobaneCatapultVengefulSoul>()
+            .ActivateOnEnter<HelblarShriekFuneralPyre>()
             .ActivateOnEnter<NecrobaneVoidzone>()
             .ActivateOnEnter<MarchOfTheDraugar>()
             .ActivateOnEnter<DoomImpending>()
@@ -124,7 +123,7 @@ class Stage28States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 697, NameID = 9233)]
-public class Stage28 : BossModule
+public sealed class Stage28 : BossModule
 {
     public Stage28(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

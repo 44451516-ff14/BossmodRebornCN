@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class FRUStates : StateMachineBuilder
+sealed class FRUStates : StateMachineBuilder
 {
     private readonly FRU _module;
 

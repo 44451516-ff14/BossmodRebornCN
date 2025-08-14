@@ -37,9 +37,9 @@ class Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.To
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.Boss && id == 0x008Eu)
+        if (id == 0x008E && actor.OID == (uint)OID.Boss)
         {
-            _aoe = new(_shape, WPos.ClampToGrid(D103Isgebind.ArenaCenter), default, WorldState.FutureTime(7.8d));
+            _aoe = new(_shape, D103Isgebind.ArenaCenter.Quantized(), default, WorldState.FutureTime(7.8d));
         }
     }
 

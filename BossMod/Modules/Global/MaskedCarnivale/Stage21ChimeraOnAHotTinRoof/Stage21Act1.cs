@@ -12,10 +12,10 @@ public enum AID : uint
     Icefall = 15064 // Boss->location, 2.5s cast, range 5 circle
 }
 
-class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
-class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
+sealed class Icefall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icefall, 5f);
+sealed class VoidBlizzard(BossModule module) : Components.CastInterruptHint(module, (uint)AID.VoidBlizzard);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -23,7 +23,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -31,7 +31,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage21Act1States : StateMachineBuilder
+sealed class Stage21Act1States : StateMachineBuilder
 {
     public Stage21Act1States(BossModule module) : base(module)
     {
@@ -56,7 +56,7 @@ class Stage21Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 631, NameID = 8120, SortOrder = 1)]
-public class Stage21Act1 : BossModule
+public sealed class Stage21Act1 : BossModule
 {
     public Stage21Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

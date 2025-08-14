@@ -49,8 +49,8 @@ public enum AID : uint
     LandSwallowTelegraph5 = 37582, // Helper->location, 19.0s cast, range 14 width 22 rect
     LandSwallowTelegraph6 = 37583, // Helper->location, 20.4s cast, range 14 width 22 rect
     Landswallow1 = 38642, // Boss->location, 14.0s cast, range 38 width 27 rect
-    Landswallow2 = 38645, // Boss->location, no cast, range 50 width 27 rect
-    Landswallow3 = 38644, // Boss->location, no cast, range 68 width 27 rect
+    Landswallow2 = 38644, // Boss->location, no cast, range 68 width 27 rect
+    Landswallow3 = 38645, // Boss->location, no cast, range 50 width 27 rect
     Landswallow4 = 38646, // Boss->location, no cast, range 63 width 27 rect
 
     Touchdown = 37339, // Boss->self, 5.0s cast, range 60 circle
@@ -76,10 +76,10 @@ public enum AID : uint
     RightwardSandspoutDDVisual = 37325 // Boss->self, no cast, single-target
 }
 
-class Devour(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Devour, 8);
-class Touchdown(BossModule module) : Components.RaidwideCast(module, (uint)AID.Touchdown);
+sealed class Devour(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Devour, 8f);
+sealed class Touchdown(BossModule module) : Components.RaidwideCast(module, (uint)AID.Touchdown);
 
-class TtokrroneStates : StateMachineBuilder
+sealed class TtokrroneStates : StateMachineBuilder
 {
     public TtokrroneStates(BossModule module) : base(module)
     {
@@ -89,16 +89,16 @@ class TtokrroneStates : StateMachineBuilder
             .ActivateOnEnter<Sandspout>()
             .ActivateOnEnter<Landswallow>()
             .ActivateOnEnter<Sandspheres>()
-            .ActivateOnEnter<DesertDustdevil>()
             .ActivateOnEnter<DustcloakDustdevil>()
+            .ActivateOnEnter<DesertDustdevil>()
             .ActivateOnEnter<Touchdown>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Fate, GroupID = 1871, NameID = 12733)]
-public class Ttokrrone(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class Ttokrrone(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(53, -820), 29.5f, 48)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(53f, -820f), 29.5f, 48)]);
 
-    protected override bool CheckPull() => base.CheckPull() && (arena.Center - Raid.Player()!.Position).LengthSq() < 900;
+    protected override bool CheckPull() => base.CheckPull() && (arena.Center - Raid.Player()!.Position).LengthSq() < 900f;
 }

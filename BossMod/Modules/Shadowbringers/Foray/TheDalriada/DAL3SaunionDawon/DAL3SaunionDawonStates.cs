@@ -1,21 +1,29 @@
 ﻿namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL3SaunionDawon;
 
-class DAL3SaunionDawonStates : StateMachineBuilder
+sealed class DAL3SaunionDawonStates : StateMachineBuilder
 {
-    public DAL3SaunionDawonStates(BossModule module) : base(module)
+    public DAL3SaunionDawonStates(DAL3SaunionDawon module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<MobileHaloCrossray>()
             .ActivateOnEnter<AntiPersonnelMissile>()
-            .ActivateOnEnter<FrigidPulseAOE>()
             .ActivateOnEnter<MagitekHalo>()
             .ActivateOnEnter<MagitekCrossray>()
             .ActivateOnEnter<MissileSalvo>()
-            .ActivateOnEnter<Touchdown3>()
-            .ActivateOnEnter<SwoopingFrenzyAOE>()
             .ActivateOnEnter<SurfaceMissile>()
-            .ActivateOnEnter<RawHeat>()
-            .ActivateOnEnter<PentagustAOE>()
+            .ActivateOnEnter<Touchdown>()
+            .ActivateOnEnter<HighPoweredMagitekRay>()
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || (module.BossDawon?.IsTargetable ?? false);
+        TrivialPhase(1u)
+            .ActivateOnEnter<VerdantPlumeVermilionFlame>()
+            .ActivateOnEnter<FrigidPulse>()
+            .ActivateOnEnter<SwoopingFrenzy>()
+            .ActivateOnEnter<Pentagust>()
             .ActivateOnEnter<ToothAndTalon>()
-            .ActivateOnEnter<HighPoweredMagitekRay>();
+            .ActivateOnEnter<WildfireWinds>()
+            .ActivateOnEnter<Obey>()
+            .ActivateOnEnter<SpiralScourge>()
+            .ActivateOnEnter<OneMind>()
+            .Raw.Update = () => module.PrimaryActor.IsDeadOrDestroyed && (module.BossDawon?.IsDeadOrDestroyed ?? true);
     }
 }

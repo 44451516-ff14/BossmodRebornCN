@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1Blastburn(BossModule module) : Components.GenericKnockback(module, default, true)
+sealed class P1Blastburn(BossModule module) : Components.GenericKnockback(module)
 {
     private Actor? _caster;
     private bool _aoeDone;
@@ -11,7 +11,7 @@ class P1Blastburn(BossModule module) : Components.GenericKnockback(module, defau
         {
             var dir = _caster.CastInfo?.Rotation ?? _caster.Rotation;
             var kind = dir.ToDirection().OrthoL().Dot(actor.Position - _caster.Position) > 0 ? Kind.DirLeft : Kind.DirRight;
-            return new Knockback[1] { new(_caster.Position, 15f, Module.CastFinishAt(_caster.CastInfo), null, dir, kind) };
+            return new Knockback[1] { new(_caster.Position, 15f, Module.CastFinishAt(_caster.CastInfo), null, dir, kind, ignoreImmunes: true) };
         }
         return [];
     }

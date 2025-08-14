@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID.JudgmentCrystalAOE)
+sealed class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID.JudgmentCrystalAOE)
 {
     private readonly List<Actor> _plasmaspheres = [];
     private readonly Actor?[] _tetherSources = new Actor?[PartyState.MaxPartySize];
@@ -9,8 +9,8 @@ class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID
     public bool AllSpheresSpawned => _plasmaspheres.Count == 4;
     public bool CrystalsDone => NumCasts > 0;
 
-    private const float _crystalRadius = 5;
-    private const float _sphereRadius = 6;
+    private const float _crystalRadius = 5f;
+    private const float _sphereRadius = 6f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -20,12 +20,12 @@ class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID
         var sphere = _tetherSources[slot];
         if (sphere != null)
         {
-            if (!sphere.IsDead && Raid.WithSlot(true, true, true).WhereSlot(s => _tetherSources[s] != null).InRadiusExcluding(actor, _sphereRadius * 2).Any())
+            if (!sphere.IsDead && Raid.WithSlot(true, true, true).WhereSlot(s => _tetherSources[s] != null).InRadiusExcluding(actor, _sphereRadius * 2f).Any())
                 hints.Add("GTFO from other tethers!");
         }
         else if (!CrystalsDone)
         {
-            if (Raid.WithSlot(true, true, true).WhereSlot(s => _tetherSources[s] == null).InRadiusExcluding(actor, _crystalRadius * 2).Any())
+            if (Raid.WithSlot(true, true, true).WhereSlot(s => _tetherSources[s] == null).InRadiusExcluding(actor, _crystalRadius * 2f).Any())
                 hints.Add("GTFO from other crystals!");
         }
     }
@@ -43,13 +43,13 @@ class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID
                 if (!sphere.IsDead)
                 {
                     Arena.Actor(sphere, Colors.Object, true);
-                    Arena.AddLine(sphere.Position, player.Position, slot == pcSlot ? Colors.Safe : Colors.Danger);
-                    Arena.AddCircle(player.Position, _sphereRadius, Colors.Danger);
+                    Arena.AddLine(sphere.Position, player.Position, slot == pcSlot ? Colors.Safe : default);
+                    Arena.AddCircle(player.Position, _sphereRadius);
                 }
             }
             else if (!CrystalsDone)
             {
-                Arena.AddCircle(player.Position, _crystalRadius, Colors.Danger);
+                Arena.AddCircle(player.Position, _crystalRadius);
             }
         }
 
@@ -63,16 +63,18 @@ class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID
         }
         else if (!CrystalsDone)
         {
-            Arena.AddCircle(_assignedPositions[pcSlot] + new WDir(-5, -5), 1, Colors.Safe);
-            Arena.AddCircle(_assignedPositions[pcSlot] + new WDir(-5, +5), 1, Colors.Safe);
-            Arena.AddCircle(_assignedPositions[pcSlot] + new WDir(+5, -5), 1, Colors.Safe);
-            Arena.AddCircle(_assignedPositions[pcSlot] + new WDir(+5, +5), 1, Colors.Safe);
+            var color = Colors.Safe;
+            var pos = _assignedPositions[pcSlot];
+            Arena.AddCircle(pos + new WDir(-5f, -5f), 1f, color);
+            Arena.AddCircle(pos + new WDir(-5f, +5f), 1f, color);
+            Arena.AddCircle(pos + new WDir(+5f, -5f), 1f, color);
+            Arena.AddCircle(pos + new WDir(+5f, +5f), 1f, color);
         }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if (tether.ID == (uint)TetherID.Plasmasphere && (OID)source.OID == OID.Plasmasphere)
+        if (tether.ID == (uint)TetherID.Plasmasphere && source.OID == (uint)OID.Plasmasphere)
         {
             _plasmaspheres.Add(source);
             var slot = Raid.FindSlot(tether.Target);
@@ -89,7 +91,7 @@ class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID
         // alex is either at N or S cardinal; 2 spheres are E and 2 spheres are W
         // for tethered player, assign 45-degree spot on alex's side, as far away from source as possible
         var alexNorth = ((TEA)Module).AlexPrime()?.Position.Z < Arena.Center.Z;
-        var boxPos = Arena.Center + new WDir(0, alexNorth ? 13 : -13);
+        var boxPos = Arena.Center + new WDir(default, alexNorth ? 13f : -13f);
         for (var slot = 0; slot < _tetherSources.Length; ++slot)
         {
             var sphere = _tetherSources[slot];
@@ -99,10 +101,10 @@ class P3Inception1(BossModule module) : Components.CastCounter(module, (uint)AID
                 var sameSideSphere = _plasmaspheres.Find(o => o != sphere && (o.Position.X < Arena.Center.X) == sphereWest);
                 var sphereNorth = sphere.Position.Z < sameSideSphere?.Position.Z;
 
-                var spotDir = alexNorth ? (sphereNorth ? 90.Degrees() : 135.Degrees()) : (sphereNorth ? 45.Degrees() : 90.Degrees());
+                var spotDir = alexNorth ? (sphereNorth ? 90f.Degrees() : 135f.Degrees()) : (sphereNorth ? 45f.Degrees() : 90f.Degrees());
                 if (!sphereWest)
                     spotDir = -spotDir;
-                _assignedPositions[slot] = Arena.Center + 18 * spotDir.ToDirection();
+                _assignedPositions[slot] = Arena.Center + 18f * spotDir.ToDirection();
             }
             else
             {

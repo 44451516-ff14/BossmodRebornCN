@@ -1,17 +1,24 @@
 ﻿namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL2Cuchulainn;
 
-class PutrifiedSoul1(BossModule module) : Components.RaidwideCast(module, (uint)AID.PutrifiedSoul1);
-class PutrifiedSoul2(BossModule module) : Components.RaidwideCast(module, (uint)AID.PutrifiedSoul2);
-class MightOfMalice(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MightOfMalice);
-class BurgeoningDread(BossModule module) : Components.StatusDrivenForcedMarch(module, 3, (uint)SID.ForwardMarch, (uint)SID.AboutFace, (uint)SID.LeftFace, (uint)SID.RightFace, activationLimit: 8);
-class NecroticBillowAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NecroticBillowAOE, 8);
-class AmbientPulsationAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AmbientPulsationAOE, 12);
-
-class FellFlow1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FellFlow1, new AOEShapeCone(50, 60.Degrees()));
-
-[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 32, SortOrder = 3)] //BossNameID = 10004
-public class DAL2Cuchulainn(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+sealed class PutrifiedSoulBurgeoningDreadGhastlyAura(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.PutrifiedSoul1, (uint)AID.PutrifiedSoul1, (uint)AID.BurgeoningDread1, (uint)AID.BurgeoningDread2,
+(uint)AID.GhastlyAura1, (uint)AID.GhastlyAura2]);
+sealed class MightOfMalice(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MightOfMalice);
+sealed class NecroticBillow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NecroticBillow, 8f);
+sealed class AmbientPulsation : Components.SimpleAOEs
 {
-    public static readonly ArenaBoundsComplex arena = new([new Polygon(new(650f, -187.4f), 25.199f, 48)], [new Rectangle(new(650f, -162f), 20f, 1.25f), new Rectangle(new(650f, -213f), 20f, 1.25f)]);
-    //small circles: SW: new(637.270f, -174.667f), SE: new(662.710f, -174.667f), NE: new(662.710f, -200.133f), NW: new(637.270f, -200.133f) - 40 vertices, radius 5.676
+    public AmbientPulsation(BossModule module) : base(module, (uint)AID.AmbientPulsation, 12f, 6)
+    {
+        MaxDangerColor = 3;
+    }
+}
+
+sealed class GhastlyAura(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.GhastlyAura1);
+sealed class FellFlowAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FellFlow, new AOEShapeCone(50f, 60f.Degrees()));
+sealed class FellFlowBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(50f, 15f.Degrees()), (uint)IconID.FellFlow, (uint)AID.FellFlowBait, 5.2d);
+
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778, NameID = 10004, SortOrder = 3)]
+public sealed class DAL2Cuchulainn(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+{
+    public static readonly WPos ArenaCenter = new(650f, -187.4f);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 25.199f, 48)], [new Rectangle(new(650f, -162f), 20f, 1.25f), new Rectangle(new(650f, -213f), 20f, 1.25f)]);
 }

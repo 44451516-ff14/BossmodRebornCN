@@ -49,19 +49,46 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
     {
         if (Source != null && Target != null && Target != actor)
         {
-            var shape = OriginAtTarget ? Shape.Distance(Target.Position, Target.Rotation) : Shape.Distance(Source.Position, Angle.FromDirection(Target.Position - Source.Position));
             if (actor.Role == Role.Tank)
             {
-                hints.AddForbiddenZone(p => -shape(p), Activation);
+                hints.AddForbiddenZone(OriginAtTarget ? Shape.InvertedDistance(Target.Position, Target.Rotation) : Shape.InvertedDistance(Source.Position, Angle.FromDirection(Target.Position - Source.Position)), Activation);
             }
             else
-                hints.AddForbiddenZone(shape, Activation);
+            {
+                hints.AddForbiddenZone(OriginAtTarget ? Shape.Distance(Target.Position, Target.Rotation) : Shape.Distance(Source.Position, Angle.FromDirection(Target.Position - Source.Position)), Activation);
+            }
         }
         else if (Source != null && Target != null && Target == actor && Shape is AOEShapeCircle circle)
         {
-            var shape = circle;
-            foreach (var c in Raid.WithoutSlot().Where(x => x.Role != Role.Tank && x != Target))
-                hints.AddForbiddenZone(ShapeDistance.Circle(c.Position, shape.Radius), Activation);
+            var radius = circle.Radius;
+            var party = Raid.WithoutSlot();
+            var len = party.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                var p = party[i];
+                if (p.Role != Role.Tank && p != Target)
+                {
+                    hints.AddForbiddenZone(ShapeDistance.Circle(p.Position, radius), Activation);
+                }
+            }
+        }
+        if (Source != null)
+        {
+            BitMask predictedDamage = default;
+            var party = Raid.WithSlot();
+            var len = party.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var p = ref party[i];
+                if (p.Item2.Role == Role.Tank)
+                {
+                    predictedDamage.Set(p.Item1);
+                }
+            }
+            if (predictedDamage != default)
+            {
+                hints.AddPredictedDamage(predictedDamage, Activation, AIHints.PredictedDamageType.Tankbuster);
+            }
         }
     }
 
@@ -72,7 +99,7 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
         if (Source != null && Target != null && pc.Role == Role.Tank)
         {
             if (OriginAtTarget)
-                Shape.Outline(Arena, Target, Target == pc ? 0 : Colors.Safe);
+                Shape.Outline(Arena, Target, Target == pc ? default : Colors.Safe);
             else
                 Shape.Outline(Arena, Source.Position, Angle.FromDirection(Target.Position - Source.Position), Target == pc ? default : Colors.Safe);
         }

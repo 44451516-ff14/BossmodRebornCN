@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class ApocalypticRay(BossModule module, bool faceCenter) : Components.GenericAOEs(module)
+abstract class ApocalypticRay(BossModule module, bool faceCenter) : Components.GenericAOEs(module)
 {
     public Actor? Source;
     private readonly bool _faceCenter = faceCenter;
@@ -42,5 +42,5 @@ class ApocalypticRay(BossModule module, bool faceCenter) : Components.GenericAOE
     }
 }
 
-class P2ApocalypticRay(BossModule module) : ApocalypticRay(module, false);
-class P3ApocalypticRay(BossModule module) : ApocalypticRay(module, true);
+sealed class P2ApocalypticRay(BossModule module) : ApocalypticRay(module, false);
+sealed class P3ApocalypticRay(BossModule module) : ApocalypticRay(module, true);

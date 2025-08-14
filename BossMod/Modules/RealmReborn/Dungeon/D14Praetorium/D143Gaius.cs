@@ -48,7 +48,7 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.TerminusEst)
-            _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(6d)));
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

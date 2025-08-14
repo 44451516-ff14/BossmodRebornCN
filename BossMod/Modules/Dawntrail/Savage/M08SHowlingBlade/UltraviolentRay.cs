@@ -1,14 +1,15 @@
 namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
-sealed class UltraviolentRay(BossModule module) : Components.GenericBaitAway(module, (uint)AID.UltraviolentRay, onlyShowOutlines: true)
+sealed class UltraviolentRay(BossModule module) : Components.GenericBaitAway(module, (uint)AID.UltraviolentRay, onlyShowOutlines: true, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private static readonly AOEShapeRect rect = new(40f, 8.5f);
+    private readonly M08SHowlingBlade bossmod = (M08SHowlingBlade)module;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.UltraviolentRay)
         {
-            CurrentBaits.Add(new(Module.Enemies((uint)OID.BossP2)[0], actor, rect, WorldState.FutureTime(6.1d)));
+            CurrentBaits.Add(new(bossmod.BossP2()!, actor, rect, WorldState.FutureTime(6.1d)));
         }
     }
 
@@ -70,4 +71,26 @@ sealed class UltraviolentRay(BossModule module) : Components.GenericBaitAway(mod
     }
 }
 
-sealed class GleamingBeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GleamingBeam, new AOEShapeRect(31f, 4f));
+sealed class GleamingBeam(BossModule module) : Components.GenericAOEs(module)
+{
+    public static readonly AOEShapeRect Rect = new(31f, 4f);
+    private readonly List<AOEInstance> _aoes = new(5);
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+
+    public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
+    {
+        if (id == 0x11D3 && actor.OID == (uint)OID.GleamingFangP21)
+        {
+            _aoes.Add(new(Rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.1d)));
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.GleamingBeam)
+        {
+            ++NumCasts;
+        }
+    }
+}

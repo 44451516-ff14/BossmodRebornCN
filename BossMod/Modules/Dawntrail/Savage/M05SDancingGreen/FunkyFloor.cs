@@ -22,7 +22,7 @@ sealed class FunkyFloor(BossModule module) : Components.GenericAOEs(module)
         for (var i = 0; i < 8; ++i)
         {
             var z = i * 5;
-            var start = (i + offset) % 2;
+            var start = (i + offset) & 1;
             for (var j = start; j < 8; j += 2)
             {
                 centers[index++] = new(82.5f + j * 5, 82.5f + z);

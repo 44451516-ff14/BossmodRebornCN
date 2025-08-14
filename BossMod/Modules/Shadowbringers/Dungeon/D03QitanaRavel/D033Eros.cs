@@ -82,13 +82,18 @@ class Inhale(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.
     {
         if (Casters.Count != 0)
         {
-            var component = _aoe.Sources(Module).ToList();
-            var count = component.Count;
-            var forbidden = new Func<WPos, float>[count];
-            for (var i = 0; i < count; ++i)
-                forbidden[i] = ShapeDistance.Rect(component[i].Position, Module.PrimaryActor.Rotation, 40f, default, 6f);
+            var aoes = _aoe.ActiveAOEs(slot, actor);
+            var len = aoes.Length;
+            var forbidden = new Func<WPos, float>[len];
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var aoe = ref aoes[0];
+                forbidden[i] = ShapeDistance.Rect(aoe.Origin, Module.PrimaryActor.Rotation, 40f, default, 6f);
+            }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(Casters[0].CastInfo));
+            {
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
+            }
         }
     }
 
@@ -98,8 +103,11 @@ class Inhale(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -111,25 +119,34 @@ class HeavingBreath(BossModule module) : Components.SimpleKnockbacks(module, (ui
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
-            var component = _aoe.Sources(Module).ToList();
-            var count = component.Count;
-            var forbidden = new Func<WPos, float>[count];
-            for (var i = 0; i < count; ++i)
-                forbidden[i] = ShapeDistance.Rect(component[i].Position, new WDir(0f, 1f), 40f, 40f, 6f);
+            var aoes = _aoe.ActiveAOEs(slot, actor);
+            var len = aoes.Length;
+            var forbidden = new Func<WPos, float>[len];
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var aoe = ref aoes[0];
+                forbidden[i] = ShapeDistance.Rect(aoe.Origin, new WDir(default, 1f), 40f, 40f, 6f);
+            }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(source.CastInfo));
+            {
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
+            }
         }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        foreach (var aoe in _aoe.ActiveAOEs(slot, actor))
+        var aoes = _aoe.ActiveAOEs(slot, actor);
+        var len1 = aoes.Length;
+        for (var i = 0; i < len1; ++i)
         {
+            ref readonly var aoe = ref aoes[i];
             if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

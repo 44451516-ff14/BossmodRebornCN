@@ -42,13 +42,13 @@ sealed class WavelengthAlphaBeta(BossModule module) : BossComponent(module)
     {
         if (numCasts == 8)
         {
-            ref readonly var pcOrder = ref expirationBySlot[pcSlot].Order;
-            ref readonly var playerOrder = ref expirationBySlot[playerSlot].Order;
-            if (pcOrder != default && pcOrder == playerOrder)
+            ref readonly var pcOrder = ref expirationBySlot[pcSlot];
+            ref readonly var playerOrder = ref expirationBySlot[playerSlot];
+            if (pcOrder.Order != default && pcOrder.Order == playerOrder.Order)
             {
                 return PlayerPriority.Critical;
             }
-            else if (playerOrder != default)
+            else if (playerOrder.Order != default)
             {
                 return PlayerPriority.Danger;
             }
@@ -63,7 +63,7 @@ sealed class WavelengthAlphaBeta(BossModule module) : BossComponent(module)
             var player = expirationBySlot[pcSlot].Order;
             for (var i = 0; i < 8; ++i)
             {
-                var exp = expirationBySlot[i];
+                ref readonly var exp = ref expirationBySlot[i];
                 if (exp == default || pcSlot == i)
                     continue;
                 var remaining = Math.Max(0d, (exp.Expiration - WorldState.CurrentTime).TotalSeconds) < 5d;
@@ -96,8 +96,7 @@ sealed class WavelengthAlphaBeta(BossModule module) : BossComponent(module)
     {
         if (status.ID is (uint)SID.WavelengthAlpha or (uint)SID.WavelengthBeta)
         {
-            var slot = WorldState.Party.FindSlot(actor.InstanceID);
-            expirationBySlot[slot] = default;
+            expirationBySlot[WorldState.Party.FindSlot(actor.InstanceID)] = default;
         }
     }
 

@@ -8,13 +8,22 @@ sealed class RazingVolleyParticleBeam(BossModule module) : Components.SimpleAOEs
     {
         var count = Casters.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(Casters);
         var deadline = aoes[0].Activation.AddSeconds(3d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -23,7 +32,9 @@ sealed class RazingVolleyParticleBeam(BossModule module) : Components.SimpleAOEs
     {
         base.OnCastStarted(caster, spell);
         if (spell.Action.ID == WatchedAction)
+        {
             NumCasts = 0;
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

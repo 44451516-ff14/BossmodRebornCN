@@ -3,6 +3,7 @@ using PInvoke;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 
 namespace BossMod;
 
@@ -129,6 +130,7 @@ public static partial class Utils
     }
 
     // get existing map element or create new
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> map, TKey key) where TValue : new()
     {
         if (!map.TryGetValue(key, out var value))
@@ -157,7 +159,9 @@ public static partial class Utils
     }
 
     // get reference to the list element (a bit of a hack, but oh well...)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ref T Ref<T>(this List<T> list, int index) => ref CollectionsMarshal.AsSpan(list)[index];
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this List<T> list) => CollectionsMarshal.AsSpan(list);
 
     // lower bound: given sorted list, find index of first element with key >= than test value
@@ -203,25 +207,10 @@ public static partial class Utils
     }
 
     // get read only span of zero or one elements, depending on whether argument is null
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> ZeroOrOne<T>(ref readonly T? value) where T : struct
     {
         return value != null ? new T[1] { value.Value } : [];
-    }
-
-    // enumerate pairs of neighbouring elements
-    public static IEnumerable<(T, T)> Pairwise<T>(this IEnumerable<T> source)
-    {
-        using var e = source.GetEnumerator();
-        if (!e.MoveNext())
-            yield break;
-
-        var prev = e.Current;
-        while (e.MoveNext())
-        {
-            var curr = e.Current;
-            yield return (prev, curr);
-            prev = curr;
-        }
     }
 
     // swap two values

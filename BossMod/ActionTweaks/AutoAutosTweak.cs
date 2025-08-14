@@ -19,19 +19,19 @@ public sealed class AutoAutosTweak(WorldState ws, AIHints hints)
 
     public bool GetDesiredState(bool currentState, ulong targetId)
     {
+        if (_config.PyreticThreshold > 0 && hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < ws.FutureTime(_config.PyreticThreshold))
+            return false; // pyretic => disable autos
+
         if (!Enabled || _lastActionDisabledAutos)
             return currentState;
 
         var player = ws.Party.Player();
-        if (player == null || player.IsDead || player.Statuses.Any(s => s.ID is 418 or 2648)) // transcendent
+        if (player == null || player.IsDead || player.Statuses.Any(s => s.ID is 418u or 2648u)) // transcendent
             return currentState;
 
         var target = ws.Actors.Find(targetId);
         if (target == null || target.IsAlly)
             return currentState;
-
-        if (_config.PyreticThreshold > 0 && hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < ws.FutureTime(_config.PyreticThreshold))
-            return false; // pyretic => disable autos
 
         var enemy = hints.FindEnemy(target);
 

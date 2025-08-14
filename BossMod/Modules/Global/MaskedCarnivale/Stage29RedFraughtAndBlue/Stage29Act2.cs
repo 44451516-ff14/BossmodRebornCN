@@ -15,7 +15,7 @@ public enum AID : uint
     AutoAttack2 = 18980, // LeftHand->player, no cast, single-target
     AutoAttack3 = 18976, // RightHand->player, no cast, single-target
 
-    Unknown = 18975, // Boss->self, no cast, single-target
+    Visual = 18975, // Boss->self, no cast, single-target
     ProteanWave1 = 18971, // Boss->self, 3.0s cast, range 39 30-degree cone, knockback 40, away from source (only first wave)
     ProteanWave2 = 18972, // Boss->self, no cast, range 39 30-degree cone, hits player position, but can be dodged. angle snapshot sometime between cast event of wave 1 and wave 2, not sure if its possible to predict accurately
     ProteanWave3 = 18984, // FireTornado->self, 3.0s cast, range 50 30-degree cone
@@ -27,7 +27,7 @@ public enum AID : uint
     FluidBallVisual = 18968, // Boss->self, 3.0s cast, single-target
     FluidBall = 18969, // Helper->location, 3.0s cast, range 5 circle
     WateryGrasp = 19028, // Boss->self, 5.0s cast, single-target, calls left/right hand, happens at 70% max hp
-    FluidStrike = 18981, // LeftHand->self, no cast, range 12 90-degree cone
+    FluidStrike1 = 18981, // LeftHand->self, no cast, range 12 90-degree cone
     FluidStrike2 = 18977, // RightHand->self, no cast, range 12 90-degree cone
     BigSplashFirst = 18965, // Boss->self, 8.0s cast, range 80 circle, knockback 25, away from source, use diamondback to survive
     BigSplashRepeat = 18966, // Boss->self, no cast, range 80 circle, knockback 25, away from source
@@ -45,19 +45,17 @@ public enum SID : uint
     Stun = 149 // Boss->player, extra=0x0
 }
 
-class BigSplash(BossModule module) : Components.RaidwideCast(module, (uint)AID.BigSplashFirst, "Diamondback! (Multiple raidwides + knockbacks)");
-class BigSplashKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BigSplashFirst, 25f);
-class Cascade(BossModule module) : Components.RaidwideCast(module, (uint)AID.Cascade, "Raidwide + Tornados spawn");
-class WateryGrasp(BossModule module) : Components.CastHint(module, (uint)AID.WateryGrasp, "Spawns hands. Focus left hand first.");
-class Throttle(BossModule module) : Components.CastHint(module, (uint)AID.Throttle, "Prepare to use Excuviation to remove debuff");
-class FluidSwing(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FluidSwing);
-class FluidSwingKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FluidSwing, 50f, kind: Kind.DirForward);
+sealed class BigSplash(BossModule module) : Components.RaidwideCast(module, (uint)AID.BigSplashFirst, "Diamondback! (Multiple raidwides + knockbacks)");
+sealed class BigSplashKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BigSplashFirst, 25f);
+sealed class Cascade(BossModule module) : Components.RaidwideCast(module, (uint)AID.Cascade, "Raidwide + Tornados spawn");
+sealed class WateryGrasp(BossModule module) : Components.CastHint(module, (uint)AID.WateryGrasp, "Spawns hands. Focus left hand first.");
+sealed class Throttle(BossModule module) : Components.CastHint(module, (uint)AID.Throttle, "Prepare to use Excuviation to remove debuff");
+sealed class FluidSwing(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FluidSwing);
+sealed class FluidSwingKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FluidSwing, 50f, kind: Kind.DirForward);
 
-abstract class ProteanWave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(39f, 15f.Degrees()));
-class ProteanWave1(BossModule module) : ProteanWave(module, (uint)AID.ProteanWave1);
-class ProteanWave3(BossModule module) : ProteanWave(module, (uint)AID.ProteanWave3);
+sealed class ProteanWave(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ProteanWave1, (uint)AID.ProteanWave3], new AOEShapeCone(39f, 15f.Degrees()));
 
-class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
+sealed class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
 {
     private Knockback? _knockback;
     private readonly FluidConvectionDynamic _aoe = module.FindComponent<FluidConvectionDynamic>()!;
@@ -75,11 +73,15 @@ class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         void AddSource(Kind kind)
-            => _knockback = new(spell.LocXZ, 6f, Module.CastFinishAt(spell), Kind: kind);
+            => _knockback = new(spell.LocXZ, 6f, Module.CastFinishAt(spell), kind: kind);
         if (spell.Action.ID == (uint)AID.FerrofluidKB)
+        {
             AddSource(Kind.AwayFromOrigin);
+        }
         else if (spell.Action.ID == (uint)AID.FerrofluidAttract)
+        {
             AddSource(Kind.TowardsOrigin);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -89,10 +91,10 @@ class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class Unwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Unwind, 10f);
-class FluidBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FluidBall, 5f);
+sealed class Unwind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Unwind, 10f);
+sealed class FluidBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FluidBall, 5f);
 
-class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(module)
+sealed class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(10f, 40f);
     private static readonly AOEShapeCircle circle = new(6f);
@@ -109,17 +111,21 @@ class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
+        {
             AOE = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.FluidConvection or (uint)AID.FluidDynamic)
+        {
             AOE = null;
+        }
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -151,7 +157,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -159,7 +165,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage29Act2States : StateMachineBuilder
+sealed class Stage29Act2States : StateMachineBuilder
 {
     public Stage29Act2States(BossModule module) : base(module)
     {
@@ -172,8 +178,7 @@ class Stage29Act2States : StateMachineBuilder
             .ActivateOnEnter<Cascade>()
             .ActivateOnEnter<WateryGrasp>()
             .ActivateOnEnter<Throttle>()
-            .ActivateOnEnter<ProteanWave1>()
-            .ActivateOnEnter<ProteanWave3>()
+            .ActivateOnEnter<ProteanWave>()
             .ActivateOnEnter<KnockbackPull>()
             .ActivateOnEnter<FluidBall>()
             .ActivateOnEnter<Unwind>()
@@ -183,7 +188,7 @@ class Stage29Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 698, NameID = 9241, SortOrder = 2)]
-public class Stage29Act2 : BossModule
+public sealed class Stage29Act2 : BossModule
 {
     public Stage29Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

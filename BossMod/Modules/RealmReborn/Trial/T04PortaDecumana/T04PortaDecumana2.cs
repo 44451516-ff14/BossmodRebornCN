@@ -107,7 +107,7 @@ class Aetheroplasm(BossModule module) : BossComponent(module)
             for (var i = 0; i < count; ++i)
             {
                 var o = orbs[i];
-                orbz[i] = ShapeDistance.InvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(0f, 1f), 0.5f, 0.5f, 0.5f);
+                orbz[i] = ShapeDistance.InvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(default, 1f), 0.5f, 0.5f, 0.5f);
             }
             hints.AddForbiddenZone(ShapeDistance.Intersection(orbz), DateTime.MaxValue);
         }
@@ -118,7 +118,9 @@ class Aetheroplasm(BossModule module) : BossComponent(module)
         var orbs = GetOrbs(Module);
         var count = orbs.Count;
         for (var i = 0; i < count; ++i)
+        {
             Arena.AddCircle(orbs[i].Position, 1f, Colors.Safe);
+        }
     }
 }
 

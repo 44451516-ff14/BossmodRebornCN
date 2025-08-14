@@ -52,22 +52,26 @@ class Throttle(BossModule module) : Components.GenericAOEs(module)
             {
                 var e = enemies[i];
                 if (e.ModelState.AnimState1 != 1)
-                    _aoes.Add(new(rectSmall, WPos.ClampToGrid(e.Position), e.Rotation, activation));
+                {
+                    _aoes.Add(new(rectSmall, e.Position.Quantized(), e.Rotation, activation));
+                }
             }
-            var offset = _aoes[0].Origin.X < 0 ? -1 : 1;
-            _aoes.Add(new(rectBig, WPos.ClampToGrid(new(offset * 18, -71.5f)), -90f.Degrees() * offset, activation));
+            var offset = _aoes.Count != 0 && _aoes.Ref(0).Origin.X < 0f ? -1f : 1f;
+            _aoes.Add(new(rectBig, new WPos(offset * 18f, -71.5f).Quantized(), -90f.Degrees() * offset, activation));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FullThrottle)
+        {
             _aoes.Clear();
+        }
     }
 }
 
 class AetherochemicalFlame(BossModule module) : Components.RaidwideCast(module, (uint)AID.AetherochemicalFlame);
-class AetherochemicalResidue(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.Baitaway, (uint)AID.AetherochemicalResidue, 4.1f);
+class AetherochemicalResidue(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.Baitaway, (uint)AID.AetherochemicalResidue, 4.1d);
 class AditDriver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AditDriver, new AOEShapeRect(33f, 3f));
 class AetherochemicalCoil(BossModule module) : Components.SingleTargetCast(module, (uint)AID.AetherochemicalCoil);
 class SludgeVoidzone(BossModule module) : Components.Voidzone(module, 2.5f, GetVoidzones)

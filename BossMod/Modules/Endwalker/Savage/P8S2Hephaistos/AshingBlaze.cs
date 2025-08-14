@@ -3,7 +3,7 @@
 class AshingBlaze(BossModule module) : Components.GenericAOEs(module)
 {
     private WPos? _origin;
-    private static readonly AOEShapeRect _shape = new(46, 10);
+    private static readonly AOEShapeRect _shape = new(46f, 10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -17,10 +17,10 @@ class AshingBlaze(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.AshingBlazeL:
-                _origin = WPos.ClampToGrid(caster.Position - new WDir(_shape.HalfWidth, 0));
+                _origin = (caster.Position - new WDir(_shape.HalfWidth, 0)).Quantized();
                 break;
             case (uint)AID.AshingBlazeR:
-                _origin = WPos.ClampToGrid(caster.Position + new WDir(_shape.HalfWidth, 0));
+                _origin = (caster.Position + new WDir(_shape.HalfWidth, 0)).Quantized();
                 break;
         }
     }

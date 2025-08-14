@@ -11,37 +11,45 @@ public abstract class ThinIce(BossModule module, float distance, bool createforb
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        if (Mask[slot] != default)
-            return new Knockback[1] { new(actor.Position, Distance, default, default, actor.Rotation, Kind.DirForward) };
+        if (Mask[slot])
+        {
+            return new Knockback[1] { new(actor.Position, Distance, default, default, MovementOverride.Instance!.LegacyMode ? Camera.Instance!.CameraAzimuth.Radians() + 180f.Degrees() : actor.Rotation, Kind.DirForward) };
+        }
         return [];
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == StatusID)
-            Mask[Raid.FindSlot(actor.InstanceID)] = true;
+        {
+            Mask.Set(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == StatusID)
-            Mask[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            Mask.Clear(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var movements = CalculateMovements(slot, actor);
-        if (movements.Count == 0)
-            return;
-        if (DestinationUnsafe(slot, actor, movements[0].to))
+        if (movements.Count != 0 && DestinationUnsafe(slot, actor, movements[0].to))
+        {
             hints.Add("You are risking to slide into danger!");
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
-        if (Mask[pcSlot] != default)
+        if (Mask[pcSlot])
+        {
             Arena.AddCircle(pc.Position, Distance, Colors.Vulnerable);
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

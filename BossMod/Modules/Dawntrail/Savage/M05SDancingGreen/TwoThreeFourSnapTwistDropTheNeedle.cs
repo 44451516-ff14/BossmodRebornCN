@@ -12,7 +12,7 @@ sealed class TwoThreeFourSnapTwistDropTheNeedle(BossModule module) : Components.
         {
             var sb = new StringBuilder(12);
             var aoes = CollectionsMarshal.AsSpan(AOEs);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var roundedrot = MathF.Round(aoes[i].Rotation.Normalized().Deg);
                 var shapeHint = roundedrot switch
@@ -69,56 +69,58 @@ sealed class TwoThreeFourSnapTwistDropTheNeedle(BossModule module) : Components.
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        var count = AOEs.Count;
-        if (count != 0)
-            switch (spell.Action.ID)
-            {
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst1:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst2:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst3:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst4:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst5:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst6:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst7:
-                case (uint)AID.TwoSnapTwistDropTheNeedleFirst8:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst1:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst2:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst3:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst4:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst5:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst6:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst7:
-                case (uint)AID.ThreeSnapTwistDropTheNeedleFirst8:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst1:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst2:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst3:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst4:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst5:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst6:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst7:
-                case (uint)AID.FourSnapTwistDropTheNeedleFirst8:
-                    ++NumCasts;
-                    break;
-                case (uint)AID.TwoSnapTwistDropTheNeedle2:
-                case (uint)AID.TwoSnapTwistDropTheNeedle3:
-                case (uint)AID.ThreeSnapTwistDropTheNeedle3:
-                case (uint)AID.ThreeSnapTwistDropTheNeedle4:
-                case (uint)AID.FourSnapTwistDropTheNeedle4:
-                case (uint)AID.FourSnapTwistDropTheNeedle5:
+        switch (spell.Action.ID)
+        {
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst1:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst2:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst3:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst4:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst5:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst6:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst7:
+            case (uint)AID.TwoSnapTwistDropTheNeedleFirst8:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst1:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst2:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst3:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst4:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst5:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst6:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst7:
+            case (uint)AID.ThreeSnapTwistDropTheNeedleFirst8:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst1:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst2:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst3:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst4:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst5:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst6:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst7:
+            case (uint)AID.FourSnapTwistDropTheNeedleFirst8:
+                ++NumCasts;
+                break;
+            case (uint)AID.TwoSnapTwistDropTheNeedle2:
+            case (uint)AID.TwoSnapTwistDropTheNeedle3:
+            case (uint)AID.ThreeSnapTwistDropTheNeedle3:
+            case (uint)AID.ThreeSnapTwistDropTheNeedle4:
+            case (uint)AID.FourSnapTwistDropTheNeedle4:
+            case (uint)AID.FourSnapTwistDropTheNeedle5:
+                if (AOEs.Count != 0)
+                {
                     AOEs.RemoveAt(0);
-                    ++NumCasts;
-                    break;
-            }
+                }
+                ++NumCasts;
+                break;
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (AOEs.Count != 2)
+        {
             return;
+        }
         // make ai stay close to boss to ensure successfully dodging the combo
-        var aoe = AOEs[0];
-        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 40f), aoe.Activation);
+        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center, new WDir(1f, default), 2f, 2f, 40f), AOEs.Ref(0).Activation);
     }
 }
 
@@ -149,7 +151,7 @@ sealed class FlipToABSide(BossModule module) : Components.GenericBaitAway(module
             var clipped = new List<Actor>(8);
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (ActiveShape.Check(p.Position, Module.PrimaryActor.Position, pcDir))
                 {
                     clipped.Add(p);

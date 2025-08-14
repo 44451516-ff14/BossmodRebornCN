@@ -6,7 +6,7 @@ class HundredfoldHavoc(BossModule module) : Components.Exaflare(module, 5f)
     {
         if (spell.Action.ID == (uint)AID.HundredfoldHavocFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 5 * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 4, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, 5f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 4, 2));
         }
     }
 

@@ -1,10 +1,10 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
+sealed class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeRect rect = new(20f, 40f);
-    private static readonly WDir offset1 = new(0f, 20f), offset2 = new(0f, 8f);
+    private static readonly WDir offset1 = new(default, 20f), offset2 = new(default, 8f);
     private readonly Besiegement _aoe = module.FindComponent<Besiegement>()!;
     private static readonly Func<WPos, float> stayInBounds = p =>
         Math.Max(ShapeDistance.InvertedRect(T03QueenEternal.LeftSplitCenter + offset2, T03QueenEternal.LeftSplitCenter - offset2, 4f)(p),
@@ -17,17 +17,25 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
             return [];
         var compare = count > 1 && _aoes[0].Rotation != _aoes[1].Rotation;
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         var index = 0;
         for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
+            ref var aoe = ref aoes[i];
             if (i == 0)
-                aoes[index++] = compare ? aoe with { Color = Colors.Danger } : aoe;
-            else if (i == 1 && compare)
-                aoes[index++] = aoe with { Risky = false };
+            {
+                ++index;
+                if (compare)
+                {
+                    aoes[0].Color = Colors.Danger;
+                }
+            }
+            else if (compare)
+            {
+                ++index;
+            }
         }
-        return aoes.AsSpan()[..index];
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -50,8 +58,9 @@ class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
 
         void AddAOEs(Actor caster, float first, float second)
         {
-            _aoes.Add(new(rect, caster.Position, spell.Rotation + first.Degrees(), Module.CastFinishAt(spell)));
-            _aoes.Add(new(rect, caster.Position, spell.Rotation + second.Degrees(), Module.CastFinishAt(spell, 3.1f)));
+            AddAOE(first);
+            AddAOE(second, 3.1d);
+            void AddAOE(float offset, double delay = default) => _aoes.Add(new(rect, caster.Position, spell.Rotation + offset.Degrees(), Module.CastFinishAt(spell, delay)));
         }
     }
 

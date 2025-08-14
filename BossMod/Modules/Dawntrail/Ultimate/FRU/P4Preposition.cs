@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
 // boss can spawn either N or S from center
-class P4Preposition(BossModule module) : BossComponent(module)
+sealed class P4Preposition(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _boss = module.Enemies((uint)OID.UsurperOfFrostP4);
 
@@ -21,7 +21,7 @@ class P4Preposition(BossModule module) : BossComponent(module)
 }
 
 // utility to draw hitbox around crystal, so that it's easier not to clip
-class P4FragmentOfFate(BossModule module) : BossComponent(module)
+sealed class P4FragmentOfFate(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _fragment = module.Enemies((uint)OID.FragmentOfFate);
 

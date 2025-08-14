@@ -12,24 +12,25 @@ class Quintessence(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
-            return [];
-        var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
         {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            return [];
         }
-        return aoes;
+        var max = count > 2 ? 2 : count;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
+        {
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
+        }
+        return aoes[..max];
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state != 0x00020001 || index is < 0x4C or > 0x57)
+        if (state != 0x00020001u || index is < 0x4C or > 0x57)
+        {
             return;
+        }
 
         // there are 12 possible arrows: from center to each corner (4) + pairs between neighbouring corners (8):
         //     <-- 57 ---
@@ -52,16 +53,18 @@ class Quintessence(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         _index = index;
-        position = WPos.ClampToGrid(Arena.Center + offset);
+        position = (Arena.Center + offset).Quantized();
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (_index == default)
+        {
             return;
+        }
         void AddAOE(Angle rotation, AOEShape? shape = null)
         {
-            _aoes.Add(new(shape ?? cone, position, rotation, Module.CastFinishAt(spell, 19.5f - _aoes.Count * 3.7f)));
+            _aoes.Add(new(shape ?? cone, position, rotation, Module.CastFinishAt(spell, 19.5d - _aoes.Count * 3.7d)));
             _index = default;
         }
 
@@ -158,7 +161,9 @@ class Quintessence(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.QuintessenceAOE3Donut:
                 ++NumCasts;
                 if (_aoes.Count != 0)
+                {
                     _aoes.RemoveAt(0);
+                }
                 break;
         }
     }

@@ -46,7 +46,9 @@ sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.Hellpounce or (uint)AID.HellpounceSecond)
+        {
             Activate(caster.Position, spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -54,8 +56,10 @@ sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.Hellpounce:
-                var offset = spell.LocXZ - Arena.Center;
-                Activate(spell.LocXZ, Arena.Center - offset, WorldState.FutureTime(3.7d));
+                var center = CE12BayingOfHounds.ArenaCenter;
+                var loc = spell.LocXZ;
+                var offset = loc - center;
+                Activate(loc, center - offset, WorldState.FutureTime(3.7d));
                 break;
             case (uint)AID.HellpounceSecond:
                 _charge = null;
@@ -66,7 +70,7 @@ sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
     private void Activate(WPos source, WPos target, DateTime activation)
     {
         var toTarget = target - source;
-        _charge = new(new AOEShapeRect(toTarget.Length(), 5f), WPos.ClampToGrid(source), Angle.FromDirection(toTarget), activation);
+        _charge = new(new AOEShapeRect(toTarget.Length(), 5f), source.Quantized(), Angle.FromDirection(toTarget), activation);
     }
 }
 
@@ -81,10 +85,7 @@ sealed class VoidQuake(BossModule module) : Components.GenericAOEs(module) // th
     private static readonly AOEShapeDonut _shape2 = new(10f, 20f);
     private static readonly AOEShapeDonut _shape3 = new(20f, 30f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        return _aoes.Count == 0 ? [] : CollectionsMarshal.AsSpan(_aoes)[..1];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count == 0 ? [] : CollectionsMarshal.AsSpan(_aoes)[..1];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -96,13 +97,17 @@ sealed class VoidQuake(BossModule module) : Components.GenericAOEs(module) // th
             _ => null
         };
         if (shape != null)
+        {
             _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.VoidQuakeAOE1 or (uint)AID.VoidQuakeAOE2 or (uint)AID.VoidQuakeAOE3)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -125,7 +130,8 @@ sealed class CE12BayingOfHoundsStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 2)] // bnpcname=9394
 public sealed class CE12BayingOfHounds(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(154f, 785f), 24.5f, 32)]);
+    public static readonly WPos ArenaCenter = new(154f, 785f);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 24.5f, 32)]);
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
 }

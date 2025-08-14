@@ -30,7 +30,7 @@ sealed class Meltdown(BossModule module) : Components.GenericAOEs(module)
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin == pos)
                 {
-                    if (++aoe.ActorID == 8u)
+                    if (++aoe.ActorID == 8ul)
                     {
                         _aoes.RemoveAt(i);
                     }

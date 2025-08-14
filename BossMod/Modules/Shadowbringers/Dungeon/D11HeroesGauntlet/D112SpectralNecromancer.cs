@@ -111,7 +111,7 @@ class Burst(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
         if (modelState == 54u)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(6d))); // activation time can be vastly different, even twice as high so we take a conservative delay
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(6d))); // activation time can be vastly different, even twice as high so we take a conservative delay
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

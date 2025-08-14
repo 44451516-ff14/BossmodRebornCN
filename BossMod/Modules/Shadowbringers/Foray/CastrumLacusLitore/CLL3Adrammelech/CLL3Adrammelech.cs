@@ -9,8 +9,8 @@ abstract class WaterIV(BossModule module, uint aid) : Components.SimpleKnockback
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 13f), Module.CastFinishAt(source.CastInfo));
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 13f), c.Activation);
         }
     }
 }
@@ -22,7 +22,7 @@ sealed class Shock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.
 sealed class AeroIV(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AeroIV1, (uint)AID.AeroIV2], new AOEShapeDonut(15f, 30f));
 sealed class ThunderIV(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ThunderIV1, (uint)AID.ThunderIV2], 18f);
 sealed class WarpedLight(BossModule module) : Components.SimpleChargeAOEGroups(module, [(uint)AID.WarpedLight1, (uint)AID.WarpedLight2,(uint)AID.WarpedLight3,
-(uint)AID.WarpedLight4, (uint)AID.WarpedLight5, (uint)AID.WarpedLight6], 1.5f, riskyWithSecondsLeft: 1f);
+(uint)AID.WarpedLight4, (uint)AID.WarpedLight5, (uint)AID.WarpedLight6], 1.5f, riskyWithSecondsLeft: 1d);
 
 sealed class Twister(BossModule module) : Components.Voidzone(module, 6.5f, GetTwister, 5f)
 {

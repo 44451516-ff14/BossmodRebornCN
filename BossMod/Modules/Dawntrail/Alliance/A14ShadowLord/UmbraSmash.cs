@@ -22,7 +22,7 @@ sealed class UmbraSmash(BossModule module) : Components.Exaflare(module, new AOE
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         void AddLine(WPos origin, WDir direction, Angle offset)
-        => Lines.Add(new() { Next = origin, Advance = 5f * direction, Rotation = spell.Rotation + offset, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 2.3f, ExplosionsLeft = 6, MaxShownExplosions = 2 });
+        => Lines.Add(new(origin, 5f * direction, Module.CastFinishAt(spell), 2.3d, 6, 2, spell.Rotation + offset));
 
         switch (spell.Action.ID)
         {

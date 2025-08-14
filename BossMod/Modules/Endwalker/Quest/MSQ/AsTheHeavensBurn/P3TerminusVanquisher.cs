@@ -50,8 +50,8 @@ class ForcefulImpactKB(BossModule module) : Components.SimpleKnockbacks(module, 
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Casters.Count != 0 && Casters[0] is Actor c)
-            hints.AddPredictedDamage(WorldState.Party.WithSlot(false, true).Mask(), Module.CastFinishAt(c.CastInfo));
+        if (Casters.Count != 0)
+            hints.AddPredictedDamage(WorldState.Party.WithSlot(false, true).Mask(), Casters.Ref(0).Activation);
     }
 }
 class MutableLaws1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MutableLawsBig, 15f);

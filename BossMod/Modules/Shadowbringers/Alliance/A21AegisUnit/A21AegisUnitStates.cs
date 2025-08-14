@@ -1,13 +1,20 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A21AegisUnit;
 
-class A21AegisUnitStates : StateMachineBuilder
+sealed class A21AegisUnitStates : StateMachineBuilder
 {
     public A21AegisUnitStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<FlightPath>()
+            .ActivateOnEnter<ManeuverDiffusionCannon>()
+            .ActivateOnEnter<SurfaceLaserAOE>()
+            .ActivateOnEnter<SurfaceLaserSpread>()
+            .ActivateOnEnter<BeamCannons>()
+            .ActivateOnEnter<ColliderCannons>()
+            .ActivateOnEnter<RefractionCannons>()
             .ActivateOnEnter<AntiPersonnelLaser>()
+            .ActivateOnEnter<FlightPath>()
             .ActivateOnEnter<HighPoweredLaser>()
+            .ActivateOnEnter<ManeuverSaturationBombing>()
             .ActivateOnEnter<LifesLastSong>();
     }
 }

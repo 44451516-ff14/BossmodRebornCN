@@ -140,7 +140,7 @@ class BlackFlame(BossModule module) : Components.GenericBaitAway(module)
         {
             var activation = WorldState.FutureTime(4d);
             CurrentBaits.Add(new(actor, actor, circle, activation));
-            CurrentBaits.Add(new(actor, actor, cross, activation, Angle.AnglesCardinals[1]));
+            CurrentBaits.Add(new(actor, actor, cross, activation, default, Angle.AnglesCardinals[1]));
         }
     }
 

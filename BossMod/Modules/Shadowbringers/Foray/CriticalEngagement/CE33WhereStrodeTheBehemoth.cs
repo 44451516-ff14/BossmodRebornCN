@@ -23,12 +23,12 @@ public enum AID : uint
     ZombieJuiceRepeat = 20199 // Helper->location, no cast, range 6 circle
 }
 
-sealed class BlazingMeteor(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.BlazingMeteor, 30f)
+sealed class BlazingMeteor(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.BlazingMeteor, 30f, safeInsideHitbox: false)
 {
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(Module.Enemies((uint)OID.BestialCorpse));
 }
 
-sealed class ZombieJuice(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.ZombieJuiceFirst, GetVoidzones, 0.9f)
+sealed class ZombieJuice(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.ZombieJuiceFirst, GetVoidzones, 0.9d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -49,8 +49,8 @@ sealed class ZombieJuice(BossModule module) : Components.VoidzoneAtCastTarget(mo
     }
 }
 
-sealed class WildBolt(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.WildBoltVisual, (uint)AID.WildBolt, 0.9f);
-sealed class WildHorn(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WildHorn, new AOEShapeCone(18f, 60f.Degrees()), endsOnCastEvent: true, tankbuster: true);
+sealed class WildBolt(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.WildBoltVisual, (uint)AID.WildBolt, 0.9d);
+sealed class WildHorn(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WildHorn, new AOEShapeCone(18f, 60f.Degrees()), endsOnCastEvent: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class Thunderbolt(BossModule module) : Components.GenericAOEs(module)
 {
@@ -100,7 +100,7 @@ sealed class Thunderbolt(BossModule module) : Components.GenericAOEs(module)
                 _aoes.Clear();
                 break;
         }
-        void AddAOE(WPos pos, Angle rot) => _aoes.Add(new(cone, WPos.ClampToGrid(pos), rot, WorldState.FutureTime(12.8d)));
+        void AddAOE(WPos pos, Angle rot) => _aoes.Add(new(cone, pos.Quantized(), rot, WorldState.FutureTime(12.8d)));
     }
 }
 

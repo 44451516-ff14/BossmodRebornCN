@@ -76,17 +76,17 @@ public enum IconID : uint
     Bait = 101 // player/Kuiyki
 }
 
-class ScathingSunshot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScathingSunshot, new AOEShapeCone(70f, 60f.Degrees()));
-class Foxflare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Foxflare, new AOEShapeRect(50f, 5f));
-class NinefoldCurse(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.NinefoldCurseVisual, (uint)AID.NinefoldCurse, 2f);
-class NinetyNinefoldCurse(BossModule module) : Components.RaidwideCast(module, (uint)AID.NinetyNinefoldCurse);
-class Roar(BossModule module) : Components.RaidwideCast(module, (uint)AID.Roar);
-class SonicStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SonicStorm, 6f);
-class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4f, 8.3f, (uint)AID.RushBait, (uint)AID.RushBaitFail, (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30f);
-class RushLineStack(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.RushLineStackMarker, (uint)AID.RushLineStack, 4.9f, markerIsFinalTarget: false);
-class Trample(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trample, 15f);
+sealed class ScathingSunshot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScathingSunshot, new AOEShapeCone(70f, 60f.Degrees()));
+sealed class Foxflare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Foxflare, new AOEShapeRect(50f, 5f));
+sealed class NinefoldCurse(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.NinefoldCurseVisual, (uint)AID.NinefoldCurse, 2f);
+sealed class NinetyNinefoldCurse(BossModule module) : Components.RaidwideCast(module, (uint)AID.NinetyNinefoldCurse);
+sealed class Roar(BossModule module) : Components.RaidwideCast(module, (uint)AID.Roar);
+sealed class SonicStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SonicStorm, 6f);
+sealed class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4f, 8.3f, (uint)AID.RushBait, (uint)AID.RushBaitFail, (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30f);
+sealed class RushLineStack(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.RushLineStackMarker, (uint)AID.RushLineStack, 4.9f, markerIsFinalTarget: false);
+sealed class Trample(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trample, 15f);
 
-class FallingDusk(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingDusk, 15f)
+sealed class FallingDusk(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingDusk, 15f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -96,19 +96,19 @@ class FallingDusk(BossModule module) : Components.SimpleAOEs(module, (uint)AID.F
     }
 }
 
-class DancingWind(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DancingWind, 8f, kind: Kind.TowardsOrigin)
+sealed class DancingWind(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DancingWind, 8f, kind: Kind.TowardsOrigin)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            hints.AddForbiddenZone(ShapeDistance.Circle(source.Position, 18.5f), Module.CastFinishAt(source.CastInfo));
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.Circle(c.Origin, 18.5f), c.Activation);
         }
     }
 }
 
-class DawnlitBolt(BossModule module) : Components.GenericAOEs(module)
+sealed class DawnlitBolt(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShapeCircle circle = new(6);
@@ -139,7 +139,7 @@ class DawnlitBolt(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Fetters(BossModule module) : BossComponent(module)
+sealed class Fetters(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -149,7 +149,7 @@ class Fetters(BossModule module) : BossComponent(module)
     }
 }
 
-class AHunterTrueStates : StateMachineBuilder
+sealed class AHunterTrueStates : StateMachineBuilder
 {
     public AHunterTrueStates(BossModule module) : base(module)
     {
@@ -171,7 +171,7 @@ class AHunterTrueStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70371, NameID = 12846)]
-public class AHunterTrue(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class AHunterTrue(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(4, 248), 19.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.Garula, (uint)OID.Dzo, (uint)OID.SteppeEagle, (uint)OID.BallOfNaught];

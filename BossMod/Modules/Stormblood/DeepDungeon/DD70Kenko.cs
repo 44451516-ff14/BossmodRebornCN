@@ -46,8 +46,10 @@ sealed class InnerspaceVoidzone(BossModule module) : Components.GenericAOEs(modu
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         var id = spell.Action.ID;
-        if (id == (uint)AID.Innerspace)
-            _aoe = new(circle, WPos.ClampToGrid(WorldState.Actors.Find(spell.MainTargetID)!.Position), default, WorldState.FutureTime(7.2d));
+        if (id == (uint)AID.Innerspace && WorldState.Actors.Find(spell.MainTargetID) is Actor t)
+        {
+            _aoe = new(circle, t.Position.Quantized(), default, WorldState.FutureTime(7.2d));
+        }
         else if (id == (uint)AID.Devour)
         {
             target = -1;
@@ -92,7 +94,7 @@ sealed class InnerspaceVoidzone(BossModule module) : Components.GenericAOEs(modu
         if (_aoe != null)
         {
             var p = Module.Enemies((uint)OID.InnerspaceVoidzone);
-            if (p.Count != 0 && p[0].EventState == 7u)
+            if (p.Count != 0 && p[0].EventState == 7)
             {
                 _aoe = null;
             }

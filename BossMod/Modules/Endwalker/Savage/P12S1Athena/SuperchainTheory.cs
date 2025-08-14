@@ -4,7 +4,13 @@
 abstract class SuperchainTheory(BossModule module) : BossComponent(module)
 {
     public enum Shape { Unknown, Circle, Donut, Spread, Pairs }
-    public record struct Chain(Actor Origin, Actor Moving, Shape Shape, DateTime Activation);
+    public readonly struct Chain(Actor origin, Actor moving, Shape shape, DateTime activation)
+    {
+        public readonly Actor Origin = origin;
+        public readonly Actor Moving = moving;
+        public readonly Shape Shape = shape;
+        public readonly DateTime Activation = activation;
+    }
 
     public List<Chain> Chains = [];
     public int NumCasts;
@@ -15,18 +21,38 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
     private static readonly AOEShapeCone _shapeSpread = new(100f, 15f.Degrees()); // TODO: verify angle
     private static readonly AOEShapeCone _shapePair = new(100f, 20f.Degrees()); // TODO: verify angle
 
-    public IEnumerable<Chain> ImminentChains()
+    public List<Chain> ImminentChains()
     {
-        var threshold = Chains.FirstOrDefault().Activation.AddSeconds(1);
-        return Chains.TakeWhile(c => c.Activation < threshold);
+        var result = new List<Chain>();
+
+        if (Chains == null || Chains.Count == 0)
+            return result;
+
+        var threshold = Chains[0].Activation.AddSeconds(1d);
+
+        var count = Chains.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var c = Chains[i];
+            if (c.Activation < threshold)
+            {
+                result.Add(c);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return result;
     }
 
     public abstract float ActivationDelay(float distance);
 
     public override void Update()
     {
-        var count = _pendingTethers.Count;
-        for (var i = 0; i < count; ++i)
+        var count = _pendingTethers.Count - 1;
+        for (var i = count; i >= 0; --i)
         {
             var source = _pendingTethers[i];
             var shape = source.Tether.ID switch
@@ -41,21 +67,24 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
             if (shape == Shape.Unknown)
             {
                 // irrelevant, remove
-                _pendingTethers.RemoveAt(i--);
+                _pendingTethers.RemoveAt(i);
             }
             else if (WorldState.Actors.Find(source.Tether.Target) is var origin && origin != null)
             {
                 Chains.Add(new(origin, source, shape, WorldState.FutureTime(ActivationDelay((source.Position - origin.Position).Length()))));
                 Chains.Sort((a, b) => a.Activation.CompareTo(b.Activation));
-                _pendingTethers.RemoveAt(i--);
+                _pendingTethers.RemoveAt(i);
             }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        foreach (var c in ImminentChains())
+        var chains = ImminentChains();
+        var count = chains.Count;
+        for (var i = 0; i < count; ++i)
         {
+            var c = Chains[i];
             switch (c.Shape)
             {
                 case Shape.Circle:
@@ -67,16 +96,54 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
                         hints.Add("GTFO from aoe!");
                     break;
                 case Shape.Spread:
-                    hints.Add("Spread!", Raid.WithoutSlot(false, true, true).Exclude(actor).InShape(_shapeSpread, c.Origin.Position, Angle.FromDirection(actor.Position - c.Origin.Position)).Count != 0);
+                    var posOrigin = c.Origin.Position;
+                    var party = Raid.WithoutSlot(false, true, true);
+                    var len = party.Length;
+                    var actorID = actor.InstanceID;
+                    var anyInside = false;
+                    var angle = Angle.FromDirection(actor.Position - posOrigin);
+                    for (var j = 0; j < len; ++j)
+                    {
+                        var p = party[i];
+                        if (p.InstanceID == actorID)
+                        {
+                            continue;
+                        }
+                        if (_shapeSpread.Check(p.Position, posOrigin, angle))
+                        {
+                            anyInside = true;
+                            break;
+                        }
+                    }
+                    hints.Add("Spread!", anyInside);
                     break;
                 case Shape.Pairs:
                     var actorIsSupport = actor.Class.IsSupport();
                     int sameRole = 0, diffRole = 0;
-                    foreach (var p in Raid.WithoutSlot(false, true, true).Exclude(actor).InShape(_shapePair, c.Origin.Position, Angle.FromDirection(actor.Position - c.Origin.Position)))
-                        if (p.Class.IsSupport() == actorIsSupport)
-                            ++sameRole;
-                        else
-                            ++diffRole;
+                    var posOrigin2 = c.Origin.Position;
+                    var party2 = Raid.WithoutSlot(false, true, true);
+                    var len2 = party2.Length;
+                    var actorID2 = actor.InstanceID;
+                    var angle2 = Angle.FromDirection(actor.Position - posOrigin2);
+                    for (var j = 0; j < len2; ++j)
+                    {
+                        ref readonly var p = ref party2[i];
+                        if (p.InstanceID == actorID2)
+                        {
+                            continue;
+                        }
+                        if (_shapeSpread.Check(p.Position, posOrigin2, angle2))
+                        {
+                            if (p.Class.IsSupport() == actorIsSupport)
+                            {
+                                ++sameRole;
+                            }
+                            else
+                            {
+                                ++diffRole;
+                            }
+                        }
+                    }
                     hints.Add("Stack in pairs!", sameRole != 0 || diffRole != 1);
                     break;
             }
@@ -87,8 +154,11 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
-        foreach (var c in ImminentChains())
+        var chains = ImminentChains();
+        var count = chains.Count;
+        for (var i = 0; i < count; ++i)
         {
+            var c = Chains[i];
             switch (c.Shape)
             {
                 case Shape.Circle:
@@ -98,13 +168,34 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
                     _shapeDonut.Draw(Arena, c.Origin);
                     break;
                 case Shape.Spread:
-                    foreach (var p in Raid.WithoutSlot(false, true, true).Exclude(pc))
-                        _shapeSpread.Draw(Arena, c.Origin.Position, Angle.FromDirection(p.Position - c.Origin.Position));
+                    var posOrigin = c.Origin.Position;
+                    var party = Raid.WithoutSlot(false, true, true);
+                    var len = party.Length;
+                    var actorID = pc.InstanceID;
+                    for (var j = 0; j < len; ++j)
+                    {
+                        var p = party[i];
+                        if (p.InstanceID == actorID)
+                        {
+                            continue;
+                        }
+                        _shapeSpread.Draw(Arena, posOrigin, Angle.FromDirection(p.Position - posOrigin));
+                    }
                     break;
                 case Shape.Pairs:
                     var pcIsSupport = pc.Class.IsSupport();
-                    foreach (var p in Raid.WithoutSlot(false, true, true).Where(p => p != pc && p.Class.IsSupport() == pcIsSupport))
-                        _shapePair.Draw(Arena, c.Origin.Position, Angle.FromDirection(p.Position - c.Origin.Position));
+                    var posOrigin2 = c.Origin.Position;
+                    var party2 = Raid.WithoutSlot(false, true, true);
+                    var len2 = party2.Length;
+                    var actorID2 = pc.InstanceID;
+                    for (var j = 0; j < len2; ++j)
+                    {
+                        var p = party2[i];
+                        if (p.InstanceID != actorID2 && p.Class.IsSupport() == pcIsSupport)
+                        {
+                            _shapePair.Draw(Arena, posOrigin2, Angle.FromDirection(p.Position - posOrigin2));
+                        }
+                    }
                     break;
             }
         }
@@ -112,15 +203,20 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var c in ImminentChains())
+        var chains = ImminentChains();
+        var count = chains.Count;
+        for (var i = 0; i < count; ++i)
         {
+            var c = Chains[i];
+            var posOrigin = c.Origin.Position;
+            var angle = Angle.FromDirection(pc.Position - posOrigin);
             switch (c.Shape)
             {
                 case Shape.Spread:
-                    _shapeSpread.Outline(Arena, c.Origin.Position, Angle.FromDirection(pc.Position - c.Origin.Position));
+                    _shapeSpread.Outline(Arena, posOrigin, angle);
                     break;
                 case Shape.Pairs:
-                    _shapePair.Outline(Arena, c.Origin.Position, Angle.FromDirection(pc.Position - c.Origin.Position), Colors.Safe);
+                    _shapePair.Outline(Arena, posOrigin, angle, Colors.Safe);
                     break;
             }
         }
@@ -133,58 +229,68 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        var shape = (AID)spell.Action.ID switch
+        var shape = spell.Action.ID switch
         {
-            AID.SuperchainBurst => Shape.Circle,
-            AID.SuperchainCoil => Shape.Donut,
-            AID.SuperchainRadiation => Shape.Spread,
-            AID.SuperchainEmission => Shape.Pairs,
+            (uint)AID.SuperchainBurst => Shape.Circle,
+            (uint)AID.SuperchainCoil => Shape.Donut,
+            (uint)AID.SuperchainRadiation => Shape.Spread,
+            (uint)AID.SuperchainEmission => Shape.Pairs,
             _ => Shape.Unknown
         };
-        if (shape != Shape.Unknown && Chains.FindIndex(c => c.Shape == shape && c.Origin.Position.AlmostEqual(caster.Position, 1) && c.Origin.Position.AlmostEqual(c.Moving.Position, 3)) is var index && index >= 0)
+        if (shape != Shape.Unknown)
         {
-            ++NumCasts;
-            Chains.RemoveAt(index);
+            var count = Chains.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var c = Chains[i];
+                var posOrigin = c.Origin.Position;
+                if (c.Shape == shape && posOrigin.AlmostEqual(caster.Position, 1f) && posOrigin.AlmostEqual(c.Moving.Position, 3f))
+                {
+                    ++NumCasts;
+                    Chains.RemoveAt(i);
+                    return;
+                }
+            }
         }
     }
 }
 
-class SuperchainTheory1(BossModule module) : SuperchainTheory(module)
+sealed class SuperchainTheory1(BossModule module) : SuperchainTheory(module)
 {
     public override float ActivationDelay(float distance)
     {
         return distance switch
         {
-            < 7 => 10.7f, // first circle/donut + spread/pair are at distance 6
-            < 16 => 12.7f, // second circle + donut are at distance 15
-            < 19 => 14.6f, // third circle/donut is at distance 18
+            < 7f => 10.7f, // first circle/donut + spread/pair are at distance 6
+            < 16f => 12.7f, // second circle + donut are at distance 15
+            < 19f => 14.6f, // third circle/donut is at distance 18
             _ => 16.6f, // fourth circle/donut is at distance 24
         };
     }
 }
 
-class SuperchainTheory2A(BossModule module) : SuperchainTheory(module)
+sealed class SuperchainTheory2A(BossModule module) : SuperchainTheory(module)
 {
     public override float ActivationDelay(float distance)
     {
         return distance switch
         {
-            < 10 => 11.9f, // first 2 circles + pairs are at distance 9
-            < 18 => 14.3f, // second donut is at distance 16.5
-            < 25 => 16.9f, // third circle is at distance 24
+            < 10f => 11.9f, // first 2 circles + pairs are at distance 9
+            < 18f => 14.3f, // second donut is at distance 16.5
+            < 25f => 16.9f, // third circle is at distance 24
             _ => 20.3f, // fourth circle + spread/pairs are at distance 34.5
         };
     }
 }
 
-class SuperchainTheory2B(BossModule module) : SuperchainTheory(module)
+sealed class SuperchainTheory2B(BossModule module) : SuperchainTheory(module)
 {
     public override float ActivationDelay(float distance)
     {
         return distance switch
         {
-            < 10 => 11.7f, // first circle + donut are at distance 9
-            < 20 => 15.1f, // second circle + spread/pairs area at distance 18
+            < 10f => 11.7f, // first circle + donut are at distance 9
+            < 20f => 15.1f, // second circle + spread/pairs area at distance 18
             _ => 19.6f, // third 2 circles + spread/pairs are at distance 33
         };
     }

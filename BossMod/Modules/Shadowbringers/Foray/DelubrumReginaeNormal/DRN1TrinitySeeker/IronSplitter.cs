@@ -14,7 +14,7 @@ sealed class IronSplitter(BossModule module) : Components.GenericAOEs(module, (u
         {
             var distance = (caster.Position - Arena.Center).Length();
             var activation = Module.CastFinishAt(spell);
-            var pos = WPos.ClampToGrid(Arena.Center);
+            var pos = Arena.Center.Quantized();
             if (distance is < 3 or > 9 and < 11 or > 17 and < 19) // tiles
             {
                 for (var i = 0; i < 3; ++i)

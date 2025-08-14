@@ -143,7 +143,7 @@ class LevinstrikeSummoningShock(BossModule module) : Components.GenericAOEs(modu
         if (isBall)
         {
             var dir = (actor.Position - Arena.Center).Normalized();
-            _explodeOrder[order] = WPos.ClampToGrid(Arena.Center - 16 * dir);
+            _explodeOrder[order] = (Arena.Center - 16f * dir).Quantized();
             _firstExplosion = WorldState.FutureTime(12.7d);
         }
         else

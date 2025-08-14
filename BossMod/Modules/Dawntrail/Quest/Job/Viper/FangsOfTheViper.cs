@@ -26,15 +26,15 @@ public enum AID : uint
     LeftSidedShockwave = 37702 // WanderingGowrow->self, 4.0s cast, range 20 180-degree cone
 }
 
-class BurningCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningCyclone, new AOEShapeCone(6f, 60f.Degrees()));
-class FoulBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FoulBreath, new AOEShapeCone(7f, 45f.Degrees()));
-class BrowHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrowHorn, new AOEShapeRect(6f, 2f));
-class Firebreathe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firebreathe, new AOEShapeCone(60f, 45f.Degrees()));
-class Shockwave(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightSidedShockwave, (uint)AID.LeftSidedShockwave], new AOEShapeCone(20f, 90f.Degrees()));
+sealed class BurningCyclone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BurningCyclone, new AOEShapeCone(6f, 60f.Degrees()));
+sealed class FoulBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FoulBreath, new AOEShapeCone(7f, 45f.Degrees()));
+sealed class BrowHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrowHorn, new AOEShapeRect(6f, 2f));
+sealed class Firebreathe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firebreathe, new AOEShapeCone(60f, 45f.Degrees()));
+sealed class Shockwave(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightSidedShockwave, (uint)AID.LeftSidedShockwave], new AOEShapeCone(20f, 90f.Degrees()));
 
-class FangsOfTheViperStates : StateMachineBuilder
+sealed class FangsOfTheViperStates : StateMachineBuilder
 {
-    public FangsOfTheViperStates(BossModule module) : base(module)
+    public FangsOfTheViperStates(FangsOfTheViper module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<BurningCyclone>()
@@ -42,15 +42,29 @@ class FangsOfTheViperStates : StateMachineBuilder
             .ActivateOnEnter<BrowHorn>()
             .ActivateOnEnter<Firebreathe>()
             .ActivateOnEnter<Shockwave>()
-            .Raw.Update = () => module.Enemies((uint)OID.WanderingGowrow).Any(e => e.IsDead) || module.PrimaryActor.IsDeadOrDestroyed;
+            .Raw.Update = () => (module.BossGowrow()?.IsDead ?? false) || module.PrimaryActor.IsDeadOrDestroyed;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70385, NameID = 12825)]
-public class FangsOfTheViper(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class FangsOfTheViper(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(264f, 480f), 19.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.FawningWivre, (uint)OID.FawningPeiste, (uint)OID.FawningRaptor, (uint)OID.WanderingGowrow];
+
+    private Actor? _bossGowrow;
+    public Actor? BossGowrow() => _bossGowrow;
+
+    protected override void UpdateModule()
+    {
+        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
+        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
+        if (_bossGowrow == null)
+        {
+            var b = Enemies((uint)OID.WanderingGowrow);
+            _bossGowrow = b.Count != 0 ? b[0] : null;
+        }
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

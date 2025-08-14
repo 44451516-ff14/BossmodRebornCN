@@ -22,28 +22,6 @@ public enum AID : uint
 }
 
 sealed class GaleCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GaleCannon, new AOEShapeRect(40f, 5f));
-sealed class Petrisphere(BossModule module) : Components.Voidzone(module, 7f, GetVoidzones, 3f)
-{
-    private static readonly uint[] petrifogs = [(uint)OID.Petrifog1, (uint)OID.Petrifog2, (uint)OID.Petrifog3, (uint)OID.Petrifog4, (uint)OID.Petrifog5, (uint)OID.Petrifog6, (uint)OID.Petrifog7];
-
-    private static Actor[] GetVoidzones(BossModule module)
-    {
-        var enemies = module.Enemies(petrifogs);
-        var count = enemies.Count;
-        if (count == 0)
-            return [];
-
-        var voidzones = new Actor[count];
-        var index = 0;
-        for (var i = 0; i < count; ++i)
-        {
-            var z = enemies[i];
-            if (!z.IsDead && z.CastInfo == null)
-                voidzones[index++] = z;
-        }
-        return voidzones[..index];
-    }
-}
 sealed class SphereShatter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SphereShatter, 7f);
 
 sealed class TheWingedTerrorStates : StateMachineBuilder
@@ -52,7 +30,6 @@ sealed class TheWingedTerrorStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<GaleCannon>()
-            .ActivateOnEnter<Petrisphere>()
             .ActivateOnEnter<SphereShatter>();
     }
 }

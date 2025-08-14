@@ -16,17 +16,23 @@ class SolarFlair(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _sunstorms.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
-            aoes[i] = new(_shape, WPos.ClampToGrid(_sunstorms[i]));
+        {
+            aoes[i] = new(_shape, _sunstorms[i].Quantized());
+        }
         return aoes;
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Sunstorm)
+        {
             _sunstorms.Add(actor.Position);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

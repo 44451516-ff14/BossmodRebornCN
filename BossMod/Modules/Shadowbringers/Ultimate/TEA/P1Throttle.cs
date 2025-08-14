@@ -1,12 +1,14 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P1Throttle(BossModule module) : BossComponent(module)
+sealed class P1Throttle(BossModule module) : BossComponent(module)
 {
-    public bool Applied { get; private set; }
+    public bool Applied;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Throttle)
+        if (status.ID == (uint)SID.Throttle)
+        {
             Applied = true;
+        }
     }
 }

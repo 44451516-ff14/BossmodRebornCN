@@ -70,9 +70,9 @@ sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.SoldierS0Clone)
         {
-            if (modelState == 5u)
+            if (modelState == 5)
                 direction = false;
-            else if (modelState == 6u)
+            else if (modelState == 6)
                 direction = true;
         }
     }
@@ -136,7 +136,7 @@ sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
                 if (tether.source == firstClone)
                 {
                     active = false;
-                    _aoe = new(cone, WPos.ClampToGrid(tether.target.Position), tether.target.Rotation + (direction ? -1f : 1f) * 90f.Degrees(), WorldState.FutureTime(cloneCount == 6 ? 4.2d : 5.9d));
+                    _aoe = new(cone, tether.target.Position.Quantized(), tether.target.Rotation + (direction ? -1f : 1f) * 90f.Degrees(), WorldState.FutureTime(cloneCount == 6 ? 4.2d : 5.9d));
                     return;
                 }
             }

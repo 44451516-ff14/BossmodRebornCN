@@ -15,7 +15,7 @@ sealed class IvoryPalm(BossModule module) : Components.GenericGaze(module)
             var tether = Tethers[i];
             if (tether.target == actor && !tether.source.IsDead) // apparently tethers don't get removed immediately upon death
             {
-                return new Eye[1] { new(tether.source.Position, Inverted: true) };
+                return new Eye[1] { new(tether.source.Position, inverted: true) };
             }
         }
         return [];

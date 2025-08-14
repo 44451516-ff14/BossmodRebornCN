@@ -8,7 +8,9 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
     {
         if (updateID != 0x8000000D || param1 > 0x08u)
+        {
             return;
+        }
         switch (param1)
         {
             case 0x01u: // default arena
@@ -31,7 +33,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x08u)
+        if (index == 0x08)
         {
             if (state == 0x01000080u)
                 SetArena(Ex3QueenEternal.HalfBounds, Ex3QueenEternal.HalfBoundsCenter);

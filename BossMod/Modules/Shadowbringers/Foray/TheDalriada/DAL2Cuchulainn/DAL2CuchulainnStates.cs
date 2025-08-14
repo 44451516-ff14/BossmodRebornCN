@@ -1,16 +1,19 @@
 ﻿namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL2Cuchulainn;
 
-class DAL2CuchulainnStates : StateMachineBuilder
+sealed class DAL2CuchulainnStates : StateMachineBuilder
 {
     public DAL2CuchulainnStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<FellFlow1>()
-            .ActivateOnEnter<AmbientPulsationAOE>()
-            .ActivateOnEnter<NecroticBillowAOE>()
+            .ActivateOnEnter<FleshNecromass>()
+            .ActivateOnEnter<FleshNecromassJumps>()
+            .ActivateOnEnter<FellFlowAOE>()
+            .ActivateOnEnter<FellFlowBait>()
+            .ActivateOnEnter<GhastlyAura>()
+            .ActivateOnEnter<AmbientPulsation>()
+            .ActivateOnEnter<NecroticBillow>()
             .ActivateOnEnter<BurgeoningDread>()
             .ActivateOnEnter<MightOfMalice>()
-            .ActivateOnEnter<PutrifiedSoul2>()
-            .ActivateOnEnter<PutrifiedSoul1>();
+            .ActivateOnEnter<PutrifiedSoulBurgeoningDreadGhastlyAura>();
     }
 }

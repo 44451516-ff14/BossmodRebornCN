@@ -9,29 +9,37 @@ sealed class TwofoldTempestVoidzone(BossModule module) : Components.GenericAOEs(
 
     public override void OnActorEState(Actor actor, ushort state)
     {
-        if (_aoes.Count != 0 && state == 0x004u)
+        if (_aoes.Count != 0 && state == 0x004)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.WindVoidzone)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position)));
+        {
+            _aoes.Add(new(circle, actor.Position.Quantized()));
+        }
     }
 }
 
 sealed class TwofoldTempestTetherAOE(BossModule module) : Components.InterceptTetherAOE(module, (uint)AID.TwofoldTempestCircle, (uint)TetherID.TwofoldTempest, 6f)
 {
-    private WPos boss = module.Enemies((uint)OID.BossP2)[0].Position;
+    private readonly WPos boss = module.Enemies((uint)OID.BossP2)[0].Position;
     private BitMask vulnerability;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
         if (Tethers[0].Player == actor && vulnerability[slot])
+        {
             hints.Add("Pass tether!");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -42,17 +50,23 @@ sealed class TwofoldTempestTetherAOE(BossModule module) : Components.InterceptTe
         if (Tethers[0].Player == actor)
         {
             if (!vulnerability[slot])
+            {
                 hints.AddForbiddenZone(ShapeDistance.Circle(boss, 23.5f), Activation);
+            }
         }
         else
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
         var side = Tethers[0];
 
         Arena.AddLine(side.Enemy.Position, side.Player.Position);
@@ -63,7 +77,7 @@ sealed class TwofoldTempestTetherAOE(BossModule module) : Components.InterceptTe
     {
         if (status.ID == (uint)SID.MagicVulnerabilityUp)
         {
-            vulnerability[Raid.FindSlot(actor.InstanceID)] = true;
+            vulnerability.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -71,7 +85,7 @@ sealed class TwofoldTempestTetherAOE(BossModule module) : Components.InterceptTe
     {
         if (status.ID == (uint)SID.MagicVulnerabilityUp)
         {
-            vulnerability[Raid.FindSlot(actor.InstanceID)] = false;
+            vulnerability.Clear(Raid.FindSlot(actor.InstanceID));
         }
     }
 }
@@ -80,14 +94,19 @@ sealed class TwofoldTempestTetherVoidzone(BossModule module) : Components.Interc
 {
     public override void AddHints(int slot, Actor actor, TextHints hints) { }
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { }
+
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
         var side = Tethers[0];
         if (side.Player != pc)
+        {
             return;
+        }
         Arena.AddCircle(side.Player.Position, Radius);
     }
 }
@@ -119,7 +138,7 @@ sealed class TwofoldTempestRect(BossModule module) : Components.GenericBaitStack
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var player = ref party[i];
+                var player = party[i];
                 var distSq = (player.Position - boss.Position).LengthSq();
                 if (distSq < closestDistSq)
                 {
@@ -151,7 +170,7 @@ sealed class TwofoldTempestRect(BossModule module) : Components.GenericBaitStack
     {
         if (status.ID == (uint)SID.MagicVulnerabilityUp)
         {
-            vulnerability[Raid.FindSlot(actor.InstanceID)] = true;
+            vulnerability.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -159,7 +178,7 @@ sealed class TwofoldTempestRect(BossModule module) : Components.GenericBaitStack
     {
         if (status.ID == (uint)SID.MagicVulnerabilityUp)
         {
-            vulnerability[Raid.FindSlot(actor.InstanceID)] = false;
+            vulnerability.Clear(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -168,14 +187,18 @@ sealed class TwofoldTempestRect(BossModule module) : Components.GenericBaitStack
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         var len = baits.Length;
         if (len == 0)
+        {
             return;
+        }
         var playerPlatform = 0;
         for (var i = 0; i < 5; ++i)
         {
             if (actor.Position.InCircle(ArenaChanges.EndArenaPlatforms[i].Center, 8f))
             {
                 if (ArenaChanges.PlatformAngles[i] != baits[0].Rotation)
+                {
                     return;
+                }
                 else if (vulnerability[slot])
                 {
                     hints.Add("Avoid bait!");
@@ -193,9 +216,11 @@ sealed class TwofoldTempestRect(BossModule module) : Components.GenericBaitStack
 
         for (var i = 0; i < pLen; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             if (p == actor)
+            {
                 continue;
+            }
             if (p.Position.InCircle(ArenaChanges.EndArenaPlatforms[playerPlatform].Center, 8f))
             {
                 if (++countP == 2)

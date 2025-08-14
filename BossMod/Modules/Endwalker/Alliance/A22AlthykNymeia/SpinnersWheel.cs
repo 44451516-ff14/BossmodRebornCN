@@ -28,7 +28,7 @@ abstract class SpinnersWheelGaze(BossModule module, bool inverted, uint aid, uin
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
         if (_source != null && _affected[slot])
-            return new Eye[1] { new(_source.Position, _activation, Inverted: inverted) };
+            return new Eye[1] { new(_source.Position, _activation, inverted: inverted) };
         return [];
     }
 

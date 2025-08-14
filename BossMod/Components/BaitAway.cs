@@ -5,28 +5,20 @@
 // otherwise we show own bait as as outline (and warn if player is clipping someone) and other baits as filled (and warn if player is being clipped)
 public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysDrawOtherBaits = true, bool centerAtTarget = false, bool tankbuster = false, bool onlyShowOutlines = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.None) : CastCounter(module, aid)
 {
-    public struct Bait(Actor source, Actor target, AOEShape shape, DateTime activation = default, BitMask forbidden = default)
+    public struct Bait(Actor source, Actor target, AOEShape shape, DateTime activation = default, BitMask forbidden = default, Angle? customRotation = null, int maxCasts = 1)
     {
-        public Angle? CustomRotation;
+        public Angle? CustomRotation = customRotation;
         public AOEShape Shape = shape;
         public Actor Source = source;
         public Actor Target = target;
         public DateTime Activation = activation;
         public BitMask Forbidden = forbidden;
+        public int MaxCasts = maxCasts;
 
         public readonly Angle Rotation => CustomRotation ?? (Source != Target ? Angle.FromDirection(Target.Position - Source.Position) : Source.Rotation);
 
-        public Bait(Actor source, Actor target, AOEShape shape, DateTime activation, Angle customRotation, BitMask forbidden = default)
-            : this(source, target, shape, activation, forbidden)
-        {
-            CustomRotation = customRotation;
-        }
-
-        public Bait(WPos source, Actor target, AOEShape shape, DateTime activation, Angle? customRotation = null, BitMask forbidden = default)
-            : this(new(default, default, default, default!, default, default, default, default, source.ToVec4()), target, shape, activation, forbidden)
-        {
-            CustomRotation = customRotation;
-        }
+        public Bait(WPos source, Actor target, AOEShape shape, DateTime activation = default, Angle? customRotation = null, BitMask forbidden = default, int maxCasts = 1)
+            : this(new(default, default, default, default, default!, default, default, default, default, source.ToVec4()), target, shape, activation, forbidden, customRotation, maxCasts) { }
     }
 
     public readonly bool AlwaysDrawOtherBaits = alwaysDrawOtherBaits; // if false, other baits are drawn only if they are clipping a player
@@ -47,15 +39,20 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         {
             var count = CurrentBaits.Count;
             if (count == 0)
+            {
                 return [];
+            }
             List<Bait> activeBaits = new(count);
+            var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
             for (var i = 0; i < count; ++i)
             {
-                var bait = CurrentBaits[i];
+                ref var bait = ref curBaits[i];
                 if (!bait.Source.IsDead)
                 {
                     if (AllowDeadTargets || !bait.Target.IsDead)
+                    {
                         activeBaits.Add(bait);
+                    }
                 }
             }
             return activeBaits;
@@ -66,13 +63,19 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     {
         var count = CurrentBaits.Count;
         if (count == 0)
+        {
             return [];
+        }
         List<Bait> activeBaitsOnTarget = new(count);
+        var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
+        var id = target.InstanceID;
         for (var i = 0; i < count; ++i)
         {
-            var bait = CurrentBaits[i];
-            if (!bait.Source.IsDead && bait.Target == target)
+            ref var bait = ref curBaits[i];
+            if (!bait.Source.IsDead && bait.Target.InstanceID == id)
+            {
                 activeBaitsOnTarget.Add(bait);
+            }
         }
         return activeBaitsOnTarget;
     }
@@ -81,28 +84,35 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     {
         var count = CurrentBaits.Count;
         if (count == 0)
+        {
             return [];
+        }
         List<Bait> activeBaitsNotOnTarget = new(count);
+        var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
+        var id = target.InstanceID;
         for (var i = 0; i < count; ++i)
         {
-            var bait = CurrentBaits[i];
-            if (!bait.Source.IsDead && bait.Target != target)
+            ref var bait = ref curBaits[i];
+            if (!bait.Source.IsDead && bait.Target.InstanceID != id)
+            {
                 activeBaitsNotOnTarget.Add(bait);
+            }
         }
         return activeBaitsNotOnTarget;
     }
 
     public WPos BaitOrigin(Bait bait) => (CenterAtTarget ? bait.Target : bait.Source).Position;
     public bool IsClippedBy(Actor actor, Bait bait) => bait.Shape.Check(actor.Position, BaitOrigin(bait), bait.Rotation);
-    public List<Actor> PlayersClippedBy(Bait bait)
+    public List<Actor> PlayersClippedBy(ref readonly Bait bait)
     {
         var actors = Raid.WithoutSlot();
         var len = actors.Length;
         List<Actor> result = new(len);
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var actor = ref actors[i];
-            if (actor != bait.Target && bait.Shape.Check(actor.Position, BaitOrigin(bait), bait.Rotation))
+            var actor = actors[i];
+            var id = actor.InstanceID;
+            if (id != bait.Target.InstanceID && bait.Shape.Check(actor.Position, BaitOrigin(bait), bait.Rotation))
                 result.Add(actor);
         }
 
@@ -113,24 +123,26 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     {
         if (!EnableHints)
             return;
-        var baits = ActiveBaits;
-        var count = baits.Count;
+        var baits = CollectionsMarshal.AsSpan(ActiveBaits);
+        var count = baits.Length;
         if (count == 0)
             return;
         if (ForbiddenPlayers[slot])
         {
-            var activeBaits = ActiveBaitsOn(actor);
-            if (activeBaits.Count != 0)
+            if (ActiveBaitsOn(actor).Count != 0)
+            {
                 hints.Add("Avoid baiting!");
+            }
         }
         else
         {
+            var id = actor.InstanceID;
             for (var i = 0; i < count; ++i)
             {
-                var bait = baits[i];
-                if (bait.Target != actor)
+                ref var bait = ref baits[i];
+                if (bait.Target.InstanceID != id)
                     continue;
-                var clippedPlayers = PlayersClippedBy(bait);
+                var clippedPlayers = PlayersClippedBy(ref bait);
                 if (clippedPlayers.Count != 0)
                 {
                     hints.Add(BaitAwayHint);
@@ -141,10 +153,11 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
 
         if (!IgnoreOtherBaits)
         {
+            var id = actor.InstanceID;
             for (var i = 0; i < count; ++i)
             {
-                var bait = baits[i];
-                if (bait.Target == actor)
+                ref var bait = ref baits[i];
+                if (bait.Target.InstanceID == id)
                     continue;
                 if (IsClippedBy(actor, bait))
                 {
@@ -157,29 +170,36 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var baits = ActiveBaits;
-        var count = baits.Count;
+        var baits = CollectionsMarshal.AsSpan(ActiveBaits);
+        var count = baits.Length;
         if (count == 0)
+        {
             return;
-        var predictedDamage = new BitMask();
+        }
+        BitMask predictedDamage = default;
         for (var i = 0; i < count; ++i)
         {
-            var bait = baits[i];
+            ref var bait = ref baits[i];
             if (bait.Target != actor)
             {
                 hints.AddForbiddenZone(bait.Shape, BaitOrigin(bait), bait.Rotation, bait.Activation);
             }
             else
             {
-                predictedDamage[Raid.FindSlot(bait.Target.InstanceID)] = true;
-                AddTargetSpecificHints(ref actor, ref bait, ref hints);
+                AddTargetSpecificHints(actor, ref bait, hints);
+            }
+            if (DamageType != AIHints.PredictedDamageType.None)
+            {
+                predictedDamage.Set(Raid.FindSlot(bait.Target.InstanceID));
             }
         }
         if (predictedDamage != default)
-            hints.AddPredictedDamage(predictedDamage, baits[0].Activation, DamageType);
+        {
+            hints.AddPredictedDamage(predictedDamage, CurrentBaits.Ref(0).Activation, DamageType);
+        }
     }
 
-    private void AddTargetSpecificHints(ref Actor actor, ref Bait bait, ref AIHints hints)
+    private void AddTargetSpecificHints(Actor actor, ref Bait bait, AIHints hints)
     {
         if (bait.Source == bait.Target) // TODO: think about how to handle source == target baits, eg. vomitting mechanics
             return;
@@ -218,11 +238,14 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
 
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         var len = baits.Length;
+        var pcID = pc.InstanceID;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
-            if (!b.Source.IsDead && b.Target != pc && (AlwaysDrawOtherBaits || IsClippedBy(pc, b)))
+            ref var b = ref baits[i];
+            if (!b.Source.IsDead && b.Target.InstanceID != pcID && (AlwaysDrawOtherBaits || IsClippedBy(pc, b)))
+            {
                 b.Shape.Draw(Arena, BaitOrigin(b), b.Rotation);
+            }
         }
     }
 
@@ -230,10 +253,11 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     {
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         var len = baits.Length;
+        var pcID = pc.InstanceID;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
-            if (!b.Source.IsDead && (OnlyShowOutlines || !OnlyShowOutlines && b.Target == pc))
+            ref var b = ref baits[i];
+            if (!b.Source.IsDead && (OnlyShowOutlines || !OnlyShowOutlines && b.Target.InstanceID == pcID))
             {
                 b.Shape.Outline(Arena, BaitOrigin(b), b.Rotation);
             }
@@ -272,33 +296,66 @@ public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, u
 
     public AOEShape Shape = shape;
     public uint TID = tetherID;
+    public readonly uint EnemyOID = enemyOID;
     public bool DrawTethers = true;
-    public readonly List<Actor> _enemies = module.Enemies(enemyOID);
     public double ActivationDelay = activationDelay;
+    protected DateTime activation;
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
         if (DrawTethers)
         {
-            foreach (var b in ActiveBaits)
+            var baits = ActiveBaits;
+            var count = baits.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var b = baits[i];
                 Arena.AddLine(b.Source.Position, b.Target.Position);
+            }
         }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         var (player, enemy) = DetermineTetherSides(source, tether);
-        if (player != null && enemy != null && (enemyOID == default || _enemies.Contains(source)))
-            CurrentBaits.Add(new(enemy, player, Shape, WorldState.FutureTime(ActivationDelay)));
+        if (player != null && enemy != null && (EnemyOID == default || enemy.OID == EnemyOID))
+        {
+            if (activation == default)
+            {
+                activation = WorldState.FutureTime(ActivationDelay); // TODO: not optimal if tethers do not appear at the same time...
+            }
+            CurrentBaits.Add(new(enemy, player, Shape, activation));
+        }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        base.OnEventCast(caster, spell);
+        if (spell.Action.ID == WatchedAction && CurrentBaits.Count == 0)
+        {
+            activation = default;
+        }
+    }
+
+    public override void OnUntethered(Actor source, ActorTetherInfo tether) // TODO: this is problematic because untethering can happen many frames before the actual cast event, maybe there is a better solution?
     {
         var (player, enemy) = DetermineTetherSides(source, tether);
         if (player != null && enemy != null)
         {
-            CurrentBaits.RemoveAll(b => b.Source == enemy && b.Target == player);
+            var eID = enemy.InstanceID;
+            var pID = player.InstanceID;
+            var count = CurrentBaits.Count;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var b = ref baits[i];
+                if (b.Source.InstanceID == eID && b.Target.InstanceID == pID)
+                {
+                    CurrentBaits.RemoveAt(i);
+                    return;
+                }
+            }
         }
     }
 
@@ -345,15 +402,30 @@ public class BaitAwayIcon(BossModule module, AOEShape shape, uint iconID, uint a
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
-        if (spell.Action.ID == WatchedAction)
-            CurrentBaits.Clear();
+        if (CurrentBaits.Count != 0 && spell.Action.ID == WatchedAction)
+        {
+            CurrentBaits.RemoveAt(0);
+        }
+    }
+
+    public override void Update()
+    {
+        var count = CurrentBaits.Count - 1;
+        for (var i = count; i >= 0; --i)
+        {
+            ref var b = ref CurrentBaits.Ref(i);
+            if (b.Target.IsDead)
+            {
+                CurrentBaits.RemoveAt(i);
+            }
+        }
     }
 }
 
 // component for mechanics requiring cast targets to gtfo from raid (aoe tankbusters etc)
-public class BaitAwayCast(BossModule module, uint aid, AOEShape shape, bool centerAtTarget = false, bool endsOnCastEvent = false, bool tankbuster = false) : GenericBaitAway(module, aid, centerAtTarget: centerAtTarget, tankbuster: tankbuster, damageType: AIHints.PredictedDamageType.Tankbuster)
+public class BaitAwayCast(BossModule module, uint aid, AOEShape shape, bool centerAtTarget = false, bool endsOnCastEvent = false, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide) : GenericBaitAway(module, aid, centerAtTarget: centerAtTarget, tankbuster: tankbuster, damageType: damageType)
 {
-    public BaitAwayCast(BossModule module, uint aid, float radius, bool centerAtTarget = true, bool endsOnCastEvent = false, bool tankbuster = false) : this(module, aid, new AOEShapeCircle(radius), centerAtTarget, endsOnCastEvent, tankbuster) { }
+    public BaitAwayCast(BossModule module, uint aid, float radius, bool centerAtTarget = true, bool endsOnCastEvent = false, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide) : this(module, aid, new AOEShapeCircle(radius), centerAtTarget, endsOnCastEvent, tankbuster, damageType: damageType) { }
 
     public AOEShape Shape = shape;
     public bool EndsOnCastEvent = endsOnCastEvent;
@@ -361,38 +433,81 @@ public class BaitAwayCast(BossModule module, uint aid, AOEShape shape, bool cent
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction && WorldState.Actors.Find(spell.TargetID) is var target && target != null)
+        {
             CurrentBaits.Add(new(caster, target, Shape, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction && !EndsOnCastEvent)
-            CurrentBaits.RemoveAll(b => b.Source == caster);
+        {
+            var count = CurrentBaits.Count;
+            var id = caster.InstanceID;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var b = ref baits[i];
+                if (b.Source.InstanceID == id)
+                {
+                    CurrentBaits.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         base.OnEventCast(caster, spell);
         if (spell.Action.ID == WatchedAction && EndsOnCastEvent)
-            CurrentBaits.RemoveAll(b => b.Source == caster);
+        {
+            var count = CurrentBaits.Count;
+            var id = caster.InstanceID;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var b = ref baits[i];
+                if (b.Source.InstanceID == id)
+                {
+                    CurrentBaits.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 }
 
 // a variation of BaitAwayCast for charges that end at target
 public class BaitAwayChargeCast(BossModule module, uint aid, float halfWidth) : GenericBaitAway(module, aid, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
-    private readonly AOEShapeRect rect = new(default, halfWidth);
+    private readonly float HalfWidth = halfWidth;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction && WorldState.Actors.Find(spell.TargetID) is var target && target != null)
-            CurrentBaits.Add(new(caster, target, rect, Module.CastFinishAt(spell)));
+        {
+            CurrentBaits.Add(new(caster, target, new AOEShapeRect((target.Position - caster.Position).Length(), HalfWidth), Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
-            CurrentBaits.RemoveAll(b => b.Source == caster);
+        {
+            var count = CurrentBaits.Count;
+            var id = caster.InstanceID;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var b = ref baits[i];
+                if (b.Source.InstanceID == id)
+                {
+                    CurrentBaits.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 
     public override void Update()
@@ -404,7 +519,11 @@ public class BaitAwayChargeCast(BossModule module, uint aid, float halfWidth) : 
         for (var i = 0; i < count; ++i)
         {
             ref var b = ref baits[i];
-            b.Shape = rect with { LengthFront = (b.Target.Position - b.Source.Position).Length() };
+            var length = (b.Target.Position - b.Source.Position).Length();
+            if (b.Shape is AOEShapeRect rect && rect.LengthFront != length)
+            {
+                b.Shape = new AOEShapeRect(length, HalfWidth);
+            }
         }
     }
 }
@@ -413,11 +532,9 @@ public class BaitAwayChargeCast(BossModule module, uint aid, float halfWidth) : 
 public class BaitAwayChargeTether(BossModule module, float halfWidth, float activationDelay, uint aidGood, uint aidBad = default, uint tetherIDBad = 57u, uint tetherIDGood = 1u, uint enemyOID = default, float minimumDistance = default)
 : StretchTetherDuo(module, minimumDistance, activationDelay, tetherIDBad, tetherIDGood, new AOEShapeRect(default, halfWidth), default, enemyOID)
 {
-    public uint AidGood = aidGood;
-    public uint AidBad = aidBad; // supports 2nd AID incase the AID changes between good and bad tethers
-    public uint TetherIDBad = tetherIDBad;
-    public uint TetherIDGood = tetherIDGood;
-    public float HalfWidth = halfWidth;
+    public readonly uint AidGood = aidGood;
+    public readonly uint AidBad = aidBad; // supports 2nd AID incase the AID changes between good and bad tethers
+    public readonly float HalfWidth = halfWidth;
 
     public override void Update()
     {
@@ -429,13 +546,10 @@ public class BaitAwayChargeTether(BossModule module, float halfWidth, float acti
         for (var i = 0; i < count; ++i)
         {
             ref var b = ref baits[i];
-            if (b.Shape is AOEShapeRect shape)
+            var length = (b.Target.Position - b.Source.Position).Length();
+            if (b.Shape is AOEShapeRect rect && rect.LengthFront != length)
             {
-                var length = (b.Target.Position - b.Source.Position).Length();
-                if (shape.LengthFront != length)
-                {
-                    b.Shape = shape with { LengthFront = length };
-                }
+                b.Shape = new AOEShapeRect(length, HalfWidth);
             }
         }
     }
@@ -445,7 +559,18 @@ public class BaitAwayChargeTether(BossModule module, float halfWidth, float acti
         if (spell.Action.ID == AidGood || spell.Action.ID == AidBad)
         {
             ++NumCasts;
-            CurrentBaits.RemoveAll(x => x.Target == WorldState.Actors.Find(spell.MainTargetID));
+            var count = CurrentBaits.Count;
+            var id = spell.MainTargetID;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var b = ref baits[i];
+                if (b.Target.InstanceID == id)
+                {
+                    CurrentBaits.RemoveAt(i);
+                    return;
+                }
+            }
         }
     }
 
@@ -454,7 +579,20 @@ public class BaitAwayChargeTether(BossModule module, float halfWidth, float acti
         if (ActiveBaits.Count == 0)
             return;
         base.AddHints(slot, actor, hints);
-        if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(b).Count != 0))
-            hints.Add(BaitAwayHint);
+        var count = CurrentBaits.Count;
+        var id = actor.InstanceID;
+        for (var i = 0; i < count; ++i)
+        {
+            var b = CurrentBaits[i];
+            if (b.Target.InstanceID != id)
+            {
+                continue;
+            }
+            if (PlayersClippedBy(ref b).Count != 0)
+            {
+                hints.Add(BaitAwayHint);
+                return;
+            }
+        }
     }
 }

@@ -86,7 +86,7 @@ sealed class TripleFlightCyclone(BossModule module) : Components.GenericAOEs(mod
             AddAOE(donut, 2.1f);
             AddAOE(rect, 2.1f);
         }
-        void AddAOE(AOEShape shape, float delay = default) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, delay), Risky: false));
+        void AddAOE(AOEShape shape, float delay = default) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, delay), risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

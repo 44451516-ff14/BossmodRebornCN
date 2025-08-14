@@ -30,14 +30,14 @@ public enum AID : uint
     Explosion = 27026 // Meteorite->self, 3.0s cast, range 6 circle
 }
 
-class TheBlackDeath(BossModule module) : Components.Cleave(module, (uint)AID.TheBlackDeath, new AOEShapeCone(25, 60.Degrees()), [(uint)OID.Boss], activeWhileCasting: false);
-class Burst(BossModule module) : Components.CastTowers(module, (uint)AID.Burst, 5);
-class DeadlyImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadlyImpact, 10, 6);
+class TheBlackDeath(BossModule module) : Components.Cleave(module, (uint)AID.TheBlackDeath, new AOEShapeCone(25f, 60f.Degrees()), [(uint)OID.Boss], activeWhileCasting: false);
+class Burst(BossModule module) : Components.CastTowers(module, (uint)AID.Burst, 5f);
+class DeadlyImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadlyImpact, 10f, 6);
 class BlackStar(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlackStar);
-class DeadlyImpact1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadlyImpact1, 8);
-class DeadlyImpact2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadlyImpact2, 10);
-class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6);
-class Meteor(BossModule module) : Components.GenericLineOfSightAOE(module, default, 40, safeInsideHitbox: false)
+class DeadlyImpact1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadlyImpact1, 8f);
+class DeadlyImpact2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadlyImpact2, 10f);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6f);
+class Meteor(BossModule module) : Components.GenericLineOfSightAOE(module, default, 40f, safeInsideHitbox: false)
 {
     private readonly List<(Actor, DateTime)> casters = new(4);
     private readonly List<Actor> meteors = new(4);
@@ -62,23 +62,23 @@ class Meteor(BossModule module) : Components.GenericLineOfSightAOE(module, defau
 
     public override void OnActorCreated(Actor actor)
     {
-        if ((OID)actor.OID == OID.MeteoriteHelper)
+        if (actor.OID == (uint)OID.MeteoriteHelper)
         {
-            casters.Add((actor, WorldState.FutureTime(11.7f)));
+            casters.Add((actor, WorldState.FutureTime(11.7d)));
             Refresh();
         }
-        else if ((OID)actor.OID == OID.Meteorite)
+        else if (actor.OID == (uint)OID.Meteorite)
             meteors.Add(actor);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (casters.Count != 0 && (AID)spell.Action.ID == AID.CosmicKiss)
+        if (casters.Count != 0 && spell.Action.ID == (uint)AID.CosmicKiss)
         {
             for (var i = 0; i < meteors.Count; ++i)
             {
                 var meteor = meteors[i];
-                if (meteor.Position.AlmostEqual(caster.Position, 10))
+                if (meteor.Position.AlmostEqual(caster.Position, 10f))
                 {
                     meteors.Remove(meteor);
                     break;

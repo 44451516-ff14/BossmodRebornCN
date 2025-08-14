@@ -24,11 +24,28 @@ sealed class Sporesplosion : Components.SimpleAOEs
 
 sealed class NeoBombarianSpecialKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.NeoBombarianSpecial, 58f, true)
 {
+    private RelSimplifiedComplexPolygon poly = new();
+    private bool polyInit;
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Casters.Count != 0)
+        if (Arena.Bounds == KnockbackArena) // this doesn't seem to be a regular knockback that ends up in PendingKnockbacks, so forbidden zone must stay longer than cast
         {
-            hints.GoalZones.Add(hints.GoalSingleTarget(new WPos(100f, 80f), 5f, 5f));
+            if (!polyInit)
+            {
+                poly = KnockbackArena.poly.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
+                polyInit = true;
+            }
+            var center = Arena.Center;
+            var loc = Module.PrimaryActor.Position;
+            hints.AddForbiddenZone(p =>
+            {
+                if (poly.Contains(p + 58f * (p - loc).Normalized() - center))
+                {
+                    return 1f;
+                }
+                return default;
+            }, Module.CastFinishAt(Module.PrimaryActor.CastInfo));
         }
     }
 }

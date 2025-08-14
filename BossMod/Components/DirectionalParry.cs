@@ -22,8 +22,12 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
         get
         {
             foreach (var state in ActorStates.Values)
+            {
                 if ((Side)(state & 0xF) != Side.None)
+                {
                     return true;
+                }
+            }
             return false;
         }
     }

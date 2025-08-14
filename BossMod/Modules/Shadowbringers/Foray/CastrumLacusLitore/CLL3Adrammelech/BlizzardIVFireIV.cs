@@ -1,6 +1,6 @@
 namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL3Adrammelech;
 
-sealed class FireIV(BossModule module) : Components.StayMove(module, 3f)
+sealed class FireIV(BossModule module) : Components.StayMove(module, 3d)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -13,11 +13,13 @@ sealed class FireIV(BossModule module) : Components.StayMove(module, 3f)
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Pyretic && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        {
             PlayerStates[slot] = default;
+        }
     }
 }
 
-sealed class BlizzardIV(BossModule module) : Components.StayMove(module, 4f)
+sealed class BlizzardIV(BossModule module) : Components.StayMove(module, 4d)
 {
     private DateTime _activation;
 
@@ -25,7 +27,7 @@ sealed class BlizzardIV(BossModule module) : Components.StayMove(module, 4f)
     {
         if (spell.Action.ID is (uint)AID.BlizzardIV1 or (uint)AID.BlizzardIV3)
         {
-            var act = Module.CastFinishAt(spell, 2f);
+            var act = Module.CastFinishAt(spell, 2d);
             Array.Fill(PlayerStates, new(Requirement.Move, act));
             _activation = act; // freeze seems to activate a little after the spell finishes somehow
         }
@@ -34,7 +36,9 @@ sealed class BlizzardIV(BossModule module) : Components.StayMove(module, 4f)
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Pyretic && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        {
             PlayerStates[slot] = default;
+        }
     }
 
     public override void Update()

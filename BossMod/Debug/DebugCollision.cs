@@ -423,7 +423,7 @@ public sealed unsafe class DebugCollision() : IDisposable
             // Render vertices in sorted order
             foreach (var (vertex, index, type) in vertices)
             {
-                var vertexStr = $"new({vertex.X.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)}f, {vertex.Z.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)}f)";
+                var vertexStr = $"new({vertex.X.ToString("F5", System.Globalization.CultureInfo.InvariantCulture)}f, {vertex.Z.ToString("F5", System.Globalization.CultureInfo.InvariantCulture)}f)";
                 using var node2 = _tree.Node2($"[{index}] ({type}): {Vec3Str(vertex)}");
                 if (node2.SelectedOrHovered)
                 {
@@ -627,7 +627,7 @@ public sealed unsafe class DebugCollision() : IDisposable
     }
 
     private string SphereStr(Vector4 s) => $"[{s.X:f3}, {s.Y:f3}, {s.Z:f3}] R{s.W:f3}";
-    private string Vec3Str(Vector3 v) => $"[{v.X:f3}, {v.Y:f3}, {v.Z:f3}]";
+    private string Vec3Str(Vector3 v) => $"[{v.X:f5}, {v.Y:f3}, {v.Z:f5}]";
     private string AABBStr(AABB bb) => $"{Vec3Str(bb.Min)} - {Vec3Str(bb.Max)}";
 
     private void DrawMat4x3(string tag, ref Matrix4x3 mat)

@@ -68,7 +68,7 @@ sealed class BrutalSmash(BossModule module) : Components.GenericSharedTankbuster
         {
             Source = caster;
             close = spell.Action.ID == (uint)AID.SmashHere;
-            Activation = Module.CastFinishAt(spell, 2.1f);
+            Activation = Module.CastFinishAt(spell, 2.1d);
         }
     }
 
@@ -88,7 +88,7 @@ sealed class BrutalSmash(BossModule module) : Components.GenericSharedTankbuster
         var len = party.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             var distSq = (p.Position - source.Position).LengthSq();
             var isBetter = findClosest ? distSq < bestDistance : distSq > bestDistance;
 

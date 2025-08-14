@@ -61,7 +61,7 @@ sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(modul
         if (actor.OID == (uint)OID.ChillingCataclysmArcaneSphere)
         {
             var act = WorldState.FutureTime(5.6d);
-            var pos = WPos.ClampToGrid(actor.Position);
+            var pos = actor.Position.Quantized();
             _aoes.Add(new(_shape, pos, Angle.AnglesCardinals[1], act));
             _aoes.Add(new(_shape, pos, Angle.AnglesIntercardinals[1], act));
         }

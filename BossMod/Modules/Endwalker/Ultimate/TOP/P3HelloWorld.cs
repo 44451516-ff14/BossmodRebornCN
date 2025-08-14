@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P3HelloWorld(BossModule module) : Components.GenericTowers(module)
+sealed class P3HelloWorld(BossModule module) : Components.GenericTowers(module)
 {
     public enum PlayerRole { None = -1, Defamation, RemoteTether, Stack, LocalTether }
     public enum TowerColor { None, Red, Blue }
@@ -21,33 +21,34 @@ class P3HelloWorld(BossModule module) : Components.GenericTowers(module)
 
         if (Towers.Count == 4)
         {
+            var party = Raid.WithSlot(false, true, true);
             switch (RoleForNextTowers(slot))
             {
                 case PlayerRole.Defamation:
-                    if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 20).WhereSlot(s => RoleForNextTowers(s) != PlayerRole.LocalTether).Any())
+                    if (party.InRadiusExcluding(actor, 20f).WhereSlot(s => RoleForNextTowers(s) != PlayerRole.LocalTether).Any())
                         hints.Add("GTFO from others!");
                     break;
                 case PlayerRole.RemoteTether:
-                    if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 20).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Any())
+                    if (party.InRadiusExcluding(actor, 20f).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Any())
                         hints.Add("GTFO from defamation!");
-                    if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 5).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Stack).Count() != 1)
+                    if (party.InRadiusExcluding(actor, 5f).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Stack).Count() != 1)
                         hints.Add("Stay near one stack!");
                     break;
                 case PlayerRole.Stack:
-                    if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 20).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Any())
+                    if (party.InRadiusExcluding(actor, 20f).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Any())
                         hints.Add("GTFO from defamation!");
-                    if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 5).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.RemoteTether).Count() != 1)
+                    if (party.InRadiusExcluding(actor, 5f).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.RemoteTether).Count() != 1)
                         hints.Add("Stay near one tether!");
                     break;
                 case PlayerRole.LocalTether:
                     if (NumCasts < 12)
                     {
-                        if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 20).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Count() != 1)
+                        if (party.InRadiusExcluding(actor, 20f).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Count() != 1)
                             hints.Add("Stay inside one defamation!");
                     }
                     else
                     {
-                        if (Raid.WithSlot(false, true, true).InRadiusExcluding(actor, 20).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Any())
+                        if (party.InRadiusExcluding(actor, 20f).WhereSlot(s => RoleForNextTowers(s) == PlayerRole.Defamation).Any())
                             hints.Add("GTFO from defamation!");
                         // TODO: they don't have to share the stack, right?
                     }
@@ -308,45 +309,37 @@ class P3HelloWorld(BossModule module) : Components.GenericTowers(module)
         return -1;
     }
 
-    private IEnumerable<WPos> PositionsForTowers(int slot)
+    private WPos[] PositionsForTowers(int slot)
     {
         // find midpoint for defamation towers
         WDir defamationMid = default;
         foreach (var i in _defamationTowers.SetBits())
             defamationMid += Towers[i].Position - Arena.Center;
         var defamationMidDir = Angle.FromDirection(defamationMid);
-
+        var center = Arena.Center;
         switch (RoleForNextTowers(slot))
         {
             case PlayerRole.Defamation:
                 // max melee at defamation towers
-                yield return Arena.Center + 15.5f * (defamationMidDir - 45.Degrees()).ToDirection();
-                yield return Arena.Center + 15.5f * (defamationMidDir + 45.Degrees()).ToDirection();
-                break;
+                return [center + 15.5f * (defamationMidDir - 45f.Degrees()).ToDirection(), center + 15.5f * (defamationMidDir + 45f.Degrees()).ToDirection()];
             case PlayerRole.RemoteTether:
                 // hitbox radius, between towers (r=7) => angle delta 2*asin(3.5/12.5f) = 33 degrees
-                yield return Arena.Center - 12.5f * (defamationMidDir - 12.Degrees()).ToDirection();
-                yield return Arena.Center - 12.5f * (defamationMidDir + 12.Degrees()).ToDirection();
-                break;
+                return [center - 12.5f * (defamationMidDir - 12f.Degrees()).ToDirection(), center - 12.5f * (defamationMidDir + 12f.Degrees()).ToDirection()];
             case PlayerRole.Stack:
                 // hitbox radius, at the inner edge of the tower (r=5) => angle delta 2*asin(2.5/12.5f) = 23 degrees
-                yield return Arena.Center - 12.5f * (defamationMidDir - 25.Degrees()).ToDirection();
-                yield return Arena.Center - 12.5f * (defamationMidDir + 25.Degrees()).ToDirection();
-                break;
+                return [center - 12.5f * (defamationMidDir - 25f.Degrees()).ToDirection(), center - 12.5f * (defamationMidDir + 25f.Degrees()).ToDirection()];
             case PlayerRole.LocalTether:
                 if (NumCasts < 12)
                 {
                     // max melee outside defamation towers (assuming 15.5f for both defamation and target and distance 7 between, angle between them is 2*asin(3.5/15.5) = 26 degrees
-                    yield return Arena.Center + 15.5f * (defamationMidDir - 75.Degrees()).ToDirection();
-                    yield return Arena.Center + 15.5f * (defamationMidDir + 75.Degrees()).ToDirection();
+                    return [center + 15.5f * (defamationMidDir - 75f.Degrees()).ToDirection(), center + 15.5f * (defamationMidDir + 75f.Degrees()).ToDirection()];
                 }
                 else
                 {
                     // same as tethers sharing stack
-                    yield return Arena.Center - 12.5f * (defamationMidDir - 12.Degrees()).ToDirection();
-                    yield return Arena.Center - 12.5f * (defamationMidDir + 12.Degrees()).ToDirection();
+                    return [center - 12.5f * (defamationMidDir - 12f.Degrees()).ToDirection(), center - 12.5f * (defamationMidDir + 12f.Degrees()).ToDirection()];
                 }
-                break;
         }
+        return [];
     }
 }

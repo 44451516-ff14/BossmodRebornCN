@@ -11,13 +11,22 @@ class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
     {
         var count = AOEs.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(AOEs);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -66,7 +75,9 @@ class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.RipplesOfGloomCloneL:
             case (uint)AID.RipplesOfGloomBossL:
                 if (AOEs.Count > 0)
+                {
                     AOEs.RemoveAt(0);
+                }
                 ++NumCasts;
                 break;
         }

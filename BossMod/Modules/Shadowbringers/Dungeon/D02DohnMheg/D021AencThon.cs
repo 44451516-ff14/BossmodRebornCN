@@ -81,7 +81,7 @@ class Geyser(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < len; ++i)
             {
                 var pos = positions[i].Rotate(rot) + origin;
-                _aoes.Add(new(circle, WPos.ClampToGrid(pos), default, activation));
+                _aoes.Add(new(circle, pos.Quantized(), default, activation));
             }
         }
     }

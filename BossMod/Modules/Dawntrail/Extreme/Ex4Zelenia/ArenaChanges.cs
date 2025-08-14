@@ -11,14 +11,16 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.QueensCrusade)
         {
-            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 0.1f));
+            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 0.1d));
         }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01u)
+        if (index != 0x01)
+        {
             return;
+        }
         switch (state)
         {
             case 0x00020001u:
@@ -85,10 +87,10 @@ class FloorTiles(BossModule module) : BossComponent(module)
             switch (state)
             {
                 case 0x00400100u or 0x00800040u:
-                    InnerActiveTiles[index - 0x04u] = true;
+                    InnerActiveTiles[index - 0x04] = true;
                     break;
                 case 0x00040020u:
-                    InnerActiveTiles[index - 0x04u] = false;
+                    InnerActiveTiles[index - 0x04] = false;
                     break;
             }
         }
@@ -97,10 +99,10 @@ class FloorTiles(BossModule module) : BossComponent(module)
             switch (state)
             {
                 case 0x00400100u or 0x00800040u:
-                    OuterActiveTiles[index - 0x0Cu] = true;
+                    OuterActiveTiles[index - 0x0C] = true;
                     break;
                 case 0x00040020u:
-                    OuterActiveTiles[index - 0x0Cu] = false;
+                    OuterActiveTiles[index - 0x0C] = false;
                     break;
             }
         }
@@ -110,9 +112,12 @@ class FloorTiles(BossModule module) : BossComponent(module)
     {
         var active = new List<int>();
         for (var i = 0; i < 8; ++i)
+        {
             if (ring[i])
+            {
                 active.Add(i);
-
+            }
+        }
         if (active.Count < 2) // only relevant for old replays before new ENVC were added
         {
             midTile = opp1 = opp2 = oppMid = 0;
@@ -123,22 +128,22 @@ class FloorTiles(BossModule module) : BossComponent(module)
         var i2 = active[1];
 
         // Normalize for direction (ensure gap is in the clockwise direction)
-        var diff = (i2 - i1 + 8) % 8;
+        var diff = (i2 - i1 + 8) & 7;
 
         if (diff == 6)
             (i1, i2) = (i2, i1);  // Swap to ensure clockwise
 
-        midTile = (i1 + 1) % 8;
-        opp1 = (i1 + 4) % 8;
-        opp2 = (i2 + 4) % 8;
-        oppMid = (midTile + 4) % 8;
+        midTile = (i1 + 1) & 7;
+        opp1 = (i1 + 4) & 7;
+        opp2 = (i2 + 4) & 7;
+        oppMid = (midTile + 4) & 7;
     }
 
     public static bool Find4ConnectedInactiveTiles(bool[] inner, bool[] outer, out int[] innerTiles, out int[] outerTiles)
     {
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < 8; ++i)
         {
-            var next = (i + 1) % 8;
+            var next = (i + 1) & 7;
             if (!inner[i] && !outer[i] && !inner[next] && !outer[next])
             {
                 innerTiles = [i, next];
@@ -201,11 +206,11 @@ class FloorTiles(BossModule module) : BossComponent(module)
                         stack[sp++] = (idx, 1 - r);
 
                     // Neighbors
-                    var prev = (idx + 7) % 8;
+                    var prev = (idx + 7) & 7;
                     if (!visited[prev, r] && (r == 0 ? inner[prev] : outer[prev]))
                         stack[sp++] = (prev, r);
 
-                    var next = (idx + 1) % 8;
+                    var next = (idx + 1) & 7;
                     if (!visited[next, r] && (r == 0 ? inner[next] : outer[next]))
                         stack[sp++] = (next, r);
                 }

@@ -23,7 +23,7 @@ class DestructiveCharge(BossModule module) : Components.GenericAOEs(module)
         };
         if (dir != default)
         {
-            var pos = WPos.ClampToGrid(Module.PrimaryActor.Position);
+            var pos = Module.PrimaryActor.Position.Quantized();
             var act = WorldState.FutureTime(16.1d);
             AOEs.Add(new(_shape, pos, dir, act));
             AOEs.Add(new(_shape, pos, dir + 180f.Degrees(), act));

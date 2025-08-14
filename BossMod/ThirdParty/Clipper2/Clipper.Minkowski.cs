@@ -1,10 +1,10 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  15 October 2022                                                 *
-* Website   :  http://www.angusj.com                                           *
-* Copyright :  Angus Johnson 2010-2022                                         *
+* Date      :  10 October 2024                                                 *
+* Website   :  https://www.angusj.com                                          *
+* Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  Minkowski Sum and Difference                                    *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #nullable enable
@@ -12,7 +12,7 @@ using System;
 
 namespace Clipper2Lib
 {
-  public sealed class Minkowski
+  public static class Minkowski
   {
     private static Paths64 MinkowskiInternal(Path64 pattern, Path64 path, bool isSum, bool isClosed)
     {
@@ -45,6 +45,7 @@ namespace Clipper2Lib
           tmp.Add(path2);
         }
       }
+
       Paths64 result = new Paths64((pathLen - delta) * patLen);
       int g = isClosed ? pathLen - 1 : 0;
 

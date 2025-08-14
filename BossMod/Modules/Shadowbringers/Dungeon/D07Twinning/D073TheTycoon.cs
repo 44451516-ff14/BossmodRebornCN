@@ -41,7 +41,7 @@ sealed class TemporalParadoxMagitekRay(BossModule module) : Components.GenericAO
 
     public override void OnActorCreated(Actor actor)
     {
-        void AddAOE(AOEShapeRect shape, double delay) => _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(delay)));
+        void AddAOE(AOEShapeRect shape, double delay) => _aoes.Add(new(shape, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(delay)));
         if (actor.OID == (uint)OID.Lasers)
         {
             AddAOE(rectShort, 6.5d);

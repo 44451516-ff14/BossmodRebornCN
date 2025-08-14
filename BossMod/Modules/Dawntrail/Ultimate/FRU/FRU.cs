@@ -1,17 +1,17 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2QuadrupleSlap(BossModule module) : Components.TankSwap(module, (uint)AID.QuadrupleSlapFirst, (uint)AID.QuadrupleSlapFirst, (uint)AID.QuadrupleSlapSecond, 4.1f, null, true);
-class P3Junction(BossModule module) : Components.CastCounter(module, (uint)AID.Junction);
-class P3BlackHalo(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.BlackHalo, new AOEShapeCone(60f, 45f.Degrees())); // TODO: verify angle
+sealed class P2QuadrupleSlap(BossModule module) : Components.TankSwap(module, (uint)AID.QuadrupleSlapFirst, (uint)AID.QuadrupleSlapFirst, (uint)AID.QuadrupleSlapSecond, 4.1f, null, true);
+sealed class P3Junction(BossModule module) : Components.CastCounter(module, (uint)AID.Junction);
+sealed class P3BlackHalo(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.BlackHalo, new AOEShapeCone(60f, 45f.Degrees())); // TODO: verify angle
 
-class P4HallowedWings(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HallowedWingsL, (uint)AID.HallowedWingsR], new AOEShapeRect(80f, 20f));
+sealed class P4HallowedWings(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HallowedWingsL, (uint)AID.HallowedWingsR], new AOEShapeRect(80f, 20f));
 
-class P5ParadiseLost(BossModule module) : Components.CastCounter(module, (uint)AID.ParadiseLostP5AOE);
+sealed class P5ParadiseLost(BossModule module) : Components.CastCounter(module, (uint)AID.ParadiseLostP5AOE);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1006, NameID = 9707, PlanLevel = 100)]
-public class FRU(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena with { IsCircle = true })
+public sealed class FRU(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(100f, 100f), 20f, 64)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(100f, 100f), 20f, 64)]) { IsCircle = true };
     public static readonly ArenaBoundsSquare PathfindHugBorderBounds = new(20f); // this is a hack to allow precise positioning near border by some mechanics, TODO reconsider
 
     private Actor? _bossP2;

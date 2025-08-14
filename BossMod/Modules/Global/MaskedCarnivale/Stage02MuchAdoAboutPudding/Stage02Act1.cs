@@ -15,9 +15,9 @@ public enum AID : uint
     GoldenTongue = 14265 // Boss/Marshmallow/Bavarois->self, 5.0s cast, single-target
 }
 
-class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
+sealed class GoldenTongue(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldenTongue);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -25,7 +25,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -33,7 +33,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage02Act1States : StateMachineBuilder
+sealed class Stage02Act1States : StateMachineBuilder
 {
     public Stage02Act1States(BossModule module) : base(module)
     {
@@ -57,7 +57,7 @@ class Stage02Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 612, NameID = 8078, SortOrder = 1)]
-public class Stage02Act1 : BossModule
+public sealed class Stage02Act1 : BossModule
 {
     public Stage02Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

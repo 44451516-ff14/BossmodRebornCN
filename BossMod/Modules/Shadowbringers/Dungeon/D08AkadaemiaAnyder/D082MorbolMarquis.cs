@@ -61,11 +61,11 @@ class ExtensibleTendrilsPutridBreath(BossModule module) : Components.GenericAOEs
         {
             var delay1 = activation.AddSeconds((5d - remainingCasts) * 6.1d);
             if ((delay1 - WorldState.CurrentTime).TotalSeconds <= 2.5d)
-                aoes.Add(new(cross, WPos.ClampToGrid(Module.PrimaryActor.Position), Module.PrimaryActor.Rotation + a45, delay1));
+                aoes.Add(new(cross, Module.PrimaryActor.Position.Quantized(), Module.PrimaryActor.Rotation + a45, delay1));
         }
         var delay2 = activation.AddSeconds(27.1d);
         if (activation != default && (delay2 - WorldState.CurrentTime).TotalSeconds <= 4.9f)
-            aoes.Add(new(cone, WPos.ClampToGrid(Module.PrimaryActor.Position), Module.PrimaryActor.Rotation, delay2));
+            aoes.Add(new(cone, Module.PrimaryActor.Position.Quantized(), Module.PrimaryActor.Rotation, delay2));
         return CollectionsMarshal.AsSpan(aoes);
     }
 

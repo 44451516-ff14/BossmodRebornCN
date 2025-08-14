@@ -19,11 +19,13 @@ sealed class Backdraft(BossModule module) : Components.SimpleKnockbacks(module, 
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
+            ref readonly var c = ref Casters.Ref(0);
             var forbidden = new Func<WPos, float>[4];
             for (var i = 0; i < 4; ++i)
-                forbidden[i] = ShapeDistance.InvertedCone(source.Position, 5f, a45 + a90 * i, a225);
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(source.CastInfo));
+            {
+                forbidden[i] = ShapeDistance.InvertedCone(c.Origin, 5f, a45 + a90 * i, a225);
+            }
+            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), c.Activation);
         }
     }
 }

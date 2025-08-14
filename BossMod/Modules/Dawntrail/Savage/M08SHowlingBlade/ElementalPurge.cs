@@ -1,22 +1,26 @@
 namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
-sealed class HuntersHarvestBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HuntersHarvest)
+sealed class HuntersHarvestBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HuntersHarvest, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     public static readonly AOEShapeCone Cone = new(40f, 105f.Degrees());
     public BitMask Bind;
+    private Actor? spreadTarget;
+    private readonly M08SHowlingBlade bossmod = (M08SHowlingBlade)module;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.StalkingStoneWind && actor.Role == Role.Tank)
         {
+            spreadTarget = actor;
             var party = Raid.WithoutSlot(true, true, true);
             var len = party.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (p.Role == Role.Tank && p != actor)
                 {
-                    CurrentBaits.Add(new(Module.Enemies((uint)OID.BossP2)[0], p, Cone, WorldState.FutureTime(10.3d)));
+                    CurrentBaits.Add(new(bossmod.BossP2()!, p, Cone, WorldState.FutureTime(10.3d)));
+                    return;
                 }
             }
         }
@@ -43,15 +47,25 @@ sealed class HuntersHarvestBait(BossModule module) : Components.GenericBaitAway(
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Bind)
-            Bind[Raid.FindSlot(actor.InstanceID)] = true;
+        {
+            Bind.Set(Raid.FindSlot(actor.InstanceID));
+        }
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        if (actor.Role == Role.Tank && spreadTarget is Actor t && t != actor && bossmod.BossP2()!.TargetID != actor.InstanceID)
+        {
+            hints.Add("Provoke for tankbuster!");
+        }
     }
 }
 
 sealed class HuntersHarvest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HuntersHarvest, HuntersHarvestBait.Cone);
 
-sealed class GeotemporalBlast(BossModule module) : Components.GenericBaitAway(module, (uint)AID.GeotemporalBlast, tankbuster: true)
+sealed class GeotemporalBlast(BossModule module) : Components.GenericBaitAway(module, (uint)AID.GeotemporalBlast, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
-    private static readonly AOEShapeCircle circle = new(16);
+    private static readonly AOEShapeCircle circle = new(16f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -64,7 +78,7 @@ sealed class GeotemporalBlast(BossModule module) : Components.GenericBaitAway(mo
 
 sealed class AerotemporalBlast(BossModule module) : Components.GenericBaitStack(module, (uint)AID.AerotemporalBlast)
 {
-    private static readonly AOEShapeCircle circle = new(6);
+    private static readonly AOEShapeCircle circle = new(6f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -79,7 +93,9 @@ sealed class AerotemporalBlast(BossModule module) : Components.GenericBaitStack(
                 {
                     ref readonly var p = ref party[i];
                     if (p.Item2.Role == Role.Tank)
-                        forbidden[p.Item1] = true;
+                    {
+                        forbidden.Set(p.Item1);
+                    }
                 }
                 CurrentBaits.Add(new(actor, actor, circle, WorldState.FutureTime(10.3d), forbidden));
             }

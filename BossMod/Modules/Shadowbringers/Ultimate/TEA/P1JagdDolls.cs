@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P1JagdDolls(BossModule module) : BossComponent(module)
+sealed class P1JagdDolls(BossModule module) : BossComponent(module)
 {
-    public int NumExhausts { get; private set; }
-    private readonly List<Actor> _dolls = module.Enemies(OID.JagdDoll);
+    public int NumExhausts;
+    private readonly List<Actor> _dolls = module.Enemies((uint)OID.JagdDoll);
     private readonly HashSet<ulong> _exhaustsDone = [];
 
     private const float _exhaustRadius = 8.8f;
@@ -21,7 +21,7 @@ class P1JagdDolls(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var t in hints.PotentialTargets.Where(t => (OID)t.Actor.OID == OID.JagdDoll))
+        foreach (var t in hints.PotentialTargets.Where(t => t.Actor.OID == (uint)OID.JagdDoll))
             t.ForbidDOTs = true;
     }
 
@@ -29,12 +29,12 @@ class P1JagdDolls(BossModule module) : BossComponent(module)
     {
         foreach (var doll in ActiveDolls)
         {
-            Arena.Actor(doll, doll.HPMP.CurHP < doll.HPMP.MaxHP / 4 ? Colors.Enemy : Colors.Vulnerable);
+            Arena.Actor(doll, doll.HPMP.CurHP < doll.HPMP.MaxHP / 4u ? default : Colors.Vulnerable);
 
             var tether = WorldState.Actors.Find(doll.Tether.Target);
             if (tether != null)
             {
-                Arena.AddLine(doll.Position, tether.Position, Colors.Danger);
+                Arena.AddLine(doll.Position, tether.Position);
             }
 
             if (NumExhausts < 2)
@@ -46,7 +46,7 @@ class P1JagdDolls(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.Exhaust && NumExhausts < 2)
+        if (spell.Action.ID == (uint)AID.Exhaust && NumExhausts < 2)
         {
             if (!_exhaustsDone.Contains(caster.InstanceID))
             {

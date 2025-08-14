@@ -10,7 +10,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DecisiveBattleTriton)
-            _aoe = new(donut, FTB2DeadStars.ArenaCenter, default, Module.CastFinishAt(spell, 1.1f));
+        {
+            _aoe = new(donut, FTB2DeadStars.ArenaCenter, default, Module.CastFinishAt(spell, 1.1d));
+        }
     }
 
     public override void OnActorCreated(Actor actor)
@@ -18,7 +20,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.Deathwall)
         {
             Arena.Bounds = FTB2DeadStars.DefaultArena;
-            Arena.Center = WPos.ClampToGrid(FTB2DeadStars.ArenaCenter);
+            Arena.Center = FTB2DeadStars.ArenaCenter.Quantized();
             _aoe = null;
         }
     }

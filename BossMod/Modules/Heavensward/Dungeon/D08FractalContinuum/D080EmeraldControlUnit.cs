@@ -41,7 +41,7 @@ class ClockworkReservoir(BossModule module) : Components.Voidzone(module, 3f, Ge
         for (var i = 0; i < count; ++i)
         {
             var z = enemies[i];
-            if (z.EventState != 7u)
+            if (z.EventState != 7)
                 voidzones[index++] = z;
         }
         return voidzones[..index];
@@ -58,7 +58,7 @@ class D080EmeraldControlUnitStates : StateMachineBuilder
             .ActivateOnEnter<Exhaust>()
             .ActivateOnEnter<SpawnReservoir>()
             .ActivateOnEnter<ClockworkReservoir>()
-            .Raw.Update = () => module.PrimaryActor.EventState == 7u;
+            .Raw.Update = () => module.PrimaryActor.EventState == 7;
     }
 }
 

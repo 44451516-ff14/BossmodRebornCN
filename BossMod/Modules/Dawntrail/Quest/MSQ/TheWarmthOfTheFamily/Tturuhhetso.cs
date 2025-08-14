@@ -56,8 +56,8 @@ public enum IconID : uint
     Spreadmarker = 140 // WukLamat/Koana/player->self
 }
 
-class CandescentRayLineStack(BossModule module) : Components.LineStack(module, aidMarker: null, (uint)AID.CandescentRayLineStack, minStackSize: 3, maxStackSize: 3);
-class CandescentRayTB(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.CandescentRayTB, new AOEShapeRect(50f, 4f))
+sealed class CandescentRayLineStack(BossModule module) : Components.LineStack(module, aidMarker: default, (uint)AID.CandescentRayLineStack, minStackSize: 3, maxStackSize: 3);
+sealed class CandescentRayTB(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.CandescentRayTB, new AOEShapeRect(50f, 4f))
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -82,9 +82,9 @@ class CandescentRayTB(BossModule module) : Components.CastSharedTankbuster(modul
     }
 }
 
-class SearingSwell(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SearingSwell, new AOEShapeCone(40f, 22.5f.Degrees()));
-class Ensnare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ensnare, 6f);
-class TriceraSnare(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.TriceraSnare, 6f, 4.7f)
+sealed class SearingSwell(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SearingSwell, new AOEShapeCone(40f, 22.5f.Degrees()));
+sealed class Ensnare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ensnare, 6f);
+sealed class TriceraSnare(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.TriceraSnare, 6f, 4.7f)
 {
     public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
     {
@@ -93,10 +93,10 @@ class TriceraSnare(BossModule module) : Components.SpreadFromIcon(module, (uint)
     }
 }
 
-class PrimordialRoar1(BossModule module) : Components.RaidwideCast(module, (uint)AID.PrimordialRoar1);
-class PrimordialRoar2(BossModule module) : Components.RaidwideCast(module, (uint)AID.PrimordialRoar2);
+sealed class PrimordialRoar1(BossModule module) : Components.RaidwideCast(module, (uint)AID.PrimordialRoar1);
+sealed class PrimordialRoar2(BossModule module) : Components.RaidwideCast(module, (uint)AID.PrimordialRoar2);
 
-class OrbCollecting(BossModule module) : BossComponent(module)
+sealed class OrbCollecting(BossModule module) : BossComponent(module)
 {
     public static List<Actor> GetOrbs(BossModule module)
     {
@@ -147,7 +147,7 @@ class OrbCollecting(BossModule module) : BossComponent(module)
     }
 }
 
-class FlameBlast(BossModule module) : Components.GenericAOEs(module)
+sealed class FlameBlast(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(20f, 2f, 20f);
     private readonly List<AOEInstance> _aoes = [];
@@ -191,9 +191,9 @@ class FlameBlast(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Firestorm(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.Firestorm], 10f, 1d, 10);
+sealed class Firestorm(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.Firestorm], 10f, 1d, 10);
 
-class TturuhhetsoStates : StateMachineBuilder
+sealed class TturuhhetsoStates : StateMachineBuilder
 {
     public TturuhhetsoStates(BossModule module) : base(module)
     {
@@ -212,7 +212,7 @@ class TturuhhetsoStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70785, NameID = 13593)]
-public class Tturuhhetso(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class Tturuhhetso(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(395.735f, -45.365f), 19.5f, 20)]);
 

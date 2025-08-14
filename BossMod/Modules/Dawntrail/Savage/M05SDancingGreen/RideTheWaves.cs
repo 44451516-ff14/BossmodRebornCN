@@ -10,7 +10,7 @@ sealed class RideTheWaves(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x04u && AOEs.Count == 0)
+        if (index == 0x04 && AOEs.Count == 0)
         {
             var pattern = new (AOEShapeRect shape, float x, float y)[]
             {

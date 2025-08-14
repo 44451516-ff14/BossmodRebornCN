@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class DSW2States : StateMachineBuilder
+sealed class DSW2States : StateMachineBuilder
 {
     private readonly DSW2 _module;
 
     private bool IsReset => Module.PrimaryActor.IsDestroyed && (_module.ArenaFeatures?.IsDestroyed ?? true);
-    private bool IsResetOrRewindFailed => IsReset || Module.Enemies(OID.BossP2).Count != 0;
+    private bool IsResetOrRewindFailed => IsReset || Module.Enemies((uint)OID.BossP2).Count != 0;
     private bool IsDead(Actor? actor) => actor != null && actor.IsDeadOrDestroyed;
     private bool IsEffectivelyDead(Actor? actor) => actor != null && (actor.IsDeadOrDestroyed || !actor.IsTargetable && actor.HPMP.CurHP <= 1);
 
@@ -115,9 +115,9 @@ class DSW2States : StateMachineBuilder
             .ActivateOnEnter<P2AscalonsMercyConcealed>()
             .DeactivateOnExit<P2AscalonsMercyConcealed>()
             .SetHint(StateMachine.StateHint.PositioningEnd);
-        ComponentCondition<P2AscalonMight>(id + 0x1000, 4.9f, comp => comp.NumCasts > 2, "3x tankbuster cones")
-            .ActivateOnEnter<P2AscalonMight>()
-            .DeactivateOnExit<P2AscalonMight>()
+        ComponentCondition<AscalonMight>(id + 0x1000, 4.9f, comp => comp.NumCasts > 2, "3x tankbuster cones")
+            .ActivateOnEnter<AscalonMight>()
+            .DeactivateOnExit<AscalonMight>()
             .SetHint(StateMachine.StateHint.Tankbuster);
     }
 
@@ -165,9 +165,9 @@ class DSW2States : StateMachineBuilder
     {
         Cast(id, (uint)AID.HeavenlyHeel, delay, 4, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ComponentCondition<P2AscalonMight>(id + 0x1000, 6.5f, comp => comp.NumCasts > 2, "3x tankbuster cones")
-            .ActivateOnEnter<P2AscalonMight>()
-            .DeactivateOnExit<P2AscalonMight>();
+        ComponentCondition<AscalonMight>(id + 0x1000, 6.5f, comp => comp.NumCasts > 2, "3x tankbuster cones")
+            .ActivateOnEnter<AscalonMight>()
+            .DeactivateOnExit<AscalonMight>();
     }
 
     private void P2SanctityOfTheWard(uint id, float delay)
@@ -369,9 +369,9 @@ class DSW2States : StateMachineBuilder
     {
         ActorCast(id, _module.BossP5, (uint)AID.HeavenlyHeel, delay, 4, true, "Tankbuster")
             .SetHint(StateMachine.StateHint.Tankbuster);
-        ComponentCondition<P5AscalonMight>(id + 0x1000, 6.5f, comp => comp.NumCasts > 2, "3x tankbuster cones")
-            .ActivateOnEnter<P5AscalonMight>()
-            .DeactivateOnExit<P5AscalonMight>();
+        ComponentCondition<AscalonMight>(id + 0x1000, 6.5f, comp => comp.NumCasts > 2, "3x tankbuster cones")
+            .ActivateOnEnter<AscalonMight>()
+            .DeactivateOnExit<AscalonMight>();
     }
 
     private void P5WrathOfHeavens(uint id, float delay)
@@ -403,17 +403,15 @@ class DSW2States : StateMachineBuilder
         ComponentCondition<P5WrathOfTheHeavensAscalonsMercyRevealed>(id + 0x202, 0.8f, comp => comp.NumCasts > 0, "Proteans")
             .DeactivateOnExit<P5WrathOfTheHeavensAscalonsMercyRevealed>()
             .DeactivateOnExit<P5WrathOfTheHeavensTwister>(); // twisters disappear together with protean hits
-        ComponentCondition<P5Cauterize1>(id + 0x210, 0.9f, comp => comp.Casters.Count > 0, "Green marker bait")
-            .ExecOnEnter<P5WrathOfTheHeavensChainLightning>(comp => comp.ShowSpreads(5.2f))
-            .ActivateOnEnter<P5Cauterize1>()
-            .ActivateOnEnter<P5Cauterize2>()
+        ComponentCondition<P5Cauterize>(id + 0x210, 0.9f, comp => comp.Casters.Count > 0, "Green marker bait")
+            .ExecOnEnter<P5WrathOfTheHeavensChainLightning>(comp => comp.ShowSpreads(5.2d))
+            .ActivateOnEnter<P5Cauterize>()
             .ActivateOnEnter<P5WrathOfTheHeavensAltarFlare>() // first cast starts right as proteans resolve
             .ActivateOnEnter<P5WrathOfTheHeavensLiquidHeaven>() // first cast happens right after proteans, then every 1.1s
             .DeactivateOnExit<P5WrathOfTheHeavensCauterizeBait>();
         ComponentCondition<P5WrathOfTheHeavensEmptyDimension>(id + 0x220, 1.2f, comp => comp.Casters.Count > 0);
         ComponentCondition<P5WrathOfTheHeavensEmptyDimension>(id + 0x230, 5.0f, comp => comp.NumCasts > 0, "Trio 1 resolve")
-            .DeactivateOnExit<P5Cauterize1>() // these casts resolve ~0.2s before donut
-            .DeactivateOnExit<P5Cauterize2>()
+            .DeactivateOnExit<P5Cauterize>() // these casts resolve ~0.2s before donut
             .DeactivateOnExit<P5WrathOfTheHeavensEmptyDimension>();
 
         ActorTargetable(id + 0x300, _module.BossP5, true, 1.0f, "Boss reappears")
@@ -439,13 +437,13 @@ class DSW2States : StateMachineBuilder
         ActorCastStart(id + 0x120, _module.BossP5, (uint)AID.LightningStorm, 4.1f, true);
         ComponentCondition<P5DeathOfTheHeavensHeavyImpact>(id + 0x130, 4.1f, comp => comp.NumCasts >= 1)
             .ActivateOnEnter<P5TwistingDive>() // TODO: consider activating earlier, when PATE's happen
-            .ActivateOnEnter<P5Cauterize1>()
+            .ActivateOnEnter<P5Cauterize>()
             .ActivateOnEnter<P5SpearOfTheFury>()
             .ActivateOnEnter<P5DeathOfTheHeavensLightningStorm>();
         ActorCastEnd(id + 0x140, _module.BossP5, 1.6f, true);
         ComponentCondition<P5TwistingDive>(id + 0x150, 0.3f, comp => comp.NumCasts > 0, "Charges")
             .DeactivateOnExit<P5TwistingDive>()
-            .DeactivateOnExit<P5Cauterize1>() // these all three happen at the same time
+            .DeactivateOnExit<P5Cauterize>() // these all three happen at the same time
             .DeactivateOnExit<P5SpearOfTheFury>();
         ComponentCondition<P5DeathOfTheHeavensHeavyImpact>(id + 0x151, 0.1f, comp => comp.NumCasts >= 2, "Ring 2");
         ComponentCondition<P5DeathOfTheHeavensLightningStorm>(id + 0x152, 0.1f, comp => !comp.Active, "Spreads")

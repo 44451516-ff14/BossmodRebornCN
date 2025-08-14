@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P6HotWingTail(BossModule module) : Components.GenericAOEs(module)
+sealed class P6HotWingTail(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 

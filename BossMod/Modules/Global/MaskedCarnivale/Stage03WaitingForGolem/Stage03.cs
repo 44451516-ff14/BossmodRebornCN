@@ -15,8 +15,8 @@ public enum AID : uint
     Obliterate = 14365 // Boss->self, 6.0s cast, range 60 circle
 }
 
-class BoulderClap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BoulderClap, new AOEShapeCone(14f, 60f.Degrees()));
-class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.EarthenHeart, GetVoidzones, 1.2f)
+sealed class BoulderClap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BoulderClap, new AOEShapeCone(14f, 60f.Degrees()));
+sealed class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.EarthenHeart, GetVoidzones, 1.2f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -36,9 +36,9 @@ class EarthenHeart(BossModule module) : Components.VoidzoneAtCastTarget(module, 
         return voidzones[..index];
     }
 }
-class Obliterate(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Obliterate);
+sealed class Obliterate(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Obliterate);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -46,7 +46,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -54,7 +54,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage03States : StateMachineBuilder
+sealed class Stage03States : StateMachineBuilder
 {
     public Stage03States(BossModule module) : base(module)
     {
@@ -68,7 +68,7 @@ class Stage03States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 613, NameID = 8084)]
-public class Stage03 : BossModule
+public sealed class Stage03 : BossModule
 {
     public Stage03(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

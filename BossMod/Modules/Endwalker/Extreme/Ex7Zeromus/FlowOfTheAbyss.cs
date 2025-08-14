@@ -44,7 +44,7 @@ class FlowOfTheAbyssAkhRhai(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.AkhRhaiStart:
-                _aoes.Add(new(_shape, WPos.ClampToGrid(caster.Position)));
+                _aoes.Add(new(_shape, caster.Position.Quantized()));
                 break;
             case (uint)AID.AkhRhaiAOE:
                 if (++NumCasts >= _aoes.Count * 10)

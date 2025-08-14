@@ -38,7 +38,7 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module, (uint)AID.
         for (var i = 0; i < count; ++i)
         {
             var t = Termini[i];
-            aoes[i] = new(rect, t.Position, t.Rotation, Activation: CastFinish ?? WorldState.FutureTime(10d));
+            aoes[i] = new(rect, t.Position, t.Rotation, activation: CastFinish ?? WorldState.FutureTime(10d));
         }
         return aoes;
     }

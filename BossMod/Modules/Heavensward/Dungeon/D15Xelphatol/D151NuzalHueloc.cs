@@ -50,7 +50,7 @@ class HotBlast(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HotBlast)
-            _aoe = new(circle, WPos.ClampToGrid(Module.PrimaryActor.Position), default, Module.CastFinishAt(spell), Colors.SafeFromAOE);
+            _aoe = new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell), Colors.SafeFromAOE);
     }
 
     public override void Update()

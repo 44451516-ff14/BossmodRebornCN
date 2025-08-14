@@ -29,9 +29,9 @@ public enum AID : uint
     Disseminate = 14899 // Serpent->self, 2.0s cast, range 6+R circle, casts on death of serpents
 }
 
-class HighVoltage(BossModule module) : Components.CastInterruptHint(module, (uint)AID.HighVoltage);
+sealed class HighVoltage(BossModule module) : Components.CastInterruptHint(module, (uint)AID.HighVoltage);
 
-class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, true)
+sealed class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, true)
 {
     private static readonly Angle a135 = 135f.Degrees();
     private static readonly AOEShape[] _shapes = [new AOEShapeCone(5.5f, a135), new AOEShapeDonutSector(5.5f, 10.5f, a135), new AOEShapeDonutSector(10.5f, 15.5f, a135)];
@@ -39,7 +39,9 @@ class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, tr
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BallastVisual1)
-            AddSequence(spell.LocXZ, Module.CastFinishAt(spell, 3.6f), spell.Rotation);
+        {
+            AddSequence(spell.LocXZ, Module.CastFinishAt(spell, 3.6d), spell.Rotation);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -58,13 +60,13 @@ class Ballast(BossModule module) : Components.ConcentricAOEs(module, _shapes, tr
     }
 }
 
-class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PiercingLaser, new AOEShapeRect(32.3f, 4f));
-class RepellingCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RepellingCannons, 12.3f);
-class Superstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Superstorm2, new AOEShapeDonut(8f, 20f));
-class Spellsword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spellsword, new AOEShapeCone(7.1f, 60f.Degrees()));
-class Disseminate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Disseminate, 7.2f);
+sealed class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PiercingLaser, new AOEShapeRect(32.3f, 4f));
+sealed class RepellingCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RepellingCannons, 12.3f);
+sealed class Superstorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Superstorm2, new AOEShapeDonut(8f, 20f));
+sealed class Spellsword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spellsword, new AOEShapeCone(7.1f, 60f.Degrees()));
+sealed class Disseminate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Disseminate, 7.2f);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -72,7 +74,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage15States : StateMachineBuilder
+sealed class Stage15States : StateMachineBuilder
 {
     public Stage15States(BossModule module) : base(module)
     {
@@ -89,7 +91,7 @@ class Stage15States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 625, NameID = 8109)]
-public class Stage15 : BossModule
+public sealed class Stage15 : BossModule
 {
     public Stage15(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

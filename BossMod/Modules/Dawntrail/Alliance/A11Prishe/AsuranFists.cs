@@ -6,7 +6,7 @@ sealed class AsuranFists(BossModule module) : Components.GenericTowers(module)
     {
         if (spell.Action.ID == (uint)AID.AsuranFistsVisual)
         {
-            Towers.Add(new(spell.LocXZ, 6f, PartyState.MaxAllianceSize, PartyState.MaxAllianceSize, activation: Module.CastFinishAt(spell, 0.5f)));
+            Towers.Add(new(spell.LocXZ, 6f, PartyState.MaxAllianceSize, PartyState.MaxAllianceSize, activation: Module.CastFinishAt(spell, 0.5d)));
         }
     }
 
@@ -14,7 +14,7 @@ sealed class AsuranFists(BossModule module) : Components.GenericTowers(module)
     {
         if (Towers.Count != 0 && actor.OID == (uint)OID.Tower && state == 0x00100020u)
         {
-            Towers[0] = Towers[0] with { Position = actor.Position }; // spell position can be about one or two pixels off the real tower position...
+            Towers.Ref(0).Position = actor.Position; // spell position can be about one or two pixels off the real tower position...
         }
     }
 

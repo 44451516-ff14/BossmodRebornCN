@@ -55,7 +55,10 @@ sealed class LawsOfIce(BossModule module) : Components.StayMove(module)
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.LawsOfIce)
-            SetState(Raid.FindSlot(actor.InstanceID), new(Requirement.Move, WorldState.FutureTime(4.2d)));
+        {
+            PlayerState state = new(Requirement.Move, WorldState.FutureTime(4.2d));
+            SetState(Raid.FindSlot(actor.InstanceID), ref state);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

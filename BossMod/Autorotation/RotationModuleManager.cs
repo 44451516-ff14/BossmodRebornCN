@@ -50,17 +50,17 @@ public sealed class RotationModuleManager : IDisposable
         (uint)Roleplay.SID.BorrowedFlesh, // used specifically for In from the Cold (Endwalker)
         (uint)Roleplay.SID.FreshPerspective, // sapphire weapon quest
 
-        // hacking interlude gimmick in Paradigm's Breach boss 3
-        // (uint)Shadowbringers.Alliance.A34RedGirl.SID.Program000000,
-        // (uint)Shadowbringers.Alliance.A34RedGirl.SID.ProgramFFFFFFF,
+        // hacking intermission gimmick in Tower of Paradigm's Breach boss 3
+        (uint)Shadowbringers.Alliance.A33RedGirl.SID.Program000000,
+        (uint)Shadowbringers.Alliance.A33RedGirl.SID.ProgramFFFFFFF,
 
-        565, // "Transfiguration" from certain pomanders in Palace of the Dead
-        439, // "Toad", palace of the dead
-        1546, // "Odder", heaven-on-high
-        3502, // "Owlet", EO
-        404, // "Transporting", not a transformation but prevents actions
-        4235, // "Rage" status from Phantom Berserker, prevents all actions and movement
-        4376, // "Transporting", variant in Occult Crescent
+        565u, // "Transfiguration" from certain pomanders in Palace of the Dead
+        439u, // "Toad", palace of the dead
+        1546u, // "Odder", heaven-on-high
+        3502u, // "Owlet", EO
+        404u, // "Transporting", not a transformation but prevents actions
+        4235u, // "Rage" status from Phantom Berserker, prevents all actions and movement
+        4376u, // "Transporting", variant in Occult Crescent
     ];
 
     public static bool IsTransformStatus(ActorStatus st) => TransformationStatuses.Contains(st.ID);
@@ -90,6 +90,15 @@ public sealed class RotationModuleManager : IDisposable
 
     public void Dispose()
     {
+        if (ActiveModules != null)
+        {
+            var count = ActiveModules.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                ActiveModules[i].Module.Dispose();
+            }
+            ActiveModules = null;
+        }
         _subscriptions.Dispose();
     }
 
@@ -218,8 +227,16 @@ public sealed class RotationModuleManager : IDisposable
 
     private void DirtyActiveModules(bool condition)
     {
-        if (condition)
-            ActiveModules = null;
+        if (!condition || ActiveModules == null)
+        {
+            return;
+        }
+        var count = ActiveModules.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            ActiveModules[i].Module.Dispose();
+        }
+        ActiveModules = null;
     }
 
     private void OnCombatChanged(Actor actor)

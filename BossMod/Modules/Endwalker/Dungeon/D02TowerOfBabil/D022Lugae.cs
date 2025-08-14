@@ -51,13 +51,13 @@ class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
         if (CurrentMechanic == Mechanic.Downpour)
         {
             var breathless = _status[slot];
-            aoes[0] = new(breathless ? square with { InvertForbiddenZone = true } : square, toad, Color: breathless ? Colors.SafeFromAOE : 0);
+            aoes[0] = new(breathless ? square with { InvertForbiddenZone = true } : square, toad, color: breathless ? Colors.SafeFromAOE : default);
             aoes[1] = new(square, mini);
         }
         else if (CurrentMechanic == Mechanic.Chakram)
         {
             var minimum = !avoidSquares && !_status[slot];
-            aoes[0] = new(minimum ? square with { InvertForbiddenZone = true } : square, mini, Color: minimum ? Colors.SafeFromAOE : 0);
+            aoes[0] = new(minimum ? square with { InvertForbiddenZone = true } : square, mini, color: minimum ? Colors.SafeFromAOE : default);
             aoes[1] = new(square, toad);
         }
         return aoes;
@@ -79,7 +79,7 @@ class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index is 0x01 or 0x02 && state == 0x00080004)
+        if (index is 0x01 or 0x02 && state == 0x00080004u)
         {
             avoidSquares = false;
             CurrentMechanic = Mechanic.None;

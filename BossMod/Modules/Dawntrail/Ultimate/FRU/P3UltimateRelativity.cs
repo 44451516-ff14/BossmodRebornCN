@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P3UltimateRelativity(BossModule module) : Components.CastCounter(module, default)
+sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(module, default)
 {
     public struct PlayerState
     {
@@ -115,8 +115,8 @@ class P3UltimateRelativity(BossModule module) : Components.CastCounter(module, d
                     ref var state = ref States[slot];
                     state.FireOrder = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds switch
                     {
-                        < 15 => 1,
-                        < 25 => 2,
+                        < 15d => 1,
+                        < 25d => 2,
                         _ => 3
                     };
                     state.LaserOrder = state.FireOrder switch
@@ -286,7 +286,7 @@ class P3UltimateRelativity(BossModule module) : Components.CastCounter(module, d
     }
 }
 
-class P3UltimateRelativityDarkFireUnholyDarkness(BossModule module) : Components.UniformStackSpread(module, 6f, 8f, 5, alwaysShowSpreads: true)
+sealed class P3UltimateRelativityDarkFireUnholyDarkness(BossModule module) : Components.UniformStackSpread(module, 6f, 8f, 5, alwaysShowSpreads: true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // handled by main component
 
@@ -306,7 +306,7 @@ class P3UltimateRelativityDarkFireUnholyDarkness(BossModule module) : Components
     }
 }
 
-class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.UltimateRelativitySinboundMeltdownAOEFirst)
+sealed class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.UltimateRelativitySinboundMeltdownAOEFirst)
 {
     private readonly P3UltimateRelativity? _rel = module.FindComponent<P3UltimateRelativity>();
 
@@ -357,7 +357,7 @@ class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Components.G
                 // draw extra rotation hints for correctly baited hourglass
                 // note: we don't want to draw 'short' edges of the rectangle (farther one is far outside arena bounds anyway, and closer one messes visualization up too much
                 var rot = _rel.LaserRotationAt(bait.Source.Position);
-                for (int i = 0; i < 10; ++i)
+                for (var i = 0; i < 10; ++i)
                 {
                     var dir = (bait.Rotation + i * rot).ToDirection();
                     var side = _shape.HalfWidth * dir.OrthoR();
@@ -385,7 +385,7 @@ class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Components.G
     private WPos AssignedHourglass(int slot) => Arena.Center + 9.5f * (_rel?.States[slot].AssignedDir ?? default);
 }
 
-class P3UltimateRelativitySinboundMeltdownAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class P3UltimateRelativitySinboundMeltdownAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly P3UltimateRelativity? _rel = module.FindComponent<P3UltimateRelativity>();
     private readonly List<AOEInstance> _aoes = [];
@@ -415,12 +415,12 @@ class P3UltimateRelativitySinboundMeltdownAOE(BossModule module) : Components.Ge
     }
 }
 
-class P3UltimateRelativityDarkBlizzard(BossModule module) : Components.GenericAOEs(module, (uint)AID.UltimateRelativityDarkBlizzard)
+sealed class P3UltimateRelativityDarkBlizzard(BossModule module) : Components.GenericAOEs(module, (uint)AID.UltimateRelativityDarkBlizzard)
 {
     private readonly List<Actor> _sources = [];
     private DateTime _activation;
 
-    private static readonly AOEShapeDonut _shape = new(3, 12); // TODO: verify inner radius
+    private static readonly AOEShapeDonut _shape = new(3f, 12f); // TODO: verify inner radius
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -447,7 +447,7 @@ class P3UltimateRelativityDarkBlizzard(BossModule module) : Components.GenericAO
     }
 }
 
-class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(module)
+sealed class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(module)
 {
     private readonly P3UltimateRelativity? _rel = module.FindComponent<P3UltimateRelativity>();
     private readonly List<WPos> _eyes = [];
@@ -512,7 +512,7 @@ class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(module)
     private bool HitByEye(WPos pos, Angle rot, WPos eye) => rot.ToDirection().Dot((eye - pos).Normalized()) >= 0.707107f; // 45-degree
 }
 
-class P3ShellCrusher(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8, includeDeadTargets: true)
+sealed class P3ShellCrusher(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8, includeDeadTargets: true)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

@@ -19,7 +19,7 @@ sealed class GrandCrossflameAOE(BossModule module) : Components.SimpleAOEs(modul
 sealed class TimeEruption(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ReverseTimeEruption1, (uint)AID.ReverseTimeEruption2,
 (uint)AID.TimeEruption1, (uint)AID.TimeEruption2], new AOEShapeRect(20f, 10f), 2, 4);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDaldriada, GroupID = 778, NameID = 9384, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.TheDalriada, GroupID = 778, NameID = 9384, SortOrder = 2)]
 public sealed class DAL1Sartauvoir(WorldState ws, Actor primary) : BossModule(ws, primary, new(631f, 157f), new ArenaBoundsSquare(19f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)

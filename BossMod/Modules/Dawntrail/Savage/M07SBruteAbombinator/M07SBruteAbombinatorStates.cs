@@ -151,13 +151,13 @@ sealed class M07SBruteAbombinatorStates : StateMachineBuilder
         Cast(id, (uint)AID.NeoBombarianSpecial, 10.8f, 8f, "Raidwide")
             .ActivateOnEnter<ArenaChanges>()
             .ActivateOnEnter<NeoBombarianSpecialKB>()
-            .DeactivateOnExit<NeoBombarianSpecialKB>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void StoneRingerGlowerPower(uint id, float delay)
     {
         CastMulti(id, [(uint)AID.Stoneringer2, (uint)AID.Stoneringer4], delay, 2f, "Select AOE shape")
+            .DeactivateOnExit<NeoBombarianSpecialKB>()
             .DeactivateOnEnter<ArenaChanges>()
             .ActivateOnExit<BrutalSwing>();
         ComponentCondition<BrutalSwing>(id + 0x10u, 14f, comp => comp.NumCasts != 0, "Stoneringer resolves")

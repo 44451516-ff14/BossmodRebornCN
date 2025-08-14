@@ -37,7 +37,7 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
         for (var i = 0; i < count; ++i)
         {
             var a = players[i];
-            for (var j = 0; j < 3; j++)
+            for (var j = 0; j < 3; ++j)
             {
                 if (a.Position.InSquare(FTB4Magitaur.SquarePositions[j], 10f, FTB4Magitaur.SquareDirs[j]))
                 {
@@ -97,7 +97,7 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
     {
         if (isClose == null && spell.Action.ID == (uint)AID.ForkedFury)
         {
-            isClose = Module.PrimaryActor.FindStatus((uint)SID.Unsealed) is ActorStatus status && status.Extra == 0x353u;
+            isClose = Module.PrimaryActor.FindStatus((uint)SID.Unsealed) is ActorStatus status && status.Extra == 0x353;
             activation = Module.CastFinishAt(spell, 6.2d);
             SetAOE();
         }
@@ -136,7 +136,7 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
         if (actor.Role == Role.Tank)
         {
             var inSquare = -1;
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 3; ++i)
             {
                 if (actor.Position.InSquare(FTB4Magitaur.SquarePositions[i], 10f, FTB4Magitaur.SquareDirs[i]))
                 {

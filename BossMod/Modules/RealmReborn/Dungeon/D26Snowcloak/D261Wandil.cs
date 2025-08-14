@@ -21,7 +21,7 @@ public enum AID : uint
     HypothermalCombustion = 3085 // FrostBomb->self, 3.0s cast, range 80+R circle
 }
 
-class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom donut = new([new Circle(D261Wandil.ArenaCenter, 20f)], D261Wandil.Polygon);
     private AOEInstance? _aoe;
@@ -30,7 +30,7 @@ class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008 && actor.OID == (uint)OID.Voidzone)
+        if (state == 0x00040008u && actor.OID == (uint)OID.Voidzone)
         {
             Arena.Bounds = D261Wandil.SmallArena;
             Arena.Center = D261Wandil.ArenaCenter;
@@ -41,20 +41,41 @@ class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Tundra)
-            _aoe = new(donut, D261Wandil.ArenaCenter, default, Module.CastFinishAt(spell, 2f));
+        {
+            _aoe = new(donut, D261Wandil.ArenaCenter, default, Module.CastFinishAt(spell, 2d));
+        }
     }
 }
 
-class IceGuillotine(BossModule module) : Components.Cleave(module, (uint)AID.IceGuillotine, new AOEShapeCone(11.23f, 60f.Degrees()), activeWhileCasting: false);
-class SnowDrift(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.SnowDriftVisual, (uint)AID.SnowDrift, 2f);
-class ColdWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColdWave, 8f);
+sealed class IceGuillotine(BossModule module) : Components.Cleave(module, (uint)AID.IceGuillotine, new AOEShapeCone(11.23f, 60f.Degrees()), activeWhileCasting: false);
+sealed class SnowDriftRaidwide(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.SnowDriftVisual, (uint)AID.SnowDrift, 2d);
+sealed class SnowDriftMove(BossModule module) : Components.StayMove(module, 3d)
+{
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.SnowDriftVisual)
+        {
+            Array.Fill(PlayerStates, new(Requirement.Move, Module.CastFinishAt(spell, 2d)));
+        }
+    }
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.SnowDrift)
+        {
+            Array.Clear(PlayerStates);
+        }
+    }
+}
 
-class D261WandilStates : StateMachineBuilder
+sealed class ColdWave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColdWave, 8f);
+
+sealed class D261WandilStates : StateMachineBuilder
 {
     public D261WandilStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<SnowDrift>()
+            .ActivateOnEnter<SnowDriftRaidwide>()
+            .ActivateOnEnter<SnowDriftMove>()
             .ActivateOnEnter<ColdWave>()
             .ActivateOnEnter<IceGuillotine>()
             .ActivateOnEnter<TundraArenaChange>();
@@ -62,20 +83,17 @@ class D261WandilStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3038, SortOrder = 1)]
-public class D261Wandil(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultArena.Center, DefaultArena)
+public sealed class D261Wandil(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultArena.Center, DefaultArena)
 {
-    public static readonly WPos ArenaCenter = new(56.168f, -88.335f);
-
-    private static readonly WPos[] vertices = [new(55.82f, -107), new(65.68f, -103.86f), new(66.18f, -103.62f), new(70.16f, -99.65f), new(70.44f, -99.22f),
-    new(71.53f, -97.13f), new(71.6f, -96.6f), new(71.52f, -96), new(71.8f, -95.56f), new(72.61f, -94.76f),
-    new(73.07f, -94.45f), new(73.42f, -93.94f), new(74.29f, -88.56f), new(74.27f, -87.98f), new(73.5f, -83.07f),
-    new(73.35f, -82.53f), new(70.97f, -77.85f), new(70.63f, -77.41f), new(67.17f, -73.95f), new(66.73f, -73.57f),
-    new(62.26f, -71.29f), new(61.71f, -71.05f), new(56.35f, -70.2f), new(55.82f, -70.23f), new(54.78f, -70.39f),
-    new(51.34f, -70.9f), new(50.76f, -70.96f), new(42.58f, -76.02f), new(42.18f, -76.42f), new(42.04f, -76.98f),
-    new(39.18f, -82.29f), new(38.94f, -82.8f), new(38.12f, -87.95f), new(38.11f, -88.52f), new(38.94f, -93.76f),
-    new(39.15f, -94.28f), new(41.39f, -98.67f), new(41.7f, -99.13f), new(45.25f, -102.67f), new(45.67f, -103.03f),
-    new(50.41f, -105.45f), new(50.93f, -105.65f), new(55.56f, -107.02f)];
-    public static readonly ArenaBoundsComplex DefaultArena = new([new PolygonCustom(vertices)]);
+    public static readonly WPos ArenaCenter = new(new(56.41631f, -88.51856f));
+    public static readonly ArenaBoundsComplex DefaultArena = new([new PolygonCustom([new(55.95f, -106.95f), new(65.84f, -103.79f), new(66.36f, -103.43f),
+    new(70.19f, -99.6f), new(71.49f, -97.2f),
+    new(71.59f, -96.53f), new(71.53f, -95.91f), new(71.88f, -95.48f), new(72.77f, -94.6f), new(73.28f, -94.2f),
+    new(73.49f, -93.58f), new(74.29f, -88.55f), new(74.26f, -87.89f), new(73.45f, -82.74f), new(71.07f, -78.03f),
+    new(70.70f, -77.48f), new(67.01f, -73.79f), new(66.44f, -73.42f), new(61.82f, -71.07f), new(56.1f, -70.18f),
+    new(50.75f, -70.93f), new(42.64f, -75.96f), new(42.17f, -76.42f), new(42.01f, -77.06f), new(38.99f, -82.65f),
+    new(38.09f, -88.44f), new(38.92f, -93.64f), new(39.14f, -94.25f), new(41.39f, -98.67f), new(41.77f, -99.2f),
+    new(45.45f, -102.88f), new(50.44f, -105.47f), new(55.27f, -106.93f), new(55.95f, -106.95f)])]);
     public static readonly Polygon[] Polygon = [new Polygon(ArenaCenter, 12f, 20)];
     public static readonly ArenaBoundsComplex SmallArena = new(Polygon);
 

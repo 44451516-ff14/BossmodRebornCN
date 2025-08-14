@@ -3,32 +3,46 @@
 // same component covers normal, leaping and leaping clone versions
 sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBaitAway(module)
 {
-    public Actor? Origin;
+    public WPos? Origin;
     private DateTime _activation;
     private Actor? _clone;
     private Angle _jumpDirection;
 
-    private static readonly AOEShapeCone _shape = new(100f, 22.5f.Degrees());
+    private static readonly AOEShapeCone cone = new(100f, 22.5f.Degrees());
 
     public override void Update()
     {
         CurrentBaits.Clear();
-        if (Origin != null && _activation != default)
+        if (Origin is WPos origin && _activation != default)
         {
             var party = Raid.WithoutSlot(false, true, true);
-            Array.Sort(party, (a, b) =>
-                {
-                    var distA = (a.Position - Origin.Position).LengthSq();
-                    var distB = (b.Position - Origin.Position).LengthSq();
-                    return distA.CompareTo(distB);
-                });
-
             var len = party.Length;
-            var max = len > 4 ? 4 : len;
-            for (var i = 0; i < max; ++i)
+
+            (Actor actor, float distSq)[] distances = new (Actor, float)[len];
+
+            for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
-                CurrentBaits.Add(new(Origin, p, _shape, _activation));
+                var p = party[i];
+                var distSq = (p.Position - origin).LengthSq();
+                distances[i] = (p, distSq);
+            }
+
+            var targets = Math.Min(4, len);
+            for (var i = 0; i < targets; ++i)
+            {
+                var selIdx = i;
+                for (var j = i + 1; j < len; ++j)
+                {
+                    if (distances[j].distSq < distances[selIdx].distSq)
+                        selIdx = j;
+                }
+
+                if (selIdx != i)
+                {
+                    (distances[selIdx], distances[i]) = (distances[i], distances[selIdx]);
+                }
+
+                CurrentBaits.Add(new(origin, distances[i].actor, cone, _activation));
             }
         }
     }
@@ -45,7 +59,7 @@ sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBai
         // note: tether target is created after boss is tethered...
         if (actor.OID == (uint)OID.LeapTarget && Module.PrimaryActor.Tether.Target == actor.InstanceID)
         {
-            Origin = actor;
+            Origin = actor.Position;
             _jumpDirection = Angle.FromDirection(actor.Position - Module.PrimaryActor.Position) - (Module.PrimaryActor.CastInfo?.Rotation ?? Module.PrimaryActor.Rotation);
         }
     }
@@ -55,17 +69,17 @@ sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBai
         switch (spell.Action.ID)
         {
             case (uint)AID.QuadrupleCrossingFirst:
-                Origin = caster;
-                _activation = Module.CastFinishAt(spell, 0.8f);
+                Origin = spell.LocXZ;
+                _activation = Module.CastFinishAt(spell, 0.8d);
                 break;
             case (uint)AID.LeapingQuadrupleCrossingBossL:
             case (uint)AID.LeapingQuadrupleCrossingBossR:
                 // origin will be set to leap target when it's created
-                _activation = Module.CastFinishAt(spell, 1.8f);
+                _activation = Module.CastFinishAt(spell, 1.8d);
                 break;
             case (uint)AID.NailchipperAOE:
                 if (NumCasts == 8)
-                    ForbiddenPlayers[Raid.FindSlot(spell.TargetID)] = true;
+                    ForbiddenPlayers.Set(Raid.FindSlot(spell.TargetID));
                 break;
         }
     }
@@ -80,9 +94,13 @@ sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBai
             }
 
             _activation = WorldState.FutureTime(3d);
-            var count = spell.Targets.Count;
-            for (var i = 0; i < count; ++i)
-                ForbiddenPlayers[Raid.FindSlot(spell.Targets[i].ID)] = true;
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var targ = ref targets[i];
+                ForbiddenPlayers.Set(Raid.FindSlot(targ.ID));
+            }
 
             if (++NumCasts is 8 or 16)
             {
@@ -104,7 +122,7 @@ sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBai
         else if (_clone == source)
         {
             var origin = source.Position + 10f * (source.Rotation + _jumpDirection).ToDirection();
-            Origin = new(0, 0, -1, "", 0, ActorType.None, Class.None, 0, new(origin.X, source.PosRot.Y, origin.Z, source.PosRot.W));
+            Origin = new(origin.X, origin.Z);
             _activation = WorldState.FutureTime(17d);
         }
     }
@@ -121,18 +139,11 @@ sealed class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(mo
         if (!ready)
             return [];
         var count = _aoes.Count;
+        var max = count > 4 ? 4 : count;
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < count; ++i)
+        for (var i = 0; i < max; ++i)
         {
-            ref var aoe = ref aoes[i];
-            if (i < 4)
-            {
-                if (count == 8)
-                    aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-            else
-                aoe.Risky = false;
+            aoes[i].Risky = true;
         }
         return aoes;
     }
@@ -144,7 +155,7 @@ sealed class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(mo
             case (uint)AID.QuadrupleCrossingProtean:
             case (uint)AID.LeapingQuadrupleCrossingBossProtean:
             case (uint)AID.LeapingQuadrupleCrossingShadeProtean:
-                _aoes.Add(new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(5.9d)));
+                _aoes.Add(new(_shape, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(5.9d), _aoes.Count < 4 ? Colors.Danger : default, risky: false));
                 break;
             case (uint)AID.QuadrupleCrossingAOE:
             case (uint)AID.LeapingQuadrupleCrossingBossAOE:

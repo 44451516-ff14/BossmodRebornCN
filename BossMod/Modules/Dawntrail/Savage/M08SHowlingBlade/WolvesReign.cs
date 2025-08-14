@@ -25,7 +25,7 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
         if (shape != null)
         {
             var pos = spell.LocXZ;
-            _aoe = new(shape, pos, Angle.FromDirection(Arena.Center - pos), Module.CastFinishAt(spell, 3.6f), Colors.Danger);
+            _aoe = new(shape, pos, Angle.FromDirection(Arena.Center - pos), Module.CastFinishAt(spell, 3.6d), Colors.Danger);
         }
         else if (id is (uint)AID.EminentReign or (uint)AID.RevolutionaryReign)
         {
@@ -114,8 +114,31 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
         }
     }
 }
+sealed class WolvesReignRect(BossModule module) : Components.GenericAOEs(module)
+{
+    private static readonly AOEShapeRect rect = new(28f, 5f);
+    private AOEInstance? _aoe;
 
-sealed class WolvesReignRect(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.WolvesReignRect1, (uint)AID.WolvesReignRect2], new AOEShapeRect(28f, 5f));
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.RevolutionaryReign or (uint)AID.EminentReign)
+        {
+            var rot = spell.Rotation;
+            _aoe = new(rect, (caster.Position - 4f * rot.ToDirection()).Quantized(), rot, Module.CastFinishAt(spell, 2.4d));
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.WolvesReignRect1 or (uint)AID.WolvesReignRect2)
+        {
+            ++NumCasts;
+        }
+    }
+}
+
 sealed class WolvesReignCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.WolvesReignCircle1, (uint)AID.WolvesReignCircle2,
 (uint)AID.WolvesReignCircle3, (uint)AID.EminentReign, (uint)AID.RevolutionaryReign], 6f);
 
@@ -127,7 +150,7 @@ sealed class SovereignScar(BossModule module) : Components.GenericBaitStack(modu
     {
         if (spell.Action.ID is (uint)AID.WolvesReignTeleport1 or (uint)AID.WolvesReignTeleport2)
         {
-            var act = Module.CastFinishAt(spell);
+            var act = Module.CastFinishAt(spell, 3.6d);
             var party = Raid.WithSlot(true, true, true);
             var source = spell.LocXZ;
             var len = party.Length;
@@ -136,20 +159,25 @@ sealed class SovereignScar(BossModule module) : Components.GenericBaitStack(modu
             {
                 ref readonly var p = ref party[i];
                 if (p.Item2.Role == Role.Tank)
-                    forbidden[p.Item1] = true;
+                {
+                    forbidden.Set(p.Item1);
+                }
             }
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i].Item2;
+                ref readonly var player = ref party[i];
+                var p = player.Item2;
                 if (p.Role == Role.Healer)
+                {
                     CurrentBaits.Add(new(source, p, cone, act, forbidden: forbidden));
+                }
             }
         }
     }
 }
 
-sealed class ReignsEnd(BossModule module) : Components.GenericBaitAway(module)
+sealed class ReignsEnd(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private static readonly AOEShapeCone cone = new(40f, 30f.Degrees());
 
@@ -157,16 +185,18 @@ sealed class ReignsEnd(BossModule module) : Components.GenericBaitAway(module)
     {
         if (spell.Action.ID is (uint)AID.WolvesReignTeleport1 or (uint)AID.WolvesReignTeleport2)
         {
-            var act = Module.CastFinishAt(spell);
+            var act = Module.CastFinishAt(spell, 3.6d);
             var party = Raid.WithoutSlot(true, true, true);
             var source = spell.LocXZ;
             var len = party.Length;
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (p.Role == Role.Tank)
+                {
                     CurrentBaits.Add(new(source, p, cone, act));
+                }
             }
         }
     }
@@ -182,8 +212,10 @@ sealed class RoaringWind(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.WolfOfWind4 && id == 0x11D2u)
-            _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(5.6d)));
+        if (id == 0x11D2 && actor.OID == (uint)OID.WolfOfWind4)
+        {
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(5.6d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -199,18 +231,23 @@ sealed class WealOfStone(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(4);
     private static readonly AOEShapeRect rect = new(40f, 3f);
+    public bool Draw;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Draw ? CollectionsMarshal.AsSpan(_aoes) : [];
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (spell.Action.ID is (uint)AID.WealOfStone1 or (uint)AID.WealOfStone2)
-            _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        if (id == 0x11D2 && actor.OID == (uint)OID.WolfOfStone3)
+        {
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(5.6d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.WealOfStone1 or (uint)AID.WealOfStone2)
+        {
             ++NumCasts;
+        }
     }
 }

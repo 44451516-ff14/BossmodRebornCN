@@ -2,7 +2,6 @@ namespace BossMod.Stormblood.Dungeon.D13TheBurn.D133MistDragon;
 
 public enum OID : uint
 {
-
     Boss = 0x2431, // R3.0-7.0
     IceVoidzone = 0x1E8713,
     DraconicRegard = 0x2432, // R3.0
@@ -42,7 +41,7 @@ public enum IconID : uint
     BaitawayRect = 14 // player
 }
 
-class FogPlumeCross(BossModule module) : Components.GenericAOEs(module)
+sealed class FogPlumeCross(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
     private static readonly AOEShapeCross cross = new(40f, 2.5f);
@@ -55,20 +54,24 @@ class FogPlumeCross(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.FogPlumeCircle)
         {
             for (var i = 0; i < 2; ++i)
-                _aoes.Add(new(cross, spell.LocXZ, angles[i], Module.CastFinishAt(spell, 3.6f)));
+            {
+                _aoes.Add(new(cross, spell.LocXZ, angles[i], Module.CastFinishAt(spell, 3.6d)));
+            }
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FogPlumeCross)
+        {
             _aoes.Clear();
+        }
     }
 }
 
-class FogPlumeCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FogPlumeCircle, 6f);
+sealed class FogPlumeCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FogPlumeCircle, 6f);
 
-class ColdFog(BossModule module) : Components.GenericAOEs(module)
+sealed class ColdFog(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private DateTime activation;
@@ -79,13 +82,17 @@ class ColdFog(BossModule module) : Components.GenericAOEs(module)
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.AreaOfInfluenceUp)
-            _aoe = new(new AOEShapeCircle(4f + status.Extra), WPos.ClampToGrid(Arena.Center), default, activation);
+        {
+            _aoe = new(new AOEShapeCircle(4f + status.Extra), Arena.Center.Quantized(), default, activation);
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ColdFogVisual)
+        {
             activation = Module.CastFinishAt(spell);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -115,11 +122,15 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
 
     protected void DrawPositionsInBounds(WPos[] positions)
     {
-        for (var i = 0; i < positions.Length; ++i)
+        var len = positions.Length;
+        var center = Arena.Center;
+        for (var i = 0; i < len; ++i)
         {
             var position = positions[i];
-            if (Module.InBounds(position))
+            if (position.InCircle(center, 20f))
+            {
                 circle.Outline(Arena, position);
+            }
         }
     }
 
@@ -127,7 +138,9 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
     {
         var positions = new WPos[count];
         for (var i = 0; i < count; ++i)
+        {
             positions[i] = CalculatePosition(boss, target, boss.HitboxRadius + i * 9f);
+        }
         return positions;
     }
 
@@ -149,13 +162,17 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (ActiveBaitsOn(actor).Count != 0)
+        {
             hints.Add("Bait away!");
+        }
     }
 
     protected void DrawBaitsOnActor(int pcSlot, Actor pc, Action<Actor> drawAction)
     {
         if (ActiveBaitsOn(pc).Count == 0)
+        {
             return;
+        }
 
         base.DrawArenaForeground(pcSlot, pc);
         drawAction(pc);
@@ -164,28 +181,36 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
     protected void DrawBaitsOnOther(int pcSlot, Actor pc, Action<Actor> drawAction)
     {
         if (ActiveBaitsOn(pc).Count == 0)
+        {
             return;
+        }
 
         base.DrawArenaBackground(pcSlot, pc);
         var baits = ActiveBaitsNotOn(pc);
         var count = baits.Count;
         for (var i = 0; i < count; ++i)
+        {
             drawAction(baits[i].Target);
+        }
     }
 }
 
-class ChillingAspiration(BossModule module) : BaitAway(module)
+sealed class ChillingAspiration(BossModule module) : BaitAway(module)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.BaitawayRect)
+        {
             CurrentBaits.Add(new(Module.PrimaryActor, actor, rect, Module.WorldState.FutureTime(6.1d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.ChillingAspiration)
+        {
             CurrentBaits.Clear();
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -207,12 +232,14 @@ class ChillingAspiration(BossModule module) : BaitAway(module)
     }
 }
 
-class FrostBreath(BossModule module) : BaitAway(module)
+sealed class FrostBreath(BossModule module) : BaitAway(module)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.BaitawayCone)
+        {
             CurrentBaits.Add(new(Module.PrimaryActor, actor, cone, Module.WorldState.FutureTime(4.1d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -240,9 +267,9 @@ class FrostBreath(BossModule module) : BaitAway(module)
     }
 }
 
-class RimeWreath(BossModule module) : Components.RaidwideCast(module, (uint)AID.RimeWreath);
-class TouchDown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Touchdown, 15f);
-class IceVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
+sealed class RimeWreath(BossModule module) : Components.RaidwideCast(module, (uint)AID.RimeWreath);
+sealed class TouchDown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Touchdown, 15f);
+sealed class IceVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -263,7 +290,7 @@ class IceVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzo
     }
 }
 
-class Cauterize(BossModule module) : Components.GenericAOEs(module)
+sealed class Cauterize(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeRect rect = new(40f, 8f);
@@ -273,7 +300,7 @@ class Cauterize(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Helper2)
-            _aoe = new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(7.3d));
+            _aoe = new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(7.3d));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -283,7 +310,7 @@ class Cauterize(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D133MistDragonStates : StateMachineBuilder
+sealed class D133MistDragonStates : StateMachineBuilder
 {
     public D133MistDragonStates(BossModule module) : base(module)
     {
@@ -301,7 +328,7 @@ class D133MistDragonStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 585, NameID = 7672)]
-public class D133MistDragon(WorldState ws, Actor primary) : BossModule(ws, primary, new(-300, -400), new ArenaBoundsCircle(19.5f))
+public sealed class D133MistDragon(WorldState ws, Actor primary) : BossModule(ws, primary, new(-300f, -400f), new ArenaBoundsCircle(19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

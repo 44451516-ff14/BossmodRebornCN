@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P4AkhRhai(BossModule module) : Components.GenericAOEs(module, (uint)AID.AkhRhaiAOE)
+sealed class P4AkhRhai(BossModule module) : Components.GenericAOEs(module, (uint)AID.AkhRhaiAOE)
 {
     public readonly List<AOEInstance> AOEs = [];
 

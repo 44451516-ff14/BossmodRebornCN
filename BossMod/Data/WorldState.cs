@@ -1,4 +1,6 @@
-﻿namespace BossMod;
+﻿using System.Runtime.CompilerServices;
+
+namespace BossMod;
 
 // this class represents parts of a world state that are interesting to boss modules
 // it does not know anything about dalamud, so it can be used for UI test - there is a separate utility that updates it based on game state every frame
@@ -20,6 +22,8 @@ public sealed class WorldState
     public readonly NetworkState Network = new();
 
     public DateTime CurrentTime => Frame.Timestamp;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public DateTime FutureTime(double deltaSeconds) => Frame.Timestamp.AddSeconds(deltaSeconds);
 
     public WorldState(ulong qpf, string gameVersion)

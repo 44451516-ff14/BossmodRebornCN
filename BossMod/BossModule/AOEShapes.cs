@@ -215,7 +215,7 @@ public sealed record class AOEShapeCustom(IReadOnlyList<Shape> Shapes1, IReadOnl
     private static readonly Dictionary<int, RelSimplifiedComplexPolygon> cache = [];
     private static readonly LinkedList<int> cacheOrder = [];
 
-    public void AddToCache(RelSimplifiedComplexPolygon value)
+    private void AddToCache(RelSimplifiedComplexPolygon value)
     {
         if (cache.Count >= 50)
         {
@@ -243,14 +243,13 @@ public sealed record class AOEShapeCustom(IReadOnlyList<Shape> Shapes1, IReadOnl
         }
 
         var shapes1 = CreateOperandFromShapes(Shapes1, origin);
-        var differenceOperands = CreateOperandFromShapes(DifferenceShapes, origin);
 
         var clipper = new PolygonClipper();
         if (Shapes2 == null)
         {
             if (DifferenceShapes != null)
             {
-                Polygon = clipper.Difference(shapes1, differenceOperands);
+                Polygon = clipper.Difference(shapes1, CreateOperandFromShapes(DifferenceShapes, origin));
                 AddToCache(Polygon);
                 return Polygon;
             }
@@ -261,30 +260,36 @@ public sealed record class AOEShapeCustom(IReadOnlyList<Shape> Shapes1, IReadOnl
                 return Polygon;
             }
         }
-        if (Shapes2 != null)
+        else
         {
             Polygon = clipper.Simplify(shapes1);
-            var count = Shapes2.Count;
-            for (var i = 0; i < count; ++i)
+            if (Operand is OperandType.Intersection or OperandType.Xor)
             {
-                var shape = Shapes2[i];
-                var singleShapeOperand = CreateOperandFromShape(shape, origin);
-
-                switch (Operand)
+                var count = Shapes2.Count;
+                for (var i = 0; i < count; ++i)
                 {
-                    case OperandType.Intersection:
-                        Polygon = clipper.Intersect(new PolygonClipper.Operand(Polygon), singleShapeOperand);
-                        break;
-                    case OperandType.Xor:
-                        Polygon = clipper.Xor(new PolygonClipper.Operand(Polygon), singleShapeOperand);
-                        break;
+                    var shape = Shapes2[i];
+                    var singleShapeOperand = CreateOperandFromShape(shape, origin);
+                    var operand = new PolygonClipper.Operand(Polygon);
+                    switch (Operand)
+                    {
+                        case OperandType.Intersection:
+                            Polygon = clipper.Intersect(operand, singleShapeOperand);
+                            break;
+                        case OperandType.Xor:
+                            Polygon = clipper.Xor(operand, singleShapeOperand);
+                            break;
+                    }
                 }
             }
-            Polygon = DifferenceShapes != null ? clipper.Difference(new PolygonClipper.Operand(Polygon), differenceOperands) : Polygon;
+            Polygon = DifferenceShapes != null ? clipper.Difference(new PolygonClipper.Operand(Polygon), CreateOperandFromShapes(DifferenceShapes, origin)) : Polygon;
+            if (Operand == OperandType.Union)
+            {
+                Polygon = clipper.Union(CreateOperandFromShapes(Shapes2, origin), new PolygonClipper.Operand(Polygon));
+            }
             AddToCache(Polygon);
             return Polygon;
         }
-        return new();
     }
 
     private static PolygonClipper.Operand CreateOperandFromShape(Shape shape, WPos origin)
@@ -298,8 +303,13 @@ public sealed record class AOEShapeCustom(IReadOnlyList<Shape> Shapes1, IReadOnl
     {
         var operand = new PolygonClipper.Operand();
         if (shapes != null)
-            for (var i = 0; i < shapes.Count; ++i)
+        {
+            var count = shapes.Count;
+            for (var i = 0; i < count; ++i)
+            {
                 operand.AddPolygon(shapes[i].ToPolygon(origin));
+            }
+        }
         return operand;
     }
 
@@ -311,12 +321,21 @@ public sealed record class AOEShapeCustom(IReadOnlyList<Shape> Shapes1, IReadOnl
     private static int CreateCacheKey(IReadOnlyList<Shape> shapes1, IReadOnlyList<Shape> shapes2, IReadOnlyList<Shape> differenceShapes, OperandType operand, WPos origin)
     {
         var hashCode = new HashCode();
-        for (var i = 0; i < shapes1.Count; ++i)
+        var count1 = shapes1.Count;
+        var count2 = shapes2.Count;
+        var count3 = differenceShapes.Count;
+        for (var i = 0; i < count1; ++i)
+        {
             hashCode.Add(shapes1[i].GetHashCode());
-        for (var i = 0; i < shapes2.Count; ++i)
+        }
+        for (var i = 0; i < count2; ++i)
+        {
             hashCode.Add(shapes2[i].GetHashCode());
-        for (var i = 0; i < differenceShapes.Count; ++i)
+        }
+        for (var i = 0; i < count3; ++i)
+        {
             hashCode.Add(differenceShapes[i].GetHashCode());
+        }
         hashCode.Add(operand);
         hashCode.Add(origin);
         return hashCode.ToHashCode();

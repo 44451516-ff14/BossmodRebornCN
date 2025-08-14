@@ -18,11 +18,11 @@ public enum AID : uint
     JitteringGlare = 37516 // Boss->self, 4.0s cast, range 40 30-degree cone
 }
 
-class JitteringGlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.JitteringGlare, new AOEShapeCone(40f, 15f.Degrees()));
-class GyratingGlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.GyratingGlare);
-class RubbleRouseRockAndRefrain(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RubbleRouse, (uint)AID.RockAndRefrain1, (uint)AID.RockAndRefrain2], 10f);
+sealed class JitteringGlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.JitteringGlare, new AOEShapeCone(40f, 15f.Degrees()));
+sealed class GyratingGlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.GyratingGlare);
+sealed class RubbleRouseRockAndRefrain(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RubbleRouse, (uint)AID.RockAndRefrain1, (uint)AID.RockAndRefrain2], 10f);
 
-class MindOverManorStates : StateMachineBuilder
+sealed class MindOverManorStates : StateMachineBuilder
 {
     public MindOverManorStates(BossModule module) : base(module)
     {
@@ -34,7 +34,7 @@ class MindOverManorStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70391, NameID = 13032)]
-public class MindOverManor(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class MindOverManor(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(20.21f, -19.11f), new(20.63f, -18.79f), new(21.03f, -18.42f), new(21.19f, -17.93f), new(21.11f, -17.43f),
     new(21.41f, -16.46f), new(21.63f, -15.98f), new(21.9f, -15.54f), new(22.23f, -15.16f), new(22.59f, -13.61f),

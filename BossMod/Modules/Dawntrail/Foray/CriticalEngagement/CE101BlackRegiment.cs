@@ -37,7 +37,7 @@ public enum AID : uint
     ChocoAeroII = 41162 // Helper->location, 3.0s cast, range 4 circle
 }
 
-sealed class ChocoSlaughter(BossModule module) : Components.SimpleExaflare(module, 5f, (uint)AID.ChocoSlaughterFirst, (uint)AID.ChocoSlaughterRest, 5f, 1.1f, 5, 3, true);
+sealed class ChocoSlaughter(BossModule module) : Components.SimpleExaflare(module, 5f, (uint)AID.ChocoSlaughterFirst, (uint)AID.ChocoSlaughterRest, 5f, 1.1d, 5, 3, true);
 
 sealed class ChocoBeak(BossModule module) : Components.GenericAOEs(module)
 {
@@ -48,8 +48,10 @@ sealed class ChocoBeak(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x11D1u && actor.OID == (uint)OID.BlackChocobo1)
-            _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(9.1d), ActorID: actor.InstanceID));
+        if (id == 0x11D1 && actor.OID == (uint)OID.BlackChocobo1)
+        {
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(9.1d), actorID: actor.InstanceID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

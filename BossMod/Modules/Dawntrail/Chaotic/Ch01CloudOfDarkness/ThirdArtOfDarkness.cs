@@ -25,7 +25,7 @@ sealed class ThirdArtOfDarknessCleave(BossModule module) : Components.GenericAOE
                 _ => default
             };
             if (dir != default)
-                aoes[index++] = new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation + dir, m[0].activation);
+                aoes[index++] = new(_shape, caster.Position.Quantized(), caster.Rotation + dir, m[0].activation);
         }
         return aoes[..index];
     }

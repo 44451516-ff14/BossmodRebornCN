@@ -12,7 +12,7 @@ sealed class RideTheWaves(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x04u)
+        if (index == 0x04)
         {
             int[] indices = [];
             switch (state)

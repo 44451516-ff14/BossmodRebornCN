@@ -11,12 +11,12 @@ sealed class Adds(BossModule module) : BossComponent(module)
     {
         if (status.ID == (uint)SID.Windpack)
         {
-            Windpack[Raid.FindSlot(actor.InstanceID)] = true;
+            Windpack.Set(Raid.FindSlot(actor.InstanceID));
             windtether = default;
         }
         else if (status.ID == (uint)SID.Stonepack)
         {
-            stonepack[Raid.FindSlot(actor.InstanceID)] = true;
+            stonepack.Set(Raid.FindSlot(actor.InstanceID));
             stonetether = default;
         }
     }
@@ -24,17 +24,25 @@ sealed class Adds(BossModule module) : BossComponent(module)
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Windpack)
-            Windpack[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            Windpack.Clear(Raid.FindSlot(actor.InstanceID));
+        }
         else if (status.ID == (uint)SID.Stonepack)
-            stonepack[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            stonepack.Clear(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Windtether)
-            windtether[Raid.FindSlot(source.InstanceID)] = true;
+        {
+            windtether.Set(Raid.FindSlot(source.InstanceID));
+        }
         else if (tether.ID == (uint)TetherID.Stonetether)
-            stonetether[Raid.FindSlot(source.InstanceID)] = true;
+        {
+            stonetether.Set(Raid.FindSlot(source.InstanceID));
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -100,9 +108,10 @@ sealed class EarthWindborneEnd(BossModule module) : BossComponent(module)
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         ref readonly var player = ref expirationBySlot[slot];
-
         if (player != default)
+        {
             hints.Add($"Order: {player.Order} - {(player.wind ? "wind" : "earth")}", Math.Max(0d, (player.Expiration - WorldState.CurrentTime).TotalSeconds) < 9d);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -132,7 +141,7 @@ sealed class EarthWindborneEnd(BossModule module) : BossComponent(module)
         }
         else if (status.ID == (uint)SID.MagicVulnerabilityUp)
         {
-            vulnerability[Raid.FindSlot(actor.InstanceID)] = true;
+            vulnerability.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -147,7 +156,7 @@ sealed class EarthWindborneEnd(BossModule module) : BossComponent(module)
         }
         else if (status.ID == (uint)SID.MagicVulnerabilityUp)
         {
-            vulnerability[Raid.FindSlot(actor.InstanceID)] = false;
+            vulnerability.Clear(Raid.FindSlot(actor.InstanceID));
         }
     }
 }
@@ -171,7 +180,9 @@ sealed class StalkingStoneWind(BossModule module) : Components.GenericBaitStack(
                 {
                     ref readonly var p = ref party[i];
                     if (p.Item2.Role == Role.Tank)
-                        tanks[p.Item1] = true;
+                    {
+                        tanks.Set(p.Item1);
+                    }
                 }
             }
             var stonewolves = Module.Enemies((uint)OID.WolfOfStone2);
@@ -181,7 +192,9 @@ sealed class StalkingStoneWind(BossModule module) : Components.GenericBaitStack(
             var earth = actor.FindStatus((uint)SID.Windpack) != null;
             var source = earth ? stonewolf : windwolf;
             if (source is Actor wolf)
+            {
                 CurrentBaits.Add(new(wolf, actor, rect, act, tanks));
+            }
         }
     }
 
@@ -195,7 +208,7 @@ sealed class StalkingStoneWind(BossModule module) : Components.GenericBaitStack(
     }
 }
 
-sealed class AlphaWindStone(BossModule module) : Components.GenericBaitAway(module)
+sealed class AlphaWindStone(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private static readonly AOEShapeCone cone = new(40f, 45f.Degrees());
 
@@ -212,13 +225,15 @@ sealed class AlphaWindStone(BossModule module) : Components.GenericBaitAway(modu
             var windwolf = windwolves.Count != 0 ? windwolves[0] : null;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (p.Role == Role.Tank)
                 {
                     var earth = p.FindStatus((uint)SID.Windpack) != null;
                     var source = earth ? stonewolf : windwolf;
                     if (source is Actor wolf)
+                    {
                         CurrentBaits.Add(new(wolf, p, cone, act));
+                    }
                 }
             }
         }

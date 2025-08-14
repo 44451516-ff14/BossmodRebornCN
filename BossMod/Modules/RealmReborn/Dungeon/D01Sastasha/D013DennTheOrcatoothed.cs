@@ -47,9 +47,9 @@ class TrashSpawning(BossModule module) : BossComponent(module)
     public override void Update()
     {
         // Loop through all possible ripple OIDs to populate the _ripples array
-        for (int i = 0; i < _ripples.Length; i++)
+        for (var i = 0; i < _ripples.Length; ++i)
         {
-            uint oid = (uint)((uint)OID.UnnaturalRipples1 + i);
+            var oid = (uint)((uint)OID.UnnaturalRipples1 + i);
             _ripples[i] ??= Module.Enemies(oid).FirstOrDefault();
         }
     }
@@ -57,7 +57,7 @@ class TrashSpawning(BossModule module) : BossComponent(module)
     // Updating ripple state when an animation state change happens
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        for (int i = 0; i < _ripples.Length; i++)
+        for (int i = 0; i < _ripples.Length; ++i)
         {
             if (_ripples[i]?.OID == actor.OID)
             {

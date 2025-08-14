@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
 // baited cones part of the mechanic
-class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Components.GenericBaitAway(module, (uint)AID.FlameBreath) // note: cast is arbitrary
+abstract class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Components.GenericBaitAway(module, (uint)AID.FlameBreath) // note: cast is arbitrary
 {
     public Actor?[] Dragons = [null, null]; // nidhogg & hraesvelgr
     public BitMask Glows;
@@ -26,7 +26,7 @@ class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Components.Generic
                 hints.Add("Stretch the tether!");
 
             var partner = IgnoredPartner(slot, actor);
-            if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(b).Any(p => p != partner)))
+            if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(ref b).Any(p => p != partner)))
                 hints.Add("Bait away from raid!");
             if (ActiveBaitsNotOn(actor).Any(b => b.Target != partner && IsClippedBy(actor, b)))
                 hints.Add("GTFO from baited aoe!");
@@ -91,11 +91,11 @@ class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Components.Generic
 
     private Actor? IgnoredPartner(int slot, Actor actor) => _allowIntersect && _tetheredTo[slot] != null ? Raid.WithSlot(false, true, true).WhereSlot(i => _tetheredTo[i] != null && _tetheredTo[i] != _tetheredTo[slot]).Closest(actor.Position).Item2 : null;
 }
-class P6Wyrmsbreath1(BossModule module) : P6Wyrmsbreath(module, true);
-class P6Wyrmsbreath2(BossModule module) : P6Wyrmsbreath(module, false);
+sealed class P6Wyrmsbreath1(BossModule module) : P6Wyrmsbreath(module, true);
+sealed class P6Wyrmsbreath2(BossModule module) : P6Wyrmsbreath(module, false);
 
 // note: it is actually symmetrical (both tanks get tankbusters), but that is hard to express, so we select one to show arbitrarily (nidhogg)
-class P6WyrmsbreathTankbusterShared(BossModule module) : Components.GenericSharedTankbuster(module, (uint)AID.DarkOrb, 6f)
+sealed class P6WyrmsbreathTankbusterShared(BossModule module) : Components.GenericSharedTankbuster(module, (uint)AID.DarkOrb, 6f)
 {
     private readonly P6Wyrmsbreath? _main = module.FindComponent<P6Wyrmsbreath>();
 
@@ -111,7 +111,7 @@ class P6WyrmsbreathTankbusterShared(BossModule module) : Components.GenericShare
     }
 }
 
-class P6WyrmsbreathTankbusterSolo(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class P6WyrmsbreathTankbusterSolo(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private readonly P6Wyrmsbreath? _main = module.FindComponent<P6Wyrmsbreath>();
 
@@ -130,7 +130,7 @@ class P6WyrmsbreathTankbusterSolo(BossModule module) : Components.GenericBaitAwa
     }
 }
 
-class P6WyrmsbreathCone(BossModule module) : Components.GenericAOEs(module)
+sealed class P6WyrmsbreathCone(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly P6Wyrmsbreath? _main = module.FindComponent<P6Wyrmsbreath>();
 

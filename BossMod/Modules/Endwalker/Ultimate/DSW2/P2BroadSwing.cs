@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P2BroadSwing(BossModule module) : Components.GenericAOEs(module, (uint)AID.BroadSwingAOE)
+sealed class P2BroadSwing(BossModule module) : Components.GenericAOEs(module, (uint)AID.BroadSwingAOE)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -25,9 +25,11 @@ class P2BroadSwing(BossModule module) : Components.GenericAOEs(module, (uint)AID
         };
         if (rot != default)
         {
-            _aoes.Add(new(_aoe, spell.LocXZ, spell.Rotation + rot, Module.CastFinishAt(spell, 0.8f), Colors.Danger));
-            _aoes.Add(new(_aoe, spell.LocXZ, spell.Rotation - rot, Module.CastFinishAt(spell, 1.8f)));
-            _aoes.Add(new(_aoe, spell.LocXZ, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 2.8f)));
+            var loc = spell.LocXZ;
+            var srot = spell.Rotation;
+            _aoes.Add(new(_aoe, loc, srot + rot, Module.CastFinishAt(spell, 0.8d), Colors.Danger));
+            _aoes.Add(new(_aoe, loc, srot - rot, Module.CastFinishAt(spell, 1.8d)));
+            _aoes.Add(new(_aoe, loc, srot + 180f.Degrees(), Module.CastFinishAt(spell, 2.8d)));
         }
     }
 

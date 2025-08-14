@@ -51,7 +51,7 @@ class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u)
+        if (index == 0x00)
         {
             if (state == 0x00020001u)
             {
@@ -70,7 +70,9 @@ class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BattleCry2)
-            _aoe = new(donut, D122Arkas.ArenaCenter, default, Module.CastFinishAt(spell, 0.8f));
+        {
+            _aoe = new(donut, D122Arkas.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d));
+        }
     }
 }
 

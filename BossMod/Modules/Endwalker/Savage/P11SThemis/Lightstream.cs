@@ -29,7 +29,7 @@ class Lightstream(BossModule module) : Components.GenericAOEs(module)
         if (rotation != default)
         {
             for (var i = 0; i < 7; ++i)
-                _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), actor.Rotation + i * rotation, WorldState.FutureTime(8d + i * 1.1d)));
+                _aoes.Add(new(_shape, actor.Position.Quantized(), actor.Rotation + i * rotation, WorldState.FutureTime(8d + i * 1.1d)));
             _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }

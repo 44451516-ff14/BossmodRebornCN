@@ -40,7 +40,7 @@ class DisclosureSpin(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.Disclosure)
         {
             Arena.Bounds = D051DemonTome.SpinArena;
-            _aoe = new(circle, WPos.ClampToGrid(Module.PrimaryActor.Position), default, Module.CastFinishAt(spell, 2.4f));
+            _aoe = new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell, 2.4f));
         }
     }
 

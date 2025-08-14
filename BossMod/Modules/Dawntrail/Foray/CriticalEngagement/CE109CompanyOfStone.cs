@@ -105,23 +105,19 @@ sealed class Moatmaker(BossModule module) : Components.SimpleAOEs(module, (uint)
 sealed class SpinningSiege(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCross cross = new(60f, 3f);
-    private static readonly Angle a9 = 9f.Degrees();
     private WPos midpoint;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        switch (spell.Action.ID)
+        var increment = spell.Action.ID switch
         {
-            case (uint)AID.SpinningSiegeCW:
-                AddSequence(-a9);
-                break;
-            case (uint)AID.SpinningSiegeCCW:
-                AddSequence(a9);
-                break;
-        }
-        void AddSequence(Angle increment)
+            (uint)AID.SpinningSiegeCW => -9f.Degrees(),
+            (uint)AID.SpinningSiegeCCW => 9f.Degrees(),
+            _ => default
+        };
+        if (increment != default)
         {
-            Sequences.Add(new(cross, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 1.7f, 6));
+            Sequences.Add(new(cross, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 1.7d, 6));
             if (Sequences.Count == 4)
             {
                 var center = Arena.Center;
@@ -131,10 +127,12 @@ sealed class SpinningSiege(BossModule module) : Components.GenericRotatingAOE(mo
                 var centerX = center.X;
                 Sequences.Sort((a, b) => MathF.Atan2(a.Origin.Z - centerZ, a.Origin.X - centerX).CompareTo(MathF.Atan2(b.Origin.Z - centerZ, b.Origin.X - centerX)));
 
+                var a9 = 9f.Degrees();
+
                 // Find adjacent pair where left is CCW and right is CW
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < 4; ++i)
                 {
-                    var next = (i + 1) % 4;
+                    var next = (i + 1) & 3;
                     var a = Sequences[i];
                     var b = Sequences[next];
 
@@ -142,7 +140,7 @@ sealed class SpinningSiege(BossModule module) : Components.GenericRotatingAOE(mo
                     {
                         var aOrigin = a.Origin;
                         var bOrigin = b.Origin;
-                        midpoint = new((aOrigin.X + bOrigin.X) / 2, (aOrigin.Z + bOrigin.Z) / 2);
+                        midpoint = new((aOrigin.X + bOrigin.X) * 0.5f, (aOrigin.Z + bOrigin.Z) * 0.5f);
                         return;
                     }
                 }
@@ -155,7 +153,7 @@ sealed class SpinningSiege(BossModule module) : Components.GenericRotatingAOE(mo
         if (spell.Action.ID is (uint)AID.SpinningSiegeCCW or (uint)AID.SpinningSiegeCW or (uint)AID.SpinningSiegeRest)
         {
             AdvanceSequence(spell.LocXZ, spell.Rotation, WorldState.CurrentTime);
-            if (NumCasts % 4 == 0)
+            if ((NumCasts & 3) == 0)
             {
                 midpoint -= 3f * (midpoint - Arena.Center).Normalized();
             }
@@ -175,7 +173,7 @@ sealed class SpinningSiege(BossModule module) : Components.GenericRotatingAOE(mo
         base.AddAIHints(slot, actor, assignment, hints);
         if (Sequences.Count == 4 && NumCasts < 20)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(midpoint, 5f), Sequences[0].NextActivation); // stay in safe area
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(midpoint, 5f), Sequences.Ref(0).NextActivation); // stay in safe area
         }
     }
 
@@ -203,7 +201,7 @@ sealed class BlastKnuckles(BossModule module) : Components.GenericKnockback(modu
     {
         if (spell.Action.ID == (uint)AID.BlastKnucklesVisual)
         {
-            activation = Module.CastFinishAt(spell, 1f);
+            activation = Module.CastFinishAt(spell, 1d);
             _kb = new(spell.LocXZ, 15f, activation);
         }
     }
@@ -234,18 +232,18 @@ sealed class BlastKnuckles(BossModule module) : Components.GenericKnockback(modu
                         ref readonly var aoe = ref aoes[i];
                         rectangle.Add(new(aoe.Origin, aoe.Origin + 60f * aoe.Rotation.ToDirection(), 4f));
                     }
-                    AOEShapeCustom combine = new([.. rectangle]);
-                    combine.GetCombinedPolygon(Arena.Center);
-                    poly = combine.Polygon!;
+                    AOEShapeCustom combine = new(rectangle);
+                    poly = combine.GetCombinedPolygon(Arena.Center);
                     polyInit = true;
                 }
                 var center = Arena.Center;
+                var polygon = poly;
                 hints.AddForbiddenZone(p =>
                 {
                     var projected = p + 15f * (p - center).Normalized();
-                    if (projected.InCircle(center, 20f) && !poly.Contains(projected - center))
+                    if (projected.InCircle(center, 20f) && !polygon.Contains(projected - center))
                         return 1f;
-                    return -1f;
+                    return default;
                 }, activation);
             }
         }
@@ -257,8 +255,11 @@ sealed class BlastKnuckles(BossModule module) : Components.GenericKnockback(modu
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -271,7 +272,7 @@ sealed class DualfistFlurry(BossModule module) : Components.Exaflare(module, 6f)
         if (spell.Action.ID == (uint)AID.DualfistFlurryFirst)
         {
             var pos = spell.LocXZ;
-            Lines.Add(new() { Next = new(MathF.Round(pos.X * 2f) / 2f, MathF.Round(pos.Z * 2f) / 2f), Advance = 7f * caster.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1f, ExplosionsLeft = 6, MaxShownExplosions = 3 });
+            Lines.Add(new(new(MathF.Round(pos.X * 2f) * 0.5f, MathF.Round(pos.Z * 2f) * 0.5f), 7f * caster.Rotation.ToDirection(), Module.CastFinishAt(spell), 1d, 6, 3));
         }
     }
 
@@ -330,7 +331,7 @@ sealed class CE109CompanyOfStoneStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 40)]
-public sealed class CE109CompanyOfStone(WorldState ws, Actor primary) : BossModule(ws, primary, WPos.ClampToGrid(new(680f, -280f)), new ArenaBoundsCircle(20f))
+public sealed class CE109CompanyOfStone(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(680f, -280f).Quantized(), new ArenaBoundsCircle(20f))
 {
     private Actor? _bossMegaloknight;
     public Actor? BossMegaloknight() => _bossMegaloknight;

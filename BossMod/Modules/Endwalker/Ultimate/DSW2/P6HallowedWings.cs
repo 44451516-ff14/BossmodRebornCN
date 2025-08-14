@@ -1,46 +1,46 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P6HallowedWings(BossModule module) : Components.GenericAOEs(module)
+sealed class P6HallowedWings(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance? AOE; // origin is always (122, 100 +- 11), direction -90
 
-    private static readonly AOEShapeRect _shape = new(50, 11);
+    private static readonly AOEShapeRect _shape = new(50f, 11f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var offset = (AID)spell.Action.ID switch
+        var offset = spell.Action.ID switch
         {
-            AID.HallowedWingsLN or AID.HallowedWingsLF => _shape.HalfWidth,
-            AID.HallowedWingsRN or AID.HallowedWingsRF => -_shape.HalfWidth,
+            (uint)AID.HallowedWingsLN or (uint)AID.HallowedWingsLF => _shape.HalfWidth,
+            (uint)AID.HallowedWingsRN or (uint)AID.HallowedWingsRF => -_shape.HalfWidth,
             _ => 0
         };
         if (offset == 0)
             return;
         var origin = caster.Position + offset * spell.Rotation.ToDirection().OrthoL();
-        AOE = new(_shape, origin, spell.Rotation, Module.CastFinishAt(spell, 0.8f));
+        AOE = new(_shape, origin.Quantized(), spell.Rotation, Module.CastFinishAt(spell, 0.8d));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.HallowedWingsAOELeft or AID.HallowedWingsAOERight or AID.CauterizeN)
+        if (spell.Action.ID is (uint)AID.HallowedWingsAOELeft or (uint)AID.HallowedWingsAOERight or (uint)AID.CauterizeN)
             ++NumCasts;
     }
 }
 
 // note: we want to show hint much earlier than cast start - we assume component is created right as hallowed wings starts, meaning nidhogg is already in place
-class P6CauterizeN : Components.GenericAOEs
+sealed class P6CauterizeN : Components.GenericAOEs
 {
     public AOEInstance? AOE; // origin is always (100 +- 11, 100 +- 34), direction 0/180
 
-    private static readonly AOEShapeRect _shape = new(80, 11);
+    private static readonly AOEShapeRect _shape = new(80f, 11f);
 
     public P6CauterizeN(BossModule module) : base(module, (uint)AID.CauterizeN)
     {
-        var caster = module.Enemies(OID.NidhoggP6).FirstOrDefault();
+        var caster = module.Enemies((uint)OID.NidhoggP6).FirstOrDefault();
         if (caster != null)
-            AOE = new(_shape, caster.Position, caster.Rotation, WorldState.FutureTime(8.6f));
+            AOE = new(_shape, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(8.6d));
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
@@ -52,7 +52,7 @@ abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(m
     protected bool _far;
     private Actor? _caster;
 
-    private static readonly AOEShapeCircle _shape = new(10);
+    private static readonly AOEShapeCircle _shape = new(10f);
 
     public override void Update()
     {
@@ -77,7 +77,7 @@ abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(m
         {
             if (shouldBait)
             {
-                if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(b).Count != 0))
+                if (ActiveBaitsOn(actor).Any(b => PlayersClippedBy(ref b).Count != 0))
                     hints.Add("Bait away from raid!");
             }
             else
@@ -109,10 +109,10 @@ abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(m
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        bool? far = (AID)spell.Action.ID switch
+        bool? far = spell.Action.ID switch
         {
-            AID.HallowedWingsLN or AID.HallowedWingsRN => false,
-            AID.HallowedWingsLF or AID.HallowedWingsRF => true,
+            (uint)AID.HallowedWingsLN or (uint)AID.HallowedWingsRN => false,
+            (uint)AID.HallowedWingsLF or (uint)AID.HallowedWingsRF => true,
             _ => null
         };
         if (far != null)
@@ -125,18 +125,21 @@ abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(m
     protected abstract IEnumerable<WPos> SafeSpots(Actor actor);
 }
 
-class P6HallowedPlume1(BossModule module) : P6HallowedPlume(module)
+sealed class P6HallowedPlume1(BossModule module) : P6HallowedPlume(module)
 {
     private readonly P6CauterizeN? _cauterize = module.FindComponent<P6CauterizeN>();
 
-    protected override IEnumerable<WPos> SafeSpots(Actor actor)
+    protected override WPos[] SafeSpots(Actor actor)
     {
         if (_wings?.AOE == null || _cauterize?.AOE == null)
-            yield break;
+            return [];
 
         var safeSpotCenter = Arena.Center;
-        safeSpotCenter.Z -= _wings.AOE.Value.Origin.Z - Arena.Center.Z;
-        safeSpotCenter.X -= _cauterize.AOE.Value.Origin.X - Arena.Center.X;
+        var safeSpotCenterX = safeSpotCenter.X;
+        var safeSpotCenterZ = safeSpotCenter.Z;
+        safeSpotCenterZ -= _wings.AOE.Value.Origin.Z - safeSpotCenterZ;
+        safeSpotCenterX -= _cauterize.AOE.Value.Origin.X - safeSpotCenterX;
+        safeSpotCenter = new(safeSpotCenterX, safeSpotCenterZ);
 
         var shouldBait = actor.Role == Role.Tank;
         var stayFar = shouldBait == _far;
@@ -144,46 +147,46 @@ class P6HallowedPlume1(BossModule module) : P6HallowedPlume(module)
         if (shouldBait)
         {
             // TODO: configurable tank assignments (e.g. MT always center/out/N/S)
-            yield return safeSpotCenter + new WDir(xOffset, 9);
-            yield return safeSpotCenter + new WDir(xOffset, -9);
+            return [safeSpotCenter + new WDir(xOffset, 9f), safeSpotCenter + new WDir(xOffset, -9f)];
         }
         else
         {
-            yield return safeSpotCenter + new WDir(xOffset, 0);
+            return [safeSpotCenter + new WDir(xOffset, default)];
         }
     }
 }
 
-class P6HallowedPlume2(BossModule module) : P6HallowedPlume(module)
+sealed class P6HallowedPlume2(BossModule module) : P6HallowedPlume(module)
 {
     private readonly P6HotWingTail? _wingTail = module.FindComponent<P6HotWingTail>();
 
-    protected override IEnumerable<WPos> SafeSpots(Actor actor)
+    protected override WPos[] SafeSpots(Actor actor)
     {
         if (_wings?.AOE == null || _wingTail == null)
-            yield break;
+            return [];
 
         var zCoeff = _wingTail.NumAOEs switch
         {
-            1 => 15.75f / 11,
-            2 => 4.0f / 11,
-            _ => 1
+            1 => 15.75f / 11f,
+            2 => 4.0f / 11f,
+            _ => 1f
         };
         var safeSpotCenter = Arena.Center;
-        safeSpotCenter.Z -= zCoeff * (_wings.AOE.Value.Origin.Z - Arena.Center.Z);
+        var safeSpotCenterZ = safeSpotCenter.Z;
+        safeSpotCenterZ -= zCoeff * (_wings.AOE.Value.Origin.Z - safeSpotCenterZ);
+        safeSpotCenter = new(safeSpotCenter.X, safeSpotCenterZ);
 
         var shouldBait = actor.Role == Role.Tank;
         var stayFar = shouldBait == _far;
-        float xOffset = stayFar ? -20 : +20; // assume hraesvelgr is always at +22
+        var xOffset = stayFar ? -20f : 20f; // assume hraesvelgr is always at +22
         if (shouldBait)
         {
             // TODO: configurable tank assignments (e.g. MT always center/border/near/far)
-            yield return safeSpotCenter;
-            yield return safeSpotCenter + new WDir(xOffset, 0);
+            return [safeSpotCenter, safeSpotCenter + new WDir(xOffset, default)];
         }
         else
         {
-            yield return safeSpotCenter + new WDir(xOffset, 0);
+            return [safeSpotCenter + new WDir(xOffset, default)];
         }
     }
 }

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C023Moko;
 
-class IronRainStorm(BossModule module) : Components.GenericAOEs(module)
+sealed class IronRainStorm(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> AOEs = [];
     private readonly IaiGiriBait? _bait = module.FindComponent<IaiGiriBait>();
 
     private static readonly AOEShapeCircle _shapeRain = new(10f);
     private static readonly AOEShapeCircle _shapeStorm = new(20f);
-    private static readonly WDir[] _safespotDirections = [new(1, 0), new(-1, 0), new(0, 1), new(0, -1)];
+    private static readonly WDir[] _safespotDirections = [new(1f, default), new(-1f, default), new(default, 1f), new(default, -1f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
@@ -20,10 +20,23 @@ class IronRainStorm(BossModule module) : Components.GenericAOEs(module)
         if (bait?.DirOffsets.Count == 2)
         {
             var offset = bait.DirOffsets[1].Rad > 0f ? 5f : -5f;
-            foreach (var dir in _safespotDirections)
+            var count = AOEs.Count;
+            var aoes = CollectionsMarshal.AsSpan(AOEs);
+            for (var i = 0; i < 4; ++i)
             {
+                var dir = _safespotDirections[i];
                 var safespot = Arena.Center + 19f * dir;
-                if (!AOEs.Any(aoe => aoe.Check(safespot)))
+                var safespotSafe = true;
+                for (var j = 0; j < count; ++j)
+                {
+                    ref var aoe = ref aoes[j];
+                    if (aoe.Check(safespot))
+                    {
+                        safespotSafe = false;
+                        break;
+                    }
+                }
+                if (safespotSafe)
                 {
                     Arena.AddCircle(safespot + offset * dir.OrthoR(), 1f, Colors.Safe);
                 }
@@ -52,8 +65,14 @@ class IronRainStorm(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.NIronStormFirst:
             case (uint)AID.SIronStormFirst:
                 ++NumCasts;
-                foreach (ref var aoe in AOEs.AsSpan())
-                    aoe.Activation = WorldState.FutureTime(6.2d); // second aoe will happen at same location
+                var count = AOEs.Count;
+                var aoes = CollectionsMarshal.AsSpan(AOEs);
+                var act = WorldState.FutureTime(6.2d);
+                for (var j = 0; j < count; ++j)
+                {
+                    ref var aoe = ref aoes[j];
+                    aoe.Activation = act; // second aoe will happen at same location
+                }
                 break;
             case (uint)AID.NIronRainSecond:
             case (uint)AID.SIronRainSecond:

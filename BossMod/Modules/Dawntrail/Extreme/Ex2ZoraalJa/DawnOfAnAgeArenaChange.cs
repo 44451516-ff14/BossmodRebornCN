@@ -7,15 +7,18 @@ sealed class DawnOfAnAgeArenaChange(BossModule module) : Components.GenericAOEs(
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DawnOfAnAge)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.9f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.9d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00200010u && index == 0x0Bu)
+        if (index == 0x0B && state == 0x00200010u)
         {
             Module.Arena.Bounds = Trial.T02ZoraalJa.ZoraalJa.SmallBounds;
             _aoe = null;

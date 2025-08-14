@@ -9,13 +9,13 @@ class RubyGlow4(BossModule module) : RubyGlowRecolor(module, 5)
         var len = poison.Length;
         var aoes = new List<AOEInstance>(len + 2);
         if (CurRecolorState != RecolorState.BeforeStones && MagicStones.Count != 0)
-            aoes.Add(new(ShapeHalf, WPos.ClampToGrid(Arena.Center), Angle.FromDirection(QuadrantDir(AOEQuadrant))));
+            aoes.Add(new(ShapeHalf, Arena.Center.Quantized(), Angle.FromDirection(QuadrantDir(AOEQuadrant))));
         aoes.AddRange(poison);
 
         if (Module.PrimaryActor.CastInfo?.IsSpell(AID.RagingClaw) ?? false)
             aoes.Add(new(ShapeHalf, Module.PrimaryActor.Position, Module.PrimaryActor.CastInfo.Rotation, Module.CastFinishAt(Module.PrimaryActor.CastInfo)));
         if (Module.PrimaryActor.CastInfo?.IsSpell(AID.SearingRay) ?? false)
-            aoes.Add(new(ShapeHalf, WPos.ClampToGrid(Arena.Center), Module.PrimaryActor.CastInfo.Rotation + 180f.Degrees(), Module.CastFinishAt(Module.PrimaryActor.CastInfo)));
+            aoes.Add(new(ShapeHalf, Arena.Center.Quantized(), Module.PrimaryActor.CastInfo.Rotation + 180f.Degrees(), Module.CastFinishAt(Module.PrimaryActor.CastInfo)));
         return CollectionsMarshal.AsSpan(aoes);
     }
 }

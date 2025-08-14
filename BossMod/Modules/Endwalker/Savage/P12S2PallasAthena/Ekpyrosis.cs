@@ -10,7 +10,7 @@ class EkpyrosisExaflare(BossModule module) : Components.Exaflare(module, 6f)
     {
         if (spell.Action.ID == (uint)AID.EkpyrosisExaflareFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 8f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 2.1f, ExplosionsLeft = 5, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, 8f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 2.1d, 5, 2));
         }
     }
 

@@ -50,7 +50,7 @@ class FeatherSquall(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (id == 0x1E43 && actor == Module.PrimaryActor && !actor.Position.AlmostEqual(new(24f, -475.5f), 1f))
-            _aoe = new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(6.7d));
+            _aoe = new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.7d));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

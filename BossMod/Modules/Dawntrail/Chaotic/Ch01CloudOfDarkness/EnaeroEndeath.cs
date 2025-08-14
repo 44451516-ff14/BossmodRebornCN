@@ -25,10 +25,10 @@ sealed class EnaeroEndeath(BossModule module) : Components.GenericKnockback(modu
         switch (spell.Action.ID)
         {
             case (uint)AID.Aero:
-                Start(Module.CastFinishAt(spell, 0.5f), Kind.AwayFromOrigin);
+                Start(Module.CastFinishAt(spell, 0.5d), Kind.AwayFromOrigin);
                 break;
             case (uint)AID.Death:
-                Start(Module.CastFinishAt(spell, 0.5f), Kind.TowardsOrigin);
+                Start(Module.CastFinishAt(spell, 0.5d), Kind.TowardsOrigin);
                 break;
             case (uint)AID.Enaero:
                 _delayed = Kind.AwayFromOrigin;
@@ -77,7 +77,7 @@ sealed class EnaeroEndeath(BossModule module) : Components.GenericKnockback(modu
     private void Start(DateTime activation, Kind kind)
     {
         NumCasts = 0;
-        _source = new(Ch01CloudOfDarkness.Phase1BoundsCenter, 15f, activation, Kind: kind);
+        _source = new(Ch01CloudOfDarkness.Phase1BoundsCenter, 15f, activation, kind: kind);
     }
 }
 

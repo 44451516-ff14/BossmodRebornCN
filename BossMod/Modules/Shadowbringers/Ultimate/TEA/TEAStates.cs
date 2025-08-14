@@ -1,16 +1,16 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class TEAStates : StateMachineBuilder
+sealed class TEAStates : StateMachineBuilder
 {
     private readonly TEA _module;
 
     public TEAStates(TEA module) : base(module)
     {
         _module = module;
-        SimplePhase(0, Phase1LivingLiquid, "P1: Living Liquid")
+        SimplePhase(default, Phase1LivingLiquid, "P1: Living Liquid")
             .ActivateOnEnter<P1HandOfPain>()
             .Raw.Update = () => Module.PrimaryActor.IsDeadOrDestroyed; // phase 1 ends either with wipe (everything destroyed) or success (boss dies, then is destroyed few seconds into next phase)
-        SimplePhase(1, Phase2BruteJusticeCruiseChaser, "P2: BJ+CC")
+        SimplePhase(1u, Phase2BruteJusticeCruiseChaser, "P2: BJ+CC")
             .Raw.Update = () =>
             {
                 var bj = _module.BruteJustice();
@@ -24,7 +24,7 @@ class TEAStates : StateMachineBuilder
                 // some time after becoming untargetable, BJ/CC get healed to full - so the pass condition is: both untargetable and at least one at non-full hp (this prevents triggering during intermission)
                 return !bj.IsTargetable && !cc.IsTargetable && (bj.HPMP.CurHP < bj.HPMP.MaxHP || cc.HPMP.CurHP < cc.HPMP.MaxHP);
             };
-        SimplePhase(2, Phase3AlexanderPrime, "P3: Alex Prime")
+        SimplePhase(2u, Phase3AlexanderPrime, "P3: Alex Prime")
             .Raw.Update = () =>
             {
                 var alex = _module.AlexPrime();
@@ -35,7 +35,7 @@ class TEAStates : StateMachineBuilder
                 // alex swaps between targetable and untargetable state; consider that state transition happens at 1hp when enrage cast is interrupted
                 return alex.HPMP.CurHP <= 1 && alex.CastInfo == null;
             };
-        SimplePhase(3, Phase4PerfectAlexander, "P4: Perfect Alex")
+        SimplePhase(3u, Phase4PerfectAlexander, "P4: Perfect Alex")
             .Raw.Update = () => Module.PrimaryActor.IsDestroyed && (_module.PerfectAlex()?.IsDestroyed ?? true) || (_module.PerfectAlex()?.IsDead ?? false); // perfect alex should not be destroyed until either wipe or kill
     }
 
@@ -65,6 +65,7 @@ class TEAStates : StateMachineBuilder
     {
         ActorCast(id, _module.BossP1, (uint)AID.Cascade, delay, 4, true, "Raidwide")
             .ActivateOnEnter<P1Cascade>()
+            .ActivateOnEnter<P1Embolus>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
@@ -112,11 +113,9 @@ class TEAStates : StateMachineBuilder
 
     private void P1ProteansBoss(uint id, float delay)
     {
-        ActorCast(id + 1, _module.BossP1, (uint)AID.ProteanWaveLiquidVisBoss, delay, 3, true, "Protean baited")
-            .ActivateOnEnter<P1ProteanWaveLiquidVisBoss>()
-            .ActivateOnEnter<P1ProteanWaveLiquidVisHelper>()
-            .DeactivateOnExit<P1ProteanWaveLiquidVisBoss>()
-            .DeactivateOnExit<P1ProteanWaveLiquidVisHelper>();
+        ActorCast(id + 1, _module.BossP1, (uint)AID.ProteanWaveLiquidVisBoss, delay, 3f, true, "Protean baited")
+            .ActivateOnEnter<P1ProteanWaveLiquid>()
+            .DeactivateOnExit<P1ProteanWaveLiquid>();
         P1HandOfPain(id + 0x10, 0.2f, 2)
             .ActivateOnEnter<P1ProteanWaveLiquidInvisFixed>()
             .ActivateOnEnter<P1ProteanWaveLiquidInvisBaited>()
@@ -158,10 +157,8 @@ class TEAStates : StateMachineBuilder
     private void P1ProteansBoth(uint id, float delay)
     {
         ActorCast(id, _module.BossP1, (uint)AID.ProteanWaveLiquidVisBoss, delay, 3, true, "Protean baited")
-            .ActivateOnEnter<P1ProteanWaveLiquidVisBoss>()
-            .ActivateOnEnter<P1ProteanWaveLiquidVisHelper>()
-            .DeactivateOnExit<P1ProteanWaveLiquidVisBoss>()
-            .DeactivateOnExit<P1ProteanWaveLiquidVisHelper>();
+            .ActivateOnEnter<P1ProteanWaveLiquid>()
+            .DeactivateOnExit<P1ProteanWaveLiquid>();
         P1HandOfPain(id + 0x10, 2, 4)
             .ActivateOnEnter<P1ProteanWaveLiquidInvisFixed>()
             .ActivateOnEnter<P1ProteanWaveLiquidInvisBaited>()

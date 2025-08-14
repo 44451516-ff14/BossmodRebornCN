@@ -230,6 +230,15 @@ sealed class WorldStateGameSync : IDisposable
                 _ws.Execute(new WaymarkState.OpWaymarkChange(wm, pos));
             ++wm;
         }
+
+        var sgn = Sign.Attack1;
+        foreach (ref var marker in MarkingController.Instance()->Markers)
+        {
+            var id = SanitizedObjectID(marker.Id);
+            if (_ws.Waymarks[sgn] != id)
+                _ws.Execute(new WaymarkState.OpSignChange(sgn, id));
+            ++sgn;
+        }
     }
 
     private unsafe void UpdateActors()
@@ -297,6 +306,7 @@ sealed class WorldStateGameSync : IDisposable
             inCombat = chr->InCombat;
         }
         var targetable = obj->GetIsTargetable();
+        var renderflags = obj->RenderFlags;
         var friendly = chr == null || ActionManager.ClassifyTarget(chr) != ActionManager.TargetCategory.Enemy;
         var isDead = obj->IsDead();
         var hasAggro = _playerEnmity.IndexOf(obj->EntityId) >= 0;
@@ -311,7 +321,7 @@ sealed class WorldStateGameSync : IDisposable
         if (act == null)
         {
             var type = (ActorType)(((int)obj->ObjectKind << 8) + obj->SubKind);
-            _ws.Execute(new ActorState.OpCreate(obj->EntityId, obj->BaseId, index, name, nameID, type, classID, level, posRot, radius, hpmp, targetable, friendly, SanitizedObjectID(obj->OwnerId), obj->FateId));
+            _ws.Execute(new ActorState.OpCreate(obj->EntityId, obj->BaseId, index, obj->LayoutId, name, nameID, type, classID, level, posRot, radius, hpmp, targetable, friendly, SanitizedObjectID(obj->OwnerId), obj->FateId, renderflags));
             act = _actorsByIndex[index] = _ws.Actors.Find(obj->EntityId)!;
 
             // note: for now, we continue relying on network messages for tether changes, since sometimes multiple changes can happen in a single frame, and some components rely on seeing all of them...
@@ -336,6 +346,8 @@ sealed class WorldStateGameSync : IDisposable
                 _ws.Execute(new ActorState.OpTargetable(id, targetable));
             if (act.IsAlly != friendly)
                 _ws.Execute(new ActorState.OpAlly(id, friendly));
+            if (act.Renderflags != renderflags)
+                _ws.Execute(new ActorState.OpRenderflags(id, renderflags));
         }
         var instanceID = act.InstanceID;
         if (act.IsDead != isDead)
@@ -360,7 +372,7 @@ sealed class WorldStateGameSync : IDisposable
         var castInfo = chr != null ? chr->GetCastInfo() : null;
         if (castInfo != null)
         {
-            var curCast = castInfo->IsCasting != 0
+            var curCast = castInfo->IsCasting
                 ? new ActorCastInfo
                 {
                     Action = new((ActionType)castInfo->ActionType, castInfo->ActionId),
@@ -369,7 +381,7 @@ sealed class WorldStateGameSync : IDisposable
                     Location = _lastCastPositions.GetValueOrDefault(act.InstanceID, castInfo->TargetLocation),
                     ElapsedTime = castInfo->CurrentCastTime,
                     TotalTime = castInfo->BaseCastTime,
-                    Interruptible = castInfo->Interruptible != 0,
+                    Interruptible = castInfo->Interruptible,
                 } : null;
             UpdateActorCastInfo(act, curCast);
         }
@@ -485,7 +497,7 @@ sealed class WorldStateGameSync : IDisposable
         {
             // in normal mode, the primary data source is playerstate
             var ui = UIState.Instance();
-            if (ui->PlayerState.IsLoaded != 0)
+            if (ui->PlayerState.IsLoaded)
             {
                 var inCutscene = Service.Condition[ConditionFlag.OccupiedInCutSceneEvent] || Service.Condition[ConditionFlag.WatchingCutscene78] || Service.Condition[ConditionFlag.Occupied33] || Service.Condition[ConditionFlag.BetweenAreas] || Service.Condition[ConditionFlag.OccupiedInQuestEvent];
                 player = new(ui->PlayerState.ContentId, ui->PlayerState.EntityId, inCutscene, ui->PlayerState.CharacterNameString);
@@ -748,6 +760,10 @@ sealed class WorldStateGameSync : IDisposable
 
         if (hatePrimary != _ws.Client.CurrentTargetHate.InstanceID || !MemoryExtensions.SequenceEqual(hateTargets, _ws.Client.CurrentTargetHate.Targets))
             _ws.Execute(new ClientState.OpHateChange(hatePrimary, hateTargets));
+
+        var timers = actionManager->ProcTimers[1..];
+        if (!MemoryExtensions.SequenceEqual(timers, _ws.Client.ProcTimers))
+            _ws.Execute(new ClientState.OpProcTimersChange(timers.ToArray()));
     }
 
     private unsafe void UpdateDeepDungeon()

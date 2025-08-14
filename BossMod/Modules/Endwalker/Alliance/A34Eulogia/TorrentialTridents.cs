@@ -28,7 +28,7 @@ class TorrentialTrident(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.TorrentialTridentLanding:
-                AOEs.Add(new(_shape, WPos.ClampToGrid(caster.Position), default, WorldState.FutureTime(13.6d)));
+                AOEs.Add(new(_shape, caster.Position.Quantized(), default, WorldState.FutureTime(13.6d)));
                 break;
             case (uint)AID.LightningBolt:
                 ++NumCasts;

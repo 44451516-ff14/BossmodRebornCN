@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P6FlashGale : Components.GenericBaitAway
+sealed class P6FlashGale : Components.GenericBaitAway
 {
     private readonly Actor? _source;
 

@@ -36,12 +36,14 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FlamesOfDecay && Arena.Bounds != D033Svarbhanu.DefaultArena)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 8.9f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 8.9d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x07u)
+        if (index == 0x07 && state == 0x00020001u)
         {
             Arena.Bounds = D033Svarbhanu.DefaultArena;
             _aoe = null;
@@ -68,7 +70,7 @@ class ChaoticUndercurrent(BossModule module) : Components.GenericAOEs(module)
         // blue blue red red => 0x00020001, red (-142, -152), blue (-162, -172) 
         // blue red red blue => 0x00100008, red (-152, -162), blue (-172, -142)
         // red red blue blue => 0x01000080, red (-162, -172), blue (-152, -142)
-        if (index == 0x08u)
+        if (index == 0x08)
         {
             currentPattern = state switch
             {
@@ -123,7 +125,7 @@ class ChaoticUndercurrent(BossModule module) : Components.GenericAOEs(module)
             void AddAOE(WPos pos)
             {
                 var activation = WorldState.FutureTime(7.7d);
-                AOEs.Add(new(rect, WPos.ClampToGrid(pos), rotation, activation));
+                AOEs.Add(new(rect, pos.Quantized(), rotation, activation));
             }
         }
     }
@@ -134,7 +136,7 @@ class ChaoticUndercurrent(BossModule module) : Components.GenericAOEs(module)
             return;
         _kb ??= Module.FindComponent<CosmicKissKnockback>();
 
-        if (_kb!.Casters.Count != 0 && !_kb.IsImmune(slot, Module.CastFinishAt(_kb.Casters[0].CastInfo)))
+        if (_kb!.Casters.Count != 0 && !_kb.IsImmune(slot, _kb.Casters.Ref(0).Activation))
         { } // remove forbidden zones while knockback is active to not confuse the AI
         else
             base.AddAIHints(slot, actor, assignment, hints);
@@ -182,7 +184,7 @@ class CosmicKissRect(BossModule module) : Components.GenericAOEs(module)
             void AddAOEs(int[] indices, double delay)
             {
                 for (var i = 0; i < 3; ++i)
-                    _aoes.Add(new(rect, WPos.ClampToGrid(coords[indices[i]]), rotation, WorldState.FutureTime(delay)));
+                    _aoes.Add(new(rect, coords[indices[i]].Quantized(), rotation, WorldState.FutureTime(delay)));
             }
         }
     }
@@ -204,11 +206,14 @@ class CosmicKissKnockback(BossModule module) : Components.SimpleKnockbacks(modul
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var count = _aoe.AOEs.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
         for (var i = 0; i < count; ++i)
         {
-            var z = _aoe.AOEs[i];
-            if (z.Shape.Check(pos, z.Origin, z.Rotation))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -219,8 +224,8 @@ class CosmicKissKnockback(BossModule module) : Components.SimpleKnockbacks(modul
         var count = component.Count;
         if (count != 0 && Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (IsImmune(slot, act))
                 return;
 
@@ -250,7 +255,7 @@ class CosmicKissKnockback(BossModule module) : Components.SimpleKnockbacks(modul
                         break;
                 }
             }
-            var pos = Arena.Center;
+            var pos = c.Origin;
             if (hasMinus152 && hasMinus162)
             {
                 forbidden.Add(ShapeDistance.InvertedCone(pos, 7f, default, a45));
@@ -265,7 +270,7 @@ class CosmicKissKnockback(BossModule module) : Components.SimpleKnockbacks(modul
                 forbidden.Add(ShapeDistance.InvertedCone(pos, 7f, a180, a90));
             else
                 forbidden.Add(ShapeDistance.InvertedCone(pos, 7f, default, a90));
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Module.CastFinishAt(source.CastInfo));
+            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
         }
     }
 }

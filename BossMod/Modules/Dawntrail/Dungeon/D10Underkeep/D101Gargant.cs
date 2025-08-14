@@ -39,13 +39,22 @@ sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -53,13 +62,17 @@ sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.SandSphere)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(7.9d)));
+        {
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(7.9d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.SphereShatter1 or (uint)AID.SphereShatter2)
+        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.SphereShatter1 or (uint)AID.SphereShatter2)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 

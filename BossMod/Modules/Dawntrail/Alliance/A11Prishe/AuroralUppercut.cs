@@ -1,10 +1,11 @@
 namespace BossMod.Dawntrail.Alliance.A11Prishe;
 
-sealed class AuroralUppercut(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class AuroralUppercut(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _source;
+    private Knockback? _kb;
+    private RelSimplifiedComplexPolygon poly = new();
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _source != null && actor.FindStatus(SID.Knockback) == null ? Utils.ZeroOrOne(ref _source) : [];
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb != null && actor.FindStatus(SID.Knockback) == null ? Utils.ZeroOrOne(ref _kb) : [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -13,18 +14,41 @@ sealed class AuroralUppercut(BossModule module) : Components.GenericKnockback(mo
             (uint)AID.AuroralUppercut1 => 12f,
             (uint)AID.AuroralUppercut2 => 25f,
             (uint)AID.AuroralUppercut3 => 38f,
-            _ => 0f
+            _ => default
         };
-        if (distance != 0f)
-            _source = new(Arena.Center, distance, Module.CastFinishAt(spell, 1.6f));
+        if (distance != default)
+        {
+            _kb = new(Arena.Center, distance, Module.CastFinishAt(spell, 1.6d), ignoreImmunes: true);
+            if (Arena.Bounds is ArenaBoundsComplex arena)
+            {
+                poly = arena.poly.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
+            }
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if (_source != null && status.ID == (uint)SID.Knockback)
+        if (_kb != null && status.ID == (uint)SID.Knockback)
         {
             NumCasts = 1;
-            _source = null;
+            _kb = null;
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (_kb is Knockback kb)
+        {
+            var center = Arena.Center;
+            var distance = kb.Distance;
+            var polygon = poly;
+            hints.AddForbiddenZone(p =>
+            {
+                var offset = p - center;
+                if (polygon.Contains(offset + distance * offset.Normalized()))
+                    return 1f;
+                return default;
+            }, kb.Activation);
         }
     }
 }
@@ -34,20 +58,14 @@ sealed class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(mod
     private static readonly Angle a45 = 45f.Degrees(), a135 = 135f.Degrees(), a44 = 44f.Degrees(), a13 = 12.5f.Degrees(), a59 = 59f.Degrees();
     private static readonly WPos center = A11Prishe.ArenaCenter;
     private AOEInstance? _aoe;
-    private static readonly AOEShapeCustom hintENVC00020001KB25 = new([new DonutSegmentHA(center, 4f, 10f, -144f.Degrees(), a44), new DonutSegmentHA(center, 4f, 10f, 36f.Degrees(), a44)],
-    [new ConeHA(center, 10f, -a135, a13), new ConeHA(center, 10f, a45, a13)], InvertForbiddenZone: true);
-    private static readonly AOEShapeCustom hintENVC02000100KB25 = new([new DonutSegmentHA(center, 4f, 10f, 126f.Degrees(), a44), new DonutSegmentHA(center, 4f, 10f, -54f.Degrees(), a44)],
-    [new ConeHA(center, 10f, a135, a13), new ConeHA(center, 10f, -a45, a13)], InvertForbiddenZone: true);
-    private static readonly AOEShapeCustom hintENVC00020001KB38 = new([new ConeHA(center, 5f, -a135, a13), new ConeHA(center, 5f, a45, a13)], InvertForbiddenZone: true);
-    private static readonly AOEShapeCustom hintENVC02000100KB38 = new([new ConeHA(center, 5f, a135, a13), new ConeHA(center, 5f, -a45, a13)], InvertForbiddenZone: true);
-    private static readonly AOEShapeCustom hintENVC00020001KB12 = new([new ConeHA(center, 5f, a135, a59), new ConeHA(center, 5f, -a45, a59),
-    new ConeV(ArenaChanges.MiddleENVC00020001[0].Center + new WDir(-9f, -9f), 3, -a135, a45, 3),
-    new ConeV(ArenaChanges.MiddleENVC00020001[1].Center + new WDir(9f, 9f), 3, a45, a45, 3),
-    new Rectangle(center + new WDir(-3f, -15f), 5f, 1f), new Rectangle(center + new WDir(3f, 15f), 5f, 1f)], InvertForbiddenZone: true);
-    private static readonly AOEShapeCustom hintENVC02000100KB12 = new([new ConeHA(center, 5f, -a135, a59), new ConeHA(center, 5f, a45, a59),
-    new ConeV(ArenaChanges.MiddleENVC02000100[0].Center + new WDir(9f, -9f), 3f, -a45, a45, 3),
-    new ConeV(ArenaChanges.MiddleENVC02000100[1].Center + new WDir(-9f, 9f), 3, a135, a45, 3),
-    new Rectangle(center + new WDir(-15f, 3f), 1f, 5f), new Rectangle(center + new WDir(15f, -3f), 1f, 5f)], InvertForbiddenZone: true);
+    private static readonly AOEShapeCustom hintENVC00020001KB25 = new([new DonutSegmentV(center, 4f, 10f, -144f.Degrees(), a44, 8), new DonutSegmentV(center, 4f, 10f, 36f.Degrees(), a44, 8)],
+    [new ConeV(center, 10f, -a135, a13, 8), new ConeV(center, 10f, a45, a13, 8)]);
+    private static readonly AOEShapeCustom hintENVC02000100KB25 = new([new DonutSegmentV(center, 4f, 10f, 126f.Degrees(), a44, 8), new DonutSegmentV(center, 4f, 10f, -54f.Degrees(), a44, 8)],
+    [new ConeV(center, 10f, a135, a13, 8), new ConeV(center, 10f, -a45, a13, 8)]);
+    private static readonly AOEShapeCustom hintENVC00020001KB38 = new([new ConeV(center, 5f, -a135, a13, 8), new ConeV(center, 5f, a45, a13, 8)]);
+    private static readonly AOEShapeCustom hintENVC02000100KB38 = new([new ConeV(center, 5f, a135, a13, 8), new ConeV(center, 5f, -a45, a13, 8)]);
+    private static readonly AOEShapeCustom hintENVC00020001KB12 = new([new ConeV(center, 5f, a135, a59, 8), new ConeV(center, 5f, -a45, a59, 8)]);
+    private static readonly AOEShapeCustom hintENVC02000100KB12 = new([new ConeV(center, 5f, -a135, a59, 8), new ConeV(center, 5f, a45, a59, 8)]);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
@@ -81,7 +99,7 @@ sealed class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(mod
                     SetAOE(hintENVC02000100KB38);
                 break;
         }
-        void SetAOE(AOEShapeCustom shape) => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 1.6f), Colors.SafeFromAOE);
+        void SetAOE(AOEShapeCustom shape) => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 1.6d), Colors.SafeFromAOE);
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
@@ -91,4 +109,5 @@ sealed class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(mod
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints) { }
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { }
 }

@@ -71,12 +71,12 @@ abstract class P1CommonAssignments(BossModule module) : CommonAssignments(module
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var order = (SID)status.ID switch
+        var order = status.ID switch
         {
-            SID.InLine1 => 1,
-            SID.InLine2 => 2,
-            SID.InLine3 => 3,
-            SID.InLine4 => 4,
+            (uint)SID.InLine1 => 1,
+            (uint)SID.InLine2 => 2,
+            (uint)SID.InLine3 => 3,
+            (uint)SID.InLine4 => 4,
             _ => 0
         };
         Assign(actor, order);

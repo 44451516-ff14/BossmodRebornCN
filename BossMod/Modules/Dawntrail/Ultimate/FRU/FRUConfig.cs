@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
 [ConfigDisplay(Order = 0x200, Parent = typeof(DawntrailConfig))]
-public class FRUConfig() : ConfigNode()
+public sealed class FRUConfig() : ConfigNode()
 {
     // TODO: fixed tethers option
     [PropertyDisplay("P1 Bound of Faith (light party tethers): group assignments & flex priority (lower number flexes)")]

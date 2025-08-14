@@ -51,7 +51,7 @@ class Spotlights1(BossModule module) : Components.GenericTowers(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (spotlightSet == null && actor.OID == (uint)OID.Spotlight && id == 0x11DCu)
+        if (id == 0x11DC && spotlightSet == null && actor.OID == (uint)OID.Spotlight)
         {
             var position = actor.Position;
             if (position == new WPos(102.5f, 107.5f))
@@ -63,7 +63,7 @@ class Spotlights1(BossModule module) : Components.GenericTowers(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x03u || patternENVC200010 != null)
+        if (index != 0x03 || patternENVC200010 != null)
             return;
 
         patternENVC200010 ??= state switch

@@ -32,13 +32,13 @@ class P5NearDistantWorld(BossModule module) : Components.GenericStackSpread(modu
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.HelloNearWorld:
+            case (uint)SID.HelloNearWorld:
                 NearWorld = actor;
                 _firstActivation = status.ExpireAt;
                 break;
-            case SID.HelloDistantWorld:
+            case (uint)SID.HelloDistantWorld:
                 DistantWorld = actor;
                 _firstActivation = status.ExpireAt;
                 break;
@@ -47,17 +47,17 @@ class P5NearDistantWorld(BossModule module) : Components.GenericStackSpread(modu
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.HelloNearWorld:
-            case AID.HelloNearWorldJump:
+            case (uint)AID.HelloNearWorld:
+            case (uint)AID.HelloNearWorldJump:
                 ++NumNearJumpsDone;
                 var nearSlot = Raid.FindSlot(spell.MainTargetID);
                 _completedJumps.Set(nearSlot);
                 NearWorld = Raid[nearSlot];
                 break;
-            case AID.HelloDistantWorld:
-            case AID.HelloDistantWorldJump:
+            case (uint)AID.HelloDistantWorld:
+            case (uint)AID.HelloDistantWorldJump:
                 ++NumDistantJumpsDone;
                 var distantSlot = Raid.FindSlot(spell.MainTargetID);
                 _completedJumps.Set(distantSlot);
@@ -80,25 +80,25 @@ class P5NearDistantWorld(BossModule module) : Components.GenericStackSpread(modu
         if (numDone == 0)
         {
             if (start != null)
-                AddSpread(start, 8, 0);
+                AddSpread(start, 8f, 0);
         }
         if (numDone <= 1 && start != null)
         {
             start = close ? Raid.WithoutSlot(false, true, true).Exclude(start).Closest(start.Position) : Raid.WithoutSlot(false, true, true).Exclude(start).Farthest(start.Position);
             if (start != null)
-                AddSpread(start, 4, 1);
+                AddSpread(start, 4f, 1);
         }
         if (numDone <= 2 && start != null)
         {
             start = close ? Raid.WithoutSlot(false, true, true).Exclude(start).Closest(start.Position) : Raid.WithoutSlot(false, true, true).Exclude(start).Farthest(start.Position);
             if (start != null)
-                AddSpread(start, 4, 2);
+                AddSpread(start, 4f, 2);
         }
     }
 
     private void AddSpread(Actor target, float radius, int order)
     {
-        Spreads.Add(new(target, radius, _firstActivation.AddSeconds(order * 1.0)));
+        Spreads.Add(new(target, radius, _firstActivation.AddSeconds(order)));
         var slot = Raid.FindSlot(target.InstanceID);
         if (_targets[slot])
             _risky.Set(slot);

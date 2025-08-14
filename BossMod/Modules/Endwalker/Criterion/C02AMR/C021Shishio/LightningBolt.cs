@@ -18,13 +18,22 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var deadline = aoes[0].Activation.AddSeconds(1.4d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -33,7 +42,9 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
     {
         var shape = ShapeForAction(spell.Action);
         if (shape != null)
+        {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -43,7 +54,9 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
             ++NumCasts;
             var numRemoved = _aoes.RemoveAll(aoe => aoe.Origin.AlmostEqual(caster.Position, 1f));
             if (numRemoved != 1)
+            {
                 ReportError($"Unexpected number of matching aoes: {numRemoved}");
+            }
         }
     }
 

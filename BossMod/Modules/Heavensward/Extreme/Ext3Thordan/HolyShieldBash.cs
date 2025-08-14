@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Heavensward.Extreme.Ex3Thordan;
 
-class HolyShieldBash(BossModule module) : Components.GenericWildCharge(module, 3)
+sealed class HolyShieldBash(BossModule module) : Components.GenericWildCharge(module, 3f)
 {
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
         => PlayerRoles[playerSlot] == PlayerRole.Target ? PlayerPriority.Interesting : PlayerPriority.Irrelevant;

@@ -190,17 +190,28 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
             else if (_config.FollowTarget && target != null && AIPreset == null)
             {
                 var positional = _config.DesiredPositional;
+                var mindist = _config.MinDistance;
+                var maxdist = _config.MaxDistanceToTarget;
                 if (positional is Positional.Rear or Positional.Flank && (target.CastInfo == null && target.NameID != 541u && target.TargetID == player.InstanceID || target.Omnidirectional)) // if player is target, rear/flank is usually impossible unless target is casting
                     positional = Positional.Any;
-                autorot.Hints.GoalZones.Add(autorot.Hints.GoalSingleTarget(master, positional, positional != Positional.Any ? 2.6f : _config.MaxDistanceToTarget));
+                autorot.Hints.GoalZones.Add(autorot.Hints.GoalSingleTarget(master, positional, positional != Positional.Any ? 2.6f : maxdist));
+
+                if (mindist != default && target.InstanceID != player.InstanceID && interactTarget == null)
+                {
+                    var hitboxradius = target.HitboxRadius;
+                    var maxAdj = hitboxradius + maxdist;
+                    var min = hitboxradius + mindist;
+                    var max = maxAdj > min ? maxAdj : min + 1f;
+                    autorot.Hints.GoalZones.Add(autorot.Hints.GoalDonut(target.Position, min, max, 2f));
+                }
             }
-            return await Task.Run(() => NavigationDecision.Build(_naviCtx, WorldState, autorot.Hints, player)).ConfigureAwait(false);
+            return await Task.Run(() => NavigationDecision.Build(_naviCtx, WorldState, autorot.Hints, player, autorot.Bossmods.WorldState.Client.MoveSpeed, forbiddenZoneCushion: _config.PreferredDistance)).ConfigureAwait(false);
         }
 
         // TODO: remove this once all rotation modules are fixed
         if (autorot.Hints.GoalZones.Count == 0 && targeting.Target != null)
             autorot.Hints.GoalZones.Add(autorot.Hints.GoalSingleTarget(targeting.Target.Actor, targeting.PreferredPosition, targeting.PreferredRange));
-        return await Task.Run(() => NavigationDecision.Build(_naviCtx, WorldState, autorot.Hints, player)).ConfigureAwait(false);
+        return await Task.Run(() => NavigationDecision.Build(_naviCtx, WorldState, autorot.Hints, player, autorot.Bossmods.WorldState.Client.MoveSpeed, _config.PreferredDistance)).ConfigureAwait(false);
     }
 
     private void FocusMaster(Actor master)
@@ -244,17 +255,17 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
             ctrl.NaviTargetVertical = null;
             ctrl.ForceCancelCast = true;
         }
-        else if (misdirectionAngle != default && _naviDecision.Destination != null)
+        else if (misdirectionAngle != default && _naviDecision.Destination is WPos destination)
         {
             ctrl.AllowInterruptingCastByMovement = true;
-            var dir = _naviDecision.Destination.Value - player.Position;
+            var dir = destination - player.Position;
             var distSq = dir.LengthSq();
             var threshold = 45f.Degrees();
             var forceddir = WorldState.Client.ForcedMovementDirection;
             var allowMovement = forceddir.AlmostEqual(Angle.FromDirection(dir), threshold.Rad);
             if (allowMovement)
                 allowMovement = CalculateUnobstructedPathLength(forceddir) >= Math.Min(3f, distSq);
-            ctrl.NaviTargetPos = allowMovement && distSq >= 0.01f ? _naviDecision.Destination.Value : null;
+            ctrl.NaviTargetPos = allowMovement && distSq >= 0.01f ? destination : null;
 
             float CalculateUnobstructedPathLength(Angle dir)
             {

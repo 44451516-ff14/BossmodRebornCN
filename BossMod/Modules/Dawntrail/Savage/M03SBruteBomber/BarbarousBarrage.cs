@@ -22,7 +22,7 @@ sealed class BarbarousBarrageTowers(BossModule module) : Components.GenericTower
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (CurState == State.None && index is 0x0E or 0x0F)
-            SetState(index == 0x0Eu ? State.NextNS : State.NextEW, 4, 10.1f);
+            SetState(index == 0x0E ? State.NextNS : State.NextEW, 4, 10.1d);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -30,10 +30,10 @@ sealed class BarbarousBarrageTowers(BossModule module) : Components.GenericTower
         switch (spell.Action.ID)
         {
             case (uint)AID.BarbarousBarrageExplosion4:
-                SetState(State.NextCorners, 2, 3);
+                SetState(State.NextCorners, 2, 3d);
                 break;
             case (uint)AID.BarbarousBarrageExplosion2:
-                SetState(State.NextCenter, 8, 3);
+                SetState(State.NextCenter, 8, 3d);
                 break;
             case (uint)AID.BarbarousBarrageExplosion8:
                 SetState(State.Done, 1, default);
@@ -41,7 +41,7 @@ sealed class BarbarousBarrageTowers(BossModule module) : Components.GenericTower
         }
     }
 
-    private void SetState(State state, int soakers, float activation)
+    private void SetState(State state, int soakers, double activation)
     {
         if (CurState != state)
         {

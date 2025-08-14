@@ -65,7 +65,7 @@ class NecroticFluidMist(BossModule module) : Components.Exaflare(module, 6f)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x2Bu)
+        if (index == 0x2B)
         {
             switch (state)
             {
@@ -89,8 +89,8 @@ class NecroticFluidMist(BossModule module) : Components.Exaflare(module, 6f)
                 Pattern.Northward => GetNorthwardExplosions(caster.Position, Arena.Center),
                 _ => 0
             };
-            var advance = 6 * (CurrentWind == Pattern.Southward ? new WDir(default, 1f) : new(default, -1f));
-            Lines.Add(new() { Next = caster.Position, Advance = advance, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 2, ExplosionsLeft = numExplosions, MaxShownExplosions = 5 });
+            var advance = 6f * (CurrentWind == Pattern.Southward ? new WDir(default, 1f) : new(default, -1f));
+            Lines.Add(new(caster.Position, advance, Module.CastFinishAt(spell), 2d, numExplosions, 5));
         }
     }
 

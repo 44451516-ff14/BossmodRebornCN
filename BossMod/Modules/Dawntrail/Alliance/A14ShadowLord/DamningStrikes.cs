@@ -18,9 +18,11 @@ sealed class DamningStrikes(BossModule module) : Components.GenericTowers(module
 
             var count = Towers.Count;
             var id = caster.InstanceID;
+            var towers = CollectionsMarshal.AsSpan(Towers);
             for (var i = 0; i < count; ++i)
             {
-                if (Towers[i].ActorID == id)
+                ref var t = ref towers[i];
+                if (t.ActorID == id)
                 {
                     Towers.RemoveAt(i);
                     break;
@@ -30,14 +32,15 @@ sealed class DamningStrikes(BossModule module) : Components.GenericTowers(module
             var party = Raid.WithSlot(false, false, true);
             var lenP = party.Length;
             BitMask forbidden = default;
-            var targets = spell.Targets;
-            var countT = targets.Count;
-            for (var i = 0; i < countT; ++i)
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            for (var i = 0; i < len; ++i)
             {
+                ref readonly var targ = ref targets[i];
                 for (var j = 0; j < lenP; ++j)
                 {
                     ref readonly var p = ref party[j];
-                    if (targets[i].ID == p.Item2.InstanceID)
+                    if (targ.ID == p.Item2.InstanceID)
                     {
                         forbidden[p.Item1] = true;
                         break;
@@ -45,11 +48,12 @@ sealed class DamningStrikes(BossModule module) : Components.GenericTowers(module
                 }
             }
 
-            var towers = CollectionsMarshal.AsSpan(Towers);
-            var len = towers.Length;
-            for (var i = 0; i < len; ++i)
+            towers = CollectionsMarshal.AsSpan(Towers);
+            var len2 = towers.Length;
+            for (var i = 0; i < len2; ++i)
             {
-                towers[i].ForbiddenSoakers |= forbidden;
+                ref var t = ref towers[i];
+                t.ForbiddenSoakers |= forbidden;
             }
         }
     }

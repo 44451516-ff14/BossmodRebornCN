@@ -30,14 +30,14 @@ class MetamorphicBlast(BossModule module) : Components.RaidwideCast(module, (uin
 class MightySpin2(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(14f);
-    private AOEInstance? _aoe = new(circle, WPos.ClampToGrid(module.PrimaryActor.Position));
+    private AOEInstance? _aoe = new(circle, module.PrimaryActor.Position.Quantized());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Groundstorm)
-            _aoe = new(circle, WPos.ClampToGrid(Module.PrimaryActor.Position), default, Module.CastFinishAt(spell, 4f));
+            _aoe = new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell, 4f));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

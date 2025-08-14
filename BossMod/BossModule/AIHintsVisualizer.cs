@@ -62,7 +62,7 @@ public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player
             ImGui.TextUnformatted($"Obstacles={hints.PathfindMapObstacles}");
             _pathfindVisualizer ??= BuildPathfindingVisualizer();
             _pathfindVisualizer!.Draw();
-            ImGui.TextUnformatted($"Rasterize Time={_naviTime:f3}");
+            ImGui.TextUnformatted($"Pathfinding time={_naviTime:f3}ms");
             ImGui.TextUnformatted($"Leeway={_navi.LeewaySeconds:f3}, ttg={_navi.TimeToGoal:f3}, dist={(_navi.Destination != null ? $"{(_navi.Destination.Value - player.Position).Length():f3}" : "---")}");
         }
     }
@@ -83,7 +83,7 @@ public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player
 
         var now = DateTime.Now;
         _navi = NavigationDecision.Build(_naviCtx, ws, hints, player, forbiddenZoneCushion: cushionSize);
-        _naviTime = (float)(DateTime.Now - now).TotalSeconds;
+        _naviTime = (float)(DateTime.Now - now).TotalMilliseconds;
 
         return new MapVisualizer(_naviCtx.Map, player.Position);
     }

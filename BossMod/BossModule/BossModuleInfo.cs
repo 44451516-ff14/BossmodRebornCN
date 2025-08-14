@@ -61,7 +61,7 @@ public static class BossModuleInfo
         RemovedUnreal, // group id is ContentFinderCondition row
         BaldesionArsenal, // group id is ContentFinderCondition row
         CastrumLacusLitore, // group id is ContentFinderCondition row
-        TheDaldriada, // group id is ContentFinderCondition row
+        TheDalriada, // group id is ContentFinderCondition row
         TheForkedTowerBlood, // group id is ContentFinderCondition row
         ForayFATE, // group id is Fate row
         Quest, // group id is Quest row

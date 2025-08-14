@@ -71,7 +71,7 @@ class DiscordantHarmony(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Chirp)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(8.7d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.7d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

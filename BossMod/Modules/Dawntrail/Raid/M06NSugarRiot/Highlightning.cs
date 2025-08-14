@@ -15,7 +15,7 @@ sealed class Highlightning(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.TempestPiece)
         {
             active = true;
-            _aoe = new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(6.5d));
+            _aoe = new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(6.5d));
         }
     }
 

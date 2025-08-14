@@ -79,7 +79,7 @@ sealed class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(
                 var a = players[i];
                 if (a.IsDead)
                     continue;
-                for (var j = 0; j < 3; j++)
+                for (var j = 0; j < 3; ++j)
                 {
                     if (a.Position.InRect(primaryPos, BA4ProtoOzma.Directions[j], 100f, default, 5f))
                     {
@@ -157,7 +157,7 @@ class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
                 var a = players[i];
                 if (a.IsDead)
                     continue;
-                for (var j = 0; j < 3; j++)
+                for (var j = 0; j < 3; ++j)
                 {
                     if (a.Position.InRect(primaryPos, BA4ProtoOzma.Directions[j], 100f, default, 5f))
                     {

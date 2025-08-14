@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
-sealed class Cloudsplitter(BossModule module) : Components.BaitAwayCast(module, (uint)AID.CloudsplitterAOE, 6f, tankbuster: true);
+sealed class Cloudsplitter(BossModule module) : Components.BaitAwayCast(module, (uint)AID.CloudsplitterAOE, 6f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 sealed class CriticalReaverRaidwide(BossModule module) : Components.CastCounter(module, (uint)AID.CriticalReaverRaidwide);
 sealed class CriticalReaverEnrage(BossModule module) : Components.CastInterruptHint(module, (uint)AID.CriticalReaverEnrage);
 sealed class Meteor(BossModule module) : Components.CastInterruptHint(module, (uint)AID.Meteor);
@@ -20,6 +20,7 @@ public sealed class A13ArkAngels(WorldState ws, Actor primary) : BossModule(ws, 
     private Actor? _bossEV;
     private Actor? _bossMR;
     private Actor? _bossTT;
+    private Actor? _shield;
     public Actor? BossHM() => _bossHM;
     public Actor? BossEV() => _bossEV;
     public Actor? BossMR() => _bossMR;
@@ -30,25 +31,47 @@ public sealed class A13ArkAngels(WorldState ws, Actor primary) : BossModule(ws, 
     {
         // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
         // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _bossHM ??= Enemies((uint)OID.BossHM)[0];
-        _bossEV ??= Enemies((uint)OID.BossEV)[0];
-        _bossMR ??= Enemies((uint)OID.BossMR)[0];
-        _bossTT ??= Enemies((uint)OID.BossTT)[0];
+        if (_bossHM == null)
+        {
+            var b = Enemies((uint)OID.BossHM);
+            _bossHM = b.Count != 0 ? b[0] : null;
+        }
+        if (_bossEV == null)
+        {
+            var b = Enemies((uint)OID.BossEV);
+            _bossEV = b.Count != 0 ? b[0] : null;
+        }
+        if (_bossMR == null)
+        {
+            var b = Enemies((uint)OID.BossMR);
+            _bossMR = b.Count != 0 ? b[0] : null;
+        }
+        if (_bossTT == null)
+        {
+            var b = Enemies((uint)OID.BossTT);
+            _bossTT = b.Count != 0 ? b[0] : null;
+        }
+        if (_shield == null)
+        {
+            var b = Enemies((uint)OID.ArkShield);
+            _shield = b.Count != 0 ? b[0] : null;
+        }
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var comp = FindComponent<DecisiveBattle>();
-        if (comp != null)
+        if (FindComponent<DecisiveBattle>() is DecisiveBattle comp && comp.AssignedBoss[pcSlot] is var slot && slot != null)
         {
-            var slot = comp.AssignedBoss[pcSlot];
-            if (slot != null)
-                Arena.Actor(slot);
+            Arena.Actor(slot);
         }
-        else if (Enemies((uint)OID.ArkShield) is var shield && shield.Count != 0 && !shield[0].IsDead)
-            Arena.Actor(shield[0]);
+        else if (!_shield?.IsDead ?? false)
+        {
+            Arena.Actor(_shield);
+        }
         else
+        {
             Arena.Actors(Enemies(Bosses));
+        }
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -57,9 +80,12 @@ public sealed class A13ArkAngels(WorldState ws, Actor primary) : BossModule(ws, 
         for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            if (e.Actor.FindStatus((uint)SID.Invincibility) != null)
+            if (e.Actor.OID == (uint)OID.BossHM)
             {
-                e.Priority = AIHints.Enemy.PriorityInvincible;
+                if (!_shield?.IsDead ?? false)
+                {
+                    e.Priority = AIHints.Enemy.PriorityInvincible;
+                }
                 break;
             }
         }

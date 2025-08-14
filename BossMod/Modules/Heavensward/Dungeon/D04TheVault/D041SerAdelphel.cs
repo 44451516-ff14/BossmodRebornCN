@@ -75,7 +75,7 @@ class BrightSphere(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.BrightSphere)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(4.6d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(4.6d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

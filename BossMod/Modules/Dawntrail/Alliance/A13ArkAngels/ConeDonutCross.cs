@@ -2,50 +2,64 @@ namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
 sealed class ConcertedDissolution(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ConcertedDissolution, new AOEShapeCone(40f, 20f.Degrees()))
 {
+    private LightsChain? _aoe;
+
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = Casters.Count;
         if (count == 0)
+        {
             return [];
-        var chain = Module.FindComponent<LightsChain>();
-        var check = chain != null && chain.Casters.Count != 0;
+        }
+        _aoe ??= Module.FindComponent<LightsChain>();
+        var check = _aoe!.Casters.Count != 0;
 
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(Casters);
         var color = Colors.Danger;
         for (var i = 0; i < count; ++i)
         {
-            var aoe = Casters[i];
-            aoes[i] = check ? aoe with { Color = color } : aoe;
+            ref var aoe = ref aoes[i];
+            aoe.Color = check ? color : default;
         }
         return aoes;
     }
 }
 
-class LightsChain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightsChain, new AOEShapeDonut(4f, 40f))
+sealed class LightsChain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightsChain, new AOEShapeDonut(4f, 40f))
 {
-    private readonly ConcertedDissolution? _aoe = module.FindComponent<ConcertedDissolution>();
+    private readonly ConcertedDissolution _aoe1 = module.FindComponent<ConcertedDissolution>()!;
+    private CrossReaver? _aoe2;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (Casters.Count == 0)
+        {
             return [];
+        }
+        _aoe2 ??= Module.FindComponent<CrossReaver>();
 
-        var reaver = Module.FindComponent<CrossReaver>();
-        var check = _aoe != null && _aoe.Casters.Count != 0;
-        var check2 = reaver != null && reaver.Casters.Count != 0;
-
-        return new AOEInstance[1] { Casters[0] with { Color = check2 ? Colors.Danger : 0, Risky = !check } };
+        var aoes = CollectionsMarshal.AsSpan(Casters);
+        ref var aoe0 = ref aoes[0];
+        aoe0.Color = _aoe2!.Casters.Count != 0 ? Colors.Danger : default;
+        aoe0.Risky = _aoe1.Casters.Count == 0;
+        return aoes;
     }
 }
 
-class CrossReaver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrossReaverAOE, new AOEShapeCross(50f, 6f))
+sealed class CrossReaver(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrossReaverAOE, new AOEShapeCross(50f, 6f))
 {
+    private LightsChain? _aoe;
+
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (Casters.Count == 0)
+        {
             return [];
-        var chain = Module.FindComponent<LightsChain>();
-        var check = chain != null && chain.Casters.Count != 0;
-        return new AOEInstance[1] { Casters[0] with { Risky = !check } };
+        }
+        _aoe ??= Module.FindComponent<LightsChain>();
+        var aoes = CollectionsMarshal.AsSpan(Casters);
+        ref var aoe0 = ref aoes[0];
+        aoe0.Risky = _aoe!.Casters.Count == 0;
+        return aoes;
     }
 }

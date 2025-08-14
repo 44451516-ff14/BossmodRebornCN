@@ -77,7 +77,7 @@ sealed class RideDownAOE(BossModule module) : Components.SimpleAOEs(module, (uin
 
 // note: there are two casters, probably to avoid 32-target limit - we only want to show one
 // TODO: generalize to reusable component
-sealed class RideDownKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.RideDownAOE, false, 1)
+sealed class RideDownKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.RideDownAOE, 1)
 {
     private readonly List<Knockback> _sources = new(2);
     private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
@@ -91,8 +91,8 @@ sealed class RideDownKnockback(BossModule module) : Components.GenericKnockback(
             _sources.Clear();
             var act = Module.CastFinishAt(spell);
             // charge always happens through center, so create two sources with origin at center looking orthogonally
-            _sources.Add(new(Arena.Center, 12f, act, _shape, spell.Rotation + 90f.Degrees(), Kind.DirForward));
-            _sources.Add(new(Arena.Center, 12f, act, _shape, spell.Rotation - 90f.Degrees(), Kind.DirForward));
+            _sources.Add(new(Arena.Center, 12f, act, _shape, spell.Rotation + 90f.Degrees(), Kind.DirForward, ignoreImmunes: true));
+            _sources.Add(new(Arena.Center, 12f, act, _shape, spell.Rotation - 90f.Degrees(), Kind.DirForward, ignoreImmunes: true));
         }
     }
 

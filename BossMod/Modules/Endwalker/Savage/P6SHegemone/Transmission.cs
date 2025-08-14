@@ -9,7 +9,7 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
     private BitMatrix _clips; // row = player, col = others that he clips
     private BitMask _clippedByOthers;
 
-    private static readonly AOEShapeCone _shape = new(60, 15.Degrees());
+    private static readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
 
     public bool StunsActive => _stuns.Any();
 
@@ -47,12 +47,12 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        switch ((TetherID)tether.ID)
+        switch (tether.ID)
         {
-            case TetherID.TransmissionSnake:
+            case (uint)TetherID.TransmissionSnake:
                 _snakeInfection.Set(Raid.FindSlot(source.InstanceID));
                 break;
-            case TetherID.TransmissionWing:
+            case (uint)TetherID.TransmissionWing:
                 _wingInfection.Set(Raid.FindSlot(source.InstanceID));
                 break;
         }
@@ -60,16 +60,16 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.Glossomorph:
-            case SID.Chelomorph:
+            case (uint)SID.Glossomorph:
+            case (uint)SID.Chelomorph:
                 var slot = Raid.FindSlot(actor.InstanceID);
                 if (slot >= 0)
                     _infectionExpire[slot] = status.ExpireAt;
                 break;
-            case SID.OutOfControlSnake:
-            case SID.OutOfControlWing:
+            case (uint)SID.OutOfControlSnake:
+            case (uint)SID.OutOfControlWing:
                 _stuns.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }
@@ -77,10 +77,10 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.OutOfControlSnake:
-            case SID.OutOfControlWing:
+            case (uint)SID.OutOfControlSnake:
+            case (uint)SID.OutOfControlWing:
                 _stuns.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }

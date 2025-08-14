@@ -12,7 +12,7 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x2Fu && state == 0x00020001u)
+        if (index == 0x2F && state == 0x00020001u)
         {
             pattern = true;
         }
@@ -24,10 +24,10 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
         {
             if (!pattern)
             {
-                const int index1 = (0x2E - 0x2D - 1 + 8) % 8;
-                const int index2 = (0x2E - 0x2D - 2 + 8) % 8;
-                const int index3 = (0x32 - 0x2D - 1 + 8) % 8;
-                const int index4 = (0x32 - 0x2D - 2 + 8) % 8;
+                const int index1 = (0x2E - 0x2D - 1 + 8) & 7;
+                const int index2 = (0x2E - 0x2D - 2 + 8) & 7;
+                const int index3 = (0x32 - 0x2D - 1 + 8) & 7;
+                const int index4 = (0x32 - 0x2D - 2 + 8) & 7;
                 AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[index1]);
                 AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[index2]);
                 AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[index3]);
@@ -35,10 +35,10 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
             }
             else
             {
-                const int index1 = (0x15 - 0x14 - 1 + 8) % 8;
-                const int index2 = (0x15 - 0x14 - 2 + 8) % 8;
-                const int index3 = (0x19 - 0x14 - 1 + 8) % 8;
-                const int index4 = (0x19 - 0x14 - 2 + 8) % 8;
+                const int index1 = (0x15 - 0x14 - 1 + 8) & 7;
+                const int index2 = (0x15 - 0x14 - 2 + 8) & 7;
+                const int index3 = (0x19 - 0x14 - 1 + 8) & 7;
+                const int index4 = (0x19 - 0x14 - 2 + 8) & 7;
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index1]);
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index2]);
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index3]);
@@ -49,10 +49,10 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
         {
             if (pattern)
             {
-                const int index1 = (0x2F - 0x2D + 1) % 8;
-                const int index2 = (0x2F - 0x2D + 2) % 8;
-                const int index3 = (0x33 - 0x2D + 1) % 8;
-                const int index4 = (0x33 - 0x2D + 2) % 8;
+                const int index1 = (0x2F - 0x2D + 1) & 7;
+                const int index2 = (0x2F - 0x2D + 2) & 7;
+                const int index3 = (0x33 - 0x2D + 1) & 7;
+                const int index4 = (0x33 - 0x2D + 2) & 7;
                 AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[index1]);
                 AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[index2]);
                 AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[index3]);
@@ -60,10 +60,10 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
             }
             else
             {
-                const int index1 = (0x16 - 0x14 + 1) % 8;
-                const int index2 = (0x16 - 0x14 + 2) % 8;
-                const int index3 = (0x1A - 0x14 + 1) % 8;
-                const int index4 = (0x1A - 0x14 + 2) % 8;
+                const int index1 = (0x16 - 0x14 + 1) & 7;
+                const int index2 = (0x16 - 0x14 + 2) & 7;
+                const int index3 = (0x1A - 0x14 + 1) & 7;
+                const int index4 = (0x1A - 0x14 + 2) & 7;
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index1]);
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index2]);
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index3]);
@@ -77,7 +77,7 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
     {
         if (iconID == (uint)IconID.Emblazon)
         {
-            Allowed[Raid.FindSlot(targetID)] = true;
+            Allowed.Set(Raid.FindSlot(targetID));
             if (Mechanic == true)
                 return;
             if (++emblazoncounter == 4)
@@ -87,7 +87,8 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
                 var forbidden = ~Allowed;
                 for (var i = 0; i < len; ++i)
                 {
-                    towers[i].ForbiddenSoakers = forbidden;
+                    ref var t = ref towers[i];
+                    t.ForbiddenSoakers = forbidden;
                 }
             }
             if (Towers.Count == 0)
@@ -97,7 +98,7 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
                 if (Mechanic == null)
                 {
                     FloorTiles.AnalyzeTilesForOuterTowers(_tiles.InnerActiveTiles, out var mid, out var o1, out var o2, out var oMid);
-                    Span<int> tiles = [mid, o1, o2, oMid];
+                    int[] tiles = [mid, o1, o2, oMid];
                     for (var i = 0; i < 4; ++i)
                     {
                         AddTower(FloorTiles.DonutSIn, FloorTiles.TileAngles[tiles[i]]);
@@ -118,7 +119,7 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
         }
         else if (iconID == (uint)IconID.AlexandrianThunderIII)
         {
-            forbiddenAlexandrianBanish[Raid.FindSlot(targetID)] = true;
+            forbiddenAlexandrianBanish.Set(Raid.FindSlot(targetID));
         }
     }
 

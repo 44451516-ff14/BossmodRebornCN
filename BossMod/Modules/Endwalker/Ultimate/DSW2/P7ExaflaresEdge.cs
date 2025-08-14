@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P7ExaflaresEdge : Components.Exaflare
+sealed class P7ExaflaresEdge : Components.Exaflare
 {
     public P7ExaflaresEdge(BossModule module) : base(module, 6f)
     {
@@ -23,7 +23,7 @@ class P7ExaflaresEdge : Components.Exaflare
             AddLine(advance.OrthoR());
 
             void AddLine(WDir dir)
-            => Lines.Add(new() { Next = caster.Position, Advance = dir, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.9f, ExplosionsLeft = 6, MaxShownExplosions = 1 });
+            => Lines.Add(new(caster.Position, dir, Module.CastFinishAt(spell), 1.9d, 6, 1));
         }
     }
 

@@ -104,7 +104,9 @@ class OnHigh(BossModule module) : Components.GenericKnockback(module)
         for (var i = 0; i < count; ++i)
         {
             if (pos.InCircle(whirlwinds[i].Position, 6f))
+            {
                 return true;
+            }
         }
         return !Arena.InBounds(pos);
     }
@@ -130,7 +132,7 @@ class OnHigh(BossModule module) : Components.GenericKnockback(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OnHigh)
-            _source = new(spell.LocXZ, 30f, Module.CastFinishAt(spell), SafeWalls: allSafeWalls);
+            _source = new(spell.LocXZ, 30f, Module.CastFinishAt(spell), safeWalls: allSafeWalls);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

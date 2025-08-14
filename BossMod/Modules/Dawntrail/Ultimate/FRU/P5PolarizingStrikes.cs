@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P5PolarizingStrikes(BossModule module) : Components.GenericAOEs(module)
+sealed class P5PolarizingStrikes(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly List<AOEInstance> _aoes = []; // 'afterglow'

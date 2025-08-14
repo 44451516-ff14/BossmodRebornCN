@@ -169,7 +169,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x0Cu)
+        if (index == 0x0C && state == 0x00020001u)
         {
             Arena.Bounds = defaultBounds;
             _aoe = null;
@@ -201,19 +201,22 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
 sealed class BatteryCircuit(BossModule module) : Components.GenericRotatingAOE(module)
 {
-    private static readonly Angle _increment = -11f.Degrees();
     private static readonly AOEShapeCone _shape = new(30f, 15f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BatteryCircuitFirst)
-            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation, _increment, Module.CastFinishAt(spell), 0.5f, 34, 9));
+        {
+            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation, -11f.Degrees(), Module.CastFinishAt(spell), 0.5d, 34, 9));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.BatteryCircuitFirst or (uint)AID.BatteryCircuitRest)
+        {
             AdvanceSequence(caster.Position, caster.Rotation, WorldState.CurrentTime);
+        }
     }
 }
 
@@ -249,13 +252,17 @@ sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 3
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID is (uint)SID.AccelerationBomb or (uint)SID.AccelerationBombNPCs && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        {
             PlayerStates[slot] = new(Requirement.Stay, status.ExpireAt);
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID is (uint)SID.AccelerationBomb or (uint)SID.AccelerationBombNPCs && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        {
             PlayerStates[slot] = default;
+        }
     }
 }
 

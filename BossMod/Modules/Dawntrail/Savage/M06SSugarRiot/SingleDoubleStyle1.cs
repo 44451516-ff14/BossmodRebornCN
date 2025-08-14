@@ -31,15 +31,15 @@ sealed class SingleDoubleStyle1(BossModule module) : Components.GenericAOEs(modu
                     break;
             }
         }
-        void AddAOE(AOEShape shape, WPos position, double time, Angle rotation = default) => AOEs.Add(new(shape, WPos.ClampToGrid(position), rotation, WorldState.FutureTime(time)));
+        void AddAOE(AOEShape shape, WPos position, double time, Angle rotation = default) => AOEs.Add(new(shape, position.Quantized(), rotation, WorldState.FutureTime(time)));
     }
 
     private void HandleSweetShot(Actor source, double time)
     {
         var sourceP = source.Position;
         var direction = source.Rotation.ToDirection();
-        var dirVector = WPos.ClampToGrid(sourceP + 60f * direction) - sourceP;
-        AOEs.Add(new(new AOEShapeRect(dirVector.Length(), 3.5f), WPos.ClampToGrid(sourceP), Angle.FromDirection(dirVector), WorldState.FutureTime(time)));
+        var dirVector = (sourceP + 60f * direction).Quantized() - sourceP;
+        AOEs.Add(new(new AOEShapeRect(dirVector.Length(), 3.5f), sourceP.Quantized(), Angle.FromDirection(dirVector), WorldState.FutureTime(time)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

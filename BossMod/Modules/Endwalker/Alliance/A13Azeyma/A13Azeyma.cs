@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A13Azeyma;
 
-class WardensWarmth(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WardensWarmthAOE, 6f, tankbuster: true);
+class WardensWarmth(BossModule module) : Components.BaitAwayCast(module, (uint)AID.WardensWarmthAOE, 6f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 class FleetingSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FleetingSpark, new AOEShapeCone(60f, 135f.Degrees()));
 class SolarFold(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SolarFoldAOE, new AOEShapeCross(30f, 5f));
 class Sunbeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sunbeam, 9f, 14);

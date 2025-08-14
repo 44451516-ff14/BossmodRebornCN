@@ -68,7 +68,7 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module, (uint)AID.
         for (var i = 0; i < count; ++i)
         {
             var t = terminus[i];
-            aoes[i] = new(rect, WPos.ClampToGrid(t.Position), t.Rotation);
+            aoes[i] = new(rect, t.Position.Quantized(), t.Rotation);
         }
         return aoes;
     }

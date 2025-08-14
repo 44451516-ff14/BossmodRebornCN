@@ -13,12 +13,16 @@ sealed class ActivePivotParticleBeam(BossModule module) : Components.GenericRota
             _ => default
         };
         if (rotation != default)
-            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation, rotation, Module.CastFinishAt(spell, 0.6f), 1.6f, 5));
+        {
+            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation, rotation, Module.CastFinishAt(spell, 0.6d), 1.6d, 5));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.ActivePivotParticleBeamAOE)
+        {
             AdvanceSequence(0, WorldState.CurrentTime);
+        }
     }
 }

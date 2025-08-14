@@ -20,7 +20,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x04u)
+        if (index == 0x04)
         {
             switch (state)
             {
@@ -40,7 +40,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                     break;
             }
         }
-        else if (index == 0x05u)
+        else if (index == 0x05)
         {
             switch (state)
             {
@@ -75,7 +75,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             AddAOE(RiverAOE);
         }
         void AddAOE(AOEShapeCustom shape, uint color = default)
-        => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 4.2f), color);
+        => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 4.2d), color);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

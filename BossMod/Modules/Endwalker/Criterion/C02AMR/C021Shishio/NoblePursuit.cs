@@ -58,11 +58,17 @@ class NoblePursuit(BossModule module) : Components.GenericAOEs(module)
             if (!_charges[^1].Check(actor.Position))
             {
                 var nextDir = actor.Position - _posAfterLastCharge;
-                if (Math.Abs(nextDir.X) < 0.1f)
-                    nextDir.X = 0;
-                if (Math.Abs(nextDir.Z) < 0.1f)
-                    nextDir.Z = 0;
-                nextDir = nextDir.Normalized();
+                var nextDirX = nextDir.X;
+                var nextDirZ = nextDir.Z;
+                if (Math.Abs(nextDirX) < 0.1f)
+                {
+                    nextDirX = 0f;
+                }
+                if (Math.Abs(nextDirZ) < 0.1f)
+                {
+                    nextDirZ = 0f;
+                }
+                nextDir = new WDir(nextDirX, nextDirZ).Normalized();
                 var ts = Arena.Center + nextDir.Sign() * Arena.Bounds.Radius - _posAfterLastCharge;
                 var t = Math.Min(nextDir.X != 0f ? ts.X / nextDir.X : float.MaxValue, nextDir.Z != 0f ? ts.Z / nextDir.Z : float.MaxValue);
                 _charges.Add(new(new AOEShapeRect(t, _chargeHalfWidth), _posAfterLastCharge, Angle.FromDirection(nextDir), _charges[^1].Activation.AddSeconds(1.4d)));

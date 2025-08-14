@@ -181,7 +181,7 @@ public sealed class SGE(RotationModuleManager manager, Actor player) : Castxan<A
         Actor? tank = null;
         foreach (var actor in World.Party.WithoutSlot(excludeAlliance: true))
         {
-            total++;
+            ++total;
             if (actor.Class.GetRole() == Role.Tank)
             {
                 tanks++;

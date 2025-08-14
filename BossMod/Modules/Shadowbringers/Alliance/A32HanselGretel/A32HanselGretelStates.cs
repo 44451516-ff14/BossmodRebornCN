@@ -1,27 +1,24 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
-class A32HanselGretelStates : StateMachineBuilder
+sealed class A32HanselGretelStates : StateMachineBuilder
 {
-    public A32HanselGretelStates(BossModule module) : base(module)
+    public A32HanselGretelStates(A32HanselGretel module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Wail1>()
-            .ActivateOnEnter<Wail2>()
+            .ActivateOnEnter<StrongerTogether>()
+            .ActivateOnEnter<UpgradedShield>()
+            .ActivateOnEnter<WailLamentation>()
             .ActivateOnEnter<CripplingBlow1>()
             .ActivateOnEnter<CripplingBlow2>()
-            .ActivateOnEnter<BloodySweep1>()
-            .ActivateOnEnter<BloodySweep2>()
-            .ActivateOnEnter<BloodySweep3>()
-            .ActivateOnEnter<BloodySweep4>()
-            .ActivateOnEnter<SeedOfMagicAlpha>()
-            .ActivateOnEnter<RiotOfMagic>()
+            .ActivateOnEnter<BloodySweep>()
+            .ActivateOnEnter<RiotOfMagicSeedOfMagicAlpha>()
             .ActivateOnEnter<PassingLance>()
             .ActivateOnEnter<Explosion>()
             .ActivateOnEnter<UnevenFooting>()
-            .ActivateOnEnter<HungryLance1>()
-            .ActivateOnEnter<HungryLance2>()
+            .ActivateOnEnter<HungryLance>()
             .ActivateOnEnter<Breakthrough>()
             .ActivateOnEnter<SeedOfMagicBeta>()
-            .ActivateOnEnter<Lamentation>();
+            .ActivateOnEnter<MagicalConfluence>()
+            .Raw.Update = () => module.PrimaryActor.IsDeadOrDestroyed && (module.BossHansel?.IsDeadOrDestroyed ?? true);
     }
 }

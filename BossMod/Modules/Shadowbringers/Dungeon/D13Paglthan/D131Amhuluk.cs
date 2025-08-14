@@ -30,35 +30,21 @@ public enum SID : uint
     LightningRod = 2574 // none->player/LightningRod, extra=0x114
 }
 
-class ElectricBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectricBurst);
-class CriticalRip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CriticalRip);
+sealed class ElectricBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectricBurst);
+sealed class CriticalRip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CriticalRip);
 
-class LightningBolt(BossModule module) : Components.GenericBaitAway(module, (uint)AID.LightningBolt, centerAtTarget: true)
+sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(module, (uint)AID.LightningBolt, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(10f);
     private DateTime activation;
-
-    public static List<Actor> GetRods(BossModule module)
-    {
-        var rods = module.Enemies((uint)OID.LightningRod);
-        var count = rods.Count;
-        if (count == 0)
-            return [];
-
-        var filteredrods = new List<Actor>(count);
-        for (var i = 0; i < count; ++i)
-        {
-            var z = rods[i];
-            if (z.FindStatus((uint)SID.LightningRod) == null)
-                filteredrods.Add(z);
-        }
-        return filteredrods;
-    }
+    private readonly List<Actor> freeRods = module.Enemies((uint)OID.LightningRod);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (ActiveBaitsOn(actor).Count == 0)
+        {
             return;
+        }
         hints.Add("Pass the lightning to a rod!");
     }
 
@@ -67,8 +53,15 @@ class LightningBolt(BossModule module) : Components.GenericBaitAway(module, (uin
         if (status.ID == (uint)SID.LightningRod)
         {
             if (activation == default)
+            {
                 activation = WorldState.FutureTime(10.8d);
+            }
+
             CurrentBaits.Add(new(actor, actor, circle, activation));
+            if (actor.OID == (uint)OID.LightningRod)
+            {
+                freeRods.Remove(actor);
+            }
         }
     }
 
@@ -76,6 +69,11 @@ class LightningBolt(BossModule module) : Components.GenericBaitAway(module, (uin
     {
         if (status.ID == (uint)SID.LightningRod)
         {
+            if (actor.OID == (uint)OID.LightningRod)
+            {
+                freeRods.Add(actor);
+            }
+
             var count = CurrentBaits.Count;
             for (var i = 0; i < count; ++i)
             {
@@ -101,32 +99,40 @@ class LightningBolt(BossModule module) : Components.GenericBaitAway(module, (uin
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count == 0)
+        {
             return;
-        var rods = GetRods(Module);
-        var count = rods.Count;
+        }
+        var count = freeRods.Count;
         var forbidden = new Func<WPos, float>[count];
         for (var i = 0; i < count; ++i)
-            forbidden[i] = ShapeDistance.InvertedCircle(rods[i].Position, 4f);
+        {
+            forbidden[i] = ShapeDistance.InvertedCircle(freeRods[i].Position, 4f);
+        }
         if (count != 0)
+        {
             hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), activation);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (ActiveBaitsOn(pc).Count == 0)
+        {
             return;
+        }
         base.DrawArenaForeground(pcSlot, pc);
-        var rods = GetRods(Module);
-        var count = rods.Count;
+        var count = freeRods.Count;
         for (var i = 0; i < count; ++i)
-            Arena.AddCircle(rods[i].Position, 4f, Colors.Safe);
+        {
+            Arena.AddCircle(freeRods[i].Position, 4f, Colors.Safe);
+        }
     }
 }
 
-class Shock(BossModule module) : Components.GenericAOEs(module)
+sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(5f), circleBig = new(10f);
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(6);
     private bool first = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -140,7 +146,9 @@ class Shock(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
-            _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(3.7d)));
+        {
+            _aoes.Add(new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(3.7d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -157,7 +165,7 @@ class Shock(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class WideBlasterSpikeFlail(BossModule module) : Components.GenericAOEs(module)
+sealed class WideBlasterSpikeFlail(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone coneWide = new(26f, 60f.Degrees()), coneNarrow = new(25f, 30f.Degrees());
     private readonly List<AOEInstance> _aoes = new(2);
@@ -166,42 +174,40 @@ class WideBlasterSpikeFlail(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
-            return [];
-        var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < count; ++i)
         {
-            ref var aoe = ref aoes[i];
-            if (i == 0)
-            {
-                if (count > 1)
-                    aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-            else
-                aoe.Risky = false;
+            return [];
+        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        ref var aoe0 = ref aoes[0];
+        aoe0.Risky = true;
+        if (count > 1)
+        {
+            aoe0.Color = Colors.Danger;
         }
         return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(AOEShape shape, Angle offset = default, float delay = 0)
-        => _aoes.Add(new(shape, caster.Position, spell.Rotation + offset, Module.CastFinishAt(spell, delay)));
+        void AddAOE(AOEShape shape, Angle offset = default, double delay = default)
+        => _aoes.Add(new(shape, caster.Position, spell.Rotation + offset, Module.CastFinishAt(spell, delay), risky: false));
         if (spell.Action.ID == (uint)AID.WideBlaster)
         {
             AddAOE(coneWide);
-            AddAOE(coneNarrow, 180f.Degrees(), 2.6f);
+            AddAOE(coneNarrow, 180f.Degrees(), 2.6d);
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0 && (AID)spell.Action.ID is AID.WideBlaster or AID.SpikeFlail)
+        if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.WideBlaster or (uint)AID.SpikeFlail)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
-class D131AmhulukStates : StateMachineBuilder
+sealed class D131AmhulukStates : StateMachineBuilder
 {
     public D131AmhulukStates(BossModule module) : base(module)
     {
@@ -215,22 +221,23 @@ class D131AmhulukStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 777, NameID = 10075)]
-public class D131Amhuluk(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D131Amhuluk(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly WPos ArenaCenter = new(-520f, 145f), LightningRod = new(-538.478f, 137.346f);
+    private static readonly WPos ArenaCenter = new(-520f, 145f), LightningRod = new(-538.53015f, 137.31409f);
 
     private static Polygon[] GenerateLightningRods()
     {
-        const float radius = 1.45f;
+        const float radius = 1.5f;
         const int edges = 16;
         var polygons = new Polygon[8];
-        polygons[0] = new(LightningRod, radius, edges);
+        var poly = new Polygon(default, radius, edges);
+        polygons[0] = poly with { Center = LightningRod };
         for (var i = 1; i < 8; ++i)
         {
-            polygons[i] = new Polygon(WPos.RotateAroundOrigin(i * 45f, ArenaCenter, LightningRod), radius, edges);
+            polygons[i] = poly with { Center = WPos.RotateAroundOrigin(i * 45f, ArenaCenter, LightningRod) };
         }
         return polygons;
     }
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.5f, 48)], [.. GenerateLightningRods(), new Rectangle(new(-540, ArenaCenter.Z), 1.25f, 20),
-    new Rectangle(new(-500, ArenaCenter.Z), 1.26f, 20)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.5f, 48)], [.. GenerateLightningRods(), new Rectangle(new(-540f, 145.0004f), 8.75f, 1.25f, 89.98f.Degrees()),
+    new Rectangle(new(-500f, 145f), 1.25f, 20)]);
 }

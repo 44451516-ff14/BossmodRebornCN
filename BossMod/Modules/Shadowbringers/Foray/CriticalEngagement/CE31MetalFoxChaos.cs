@@ -44,7 +44,7 @@ sealed class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module
             for (var i = 0; i < count; ++i)
             {
                 var p = bits[i];
-                aoes[index++] = new(rect, WPos.ClampToGrid(p.Position), p.Rotation, _times[1]);
+                aoes[index++] = new(rect, p.Position.Quantized(), p.Rotation, _times[1]);
             }
         }
         else if (Type == Types.DiffractiveLaser && time || Type == Types.LaserShower)
@@ -54,7 +54,7 @@ sealed class MagitekBitLasers(BossModule module) : Components.GenericAOEs(module
             for (var i = 0; i < count; ++i)
             {
                 var p = bits[i];
-                var pos = WPos.ClampToGrid(p.Position);
+                var pos = p.Position.Quantized();
                 var rot = p.Rotation;
                 if (rot.AlmostEqual(startrotation + (isMax4 ? default : a180), Angle.DegToRad))
                     aoes[index++] = new(rect, pos, rot, isMax4 ? _times[1] : _times[3], isMax4 ? color : default);

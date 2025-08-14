@@ -6,7 +6,7 @@ sealed class SagesStaff(BossModule module) : Components.GenericBaitStack(module,
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.SagesStaff && id == 0x11D4u)
+        if (id == 0x11D4 && actor.OID == (uint)OID.SagesStaff)
         {
             CurrentBaits.Add(new(actor, actor, rect, WorldState.FutureTime(11.4d)));
         }

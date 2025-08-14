@@ -28,7 +28,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x18u)
+        if (index == 0x18 && state == 0x00020001u)
         {
             Arena.Bounds = QueensGuard.DefaultArena;
             Arena.Center = QueensGuard.DefaultArena.Center;

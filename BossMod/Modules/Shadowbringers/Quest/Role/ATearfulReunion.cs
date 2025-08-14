@@ -40,7 +40,7 @@ class SanctifiedFlare(BossModule module) : Components.StackWithCastTargets(modul
 class LightningGlobe(BossModule module) : Components.GenericLineOfSightAOE(module, default, 100, false)
 {
     private readonly List<Actor> Balls = [];
-    private IEnumerable<(WPos Center, float Radius)> Hollows => Module.Enemies(OID.Hollow).Select(h => (h.Position, h.HitboxRadius));
+    private IEnumerable<(WPos Center, float Radius)> Hollows => Module.Enemies((uint)OID.Hollow).Select(h => (h.Position, h.HitboxRadius));
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {

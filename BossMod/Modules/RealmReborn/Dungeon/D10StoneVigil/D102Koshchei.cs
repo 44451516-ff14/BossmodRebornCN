@@ -36,7 +36,7 @@ class Typhoon(BossModule module) : Components.Exaflare(module, 3f)
             if (m.IsDead && line != null)
                 Lines.Remove(line);
             else if (!m.IsDead && line == null)
-                Lines.Add(new() { Next = m.Position, Advance = new(-1.745f, default), TimeToMove = 0.6f, ExplosionsLeft = 4, MaxShownExplosions = 4 });
+                Lines.Add(new(m.Position, new(-1.745f, default), default, 0.6d, 4, 4));
         }
     }
 

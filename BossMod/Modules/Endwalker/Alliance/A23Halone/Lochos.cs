@@ -19,7 +19,7 @@ class Lochos(BossModule module, float activationDelay) : Components.GenericAOEs(
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00200010)
+        if (state == 0x00200010u)
         {
             (var offset, var dir) = index switch
             {
@@ -31,7 +31,7 @@ class Lochos(BossModule module, float activationDelay) : Components.GenericAOEs(
             };
             if (offset != default)
             {
-                _aoes.Add(new(_shape, WPos.ClampToGrid(Arena.Center + offset), dir, WorldState.FutureTime(_activationDelay)));
+                _aoes.Add(new(_shape, (Arena.Center + offset).Quantized(), dir, WorldState.FutureTime(_activationDelay)));
             }
         }
     }

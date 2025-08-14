@@ -29,7 +29,7 @@ sealed class BrightDarkAuroraExplosion(BossModule module) : Components.GenericAO
         {
             var tether = tetherByActor[i];
             if (tether.target != actor.InstanceID)
-                aoes[index++] = new(circle, WPos.ClampToGrid(tetherByActor[i].source.Position), Risky: !isActorTarget);
+                aoes[index++] = new(circle, tetherByActor[i].source.Position.Quantized(), risky: !isActorTarget);
         }
         return aoes;
     }

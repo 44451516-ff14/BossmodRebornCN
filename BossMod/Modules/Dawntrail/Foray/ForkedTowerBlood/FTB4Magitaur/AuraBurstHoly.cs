@@ -105,14 +105,14 @@ sealed class ArcaneReaction(BossModule module) : Components.GenericBaitAway(modu
         {
             base.AddHints(slot, actor, hints);
             var bait = CurrentBaits[0];
-            var isPhantomBerserker = actor.FindStatus((uint)Data.PhantomSID.PhantomBerserker) == null;
+            var isPhantomBerserker = actor.FindStatus((uint)Data.PhantomSID.PhantomBerserker) != null;
             if (!isPhantomBerserker && bait.Target == actor)
             {
                 hints.Add($"GTFO from {conduit!.Name}!");
             }
             else if (isPhantomBerserker && bait.Target != actor && bait.Target.FindStatus((uint)Data.PhantomSID.PhantomBerserker) == null)
             {
-                hints.Add($"Get close to {conduit!.Name}!!");
+                hints.Add($"Get closer to {conduit!.Name}!!");
             }
         }
     }

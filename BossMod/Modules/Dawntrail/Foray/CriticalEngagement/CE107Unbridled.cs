@@ -47,7 +47,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BoilOverVisual && Arena.Bounds != CE107Unbridled.DefaultArena)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1d));
+        }
     }
 
     public override void OnActorCreated(Actor actor)
@@ -55,7 +57,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.Deathwall)
         {
             Arena.Bounds = CE107Unbridled.DefaultArena;
-            Arena.Center = WPos.ClampToGrid(Arena.Center);
+            Arena.Center = Arena.Center.Quantized();
             _aoe = null;
         }
     }
@@ -112,11 +114,11 @@ sealed class HoppingMad(BossModule module) : Components.GenericAOEs(module)
         {
             AddAOE(shape);
             if (shape == circleBig)
-                AddAOE(donutBig, 2.1f);
+                AddAOE(donutBig, 2.1d);
             if (_aoes.Count == 4)
                 _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
-        void AddAOE(AOEShape shape, float delay = default) => _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay), Risky: false));
+        void AddAOE(AOEShape shape, double delay = default) => _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay), risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -151,7 +153,7 @@ sealed class HoppingMad(BossModule module) : Components.GenericAOEs(module)
                 var aoe = _aoes[i];
                 if (aoe.Shape == shape.Item1)
                 {
-                    _aoes.Insert(1, new(shape.Item2, aoe.Origin, default, aoe.Activation.AddSeconds(2.1d), Risky: false));
+                    _aoes.Insert(1, new(shape.Item2, aoe.Origin, default, aoe.Activation.AddSeconds(2.1d), risky: false));
                     return;
                 }
             }
@@ -165,9 +167,9 @@ sealed class HoppingMad(BossModule module) : Components.GenericAOEs(module)
             return;
         var aoe = _aoes[0];
         if (aoe.Shape is AOEShapeCircle circle)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, circle.Radius + 2), aoe.Activation); // stay close to border of circle to move into donut fast
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, circle.Radius + 2f), aoe.Activation); // stay close to border of circle to move into donut fast
         else if (aoe.Shape is AOEShapeDonut donut)
-            hints.AddForbiddenZone(ShapeDistance.Circle(aoe.Origin, donut.InnerRadius - 2), aoe.Activation); // stay close to border of donut to move to next circle fast
+            hints.AddForbiddenZone(ShapeDistance.Circle(aoe.Origin, donut.InnerRadius - 2f), aoe.Activation); // stay close to border of donut to move to next circle fast
     }
 }
 

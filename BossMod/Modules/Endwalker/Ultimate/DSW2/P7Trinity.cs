@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
 // TODO: improve...
-class P7Trinity(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
+sealed class P7Trinity(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private readonly Actor? _source = module.Enemies(OID.DragonKingThordan).FirstOrDefault();
 
@@ -22,7 +22,7 @@ class P7Trinity(BossModule module) : Components.GenericBaitAway(module, centerAt
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.TrinityAOE1 or AID.TrinityAOE2 or AID.TrinityAOE3)
+        if (spell.Action.ID is (uint)AID.TrinityAOE1 or (uint)AID.TrinityAOE2 or (uint)AID.TrinityAOE3)
         {
             ++NumCasts;
         }

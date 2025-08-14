@@ -70,7 +70,7 @@ class SnortsaultCircle(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.DaenOseTheAvaricious2)
-            _aoe = new(circle, WPos.ClampToGrid(Arena.Center), default, WorldState.FutureTime(14.3d));
+            _aoe = new(circle, Arena.Center.Quantized(), default, WorldState.FutureTime(14.3d));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -102,7 +102,7 @@ class Snortsault(BossModule module) : Components.GenericRotatingAOE(module)
             var rotationIncrement = isClockwise ? increment : -increment;
             AddSequence(default);
             AddSequence(180f.Degrees());
-            void AddSequence(Angle offset) => Sequences.Add(new(cone, WPos.ClampToGrid(Arena.Center), actor.Rotation + offset, rotationIncrement, WorldState.FutureTime(14.5d), 1.1f, 31, 9));
+            void AddSequence(Angle offset) => Sequences.Add(new(cone, Arena.Center.Quantized(), actor.Rotation + offset, rotationIncrement, WorldState.FutureTime(14.5d), 1.1f, 31, 9));
         }
     }
 

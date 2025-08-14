@@ -1,10 +1,10 @@
 ﻿/*******************************************************************************
 * Author    :  Angus Johnson                                                   *
-* Date      :  5 July 2024                                                     *
-* Website   :  http://www.angusj.com                                           *
+* Date      :  10 October 2024                                                 *
+* Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  FAST rectangular clipping                                       *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #nullable enable
@@ -22,7 +22,7 @@ namespace Clipper2Lib
     public Point64 pt;
     public int ownerIdx;
     public List<OutPt2?>? edge;
-    public OutPt2(Point64 pt) 
+    public OutPt2(Point64 pt)
     {
       this.pt = pt;
     }
@@ -33,7 +33,7 @@ namespace Clipper2Lib
     protected enum Location
     {
       left, top, right, bottom, inside
-    };
+    }
 
     readonly protected Rect64 rect_;
     readonly protected Point64 mp_;
@@ -93,9 +93,9 @@ namespace Clipper2Lib
       int ioCount = 0;
       foreach (Point64 pt in path2)
       {
-        PointInPolygonResult pip = 
+        PointInPolygonResult pip =
           InternalClipper.PointInPolygon(pt, path1);
-        switch(pip)
+        switch (pip)
         {
           case PointInPolygonResult.IsInside:
             ioCount--; break;
@@ -108,32 +108,31 @@ namespace Clipper2Lib
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool IsClockwise(Location prev, Location curr, 
+    private static bool IsClockwise(Location prev, Location curr,
       Point64 prevPt, Point64 currPt, Point64 rectMidPoint)
     {
       if (AreOpposites(prev, curr))
-        return InternalClipper.CrossProduct(prevPt, rectMidPoint, currPt) < 0;
-      else
-        return HeadingClockwise(prev, curr);
+        return InternalClipper.CrossProduct(prevPt, rectMidPoint, currPt) < 0d;
+      return HeadingClockwise(prev, curr);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool AreOpposites(Location prev, Location curr)
     {
-      return Math.Abs((int)prev - (int) curr) == 2;
+      return Math.Abs((int)prev - (int)curr) == 2;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool HeadingClockwise(Location prev, Location curr)
     {
-      return ((int) prev + 1) % 4 == (int) curr;
+      return (((int)prev + 1) & 3) == (int)curr;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static Location GetAdjacentLocation(Location loc, bool isClockwise)
     {
       int delta = (isClockwise) ? 1 : 3;
-      return (Location)(((int) loc + delta) % 4);
+      return (Location)(((int)loc + delta) & 3);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -173,7 +172,7 @@ namespace Clipper2Lib
         0 => pt2.Y < pt1.Y,
         1 => pt2.X > pt1.X,
         2 => pt2.Y > pt1.Y,
-        _ => pt2.X < pt1.X,
+        _ => pt2.X < pt1.X
       };
     }
 
@@ -206,11 +205,9 @@ namespace Clipper2Lib
       for (int i = 0; i < op.edge.Count; ++i)
       {
         OutPt2? op2 = op.edge[i];
-        if (op2 == op)
-        {
-          op.edge[i] = null;
-          break;
-        }
+        if (op2 != op) continue;
+        op.edge[i] = null;
+        break;
       }
       op.edge = null;
     }
@@ -229,27 +226,24 @@ namespace Clipper2Lib
 
     private void AddCorner(Location prev, Location curr)
     {
-      if (HeadingClockwise(prev, curr))
-        Add(rectPath_[(int) prev]);
-      else
-        Add(rectPath_[(int) curr]);
+      Add(HeadingClockwise(prev, curr) ? rectPath_[(int)prev] : rectPath_[(int)curr]);
     }
 
     private void AddCorner(ref Location loc, bool isClockwise)
     {
       if (isClockwise)
       {
-        Add(rectPath_[(int) loc]);
+        Add(rectPath_[(int)loc]);
         loc = GetAdjacentLocation(loc, true);
       }
       else
       {
         loc = GetAdjacentLocation(loc, false);
-        Add(rectPath_[(int) loc]);
+        Add(rectPath_[(int)loc]);
       }
     }
 
-    static protected bool GetLocation(Rect64 rec, Point64 pt, out Location loc) 
+    static protected bool GetLocation(Rect64 rec, Point64 pt, out Location loc)
     {
       if (pt.X == rec.left && pt.Y >= rec.top && pt.Y <= rec.bottom)
       {
@@ -269,7 +263,7 @@ namespace Clipper2Lib
       }
       if (pt.X < rec.left) loc = Location.left;
       else if (pt.X > rec.right) loc = Location.right;
-      else if (pt.Y < rec.top)  loc = Location.top; 
+      else if (pt.Y < rec.top) loc = Location.top;
       else if (pt.Y > rec.bottom) loc = Location.bottom;
       else loc = Location.inside;
       return true;
@@ -286,24 +280,24 @@ namespace Clipper2Lib
     {
       double res1 = InternalClipper.CrossProduct(p1, p3, p4);
       double res2 = InternalClipper.CrossProduct(p2, p3, p4);
-      if (res1 == 0)
+      if (res1 == 0d)
       {
         ip = p1;
-        if (res2 == 0) return false; // segments are collinear
-        else if (p1 == p3 || p1 == p4) return true;
+        if (res2 == 0d) return false; // segments are collinear
+        if (p1 == p3 || p1 == p4) return true;
         //else if (p2 == p3 || p2 == p4) { ip = p2; return true; }
-        else if (IsHorizontal(p3, p4)) return ((p1.X > p3.X) == (p1.X < p4.X));
-        else return ((p1.Y > p3.Y) == (p1.Y < p4.Y));
+        if (IsHorizontal(p3, p4)) return ((p1.X > p3.X) == (p1.X < p4.X));
+        return ((p1.Y > p3.Y) == (p1.Y < p4.Y));
       }
-      else if (res2 == 0)
+      if (res2 == 0)
       {
         ip = p2;
         if (p2 == p3 || p2 == p4) return true;
-        else if (IsHorizontal(p3, p4)) return ((p2.X > p3.X) == (p2.X < p4.X));
-        else return ((p2.Y > p3.Y) == (p2.Y < p4.Y));
+        if (IsHorizontal(p3, p4)) return ((p2.X > p3.X) == (p2.X < p4.X));
+        return ((p2.Y > p3.Y) == (p2.Y < p4.Y));
       }
 
-      if ((res1 > 0) == (res2 > 0))
+      if ((res1 > 0d) == (res2 > 0d))
       {
         ip = new Point64(0, 0);
         return false;
@@ -311,21 +305,21 @@ namespace Clipper2Lib
 
       double res3 = InternalClipper.CrossProduct(p3, p1, p2);
       double res4 = InternalClipper.CrossProduct(p4, p1, p2);
-      if (res3 == 0)
+      if (res3 == 0d)
       {
         ip = p3;
         if (p3 == p1 || p3 == p2) return true;
-        else if (IsHorizontal(p1, p2)) return ((p3.X > p1.X) == (p3.X < p2.X));
-        else return ((p3.Y > p1.Y) == (p3.Y < p2.Y));
+        if (IsHorizontal(p1, p2)) return ((p3.X > p1.X) == (p3.X < p2.X));
+        return ((p3.Y > p1.Y) == (p3.Y < p2.Y));
       }
-      else if (res4 == 0)
+      if (res4 == 0d)
       {
         ip = p4;
         if (p4 == p1 || p4 == p2) return true;
-        else if (IsHorizontal(p1, p2)) return ((p4.X > p1.X) == (p4.X < p2.X));
-        else return ((p4.Y > p1.Y) == (p4.Y < p2.Y));
+        if (IsHorizontal(p1, p2)) return ((p4.X > p1.X) == (p4.X < p2.X));
+        return ((p4.Y > p1.Y) == (p4.Y < p2.Y));
       }
-      if ((res3 > 0) == (res4 > 0)) 
+      if ((res3 > 0d) == (res4 > 0d))
       {
         ip = new Point64(0, 0);
         return false;
@@ -334,74 +328,66 @@ namespace Clipper2Lib
       // segments must intersect to get here
       return InternalClipper.GetSegmentIntersectPt(p1, p2, p3, p4, out ip);
     }
-  
+
 
     static protected bool GetIntersection(Path64 rectPath, Point64 p, Point64 p2, ref Location loc, out Point64 ip)
     {
       // gets the pt of intersection between rectPath and segment(p, p2) that's closest to 'p'
       // when result == false, loc will remain unchanged
-      ip = new Point64(); 
+      ip = new Point64();
       switch (loc)
       {
         case Location.left:
-          if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip)) 
+          if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip))
             return true;
-          else if (p.Y < rectPath[0].Y && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
-          { 
+          if (p.Y < rectPath[0].Y && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
+          {
             loc = Location.top;
             return true;
           }
-          else if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip))
-          { 
-            loc = Location.bottom;
-            return true;
-          }
-          else return false;
+
+          if (!GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip)) return false;
+          loc = Location.bottom;
+          return true;
 
         case Location.right:
           if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip))
             return true;
-          else if (p.Y < rectPath[0].Y && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
-          { 
+          if (p.Y < rectPath[0].Y && GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
+          {
             loc = Location.top;
             return true;
           }
-          else if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip))
-          { 
-            loc = Location.bottom;
-            return true;
-          }
-          else return false;
+
+          if (!GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip)) return false;
+          loc = Location.bottom;
+          return true;
 
         case Location.top:
-          if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip)) 
+          if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
             return true;
-          else if (p.X < rectPath[0].X && GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip))
-          { 
+          if (p.X < rectPath[0].X && GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip))
+          {
             loc = Location.left;
             return true;
           }
-          else if (p.X > rectPath[1].X && GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip))
-          { 
-            loc = Location.right;
-            return true;
-          }
-          else return false;
+
+          if (p.X <= rectPath[1].X || !GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip)) return false;
+          loc = Location.right;
+          return true;
 
         case Location.bottom:
-          if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip)) 
+          if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip))
             return true;
-          else if (p.X < rectPath[3].X && GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip))
+          if (p.X < rectPath[3].X && GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip))
           {
             loc = Location.left;
             return true;
           }
-          else if (p.X > rectPath[2].X && GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip))
-          {
-            loc = Location.right;
-            return true;
-          }
-          else return false;
+
+          if (p.X <= rectPath[2].X || !GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip)) return false;
+          loc = Location.right;
+          return true;
 
         default:
           if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[3], out ip))
@@ -409,22 +395,20 @@ namespace Clipper2Lib
             loc = Location.left;
             return true;
           }
-          else if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
+          if (GetSegmentIntersection(p, p2, rectPath[0], rectPath[1], out ip))
           {
             loc = Location.top;
             return true;
           }
-          else if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip))
+          if (GetSegmentIntersection(p, p2, rectPath[1], rectPath[2], out ip))
           {
             loc = Location.right;
             return true;
           }
-          else if (GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip))
-          {
-            loc = Location.bottom;
-            return true;
-          }
-          else return false;
+
+          if (!GetSegmentIntersection(p, p2, rectPath[2], rectPath[3], out ip)) return false;
+          loc = Location.bottom;
+          return true;
       }
     }
 
@@ -488,7 +472,7 @@ namespace Clipper2Lib
               else
               {
                 Add(path[i]);
-                ++i;
+                i++;
                 continue;
               }
               break;
@@ -498,7 +482,7 @@ namespace Clipper2Lib
       } // switch
     }
 
-    private bool StartLocsAreClockwise(List<Location> startLocs)
+    private static bool StartLocsAreClockwise(List<Location> startLocs)
     {
       int result = 0;
       for (int i = 1; i < startLocs.Count; ++i)
@@ -517,9 +501,9 @@ namespace Clipper2Lib
 
     private void ExecuteInternal(Path64 path)
     {
-      if (path.Count < 3 || rect_.IsEmpty()) return;      
+      if (path.Count < 3 || rect_.IsEmpty()) return;
       List<Location> startLocs = new List<Location>();
-      
+
       Location firstCross = Location.inside;
       Location crossingLoc = firstCross, prev = firstCross;
 
@@ -530,7 +514,7 @@ namespace Clipper2Lib
         while (i >= 0 && !GetLocation(rect_, path[i], out prev)) --i;
         if (i < 0)
         {
-          foreach(Point64 pt in path) { Add(pt); }
+          foreach (Point64 pt in path) { Add(pt); }
           return;
         }
         if (prev == Location.inside) loc = Location.inside;
@@ -548,7 +532,7 @@ namespace Clipper2Lib
 
         Point64 prevPt = (i == 0) ? path[highI] : path[i - 1];
         crossingLoc = loc;
-        if (!GetIntersection(rectPath_, 
+        if (!GetIntersection(rectPath_,
           path[i], prevPt, ref crossingLoc, out Point64 ip))
         {
           // ie remaining outside
@@ -600,7 +584,7 @@ namespace Clipper2Lib
           // passing right through rect. 'ip' here will be the second 
           // intersect pt but we'll also need the first intersect pt (ip2)
           loc = prev;
-          GetIntersection(rectPath_, 
+          GetIntersection(rectPath_,
             prevPt, path[i], ref loc, out Point64 ip2);
           if (prevCrossLoc != Location.inside && prevCrossLoc != loc) //#597
             AddCorner(prevCrossLoc, loc);
@@ -636,22 +620,18 @@ namespace Clipper2Lib
       if (firstCross == Location.inside)
       {
         // path never intersects
-        if (startingLoc != Location.inside)
+        if (startingLoc == Location.inside) return;
+        if (!pathBounds_.Contains(rect_) ||
+            !Path1ContainsPath2(path, rectPath_)) return;
+        bool startLocsClockwise = StartLocsAreClockwise(startLocs);
+        for (int j = 0; j < 4; ++j)
         {
-          if (pathBounds_.Contains(rect_) &&
-            Path1ContainsPath2(path, rectPath_))
-          {
-            bool startLocsClockwise = StartLocsAreClockwise(startLocs);
-            for (int j = 0; j < 4; ++j)
-            {
-              int k = startLocsClockwise ? j : 3 - j; // ie reverse result path
-              Add(rectPath_[k]);
-              AddToEdge(edges_[k * 2], results_[0]!);
-            }
-          }
+          int k = startLocsClockwise ? j : 3 - j; // ie reverse result path
+          Add(rectPath_[k]);
+          AddToEdge(edges_[k * 2], results_[0]!);
         }
       }
-      else if (loc != Location.inside && 
+      else if (loc != Location.inside &&
         (loc != firstCross || startLocs.Count > 2))
       {
         if (startLocs.Count > 0)
@@ -680,7 +660,7 @@ namespace Clipper2Lib
         pathBounds_ = Clipper.GetBounds(path);
         if (!rect_.Intersects(pathBounds_))
           continue; // the path must be completely outside fRect
-        else if (rect_.Contains(pathBounds_))
+        if (rect_.Contains(pathBounds_))
         {
           // the path must be completely inside rect_
           result.Add(path);
@@ -707,7 +687,7 @@ namespace Clipper2Lib
 
     private void CheckEdges()
     {
-      for (int i = 0; i < results_.Count; ++i)
+      for (int i = 0; i < results_.Count; i++)
       {
         OutPt2? op = results_[i], op2 = op;
         if (op == null) continue;
@@ -749,13 +729,11 @@ namespace Clipper2Lib
             uint combinedSet = (edgeSet1 & edgeSet2);
             for (int j = 0; j < 4; ++j)
             {
-              if ((combinedSet & (1 << j)) != 0)
-              {
-                if (IsHeadingClockwise(op2.prev!.pt, op2.pt, j))
-                  AddToEdge(edges_[j * 2], op2);
-                else
-                  AddToEdge(edges_[j * 2 + 1], op2);
-              }
+              if ((combinedSet & (1 << j)) == 0) continue;
+              if (IsHeadingClockwise(op2.prev!.pt, op2.pt, j))
+                AddToEdge(edges_[j * 2], op2);
+              else
+                AddToEdge(edges_[j * 2 + 1], op2);
             }
           }
           edgeSet1 = edgeSet2;
@@ -770,11 +748,10 @@ namespace Clipper2Lib
       bool isHorz = ((idx == 1) || (idx == 3));
       bool cwIsTowardLarger = ((idx == 1) || (idx == 2));
       int i = 0, j = 0;
-      OutPt2? p1, p2, p1a, p2a, op, op2;
 
       while (i < cw.Count)
       {
-        p1 = cw[i];
+        OutPt2? p1 = cw[i];
         if (p1 == null || p1.next == p1.prev)
         {
           cw[i++] = null;
@@ -793,6 +770,9 @@ namespace Clipper2Lib
           continue;
         }
 
+        OutPt2? p2;
+        OutPt2? p1a;
+        OutPt2? p2a;
         if (cwIsTowardLarger)
         {
           // p1 >>>> p1a;
@@ -855,6 +835,8 @@ namespace Clipper2Lib
           SetNewOwner(p1a, new_idx);
         }
 
+        OutPt2? op;
+        OutPt2? op2;
         if (cwIsTowardLarger)
         {
           op = p2;
@@ -942,8 +924,8 @@ namespace Clipper2Lib
       }
     }
 
-    private Path64 GetPath(OutPt2? op)
-    { 
+    private static Path64 GetPath(OutPt2? op)
+    {
       Path64 result = new Path64();
       if (op == null || op.prev == op.next) return result;
       OutPt2? op2 = op.next;
@@ -999,13 +981,13 @@ namespace Clipper2Lib
 
         //clean up after every loop
         results_.Clear();
-        for(int i = 0; i < 8; ++i)
+        for (int i = 0; i < 8; ++i)
           edges_[i].Clear();
       }
       return result;
     }
 
-    private Path64 GetPath(OutPt2? op)
+    private static Path64 GetPath(OutPt2? op)
     {
       Path64 result = new Path64();
       if (op == null || op == op.next) return result;
@@ -1034,7 +1016,7 @@ namespace Clipper2Lib
         {
           foreach (Point64 pt in path) Add(pt);
           return;
-        }                   
+        }
         if (prev == Location.inside) loc = Location.inside;
         i = 1;
       }

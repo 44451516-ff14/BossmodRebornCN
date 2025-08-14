@@ -7,13 +7,17 @@ sealed class Towers1(BossModule module) : Components.GenericTowers(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Explosion1)
+        {
             Towers.Add(new(spell.LocXZ, 3f, forbiddenSoakers: forbidden, activation: Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.ShockCircle)
-            forbidden[Raid.FindSlot(targetID)] = true;
+        {
+            forbidden.Set(Raid.FindSlot(targetID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -39,13 +43,17 @@ sealed class ShockSpread(BossModule module) : Components.GenericBaitAway(module,
             _ => null
         };
         if (shape != null)
+        {
             CurrentBaits.Add(new(actor, actor, shape, WorldState.FutureTime(8d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.ShockDonutLock)
+        {
             ++NumCasts;
+        }
     }
 }
 
@@ -68,7 +76,7 @@ sealed class ShockAOE(BossModule module) : Components.GenericAOEs(module)
         };
         if (shape != null)
         {
-            _aoes.Add(new(shape, WPos.ClampToGrid(caster.Position)));
+            _aoes.Add(new(shape, caster.Position.Quantized()));
             if (shape == ShockSpread.Donut)
                 ++donuts;
             else

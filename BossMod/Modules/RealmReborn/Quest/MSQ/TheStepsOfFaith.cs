@@ -105,7 +105,7 @@ class Earthrising(BossModule module) : Components.Exaflare(module, 8f)
     {
         if (spell.Action.ID == (uint)AID.EarthrisingCast)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = new(default, -7.5f), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1f, ExplosionsLeft = 5, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, new(default, -7.5f), Module.CastFinishAt(spell), 1d, 5, 2));
         }
     }
 

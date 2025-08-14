@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
 // note: this is all very tied to LPDU strat
-class P5Delta(BossModule module) : BossComponent(module)
+sealed class P5Delta(BossModule module) : BossComponent(module)
 {
     public enum PairAssignment { None, Inner, Outer }
     public enum SideAssignment { None, North, South }
@@ -352,7 +352,7 @@ class P5Delta(BossModule module) : BossComponent(module)
     private WDir BaitOffset(int index) => 19f * (Angle.FromDirection(_eyeDir) + index * 60f.Degrees() - 0.15f * ArmRotations[index]).ToDirection(); // 5 degrees offset in correct direction
 }
 
-class P5DeltaOpticalLaser(BossModule module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
+sealed class P5DeltaOpticalLaser(BossModule module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
 {
     public Actor? Source;
     private DateTime _activation;
@@ -369,7 +369,7 @@ class P5DeltaOpticalLaser(BossModule module) : Components.GenericAOEs(module, (u
     // at this point eye is in correct position
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID is (uint)OID.BeetleHelper or (uint)OID.FinalHelper && id == 0x1E43)
+        if (id == 0x1E43 && actor.OID is (uint)OID.BeetleHelper or (uint)OID.FinalHelper)
         {
             Source ??= Module.Enemies((uint)OID.OpticalUnit)[0];
             _activation = WorldState.FutureTime(20d);
@@ -377,7 +377,7 @@ class P5DeltaOpticalLaser(BossModule module) : Components.GenericAOEs(module, (u
     }
 }
 
-class P5DeltaExplosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeltaExplosion, 3f)
+sealed class P5DeltaExplosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeltaExplosion, 3f)
 {
     private readonly P5Delta? _delta = module.FindComponent<P5Delta>();
 
@@ -392,13 +392,13 @@ class P5DeltaExplosion(BossModule module) : Components.SimpleAOEs(module, (uint)
     }
 }
 
-class P5DeltaHyperPulse(BossModule module) : Components.GenericAOEs(module)
+sealed class P5DeltaHyperPulse(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly P5Delta? _delta = module.FindComponent<P5Delta>();
     private readonly List<AOEInstance> _aoes = [];
 
     private static readonly AOEShapeRect _shape = new(100f, 4f);
-    private const int _numRepeats = 6;
+    private const uint _numRepeats = 6u;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -412,13 +412,13 @@ class P5DeltaHyperPulse(BossModule module) : Components.GenericAOEs(module)
             var aoes = new List<AOEInstance>(len);
             for (var i = 0; i < len; ++i)
             {
-                var pos = WPos.ClampToGrid(Arena.Center + _delta.ArmOffset(i));
+                var pos = (Arena.Center + _delta.ArmOffset(i)).Quantized();
                 if (Raid.WithoutSlot(false, true, true).Closest(pos) == actor)
                 {
                     var angle = Angle.FromDirection(actor.Position - pos);
-                    for (var j = 0; j < _numRepeats; ++j)
+                    for (var j = 0u; j < _numRepeats; ++j)
                     {
-                        aoes.Add(new(_shape, pos, angle + j * _delta.ArmRotations[i], Risky: false));
+                        aoes.Add(new(_shape, pos, angle + j * _delta.ArmRotations[i], risky: false));
                     }
                 }
             }
@@ -432,9 +432,9 @@ class P5DeltaHyperPulse(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.DeltaHyperPulseFirst && _delta != null)
         {
             var rot = _delta.ArmRotations[_delta.ArmIndex(caster.Position - Arena.Center)];
-            for (var i = 0; i < _numRepeats; ++i)
+            for (var i = 0u; i < _numRepeats; ++i)
             {
-                _aoes.Add(new(_shape, spell.LocXZ, (spell.Rotation + i * rot).Normalized(), Module.CastFinishAt(spell, i * 0.6f), ActorID: caster.InstanceID));
+                _aoes.Add(new(_shape, spell.LocXZ, (spell.Rotation + i * rot).Normalized(), Module.CastFinishAt(spell, i * 0.6d), actorID: caster.InstanceID));
             }
         }
     }
@@ -460,7 +460,7 @@ class P5DeltaHyperPulse(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P5DeltaOversampledWaveCannon(BossModule module) : Components.UniformStackSpread(module, default, 7f)
+sealed class P5DeltaOversampledWaveCannon(BossModule module) : Components.UniformStackSpread(module, default, 7f)
 {
     private readonly P5Delta? _delta = module.FindComponent<P5Delta>();
     private Actor? _boss;
@@ -499,9 +499,9 @@ class P5DeltaOversampledWaveCannon(BossModule module) : Components.UniformStackS
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (_boss != null)
-            _shape.Draw(Arena, _boss.Position, _boss.Rotation + _bossAngle, _bossIntendedTargets[pcSlot] ? Colors.SafeFromAOE : 0);
+            _shape.Draw(Arena, _boss.Position, _boss.Rotation + _bossAngle, _bossIntendedTargets[pcSlot] ? Colors.SafeFromAOE : default);
         if (_player != null)
-            _shape.Draw(Arena, _player.Position, _player.Rotation + _playerAngle, _playerIntendedTargets[pcSlot] ? Colors.SafeFromAOE : 0);
+            _shape.Draw(Arena, _player.Position, _player.Rotation + _playerAngle, _playerIntendedTargets[pcSlot] ? Colors.SafeFromAOE : default);
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
@@ -555,7 +555,7 @@ class P5DeltaOversampledWaveCannon(BossModule module) : Components.UniformStackS
     }
 }
 
-class P5DeltaSwivelCannon(BossModule module) : Components.GenericAOEs(module)
+sealed class P5DeltaSwivelCannon(BossModule module) : Components.GenericAOEs(module)
 {
     public AOEInstance? AOE;
 

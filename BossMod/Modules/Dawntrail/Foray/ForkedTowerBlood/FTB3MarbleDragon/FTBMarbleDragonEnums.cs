@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB3MarbleDragon;
 
 public enum OID : uint
 {
-    Boss = 0x3974, // R7.6
+    MarbleDragon = 0x3974, // R7.6
     DeathwallHelper = 0x46D5, // R0.5
     Deathwall = 0x1EBD51, // R0.5
     Icewind = 0x3976, // R1.0
@@ -56,6 +56,7 @@ public enum AID : uint
     ChangeModelState = 30416, // Boss->self, no cast, single-target
     LifelessLegacyVisual = 30616, // Boss->self, 35.0+1,6s cast, single-target, raidwide
     LifelessLegacy = 37818, // Helper->self, no cast, ???
+    Recharge = 30617, // IceSprite->Boss, no cast, single-target, buffs boss for Lifeless Legacy
     WickedWater = 30695, // Boss->self, 4.0s cast, single-target
 
     LifelessLegacyEnrageVisual = 30061, // Boss->self, 20.0+1,6s cast, single-target, enrage

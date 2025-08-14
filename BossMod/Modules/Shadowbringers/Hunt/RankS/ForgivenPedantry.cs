@@ -71,7 +71,7 @@ class TheStake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheS
 class SecondCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SecondCircle, new AOEShapeRect(40f, 4f));
 class CleansingFire(BossModule module) : Components.RaidwideCast(module, (uint)AID.CleansingFire);
 
-class FeveredFlagellation(BossModule module) : Components.BaitAwayCast(module, (uint)AID.FeveredFlagellation, new AOEShapeCone(15f, 45f.Degrees()), tankbuster: true, endsOnCastEvent: true);
+class FeveredFlagellation(BossModule module) : Components.BaitAwayCast(module, (uint)AID.FeveredFlagellation, new AOEShapeCone(15f, 45f.Degrees()), tankbuster: true, endsOnCastEvent: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class WitchHunt(BossModule module) : Components.GenericBaitAway(module)
 {

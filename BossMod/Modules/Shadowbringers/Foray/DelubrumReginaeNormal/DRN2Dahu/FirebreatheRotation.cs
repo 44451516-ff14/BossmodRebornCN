@@ -39,7 +39,7 @@ sealed class FirebreatheRotation(BossModule module) : Components.GenericRotating
     {
         if (_rotation != default && _increment != default)
         {
-            Sequences.Add(new(cone, WPos.ClampToGrid(source.Position), _rotation, _increment, _activation, 2f, 5));
+            Sequences.Add(new(cone, source.Position.Quantized(), _rotation, _increment, _activation, 2f, 5));
             _rotation = default;
             _increment = default;
         }

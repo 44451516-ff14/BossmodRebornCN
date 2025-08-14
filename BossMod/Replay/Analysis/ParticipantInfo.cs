@@ -6,7 +6,7 @@ namespace BossMod.ReplayAnalysis;
 
 sealed class ParticipantInfo : CommonEnumInfo
 {
-    class ParticipantData
+    sealed class ParticipantData
     {
         public List<ActorType> Types = [];
         public List<(uint zoneId, uint cfcId)> Zones = [];
@@ -195,7 +195,7 @@ sealed class ParticipantInfo : CommonEnumInfo
         var name = GuessName(oid, data);
         sb.AppendLine("public enum OID : uint");
         sb.AppendLine("{");
-        sb.AppendLine($"    Boss = 0x{oid:X},");
+        sb.AppendLine($"    {name} = 0x{oid:X},");
         sb.AppendLine($"    Helper = 0x233C,");
         sb.AppendLine("}");
         sb.AppendLine();
@@ -220,7 +220,7 @@ sealed class ParticipantInfo : CommonEnumInfo
         }
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, GroupType = BossModuleInfo.GroupType.CFC, GroupID = {data.Zones.FirstOrDefault().cfcId}, NameID = {data.Names.FirstOrDefault().id})]");
+        sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.{name}, GroupType = BossModuleInfo.GroupType.CFC, GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u, NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u, Category = BossModuleInfo.Category.Placeholder, Expansion = BossModuleInfo.Expansion.Placeholder)]");
         sb.AppendLine($"public sealed class {name}(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));");
         return sb;
     }

@@ -1,12 +1,12 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // baited flarethrowers
-class P3Inception2 : Components.GenericBaitAway
+sealed class P3Inception2 : Components.GenericBaitAway
 {
     private int _numAetheroplasmsDone;
     private BitMask _taken;
 
-    private static readonly AOEShapeCone _shape = new(100, 45.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shape = new(100f, 45f.Degrees()); // TODO: verify angle
 
     public P3Inception2(BossModule module) : base(module)
     {
@@ -28,12 +28,12 @@ class P3Inception2 : Components.GenericBaitAway
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Aetheroplasm:
+            case (uint)AID.Aetheroplasm:
                 ++_numAetheroplasmsDone;
                 break;
-            case AID.FlarethrowerP3:
+            case (uint)AID.FlarethrowerP3:
                 ++NumCasts;
                 foreach (var t in spell.Targets)
                 {

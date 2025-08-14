@@ -132,15 +132,19 @@ class Gravitons(BossModule module) : Components.Voidzone(module, 1f, GetVoidzone
 }
 
 class AetherialPull(BossModule module) : Components.StretchTetherDuo(module, 33f, 7.9f, tetherIDGood: (uint)TetherID.AetherialPullGood, knockbackImmunity: true);
-class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(3f), (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1, 5, true, (uint)IconID.ChasingAOE)
+class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1, 5, true, (uint)IconID.ChasingAOE)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Actors.Contains(actor))
+        if (Targets[slot])
+        {
             hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center + new WDir(18.5f, default), Arena.Center + new WDir(-18.5f, default), 20f), Activation);
+        }
         else if (IsChaserTarget(actor))
+        {
             hints.AddForbiddenZone(ShapeDistance.InvertedRect(actor.Position, new WDir(1f, default), 40f, 40f, 3f));
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

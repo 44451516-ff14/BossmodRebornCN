@@ -1,11 +1,11 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P5DeathOfTheHeavensHeavyImpact(BossModule module) : HeavyImpact(module, 10.5f);
+sealed class P5DeathOfTheHeavensHeavyImpact(BossModule module) : HeavyImpact(module, 10.5d);
 
-class P5DeathOfTheHeavensGaze(BossModule module) : DragonsGaze(module, OID.BossP5, 23.5f);
+sealed class P5DeathOfTheHeavensGaze(BossModule module) : DragonsGaze(module, (uint)OID.BossP5, 23.5d);
 
 // TODO: make more meaningful somehow
-class P5DeathOfTheHeavensDooms(BossModule module) : BossComponent(module)
+sealed class P5DeathOfTheHeavensDooms(BossModule module) : BossComponent(module)
 {
     public BitMask Dooms;
 
@@ -24,7 +24,7 @@ class P5DeathOfTheHeavensDooms(BossModule module) : BossComponent(module)
     }
 }
 
-class P5DeathOfTheHeavensLightningStorm : Components.UniformStackSpread
+sealed class P5DeathOfTheHeavensLightningStorm : Components.UniformStackSpread
 {
     public P5DeathOfTheHeavensLightningStorm(BossModule module) : base(module, default, 5f)
     {
@@ -38,7 +38,7 @@ class P5DeathOfTheHeavensLightningStorm : Components.UniformStackSpread
     }
 }
 
-class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKnockback(module, (uint)AID.HeavensflameAOE)
+sealed class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKnockback(module, (uint)AID.HeavensflameAOE)
 {
     public bool KnockbackDone;
     private readonly WPos[] _playerAdjustedPositions = new WPos[PartyState.MaxPartySize];
@@ -200,4 +200,4 @@ class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.GenericKno
     private WPos ClosestCleanse(WPos p) => _cleanses.MinBy(c => (c - p).LengthSq());
 }
 
-class P5DeathOfTheHeavensMeteorCircle(BossModule module) : Components.Adds(module, (uint)OID.MeteorCircle);
+sealed class P5DeathOfTheHeavensMeteorCircle(BossModule module) : Components.Adds(module, (uint)OID.MeteorCircle);

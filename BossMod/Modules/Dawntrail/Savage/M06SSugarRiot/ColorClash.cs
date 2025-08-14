@@ -30,18 +30,22 @@ sealed class ColorClash(BossModule module) : Components.GenericStackSpread(modul
             {
                 for (var i = 0; i < len; ++i)
                 {
-                    ref readonly var p = ref party[i];
+                    var p = party[i];
                     if (p.Class.IsSupport())
+                    {
                         Stacks.Add(new(p, 6f, 2, 2, activation));
+                    }
                 }
             }
             else
             {
                 for (var i = 0; i < len; ++i)
                 {
-                    ref readonly var p = ref party[i];
+                    var p = party[i];
                     if (p.Role == Role.Healer)
+                    {
                         Stacks.Add(new(p, 6f, 4, 4, activation));
+                    }
                 }
             }
         }

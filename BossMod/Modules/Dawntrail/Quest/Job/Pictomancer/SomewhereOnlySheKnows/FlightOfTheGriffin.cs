@@ -17,13 +17,13 @@ public enum AID : uint
     FervidPulse = 37521, // Boss->self, 5.0s cast, range 50 width 14 cross
 }
 
-class SwoopingFrenzy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwoopingFrenzy, 12);
-class Feathercut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Feathercut, new AOEShapeRect(10, 2.5f));
-class FrigidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidPulse, new AOEShapeDonut(12, 60));
-class FervidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FervidPulse, new AOEShapeCross(50, 7));
-class EyeOfTheFierce(BossModule module) : Components.CastGaze(module, (uint)AID.EyeOfTheFierce);
+sealed class SwoopingFrenzy(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwoopingFrenzy, 12f);
+sealed class Feathercut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Feathercut, new AOEShapeRect(10f, 2.5f));
+sealed class FrigidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidPulse, new AOEShapeDonut(12f, 60f));
+sealed class FervidPulse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FervidPulse, new AOEShapeCross(50f, 7f));
+sealed class EyeOfTheFierce(BossModule module) : Components.CastGaze(module, (uint)AID.EyeOfTheFierce);
 
-class FlightOfTheGriffinStates : StateMachineBuilder
+sealed class FlightOfTheGriffinStates : StateMachineBuilder
 {
     public FlightOfTheGriffinStates(BossModule module) : base(module)
     {
@@ -38,7 +38,7 @@ class FlightOfTheGriffinStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70395, NameID = 13035)]
-public class FlightOfTheGriffin(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class FlightOfTheGriffin(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(3.6f, -294.59f), new(3.61f, -292.54f), new(3.92f, -292.06f), new(4.04f, -291.54f), new(5.6f, -291.42f),
     new(6.24f, -291.41f), new(6.77f, -291.43f), new(7.07f, -291.83f), new(7.09f, -292.34f), new(8.36f, -292.65f),
@@ -85,6 +85,6 @@ public class FlightOfTheGriffin(WorldState ws, Actor primary) : BossModule(ws, p
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.TheBirdOfPrey));
+        Arena.Actors(Enemies((uint)OID.TheBirdOfPrey));
     }
 }

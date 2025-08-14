@@ -6,6 +6,16 @@ public enum OID : uint
     MorbolFruit = 0x5BC, // R0.6-1.8
     Plume1 = 0x5CA, // R0.5
     Plume2 = 0x603, // R1.5
+    MorbolFruit1 = 0x1E8EE7, // R0.5
+    MorbolFruit2 = 0x1E8EDE, // R0.5
+    MorbolFruit3 = 0x1E8EE6, // R0.5
+    MorbolFruit4 = 0x1E8EDF, // R0.5
+    MorbolFruit5 = 0x1E8EE4, // R0.5
+    MorbolFruit6 = 0x1E8EE5, // R0.5
+    MorbolFruit7 = 0x1E8EE0, // R0.5
+    MorbolFruit8 = 0x1E8EE1, // R0.5
+    MorbolFruit9 = 0x1E8EE3, // R0.5
+    MorbolFruit10 = 0x1E8EE2, // R0.5
     MorbolSeedling = 0x5BB // R0.9
 }
 
@@ -24,11 +34,16 @@ public enum AID : uint
     Germinate = 1040 // MorbolFruit->self, 15.0s cast, single-target
 }
 
-class VineProbeCleave(BossModule module) : Components.Cleave(module, (uint)AID.VineProbe, new AOEShapeRect(9.85f, 4f), activeWhileCasting: false);
-class VineProbe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VineProbe, new AOEShapeRect(9.85f, 4f));
-class BadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BadBreath, new AOEShapeCone(16f, 60f.Degrees()));
+public enum SID : uint
+{
+    Burrs = 303 // Boss->player, extra=0x1/0x2/0x3
+}
 
-class GoldBilePlume(BossModule module) : Components.GenericAOEs(module)
+sealed class VineProbeCleave(BossModule module) : Components.Cleave(module, (uint)AID.VineProbe, new AOEShapeRect(9.85f, 4f), activeWhileCasting: false);
+sealed class VineProbe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VineProbe, new AOEShapeRect(9.85f, 4f));
+sealed class BadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BadBreath, new AOEShapeCone(16f, 60f.Degrees()));
+
+sealed class GoldBilePlume(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(2f);
     private static readonly AOEShapeRect rect = new(4.5f, 1f);
@@ -38,19 +53,111 @@ class GoldBilePlume(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorCreated(Actor actor)
     {
-        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position), actor.Rotation));
+        void AddAOE(AOEShape shape) => _aoes.Add(new(shape, actor.Position.Quantized(), actor.Rotation));
         if (actor.OID == (uint)OID.Plume1)
+        {
             AddAOE(circle);
+        }
         else if (actor.OID == (uint)OID.Plume2)
+        {
             AddAOE(rect);
+        }
     }
 }
 
-class D123MisersMistressStates : StateMachineBuilder
+sealed class MorbolFruit(BossModule module) : BossComponent(module)
+{
+    private BitMask burrs;
+    private readonly List<Actor> _fruits = module.Enemies([(uint)OID.MorbolFruit1, (uint)OID.MorbolFruit2, (uint)OID.MorbolFruit3, (uint)OID.MorbolFruit4,
+    (uint)OID.MorbolFruit5, (uint)OID.MorbolFruit6, (uint)OID.MorbolFruit7, (uint)OID.MorbolFruit8, (uint)OID.MorbolFruit9, (uint)OID.MorbolFruit10]);
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Burrs && status.Extra > 0x02)
+        {
+            burrs.Set(Raid.FindSlot(actor.InstanceID));
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Burrs && status.Extra > 0x02)
+        {
+            burrs.Clear(Raid.FindSlot(actor.InstanceID));
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (!burrs[slot])
+        {
+            return;
+        }
+
+        Actor? closest = null;
+        var minDistSq = float.MaxValue;
+
+        var count = _fruits.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var fruit = _fruits[i];
+            if (fruit.IsTargetable)
+            {
+                hints.GoalZones.Add(hints.GoalSingleTarget(fruit, 2f, 5f));
+                var distSq = (actor.Position - fruit.Position).LengthSq();
+                if (distSq < minDistSq)
+                {
+                    minDistSq = distSq;
+                    closest = fruit;
+                }
+            }
+        }
+        hints.InteractWithTarget = closest;
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        if (!burrs[slot])
+        {
+            return;
+        }
+
+        var count = _fruits.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            if (_fruits[i].IsTargetable)
+            {
+                hints.Add("Eat a fruit to cleanse debuff!");
+                return;
+            }
+        }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (!burrs[pcSlot])
+        {
+            return;
+        }
+
+        var count = _fruits.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var fruit = _fruits[i];
+            if (fruit.IsTargetable)
+            {
+                Arena.AddCircle(fruit.Position, 3f, Colors.Safe);
+            }
+        }
+    }
+}
+
+sealed class D123MisersMistressStates : StateMachineBuilder
 {
     public D123MisersMistressStates(BossModule module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<MorbolFruit>()
             .ActivateOnEnter<VineProbeCleave>()
             .ActivateOnEnter<VineProbe>()
             .ActivateOnEnter<GoldBilePlume>()
@@ -59,7 +166,7 @@ class D123MisersMistressStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 5, NameID = 1532)]
-public class D123MisersMistress(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D123MisersMistress(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-390.6f, -142.52f), new(-390.05f, -142.12f), new(-389.51f, -141.84f), new(-388.26f, -141.72f), new(-387.03f, -141.22f),
     new(-386.41f, -141.16f), new(-385.89f, -140.77f), new(-385.31f, -140.56f), new(-384.72f, -140.55f), new(-383.84f, -140.67f),

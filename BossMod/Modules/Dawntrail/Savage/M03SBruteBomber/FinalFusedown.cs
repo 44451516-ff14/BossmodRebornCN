@@ -25,7 +25,7 @@ sealed class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAO
         };
         if (delay > 0)
         {
-            _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(delay)));
+            _aoes.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(delay)));
             _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
     }

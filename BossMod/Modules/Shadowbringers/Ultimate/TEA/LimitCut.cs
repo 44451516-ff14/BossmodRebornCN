@@ -1,18 +1,18 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class LimitCut(BossModule module, float alphaDelay) : Components.GenericBaitAway(module)
+abstract class LimitCut(BossModule module, double alphaDelay) : Components.GenericBaitAway(module)
 {
     private enum State { Teleport, Alpha, Blasty }
 
     public int[] PlayerOrder = new int[PartyState.MaxPartySize];
-    private readonly float _alphaDelay = alphaDelay;
+    private readonly double _alphaDelay = alphaDelay;
     private State _nextState;
     private Actor? _chaser;
     private WPos _prevPos;
     private DateTime _nextHit;
 
-    private static readonly AOEShapeCone _shapeAlpha = new(30, 45.Degrees());
-    private static readonly AOEShapeRect _shapeBlasty = new(55, 5);
+    private static readonly AOEShapeCone _shapeAlpha = new(30f, 45f.Degrees());
+    private static readonly AOEShapeRect _shapeBlasty = new(55f, 5f);
 
     public override void Update()
     {
@@ -52,7 +52,7 @@ class LimitCut(BossModule module, float alphaDelay) : Components.GenericBaitAway
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if (iconID is >= 79 and <= 86)
+        if (iconID is >= 79u and <= 86u)
         {
             var slot = Raid.FindSlot(actor.InstanceID);
             if (slot >= 0)
@@ -63,23 +63,23 @@ class LimitCut(BossModule module, float alphaDelay) : Components.GenericBaitAway
                 // initialize baits on first icon; note that icons appear over ~300ms
                 _chaser = ((TEA)Module).CruiseChaser();
                 _prevPos = _chaser?.Position ?? default;
-                _nextHit = WorldState.FutureTime(9.5f);
+                _nextHit = WorldState.FutureTime(9.5d);
             }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.AlphaSwordP2:
+            case (uint)AID.AlphaSwordP2:
                 ++NumCasts;
                 _nextState = State.Blasty;
                 SetNextBaiter(NumCasts + 1, _shapeBlasty);
-                _nextHit = WorldState.FutureTime(1.5f);
+                _nextHit = WorldState.FutureTime(1.5d);
                 break;
-            case AID.SuperBlasstyChargeP2:
-            case AID.SuperBlasstyChargeP3:
+            case (uint)AID.SuperBlasstyChargeP2:
+            case (uint)AID.SuperBlasstyChargeP3:
                 ++NumCasts;
                 _nextState = State.Teleport;
                 CurrentBaits.Clear();

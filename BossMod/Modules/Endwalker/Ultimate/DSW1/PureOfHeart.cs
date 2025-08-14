@@ -1,21 +1,27 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
-class PureOfHeartBrightwing(BossModule module) : Components.GenericBaitAway(module)
+sealed class PureOfHeartBrightwing(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeCone _shape = new(18, 15.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shape = new(18f, 15f.Degrees()); // TODO: verify angle
+    private readonly DSW1 bossmod = (DSW1)module;
 
     public override void Update()
     {
         CurrentBaits.Clear();
         if (NumCasts < 8)
-            foreach (var source in Module.Enemies(OID.SerCharibert))
-                foreach (var target in Raid.WithoutSlot(false, true, true).SortedByRange(source.Position).Take(2))
-                    CurrentBaits.Add(new(source, target, _shape));
+        {
+            var charibert = bossmod.SerCharibert();
+            if (charibert != null)
+            {
+                foreach (var target in Raid.WithoutSlot(false, true, true).SortedByRange(charibert.Position).Take(2))
+                    CurrentBaits.Add(new(charibert, target, _shape));
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID == AID.Brightwing)
+        if (spell.Action.ID == (uint)AID.Brightwing)
         {
             ++NumCasts;
             foreach (var t in spell.Targets)
@@ -24,7 +30,7 @@ class PureOfHeartBrightwing(BossModule module) : Components.GenericBaitAway(modu
     }
 }
 
-class PureOfHeartSkyblindBait(BossModule module) : BossComponent(module)
+sealed class PureOfHeartSkyblindBait(BossModule module) : BossComponent(module)
 {
     private BitMask _baiters;
 
@@ -49,15 +55,15 @@ class PureOfHeartSkyblindBait(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Skyblind)
+        if (status.ID == (uint)SID.Skyblind)
             _baiters.Set(Raid.FindSlot(actor.InstanceID));
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Skyblind)
+        if (status.ID == (uint)SID.Skyblind)
             _baiters.Clear(Raid.FindSlot(actor.InstanceID));
     }
 }
 
-class PureOfHeartSkyblind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skyblind, 3);
+sealed class PureOfHeartSkyblind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Skyblind, 3f);

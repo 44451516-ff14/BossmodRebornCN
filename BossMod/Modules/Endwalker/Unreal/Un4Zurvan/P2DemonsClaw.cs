@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Unreal.Un4Zurvan;
 
-class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DemonsClaw, true)
+class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DemonsClaw)
 {
     private Actor? _caster;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_caster?.CastInfo?.TargetID == actor.InstanceID)
-            return new Knockback[1] { new(_caster.Position, 17f, Module.CastFinishAt(_caster.CastInfo)) };
+            return new Knockback[1] { new(_caster.Position, 17f, Module.CastFinishAt(_caster.CastInfo), ignoreImmunes: true) };
         return [];
     }
 
@@ -24,7 +24,7 @@ class P2DemonsClawKnockback(BossModule module) : Components.GenericKnockback(mod
     }
 }
 
-class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(module, 5, (uint)AID.WaveCannonShared)
+class P2DemonsClawWaveCannon(BossModule module) : Components.GenericWildCharge(module, 5f, (uint)AID.WaveCannonShared)
 {
     public Actor? Target;
 

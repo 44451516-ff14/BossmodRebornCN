@@ -38,7 +38,7 @@ class NavigatorsTridentAOE(BossModule module) : Components.SimpleAOEs(module, (u
 
 class NavigatorsTridentKnockback(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly SerpentsTide? _serpentsTide = module.FindComponent<SerpentsTide>();
+    private SerpentsTide? _serpentsTide = module.FindComponent<SerpentsTide>();
     private readonly List<Knockback> _sources = new(2);
 
     private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
@@ -47,14 +47,19 @@ class NavigatorsTridentKnockback(BossModule module) : Components.GenericKnockbac
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (_serpentsTide == null)
-            return false;
-        var aoes = _serpentsTide.ActiveAOEs(slot, actor);
-        var len = aoes.Length;
-        for (var i = 0; i < len; ++i)
+        _serpentsTide ??= Module.FindComponent<SerpentsTide>();
+        if (_serpentsTide != null)
         {
-            if (aoes[i].Check(pos))
-                return true;
+            var aoes = _serpentsTide.ActiveAOEs(slot, actor);
+            var len = aoes.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var aoe = ref aoes[i];
+                if (aoe.Check(pos))
+                {
+                    return true;
+                }
+            }
         }
         return !Module.InBounds(pos);
     }

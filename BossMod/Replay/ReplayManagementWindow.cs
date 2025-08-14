@@ -1,4 +1,6 @@
 ﻿using BossMod.Autorotation;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.ImGuiFileDialog;
 using ImGuiNET;
@@ -15,6 +17,7 @@ public sealed class ReplayManagementWindow : UIWindow
     private static readonly ReplayManagementConfig _config = Service.Config.Get<ReplayManagementConfig>();
     private readonly ReplayManager _manager;
     private readonly EventSubscriptions _subscriptions;
+    private readonly BossModuleManager _bmm;
     private ReplayRecorder? _recorder;
     private string _message = "";
     private bool _recordingManual; // recording was started manually, and so should not be stopped automatically
@@ -22,6 +25,9 @@ public sealed class ReplayManagementWindow : UIWindow
     private int _recordingActiveModules; // recording was started automatically, because we've activated N modules
     private FileDialog? _folderDialog;
     private string _lastErrorMessage = "";
+    private DalamudLinkPayload? _startLinkPayload;
+    private DalamudLinkPayload? _uploadLinkPayload;
+    private DalamudLinkPayload? _disableAlertLinkPayload;
 
     private const string _windowID = "###Replay recorder";
 
@@ -30,6 +36,7 @@ public sealed class ReplayManagementWindow : UIWindow
         _ws = ws;
         _logDir = logDir;
         _manager = new(rotationDB, logDir.FullName);
+        _bmm = bmm;
         _subscriptions = new
         (
             _config.Modified.ExecuteAndSubscribe(() =>
@@ -38,8 +45,8 @@ public sealed class ReplayManagementWindow : UIWindow
                 UpdateLogDirectory();
             }),
             _ws.CurrentZoneChanged.Subscribe(op => OnZoneChange(op.CFCID)),
-            bmm.ModuleActivated.Subscribe(OnModuleActivation),
-            bmm.ModuleDeactivated.Subscribe(OnModuleDeactivation)
+            _bmm.ModuleActivated.Subscribe(OnModuleActivation),
+            _bmm.ModuleDeactivated.Subscribe(OnModuleDeactivation)
         );
         if (!OnZoneChange(_ws.CurrentCFCID))
             UpdateTitle();
@@ -139,6 +146,42 @@ public sealed class ReplayManagementWindow : UIWindow
 
     private bool OnZoneChange(uint cfcId)
     {
+        if (_config.ImportantDutyAlert && IsImportantDuty(cfcId) && !ShouldAutoRecord)
+        {
+            _startLinkPayload ??= Service.PluginInterface.AddChatLinkHandler(0, (id, str) =>
+            {
+                if (id == 0)
+                {
+                    StartRecording("");
+                    Service.ChatGui.Print("[BMR] Replay recording started");
+                }
+            });
+            _disableAlertLinkPayload ??= Service.PluginInterface.AddChatLinkHandler(2, (id, str) =>
+            {
+                if (id == 2)
+                {
+                    _config.ImportantDutyAlert = false;
+                    _config.Modified.Fire();
+                    Service.ChatGui.Print("[BMR] Important duty alert disabled");
+                }
+            });
+            var alertPayload =
+                new TextPayload("[BMR] This duty does not yet have a complete module. Recording and uploading a replay will help enable module creation. ");
+            var linkTextPayload = new TextPayload("[Start replay recording]");
+            var disableTextPayload = new TextPayload("[Permanently disable these alerts]");
+
+            var seString = new SeStringBuilder()
+                .Add(alertPayload)
+                .Add(_startLinkPayload)
+                .Add(linkTextPayload)
+                .Add(RawPayload.LinkTerminator)
+                .AddText(" ")
+                .Add(_disableAlertLinkPayload)
+                .Add(disableTextPayload)
+                .Add(RawPayload.LinkTerminator)
+                .Build();
+            Service.ChatGui.Print(seString);
+        }
         if (!ShouldAutoRecord || _recordingManual)
             return false; // don't care
 
@@ -160,6 +203,75 @@ public sealed class ReplayManagementWindow : UIWindow
         }
 
         return false;
+    }
+
+    private static readonly Dictionary<uint, bool> StaticDutyImportance = GenerateStaticDutyMap();
+
+    private static Dictionary<uint, bool> GenerateStaticDutyMap()
+    {
+        var map = new Dictionary<uint, bool>();
+
+        uint[] alwaysImportantDuties = [280u, 539u, 694u, 788u, 908u, 1006u, 700u, 736u, 779u, 878u, 879u, 946u, 947u, 979u, 980u,
+        801u, 807u, 809u, 811u, 873u, 877u, 881u, 884u, 937u, 939u, 941u, 943u];
+        for (var i = 0; i < 27; ++i)
+        {
+            map[alwaysImportantDuties[i]] = true;
+        }
+
+        // ignored duties
+        uint[] alwaysIgnoredDuties = [0u, 650u, 127u, 130u, 195u, 756u, 180u, 701u, 473u, 721u];
+        for (var i = 0; i < 10; ++i)
+        {
+            map[alwaysIgnoredDuties[i]] = false;
+        }
+
+        static void AddRange(Dictionary<uint, bool> dict, uint start, uint end)
+        {
+            for (var i = start; i <= end; ++i)
+            {
+                dict[i] = false;
+            }
+        }
+
+        AddRange(map, 197, 199); // lord of verminion
+        AddRange(map, 481, 535); // chocobo races
+        AddRange(map, 552, 579); // lord of verminion
+        AddRange(map, 599, 608); // hidden gorge + leap of faith
+        AddRange(map, 640, 645); // air force one + mahjong
+        AddRange(map, 705, 713); // leap of faith
+        AddRange(map, 730, 734); // ocean fishing
+        AddRange(map, 766, 775); // mahjong + ocean fishing
+        AddRange(map, 835, 843); // crystalline conflict
+        AddRange(map, 847, 864); // crystalline conflict
+        AddRange(map, 912, 923); // crystalline conflict
+        AddRange(map, 927, 935); // leap of faith
+        AddRange(map, 952, 957); // ocean fishing
+        AddRange(map, 967, 978); // crystalline conflict
+        AddRange(map, 1012, 1014); // tutorial
+
+        // check modules for WIP and non existing
+        foreach (var module in BossModuleRegistry.RegisteredModules.Values)
+        {
+            if (module.Maturity != BossModuleInfo.Maturity.WIP)
+            {
+                var id = module.GroupID;
+                if (!map.ContainsKey(id))
+                {
+                    map[id] = false;
+                }
+            }
+        }
+
+        return map;
+    }
+
+    private bool IsImportantDuty(uint cfcId)
+    {
+        if (StaticDutyImportance.TryGetValue(cfcId, out var isImportant))
+        {
+            return isImportant;
+        }
+        return true;
     }
 
     private void OnModuleActivation(BossModule m)
@@ -219,6 +331,31 @@ public sealed class ReplayManagementWindow : UIWindow
 
     public void StopRecording()
     {
+        if (_config.ImportantDutyAlert && IsImportantDuty(_recorder?.CFCID ?? 0))
+        {
+            var path = _recorder?.LogPath;
+            _uploadLinkPayload ??= Service.PluginInterface.AddChatLinkHandler(1, (id, str) =>
+            {
+                if (id == 1)
+                {
+                    Task.Run(() =>
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "https://forms.gle/z6czgekaEnFBtgbB6",
+                            UseShellExecute = true
+                        });
+                    });
+                    Service.ChatGui.Print($"[BMR] The path to your replay is: {path}");
+                }
+            });
+            var alertPayload =
+                new TextPayload(
+                    "[BMR] You recorded a duty without a complete module. Uploading this replay helps with module development. ");
+            var linkTextPayload = new TextPayload("[Upload the replay]");
+            var seString = new SeStringBuilder().Add(alertPayload).Add(_uploadLinkPayload).Add(linkTextPayload).Add(RawPayload.LinkTerminator).Build();
+            Service.ChatGui.Print(seString);
+        }
         _recordingManual = false;
         _recordingDuty = false;
         _recordingActiveModules = 0;
@@ -237,16 +374,31 @@ public sealed class ReplayManagementWindow : UIWindow
     private unsafe string GetPrefix()
     {
         string? prefix = null;
-        if (_ws.CurrentCFCID != 0)
+        if (_ws.CurrentCFCID != default)
             prefix = Service.LuminaRow<ContentFinderCondition>(_ws.CurrentCFCID)?.Name.ToString();
-        if (_ws.CurrentZone != 0)
+        if (_ws.CurrentZone != default)
             prefix ??= Service.LuminaRow<TerritoryType>(_ws.CurrentZone)?.PlaceName.ValueNullable?.NameNoArticle.ToString();
         prefix ??= "World";
         prefix = Utils.StringToIdentifier(prefix);
 
         var player = _ws.Party.Player();
         if (player != null)
-            prefix += $"_{player.Class}{player.Level}_{player.Name.Replace(" ", null, StringComparison.Ordinal)}";
+        {
+            prefix += "_" + player.Class + player.Level + "_";
+
+            var nameParts = player.Name.Split(' ');
+            List<string> shortenedParts = [];
+            var nameLen = nameParts.Length;
+            for (var i = 0; i < nameLen; ++i)
+            {
+                ref var part = ref nameParts[i];
+                var len = Math.Min(2, part.Length);
+                shortenedParts.Add(part[..len]);
+            }
+
+            prefix += string.Join("_", shortenedParts);
+        }
+
 
         var cf = FFXIVClientStructs.FFXIV.Client.Game.UI.ContentsFinder.Instance();
         if (cf->IsUnrestrictedParty)

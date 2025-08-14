@@ -52,7 +52,7 @@ sealed class TimeEruptionBombReproduce(BossModule module) : Components.GenericAO
         if (_bombsActivation != default)
         {
             var countB = _bombs.Count;
-            Span<AOEInstance> aoesB = new AOEInstance[countB];
+            var aoesB = new AOEInstance[countB];
             for (var i = 0; i < countB; ++i)
             {
                 var b = _bombs[i];
@@ -68,7 +68,7 @@ sealed class TimeEruptionBombReproduce(BossModule module) : Components.GenericAO
         {
             var countC = _clocks.Count;
             var max = countC > 2 ? countC - 2 : countC;
-            Span<AOEInstance> aoesC = new AOEInstance[max];
+            var aoesC = new AOEInstance[max];
             for (var i = 0; i < max; ++i)
             {
                 var e = _clocks[i];

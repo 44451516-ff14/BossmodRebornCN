@@ -58,7 +58,7 @@ class P3GrandOctet(BossModule module) : Components.GenericAOEs(module)
         var shape = CastShape(spell.Action);
         if (shape != null)
         {
-            AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
         }
     }
 

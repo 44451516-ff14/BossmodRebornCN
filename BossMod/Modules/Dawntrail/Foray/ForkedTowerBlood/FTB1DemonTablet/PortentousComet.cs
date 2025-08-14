@@ -35,7 +35,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
     {
         if (ActiveBaitsOn(actor).Count != 0 && meteor != null)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(meteor.Position, 1f), CurrentBaits[0].Activation);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(meteor.Position, 1f), CurrentBaits.Ref(0).Activation);
         }
     }
 
@@ -65,7 +65,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
     }
 }
 
-sealed class PortentousCometKnockback(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class PortentousCometKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private static readonly AOEShapeCircle circle = new(4f);
     private readonly List<(Actor target, Angle dir)> targets = new(4);
@@ -96,14 +96,15 @@ sealed class PortentousCometKnockback(BossModule module) : Components.GenericKno
             var kb = targets[i];
             if (isTarget && kb.target == actor || !isTarget && pos.InCircle(kb.target.Position, 4f)) // only draw one knockback since they cant be chained, give priority to actor's own knockback
             {
-                Span<Knockback> knockback = new Knockback[1];
-                // the knockback range for knockbacks away from meteor side does not seem very consistent. Theory: if the knockback ends up inside the demon tablet, it gets extended to land 3y behind the wall
-                knockback[0] = new Knockback(kb.target.Position, 13f, activation, circle, kb.dir, Kind: Kind.DirForward);
+                var knockback = new Knockback[1];
                 var dir = kb.dir.ToDirection();
+                var distance = 13f;
                 if ((pos + 13f * dir).InRect(center, dirRect, 3f, 3f, 15f))
                 {
-                    knockback[0].Distance = (center + 6f * dir - pos).Length();
+                    distance = (center + 6f * dir - pos).Length();
                 }
+                // the knockback range for knockbacks away from meteor side does not seem very consistent. Theory: if the knockback ends up inside the demon tablet, it gets extended to land 3y behind the wall
+                knockback[0] = new Knockback(kb.target.Position, distance, activation, circle, kb.dir, kind: Kind.DirForward, ignoreImmunes: true);
                 return knockback;
             }
         }
@@ -122,12 +123,13 @@ sealed class PortentousCometKnockback(BossModule module) : Components.GenericKno
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.PortentousComet1 or (uint)AID.PortentousComet2 && WorldState.Actors.Find(spell.TargetID) is Actor target)
+        if (spell.Action.ID is (uint)AID.PortentousComet1 or (uint)AID.PortentousComet2)
         {
             var count = targets.Count;
+            var id = spell.TargetID;
             for (var i = 0; i < count; ++i)
             {
-                if (targets[i].target == target)
+                if (targets[i].target.InstanceID == id)
                 {
                     targets.RemoveAt(i);
                     return;
@@ -137,5 +139,35 @@ sealed class PortentousCometKnockback(BossModule module) : Components.GenericKno
     }
 }
 
-sealed class PortentousComet1(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.PortentousComet1, 4f, 12);
-sealed class PortentousComet2(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.PortentousComet2, 4f, 12);
+sealed class PortentousComet(BossModule module) : Components.GenericStackSpread(module)
+{
+    public int NumFinishedStacks;
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.PortentousComet1 or (uint)AID.PortentousComet2 && WorldState.Actors.Find(spell.TargetID) is Actor t)
+        {
+            Stacks.Add(new(t, 4f, 12, 12, Module.CastFinishAt(spell)));
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.PortentousComet1 or (uint)AID.PortentousComet2)
+        {
+            var count = Stacks.Count;
+            var id = spell.TargetID;
+            var stacks = CollectionsMarshal.AsSpan(Stacks);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var stack = ref stacks[i];
+                if (stack.Target.InstanceID == id)
+                {
+                    Stacks.RemoveAt(i);
+                    ++NumFinishedStacks;
+                    return;
+                }
+            }
+        }
+    }
+}

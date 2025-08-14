@@ -15,13 +15,13 @@ public enum AID : uint
     LightningBolt = 14717 // Helper->location, 3.0s cast, range 3 circle
 }
 
-class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13.1f, 45f.Degrees()));
-class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11.1f);
-class Waterspout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Waterspout, 4f);
-class LightningBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBolt, 3f);
-class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong);
+sealed class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13.1f, 45f.Degrees()));
+sealed class Megavolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Megavolt, 11.1f);
+sealed class Waterspout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Waterspout, 4f);
+sealed class LightningBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBolt, 3f);
+sealed class ImpSong(BossModule module) : Components.CastInterruptHint(module, (uint)AID.ImpSong);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -29,7 +29,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage20Act2States : StateMachineBuilder
+sealed class Stage20Act2States : StateMachineBuilder
 {
     public Stage20Act2States(BossModule module) : base(module)
     {
@@ -45,7 +45,7 @@ class Stage20Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 630, NameID = 7111, SortOrder = 2)]
-public class Stage20Act2 : BossModule
+public sealed class Stage20Act2 : BossModule
 {
     public Stage20Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

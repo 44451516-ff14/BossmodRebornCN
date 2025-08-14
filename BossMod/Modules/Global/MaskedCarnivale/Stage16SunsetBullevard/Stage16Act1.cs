@@ -10,7 +10,7 @@ public enum AID : uint
     AutoAttack = 6497 // Boss->player, no cast, single-target
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -18,7 +18,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage16Act1States : StateMachineBuilder
+sealed class Stage16Act1States : StateMachineBuilder
 {
     public Stage16Act1States(BossModule module) : base(module)
     {
@@ -40,7 +40,7 @@ class Stage16Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 626, NameID = 8112, SortOrder = 1)]
-public class Stage16Act1 : BossModule
+public sealed class Stage16Act1 : BossModule
 {
     public Stage16Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

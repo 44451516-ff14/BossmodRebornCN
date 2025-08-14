@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
 // used by two trio mechanics, in p2 and in p5
-class DragonsGaze(BossModule module, OID bossOID, double activationDelay) : Components.GenericGaze(module, (uint)AID.DragonsGazeAOE)
+abstract class DragonsGaze(BossModule module, uint bossOID, double activationDelay) : Components.GenericGaze(module, (uint)AID.DragonsGazeAOE)
 {
     public bool EnableHints;
-    private readonly OID _bossOID = bossOID;
+    private readonly uint _bossOID = bossOID;
     private Actor? _boss;
     private WPos _eyePosition;
     private DateTime _activation;
@@ -16,8 +16,8 @@ class DragonsGaze(BossModule module, OID bossOID, double activationDelay) : Comp
         if (_boss != null && NumCasts == 0)
         {
             var eyes = new Eye[2];
-            eyes[0] = new(_eyePosition, _activation, Range: EnableHints ? 10000f : default);
-            eyes[1] = new(_boss.Position, _activation, Range: EnableHints ? 10000f : default);
+            eyes[0] = new(_eyePosition, _activation, range: EnableHints ? 10000f : default);
+            eyes[1] = new(_boss.Position, _activation, range: EnableHints ? 10000f : default);
             return eyes;
         }
         return [];
@@ -26,7 +26,7 @@ class DragonsGaze(BossModule module, OID bossOID, double activationDelay) : Comp
     public override void OnEventEnvControl(byte index, uint state)
     {
         // seen indices: 2 = E, 5 = SW, 6 = W => inferring 0=N, 1=NE, ... cw order
-        if (state == 0x00020001u && index <= 0x07u)
+        if (index <= 0x07 && state == 0x00020001u)
         {
             if (_activation == default)
                 _activation = WorldState.FutureTime(activationDelay);

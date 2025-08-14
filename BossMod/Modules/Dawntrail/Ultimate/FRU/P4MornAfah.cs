@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P4MornAfah(BossModule module) : Components.UniformStackSpread(module, 4f, default, 8)
+sealed class P4MornAfah(BossModule module) : Components.UniformStackSpread(module, 4f, default, 8)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -19,7 +19,7 @@ class P4MornAfah(BossModule module) : Components.UniformStackSpread(module, 4f, 
     }
 }
 
-class P4MornAfahHPCheck(BossModule module) : BossComponent(module)
+sealed class P4MornAfahHPCheck(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {

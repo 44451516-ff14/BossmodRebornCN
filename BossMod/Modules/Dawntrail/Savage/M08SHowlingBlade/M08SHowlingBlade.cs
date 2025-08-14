@@ -8,20 +8,11 @@ sealed class RavenousSaber(BossModule module) : Components.CastCounterMulti(modu
 (uint)AID.RavenousSaber2, (uint)AID.RavenousSaber3, (uint)AID.RavenousSaber4, (uint)AID.RavenousSaber5]);
 sealed class Mooncleaver1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mooncleaver1, 8f);
 sealed class ProwlingGaleP2(BossModule module) : Components.CastTowers(module, (uint)AID.ProwlingGaleP2, 2f, 2, 2);
-sealed class MoonbeamsBite : Components.SimpleAOEGroups
-{
-    public MoonbeamsBite(BossModule module) : base(module, [(uint)AID.MoonbeamsBite1, (uint)AID.MoonbeamsBite2], new AOEShapeRect(40f, 10f), 2, 6)
-    {
-        MaxDangerColor = 1;
-    }
-}
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1026, NameID = 13843, PlanLevel = 100)]
 public sealed class M08SHowlingBlade(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingArena)
 {
     private Actor? _bossP2;
-
-    public Actor? BossP1() => PrimaryActor;
     public Actor? BossP2() => _bossP2;
 
     protected override void UpdateModule()
@@ -46,6 +37,6 @@ public sealed class M08SHowlingBlade(WorldState ws, Actor primary) : BossModule(
 
     public static readonly WPos ArenaCenter = new(100f, 100f);
     public static readonly Polygon[] StartingArenaPolygon = [new(ArenaCenter, 12f, 40)];
-    public static readonly ArenaBoundsComplex StartingArena = new(StartingArenaPolygon);
+    public static readonly ArenaBoundsComplex StartingArena = new(StartingArenaPolygon, MapResolution: 0.25f);
     public static readonly ArenaBoundsComplex DonutArena = new(StartingArenaPolygon, [new Polygon(ArenaCenter, 8f, 40)]);
 }

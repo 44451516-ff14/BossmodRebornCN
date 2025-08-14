@@ -1,51 +1,53 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P1BallisticImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallisticImpact, 5);
+sealed class P1BallisticImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallisticImpact, 5);
 
-class P1FlameThrower(BossModule module) : Components.GenericAOEs(module)
+sealed class P1FlameThrower(BossModule module) : Components.GenericAOEs(module)
 {
-    public List<Actor> Casters = [];
     private readonly TOPConfig _config = Service.Config.Get<TOPConfig>();
     private readonly P1Pantokrator? _pantokrator = module.FindComponent<P1Pantokrator>();
-
+    public readonly List<AOEInstance> AOEs = [];
     private static readonly AOEShapeCone _shape = new(65f, 30f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = Casters.Count;
+        var count = AOEs.Count;
         if (count == 0)
             return [];
 
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        var max = count > 2 ? 2 : count;
+        var color = Colors.Danger;
+        for (var i = 0; i < max; ++i)
         {
-            var c = Casters[i];
-            if (i < 2)
-                aoes[i] = new(_shape, c.CastInfo!.LocXZ, c.CastInfo.Rotation, Module.CastFinishAt(c.CastInfo), count > 2 ? Colors.Danger : default, true);
-            else
-                aoes[i] = new(_shape, c.CastInfo!.LocXZ, c.CastInfo.Rotation, Module.CastFinishAt(c.CastInfo), default, false);
+            ref var aoe = ref aoes[i];
+            if (count > 2)
+            {
+                aoe.Color = color;
+            }
+            aoe.Risky = true;
         }
         return aoes;
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (Casters.Count == 0 || NumCasts > 0)
+        if (AOEs.Count == 0 || NumCasts > 0)
             return;
 
         var group = _pantokrator != null ? _pantokrator.PlayerStates[pcSlot].Group : 0;
         if (group > 0)
         {
-            var flame1Dir = Casters[0].CastInfo!.Rotation - Module.PrimaryActor.Rotation;
+            var flame1Dir = AOEs.Ref(0).Rotation - Module.PrimaryActor.Rotation;
             // if ne/sw, set of safe cones is offset by 1 rotation
             if (_config.P1PantokratorNESW)
-                flame1Dir += 60.Degrees();
+                flame1Dir += 60f.Degrees();
 
             var dir = flame1Dir.Normalized().Deg switch
             {
                 > 15f and < 45f or > -165f and < -135f => -60f.Degrees(),
                 > 45f and < 75f or > -135f and < -105f => -30f.Degrees(),
-                > 75f and < 105f or > -105f and < -75f => new Angle(),
+                > 75f and < 105f or > -105f and < -75f => default,
                 > 105f and < 135f or > -75f and < -45f => 30f.Degrees(),
                 > 135f and < 165f or > -45f and < -15f => 60f.Degrees(),
                 _ => -90f.Degrees(), // assume groups go CW
@@ -62,23 +64,25 @@ class P1FlameThrower(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.FlameThrowerFirst or (uint)AID.FlameThrowerRest)
-            Casters.Add(caster);
+        {
+            AOEs.Add(new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: false));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.FlameThrowerFirst or (uint)AID.FlameThrowerRest)
-            Casters.Remove(caster);
-    }
-
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        if (spell.Action.ID is (uint)AID.FlameThrowerFirst or (uint)AID.FlameThrowerRest)
+        {
             ++NumCasts;
+            if (AOEs.Count != 0)
+            {
+                AOEs.RemoveAt(0);
+            }
+        }
     }
 }
 
-class P1Pantokrator(BossModule module) : P1CommonAssignments(module)
+sealed class P1Pantokrator(BossModule module) : P1CommonAssignments(module)
 {
     public int NumSpreadsDone;
     public int NumStacksDone;

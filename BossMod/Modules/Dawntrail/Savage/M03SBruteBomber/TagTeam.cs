@@ -106,7 +106,7 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
                 else if (spell.Action.ID is (uint)AID.TagTeamLariatComboFirstRAOE or (uint)AID.TagTeamLariatComboFirstLAOE or (uint)AID.FusesOfFuryLariatComboFirstRAOE or (uint)AID.FusesOfFuryLariatComboFirstLAOE)
                 {
                     ref var aoe = ref AOEs.Ref(index);
-                    aoe.Origin = WPos.ClampToGrid(Arena.Center - (aoe.Origin - Arena.Center));
+                    aoe.Origin = Arena.Center - (aoe.Origin - Arena.Center.Quantized());
                     aoe.Rotation += 180f.Degrees();
                     aoe.Activation = WorldState.FutureTime(4.3d);
                 }

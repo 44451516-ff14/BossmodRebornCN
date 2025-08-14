@@ -1,8 +1,8 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class AbsoluteAuthorityCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbsoluteAuthorityCircle, 8f);
+sealed class AbsoluteAuthorityCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbsoluteAuthorityCircle, 8f);
 
-class AbsoluteAuthorityFlare(BossModule module) : Components.BaitAwayIcon(module, 12f, (uint)IconID.Flare, (uint)AID.AbsoluteAuthorityFlare, 6f)
+sealed class AbsoluteAuthorityFlare(BossModule module) : Components.BaitAwayIcon(module, 12f, (uint)IconID.Flare, (uint)AID.AbsoluteAuthorityFlare, 6f)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -12,47 +12,55 @@ class AbsoluteAuthorityFlare(BossModule module) : Components.BaitAwayIcon(module
     }
 }
 
-class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStackSpread(module)
+sealed class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStackSpread(module)
 {
     private readonly AbsoluteAuthorityCircle _aoe = module.FindComponent<AbsoluteAuthorityCircle>()!;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.DoritoStack && Stacks.Count == 0)
-            Stacks.Add(new(actor, 1.5f, 8, 8, activation: WorldState.FutureTime(5.1d)));
+            Stacks.Add(new(actor, 3f, 8, 8, activation: WorldState.FutureTime(5.1d)));
     }
 
     public override void Update()
     {
         if (Stacks.Count != 0)
         {
-            var player = Raid.Player()!;
             var party = Raid.WithoutSlot(false, true, true);
-            Array.Sort(party, (a, b) =>
-            {
-                var distA = (player.Position - a.Position).LengthSq();
-                var distB = (player.Position - a.Position).LengthSq();
-                return distA.CompareTo(distB);
-            });
-            var len = party.Length;
+            var player = Raid.Player()!;
+            var pPos = player.Position;
             Actor? closest = null;
+
+            var minDistSq = float.MaxValue;
+            var len = party.Length;
             var aoes = _aoe.ActiveAOEs(default, player);
             var lenaoes = aoes.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
+
                 if (p == player)
                     continue;
-                for (var j = 0; j < lenaoes; ++j)
+                var distSq = (p.Position - pPos).LengthSq();
+
+                if (distSq < minDistSq)
                 {
-                    if (!aoes[i].Check(p.Position))
+                    for (var j = 0; j < lenaoes; ++j)
                     {
-                        closest = p;
-                        break;
+                        if (aoes[j].Check(p.Position))
+                        {
+                            goto next;
+                        }
                     }
+                    minDistSq = distSq;
+                    closest = p;
                 }
+            next:
+                ;
             }
-            Stacks[0] = Stacks[0] with { Target = closest ?? player };
+
+            var stacks = CollectionsMarshal.AsSpan(Stacks);
+            stacks[0].Target = closest ?? player;
         }
     }
 
@@ -63,7 +71,7 @@ class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStackSpread
     }
 }
 
-class AuthoritysHold(BossModule module) : Components.StayMove(module, 3)
+sealed class AuthoritysHold(BossModule module) : Components.StayMove(module, 3)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -78,7 +86,7 @@ class AuthoritysHold(BossModule module) : Components.StayMove(module, 3)
     }
 }
 
-class AuthoritysGaze(BossModule module) : Components.GenericGaze(module)
+sealed class AuthoritysGaze(BossModule module) : Components.GenericGaze(module)
 {
     private DateTime _activation;
     private readonly List<Actor> _affected = [];

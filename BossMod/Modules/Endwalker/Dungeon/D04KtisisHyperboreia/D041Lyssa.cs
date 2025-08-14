@@ -59,7 +59,7 @@ class PunishingSlice(BossModule module) : Components.GenericAOEs(module)
         if (pair != default)
         {
             var activation = NumCasts == 0 ? WorldState.FutureTime(13d) : WorldState.FutureTime(16d);
-            _aoe = new(rect, WPos.ClampToGrid(pair.Item1), pair.Item2, activation);
+            _aoe = new(rect, pair.Item1.Quantized(), pair.Item2, activation);
         }
     }
 

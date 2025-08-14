@@ -82,13 +82,13 @@ class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.ShadowFlowCone)
         {
             var activation = WorldState.FutureTime(8d);
-            var pos = WPos.ClampToGrid(DO12TheGovernor.ArenaCenter);
+            var pos = DO12TheGovernor.ArenaCenter.Quantized();
             _aoes.Add(new(cone, pos, caster.Rotation, activation));
             if (_aoes.Count == 6)
             {
                 _aoes.Add(new(circle, pos, default, activation));
                 foreach (var g in Module.Enemies((uint)OID.TheGroveller))
-                    _aoes.Add(new(circle, WPos.ClampToGrid(g.Position), default, activation));
+                    _aoes.Add(new(circle, g.Position.Quantized(), default, activation));
             }
         }
     }

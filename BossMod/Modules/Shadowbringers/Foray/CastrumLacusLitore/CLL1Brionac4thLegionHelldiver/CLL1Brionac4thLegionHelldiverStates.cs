@@ -29,7 +29,7 @@ sealed class CLL1Brionac4thLegionHelldiverStates : StateMachineBuilder
                     if (!enemy.IsDeadOrDestroyed)
                         return false;
                 }
-                return module.PrimaryActor.IsDeadOrDestroyed && (module.BossHelldiver()?.IsDeadOrDestroyed ?? true);
+                return module.PrimaryActor.IsDeadOrDestroyed && (module.BossHellDiver?.IsDeadOrDestroyed ?? true);
             };
     }
 }

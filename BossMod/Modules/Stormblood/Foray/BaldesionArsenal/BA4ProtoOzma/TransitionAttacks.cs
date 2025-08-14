@@ -12,13 +12,22 @@ sealed class TransitionAttacks(BossModule module) : Components.GenericAOEs(modul
     {
         var count = AOEs.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(AOEs);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -28,21 +37,27 @@ sealed class TransitionAttacks(BossModule module) : Components.GenericAOEs(modul
         void AddAOEs()
         {
             for (var i = 0; i < 3; ++i)
+            {
                 AddAOE(rect, angles[i], new(-17f, 29.012f));
+            }
         }
         void AddAOE(AOEShape shape, Angle rotation = default, WPos position = default)
-        => AOEs.Add(new(shape, WPos.ClampToGrid(position == default ? caster.Position : position), rotation, WorldState.FutureTime(7.8d)));
+        => AOEs.Add(new(shape, position == default ? caster.Position : position.Quantized(), rotation, WorldState.FutureTime(7.8d)));
         void TransfigurationCounter()
         {
             if (caster == Module.PrimaryActor)
+            {
                 ++NumCasts;
+            }
         }
         switch (spell.Action.ID)
         {
             case (uint)AID.TransfigurationStar:
                 TransfigurationCounter();
                 if (NumCasts < 7) // no transition AOE at last transition, but enrage start
+                {
                     AddAOE(Circle);
+                }
                 break;
             case (uint)AID.TransfigurationCube:
                 AddAOE(Donut);
@@ -72,7 +87,9 @@ sealed class TransitionAttacks(BossModule module) : Components.GenericAOEs(modul
             case (uint)AID.FlareStar:
             case (uint)AID.MourningStar:
                 if (AOEs.Count != 0)
+                {
                     AOEs.RemoveAt(0);
+                }
                 break;
         }
     }

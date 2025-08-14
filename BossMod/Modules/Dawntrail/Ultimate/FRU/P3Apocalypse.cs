@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P3Apocalypse(BossModule module) : Components.GenericAOEs(module)
+sealed class P3Apocalypse(BossModule module) : Components.GenericAOEs(module)
 {
     public Angle? Starting;
     public Angle Rotation;
@@ -75,7 +75,7 @@ class P3Apocalypse(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4, includeDeadTargets: true)
+sealed class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4, includeDeadTargets: true)
 {
     public struct State
     {
@@ -126,8 +126,8 @@ class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackSpread(m
             States[slot].Expiration = status.ExpireAt;
             States[slot].Order = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds switch
             {
-                < 15 => 1,
-                < 34 => 2,
+                < 15d => 1,
+                < 34d => 2,
                 _ => 3,
             };
             if (++NumStatuses == 6)
@@ -252,7 +252,7 @@ class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackSpread(m
     }
 }
 
-class P3ApocalypseSpiritTaker(BossModule module) : SpiritTaker(module)
+sealed class P3ApocalypseSpiritTaker(BossModule module) : SpiritTaker(module)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -261,7 +261,7 @@ class P3ApocalypseSpiritTaker(BossModule module) : SpiritTaker(module)
     }
 }
 
-class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.DarkEruption, (uint)AID.DarkEruption, 6, 5.1f)
+sealed class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.DarkEruption, (uint)AID.DarkEruption, 6, 5.1f)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P3Apocalypse? _apoc = module.FindComponent<P3Apocalypse>();
@@ -285,15 +285,15 @@ class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(mo
         var safeSpot = SafeOffset(pcSlot, out var refSafeSpot);
         if (safeSpot != default)
         {
-            Arena.AddCircle(Arena.Center + safeSpot, 1, Colors.Safe);
+            Arena.AddCircle(Arena.Center + safeSpot, 1f, Colors.Safe);
             if (refSafeSpot != safeSpot)
-                Arena.AddCircle(Arena.Center + refSafeSpot, 1, Colors.Danger);
+                Arena.AddCircle(Arena.Center + refSafeSpot, 1f, Colors.Danger);
         }
         else if (refSafeSpot != default)
         {
             // we don't have assignments, at least draw two reference ones
-            Arena.AddCircle(Arena.Center + refSafeSpot, 1, Colors.Danger);
-            Arena.AddCircle(Arena.Center - refSafeSpot, 1, Colors.Danger);
+            Arena.AddCircle(Arena.Center + refSafeSpot, 1f, Colors.Danger);
+            Arena.AddCircle(Arena.Center - refSafeSpot, 1f, Colors.Danger);
         }
     }
 
@@ -322,8 +322,8 @@ class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(mo
         if ((pos & 2) == 0)
         {
             // melee spot; note that non-reference melee goes in right after second apoc (max range is 14-9)
-            var altPos = _apoc.Rotation.Rad < 0 ? 1 : 0;
-            return pos == altPos ? (_apoc.NumCasts > 4 ? 4.5f : 10) * (midDir - _apoc.Rotation).ToDirection() : reference;
+            var altPos = _apoc.Rotation.Rad < 0f ? 1 : 0;
+            return pos == altPos ? (_apoc.NumCasts > 4 ? 4.5f : 10f) * (midDir - _apoc.Rotation).ToDirection() : reference;
         }
         else
         {
@@ -334,7 +334,7 @@ class P3ApocalypseDarkEruption(BossModule module) : Components.SpreadFromIcon(mo
     }
 }
 
-class P3DarkestDanceBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DarkestDanceBait, centerAtTarget: true)
+sealed class P3DarkestDanceBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DarkestDanceBait, centerAtTarget: true)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -358,12 +358,12 @@ class P3DarkestDanceBait(BossModule module) : Components.GenericBaitAway(module,
         {
             ForbiddenPlayers = Raid.WithSlot(true, true, true).WhereActor(p => p.Role != Role.Tank).Mask();
             _source = caster;
-            _activation = Module.CastFinishAt(spell, 0.4f);
+            _activation = Module.CastFinishAt(spell, 0.4d);
         }
     }
 }
 
-class P3DarkestDanceKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DarkestDanceKnockback, true)
+sealed class P3DarkestDanceKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.DarkestDanceKnockback)
 {
     public Actor? Caster;
     public DateTime Activation;
@@ -371,7 +371,7 @@ class P3DarkestDanceKnockback(BossModule module) : Components.GenericKnockback(m
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (Caster != null)
-            return new Knockback[1] { new(Caster.Position, 21, Activation) };
+            return new Knockback[1] { new(Caster.Position, 21f, Activation, ignoreImmunes: true) };
         return [];
     }
 
@@ -391,7 +391,7 @@ class P3DarkestDanceKnockback(BossModule module) : Components.GenericKnockback(m
 }
 
 // position for first dark water - note that this is somewhat arbitrary (range etc)
-class P3ApocalypseAIWater1(BossModule module) : BossComponent(module)
+sealed class P3ApocalypseAIWater1(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P3ApocalypseDarkWater? _water = module.FindComponent<P3ApocalypseDarkWater>();
@@ -420,7 +420,7 @@ class P3ApocalypseAIWater1(BossModule module) : BossComponent(module)
 }
 
 // position for second dark water & darkest dance - for simplicity, we position in the direction tank would take darkest dance
-class P3ApocalypseAIWater2(BossModule module) : BossComponent(module)
+sealed class P3ApocalypseAIWater2(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P3Apocalypse? _apoc = module.FindComponent<P3Apocalypse>();
@@ -454,12 +454,12 @@ class P3ApocalypseAIWater2(BossModule module) : BossComponent(module)
         }
 
         var destOff = distance * (midDir - _apoc.Rotation).ToDirection();
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center + destOff, 1), DateTime.MaxValue);
+        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center + destOff, 1f), DateTime.MaxValue);
     }
 }
 
 // position for darkest dance knockback & third dark water
-class P3ApocalypseAIWater3(BossModule module) : BossComponent(module)
+sealed class P3ApocalypseAIWater3(BossModule module) : BossComponent(module)
 {
     private readonly P3ApocalypseDarkWater? _water = module.FindComponent<P3ApocalypseDarkWater>();
     private readonly P3DarkestDanceKnockback? _knockback = module.FindComponent<P3DarkestDanceKnockback>();

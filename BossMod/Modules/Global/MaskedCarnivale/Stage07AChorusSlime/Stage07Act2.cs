@@ -3,53 +3,59 @@ namespace BossMod.Global.MaskedCarnivale.Stage07.Act2;
 public enum OID : uint
 {
     Boss = 0x2705, //R=1.6
-    Sprite = 0x2704, //R=0.8
+    Sprite = 0x2704 //R=0.8
 }
 
 public enum AID : uint
 {
     Detonation = 14696, // Boss->self, no cast, range 6+R circle
-    Blizzard = 14709, // Sprite->player, 1.0s cast, single-target
+    Blizzard = 14709 // Sprite->player, 1.0s cast, single-target
 }
 
-class SlimeExplosion(BossModule module) : Components.GenericStackSpread(module)
+sealed class SlimeExplosion(BossModule module) : Components.GenericStackSpread(module)
 {
-    private static List<Actor> GetEnemies(BossModule module)
-    {
-        var enemies = module.Enemies((uint)OID.Boss);
-        var count = enemies.Count;
-        if (count == 0)
-            return [];
+    private readonly List<Actor> slimes = new(4);
 
-        var slimes = new List<Actor>(count);
-        for (var i = 0; i < count; ++i)
+    public override void OnActorCreated(Actor actor)
+    {
+        if (actor.OID == (uint)OID.Boss)
         {
-            var z = enemies[i];
-            if (!z.IsDead)
-                slimes.Add(z);
+            slimes.Add(actor);
         }
-        return slimes;
+    }
+
+    public override void OnActorDeath(Actor actor)
+    {
+        if (actor.OID == (uint)OID.Boss)
+        {
+            slimes.Remove(actor);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        var slimes = GetEnemies(Module);
         var count = slimes.Count;
         for (var i = 0; i < count; ++i)
-            Arena.AddCircle(slimes[i].Position, 7.6f, Colors.Danger);
+        {
+            Arena.AddCircle(slimes[i].Position, 7.6f);
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var slimes = GetEnemies(Module);
         var count = slimes.Count;
         for (var i = 0; i < count; ++i)
+        {
             if (actor.Position.InCircle(slimes[i].Position, 7.6f))
+            {
                 hints.Add("In slime explosion radius!");
+                return;
+            }
+        }
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -57,7 +63,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage07Act2States : StateMachineBuilder
+sealed class Stage07Act2States : StateMachineBuilder
 {
     public Stage07Act2States(BossModule module) : base(module)
     {
@@ -78,7 +84,7 @@ class Stage07Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 617, NameID = 8094, SortOrder = 2)]
-public class Stage07Act2 : BossModule
+public sealed class Stage07Act2 : BossModule
 {
     public Stage07Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.Layout4Quads)
     {

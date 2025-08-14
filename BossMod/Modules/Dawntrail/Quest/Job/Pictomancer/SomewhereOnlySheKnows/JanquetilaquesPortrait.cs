@@ -39,13 +39,13 @@ public enum AID : uint
     FreezeInCyan = 37540 // Boss->self, 5.0s cast, range 40 45-degree cone
 }
 
-class FreezeInCyan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FreezeInCyan, new AOEShapeCone(40f, 22.5f.Degrees()));
-class NineIvies(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NineIvies, new AOEShapeCone(50f, 10f.Degrees()), 9);
-class TornadoInGreen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TornadoInGreen, new AOEShapeDonut(10f, 40f));
-class SculptureCast(BossModule module) : Components.CastGaze(module, (uint)AID.SculptureCast);
-class BlazeInRed(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlazeInRed);
+sealed class FreezeInCyan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FreezeInCyan, new AOEShapeCone(40f, 22.5f.Degrees()));
+sealed class NineIvies(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NineIvies, new AOEShapeCone(50f, 10f.Degrees()), 9);
+sealed class TornadoInGreen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TornadoInGreen, new AOEShapeDonut(10f, 40f));
+sealed class SculptureCast(BossModule module) : Components.CastGaze(module, (uint)AID.SculptureCast);
+sealed class BlazeInRed(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlazeInRed);
 
-class BloodyCaress(BossModule module) : Components.GenericAOEs(module)
+sealed class BloodyCaress(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     private static readonly AOEShapeCone cone = new(60f, 90f.Degrees());
@@ -65,7 +65,7 @@ class BloodyCaress(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Earthquake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class Earthquake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
 
@@ -91,17 +91,16 @@ class Earthquake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
     }
 }
 
-class FloodInBlueFirst : Components.SimpleAOEs
+sealed class FloodInBlueFirst : Components.SimpleAOEs
 {
     public FloodInBlueFirst(BossModule module) : base(module, (uint)AID.FloodInBlueFirst, new AOEShapeRect(50f, 5f)) { Color = Colors.Danger; }
 }
 
-class FloodInBlueRest(BossModule module) : Components.Exaflare(module, new AOEShapeRect(25f, 2.5f, 25f))
+sealed class FloodInBlueRest(BossModule module) : Components.Exaflare(module, new AOEShapeRect(25f, 2.5f, 25f))
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddLine(WPos first, WDir dir, Angle offset)
-        => Lines.Add(new() { Next = first, Advance = dir, Rotation = spell.Rotation + offset, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 2f, ExplosionsLeft = 5, MaxShownExplosions = 2 });
+        void AddLine(WPos first, WDir dir, Angle offset) => Lines.Add(new(first, dir, Module.CastFinishAt(spell), 2d, 5, 2, spell.Rotation + offset));
         if (spell.Action.ID == (uint)AID.FloodInBlueFirst)
         {
             var advance = spell.Rotation.ToDirection().OrthoR();
@@ -134,7 +133,7 @@ class FloodInBlueRest(BossModule module) : Components.Exaflare(module, new AOESh
     }
 }
 
-class JanquetilaquesPortraitStates : StateMachineBuilder
+sealed class JanquetilaquesPortraitStates : StateMachineBuilder
 {
     public JanquetilaquesPortraitStates(BossModule module) : base(module)
     {
@@ -152,4 +151,4 @@ class JanquetilaquesPortraitStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70395, NameID = 13037)]
-public class JanquetilaquesPortrait(WorldState ws, Actor primary) : BossModule(ws, primary, new(0, -340), new ArenaBoundsSquare(24.5f));
+public sealed class JanquetilaquesPortrait(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -340f), new ArenaBoundsSquare(24.5f));

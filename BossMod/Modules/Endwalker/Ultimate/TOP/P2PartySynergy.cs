@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P2PartySynergy(BossModule module) : CommonAssignments(module)
+sealed class P2PartySynergy(BossModule module) : CommonAssignments(module)
 {
     public enum Glitch { Unknown, Mid, Remote }
 
@@ -106,7 +106,7 @@ class P2PartySynergy(BossModule module) : CommonAssignments(module)
     }
 }
 
-class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
+sealed class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     public List<AOEInstance> AOEs = [];
 
@@ -122,7 +122,7 @@ class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOEs(modul
     {
         if (id != 0x1E43)
             return;
-        var pos = WPos.ClampToGrid(actor.Position);
+        var pos = actor.Position.Quantized();
         var act = WorldState.FutureTime(5.1d);
         var rot = actor.Rotation;
         switch (actor.OID)
@@ -152,9 +152,9 @@ class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-class P2PartySynergyOptimizedFire : Components.UniformStackSpread
+sealed class P2PartySynergyOptimizedFire : Components.UniformStackSpread
 {
-    public P2PartySynergyOptimizedFire(BossModule module) : base(module, 0, 7, alwaysShowSpreads: true)
+    public P2PartySynergyOptimizedFire(BossModule module) : base(module, default, 7f, alwaysShowSpreads: true)
     {
         AddSpreads(Raid.WithoutSlot(true, true, true));
     }
@@ -166,10 +166,10 @@ class P2PartySynergyOptimizedFire : Components.UniformStackSpread
     }
 }
 
-class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
+sealed class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(module, (uint)AID.OpticalLaser)
 {
     private readonly P2PartySynergy? _synergy = module.FindComponent<P2PartySynergy>();
-    private readonly Actor? _source = module.Enemies(OID.OpticalUnit).FirstOrDefault();
+    private readonly Actor? _source = module.Enemies((uint)OID.OpticalUnit).FirstOrDefault();
     private DateTime _activation;
 
     private static readonly AOEShapeRect _shape = new(100f, 8f);
@@ -182,7 +182,7 @@ class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(mod
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_activation != default && _source != null)
-            return new AOEInstance[1] { new(_shape, WPos.ClampToGrid(_source.Position), _source.Rotation, _activation) };
+            return new AOEInstance[1] { new(_shape, _source.Position.Quantized(), _source.Rotation, _activation) };
         return [];
     }
 
@@ -211,7 +211,7 @@ class P2PartySynergyOpticalLaser(BossModule module) : Components.GenericAOEs(mod
     }
 }
 
-class P2PartySynergyDischarger(BossModule module) : Components.GenericKnockback(module, (uint)AID.Discharger)
+sealed class P2PartySynergyDischarger(BossModule module) : Components.GenericKnockback(module, (uint)AID.Discharger)
 {
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -247,7 +247,7 @@ class P2PartySynergyEfficientBladework : Components.GenericAOEs
             var count = _sources.Count;
             var aoes = new AOEInstance[count];
             for (var i = 0; i < count; ++i)
-                aoes[i] = new(_shape, WPos.ClampToGrid(_sources[i].Position), default, _activation);
+                aoes[i] = new(_shape, _sources[i].Position.Quantized(), default, _activation);
             return aoes;
         }
         return [];
@@ -337,7 +337,7 @@ class P2PartySynergyEfficientBladework : Components.GenericAOEs
     }
 }
 
-class P2PartySynergySpotlight(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
+sealed class P2PartySynergySpotlight(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
     private readonly List<Actor> _stackTargets = []; // don't show anything until knockbacks are done, to reduce visual clutter
 

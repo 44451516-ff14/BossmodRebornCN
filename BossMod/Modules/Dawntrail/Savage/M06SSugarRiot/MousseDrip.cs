@@ -92,7 +92,7 @@ sealed class MousseDripTowers(BossModule module) : Components.GenericTowers(modu
             _ => null
         };
         if (pos is WPos origin)
-            Towers.Add(new(WPos.ClampToGrid(origin), 3f, activation: WorldState.FutureTime(19.1d)));
+            Towers.Add(new(origin.Quantized(), 3f, activation: WorldState.FutureTime(19.1d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

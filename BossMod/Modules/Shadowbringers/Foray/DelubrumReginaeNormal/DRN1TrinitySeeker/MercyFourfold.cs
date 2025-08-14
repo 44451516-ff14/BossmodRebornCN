@@ -46,7 +46,7 @@ sealed class MercyFourfold(BossModule module) : Components.GenericAOEs(module)
         };
         if (dirOffset == default)
             return;
-        _aoes.Add(new(cone, WPos.ClampToGrid(actor.Position), (Module.PrimaryActor.CastInfo?.Rotation ?? actor.Rotation) + dirOffset, WorldState.FutureTime(13.4d + 1.7d * _aoes.Count)));
+        _aoes.Add(new(cone, actor.Position.Quantized(), (Module.PrimaryActor.CastInfo?.Rotation ?? actor.Rotation) + dirOffset, WorldState.FutureTime(13.4d + 1.7d * _aoes.Count)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

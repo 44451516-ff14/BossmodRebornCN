@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P3DarkdragonDiveCounter(BossModule module) : Components.GenericTowers(module)
+sealed class P3DarkdragonDiveCounter(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

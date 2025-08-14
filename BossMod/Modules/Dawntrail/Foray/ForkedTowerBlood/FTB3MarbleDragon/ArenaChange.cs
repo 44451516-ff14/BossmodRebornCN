@@ -18,7 +18,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.Deathwall)
         {
             Arena.Bounds = FTB3MarbleDragon.DefaultArena;
-            Arena.Center = WPos.ClampToGrid(FTB3MarbleDragon.ArenaCenter);
+            Arena.Center = FTB3MarbleDragon.ArenaCenter.Quantized();
             _aoe = null;
         }
     }

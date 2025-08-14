@@ -1,14 +1,12 @@
 ﻿namespace BossMod.Dawntrail.Trial.T02ZoraalJaP2;
 
-class SmitingCircuitHalfCircuitDonut(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SmitingCircuitDonut, (uint)AID.HalfCircuitDonut], new AOEShapeDonut(10f, 30f));
-class SmitingCircuitHalfCircuitCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SmitingCircuitCircle, (uint)AID.HalfCircuitCircle], 10f);
-
-class DawnOfAnAge(BossModule module) : Components.RaidwideCast(module, (uint)AID.DawnOfAnAge);
-class BitterReaping(BossModule module) : Components.SingleTargetCast(module, (uint)AID.BitterReaping);
-class Actualize(BossModule module) : Components.RaidwideCast(module, (uint)AID.Actualize);
+sealed class SmitingCircuitHalfCircuitDonut(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SmitingCircuitDonut, (uint)AID.HalfCircuitDonut], new AOEShapeDonut(10f, 30f));
+sealed class SmitingCircuitHalfCircuitCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SmitingCircuitCircle, (uint)AID.HalfCircuitCircle], 10f);
+sealed class DawnOfAnAgeActualize(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.DawnOfAnAge, (uint)AID.Actualize]);
+sealed class BitterReaping(BossModule module) : Components.SingleTargetCast(module, (uint)AID.BitterReaping);
 
 abstract class HalfRect(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 30f));
-class HalfFull(BossModule module) : HalfRect(module, (uint)AID.HalfFull)
+sealed class HalfFull(BossModule module) : HalfRect(module, (uint)AID.HalfFull)
 {
     private readonly ChasmOfVollok _aoe = module.FindComponent<ChasmOfVollok>()!;
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -17,13 +15,13 @@ class HalfFull(BossModule module) : HalfRect(module, (uint)AID.HalfFull)
     }
 }
 
-class HalfCircuitRect(BossModule module) : HalfRect(module, (uint)AID.HalfCircuitRect);
+sealed class HalfCircuitRect(BossModule module) : HalfRect(module, (uint)AID.HalfCircuitRect);
 
-class FireIII(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.FireIII, 6f, 5.1f);
-class DutysEdge(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.DutysEdgeMarker, (uint)AID.DutysEdge, 5.4f, 100f, minStackSize: 8, maxStackSize: 8, maxCasts: 4, markerIsFinalTarget: false);
+sealed class FireIII(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.FireIII, 6f, 5.1f);
+sealed class DutysEdge(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.DutysEdgeMarker, (uint)AID.DutysEdge, 5.4f, 100f, minStackSize: 8, maxStackSize: 8, maxCasts: 4, markerIsFinalTarget: false);
 
 // P2 is a checkpoint so we can't make it one module since it would prevent reloading the module incase of wipes
-class T02ZoraalJaP2States : StateMachineBuilder
+sealed class T02ZoraalJaP2States : StateMachineBuilder
 {
     public T02ZoraalJaP2States(BossModule module) : base(module)
     {
@@ -31,11 +29,10 @@ class T02ZoraalJaP2States : StateMachineBuilder
             .ActivateOnEnter<DawnOfAnAgeArenaChange>()
             .ActivateOnEnter<SmitingCircuitHalfCircuitDonut>()
             .ActivateOnEnter<SmitingCircuitHalfCircuitCircle>()
-            .ActivateOnEnter<DawnOfAnAge>()
+            .ActivateOnEnter<DawnOfAnAgeActualize>()
             .ActivateOnEnter<BitterReaping>()
             .ActivateOnEnter<ChasmOfVollok>()
             .ActivateOnEnter<ForgedTrack>()
-            .ActivateOnEnter<Actualize>()
             .ActivateOnEnter<HalfFull>()
             .ActivateOnEnter<HalfCircuitRect>()
             .ActivateOnEnter<FireIII>()
@@ -44,4 +41,4 @@ class T02ZoraalJaP2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 995, NameID = 12882, SortOrder = 2)]
-public class T02ZoraalJaP2(WorldState ws, Actor primary) : T02ZoraalJa.ZoraalJa(ws, primary);
+public sealed class T02ZoraalJaP2(WorldState ws, Actor primary) : T02ZoraalJa.ZoraalJa(ws, primary);

@@ -41,7 +41,7 @@ public enum AID : uint
     BlazingBlazeOfGlory = 40932 // Helper->allies, 7.0s cast, range 6 circle
 }
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 25f);
     private AOEInstance? _aoe;
@@ -50,13 +50,13 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(float delay) => _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, delay));
+        void AddAOE(double delay) => _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, delay));
         if (Arena.Bounds != ApyaahiTheArchitect.StartingArena)
         {
             if (spell.Action.ID == (uint)AID.FlamesOfTheFallingOrder)
-                AddAOE(0.5f);
+                AddAOE(0.5d);
             else if (spell.Action.ID == (uint)AID.FleshBoilingPunishmentLake)
-                AddAOE(2f);
+                AddAOE(2d);
         }
     }
 
@@ -69,22 +69,21 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         }
         if (index == 0x06)
         {
-            if (state == 0x00020001)
+            if (state == 0x00020001u)
             {
                 SetArena(ApyaahiTheArchitect.DefaultArena);
                 _aoe = null;
             }
-            else if (state == 0x0008004)
+            else if (state == 0x0008004u)
                 SetArena(ApyaahiTheArchitect.StartingArena);
         }
     }
 }
 
-class FlamesOfTheFallingOrder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlamesOfTheFallingOrder, 12f);
-class RottingRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.RottingRoar);
-class Mycocyclone(BossModule module) : Components.RaidwideCast(module, (uint)AID.Mycocyclone);
+sealed class FlamesOfTheFallingOrder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlamesOfTheFallingOrder, 12f);
+sealed class RottingRoarMycocyclone(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.RottingRoar, (uint)AID.Mycocyclone]);
 
-class PathogenicPowerAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class PathogenicPowerAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
     private readonly List<AOEInstance> _aoes = new(20);
@@ -93,55 +92,79 @@ class PathogenicPowerAOE(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
-            return [];
-        var act0 = _aoes[0].Activation;
-        var compareFL = (_aoes[count - 1].Activation - act0).TotalSeconds > 1d;
-        var aoes = new AOEInstance[count];
-        var color = Colors.Danger;
-        for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
-            aoes[i] = (aoe.Activation - act0).TotalSeconds < 1d ? aoe with { Color = compareFL ? color : 0 } : aoe with { Risky = false };
+            return [];
         }
-        return aoes;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        ref var aoe0 = ref aoes[0];
+        ref var aoeL = ref aoes[^1];
+        var act0 = aoe0.Activation;
+        var deadline1 = act0.AddSeconds(2d);
+        var deadline2 = act0.AddSeconds(1d);
+        var actLast = aoeL.Activation.AddSeconds(-1d);
+
+        var index = 0;
+        var color = Colors.Danger;
+        while (index < count)
+        {
+            ref var cur = ref aoes[index];
+            var curAct = cur.Activation;
+            if (curAct < deadline1)
+            {
+                if (curAct < deadline2)
+                {
+                    cur.Risky = true;
+                    cur.Color = curAct < actLast ? color : default;
+                }
+            }
+            ++index;
+        }
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.PathogenicPowerAOE)
-            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell)));
+        {
+            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell), risky: false));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.PathogenicPowerAOE)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
-class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.PathogenicPowerKB, 13f)
+
+sealed class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.PathogenicPowerKB, 13f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0].CastInfo!;
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.LocXZ, 6f), Module.CastFinishAt(source));
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 6f), c.Activation);
         }
     }
 }
 
-class SporeBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SporeBurst, 6f);
-class FleshBoilingPunishmentLake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FleshBoilingPunishmentLake, new AOEShapeDonut(5f, 40f));
-class BlazingBlazeOfGlory(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlazingBlazeOfGlory, 6f);
-class MyceliumStomp(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MyceliumStomp, 6f);
-class SpoilingSmashEnrage(BossModule module) : Components.CastHint(module, (uint)AID.SpoilingSmashVisual2, "Enrage!", true);
+sealed class SporeBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SporeBurst, 6f);
+sealed class FleshBoilingPunishmentLake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FleshBoilingPunishmentLake, new AOEShapeDonut(5f, 40f));
+sealed class BlazingBlazeOfGlory(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BlazingBlazeOfGlory, 6f);
+sealed class MyceliumStomp(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MyceliumStomp, 6f);
+sealed class SpoilingSmashEnrage(BossModule module) : Components.CastHint(module, (uint)AID.SpoilingSmashVisual2, "Enrage!", true);
 
-class Burst(BossModule module) : Components.Exaflare(module, 6f)
+sealed class Burst(BossModule module) : Components.Exaflare(module, 6f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BurstFirst)
-            Lines.Add(new() { Next = caster.Position, Advance = 5f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.2f, ExplosionsLeft = 9, MaxShownExplosions = 4 });
+        {
+            Lines.Add(new(caster.Position, 5f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.2d, 9, 4));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -157,7 +180,9 @@ class Burst(BossModule module) : Components.Exaflare(module, 6f)
                 {
                     AdvanceLine(line, pos);
                     if (line.ExplosionsLeft == 0)
+                    {
                         Lines.RemoveAt(i);
+                    }
                     break;
                 }
             }
@@ -165,14 +190,13 @@ class Burst(BossModule module) : Components.Exaflare(module, 6f)
     }
 }
 
-class ApyaahiTheArchitectStates : StateMachineBuilder
+sealed class ApyaahiTheArchitectStates : StateMachineBuilder
 {
     public ApyaahiTheArchitectStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<ArenaChanges>()
-            .ActivateOnEnter<RottingRoar>()
-            .ActivateOnEnter<Mycocyclone>()
+            .ActivateOnEnter<RottingRoarMycocyclone>()
             .ActivateOnEnter<Burst>()
             .ActivateOnEnter<PathogenicPowerKB>()
             .ActivateOnEnter<PathogenicPowerAOE>()
@@ -186,7 +210,7 @@ class ApyaahiTheArchitectStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1016, NameID = 13669)]
-public class ApyaahiTheArchitect(WorldState ws, Actor primary) : BossModule(ws, primary, StartingArena.Center, StartingArena)
+public sealed class ApyaahiTheArchitect(WorldState ws, Actor primary) : BossModule(ws, primary, StartingArena.Center, StartingArena)
 {
     public static readonly ArenaBoundsComplex StartingArena = new([new Polygon(new(default, 379.27f), 24.5f, 20)]);
     public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(new(default, 379.241f), 20f, 64)]);

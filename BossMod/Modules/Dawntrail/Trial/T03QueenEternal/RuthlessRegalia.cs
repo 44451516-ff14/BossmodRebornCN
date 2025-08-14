@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class RuthlessRegalia(BossModule module) : Components.GenericAOEs(module)
+sealed class RuthlessRegalia(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(100f, 6f);
     private (Actor, DateTime)? _source;

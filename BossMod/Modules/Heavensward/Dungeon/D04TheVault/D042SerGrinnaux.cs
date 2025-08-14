@@ -40,7 +40,7 @@ public enum AID : uint
 
 class HeavySwing(BossModule module) : Components.Cleave(module, (uint)AID.HeavySwing, new AOEShapeCone(6.5f, 45f.Degrees()), [(uint)OID.SerGrinnauxTheBull]);
 class Overpower(BossModule module) : Components.Cleave(module, (uint)AID.Overpower, new AOEShapeCone(10.2f, 45f.Degrees()));
-class DimensionalRip(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.DimensionalRip, GetVoidzones, 1.1f)
+class DimensionalRip(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.DimensionalRip, GetVoidzones, 1.1d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -72,15 +72,21 @@ class FaithUnmoving(BossModule module) : Components.SimpleKnockbacks(module, (ui
         var len1 = aoes1.Length;
         for (var i = 0; i < len1; ++i)
         {
-            if (aoes1[i].Check(pos))
+            ref readonly var aoe = ref aoes1[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         var aoes2 = _aoe2.ActiveAOEs(slot, actor);
         var len2 = aoes2.Length;
         for (var i = 0; i < len2; ++i)
         {
-            if (aoes2[i].Check(pos))
+            ref readonly var aoe = ref aoes2[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

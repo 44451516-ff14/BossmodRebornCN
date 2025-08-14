@@ -11,7 +11,7 @@ class Fragility(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Inoshikacho)
-            _aoes.Add(new(_circle, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(_fragilityDelay)));
+            _aoes.Add(new(_circle, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(_fragilityDelay)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

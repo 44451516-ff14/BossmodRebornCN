@@ -5,7 +5,10 @@ class P2ArrowTrail(BossModule module) : Components.Exaflare(module, new AOEShape
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ArrowTrailHint)
-            Lines.Add(new() { Next = caster.Position, Advance = 5f * caster.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell, 0.4f), TimeToMove = 0.5f, ExplosionsLeft = 8, MaxShownExplosions = 3 });
+        {
+            var dir = new WDir(default, 5f);
+            Lines.Add(new(caster.Position - dir, dir, Module.CastFinishAt(spell, 0.4d), 0.5d, 8, 3, Angle.AnglesCardinals[1]));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -14,7 +17,7 @@ class P2ArrowTrail(BossModule module) : Components.Exaflare(module, new AOEShape
         {
             ++NumCasts;
             var count = Lines.Count;
-            var pos = caster.Position;
+            var pos = caster.Position - new WDir(default, 5f);
             for (var i = 0; i < count; ++i)
             {
                 var line = Lines[i];

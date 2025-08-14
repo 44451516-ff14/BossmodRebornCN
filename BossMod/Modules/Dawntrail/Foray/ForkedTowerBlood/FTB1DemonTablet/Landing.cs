@@ -6,7 +6,7 @@ sealed class LandingKnockback(BossModule module) : Components.SimpleKnockbacks(m
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (_aoe.Casters.Count != 0 && _aoe.Casters[0].Check(pos))
+        if (_aoe.Casters.Count != 0 && _aoe.Casters.Ref(0).Check(pos))
         {
             return true;
         }
@@ -17,14 +17,17 @@ sealed class LandingKnockback(BossModule module) : Components.SimpleKnockbacks(m
     {
         if (Casters.Count != 0)
         {
-            if (_aoe.Casters.Count != 0 && _aoe.Casters[0].Check(actor.Position))
+            if (_aoe.Casters.Count != 0 && _aoe.Casters.Ref(0).Check(actor.Position))
+            {
                 return; // on dangerous side
+            }
             var activeKnockbacks = ActiveKnockbacks(slot, actor);
             var len = activeKnockbacks.Length;
-            var act = Module.CastFinishAt(Casters[0].CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             for (var i = 0; i < len; ++i)
             {
-                var kb = activeKnockbacks[i];
+                ref readonly var kb = ref activeKnockbacks[i];
                 if (IsImmune(slot, act))
                     return; // this won't affect player due to immunity
                 if (!kb.Shape!.Check(actor.Position, kb.Origin, kb.Direction))

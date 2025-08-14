@@ -19,76 +19,89 @@ public enum SID : uint
     Blind = 571 // Mandragora->player, extra=0x0
 }
 
-class DemonEye(BossModule module) : Components.CastGaze(module, (uint)AID.DemonEye)
+sealed class DemonEye(BossModule module) : Components.CastGaze(module, (uint)AID.DemonEye)
 {
     private BitMask _blinded;
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Blind)
-            _blinded[Raid.FindSlot(actor.InstanceID)] = true;
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Blind)
-            _blinded[Raid.FindSlot(actor.InstanceID)] = false;
-    }
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
         return _blinded[slot] ? [] : base.ActiveEyes(slot, actor);
     }
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Blind)
+        {
+            _blinded[Raid.FindSlot(actor.InstanceID)] = true;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Blind)
+        {
+            _blinded[Raid.FindSlot(actor.InstanceID)] = false;
+        }
+    }
 }
 
-class ColdStare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColdStare, new AOEShapeCone(42.53f, 45f.Degrees())) // TODO: cone based gaze
+sealed class ColdStare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ColdStare, new AOEShapeCone(42.53f, 45f.Degrees())) // TODO: cone based gaze
+{
+    private BitMask _blinded;
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _blinded[slot] ? [] : base.ActiveAOEs(slot, actor);
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Blind)
+        {
+            _blinded[Raid.FindSlot(actor.InstanceID)] = true;
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Blind)
+        {
+            _blinded[Raid.FindSlot(actor.InstanceID)] = false;
+        }
+    }
+}
+
+sealed class TearyTwirl(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TearyTwirl, 6.3f)
 {
     private BitMask _blinded;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
+        {
             _blinded[Raid.FindSlot(actor.InstanceID)] = true;
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
+        {
             _blinded[Raid.FindSlot(actor.InstanceID)] = false;
-    }
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        return _blinded[slot] ? [] : base.ActiveAOEs(slot, actor);
-    }
-}
-
-class TearyTwirl(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TearyTwirl, 6.3f)
-{
-    private BitMask _blinded;
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Blind)
-            _blinded[Raid.FindSlot(actor.InstanceID)] = true;
-    }
-
-    public override void OnStatusLose(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.Blind)
-            _blinded[Raid.FindSlot(actor.InstanceID)] = false;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_blinded[slot])
+        {
             hints.Add("Kill mandragoras last incase you need to get blinded again.", false);
+        }
         else
+        {
             hints.Add("Stack to get blinded!", false);
+        }
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -96,7 +109,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage06Act1States : StateMachineBuilder
+sealed class Stage06Act1States : StateMachineBuilder
 {
     public Stage06Act1States(BossModule module) : base(module)
     {
@@ -119,7 +132,7 @@ class Stage06Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 616, NameID = 8090, SortOrder = 1)]
-public class Stage06Act1 : BossModule
+public sealed class Stage06Act1 : BossModule
 {
     public Stage06Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.LayoutBigQuad)
     {

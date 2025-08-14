@@ -1,19 +1,19 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C023Moko;
 
-abstract class AzureAuspice(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(6f, 40f)); // TODO: verify inner radius
-class NAzureAuspice(BossModule module) : AzureAuspice(module, (uint)AID.NAzureAuspice);
-class SAzureAuspice(BossModule module) : AzureAuspice(module, (uint)AID.SAzureAuspice);
+abstract class AzureAuspice(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(6f, 40f));
+sealed class NAzureAuspice(BossModule module) : AzureAuspice(module, (uint)AID.NAzureAuspice);
+sealed class SAzureAuspice(BossModule module) : AzureAuspice(module, (uint)AID.SAzureAuspice);
 
 abstract class BoundlessAzure(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 5f));
-class NBoundlessAzure(BossModule module) : BoundlessAzure(module, (uint)AID.NBoundlessAzureAOE);
-class SBoundlessAzure(BossModule module) : BoundlessAzure(module, (uint)AID.SBoundlessAzureAOE);
+sealed class NBoundlessAzure(BossModule module) : BoundlessAzure(module, (uint)AID.NBoundlessAzureAOE);
+sealed class SBoundlessAzure(BossModule module) : BoundlessAzure(module, (uint)AID.SBoundlessAzureAOE);
 
 // note: each initial line sends out two 'exaflares' to the left & right
 // each subsequent exaflare moves by distance 5, and happen approximately 2s apart
 // each wave is 5 subsequent lines, except for two horizontal ones that go towards edges - they only have 1 line - meaning there's a total 32 'rest' casts
-class Upwell(BossModule module) : Components.GenericAOEs(module)
+sealed class Upwell(BossModule module) : Components.GenericAOEs(module)
 {
-    private class LineSequence
+    private sealed class LineSequence
     {
         public WPos NextOrigin;
         public WDir Advance;
@@ -47,7 +47,7 @@ class Upwell(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.NUpwellFirst or (uint)AID.SUpwellFirst)
         {
-            var advance = spell.Rotation.ToDirection().OrthoR() * 5;
+            var advance = spell.Rotation.ToDirection().OrthoR() * 5f;
             var pos = caster.Position;
             var activation = Module.CastFinishAt(spell);
             _lines.Add(new() { NextOrigin = pos, Advance = advance, Rotation = spell.Rotation, NextActivation = activation, NextShape = _shapeWide });

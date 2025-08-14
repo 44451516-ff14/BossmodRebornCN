@@ -1,28 +1,34 @@
 ﻿namespace BossMod.Heavensward.Extreme.Ex3Thordan;
 
-class HiemalStormSpread(BossModule module) : Components.UniformStackSpread(module, default, 6f, alwaysShowSpreads: true)
+sealed class HiemalStormSpread(BossModule module) : Components.UniformStackSpread(module, default, 6f, alwaysShowSpreads: true)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.HiemalStorm)
-            AddSpread(actor, WorldState.FutureTime(3));
+        {
+            AddSpread(actor, WorldState.FutureTime(3d));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.HiemalStormAOE)
+        {
             Spreads.Clear();
+        }
     }
 }
 
-class HiemalStormVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
+sealed class HiemalStormVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
         var enemies = module.Enemies((uint)OID.HiemalStorm);
         var count = enemies.Count;
         if (count == 0)
+        {
             return [];
+        }
 
         var voidzones = new Actor[count];
         var index = 0;
@@ -35,25 +41,41 @@ class HiemalStormVoidzone(BossModule module) : Components.Voidzone(module, 6f, G
         return voidzones[..index];
     }
 }
-class SpiralPierce(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 6f), (uint)TetherID.SpiralPierce, (uint)AID.SpiralPierce);
-class DimensionalCollapse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DimensionalCollapseAOE, 9f);
+sealed class SpiralPierce(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 6f), (uint)TetherID.SpiralPierce, (uint)AID.SpiralPierce);
+sealed class DimensionalCollapse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DimensionalCollapseAOE, 9f);
 
-class FaithUnmoving(BossModule module) : Components.GenericKnockback(module, (uint)AID.FaithUnmoving, true)
+sealed class FaithUnmoving(BossModule module) : Components.GenericKnockback(module, (uint)AID.FaithUnmoving)
 {
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
+    private readonly DateTime activation = module.WorldState.FutureTime(4.5d);
+    private readonly Knockback[] _kb = GetKnockback(module);
+
+    private static Knockback[] GetKnockback(BossModule module)
     {
-        var grinnauxs = Module.Enemies((uint)OID.SerGrinnaux);
+        var grinnauxs = module.Enemies((uint)OID.SerGrinnaux);
         var grinnaux = grinnauxs.Count != 0 ? grinnauxs[0] : null;
         if (grinnaux != default)
-            return new Knockback[1] { new(grinnaux.Position, 16f) };
+            return [new(grinnaux.Position, 16f, ignoreImmunes: true)];
         return [];
+    }
+
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var origin = _kb.Length != 0 ? _kb[0].Origin : default;
+        hints.AddForbiddenZone(p =>
+        {
+            if ((p + 16f * (p - origin).Normalized()).InCircle(default, 18f))
+                return 1f;
+            return default;
+        }, activation);
     }
 }
 
-class CometCircle(BossModule module) : Components.Adds(module, (uint)OID.CometCircle);
-class MeteorCircle(BossModule module) : Components.Adds(module, (uint)OID.MeteorCircle);
+sealed class CometCircle(BossModule module) : Components.Adds(module, (uint)OID.CometCircle);
+sealed class MeteorCircle(BossModule module) : Components.Adds(module, (uint)OID.MeteorCircle);
 
-class HeavyImpact(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class HeavyImpact(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly Angle a135 = 135f.Degrees();
     private static readonly AOEShape[] _shapes = [new AOEShapeCone(6.5f, a135), new AOEShapeDonutSector(6.5f, 12.5f, a135), new AOEShapeDonutSector(12.5f, 18.5f, a135), new AOEShapeDonutSector(18.5f, 27.5f, a135)];
@@ -61,7 +83,9 @@ class HeavyImpact(BossModule module) : Components.ConcentricAOEs(module, _shapes
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HeavyImpactAOE1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell), spell.Rotation);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -74,7 +98,6 @@ class HeavyImpact(BossModule module) : Components.ConcentricAOEs(module, _shapes
             (uint)AID.HeavyImpactAOE4 => 3,
             _ => -1
         };
-        if (!AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2d), caster.Rotation))
-            ReportError($"Unexpected ring {order}");
+        AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2d), spell.Rotation);
     }
 }

@@ -61,7 +61,7 @@ class MirageAdmonishment(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (id == 0x11D3 && actor.OID is (uint)OID.MirageDragon1 or (uint)OID.MirageDragon2)
-            _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(12d)));
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(12d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

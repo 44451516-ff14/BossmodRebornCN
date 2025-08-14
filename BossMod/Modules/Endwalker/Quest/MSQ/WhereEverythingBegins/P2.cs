@@ -49,14 +49,14 @@ public enum AID : uint
     DeathStreak = 31242, // PlunderedGuard->self, 20.0s cast, range 60 circle
 }
 
-class CursedNoise(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.CursedNoiseVisual, (uint)AID.CursedNoise, 0.1f);
+class CursedNoise(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.CursedNoiseVisual, (uint)AID.CursedNoise, 0.1d);
 class CursedEcho(BossModule module) : Components.RaidwideCast(module, (uint)AID.CursedEcho);
 class DeathStreak(BossModule module) : Components.RaidwideCast(module, (uint)AID.DeathStreak);
-class VoidVortex(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.VoidVortex, 6, 4, 4);
-class RottenRampageSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RottenRampageSpread, 6);
-class RottenRampage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottenRampage, 6);
+class VoidVortex(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.VoidVortex, 6f, 4, 4);
+class RottenRampageSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RottenRampageSpread, 6f);
+class RottenRampage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RottenRampage, 6f);
 
-abstract class BlightedCleave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40, 90.Degrees()));
+abstract class BlightedCleave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 90f.Degrees()));
 class BlightedSwathe(BossModule module) : BlightedCleave(module, (uint)AID.BlightedSwathe)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -77,10 +77,10 @@ class BlightedSwathe(BossModule module) : BlightedCleave(module, (uint)AID.Bligh
 }
 class BlightedSweep(BossModule module) : BlightedCleave(module, (uint)AID.BlightedSweep);
 
-class BlightedBuffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlightedBuffet, 9);
+class BlightedBuffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlightedBuffet, 9f);
 class DarkMist1 : Components.SimpleAOEs
 {
-    public DarkMist1(BossModule module) : base(module, (uint)AID.DarkMist1, 8)
+    public DarkMist1(BossModule module) : base(module, (uint)AID.DarkMist1, 8f)
     {
         MaxRisky = 3;
     }
@@ -88,7 +88,7 @@ class DarkMist1 : Components.SimpleAOEs
 
 class DarkMist2 : Components.SimpleAOEs
 {
-    public DarkMist2(BossModule module) : base(module, (uint)AID.DarkMist2, 16)
+    public DarkMist2(BossModule module) : base(module, (uint)AID.DarkMist2, 16f)
     {
         MaxRisky = 7;
     }
@@ -96,41 +96,43 @@ class DarkMist2 : Components.SimpleAOEs
 
 class VoidSlash : Components.SimpleAOEs
 {
-    public VoidSlash(BossModule module) : base(module, (uint)AID.VoidSlash, new AOEShapeCone(30, 45.Degrees()))
+    public VoidSlash(BossModule module) : base(module, (uint)AID.VoidSlash, new AOEShapeCone(30f, 45f.Degrees()))
     {
         MaxRisky = 3;
         Color = Colors.Danger;
     }
 }
 
-class VacuumWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VacuumWave, 5)
+class VacuumWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VacuumWave, 5f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count == 0)
             return;
-        var c = Casters[0];
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Position, 13), activation: Module.CastFinishAt(c.CastInfo));
+        ref readonly var c = ref Casters.Ref(0);
+        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 13f), c.Activation);
     }
 }
-class VoidQuakeIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidQuakeIII, new AOEShapeCross(40, 5));
+class VoidQuakeIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidQuakeIII, new AOEShapeCross(40f, 5f));
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
-    private static readonly AOEShapeDonut donut = new(18, 20);
+    private static readonly AOEShapeDonut donut = new(18f, 20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (NumCasts == 0 && (AID)spell.Action.ID == AID.CursedNoiseVisual)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        if (NumCasts == 0 && spell.Action.ID == (uint)AID.CursedNoiseVisual)
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (NumCasts == 0 && index == 0x01 && state == 0x00020001)
+        if (NumCasts == 0 && index == 0x01 && state == 0x00020001u)
         {
             _aoe = null;
             ++NumCasts;
@@ -144,30 +146,32 @@ class Shield(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(5, true);
     private AOEInstance? _aoe;
-    private const string Hint = "Go under shield!";
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnActorCreated(Actor actor)
     {
-        if ((OID)actor.OID == OID.VarshahnShield)
-            _aoe = new(circle, actor.Position, Color: Colors.SafeFromAOE);
+        if (actor.OID == (uint)OID.VarshahnShield)
+        {
+            _aoe = new(circle, actor.Position, color: Colors.SafeFromAOE);
+        }
     }
 
     public override void OnActorEState(Actor actor, ushort state)
     {
-        if ((OID)actor.OID == OID.VarshahnShield && state == 0x0004)
+        if (state == 0x0004 && actor.OID == (uint)OID.VarshahnShield)
+        {
             _aoe = null;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_aoe == null)
+        {
             return;
-        if (!_aoe.Value.Check(actor.Position))
-            hints.Add(Hint);
-        else
-            hints.Add(Hint, false);
+        }
+        hints.Add("Go under shield!", !_aoe.Value.Check(actor.Position));
     }
 }
 
@@ -198,7 +202,7 @@ public class ScarmiglioneP2States : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70130, NameID = 11407)]
 public class ScarmiglioneP2(WorldState ws, Actor primary) : BossModule(ws, primary, ScarmiglioneP1.ArenaBounds.Center, ScarmiglioneP1.ArenaBounds)
 {
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(ScarmiglioneP1.ArenaCenter, 18, 36)]);
+    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(ScarmiglioneP1.ArenaCenter, 18f, 36)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -212,6 +216,6 @@ public class ScarmiglioneP2(WorldState ws, Actor primary) : BossModule(ws, prima
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.FilthyShackle), Colors.Object);
+        Arena.Actors(Enemies((uint)OID.FilthyShackle), Colors.Object);
     }
 }

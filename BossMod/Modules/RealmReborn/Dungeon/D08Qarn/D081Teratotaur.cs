@@ -1,4 +1,5 @@
-﻿namespace BossMod.RealmReborn.Dungeon.D08Qarn.D081Teratotaur;
+﻿
+namespace BossMod.RealmReborn.Dungeon.D08Qarn.D081Teratotaur;
 
 public enum OID : uint
 {
@@ -33,64 +34,60 @@ public enum SID : uint
     Doom = 1970 // Boss->player, extra=0x0
 }
 
-class Triclip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Triclip);
-class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new AOEShapeCone(8.25f, 60f.Degrees()));
-class FrightfulRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrightfulRoar, 6.0f);
+sealed class Triclip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Triclip);
+sealed class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new AOEShapeCone(8.25f, 60f.Degrees()));
+sealed class FrightfulRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrightfulRoar, 6.0f);
 
-class MortalRay(BossModule module) : BossComponent(module)
+sealed class MortalRay(BossModule module) : Components.GenericAOEs(module)
 {
     private BitMask _dooms;
-    private readonly Actor?[] _platforms = [null, null, null];
+    private readonly Actor[] _platforms = [module.Enemies((uint)OID.Platform1)[0], module.Enemies((uint)OID.Platform2)[0], module.Enemies((uint)OID.Platform3)[0]];
+    private DateTime activation;
+    private static readonly AOEShapeRect square = new(1.75f, 1.75f, 1.75f, InvertForbiddenZone: true);
 
-    private static readonly AOEShapeCircle _platformShape = new(2);
-
-    private Actor? ActivePlatform => _platforms.FirstOrDefault(a => a != null && a.EventState == 0);
-
-    public override void Update()
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        _platforms[0] ??= Module.Enemies((uint)OID.Platform1)[0];
-        _platforms[1] ??= Module.Enemies((uint)OID.Platform2)[0];
-        _platforms[2] ??= Module.Enemies((uint)OID.Platform3)[0];
+        if (_dooms[slot])
+        {
+            for (var i = 0; i < 3; ++i)
+            {
+                var p = _platforms[i];
+                if (_platforms[i].EventState == default)
+                {
+                    return new AOEInstance[1] { new(square, p.Position, default, activation, Colors.SafeFromAOE) };
+                }
+            }
+        }
+        return [];
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_dooms[slot])
-            hints.Add("Go to glowing platform!");
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (_dooms[slot])
         {
-            var target = ActivePlatform;
-            if (target != null)
-            {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(target.Position, _platformShape.Radius), actor.FindStatus(SID.Doom)!.Value.ExpireAt);
-            }
+            hints.Add("Go to glowing platform!");
         }
-    }
-
-    public override void DrawArenaBackground(int pcSlot, Actor pc)
-    {
-        if (_dooms[pcSlot])
-            _platformShape.Draw(Arena, ActivePlatform, Colors.SafeFromAOE);
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
-            _dooms.Set(Raid.FindSlot(actor.InstanceID));
+        {
+            _dooms[Raid.FindSlot(actor.InstanceID)] = true;
+            activation = status.ExpireAt;
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
-            _dooms.Clear(Raid.FindSlot(actor.InstanceID));
+        {
+            _dooms[Raid.FindSlot(actor.InstanceID)] = false;
+        }
     }
 }
 
-class D081TeratotaurStates : StateMachineBuilder
+sealed class D081TeratotaurStates : StateMachineBuilder
 {
     public D081TeratotaurStates(BossModule module) : base(module)
     {
@@ -102,13 +99,12 @@ class D081TeratotaurStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "Malediktus, Chuggalo", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 9, NameID = 1567)]
-public class D081Teratotaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus, Chuggalo", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 9, NameID = 1567)]
+public sealed class D081Teratotaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly PolygonCustom[] shape = [new ([new(-94.9f, -59f), new(-70.2f, -46.1f), new(-55.3f, -46.6f),
+    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(-94.9f, -59f), new(-70.2f, -46.1f), new(-55.3f, -46.6f),
     new(-55.7f, -55.6f), new(-51.1f, -60.9f), new(-51.2f, -65), new(-58.1f, -67.7f),
-    new(-64.7f, -70.6f), new(-88.4f, -72.2f), new(-89, -66.2f), new(-94.9f, -65.5f)])];
-    public static readonly ArenaBoundsComplex arena = new(shape);
+    new(-64.7f, -70.6f), new(-88.4f, -72.2f), new(-89, -66.2f), new(-94.9f, -65.5f)])]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

@@ -193,7 +193,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             Arena.Bounds = arena;
             outOfBounds = true;
         }
-        else if (outOfBounds && (player - Arena.Center).LengthSq() < 399)
+        else if (outOfBounds && (player - Arena.Center).LengthSq() < 399f)
         {
             _aoe = null;
             ArenaBoundsComplex arena = new(defaultCircle, [.. SafeWalls]);
@@ -203,7 +203,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-sealed class VacuumWave(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class VacuumWave(BossModule module) : Components.GenericKnockback(module)
 {
     private Knockback? _source;
     public readonly List<SafeWall> safeWalls =
@@ -227,7 +227,7 @@ sealed class VacuumWave(BossModule module) : Components.GenericKnockback(module,
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.VacuumWave)
-            _source = new(spell.LocXZ, 30f, Module.CastFinishAt(spell), SafeWalls: safeWalls);
+            _source = new(spell.LocXZ, 30f, Module.CastFinishAt(spell), safeWalls: safeWalls, ignoreImmunes: true);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -332,9 +332,9 @@ sealed class RottenRampageSpread(BossModule module) : Components.SpreadFromCastT
 sealed class BlightedSweep(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlightedSweep, new AOEShapeCone(40f, 90f.Degrees()));
 sealed class CursedEcho(BossModule module) : Components.RaidwideCast(module, (uint)AID.CursedEcho);
 sealed class VoidGravity(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.VoidGravity, 6f);
-sealed class Firedamp(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Firedamp, 5f, tankbuster: true);
+sealed class Firedamp(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Firedamp, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
-sealed class CorruptorsPitch(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.CorruptorsPitchVisual, (uint)AID.CorruptorsPitch3, 8.1f)
+sealed class CorruptorsPitch(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.CorruptorsPitchVisual, (uint)AID.CorruptorsPitch3, 8.1d)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {

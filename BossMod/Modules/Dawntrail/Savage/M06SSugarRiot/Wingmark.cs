@@ -5,6 +5,7 @@ sealed class Wingmark(BossModule module) : Components.GenericKnockback(module)
     private DateTime activation;
     private BitMask wingmark;
     public BitMask StunStatus;
+    private SingleDoubleStyle1? _aoe = module.FindComponent<SingleDoubleStyle1>();
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -15,15 +16,18 @@ sealed class Wingmark(BossModule module) : Components.GenericKnockback(module)
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var comp = Module.FindComponent<SingleDoubleStyle1>();
-        if (comp != null)
+        _aoe ??= Module.FindComponent<SingleDoubleStyle1>();
+        if (_aoe != null)
         {
-            var aoes = comp.ActiveAOEs(slot, actor);
+            var aoes = _aoe.ActiveAOEs(slot, actor);
             var len = aoes.Length;
             for (var i = 0; i < len; ++i)
             {
-                if (aoes[i].Check(pos))
+                ref readonly var aoe = ref aoes[i];
+                if (aoe.Check(pos))
+                {
                     return true;
+                }
             }
         }
         return !Module.InBounds(pos);

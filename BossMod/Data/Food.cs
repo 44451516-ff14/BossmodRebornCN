@@ -36,7 +36,7 @@ public static class Food
         var foodCount = itemFoodSheet.Count;
 
         var types = new PotionType[foodCount];
-        for (var i = 0; i < foodCount; i++)
+        for (var i = 0; i < foodCount; ++i)
         {
             var primaryBaseParam = itemFoodSheet[(uint)i].Params[0].BaseParam.RowId;
             if (primaryBaseParam is 1 or 2 or 4 or 5)

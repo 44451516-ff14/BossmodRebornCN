@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P2Flarethrower(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP2AOE)
+sealed class P2Flarethrower(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP2AOE)
 {
     private Actor? _source;
 
-    private static readonly AOEShapeCone _shape = new(100, 45.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shape = new(100f, 45f.Degrees()); // TODO: verify angle
 
     public override void Update()
     {
@@ -16,13 +16,13 @@ class P2Flarethrower(BossModule module) : Components.GenericBaitAway(module, (ui
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (_source != null && CurrentBaits.Any(b => b.Target == actor) && Module.Enemies(OID.LiquidRage).Any(r => !_shape.Check(r.Position, _source.Position, Angle.FromDirection(actor.Position - _source.Position))))
+        if (_source != null && CurrentBaits.Any(b => b.Target == actor) && Module.Enemies((uint)OID.LiquidRage).Any(r => !_shape.Check(r.Position, _source.Position, Angle.FromDirection(actor.Position - _source.Position))))
             hints.Add("Aim towards tornado!");
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.FlarethrowerP2)
+        if (spell.Action.ID == (uint)AID.FlarethrowerP2)
         {
             _source = caster;
             ForbiddenPlayers = Raid.WithSlot(true, true, true).WhereActor(a => a.InstanceID != caster.TargetID).Mask(); // TODO: unsure about this... assumes BJ main target should bait

@@ -63,10 +63,18 @@ sealed class ArenaBounds
         {
             Task.Run(() =>
             {
-                var playerPoints = _points
-                    .Where(p => p.Item2.OID == 0)
-                    .Select(x => new WPos(RoundToNearestHundredth(x.Item4.X), RoundToNearestHundredth(x.Item4.Z)))
-                    .ToList();
+                var count = _points.Count;
+                var pointz = CollectionsMarshal.AsSpan(_points);
+                var playerPoints = new List<WPos>(512);
+                for (var i = 0; i < count; ++i)
+                {
+                    ref var p = ref pointz[i];
+                    if (p.Item2.OID == default)
+                    {
+                        ref var vec = ref p.Item4;
+                        playerPoints.Add(new WPos(RoundToNearestHundredth(vec.X), RoundToNearestHundredth(vec.Z)));
+                    }
+                }
 
                 var points = ConcaveHull.GenerateConcaveHull(playerPoints, 0.5f, 0.2f);
                 var center = CalculateCentroid(points);
@@ -96,16 +104,17 @@ sealed class ArenaBounds
     private static float RoundToNearestHundredth(float value) => MathF.Round(value, 3);
     private static WPos CalculateCentroid(List<WPos> points)
     {
-        if (points == null || points.Count < 3)
+        var count = points.Count;
+        if (points == null || count < 3)
             return default;
 
         float sumX = 0, sumZ = 0;
         float area = 0;
 
-        for (var i = 0; i < points.Count; ++i)
+        for (var i = 0; i < count; ++i)
         {
             var current = points[i];
-            var next = points[(i + 1) % points.Count];
+            var next = points[(i + 1) % count];
             var crossProduct = current.X * next.Z - next.X * current.Z;
             area += crossProduct;
             sumX += (current.X + next.X) * crossProduct;

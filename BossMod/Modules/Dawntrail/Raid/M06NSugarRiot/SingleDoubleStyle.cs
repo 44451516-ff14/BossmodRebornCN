@@ -63,7 +63,7 @@ sealed class SingleDoubleStyle(BossModule module) : Components.GenericAOEs(modul
                     ref var aoe = ref aoes[i];
                     var sourceP = aoe.Origin;
                     var direction = Angle.FromDirection(Arena.Center - sourceP).ToDirection();
-                    var dirVector = WPos.ClampToGrid(sourceP + 60f * direction) - sourceP;
+                    var dirVector = (sourceP + 60f * direction).Quantized() - sourceP;
                     aoe.Shape = new AOEShapeRect(dirVector.Length(), 3.5f);
                     aoe.Rotation = Angle.FromDirection(dirVector);
                 }
@@ -88,13 +88,13 @@ sealed class SingleDoubleStyle(BossModule module) : Components.GenericAOEs(modul
     {
         var sourceP = source.Position;
         var direction = target ? Angle.FromDirection(Arena.Center - sourceP).ToDirection() : source.Rotation.ToDirection();
-        var dirVector = WPos.ClampToGrid(sourceP + 60f * direction) - sourceP;
-        _aoes.Add(new(new AOEShapeRect(dirVector.Length(), 3.5f), WPos.ClampToGrid(sourceP), Angle.FromDirection(dirVector), WorldState.FutureTime(time)));
+        var dirVector = (sourceP + 60f * direction).Quantized() - sourceP;
+        _aoes.Add(new(new AOEShapeRect(dirVector.Length(), 3.5f), sourceP.Quantized(), Angle.FromDirection(dirVector), WorldState.FutureTime(time)));
     }
 
     private void AddAOE(WPos position, double time)
     {
-        _aoes.Add(new(circle, WPos.ClampToGrid(position), default, WorldState.FutureTime(time)));
+        _aoes.Add(new(circle, position.Quantized(), default, WorldState.FutureTime(time)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

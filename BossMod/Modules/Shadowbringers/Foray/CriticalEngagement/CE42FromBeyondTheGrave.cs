@@ -80,7 +80,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.Deathwall)
         {
             Arena.Bounds = CE42FromBeyondTheGrave.DefaultArena;
-            Arena.Center = WPos.ClampToGrid(Arena.Center);
+            Arena.Center = Arena.Center.Quantized();
             _aoe = null;
         }
     }
@@ -99,8 +99,11 @@ class GallowsMarch(BossModule module) : Components.StatusDrivenForcedMarch(modul
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (!aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (!aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

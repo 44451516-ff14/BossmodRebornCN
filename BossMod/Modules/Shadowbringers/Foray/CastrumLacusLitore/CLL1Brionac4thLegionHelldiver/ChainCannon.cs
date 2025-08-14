@@ -34,7 +34,7 @@ sealed class ChainCannon(BossModule module) : Components.GenericAOEs(module)
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin.AlmostEqual(pos, 0.1f))
                 {
-                    if (++aoe.ActorID == 7u)
+                    if (++aoe.ActorID == 7ul)
                     {
                         _aoes.RemoveAt(i);
                     }

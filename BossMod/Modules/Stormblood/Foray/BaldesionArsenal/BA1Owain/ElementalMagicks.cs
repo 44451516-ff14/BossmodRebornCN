@@ -17,7 +17,7 @@ sealed class ElementalMagicks(BossModule module) : Components.GenericAOEs(module
             {
                 var spear = mundberg[i];
                 if (spear.FindStatus(sid) != null)
-                    AOEs.Add(new(circle, WPos.ClampToGrid(spear.Position), default, activation));
+                    AOEs.Add(new(circle, spear.Position.Quantized(), default, activation));
             }
             AOEs.Add(new(circle, spell.LocXZ, default, activation));
         }

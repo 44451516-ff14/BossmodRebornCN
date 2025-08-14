@@ -27,10 +27,14 @@ abstract class SpringCrystalsRect(BossModule module, bool moveCasters, bool risk
             {
                 // crystals are moved once or twice, but never outside arena bounds
                 // orthogonal movement always happens, movement along direction happens only for half of them - but it doesn't actually affect aoe, so we can ignore it
-                pos.X += pos.X < Arena.Center.X ? 20 : -20;
-                pos.Z += pos.Z < Arena.Center.Z ? 20 : -20;
+                var posX = pos.X;
+                var posZ = pos.Z;
+                var center = Arena.Center;
+                posX += posX < center.X ? 20f : -20f;
+                posZ += posZ < center.Z ? 20f : -20f;
+                pos = new(posX, posZ);
             }
-            _aoes.Add(new(_shape, pos, actor.Rotation, WorldState.FutureTime(delay), Risky: risky));
+            _aoes.Add(new(_shape, pos, actor.Rotation, WorldState.FutureTime(delay), risky: risky));
             SafeZoneCenters.RemoveAll(c => _shape.Check(c, pos, actor.Rotation));
         }
     }
@@ -60,7 +64,7 @@ class SpringCrystalsSphere(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID is (uint)OID.NSpringCrystalSphere or (uint)OID.SSpringCrystalSphere)
         {
-            _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(23.9d)));
+            _aoes.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(23.9d)));
         }
     }
 

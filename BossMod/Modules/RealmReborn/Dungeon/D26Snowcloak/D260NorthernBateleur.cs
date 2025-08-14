@@ -26,11 +26,11 @@ public enum AID : uint
     Beatdown = 575 // SnowcloakGoobbue->player, no cast, single-target
 }
 
-class WallRemoval(BossModule module) : BossComponent(module)
+sealed class WallRemoval(BossModule module) : BossComponent(module)
 {
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008 && actor.OID == (uint)OID.WallController1)
+        if (state == 0x00040008u && actor.OID == (uint)OID.WallController1)
         {
             Arena.Bounds = D260NorthernBateleur.Arena2;
             Arena.Center = D260NorthernBateleur.Arena2.Center;
@@ -38,9 +38,9 @@ class WallRemoval(BossModule module) : BossComponent(module)
     }
 }
 
-class Frostbite(BossModule module) : Components.GenericAOEs(module)
+sealed class Frostbite(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(17, 17);
+    private static readonly AOEShapeRect rect = new(17f, 17f);
     private readonly List<AOEInstance> _aoes = new(3);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -55,20 +55,41 @@ class Frostbite(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         if (origin == default)
-            return;
-        if (state == 0x00040008)
-            _aoes.Add(new(rect, origin, angle));
-        else if (state == 0x00010002)
         {
+            return;
+        }
+        if (state == 0x00040008u)
+        {
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             var count = _aoes.Count;
-            var pos = actor.Position;
+            var id = actor.InstanceID;
+
             for (var i = 0; i < count; ++i)
             {
-                var aoe = _aoes[i];
-                if (aoe.Origin == pos)
+                ref var aoe = ref aoes[i];
+                if (aoe.ActorID == id)
                 {
-                    _aoes[i] = new(rect, origin, angle, WorldState.FutureTime(5d), Colors.FutureVulnerable, false);
-                    break;
+                    aoe.Color = default;
+                    aoe.Risky = true;
+                    return;
+                }
+            }
+            _aoes.Add(new(rect, origin, angle, actorID: actor.InstanceID));
+        }
+        else if (state == 0x00010002u)
+        {
+            var count = _aoes.Count;
+            var id = actor.InstanceID;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                if (aoe.ActorID == id)
+                {
+                    aoe.Activation = WorldState.FutureTime(5d);
+                    aoe.Color = Colors.FutureVulnerable;
+                    aoe.Risky = false;
+                    return;
                 }
             }
         }
@@ -78,26 +99,34 @@ class Frostbite(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return;
+        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
+            ref readonly var aoe = ref aoes[i];
             if (aoe.Check(actor.Position))
             {
                 if (aoe.Risky)
+                {
                     hints.Add("GTFO from wind area!");
+                }
                 else
+                {
                     hints.Add("Leave unsafe area!" + $" {(aoe.Activation - WorldState.CurrentTime).TotalSeconds:F1}s until activation.");
+                }
+                return;
             }
         }
     }
 }
 
-class WingCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingCutter, new AOEShapeCone(6.9f, 30f.Degrees()));
-class DoubleSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSmash, new AOEShapeCone(7.69f, 60f.Degrees()));
-class SicklySneeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SicklySneeze, new AOEShapeCone(7.9f, 45f.Degrees()));
+sealed class WingCutter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingCutter, new AOEShapeCone(6.9f, 30f.Degrees()));
+sealed class DoubleSmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSmash, new AOEShapeCone(7.69f, 60f.Degrees()));
+sealed class SicklySneeze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SicklySneeze, new AOEShapeCone(7.9f, 45f.Degrees()));
 
-class D260NorthernBateleurStates : StateMachineBuilder
+sealed class D260NorthernBateleurStates : StateMachineBuilder
 {
     public D260NorthernBateleurStates(BossModule module) : base(module)
     {
@@ -125,7 +154,7 @@ class D260NorthernBateleurStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3220, SortOrder = 2)]
-public class D260NorthernBateleur(WorldState ws, Actor primary) : BossModule(ws, primary, arena1.Center, arena1)
+public sealed class D260NorthernBateleur(WorldState ws, Actor primary) : BossModule(ws, primary, arena1.Center, arena1)
 {
     private static readonly WPos[] vertices1 = [new(-31.24f, -185.2f), new(-30.26f, -184.84f), new(-29.79f, -184.64f), new(-29.32f, -184.42f), new(-28.88f, -184.17f),
     new(-28.44f, -183.9f), new(-24.36f, -180.74f), new(-21.94f, -179.18f), new(-21.43f, -179.14f), new(-19.93f, -179.49f),

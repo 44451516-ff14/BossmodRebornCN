@@ -124,7 +124,7 @@ abstract class OpenWater(BossModule module, int maxCasts, float timeToMove, Angl
             for (var i = 0; i < MaxCasts; ++i)
             {
                 var rotate = (pos - CE111SharkAttack.ArenaCenter).Rotate(inc * i) + CE111SharkAttack.ArenaCenter;
-                _aoes.Add(new(shape, WPos.ClampToGrid(rotate), default, Module.CastFinishAt(spell, TimeToMove * i)));
+                _aoes.Add(new(shape, rotate.Quantized(), default, Module.CastFinishAt(spell, TimeToMove * i)));
             }
         }
     }

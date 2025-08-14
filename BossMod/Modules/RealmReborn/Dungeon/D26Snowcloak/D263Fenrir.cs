@@ -24,29 +24,33 @@ public enum AID : uint
     HeavenswardRoar = 29593 // Boss->self, 5.0s cast, range 50 60-degree cone
 }
 
-class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.LunarCry, 80f)
+sealed class LunarCry(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.LunarCry, 80f)
 {
     public override ReadOnlySpan<Actor> BlockerActors()
     {
         var boulders = Module.Enemies((uint)OID.Icicle);
         var count = boulders.Count;
         if (count == 0)
+        {
             return [];
+        }
         var actors = new List<Actor>();
         for (var i = 0; i < count; ++i)
         {
             var b = boulders[i];
             if (b.ModelState.AnimState1 != 1)
+            {
                 actors.Add(b);
+            }
         }
         return CollectionsMarshal.AsSpan(actors);
     }
 }
 
-class PillarImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarImpact, 4f);
+sealed class PillarImpact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarImpact, 4f);
 
-class PillarShatter1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarShatter1, 8f);
-class PillarShatter2(BossModule module) : Components.GenericAOEs(module)
+sealed class PillarShatter1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarShatter1, 8f);
+sealed class PillarShatter2(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
     private readonly List<AOEInstance> _aoes = [];
@@ -63,19 +67,23 @@ class PillarShatter2(BossModule module) : Components.GenericAOEs(module)
             {
                 var p = icicles[i];
                 if (p.ModelState.AnimState1 != 1)
-                    _aoes.Add(new(circle, WPos.ClampToGrid(p.Position), default, WorldState.FutureTime(4.5d)));
+                {
+                    _aoes.Add(new(circle, p.Position.Quantized(), default, WorldState.FutureTime(4.5d)));
+                }
             }
         }
         else if (spell.Action.ID == (uint)AID.PillarShatter2)
+        {
             _aoes.Clear();
+        }
     }
 }
 
-class HeavenswardRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavenswardRoar, new AOEShapeCone(50f, 30f.Degrees()));
-class EclipticBite(BossModule module) : Components.SingleTargetCast(module, (uint)AID.EclipticBite);
-class ThousandYearStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThousandYearStorm);
+sealed class HeavenswardRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavenswardRoar, new AOEShapeCone(50f, 30f.Degrees()));
+sealed class EclipticBite(BossModule module) : Components.SingleTargetCast(module, (uint)AID.EclipticBite);
+sealed class ThousandYearStorm(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThousandYearStorm);
 
-class D263FenrirStates : StateMachineBuilder
+sealed class D263FenrirStates : StateMachineBuilder
 {
     public D263FenrirStates(BossModule module) : base(module)
     {
@@ -91,7 +99,13 @@ class D263FenrirStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3044, SortOrder = 4)]
-public class D263Fenrir(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D263Fenrir(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(1f, 65.1f), 26f, 24, 7.5f.Degrees())], [new Rectangle(new(-25.4f, 65), 1f, 20f)]);
+    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(4.25f, 39.50f), new(10.54f, 41.14f), new(11.16f, 41.39f), new(16.75f, 44.63f), new(21.32f, 49.20f),
+    new(21.72f, 49.74f), new(24.72f, 54.95f), new(24.97f, 55.57f), new(26.62f, 61.89f), new(26.62f, 68.44f),
+    new(24.95f, 74.69f), new(24.68f, 75.31f), new(21.73f, 80.43f), new(21.31f, 81f), new(16.70f, 85.60f),
+    new(11.10f, 88.83f), new(10.48f, 89.06f), new(4.23f, 90.69f), new(-2.31f, 90.69f), new(-8.60f, 89.01f),
+    new(-9.24f, 88.72f), new(-14.46f, 85.71f), new(-14.99f, 85.28f), new(-19.53f, 80.69f), new(-24.11f, 72.99f),
+    new(-24.38f, 72.38f), new(-24.38f, 58.11f), new(-24.11f, 57.48f), new(-19.32f, 49.24f), new(-14.70f, 44.62f),
+    new(-9.17f, 41.42f), new(-8.54f, 41.16f), new(-2.27f, 39.5f), new(4.25f, 39.5f)])]);
 }

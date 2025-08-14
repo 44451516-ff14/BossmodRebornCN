@@ -142,7 +142,7 @@ dotnet_style_coalesce_expression = true
 dotnet_diagnostic.IDE0031.severity = warning # prefer x?.foo() to x != null ? x.foo() : null;
 dotnet_style_null_propagation = true
 
-dotnet_diagnostic.IDE0032.severity = warning # prefer auto properties to explicit backing fields
+dotnet_diagnostic.IDE0032.severity = none # prefer auto properties to explicit backing fields
 dotnet_style_prefer_auto_properties = true
 dotnet_diagnostic.IDE0033.severity = warning # prefer explicit tuple member names to ItemN
 dotnet_style_explicit_tuple_names = true

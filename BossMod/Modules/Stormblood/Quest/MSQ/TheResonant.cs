@@ -44,7 +44,7 @@ class TerminusEst(BossModule module) : Components.GenericAOEs(module)
             var t = terminii[i];
             if (!t.Position.AlmostEqual(Arena.Center, 0.5f))
             {
-                aoes[i] = new(rect, t.Position, t.Rotation, Activation: act);
+                aoes[i] = new(rect, t.Position, t.Rotation, activation: act);
             }
         }
         return aoes;

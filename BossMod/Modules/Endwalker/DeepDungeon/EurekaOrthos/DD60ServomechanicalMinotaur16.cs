@@ -35,28 +35,25 @@ class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        var color = Colors.Danger;
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
         {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = color } : aoe;
-            else
-                aoes[i] = aoe;
+            ref var aoe = ref aoes[0];
+            aoe.Color = Colors.Danger;
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OctupleSwipeTelegraph)
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, _aoes.Count == 0 ? Module.CastFinishAt(spell, 8.7f + 2f * _aoes.Count) : _aoes[0].Activation.AddSeconds(_aoes.Count * 2d)));
+            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, _aoes.Count == 0 ? Module.CastFinishAt(spell, 8.7d + 2d * _aoes.Count) : _aoes.Ref(0).Activation.AddSeconds(_aoes.Count * 2d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.BullishSwipe1:
@@ -67,6 +64,7 @@ class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 }
 
@@ -79,7 +77,8 @@ class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module,
     {
         if (Casters.Count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 5f), Module.CastFinishAt(Casters[0].CastInfo));
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 5f), c.Activation);
         }
     }
 }
@@ -94,7 +93,7 @@ class Shock(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.BallOfLevin)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(13d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(13d)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

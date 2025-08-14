@@ -2,7 +2,7 @@
 
 public enum OID : uint
 {
-    Boss = 0x35CF // R8.000, x1
+    Boss = 0x35CF // R8.0
 }
 
 public enum AID : uint
@@ -41,108 +41,122 @@ public enum AID : uint
     RightInterment = 27643, // Boss->self, 6.0s cast, range 40 180-degree cone
     LeftInterment = 27644, // Boss->self, 6.0s cast, range 40 180-degree cone
 
-    Visual = 25698, // Boss->player, no cast, single-target
+    Visual = 25698 // Boss->player, no cast, single-target
 }
 
 public enum SID : uint
 {
-    WhisperedIncantation = 2846, // Boss->Boss, extra=0x0
     MirroredIncantation = 2848, // Boss->Boss, extra=0x3/0x2/0x1/0x4
     Pyretic = 960, // Boss->player, extra=0x0
-    Doom = 1970, // Boss->player
-    WhispersManifest = 2847, // Boss->Boss, extra=0x0
+    WhispersManifest = 2847 // Boss->Boss, extra=0x0
 }
 
-class MinaxGlare(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.MinaxGlare);
-class Heliovoid(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Heliovoid, 12f);
+sealed class MinaxGlare(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.MinaxGlare);
+sealed class Heliovoid(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Heliovoid, 12f);
 
-class AncientBlizzard(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientBlizzard1, (uint)AID.AncientBlizzard2, (uint)AID.WhispersManifest3], new AOEShapeDonut(8f, 40f));
-class AncientHoly(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientHoly1, (uint)AID.AncientHoly2, (uint)AID.WhispersManifest2], 20f);
+sealed class AncientBlizzard(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientBlizzard1, (uint)AID.AncientBlizzard2, (uint)AID.WhispersManifest3], new AOEShapeDonut(8f, 40f));
+sealed class AncientHoly(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientHoly1, (uint)AID.AncientHoly2, (uint)AID.WhispersManifest2], 20f);
 
-class Interment(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ForeInterment, (uint)AID.RearInterment, (uint)AID.RightInterment, (uint)AID.LeftInterment,
+sealed class Interment(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ForeInterment, (uint)AID.RearInterment, (uint)AID.RightInterment, (uint)AID.LeftInterment,
 (uint)AID.MirroredForeInterment, (uint)AID.MirroredRearInterment, (uint)AID.MirroredRightInterment, (uint)AID.MirroredLeftInterment], new AOEShapeCone(40f, 90f.Degrees()));
 
-class EternalDamnation1(BossModule module) : Components.CastGaze(module, (uint)AID.EternalDamnation1);
-class EternalDamnation2(BossModule module) : Components.CastGaze(module, (uint)AID.EternalDamnation2);
-class EternalDamnationWhispersManifest(BossModule module) : Components.CastGaze(module, (uint)AID.WhispersManifest4);
+sealed class EternalDamnation(BossModule module) : Components.CastGazes(module, [(uint)AID.EternalDamnation1, (uint)AID.EternalDamnation2, (uint)AID.WhispersManifest4]);
 
-class WhisperedIncantation(BossModule module) : Components.CastHint(module, (uint)AID.WhisperedIncantation, "Remembers the next skill and uses it again when casting Whispers Manifest");
+sealed class WhisperedIncantation(BossModule module) : Components.CastHint(module, (uint)AID.WhisperedIncantation, "Remembers the next skill and uses it again when casting Whispers Manifest");
 
-class MirroredIncantation(BossModule module) : BossComponent(module)
+sealed class MirroredIncantation(BossModule module) : BossComponent(module)
 {
-    private int Mirrorstacks;
-    private enum Types { None, Mirroredx3, Mirroredx4 }
-    private Types Type;
+    private int numMirrorStacks;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.MirroredIncantation1)
-            Type = Types.Mirroredx3;
-        else if (spell.Action.ID == (uint)AID.MirroredIncantation2)
-            Type = Types.Mirroredx4;
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID is (uint)AID.MirroredIncantation1 or (uint)AID.MirroredIncantation2)
-            Type = Types.None;
+        var id = spell.Action.ID;
+        if (id == (uint)AID.MirroredIncantation1)
+        {
+            numMirrorStacks = 3;
+        }
+        else if (id == (uint)AID.MirroredIncantation2)
+        {
+            numMirrorStacks = 4;
+        }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch (status.ID)
+        if (status.ID == (uint)SID.MirroredIncantation)
         {
-            case (uint)SID.MirroredIncantation:
-                var stacks = status.Extra switch
-                {
-                    0x1 => 1,
-                    0x2 => 2,
-                    0x3 => 3,
-                    0x4 => 4,
-                    _ => 0
-                };
-                Mirrorstacks = stacks;
-                break;
+            numMirrorStacks = status.Extra switch
+            {
+                0x1 => 1,
+                0x2 => 2,
+                0x3 => 3,
+                0x4 => 4,
+                _ => 0
+            };
         }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.MirroredIncantation)
-            Mirrorstacks = 0;
+        {
+            numMirrorStacks = 0;
+        }
     }
 
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (Mirrorstacks > 0)
-            hints.Add($"Mirrored interments left: {Mirrorstacks}!");
-        else if (Type == Types.Mirroredx3)
-            hints.Add("The next three interments will be mirrored!");
-        else if (Type == Types.Mirroredx4)
-            hints.Add("The next four interments will be mirrored!");
+        if (numMirrorStacks > 0)
+        {
+            hints.Add($"The next {numMirrorStacks} interments will be mirrored!");
+        }
     }
 }
 
-class AncientFlare(BossModule module) : Components.StayMove(module)
+sealed class AncientFlare(BossModule module) : Components.StayMove(module, 2.5d)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.AncientFlare or (uint)AID.AncientFlare2 or (uint)AID.WhispersManifest1)
-            foreach (var m in Raid.WithSlot(excludeNPCs: true))
-                SetState(m.Item1, new(Requirement.Stay, Module.CastFinishAt(spell)));
+        {
+            var party = Raid.WithSlot(false, true, true);
+            var len = party.Length;
+            PlayerState state = new(Requirement.Stay, Module.CastFinishAt(spell));
+            for (var i = 0; i < len; ++i)
+            {
+                SetState(party[i].Item1, ref state);
+            }
+        }
     }
 
-    public override void Update() // we don't know which players will be affected by pyretic due to 32 player cap, so we need to do a trick to clear states again...
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (PlayerStates != default && PlayerStates[0].Activation.AddSeconds(2d) < WorldState.CurrentTime)
-            if (Raid.WithoutSlot(excludeNPCs: true).All(x => x.FindStatus((uint)SID.Pyretic) == null))
-                foreach (var p in Raid.WithSlot(excludeNPCs: true))
-                    ClearState(p.Item1);
+        if (spell.Action.ID is (uint)AID.AncientFlare or (uint)AID.AncientFlare2 or (uint)AID.WhispersManifest1)
+        {
+            Array.Clear(PlayerStates);
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            PlayerState state = new(Requirement.Stay, WorldState.CurrentTime);
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var targ = ref targets[i];
+                SetState(Raid.FindSlot(targ.ID), ref state);
+            }
+        }
+    }
+
+    public override void OnStatusLose(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Pyretic && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        {
+            PlayerStates[slot] = default;
+        }
     }
 }
+
 // TODO: wicked swipe, check if there are even more skills missing
 
-class KerStates : StateMachineBuilder
+sealed class KerStates : StateMachineBuilder
 {
     public KerStates(BossModule module) : base(module)
     {
@@ -154,12 +168,10 @@ class KerStates : StateMachineBuilder
             .ActivateOnEnter<Interment>()
             .ActivateOnEnter<WhisperedIncantation>()
             .ActivateOnEnter<MirroredIncantation>()
-            .ActivateOnEnter<EternalDamnation1>()
-            .ActivateOnEnter<EternalDamnation2>()
-            .ActivateOnEnter<EternalDamnationWhispersManifest>()
+            .ActivateOnEnter<EternalDamnation>()
             .ActivateOnEnter<AncientFlare>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.SS, NameID = 10615)]
-public class Ker(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Ker(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

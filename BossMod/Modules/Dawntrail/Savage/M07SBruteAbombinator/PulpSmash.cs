@@ -11,15 +11,14 @@ sealed class TheUnpotted(BossModule module) : Components.GenericBaitAway(module,
     {
         if (spell.Action.ID == (uint)AID.ItCameFromTheDirt)
         {
-            var act = Module.CastFinishAt(spell, 0.1f);
+            var act = Module.CastFinishAt(spell, 0.1d);
             var party = Raid.WithoutSlot(false, true, true);
             var source = Module.PrimaryActor;
             var len = party.Length;
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
-                CurrentBaits.Add(new(source, p, cone, act));
+                CurrentBaits.Add(new(source, party[i], cone, act));
             }
         }
     }

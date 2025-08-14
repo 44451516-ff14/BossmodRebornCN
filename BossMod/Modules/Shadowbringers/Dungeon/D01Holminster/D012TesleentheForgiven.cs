@@ -13,10 +13,10 @@ public enum AID : uint
 
     TheTickler = 15823, // Boss->player, 4.0s cast, single-target, tankbuster
     ScoldsBridle = 15824, // Boss->self, 4.0s cast, range 40 circle, raidwide
-    FeveredFlagellation1 = 15829, // Boss->self, 8.0s cast, single-target
-    FeveredFlagellation2 = 15830, // Boss->players, no cast, width 4 rect charge, limit cut mechanic
-    ExorciseA = 15826, // Boss->none, 5.0s cast, single-target
-    ExorciseB = 15827, // Boss->location, no cast, range 6 circle
+    FeveredFlagellationVisual = 15829, // Boss->self, 8.0s cast, single-target
+    FeveredFlagellation = 15830, // Boss->players, no cast, width 4 rect charge, limit cut mechanic
+    ExorciseVisual = 15826, // Boss->none, 5.0s cast, single-target
+    Exorcise = 15827, // Boss->location, no cast, range 6 circle
     HolyWaterVoidzones = 15825, // Boss->self, no cast, single-target
     HolyWater = 15828 // Helper->location, 7.0s cast, range 6 circle
 }
@@ -29,23 +29,26 @@ public enum IconID : uint
     Icon4 = 82 // player
 }
 
-class TheTickler(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.TheTickler);
-class ScoldsBridle(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScoldsBridle);
+sealed class TheTickler(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.TheTickler);
+sealed class ScoldsBridle(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScoldsBridle);
 
-class FeveredFlagellation(BossModule module) : Components.GenericBaitAway(module)
+sealed class FeveredFlagellation(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect rect = new(default, 2);
-
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (CurrentBaits.Count != 0 && spell.Action.ID == (uint)AID.FeveredFlagellation2)
+        if (CurrentBaits.Count != 0 && spell.Action.ID == (uint)AID.FeveredFlagellation)
+        {
             CurrentBaits.RemoveAt(0);
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID is >= (uint)IconID.Icon1 and <= (uint)IconID.Icon4)
-            CurrentBaits.Add(new(Module.PrimaryActor, actor, rect));
+        {
+            var primary = Module.PrimaryActor;
+            CurrentBaits.Add(new(primary, actor, new AOEShapeRect((actor.Position - primary.Position).Length(), 2f), WorldState.FutureTime(8.3d + CurrentBaits.Count * 0.3d)));
+        }
     }
 
     public override void Update()
@@ -53,16 +56,31 @@ class FeveredFlagellation(BossModule module) : Components.GenericBaitAway(module
         var count = CurrentBaits.Count;
         if (count == 0)
             return;
-        for (var i = 0; i < CurrentBaits.Count; ++i)
+
+        var count2 = count - 1;
+        for (var i = count2; i >= 0; --i)
         {
-            var b = CurrentBaits[i];
-            CurrentBaits[i] = b with { Shape = rect with { LengthFront = (b.Target.Position - b.Source.Position).Length() } };
+            if (CurrentBaits[i].Target.IsDead) // if a target dies we need to remove the bait since the cast event will no longer happen
+            {
+                CurrentBaits.RemoveAt(i);
+            }
+        }
+        var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+        count = baits.Length;
+        for (var i = 0; i < count; ++i)
+        {
+            ref var b = ref baits[i];
+            var length = (b.Target.Position - b.Source.Position).Length();
+            if (b.Shape is AOEShapeRect rect && rect.LengthFront != length)
+            {
+                b.Shape = new AOEShapeRect(length, 2f);
+            }
         }
     }
 }
 
-class Exorcise(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ExorciseA, 6f, 4, 4);
-class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.HolyWater, GetVoidzones, 0.8f)
+sealed class Exorcise(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Exorcise, 6f, 4, 4);
+sealed class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.HolyWater, GetVoidzones, 0.8f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -83,7 +101,7 @@ class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f,
     }
 }
 
-class D012TesleentheForgivenStates : StateMachineBuilder
+sealed class D012TesleentheForgivenStates : StateMachineBuilder
 {
     public D012TesleentheForgivenStates(BossModule module) : base(module)
     {
@@ -97,7 +115,8 @@ class D012TesleentheForgivenStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "legendoficeman, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 676, NameID = 8300)]
-public class D012TesleentheForgiven(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D012TesleentheForgiven(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(78f, -82f), 19.5f)], [new Rectangle(new(78f, -62f), 20f, 1f), new Rectangle(new(78f, -102f), 20f, 1f)]);
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(78f, -82f), 19.5f * CosPI.Pi64th, 64)], [new Rectangle(new(78f, -62.081f), 20f, 1.0562f),
+    new Rectangle(new(78f, -102.023f), 20f, 1.0562f)]);
 }

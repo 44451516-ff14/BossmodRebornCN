@@ -175,7 +175,7 @@ class Implode(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Implo
 
 class PalladianRayBait(BossModule module) : Components.GenericBaitAway(module, (uint)AID.PalladianRayAOEFirst)
 {
-    private static readonly Actor[] _dummies = [new(default, default, -1, "L dummy", default, default, default, default, new(92f, default, 92f, default)), new(default, default, -1, "R dummy", default, default, default, default, new(108f, default, 92f, default))];
+    private readonly WPos[] _dummies = [new(92f, 92f), new(108f, 92f)];
 
     private static readonly AOEShapeCone _shape = new(100f, 15f.Degrees());
 
@@ -183,7 +183,7 @@ class PalladianRayBait(BossModule module) : Components.GenericBaitAway(module, (
     {
         CurrentBaits.Clear();
         foreach (var d in _dummies)
-            foreach (var p in Raid.WithoutSlot(false, true, true).SortedByRange(d.Position).Take(4))
+            foreach (var p in Raid.WithoutSlot(false, true, true).SortedByRange(d).Take(4))
                 CurrentBaits.Add(new(d, p, _shape));
     }
 }
@@ -201,6 +201,6 @@ class PalladianRayAOE(BossModule module) : Components.GenericAOEs(module, (uint)
     {
         base.OnEventCast(caster, spell);
         if (spell.Action.ID == (uint)AID.PalladianRayAOEFirst)
-            _aoes.Add(new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation));
+            _aoes.Add(new(_shape, caster.Position.Quantized(), caster.Rotation));
     }
 }

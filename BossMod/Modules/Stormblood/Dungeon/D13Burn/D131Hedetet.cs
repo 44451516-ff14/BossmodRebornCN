@@ -50,7 +50,7 @@ class ShardstrikeCrystals(BossModule module) : Components.GenericAOEs(module)
         {
             var z = enemies[i];
             if (!z.IsDead)
-                aoes[i] = new(circle, z.Position, Color: Colors.FutureVulnerable);
+                aoes[i] = new(circle, z.Position, color: Colors.FutureVulnerable);
         }
 
         return CollectionsMarshal.AsSpan(aoes);
@@ -75,7 +75,7 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
         {
             var primary = Module.PrimaryActor;
             return new AOEInstance[1] { _target == actor
-                ? new(new AOEShapeCustom(rects, InvertForbiddenZone: true), Arena.Center, Color: Colors.SafeFromAOE)
+                ? new(new AOEShapeCustom(rects, InvertForbiddenZone: true), Arena.Center, color: Colors.SafeFromAOE)
                 : new(new AOEShapeCustom([new RectangleSE(primary.Position, primary.Position + Length * primary.DirectionTo(_target), 2f)], rects), Arena.Center) };
         }
         return [];

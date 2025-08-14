@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P2Nisi : BossComponent
+sealed class P2Nisi : BossComponent
 {
     public enum Nisi { None, Alpha, Beta, Gamma, Delta }
 
@@ -49,7 +49,7 @@ class P2Nisi : BossComponent
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var nisi = NisiForSID((SID)status.ID);
+        var nisi = NisiForSID(status.ID);
         if (nisi != Nisi.None && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
             if (_current[slot] != nisi) // sometimes same nisi is reapplied, which is weird...
@@ -59,12 +59,12 @@ class P2Nisi : BossComponent
             _current[slot] = nisi;
         }
 
-        var judgment = (SID)status.ID switch
+        var judgment = status.ID switch
         {
-            SID.FinalJudgmentNisiAlpha => Nisi.Alpha,
-            SID.FinalJudgmentNisiBeta => Nisi.Beta,
-            SID.FinalJudgmentNisiGamma => Nisi.Gamma,
-            SID.FinalJudgmentNisiDelta => Nisi.Delta,
+            (uint)SID.FinalJudgmentNisiAlpha => Nisi.Alpha,
+            (uint)SID.FinalJudgmentNisiBeta => Nisi.Beta,
+            (uint)SID.FinalJudgmentNisiGamma => Nisi.Gamma,
+            (uint)SID.FinalJudgmentNisiDelta => Nisi.Delta,
             _ => Nisi.None
         };
         if (judgment != Nisi.None && Raid.FindSlot(actor.InstanceID) is var judgmentSlot && judgmentSlot >= 0)
@@ -75,7 +75,7 @@ class P2Nisi : BossComponent
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        var nisi = NisiForSID((SID)status.ID);
+        var nisi = NisiForSID(status.ID);
         if (nisi != Nisi.None && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && nisi == _current[slot])
         {
             _current[slot] = Nisi.None;
@@ -83,12 +83,12 @@ class P2Nisi : BossComponent
         }
     }
 
-    private Nisi NisiForSID(SID sid) => sid switch
+    private static Nisi NisiForSID(uint sid) => sid switch
     {
-        SID.FinalDecreeNisiAlpha => Nisi.Alpha,
-        SID.FinalDecreeNisiBeta => Nisi.Beta,
-        SID.FinalDecreeNisiGamma => Nisi.Gamma,
-        SID.FinalDecreeNisiDelta => Nisi.Delta,
+        (uint)SID.FinalDecreeNisiAlpha => Nisi.Alpha,
+        (uint)SID.FinalDecreeNisiBeta => Nisi.Beta,
+        (uint)SID.FinalDecreeNisiGamma => Nisi.Gamma,
+        (uint)SID.FinalDecreeNisiDelta => Nisi.Delta,
         _ => Nisi.None
     };
 

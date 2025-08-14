@@ -40,7 +40,7 @@ class PerfectContrition(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Brightsphere)
-            _aoes.Add(new(donut, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(10.6d)));
+            _aoes.Add(new(donut, actor.Position.Quantized(), default, WorldState.FutureTime(10.6d)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -58,7 +58,7 @@ class JudgmentDay(BossModule module) : Components.GenericTowers(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Towers)
-            Towers.Add(new(WPos.ClampToGrid(actor.Position), 5f, activation: WorldState.FutureTime(7.6d)));
+            Towers.Add(new(actor.Position.Quantized(), 5f, activation: WorldState.FutureTime(7.6d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

@@ -1,20 +1,20 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2AbsoluteZero(BossModule module) : Components.CastCounter(module, (uint)AID.AbsoluteZeroAOE);
+sealed class P2AbsoluteZero(BossModule module) : Components.CastCounter(module, (uint)AID.AbsoluteZeroAOE);
 
-class P2SwellingFrost(BossModule module) : Components.GenericKnockback(module, (uint)AID.SwellingFrost, true)
+sealed class P2SwellingFrost(BossModule module) : Components.GenericKnockback(module, (uint)AID.SwellingFrost)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(3.2d);
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        return new Knockback[1] { new(Arena.Center, 10f, _activation) };
+        return new Knockback[1] { new(Arena.Center, 10f, _activation, ignoreImmunes: true) };
     }
 }
 
-class P2SinboundBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SinboundBlizzardAOE, new AOEShapeCone(50f, 10f.Degrees()));
+sealed class P2SinboundBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SinboundBlizzardAOE, new AOEShapeCone(50f, 10f.Degrees()));
 
-class P2HiemalStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HiemalStormAOE, 7f)
+sealed class P2HiemalStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HiemalStormAOE, 7f)
 {
     private bool _slowDodges;
 
@@ -38,7 +38,7 @@ class P2HiemalStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID
     }
 }
 
-class P2HiemalRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.HiemalRay, GetVoidzones, 0.7f)
+sealed class P2HiemalRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.HiemalRay, GetVoidzones, 0.7d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -53,20 +53,22 @@ class P2HiemalRay(BossModule module) : Components.VoidzoneAtCastTarget(module, 4
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
 
 // TODO: show hint if ice veil is clipped
-class P2Intermission(BossModule module) : Components.GenericBaitAway(module)
+sealed class P2Intermission(BossModule module) : Components.GenericBaitAway(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P2SinboundBlizzard? _cones = module.FindComponent<P2SinboundBlizzard>();
-    private readonly IReadOnlyList<Actor> _crystalsOfLight = module.Enemies(OID.CrystalOfLight);
-    private readonly IReadOnlyList<Actor> _crystalsOfDarkness = module.Enemies(OID.CrystalOfDarkness);
-    private readonly IReadOnlyList<Actor> _iceVeil = module.Enemies(OID.IceVeil);
+    private readonly List<Actor> _crystalsOfLight = module.Enemies((uint)OID.CrystalOfLight);
+    private readonly List<Actor> _crystalsOfDarkness = module.Enemies((uint)OID.CrystalOfDarkness);
+    private readonly List<Actor> _iceVeil = module.Enemies((uint)OID.IceVeil);
     private bool _iceVeilInvincible = true;
 
     public bool CrystalsActive => CrystalsOfLight.Any();
@@ -148,7 +150,7 @@ class P2Intermission(BossModule module) : Components.GenericBaitAway(module)
     {
         Arena.Actors(CrystalsOfLight);
         Arena.Actors(CrystalsOfDarkness, Colors.Object);
-        Arena.Actor(IceVeil, _iceVeilInvincible ? Colors.Object : 0);
+        Arena.Actor(IceVeil, _iceVeilInvincible ? Colors.Object : default);
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)

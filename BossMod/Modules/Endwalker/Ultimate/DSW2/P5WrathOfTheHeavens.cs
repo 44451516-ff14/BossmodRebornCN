@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P5WrathOfTheHeavensSkywardLeap(BossModule module) : Components.UniformStackSpread(module, default, 24f, alwaysShowSpreads: true, raidwideOnResolve: false)
+sealed class P5WrathOfTheHeavensSkywardLeap(BossModule module) : Components.UniformStackSpread(module, default, 24f, alwaysShowSpreads: true, raidwideOnResolve: false)
 {
     public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
     {
@@ -38,7 +38,7 @@ class P5WrathOfTheHeavensSkywardLeap(BossModule module) : Components.UniformStac
     }
 }
 
-class P5WrathOfTheHeavensSpiralPierce(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 8f), (uint)TetherID.SpiralPierce, (uint)AID.SpiralPierce)
+sealed class P5WrathOfTheHeavensSpiralPierce(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(50f, 8f), (uint)TetherID.SpiralPierce, (uint)AID.SpiralPierce)
 {
     public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
     {
@@ -68,11 +68,11 @@ class P5WrathOfTheHeavensSpiralPierce(BossModule module) : Components.BaitAwayTe
     }
 }
 
-class P5WrathOfTheHeavensChainLightning(BossModule module) : Components.UniformStackSpread(module, default, 5f, alwaysShowSpreads: true)
+sealed class P5WrathOfTheHeavensChainLightning(BossModule module) : Components.UniformStackSpread(module, default, 5f, alwaysShowSpreads: true)
 {
     public BitMask Targets;
 
-    public void ShowSpreads(float delay) => AddSpreads(Raid.WithSlot(true, true, true).IncludedInMask(Targets).Actors(), WorldState.FutureTime(delay));
+    public void ShowSpreads(double delay) => AddSpreads(Raid.WithSlot(true, true, true).IncludedInMask(Targets).Actors(), WorldState.FutureTime(delay));
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -100,7 +100,7 @@ class P5WrathOfTheHeavensChainLightning(BossModule module) : Components.UniformS
     }
 }
 
-class P5WrathOfTheHeavensTwister(BossModule module) : Components.GenericAOEs(module, default, "GTFO from twister!")
+sealed class P5WrathOfTheHeavensTwister(BossModule module) : Components.GenericAOEs(module, default, "GTFO from twister!")
 {
     private readonly List<WPos> _predicted = GetPositions(module);
     private readonly List<Actor> _voidzones = module.Enemies((uint)OID.VoidzoneTwister);
@@ -139,7 +139,7 @@ class P5WrathOfTheHeavensTwister(BossModule module) : Components.GenericAOEs(mod
 }
 
 // note: we're not really showing baits here, it's more misleading than helpful...
-class P5WrathOfTheHeavensCauterizeBait(BossModule module) : BossComponent(module)
+sealed class P5WrathOfTheHeavensCauterizeBait(BossModule module) : BossComponent(module)
 {
     private Actor? _target;
 
@@ -178,15 +178,15 @@ class P5WrathOfTheHeavensCauterizeBait(BossModule module) : BossComponent(module
     }
 }
 
-class P5WrathOfTheHeavensAscalonsMercyRevealed(BossModule module) : Components.BaitAwayEveryone(module, module.Enemies((uint)OID.BossP5).FirstOrDefault(), new AOEShapeCone(50f, 15f.Degrees()), (uint)AID.AscalonsMercyRevealedAOE);
+sealed class P5WrathOfTheHeavensAscalonsMercyRevealed(BossModule module) : Components.BaitAwayEveryone(module, module.Enemies((uint)OID.BossP5).FirstOrDefault(), new AOEShapeCone(50f, 15f.Degrees()), (uint)AID.AscalonsMercyRevealedAOE);
 
 // TODO: detect baiter
-class P5WrathOfTheHeavensLiquidHeaven(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.LiquidHeaven, m => m.Enemies(OID.VoidzoneLiquidHeaven).Where(z => z.EventState != 7), 1.1f);
+sealed class P5WrathOfTheHeavensLiquidHeaven(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.LiquidHeaven, m => m.Enemies((uint)OID.VoidzoneLiquidHeaven).Where(z => z.EventState != 7), 1.1f);
 
 // TODO: detect baiter
-class P5WrathOfTheHeavensAltarFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AltarFlareAOE, 8f);
+sealed class P5WrathOfTheHeavensAltarFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AltarFlareAOE, 8f);
 
-class P5WrathOfTheHeavensEmptyDimension(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EmptyDimension, new AOEShapeDonut(6f, 70f))
+sealed class P5WrathOfTheHeavensEmptyDimension(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EmptyDimension, new AOEShapeDonut(6f, 70f))
 {
     private WPos _predicted;
 
@@ -200,7 +200,7 @@ class P5WrathOfTheHeavensEmptyDimension(BossModule module) : Components.SimpleAO
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.SerGrinnaux && id == 0x1E43u)
+        if (id == 0x1E43 && actor.OID == (uint)OID.SerGrinnaux)
             _predicted = actor.Position;
     }
 }

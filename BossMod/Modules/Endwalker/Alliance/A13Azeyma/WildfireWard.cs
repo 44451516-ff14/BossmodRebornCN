@@ -7,13 +7,13 @@ class WildfireWard(BossModule module) : Components.SimpleKnockbacks(module, (uin
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
             {
-                var x = (int)source.Position.X;
+                var x = (int)c.Origin.X;
                 var pos = x == -777 ? south : x == -726 ? east : west;
-                hints.AddForbiddenZone(ShapeDistance.InvertedRect(pos, source.Rotation + 90f.Degrees(), 2f, 1f, 1f), act);
+                hints.AddForbiddenZone(ShapeDistance.InvertedRect(pos, c.Direction + 90f.Degrees(), 2f, 1f, 1f), act);
             }
         }
     }

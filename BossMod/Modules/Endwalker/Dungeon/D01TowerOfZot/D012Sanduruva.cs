@@ -57,7 +57,7 @@ class SphereShatter(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.BerserkerSphere)
         {
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, NumCasts == 0 ? WorldState.FutureTime(10.8d) : WorldState.FutureTime(20d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, NumCasts == 0 ? WorldState.FutureTime(10.8d) : WorldState.FutureTime(20d)));
         }
     }
 

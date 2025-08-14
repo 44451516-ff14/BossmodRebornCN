@@ -3,18 +3,18 @@
 // leap (icons spread) + rage (rest stack)
 // note: we currently don't show stack hints, that happens automatically if mechanic is resolved properly
 // TODO: figure out rage target - it is probably a random non-tank non-spread
-class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
+sealed class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
 {
     public bool LeapsDone;
     public bool RageDone;
     private readonly Actor? _leftCharge;
     private readonly Actor? _rightCharge;
-    private Angle _dirToStackPos;
+    private readonly Angle _dirToStackPos;
 
     public P2StrengthOfTheWard2SpreadStack(BossModule module) : base(module, 8, 24, 5)
     {
-        var c1 = module.Enemies(OID.SerAdelphel).FirstOrDefault();
-        var c2 = module.Enemies(OID.SerJanlenoux).FirstOrDefault();
+        var c1 = module.Enemies((uint)OID.SerAdelphel).FirstOrDefault();
+        var c2 = module.Enemies((uint)OID.SerJanlenoux).FirstOrDefault();
         if (c1 == null || c2 == null)
         {
             ReportError($"Failed to find charge sources");
@@ -45,13 +45,13 @@ class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.SkywardLeapP2:
+            case (uint)AID.SkywardLeapP2:
                 LeapsDone = true;
                 Spreads.Clear();
                 break;
-            case AID.DragonsRageAOE:
+            case (uint)AID.DragonsRageAOE:
                 RageDone = true;
                 Stacks.Clear();
                 break;
@@ -60,48 +60,52 @@ class P2StrengthOfTheWard2SpreadStack : Components.UniformStackSpread
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if ((IconID)iconID == IconID.SkywardLeapP2)
+        if (iconID == (uint)IconID.SkywardLeapP2)
             AddSpread(actor);
     }
 
-    private IEnumerable<WPos> EnumSafeSpots(Actor player)
+    private WPos[] EnumSafeSpots(Actor player)
     {
         if (IsSpreadTarget(player))
         {
             if (!LeapsDone)
             {
                 // TODO: select single safe spot for a player based on some criterion...
-                yield return SafeSpotAt(_dirToStackPos + 100.Degrees());
-                yield return SafeSpotAt(_dirToStackPos + 180.Degrees());
-                yield return SafeSpotAt(_dirToStackPos - 100.Degrees());
+                return
+                [
+                    SafeSpotAt(_dirToStackPos + 100f.Degrees()),
+                    SafeSpotAt(_dirToStackPos + 180f.Degrees()),
+                    SafeSpotAt(_dirToStackPos - 100f.Degrees())
+                ];
             }
         }
         else if (_leftCharge?.Tether.Target == player.InstanceID)
         {
-            yield return SafeSpotAt(_dirToStackPos - 18.Degrees());
+            return [SafeSpotAt(_dirToStackPos - 18f.Degrees())];
         }
         else if (_rightCharge?.Tether.Target == player.InstanceID)
         {
-            yield return SafeSpotAt(_dirToStackPos + 18.Degrees());
+            return [SafeSpotAt(_dirToStackPos + 18f.Degrees())];
         }
         else if (!RageDone)
         {
-            yield return SafeSpotAt(_dirToStackPos);
+            return [SafeSpotAt(_dirToStackPos)];
         }
+        return [];
     }
 
-    private WPos SafeSpotAt(Angle dir) => Arena.Center + 20 * dir.ToDirection();
+    private WPos SafeSpotAt(Angle dir) => Arena.Center + 20f * dir.ToDirection();
 }
 
 // growing voidzones
-class P2StrengthOfTheWard2Voidzones(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DimensionalCollapseAOE, 9);
+sealed class P2StrengthOfTheWard2Voidzones(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DimensionalCollapseAOE, 9f);
 
 // charges on tethered targets
-class P2StrengthOfTheWard2Charges(BossModule module) : Components.CastCounter(module, (uint)AID.HolyShieldBash)
+sealed class P2StrengthOfTheWard2Charges(BossModule module) : Components.CastCounter(module, (uint)AID.HolyShieldBash)
 {
-    private readonly List<Actor> _chargeSources = [.. module.Enemies(OID.SerAdelphel), .. module.Enemies(OID.SerJanlenoux)];
+    private readonly List<Actor> _chargeSources = [.. module.Enemies((uint)OID.SerAdelphel), .. module.Enemies((uint)OID.SerJanlenoux)];
 
-    private const float _chargeHalfWidth = 4;
+    private const float _chargeHalfWidth = 4f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -163,7 +167,7 @@ class P2StrengthOfTheWard2Charges(BossModule module) : Components.CastCounter(mo
         var dir = target.Position - source.Position;
         var len = dir.Length();
         dir /= len;
-        return Raid.WithoutSlot(false, true, true).Any(p => p.Role != Role.Tank && p.Position.InRect(source.Position, dir, len, 0, _chargeHalfWidth));
+        return Raid.WithoutSlot(false, true, true).Any(p => p.Role != Role.Tank && p.Position.InRect(source.Position, dir, len, default, _chargeHalfWidth));
     }
 
     private bool IsInChargeAOE(Actor player)
@@ -180,7 +184,7 @@ class P2StrengthOfTheWard2Charges(BossModule module) : Components.CastCounter(mo
 
 // towers
 // TODO: assign tower to proper player
-class P2StrengthOfTheWard2Towers(BossModule module) : Components.CastTowers(module, (uint)AID.Conviction1AOE, 3)
+sealed class P2StrengthOfTheWard2Towers(BossModule module) : Components.CastTowers(module, (uint)AID.Conviction1AOE, 3f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

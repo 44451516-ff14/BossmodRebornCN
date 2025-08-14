@@ -16,13 +16,13 @@ public enum AID : uint
     EyeOfTheBeholder = 631 // Boss->self, 2.5s cast, range 8-15+R donut 270-degree cone aoe
 }
 
-class TenTonzeSwipe(BossModule module) : Components.Cleave(module, (uint)AID.TenTonzeSwipe, new AOEShapeCone(10, 60.Degrees())); // TODO: verify angle
-class HundredTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwipe, new AOEShapeCone(10, 60.Degrees()));
-class HundredTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwing, 12);
-class Glower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Glower, new AOEShapeRect(21, 3.5f));
-class EyeOfTheBeholder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheBeholder, new AOEShapeDonutSector(8, 19, 135.Degrees()));
+sealed class TenTonzeSwipe(BossModule module) : Components.Cleave(module, (uint)AID.TenTonzeSwipe, new AOEShapeCone(10, 60.Degrees()));
+sealed class HundredTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwipe, new AOEShapeCone(10, 60.Degrees()));
+sealed class HundredTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HundredTonzeSwing, 12);
+sealed class Glower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Glower, new AOEShapeRect(21, 3.5f));
+sealed class EyeOfTheBeholder(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheBeholder, new AOEShapeDonutSector(8, 19, 135.Degrees()));
 
-class D122CoincounterStates : StateMachineBuilder
+sealed class D122CoincounterStates : StateMachineBuilder
 {
     public D122CoincounterStates(BossModule module) : base(module)
     {
@@ -36,7 +36,7 @@ class D122CoincounterStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 5, NameID = 1533)]
-public class D122Coincounter(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D122Coincounter(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-139.18f, -177.68f), new(-138.68f, -177.28f), new(-138.39f, -176.65f), new(-138.6f, -176.02f), new(-138.38f, -175.49f),
     new(-138.46f, -174.96f), new(-139.64f, -175.02f), new(-140.22f, -174.91f), new(-140.77f, -174.53f), new(-141.72f, -173.62f),

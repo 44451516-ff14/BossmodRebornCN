@@ -57,9 +57,13 @@ class OminousWind(BossModule module) : BossComponent(module)
             {
                 ref readonly var p = ref party[i];
                 if (p.Item1 == pcSlot)
+                {
                     continue;
+                }
                 if (Targets[p.Item1])
+                {
                     Arena.AddCircle(p.Item2.Position, 6f);
+                }
             }
         }
     }
@@ -67,13 +71,17 @@ class OminousWind(BossModule module) : BossComponent(module)
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.OminousWind)
-            Targets[Raid.FindSlot(actor.InstanceID)] = true;
+        {
+            Targets.Set(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.OminousWind)
-            Targets[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            Targets.Clear(Raid.FindSlot(actor.InstanceID));
+        }
     }
 }
 

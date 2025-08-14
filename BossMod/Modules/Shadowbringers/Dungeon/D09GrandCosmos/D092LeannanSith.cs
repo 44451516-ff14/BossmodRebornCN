@@ -75,9 +75,10 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x0Bu)
+        if (index != 0x0B)
+        {
             return;
-
+        }
         tiles = state switch
         {
             0x00020001u => GenerateTiles(defaultGreenTiles),
@@ -93,7 +94,7 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
         var isNull = _aoe == null;
         var activate = ShouldActivateAOEs;
         if (activate && isNull)
-            _aoe = new(new AOEShapeCustom(tiles), Arena.Center, Color: Colors.FutureVulnerable);
+            _aoe = new(new AOEShapeCustom(tiles), Arena.Center, color: Colors.FutureVulnerable);
         else if (!activate && !isNull)
             _aoe = null;
     }
@@ -102,7 +103,9 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
     {
         var tiles = new Square[8];
         for (var i = 0; i < 8; ++i)
+        {
             tiles[i] = new Square(positions[i], HalfSize);
+        }
         return tiles;
     }
 
@@ -110,7 +113,9 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
     {
         var tiles = new Square[8];
         for (var i = 0; i < 8; ++i)
+        {
             tiles[i] = new Square(WPos.RotateAroundOrigin(angle, D092LeananSith.ArenaCenter, defaultGreenTiles[i]), HalfSize);
+        }
         return tiles;
     }
 
@@ -120,7 +125,7 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
             ++NumCasts;
         else if (spell.Action.ID == (uint)AID.IrefulWind)
         {
-            var knockbackDirection = new Angle(MathF.Round(spell.Rotation.Deg / 90f) * 90f) * Angle.DegToRad;
+            var knockbackDirection = spell.Rotation.Round(90f);
             var offset = 10f * knockbackDirection.ToDirection();
             var newTiles = new List<Square>(10);
             var pos = caster.Position;

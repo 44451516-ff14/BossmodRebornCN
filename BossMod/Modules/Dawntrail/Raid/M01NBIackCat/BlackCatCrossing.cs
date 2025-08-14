@@ -15,17 +15,16 @@ sealed class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
             return [];
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < count; ++i)
+        var color = Colors.Danger;
+        for (var i = 0; i < 4; ++i)
         {
             ref var aoe = ref aoes[i];
             if (i < 4)
             {
                 if (count == 8)
-                    aoe.Color = Colors.Danger;
+                    aoe.Color = color;
                 aoe.Risky = true;
             }
-            else
-                aoe.Risky = false;
         }
         return aoes;
     }
@@ -36,7 +35,7 @@ sealed class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
         {
             case (uint)AID.BlackCatCrossingFirst:
             case (uint)AID.BlackCatCrossingRest:
-                _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+                _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: false));
                 if (_aoes.Count == 8)
                     _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 break;
@@ -45,7 +44,7 @@ sealed class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if (status.Extra != 0x307u && _currentPattern == Pattern.None)
+        if (status.Extra != 0x307 && _currentPattern == Pattern.None)
         {
             switch (status.ID)
             {

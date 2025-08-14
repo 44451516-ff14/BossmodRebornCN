@@ -1,4 +1,3 @@
-using BossMod.AI;
 using Dalamud.Game.Config;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
@@ -32,8 +31,9 @@ public sealed unsafe class MovementOverride : IDisposable
     private readonly IDalamudPluginInterface _dalamud;
     private readonly ActionTweaksConfig _tweaksConfig = Service.Config.Get<ActionTweaksConfig>();
     private bool? _forcedControlState;
-    private bool _legacyMode;
+    public bool LegacyMode;
     private bool[]? _navmeshPathIsRunning;
+    public static MovementOverride? Instance;
 
     public bool IsMoving() => ActualMove != default;
     public bool IsMoveRequested() => UserMove != default;
@@ -72,7 +72,7 @@ public sealed unsafe class MovementOverride : IDisposable
     public MovementOverride(IDalamudPluginInterface dalamud)
     {
         _dalamud = dalamud;
-
+        Instance = this;
         var rmiWalkIsInputEnabled1Addr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 75 10 38 43 3C");
         var rmiWalkIsInputEnabled2Addr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 75 03 88 47 3F");
         Service.Log($"RMIWalkIsInputEnabled1 address: 0x{rmiWalkIsInputEnabled1Addr:X}");
@@ -96,9 +96,10 @@ public sealed unsafe class MovementOverride : IDisposable
         _mcIsInputActiveHook.Dispose();
         _rmiWalkHook.Dispose();
         _rmiFlyHook.Dispose();
+        Instance = null;
     }
 
-    private bool FollowpathActive()
+    public bool FollowPathActive()
     {
         if (_navmeshPathIsRunning == null && _dalamud.TryGetData<bool[]>("vnav.PathIsRunning", out var data))
             _navmeshPathIsRunning = data;
@@ -112,7 +113,7 @@ public sealed unsafe class MovementOverride : IDisposable
         _rmiWalkHook.Original(self, sumLeft, sumForward, sumTurnLeft, haveBackwardOrStrafe, a6, bAdditiveUnk);
 
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
-        var movementAllowed = bAdditiveUnk == 0 && _rmiWalkIsInputEnabled1(self) && _rmiWalkIsInputEnabled2(self) && !FollowpathActive();
+        var movementAllowed = bAdditiveUnk == 0 && _rmiWalkIsInputEnabled1(self) && _rmiWalkIsInputEnabled2(self) && !FollowPathActive();
         var misdirectionMode = PlayerHasMisdirection();
         if (!movementAllowed && misdirectionMode)
         {
@@ -167,7 +168,7 @@ public sealed unsafe class MovementOverride : IDisposable
         _rmiFlyHook.Original(self, result);
 
         // do nothing while followpath is running
-        if (FollowpathActive())
+        if (FollowPathActive())
             return;
 
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
@@ -200,7 +201,7 @@ public sealed unsafe class MovementOverride : IDisposable
         return (dirH - ForwardMovementDirection(), dirV);
     }
 
-    private Angle ForwardMovementDirection() => _legacyMode ? Camera.Instance!.CameraAzimuth.Radians() + 180f.Degrees() : GameObjectManager.Instance()->Objects.IndexSorted[0].Value->Rotation.Radians();
+    private Angle ForwardMovementDirection() => LegacyMode ? Camera.Instance!.CameraAzimuth.Radians() + 180f.Degrees() : GameObjectManager.Instance()->Objects.IndexSorted[0].Value->Rotation.Radians();
 
     private bool PlayerHasMisdirection()
     {
@@ -217,7 +218,7 @@ public sealed unsafe class MovementOverride : IDisposable
     private void OnConfigChanged(object? sender, ConfigChangeEvent evt) => UpdateLegacyMode();
     private void UpdateLegacyMode()
     {
-        _legacyMode = Service.GameConfig.UiControl.TryGetUInt("MoveMode", out var mode) && mode == 1;
-        Service.Log($"Legacy mode is now {(_legacyMode ? "enabled" : "disabled")}");
+        LegacyMode = Service.GameConfig.UiControl.TryGetUInt("MoveMode", out var mode) && mode == 1;
+        Service.Log($"Legacy mode is now {(LegacyMode ? "enabled" : "disabled")}");
     }
 }

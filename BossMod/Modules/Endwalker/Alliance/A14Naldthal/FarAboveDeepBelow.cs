@@ -82,7 +82,7 @@ class DeepestPit(BossModule module) : Components.GenericAOEs(module)
                 break;
             case (uint)AID.DeepestPitFirst:
             case (uint)AID.DeepestPitRest:
-                _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+                _aoes.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
                 break;
         }
     }

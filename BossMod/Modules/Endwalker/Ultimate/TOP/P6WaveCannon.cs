@@ -1,14 +1,14 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P6WaveCannonPuddle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.P6WaveCannonPuddle, 6);
+sealed class P6WaveCannonPuddle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.P6WaveCannonPuddle, 6f);
 
-class P6WaveCannonExaflare(BossModule module) : Components.Exaflare(module, 8f)
+sealed class P6WaveCannonExaflare(BossModule module) : Components.Exaflare(module, 8f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.P6WaveCannonExaflareFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 8f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 7, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, 8f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 7, 2));
         }
     }
 
@@ -35,9 +35,9 @@ class P6WaveCannonExaflare(BossModule module) : Components.Exaflare(module, 8f)
     }
 }
 
-class P6WaveCannonProteans(BossModule module) : Components.GenericBaitAway(module)
+sealed class P6WaveCannonProteans(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect _shape = new(100, 4);
+    private static readonly AOEShapeRect _shape = new(100f, 4f);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -57,7 +57,7 @@ class P6WaveCannonProteans(BossModule module) : Components.GenericBaitAway(modul
     }
 }
 
-class P6WaveCannonWildCharge(BossModule module) : Components.GenericWildCharge(module, 4f, (uint)AID.P6WaveCannonWildCharge, 100)
+sealed class P6WaveCannonWildCharge(BossModule module) : Components.GenericWildCharge(module, 4f, (uint)AID.P6WaveCannonWildCharge, 100)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

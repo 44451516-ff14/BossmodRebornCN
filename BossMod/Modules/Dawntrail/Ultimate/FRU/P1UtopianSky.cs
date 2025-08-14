@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(module, (uint)AID.BlastingZoneAOE)
+sealed class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(module, (uint)AID.BlastingZoneAOE)
 {
     public readonly List<AOEInstance> AOEs = [];
     public BitMask DangerousSpots; // 0 = N, then CCW
@@ -23,7 +23,7 @@ class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(modul
         {
             Activation = WorldState.FutureTime(9.1d);
             AOEs.Add(new(_shape, actor.Position, actor.Rotation, Activation));
-            DangerousSpots.Set((int)MathF.Round((-Angle.FromDirection(actor.Position - Arena.Center).Deg + 180f) / 45f) % 8);
+            DangerousSpots.Set((int)MathF.Round((-Angle.FromDirection(actor.Position - Arena.Center).Deg + 180f) / 45f) & 7);
         }
     }
 
@@ -37,7 +37,7 @@ class P1UtopianSkyBlastingZone(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-class P1UtopianSkySpreadStack(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 4, 4, true)
+sealed class P1UtopianSkySpreadStack(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 4, 4, true)
 {
     public enum Mechanic { None, Spread, Stack }
 
@@ -98,7 +98,7 @@ class P1UtopianSkySpreadStack(BossModule module) : Components.UniformStackSpread
 }
 
 // initial positions: resolve tankbuster + 'see' own image
-class P1UtopianSkyAIInitial(BossModule module) : BossComponent(module)
+sealed class P1UtopianSkyAIInitial(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
 
@@ -121,7 +121,7 @@ class P1UtopianSkyAIInitial(BossModule module) : BossComponent(module)
 // - if our clone starts aoe, we move to the center immediately
 // - if opposite clone starts aoe, we move to the center as soon as our opposite partner moves
 // - as soon as all aoe directions have at least one person 'near center', or if resolve is imminent, we move to our final spot
-class P1UtopianSkyAIResolve(BossModule module) : BossComponent(module)
+sealed class P1UtopianSkyAIResolve(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P1UtopianSkyBlastingZone? _aoes = module.FindComponent<P1UtopianSkyBlastingZone>();

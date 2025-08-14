@@ -50,7 +50,7 @@ class AetherochemicalExplosive(BossModule module) : Components.GenericAOEs(modul
             var e = Explosives[i];
             if (!e.Actor.IsDead || !e.Primed)
             {
-                aoes[i] = new(circle, e.Actor.Position, Activation: e.Activation);
+                aoes[i] = new(circle, e.Actor.Position, activation: e.Activation);
             }
         }
         return aoes;

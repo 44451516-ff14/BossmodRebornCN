@@ -2,12 +2,13 @@
 
 // wrapper around float, stores angle in radians, provides type-safety and convenience
 // when describing rotation in world, common convention is 0 for 'south'/'down'/(0, -1) and increasing counterclockwise - so +90 is 'east'/'right'/(1, 0)
-public record struct Angle(float Rad)
+public readonly struct Angle(float rad) : IEquatable<Angle>
 {
-    public const float RadToDeg = (float)(180 / Math.PI);
-    public const float DegToRad = (float)(Math.PI / 180);
-    public const float HalfPi = (float)(Math.PI / 2);
-    public const float DoublePI = (float)(2 * Math.PI);
+    public readonly float Rad = rad;
+    public const float RadToDeg = 180f / MathF.PI;
+    public const float DegToRad = MathF.PI / 180f;
+    public const float HalfPi = MathF.PI / 2f;
+    public const float DoublePI = MathF.Tau;
 
     public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
     public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
@@ -21,6 +22,8 @@ public record struct Angle(float Rad)
         return new(sin, cos);
     }
 
+    public static bool operator ==(Angle left, Angle right) => left.Rad == right.Rad;
+    public static bool operator !=(Angle left, Angle right) => left.Rad != right.Rad;
     public static Angle operator +(Angle a, Angle b) => new(a.Rad + b.Rad);
     public static Angle operator -(Angle a, Angle b) => new(a.Rad - b.Rad);
     public static Angle operator -(Angle a) => new(-a.Rad);
@@ -38,6 +41,7 @@ public record struct Angle(float Rad)
     public readonly float Tan() => (float)Math.Tan(Rad);
     public static Angle Asin(float x) => new((float)Math.Asin(x));
     public static Angle Acos(float x) => new((float)Math.Acos(x));
+    public readonly Angle Round(float roundToNearestDeg) => (MathF.Round(Deg / roundToNearestDeg) * roundToNearestDeg).Degrees();
 
     public readonly Angle Normalized()
     {
@@ -71,6 +75,9 @@ public record struct Angle(float Rad)
     }
 
     public override readonly string ToString() => Deg.ToString("f3");
+    public readonly bool Equals(Angle other) => Rad == other.Rad;
+    public override readonly bool Equals(object? obj) => obj is Angle other && Equals(other);
+    public override readonly int GetHashCode() => Rad.GetHashCode();
 }
 
 public static class AngleExtensions

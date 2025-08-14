@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-#nullable enable
 
 namespace Clipper2Lib
 {
@@ -43,7 +42,7 @@ namespace Clipper2Lib
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     You can contact the author at :
-    - xxHash homepage: http://www.xxhash.com
+    - xxHash homepage: https://www.xxhash.com
     - xxHash source repository : https://github.com/Cyan4973/xxHash
   */
 
@@ -51,7 +50,7 @@ namespace Clipper2Lib
   {
     private static readonly uint s_seed = GenerateGlobalSeed();
 
-    private const uint Prime1 = 2654435761U;
+    // private const uint Prime1 = 2654435761U;
     private const uint Prime2 = 2246822519U;
     private const uint Prime3 = 3266489917U;
     private const uint Prime4 = 668265263U;
@@ -67,8 +66,8 @@ namespace Clipper2Lib
 
     public static int Combine<T1, T2>(T1 value1, T2 value2)
     {
-      uint hc1 = (uint) (value1?.GetHashCode() ?? 0);
-      uint hc2 = (uint) (value2?.GetHashCode() ?? 0);
+      uint hc1 = (uint)(value1?.GetHashCode() ?? 0);
+      uint hc2 = (uint)(value2?.GetHashCode() ?? 0);
 
       uint hash = MixEmptyState();
       hash += 8;
@@ -77,7 +76,7 @@ namespace Clipper2Lib
       hash = QueueRound(hash, hc2);
 
       hash = MixFinal(hash);
-      return (int) hash;
+      return (int)hash;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

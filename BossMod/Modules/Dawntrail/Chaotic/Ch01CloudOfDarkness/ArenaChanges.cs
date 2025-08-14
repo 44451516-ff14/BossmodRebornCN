@@ -12,7 +12,8 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u)
+        if (index == 0x00)
+        {
             switch (state)
             {
                 case 0x00200010u:
@@ -22,7 +23,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                     SetAOE(P2Transition);
                     break;
             }
-        else if (index == 0x02u)
+        }
+        else if (index == 0x02)
+        {
             switch (state)
             {
                 case 0x00020001u:
@@ -32,22 +35,25 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                     SetArena(Ch01CloudOfDarkness.Phase2BoundsWD);
                     break;
             }
+        }
     }
 
     public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
     {
         if (updateID != 0x8000000D)
+        {
             return;
+        }
         switch (param1)
         {
-            case 0x10000000: // default arena
+            case 0x10000000u: // default arena
                 Arena.Bounds = Ch01CloudOfDarkness.DefaultArena;
                 Arena.Center = Ch01CloudOfDarkness.DefaultCenter;
                 break;
-            case 0x20000000: // (phase 2)
+            case 0x20000000u: // (phase 2)
                 SetArena(Ch01CloudOfDarkness.Phase2BoundsWD);
                 break;
-            case 0x40000000: // diamond arena (phase 1)
+            case 0x40000000u: // diamond arena (phase 1)
                 SetArena(Ch01CloudOfDarkness.Phase1Bounds);
                 break;
         }
@@ -56,7 +62,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DarkDominion)
+        {
             SetAOE(donut);
+        }
     }
 
     private void SetArena(ArenaBoundsComplex bounds)

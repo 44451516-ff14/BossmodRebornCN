@@ -21,7 +21,7 @@ sealed class Coronation(BossModule module) : Components.GenericAOEs(module, (uin
         var count = Groups.Count;
         if (count == 0)
             return [];
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var g = Groups[i];
@@ -85,7 +85,7 @@ sealed class Coronation(BossModule module) : Components.GenericAOEs(module, (uin
             if (index >= 0)
             {
                 ref var group = ref Groups.Ref(index);
-                ref var partner = ref (TetherID)tether.ID == TetherID.CoronationL ? ref group.LeftPartner : ref group.RightPartner;
+                ref var partner = ref tether.ID == (uint)TetherID.CoronationL ? ref group.LeftPartner : ref group.RightPartner;
                 if (partner != null)
                     ReportError($"Both {source} and {partner} have identical tether");
                 partner = source;

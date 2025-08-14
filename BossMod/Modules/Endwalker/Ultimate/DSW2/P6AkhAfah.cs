@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P6HPCheck(BossModule module) : BossComponent(module)
+sealed class P6HPCheck(BossModule module) : BossComponent(module)
 {
-    private readonly Actor? _nidhogg = module.Enemies(OID.NidhoggP6).FirstOrDefault();
-    private readonly Actor? _hraesvelgr = module.Enemies(OID.HraesvelgrP6).FirstOrDefault();
+    private readonly Actor? _nidhogg = module.Enemies((uint)OID.NidhoggP6).FirstOrDefault();
+    private readonly Actor? _hraesvelgr = module.Enemies((uint)OID.HraesvelgrP6).FirstOrDefault();
 
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -15,19 +15,19 @@ class P6HPCheck(BossModule module) : BossComponent(module)
     }
 }
 
-class P6AkhAfah(BossModule module) : Components.UniformStackSpread(module, 4, 0, 4)
+sealed class P6AkhAfah(BossModule module) : Components.UniformStackSpread(module, 4f, default, 4)
 {
     public bool Done { get; private set; }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.AkhAfahN)
+        if (spell.Action.ID == (uint)AID.AkhAfahN)
             AddStacks(Raid.WithoutSlot(true, true, true).Where(p => p.Role == Role.Healer));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.AkhAfahHAOE or AID.AkhAfahNAOE)
+        if (spell.Action.ID is (uint)AID.AkhAfahHAOE or (uint)AID.AkhAfahNAOE)
         {
             Stacks.Clear();
             Done = true;

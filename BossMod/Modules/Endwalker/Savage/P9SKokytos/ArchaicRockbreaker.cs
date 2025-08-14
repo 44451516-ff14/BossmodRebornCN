@@ -2,7 +2,7 @@
 
 class ArchaicRockbreakerCenter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArchaicRockbreakerCenter, 6f);
 
-class ArchaicRockbreakerShockwave(BossModule module) : Components.GenericKnockback(module, (uint)AID.ArchaicRockbreakerShockwave, true)
+class ArchaicRockbreakerShockwave(BossModule module) : Components.GenericKnockback(module, (uint)AID.ArchaicRockbreakerShockwave)
 {
     private readonly DateTime _activation = module.WorldState.FutureTime(6.5d);
     private static readonly SafeWall[] Walls0 = [new(new(93f, 117.5f), new(108f, 117.5f)), new(new(82.5f, 93f), new(82.5f, 108f)),
@@ -23,9 +23,9 @@ class ArchaicRockbreakerShockwave(BossModule module) : Components.GenericKnockba
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (Arena.Bounds == P9SKokytos.arenaUplift0)
-            return new Knockback[1] { new(Arena.Center, 21f, _activation, SafeWalls: Walls0) };
+            return new Knockback[1] { new(Arena.Center, 21f, _activation, safeWalls: Walls0, ignoreImmunes: true) };
         else if (Arena.Bounds == P9SKokytos.arenaUplift45)
-            return new Knockback[1] { new(Arena.Center, 21f, _activation, SafeWalls: Walls45) };
+            return new Knockback[1] { new(Arena.Center, 21f, _activation, safeWalls: Walls45, ignoreImmunes: true) };
         return [];
     }
 

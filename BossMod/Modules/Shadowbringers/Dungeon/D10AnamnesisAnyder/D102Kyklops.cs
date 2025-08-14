@@ -49,13 +49,22 @@ class TerribleBladeHammer(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -66,31 +75,42 @@ class TerribleBladeHammer(BossModule module) : Components.GenericAOEs(module)
         // 0E - 00800040 - blade cross pattern, 02000100 - blade X pattern
         // any - 00080004 - pattern disappears
         if (_aoes.Count > 0 || index is not 0xD and not 0xE)
+        {
             return;
+        }
 
-        if (state is 0x08000400 or 0x02000100)
+        if (state is 0x08000400u or 0x02000100u)
+        {
             SetupPattern(xPattern, crossPattern, XPatternActivationTime, CrossPatternActivationTime);
-        else if (state is 0x20001000 or 0x00800040)
+        }
+        else if (state is 0x20001000u or 0x00800040u)
+        {
             SetupPattern(crossPattern, xPattern, XPatternActivationTime, CrossPatternActivationTime);
+        }
+
+        void SetupPattern(WPos[] primaryPattern, WPos[] secondaryPattern, double primaryTime, double secondaryTime)
+        {
+            AddAOEs(primaryPattern, primaryTime);
+            AddAOEs(secondaryPattern, secondaryTime);
+
+            void AddAOEs(WPos[] pattern, double activationTime)
+            {
+                var len = pattern.Length;
+                var act = WorldState.FutureTime(activationTime);
+                for (var i = 0; i < len; ++i)
+                {
+                    _aoes.Add(new(rect, pattern[i], Angle.AnglesCardinals[1], act));
+                }
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count > 0 && spell.Action.ID is (uint)AID.TerribleHammer or (uint)AID.TerribleBlade)
+        {
             _aoes.RemoveAt(0);
-    }
-
-    private void SetupPattern(WPos[] primaryPattern, WPos[] secondaryPattern, double primaryTime, double secondaryTime)
-    {
-        AddAOEs(primaryPattern, primaryTime);
-        AddAOEs(secondaryPattern, secondaryTime);
-    }
-
-    private void AddAOEs(WPos[] pattern, double activationTime)
-    {
-        var len = pattern.Length;
-        for (var i = 0; i < len; ++i)
-            _aoes.Add(new(rect, pattern[i], Angle.AnglesCardinals[1], WorldState.FutureTime(activationTime)));
+        }
     }
 }
 

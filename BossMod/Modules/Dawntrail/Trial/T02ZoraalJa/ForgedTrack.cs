@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T02ZoraalJaP2;
 
-class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
+sealed class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> _aoes = new(4);
     private static readonly AOEShapeRect _shape = new(10f, 2.5f, 10f);
@@ -11,10 +11,7 @@ class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 4 ? 4 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
-            aoes[i] = _aoes[i];
-        return aoes;
+        return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
@@ -27,7 +24,7 @@ class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
         var lane1 = laneOffset is < -7 and > -8;
         var lane3 = laneOffset is > 2 and < 3;
         var adjustedLaneOffset = laneOffset + (patternX ? 5 * (lane1 || lane3 ? 1 : -1) : 0);
-        _aoes.Add(new(_shape, WPos.ClampToGrid(Arena.Center + rightDir * adjustedLaneOffset), source.Rotation, WorldState.FutureTime(13.3d)));
+        _aoes.Add(new(_shape, (Arena.Center + rightDir * adjustedLaneOffset).Quantized(), source.Rotation, WorldState.FutureTime(13.3d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

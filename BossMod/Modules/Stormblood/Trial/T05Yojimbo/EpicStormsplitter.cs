@@ -49,7 +49,7 @@ class EpicStormsplitter(BossModule module) : Components.GenericAOEs(module)
 
     private void UpdateSideAOEColors()
     {
-        for (var i = 0; i < _aoes.Count; i++)
+        for (var i = 0; i < _aoes.Count; ++i)
         {
             if (_aoes[i].Shape == _sideRect)
             {

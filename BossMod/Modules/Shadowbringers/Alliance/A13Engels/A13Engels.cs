@@ -9,7 +9,7 @@ class DemolishStructureArenaChange(BossModule module) : Components.GenericAOEs(m
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if ((AID)spell.Action.ID == AID.DemolishStructure2 && Arena.Bounds == A13MarxEngels.StartingBounds)
-            _aoe = new(square, A13MarxEngels.TransitionSpot, Color: Colors.SafeFromAOE);
+            _aoe = new(square, A13MarxEngels.TransitionSpot, color: Colors.SafeFromAOE);
     }
 
     public override void OnEventEnvControl(byte index, uint state)

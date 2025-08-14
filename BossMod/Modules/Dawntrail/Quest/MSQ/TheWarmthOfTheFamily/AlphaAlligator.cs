@@ -20,7 +20,7 @@ public enum AID : uint
     CriticalBite = 40563, // Alligator->self, 25.0s cast, range 10 120-degree cone
 }
 
-class FeedingTime(BossModule module) : Components.InterceptTether(module, (uint)AID.ToxicSpit, excludedAllies: [(uint)OID.Boss])
+sealed class FeedingTime(BossModule module) : Components.InterceptTether(module, (uint)AID.ToxicSpit, excludedAllies: [(uint)OID.Boss])
 {
     private DateTime _activation;
 
@@ -57,9 +57,9 @@ class FeedingTime(BossModule module) : Components.InterceptTether(module, (uint)
     }
 }
 
-class CriticalBite(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CriticalBite, new AOEShapeCone(10, 60.Degrees()));
+sealed class CriticalBite(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CriticalBite, new AOEShapeCone(10, 60.Degrees()));
 
-class AlphaAlligatorStates : StateMachineBuilder
+sealed class AlphaAlligatorStates : StateMachineBuilder
 {
     public AlphaAlligatorStates(BossModule module) : base(module)
     {
@@ -85,7 +85,7 @@ class AlphaAlligatorStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70785, NameID = 13593)]
-public class AlphaAlligator(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class AlphaAlligator(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(423.82f, -140.6f), new(424.36f, -140.47f), new(424.85f, -140.23f), new(425.30f, -139.93f), new(425.72f, -139.59f),
     new(426.11f, -139.22f), new(428.76f, -135.75f), new(431.02f, -134.76f), new(431.56f, -134.39f), new(432.07f, -134.19f),

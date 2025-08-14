@@ -97,7 +97,7 @@ sealed class AlexandrianBanishIII(BossModule module) : Components.GenericBaitSta
                         : new DonutSegmentV(Arena.Center, 8f, 16f, FloorTiles.TileAngles[j], angle, 8);
 
                     shapes.Add(shape);
-                    var leftright = new int[2] { (j + 7) % 8, (j + 1) % 8 };
+                    var leftright = new int[2] { (j + 7) & 7, (j + 1) & 7 };
                     for (var k = 0; k < 2; ++k)
                     {
                         var n = leftright[k];

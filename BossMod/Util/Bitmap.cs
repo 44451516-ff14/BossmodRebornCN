@@ -1,6 +1,5 @@
 ﻿using SharpDX.Win32;
 using System.IO;
-using System.Runtime.InteropServices;
 
 namespace BossMod;
 
@@ -13,8 +12,13 @@ namespace BossMod;
 // - per bitmap spec, rows are padded to 4 byte alignment
 public sealed class Bitmap
 {
-    public record struct Rect(int Left, int Top, int Right, int Bottom) // bottom/right exclusive
+    public readonly struct Rect(int left, int top, int right, int bottom) // bottom/right exclusive
     {
+        public readonly int Left = left;
+        public readonly int Top = top;
+        public readonly int Right = right;
+        public readonly int Bottom = bottom;
+
         public readonly int Width => Right - Left;
         public readonly int Height => Bottom - Top;
 
@@ -41,9 +45,9 @@ public sealed class Bitmap
                 return; // nothing to copy
 
             // note: this could be optimized if needed...
-            for (int y = r.Top; y < r.Bottom; ++y)
+            for (var y = r.Top; y < r.Bottom; ++y)
             {
-                for (int x = r.Left; x < r.Right; ++x)
+                for (var x = r.Left; x < r.Right; ++x)
                 {
                     dest[x + offX, y + offY] = Bitmap[x, y];
                 }

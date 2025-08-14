@@ -24,8 +24,10 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
         // 0x04, 0x05, 0x06, 0x07
         // 0x08, 0x09, 0x0A, 0x0B
         // 0x0C, 0x0D, 0x0E, 0x0F
-        if (index > 0x0Fu)
+        if (index > 0x0F)
+        {
             return;
+        }
         if (state == 0x00020001u) // tile gets damaged
             DamagedCells[index] = true;
         else if (state == 0x00200010u) // tile gets broken
@@ -113,7 +115,7 @@ sealed class Mouser(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index <= 0x0Fu && state is 0x00020001u or 0x00200010u && _aoes.Count != 0)
+        if (index <= 0x0F && state is 0x00020001u or 0x00200010u && _aoes.Count != 0)
             _aoes.RemoveAt(0);
     }
 

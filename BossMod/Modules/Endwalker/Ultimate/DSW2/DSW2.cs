@@ -1,32 +1,28 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P2AscalonsMercyConcealed(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AscalonsMercyConcealedAOE, new AOEShapeCone(50, 15.Degrees()));
+sealed class P2AscalonsMercyConcealed(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AscalonsMercyConcealedAOE, new AOEShapeCone(50f, 15f.Degrees()));
 
-abstract class AscalonMight(BossModule module, uint oid) : Components.Cleave(module, (uint)AID.AscalonsMight, new AOEShapeCone(50, 30.Degrees()), [oid]);
-class P2AscalonMight(BossModule module) : AscalonMight(module, (uint)OID.BossP2);
+sealed class AscalonMight(BossModule module) : Components.Cleave(module, (uint)AID.AscalonsMight, new AOEShapeCone(50f, 30f.Degrees()), [(uint)OID.BossP2, (uint)OID.BossP5]);
 
-class P2UltimateEnd(BossModule module) : Components.CastCounter(module, (uint)AID.UltimateEndAOE);
-class P3Drachenlance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DrachenlanceAOE, new AOEShapeCone(13, 45.Degrees()));
-class P3SoulTether(BossModule module) : Components.TankbusterTether(module, (uint)AID.SoulTether, (uint)TetherID.HolyShieldBash, 5);
-class P4Resentment(BossModule module) : Components.CastCounter(module, (uint)AID.Resentment);
-class P5TwistingDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwistingDive, new AOEShapeRect(60, 5));
+sealed class P2UltimateEnd(BossModule module) : Components.CastCounter(module, (uint)AID.UltimateEndAOE);
+sealed class P3Drachenlance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DrachenlanceAOE, new AOEShapeCone(13f, 45f.Degrees()));
+sealed class P3SoulTether(BossModule module) : Components.TankbusterTether(module, (uint)AID.SoulTether, (uint)TetherID.HolyShieldBash, 5f);
+sealed class P4Resentment(BossModule module) : Components.CastCounter(module, (uint)AID.Resentment);
+sealed class P5TwistingDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwistingDive, new AOEShapeRect(60f, 5f));
 
-abstract class Cauterize(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(48, 10));
-class P5Cauterize1(BossModule module) : Cauterize(module, (uint)AID.Cauterize1);
-class P5Cauterize2(BossModule module) : Cauterize(module, (uint)AID.Cauterize2);
+sealed class P5Cauterize(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Cauterize1, (uint)AID.Cauterize2], new AOEShapeRect(48f, 10f));
 
-class P5SpearOfTheFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpearOfTheFuryP5, new AOEShapeRect(50, 5));
-class P5AscalonMight(BossModule module) : AscalonMight(module, (uint)OID.BossP5);
-class P5Surrender(BossModule module) : Components.CastCounter(module, (uint)AID.Surrender);
-class P6SwirlingBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwirlingBlizzard, new AOEShapeDonut(20, 35));
-class P7Shockwave(BossModule module) : Components.CastCounter(module, (uint)AID.ShockwaveP7);
-class P7AlternativeEnd(BossModule module) : Components.CastCounter(module, (uint)AID.AlternativeEnd);
+sealed class P5SpearOfTheFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpearOfTheFuryP5, new AOEShapeRect(50f, 5f));
+sealed class P5Surrender(BossModule module) : Components.CastCounter(module, (uint)AID.Surrender);
+sealed class P6SwirlingBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SwirlingBlizzard, new AOEShapeDonut(20f, 35f));
+sealed class P7Shockwave(BossModule module) : Components.CastCounter(module, (uint)AID.ShockwaveP7);
+sealed class P7AlternativeEnd(BossModule module) : Components.CastCounter(module, (uint)AID.AlternativeEnd);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP2, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 788, PlanLevel = 90)]
-public class DSW2(WorldState ws, Actor primary) : BossModule(ws, primary, new(100, 100), BoundsCircle)
+public sealed class DSW2(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), BoundsCircle)
 {
-    public static readonly ArenaBoundsCircle BoundsCircle = new(21); // p2, intermission
-    public static readonly ArenaBoundsSquare BoundsSquare = new(21); // p3, p4
+    public static readonly ArenaBoundsCircle BoundsCircle = new(21f); // p2, intermission
+    public static readonly ArenaBoundsSquare BoundsSquare = new(21f); // p3, p4
 
     private Actor? _bossP3;
     private Actor? _leftEyeP4;
@@ -38,7 +34,7 @@ public class DSW2(WorldState ws, Actor primary) : BossModule(ws, primary, new(10
     private Actor? _nidhoggP6;
     private Actor? _hraesvelgrP6;
     private Actor? _bossP7;
-    public Actor? ArenaFeatures { get; private set; }
+    public Actor? ArenaFeatures;
     public Actor? BossP2() => PrimaryActor;
     public Actor? BossP3() => _bossP3;
     public Actor? LeftEyeP4() => _leftEyeP4;

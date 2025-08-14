@@ -36,7 +36,7 @@ class Landslide(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.LandslideBoss or (uint)AID.LandslideBossAwakened or (uint)AID.LandslideHelper or (uint)AID.LandslideHelperAwakened or (uint)AID.LandslideUltima or (uint)AID.LandslideUltimaHelper)
         {
-            _aoes.Add(new(new AOEShapeRect(40f + caster.HitboxRadius, 3f), spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            _aoes.Add(new(new AOEShapeRect(40f + caster.HitboxRadius, 3f), spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             PredictedSource = null;
             if (spell.Action.ID == (uint)AID.LandslideBossAwakened)
                 Awakened = true;

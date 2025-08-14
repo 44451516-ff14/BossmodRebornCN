@@ -1,18 +1,18 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C023Moko;
 
 abstract class ScarletAuspice(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6f);
-class NScarletAuspice(BossModule module) : ScarletAuspice(module, (uint)AID.NScarletAuspice);
-class SScarletAuspice(BossModule module) : ScarletAuspice(module, (uint)AID.SScarletAuspice);
+sealed class NScarletAuspice(BossModule module) : ScarletAuspice(module, (uint)AID.NScarletAuspice);
+sealed class SScarletAuspice(BossModule module) : ScarletAuspice(module, (uint)AID.SScarletAuspice);
 
 abstract class BoundlessScarletFirst(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 5f));
-class NBoundlessScarletFirst(BossModule module) : BoundlessScarletFirst(module, (uint)AID.NBoundlessScarletAOE);
-class SBoundlessScarletFirst(BossModule module) : BoundlessScarletFirst(module, (uint)AID.SBoundlessScarletAOE);
+sealed class NBoundlessScarletFirst(BossModule module) : BoundlessScarletFirst(module, (uint)AID.NBoundlessScarletAOE);
+sealed class SBoundlessScarletFirst(BossModule module) : BoundlessScarletFirst(module, (uint)AID.SBoundlessScarletAOE);
 
 abstract class BoundlessScarletRest(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(60f, 15f), 2);
-class NBoundlessScarletRest(BossModule module) : BoundlessScarletRest(module, (uint)AID.NBoundlessScarletExplosion);
-class SBoundlessScarletRest(BossModule module) : BoundlessScarletRest(module, (uint)AID.SBoundlessScarletExplosion);
+sealed class NBoundlessScarletRest(BossModule module) : BoundlessScarletRest(module, (uint)AID.NBoundlessScarletExplosion);
+sealed class SBoundlessScarletRest(BossModule module) : BoundlessScarletRest(module, (uint)AID.SBoundlessScarletExplosion);
 
-class InvocationOfVengeance(BossModule module) : Components.UniformStackSpread(module, 3, 3, alwaysShowSpreads: true)
+sealed class InvocationOfVengeance(BossModule module) : Components.UniformStackSpread(module, 3, 3, alwaysShowSpreads: true)
 {
     public int NumMechanics;
     private readonly List<Actor> _spreadTargets = [];

@@ -51,27 +51,27 @@ class P2BrokenSeal(BossModule module) : BossComponent(module)
         }
 
         for (var i = 0; i < _fireTowers.Count; ++i)
-            Arena.AddCircle(_fireTowers[i].Position, 2, state.Color == Color.Fire ? Colors.Safe : Colors.Danger);
+            Arena.AddCircle(_fireTowers[i].Position, 2, state.Color == Color.Fire ? Colors.Safe : default);
         for (var i = 0; i < _iceTowers.Count; ++i)
-            Arena.AddCircle(_iceTowers[i].Position, 2, state.Color == Color.Ice ? Colors.Safe : Colors.Danger);
+            Arena.AddCircle(_iceTowers[i].Position, 2, state.Color == Color.Ice ? Colors.Safe : default);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.InfiniteFire:
+            case (uint)AID.InfiniteFire:
                 AssignColor(spell.MainTargetID, Color.Fire);
                 break;
-            case AID.InfiniteIce:
+            case (uint)AID.InfiniteIce:
                 AssignColor(spell.MainTargetID, Color.Ice);
                 break;
-            case AID.SouthStar:
-            case AID.NorthStar:
-            case AID.SouthStarUnsoaked:
-            case AID.NorthStarUnsoaked:
-            case AID.SouthStarWrong:
-            case AID.NorthStarWrong:
+            case (uint)AID.SouthStar:
+            case (uint)AID.NorthStar:
+            case (uint)AID.SouthStarUnsoaked:
+            case (uint)AID.NorthStarUnsoaked:
+            case (uint)AID.SouthStarWrong:
+            case (uint)AID.NorthStarWrong:
                 ++NumCasts;
                 break;
         }
@@ -79,7 +79,7 @@ class P2BrokenSeal(BossModule module) : BossComponent(module)
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID is TetherID.InfiniteAnguish or TetherID.InfiniteFire or TetherID.InfiniteIce)
+        if (tether.ID is (uint)TetherID.InfiniteAnguish or (uint)TetherID.InfiniteFire or (uint)TetherID.InfiniteIce)
         {
             var from = Raid.FindSlot(source.InstanceID);
             var to = Raid.FindSlot(tether.Target);
@@ -87,7 +87,7 @@ class P2BrokenSeal(BossModule module) : BossComponent(module)
             {
                 _playerStates[from].Partner = to;
                 _playerStates[to].Partner = from;
-                _playerStates[from].TooFar = _playerStates[to].TooFar = (TetherID)tether.ID == TetherID.InfiniteAnguish;
+                _playerStates[from].TooFar = _playerStates[to].TooFar = tether.ID == (uint)TetherID.InfiniteAnguish;
             }
         }
     }

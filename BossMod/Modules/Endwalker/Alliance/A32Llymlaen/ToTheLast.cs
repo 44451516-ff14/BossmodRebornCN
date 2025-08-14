@@ -24,7 +24,7 @@ class ToTheLast(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ToTheLastVisual)
-            _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 5f + 1.9f * _aoes.Count), Risky: false));
+            _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 5d + 1.9d * _aoes.Count), risky: false));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

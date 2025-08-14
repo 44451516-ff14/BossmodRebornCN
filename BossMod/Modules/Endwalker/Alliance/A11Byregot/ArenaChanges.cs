@@ -9,7 +9,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module) // arena 
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u)
+        if (index == 0x00)
         {
             if (state == 0x00020001u)
             {
@@ -19,7 +19,7 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module) // arena 
             else if (state == 0x00080004u)
                 Arena.Bounds = A11Byregot.StartingBounds;
         }
-        else if (index == 0x4Fu && state == 0x00080004u)
+        else if (index == 0x4F && state == 0x00080004u)
         {
             Arena.Bounds = A11Byregot.StartingBounds;
             Arena.Center = A11Byregot.ArenaCenter;
@@ -30,7 +30,9 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module) // arena 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OrdealOfThunder && Arena.Bounds == A11Byregot.StartingBounds)
-            AddAOE(Module.CastFinishAt(spell, 0.9f));
+        {
+            AddAOE(Module.CastFinishAt(spell, 0.9d));
+        }
     }
 
     private void AddAOE(DateTime act)

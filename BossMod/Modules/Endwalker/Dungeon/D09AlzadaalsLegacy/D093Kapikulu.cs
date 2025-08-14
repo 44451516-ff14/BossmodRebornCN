@@ -35,18 +35,25 @@ public enum TetherID : uint
     ManaExplosion = 188 // Boss->Helper
 }
 
-class BillowingBoltsArenaChange(BossModule module) : BossComponent(module)
+public enum SID : uint
+{
+    Spinning = 2973 // Boss->player, extra=0x7
+}
+
+sealed class BillowingBoltsArenaChange(BossModule module) : BossComponent(module)
 {
     private static readonly ArenaBoundsRect smallerBounds = new(15f, 20f);
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BillowingBolts && Arena.Bounds != smallerBounds)
+        {
             Arena.Bounds = smallerBounds;
+        }
     }
 }
 
-class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
+sealed class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
 {
     private enum Pattern { None, Pattern1, Pattern2 }
     private Pattern currentPattern;
@@ -72,7 +79,7 @@ class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
     {
         if (_target != default) // Helper can teleport after tether started, this fixes the rare problem
         {
-            void AddAOE(WPos pos) => _aoes.Add(new(circle, WPos.ClampToGrid(pos), default, _activation));
+            void AddAOE(WPos pos) => _aoes.Add(new(circle, pos.Quantized(), default, _activation));
             if (_target.Position.Z == -45.5f) // green cloth tethered
                 foreach (var c in currentPattern == Pattern.Pattern1 ? aoePositionsSet1 : aoePositionsSet2)
                     AddAOE(c);
@@ -86,7 +93,7 @@ class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001)
+        if (state == 0x00020001u)
         {
             if (index == 0x0D) // 0x0D, 0x02, 0x0C, 0x04, 0x0E, 0x03 activate at the same time
                 currentPattern = Pattern.Pattern1;
@@ -105,35 +112,39 @@ class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class BastingBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BastingBlade, new AOEShapeRect(60f, 7.5f));
+sealed class BastingBlade(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BastingBlade, new AOEShapeRect(60f, 7.5f));
 
-class SpikeTraps(BossModule module) : Components.GenericAOEs(module)
+sealed class SpikeTraps(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(6f, 3f);
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(6);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Traps)
+        {
             _aoes.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x01 && state is 0x00400004 or 0x00800004 or 0x00080004)
+        if (index == 0x01 && state is 0x00400004u or 0x00800004u or 0x00080004u)
+        {
             _aoes.Clear();
+        }
     }
 }
 
-class BorderChange(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BorderChange, new AOEShapeRect(5f, 20f));
-class MagnitudeOpus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MagnitudeOpus, 6f, 4, 4);
-class RotaryGale(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RotaryGale, 5f);
-class CrewelSlice(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CrewelSlice);
-class BillowingBolts(BossModule module) : Components.RaidwideCast(module, (uint)AID.BillowingBolts);
+sealed class BorderChange(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BorderChange, new AOEShapeRect(5f, 20f));
+sealed class MagnitudeOpus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.MagnitudeOpus, 6f, 4, 4);
+sealed class RotaryGale(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.RotaryGale, 5f);
+sealed class CrewelSlice(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CrewelSlice);
+sealed class BillowingBolts(BossModule module) : Components.RaidwideCast(module, (uint)AID.BillowingBolts);
 
-class D093KapikuluStates : StateMachineBuilder
+sealed class D093KapikuluStates : StateMachineBuilder
 {
     public D093KapikuluStates(BossModule module) : base(module)
     {
@@ -151,4 +162,4 @@ class D093KapikuluStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 844, NameID = 11238)]
-public class D093Kapikulu(WorldState ws, Actor primary) : BossModule(ws, primary, new(110f, -68f), new ArenaBoundsRect(19.5f, 24.5f));
+public sealed class D093Kapikulu(WorldState ws, Actor primary) : BossModule(ws, primary, new(110f, -68f), new ArenaBoundsRect(19.5f, 24.5f));

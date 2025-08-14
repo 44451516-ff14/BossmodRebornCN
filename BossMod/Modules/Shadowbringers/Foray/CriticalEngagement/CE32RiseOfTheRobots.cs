@@ -61,7 +61,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BootCampMode)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 4.3f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 4.3d));
+        }
     }
 
     public override void OnActorCreated(Actor actor)
@@ -69,7 +71,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.Deathwall)
         {
             Arena.Bounds = CE32RiseOfTheRobots.DefaultArena;
-            Arena.Center = WPos.ClampToGrid(Arena.Center);
+            Arena.Center = Arena.Center.Quantized();
             _aoe = null;
         }
     }
@@ -100,8 +102,11 @@ sealed class Train(BossModule module) : Components.GenericRotatingAOE(module)
     {
         if (_rotation.Count == 2 && _increment != default)
         {
+            var pos = Arena.Center;
             for (var i = 0; i < 2; ++i)
-                Sequences.Add(new(_shape, WPos.ClampToGrid(Arena.Center), _rotation[i], _increment, _activation, 1.2f, casts));
+            {
+                Sequences.Add(new(_shape, pos, _rotation[i], _increment, _activation, 1.2d, casts));
+            }
             _rotation.Clear();
             _increment = default;
             casts = default;
@@ -143,10 +148,12 @@ sealed class Train(BossModule module) : Components.GenericRotatingAOE(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        base.AddAIHints(slot, actor, assignment, hints);
         if (Sequences.Count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(CE32RiseOfTheRobots.ArenaCenter, 3f), Sequences[0].NextActivation);
+            base.AddAIHints(slot, actor, assignment, hints);
+            var sequences = CollectionsMarshal.AsSpan(Sequences);
+            ref readonly var sequence = ref sequences[0];
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(CE32RiseOfTheRobots.ArenaCenter, 3f), sequence.NextActivation);
         }
     }
 }
@@ -172,8 +179,10 @@ sealed class OrderTowers(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (slot is < 0 or > 7 || AOEs[slot] == default) // no support for NPCs that might be around
+        if (slot > 7 || AOEs[slot] == default) // no support for NPCs that might be around
+        {
             return [];
+        }
         return AOEs[slot];
     }
 
@@ -190,7 +199,9 @@ sealed class OrderTowers(BossModule module) : Components.GenericAOEs(module)
         if (divisor < 6u)
         {
             for (var i = 0; i < 8; ++i)
+            {
                 Numbers[i] = [];
+            }
 
             var party = Module.Raid.WithSlot(true, true, true);
             var len = party.Length;
@@ -199,7 +210,9 @@ sealed class OrderTowers(BossModule module) : Components.GenericAOEs(module)
                 ref readonly var p = ref party[i];
                 var maxHP = p.Item2.HPMP.MaxHP;
                 if (maxHP > 9) // ignore players not taking part in the mechanic
+                {
                     continue;
+                }
                 var outsideSafe = false;
                 var shapes = new List<Polygon>();
 
@@ -239,10 +252,14 @@ sealed class OrderTowers(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        ref var aoes = ref AOEs[slot];
+        if (slot > 7)
+        {
+            return;
+        }
+        ref readonly var aoes = ref AOEs[slot];
         if (aoes != default)
         {
-            ref var aoe = ref AOEs[slot][0];
+            ref readonly var aoe = ref aoes[0];
             var isInside = aoe.Check(actor.Position);
             hints.Add(Numbers[slot][0] == default ? ("Avoid marked towers!", isInside) : ("Move into a marked tower!", !isInside));
         }
@@ -258,7 +275,7 @@ sealed class OrderForcedMarch(BossModule module) : Components.StatusDrivenForced
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        ref var aoes = ref _math.AOEs[slot];
+        ref readonly var aoes = ref _math.AOEs[slot];
         if (aoes != default)
         {
             ref readonly var aoe = ref aoes[0];

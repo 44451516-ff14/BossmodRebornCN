@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P6Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.TouchdownAOE)
+sealed class P6Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.TouchdownAOE)
 {
     private static readonly AOEShapeCircle _shape = new(20f); // TODO: verify falloff
 
@@ -75,17 +75,22 @@ class P6TouchdownCauterize(BossModule module) : BossComponent(module)
     }
 }
 
-class P6TouchdownPyretic(BossModule module) : Components.StayMove(module)
+sealed class P6TouchdownPyretic(BossModule module) : Components.StayMove(module)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Boiling)
-            SetState(Raid.FindSlot(actor.InstanceID), new(Requirement.Stay, status.ExpireAt));
+        if (status.ID == (uint)SID.Boiling)
+        {
+            PlayerState state = new(Requirement.Stay, status.ExpireAt);
+            SetState(Raid.FindSlot(actor.InstanceID), ref state);
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Pyretic)
+        if (status.ID == (uint)SID.Pyretic)
+        {
             ClearState(Raid.FindSlot(actor.InstanceID));
+        }
     }
 }

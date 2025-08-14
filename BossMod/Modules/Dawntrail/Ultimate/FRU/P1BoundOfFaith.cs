@@ -1,17 +1,17 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
 abstract class BurntStrike(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(80f, 5f));
-class P1TurnOfHeavensBurntStrikeFire(BossModule module) : BurntStrike(module, (uint)AID.TurnOfHeavensBurntStrikeFire);
-class P1TurnOfHeavensBurntStrikeLightning(BossModule module) : BurntStrike(module, (uint)AID.TurnOfHeavensBurntStrikeLightning);
+sealed class P1TurnOfHeavensBurntStrikeFire(BossModule module) : BurntStrike(module, (uint)AID.TurnOfHeavensBurntStrikeFire);
+sealed class P1TurnOfHeavensBurntStrikeLightning(BossModule module) : BurntStrike(module, (uint)AID.TurnOfHeavensBurntStrikeLightning);
 
 abstract class BurntOut(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(80f, 10f));
-class P1TurnOfHeavensBurnout(BossModule module) : BurntOut(module, (uint)AID.TurnOfHeavensBurnout);
+sealed class P1TurnOfHeavensBurnout(BossModule module) : BurntOut(module, (uint)AID.TurnOfHeavensBurnout);
 
-class P1BrightfireSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrightfireSmall, 5f);
-class P1BrightfireLarge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrightfireLarge, 10f);
+sealed class P1BrightfireSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrightfireSmall, 5f);
+sealed class P1BrightfireLarge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrightfireLarge, 10f);
 
 // TODO: fixed tethers strat variant (tether target with clone on safe side goes S, other goes N, if any group has 5 players prio1 adjusts)
-class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
+sealed class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
     public bool EnableHints;
     public WDir SafeSide;
@@ -73,7 +73,8 @@ class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 
             WDir averageOffset = default;
             foreach (var aoe in Module.Enemies(_safeHalo))
                 averageOffset += aoe.Position - Arena.Center;
-            SafeSide.X = averageOffset.X > 0 ? 1 : -1;
+            var safeSideX = averageOffset.X > 0 ? 1 : -1;
+            SafeSide = new(safeSideX, SafeSide.Z);
         }
 
         // initial assignments
@@ -107,7 +108,7 @@ class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(module, 
     }
 }
 
-class P1BoundOfFaithAIKnockback(BossModule module) : BossComponent(module)
+sealed class P1BoundOfFaithAIKnockback(BossModule module) : BossComponent(module)
 {
     private readonly P1BoundOfFaith? _comp = module.FindComponent<P1BoundOfFaith>();
     private bool _horizDone;
@@ -134,7 +135,7 @@ class P1BoundOfFaithAIKnockback(BossModule module) : BossComponent(module)
     }
 }
 
-class P1BoundOfFaithAIStack(BossModule module) : BossComponent(module)
+sealed class P1BoundOfFaithAIStack(BossModule module) : BossComponent(module)
 {
     private readonly P1BoundOfFaith? _comp = module.FindComponent<P1BoundOfFaith>();
     private bool _haveFetters;

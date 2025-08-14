@@ -63,7 +63,8 @@ class Deflect(BossModule module) : BossComponent(module)
         var closestSphere = Spheres.MaxBy(x => x.Position.Z);
         if (closestSphere != null)
         {
-            var optimalDeflectPosition = closestSphere.Position with { Z = closestSphere.Position.Z + 1 };
+            var pos = closestSphere.Position;
+            WPos optimalDeflectPosition = new(pos.X, pos.Z + 1);
 
             hints.GoalZones.Add(hints.GoalSingleTarget(optimalDeflectPosition, deflectRadius - 2, 10));
 

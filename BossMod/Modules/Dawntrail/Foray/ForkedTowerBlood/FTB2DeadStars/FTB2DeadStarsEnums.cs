@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB2DeadStars;
 
 public enum OID : uint
 {
-    Boss = 0x4786, // R4.0, Triton
+    Triton = 0x4786, // R4.0
     Phobos = 0x4788, // R4.0
     Nereid = 0x4787, // R4.0
     LiquifiedTriton = 0x478B, // R4.0
@@ -99,6 +99,8 @@ public enum AID : uint
     ElementalImpact1 = 42432, // GaseousNereid/GaseousPhobos->self, 3.0s cast, range 5 circle, tower
     ElementalImpact2 = 42433, // GaseousNereid/GaseousPhobos->self, 3.0s cast, range 5 circle, tower
     ElementalImpact3 = 42434, // GaseousNereid/GaseousPhobos->self, 5.0s cast, range 5 circle, tower
+    ElementalImpactFailVisual = 42435, // Helper->self, no cast, single-target
+    ElementalImpactFail = 42436, // Helper->self, no cast, ???, tower explodes
     FireSpread = 43272, // Helper->players, no cast, range 60 120-degree cone
 
     GeothermalRuptureVisual = 42441, // Boss->self, 5.0s cast, single-target
@@ -140,7 +142,8 @@ public enum AID : uint
 public enum SID : uint
 {
     IceOoze = 4442, // none->player, extra=0x1/0x2/0x3
-    NovaOoze = 4441 // none->player, extra=0x2/0x1/0x3
+    NovaOoze = 4441, // none->player, extra=0x2/0x1/0x3
+    IceboundBuffoonery = 4443 // none->FrozenTriton/FrozenPhobos, extra=0x4/0x3/0x2/0x1
 }
 
 public enum IconID : uint

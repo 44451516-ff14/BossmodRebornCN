@@ -121,7 +121,7 @@ class FireSpread(BossModule module) : Components.GenericAOEs(module)
 
         var aoes = new AOEInstance[count];
         var index = 0;
-        var center = WPos.ClampToGrid(Arena.Center);
+        var center = Arena.Center.Quantized();
         for (var i = 0; i < countS; ++i)
         {
             var s = Sequences[i];

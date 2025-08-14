@@ -2,7 +2,7 @@
 
 // these two abilities are very similar, only differ by activation delay and action id
 // TODO: not all the wall is safe...
-abstract class FeralHowlHystericAssault(BossModule module, uint aidCast, uint aidAOE, float delay) : Components.GenericKnockback(module, aidAOE, true, stopAtWall: true)
+abstract class FeralHowlHystericAssault(BossModule module, uint aidCast, uint aidAOE, double delay) : Components.GenericKnockback(module, aidAOE, stopAtWall: true)
 {
     private Knockback? _source;
     private HuntersClaw? _aoe = module.FindComponent<HuntersClaw>();
@@ -12,7 +12,7 @@ abstract class FeralHowlHystericAssault(BossModule module, uint aidCast, uint ai
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == aidCast)
-            _source = new(caster.Position, 30f, Module.CastFinishAt(spell, delay));
+            _source = new(caster.Position, 30f, Module.CastFinishAt(spell, delay), ignoreImmunes: true);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -38,5 +38,5 @@ abstract class FeralHowlHystericAssault(BossModule module, uint aidCast, uint ai
     }
 }
 
-sealed class FeralHowl(BossModule module) : FeralHowlHystericAssault(module, (uint)AID.FeralHowl, (uint)AID.FeralHowlAOE, 2.1f);
-sealed class HystericAssault(BossModule module) : FeralHowlHystericAssault(module, (uint)AID.HystericAssault, (uint)AID.HystericAssaultAOE, 0.9f);
+sealed class FeralHowl(BossModule module) : FeralHowlHystericAssault(module, (uint)AID.FeralHowl, (uint)AID.FeralHowlAOE, 2.1d);
+sealed class HystericAssault(BossModule module) : FeralHowlHystericAssault(module, (uint)AID.HystericAssault, (uint)AID.HystericAssaultAOE, 0.9d);

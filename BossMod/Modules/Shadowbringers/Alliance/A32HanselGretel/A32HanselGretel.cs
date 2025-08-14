@@ -1,50 +1,56 @@
 ﻿namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
-class Wail1(BossModule module) : Components.RaidwideCast(module, (uint)AID.Wail1);
-class Wail2(BossModule module) : Components.RaidwideCast(module, (uint)AID.Wail2);
+sealed class WailLamentation(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.Wail1, (uint)AID.Wail2, (uint)AID.Lamentation1, (uint)AID.Lamentation2]);
 
-class CripplingBlow1(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CripplingBlow1);
-class CripplingBlow2(BossModule module) : Components.SingleTargetCast(module, (uint)AID.CripplingBlow2);
+sealed class CripplingBlow1(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CripplingBlow1);
+sealed class CripplingBlow2(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CripplingBlow2);
 
-abstract class BloodySweep(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50, 12.5f));
-class BloodySweep1(BossModule module) : BloodySweep(module, (uint)AID.BloodySweep1);
-class BloodySweep2(BossModule module) : BloodySweep(module, (uint)AID.BloodySweep2);
-class BloodySweep3(BossModule module) : BloodySweep(module, (uint)AID.BloodySweep3);
-class BloodySweep4(BossModule module) : BloodySweep(module, (uint)AID.BloodySweep4);
+sealed class BloodySweep(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BloodySweep1, (uint)AID.BloodySweep2,
+(uint)AID.BloodySweep3, (uint)AID.BloodySweep4], new AOEShapeRect(50, 12.5f));
 
-class SeedOfMagicAlpha(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SeedOfMagicAlpha, 5);
-class RiotOfMagic(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.RiotOfMagic, 5, 8);
+sealed class PassingLance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PassingLance, new AOEShapeRect(50f, 12f));
+sealed class UnevenFooting(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnevenFooting, 23f);
 
-class PassingLance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PassingLance, new AOEShapeRect(50, 12));
-class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeRect(4, 25));
-class UnevenFooting(BossModule module) : Components.SimpleAOEs(module, (uint)AID.UnevenFooting, 17);
+sealed class HungryLance(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HungryLance1, (uint)AID.HungryLance2], new AOEShapeCone(40f, 60.Degrees()));
 
-abstract class HungryLance(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40, 60.Degrees()));
-class HungryLance1(BossModule module) : HungryLance(module, (uint)AID.HungryLance1);
-class HungryLance2(BossModule module) : HungryLance(module, (uint)AID.HungryLance2);
+sealed class Breakthrough(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Breakthrough, new AOEShapeRect(53f, 16f));
+sealed class SeedOfMagicBeta(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeedOfMagicBeta, 5f);
 
-class Breakthrough(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Breakthrough, new AOEShapeRect(53, 16));
-class SeedOfMagicBeta(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeedOfMagicBeta, 5);
-class Lamentation(BossModule module) : Components.RaidwideCast(module, (uint)AID.Lamentation);
-
-[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", PrimaryActorOID = (uint)OID.Gretel, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 779, NameID = 9990)]
-public class A32HanselGretel(WorldState ws, Actor primary) : BossModule(ws, primary, new(-800, -951), new ArenaBoundsCircle(25))
+sealed class UpgradedShield(BossModule module) : Components.DirectionalParry(module, [(uint)OID.Gretel, (uint)OID.Hansel])
 {
-    private Actor? _hansel;
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.UpgradedShield1 or (uint)AID.UpgradedShield2)
+        {
+            PredictParrySide(caster.InstanceID, Side.All ^ Side.Front);
+        }
+    }
+}
 
-    public Actor? Gretel() => PrimaryActor;
-    public Actor? Hansel() => _hansel;
+sealed class MagicalConfluence(BossModule module) : Components.Voidzone(module, 4f, GetVoidzones, 8f)
+{
+    private static List<Actor> GetVoidzones(BossModule module) => module.Enemies((uint)OID.MagicalConfluence);
+}
+
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Gretel, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 779, NameID = 9990, SortOrder = 2)]
+public sealed class A32HanselGretel(WorldState ws, Actor primary) : BossModule(ws, primary, new(-800f, -951.03119f), new ArenaBoundsCircle(24.5f))
+{
+    public Actor? BossHansel;
 
     protected override void UpdateModule()
     {
         // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
         // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _hansel ??= StateMachine.ActivePhaseIndex == 0 ? Enemies(OID.Hansel).FirstOrDefault() : null;
+        if (BossHansel == null)
+        {
+            var b = Enemies((uint)OID.Hansel);
+            BossHansel = b.Count != 0 ? b[0] : null;
+        }
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actor(_hansel);
+        Arena.Actor(BossHansel);
     }
 }

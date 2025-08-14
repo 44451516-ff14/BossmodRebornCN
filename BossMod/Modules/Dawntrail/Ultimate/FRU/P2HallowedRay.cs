@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2HallowedRay(BossModule module) : Components.GenericWildCharge(module, 3f, (uint)AID.HallowedRayAOE, 65f)
+sealed class P2HallowedRay(BossModule module) : Components.GenericWildCharge(module, 3f, (uint)AID.HallowedRayAOE, 65f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

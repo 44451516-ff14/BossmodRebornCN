@@ -100,7 +100,7 @@ class TartareanTwister(BossModule module) : Components.CastInterruptHint(module,
 class TartareanBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TartareanBlizzard, new AOEShapeCone(40f, 22.5f.Degrees()));
 class TartareanQuake(BossModule module) : Components.RaidwideCast(module, (uint)AID.TartareanQuake);
 
-class TartareanAbyss(BossModule module) : Components.BaitAwayCast(module, (uint)AID.TartareanAbyss, 6f, tankbuster: true);
+class TartareanAbyss(BossModule module) : Components.BaitAwayCast(module, (uint)AID.TartareanAbyss, 6f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class TartareanFlare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TartareanFlare, 18f);
 class TartareanMeteor(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TartareanMeteor, 10f, 8);

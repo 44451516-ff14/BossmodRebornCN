@@ -15,7 +15,7 @@ sealed class InsideOutOutsideIn(BossModule module) : Components.GenericAOEs(modu
         {
             var sb = new StringBuilder(9);
             var aoes = CollectionsMarshal.AsSpan(AOEs);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 var shapeHint = aoes[i].Shape switch
                 {

@@ -46,7 +46,7 @@ class BrokenShards(BossModule module) : Components.GenericAOEs(module)
         };
         if (locs != null)
             for (var i = 0; i < 9; ++i)
-                _aoes.Add(new(_shape, WPos.ClampToGrid(locs[i]), default, Module.CastFinishAt(spell)));
+                _aoes.Add(new(_shape, locs[i].Quantized(), default, Module.CastFinishAt(spell)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

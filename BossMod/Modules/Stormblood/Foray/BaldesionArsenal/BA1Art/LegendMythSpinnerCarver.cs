@@ -27,7 +27,7 @@ sealed class LegendMythSpinnerCarver(BossModule module) : Components.GenericAOEs
         {
             var orlasrach = Module.Enemies((uint)OID.Orlasrach);
             for (var i = 0; i < orlasrach.Count; ++i)
-                AOEs.Add(new(shape, WPos.ClampToGrid(orlasrach[i].Position), default, Module.CastFinishAt(spell, 2.6f)));
+                AOEs.Add(new(shape, orlasrach[i].Position.Quantized(), default, Module.CastFinishAt(spell, 2.6f)));
             mythcall = false;
         }
         switch (spell.Action.ID)

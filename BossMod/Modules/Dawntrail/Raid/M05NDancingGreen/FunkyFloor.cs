@@ -23,7 +23,7 @@ sealed class FunkyFloor(BossModule module) : Components.GenericAOEs(module)
         for (var i = 0; i < 8; ++i)
         {
             var z = i * 5;
-            var start = (i + offset) % 2;
+            var start = (i + offset) & 1;
             for (var j = start; j < 8; j += 2)
             {
                 centers[index++] = new(82.5f + j * 5, 82.5f + z);
@@ -34,7 +34,7 @@ sealed class FunkyFloor(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x03u || _activeSet != null)
+        if (index != 0x03 || _activeSet != null)
             return;
 
         var act = WorldState.FutureTime(3.2d);

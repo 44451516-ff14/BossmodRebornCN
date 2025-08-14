@@ -60,7 +60,7 @@ sealed class HighWind(BossModule module) : Components.RaidwideCast(module, (uint
 sealed class RazorZephyrBladesOfFamine(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RazorZephyr, (uint)AID.BladesOfFamine], new AOEShapeRect(50f, 6f));
 
 sealed class Levinsickle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Levinsickle, 4f);
-sealed class LevinsickleSpark(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.LevinsickleSpark, GetVoidzones, 0.7f)
+sealed class LevinsickleSpark(BossModule module) : Components.VoidzoneAtCastTarget(module, 4f, (uint)AID.LevinsickleSpark, GetVoidzones, 0.7d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -83,7 +83,7 @@ sealed class LevinsickleSpark(BossModule module) : Components.VoidzoneAtCastTarg
 sealed class WingOfLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingOfLightning, new AOEShapeCone(40f, 22.5f.Degrees()), 8);
 
 sealed class ThunderIII2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderIII, 6f);
-sealed class BladeTB(BossModule module) : Components.BaitAwayCast(module, (uint)AID.BladeTB, 6f, tankbuster: true);
+sealed class BladeTB(BossModule module) : Components.BaitAwayCast(module, (uint)AID.BladeTB, 6f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class WindSickle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindSickle, new AOEShapeDonut(5f, 60f));
 sealed class RazorStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RazorStorm, new AOEShapeRect(40f, 20f));
@@ -112,22 +112,30 @@ sealed class CuttingWind(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < 3; ++i)
             {
                 var delay = WorldState.FutureTime(delays[i]);
-                var posi = WPos.ClampToGrid(pos[i]);
+                var posi = pos[i].Quantized();
                 for (var j = 0; j < 4; ++j)
+                {
                     _aoes.Add(new(rect, posi, angles[j], delay));
+                }
             }
         }
         if (actor.OID == (uint)OID.Whirlwind)
             if (actor.Position.AlmostEqual(new WPos(-121f, 279f), 1f))
+            {
                 AddWhirlwind([new(-102.935f, 274.357f), new(-108.935f, 262.224f), new(-105.733f, 252.340f)]); // SW whirlwind
+            }
             else
+            {
                 AddWhirlwind([new(-111.688f, 253.942f), new(-102.276f, 264.313f), new(-108.922f, 276.528f)]); // NW whirlwind
+            }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.CuttingWind)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 

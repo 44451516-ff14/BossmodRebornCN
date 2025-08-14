@@ -48,175 +48,134 @@ public enum SID : uint
 
 sealed class AncientStoneAncientAeroIIISlow : Components.SimpleAOEGroups
 {
-    public AncientStoneAncientAeroIIISlow(BossModule module) : base(module, [(uint)AID.AncientAeroIII2, (uint)AID.AncientStoneIII2], WindStoneSurge.Cone, 4)
+    public AncientStoneAncientAeroIIISlow(BossModule module) : base(module, [(uint)AID.AncientAeroIII2, (uint)AID.AncientStoneIII2], WindStoneLightSurge.Cone, 4)
     {
         MaxDangerColor = 2;
     }
 }
-sealed class AncientStoneAncientAeroIIIFast(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientAeroIII1, (uint)AID.AncientStoneIII1], WindStoneSurge.Cone);
+
+sealed class AncientStoneAncientAeroIIIFast(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AncientAeroIII1, (uint)AID.AncientStoneIII1], WindStoneLightSurge.Cone)
+{
+    private readonly WindStoneLightSurge _aoe = module.FindComponent<WindStoneLightSurge>()!;
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        if (_aoe.AOEs.Count != 0 && Casters.Count != 0 && (_aoe.AOEs[0].Activation - Casters[0].Activation).TotalSeconds < 1.5d)
+        {
+            return [];
+        }
+        return base.ActiveAOEs(slot, actor);
+    }
+}
+
 sealed class AncientHoly(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientHoly1, 26f);
 sealed class RadiantWave(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.RadiantWaveVisual, (uint)AID.RadiantWave, 1.2f);
 sealed class Scratch(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Scratch);
 sealed class HolyBlaze(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HolyBlaze, new AOEShapeRect(60f, 2.5f));
 
-sealed class LightSurge(BossModule module) : Components.GenericAOEs(module)
+sealed class WindStoneLightSurge(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
-    private static readonly AOEShapeCircle circle = new(15f);
-    private readonly List<Actor> spheres = new(12);
-    private readonly AncientHoly _aoe = module.FindComponent<AncientHoly>()!;
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.AncientHoly1 && _aoes.Count == 0 && spheres.Count == 4)
-        {
-            var count = spheres.Count;
-            var act = Module.CastFinishAt(spell, 2.4f);
-            for (var i = 0; i < count; ++i)
-            {
-                var sphere = spheres[i];
-                _aoes.Add(new(circle, WPos.ClampToGrid(sphere.Position), default, act, ActorID: sphere.InstanceID));
-            }
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.LightSurge)
-        {
-            var count = _aoes.Count;
-            var id = caster.InstanceID;
-            for (var i = 0; i < count; ++i)
-            {
-                if (_aoes[i].ActorID == id)
-                {
-                    _aoes.RemoveAt(i);
-                    return;
-                }
-            }
-        }
-    }
-
-    public override void OnActorCreated(Actor actor)
-    {
-        if (actor.OID == (uint)OID.HolySphere)
-        {
-            spheres.Add(actor);
-        }
-    }
-
-    public override void OnActorDestroyed(Actor actor)
-    {
-        if (actor.OID == (uint)OID.HolySphere)
-        {
-            var count = spheres.Count;
-            for (var i = 0; i < count; ++i)
-            {
-                if (spheres[i] == actor)
-                {
-                    spheres.RemoveAt(i);
-                    return;
-                }
-            }
-        }
-    }
-
-    public override void OnStatusGain(Actor actor, ActorStatus status)
-    {
-        if (status.ID == (uint)SID.SphereStatus)
-        {
-            var count = spheres.Count;
-            for (var i = 0; i < count; ++i)
-            {
-                if (spheres[i] == actor)
-                {
-                    spheres.RemoveAt(i);
-                    if (spheres.Count == 4 && _aoe.Casters.Count != 0)
-                    {
-                        var countS = spheres.Count;
-                        for (var j = 0; j < countS; ++j)
-                        {
-                            var sphere = spheres[j];
-                            _aoes.Add(new(circle, WPos.ClampToGrid(sphere.Position), default, _aoe.Casters[0].Activation, ActorID: sphere.InstanceID));
-                        }
-                    }
-                    return;
-                }
-            }
-        }
-    }
-}
-
-sealed class WindStoneSurge(BossModule module) : Components.GenericAOEs(module)
-{
-    private readonly List<AOEInstance> _aoes = new(8);
+    public readonly List<AOEInstance> AOEs = new(12);
     private static readonly AOEShapeCircle circle = new(15f);
     public static readonly AOEShapeCone Cone = new(40f, 30f.Degrees());
+    private readonly List<Actor> spheres = new(12);
     private readonly List<Actor> spheresStone = new(6);
     private readonly List<Actor> spheresWind = new(6);
+    private readonly AncientHoly _aoe = module.FindComponent<AncientHoly>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = _aoes.Count;
+        var count = AOEs.Count;
         if (count == 0)
+        {
             return [];
-        var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var max = count > 4 ? 4 : count;
-        if (count > 3 && aoes[0].Activation != aoes[3].Activation)
+        }
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+
+        ref var aoe0 = ref aoes[0];
+        var act0 = aoe0.Activation;
+
+        if (count > 3 && (AOEs.Ref(3).Activation - act0).TotalSeconds > 0.5d)
         {
             for (var i = 0; i < 2; ++i)
             {
-                aoes[i].Color = Colors.Danger;
+                ref var aoe = ref aoes[i];
+                aoe.Color = Colors.Danger;
             }
         }
-        return aoes[..max];
+        var deadline = act0.AddSeconds(2.4d);
+
+        var index = 0;
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
+            ++index;
+        }
+
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var id = spell.Action.ID;
-        if (id is (uint)AID.AncientAeroIII1 or (uint)AID.AncientAeroIII2)
+        switch (spell.Action.ID)
         {
-            var count = spheresWind.Count - 1;
+            case (uint)AID.AncientAeroIII1:
+            case (uint)AID.AncientAeroIII2:
+                AddAOEs(spheresWind);
+                break;
+            case (uint)AID.AncientStoneIII1:
+            case (uint)AID.AncientStoneIII2:
+                AddAOEs(spheresStone);
+                break;
+            case (uint)AID.AncientHoly1 when spheres.Count == 4:
+                var count = spheres.Count;
+                var act = Module.CastFinishAt(spell, 2.4d);
+                for (var i = 0; i < count; ++i)
+                {
+                    var sphere = spheres[i];
+                    AddAOE(sphere.Position, ref sphere.InstanceID, ref act);
+                }
+                spheres.Clear();
+                break;
+        }
+        void AddAOE(WPos position, ref readonly ulong instanceID, ref readonly DateTime activation, Angle rotation = default) => AOEs.Add(new(circle, position.Quantized(), rotation, activation, actorID: instanceID));
+        void AddAOEs(List<Actor> list)
+        {
+            var count = list.Count - 1;
+            var pos = spell.LocXZ;
+            var rot = spell.Rotation;
+            var act = Module.CastFinishAt(spell).AddSeconds(2.4d);
             for (var i = count; i >= 0; --i)
             {
-                var sphere = spheresWind[i];
-                if (Cone.Check(sphere.Position, spell.LocXZ, spell.Rotation))
+                var sphere = list[i];
+                if (Cone.Check(sphere.Position, pos, rot))
                 {
-                    AddAOE(sphere.Position, sphere.InstanceID);
-                    spheresWind.RemoveAt(i);
+                    AddAOE(sphere.Position, ref sphere.InstanceID, ref act);
+                    list.RemoveAt(i);
+                }
+                if (i == 0)
+                {
+                    AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 }
             }
         }
-        else if (id is (uint)AID.AncientStoneIII1 or (uint)AID.AncientStoneIII2)
-        {
-            var count = spheresStone.Count - 1;
-            for (var i = count; i >= 0; --i)
-            {
-                var sphere = spheresStone[i];
-                if (Cone.Check(sphere.Position, spell.LocXZ, spell.Rotation))
-                {
-                    AddAOE(sphere.Position, sphere.InstanceID);
-                    spheresStone.RemoveAt(i);
-                }
-            }
-        }
-        void AddAOE(WPos position, ulong instanceID) => _aoes.Add(new(circle, WPos.ClampToGrid(position), default, Module.CastFinishAt(spell, 2.6f), ActorID: instanceID));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.WindSurge or (uint)AID.SandSurge)
+        if (spell.Action.ID is (uint)AID.WindSurge or (uint)AID.SandSurge or (uint)AID.LightSurge)
         {
-            var count = _aoes.Count;
+            var count = AOEs.Count;
             var id = caster.InstanceID;
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].ActorID == id)
+                if (AOEs[i].ActorID == id)
                 {
-                    _aoes.RemoveAt(i);
+                    AOEs.RemoveAt(i);
                     return;
                 }
             }
@@ -228,14 +187,37 @@ sealed class WindStoneSurge(BossModule module) : Components.GenericAOEs(module)
         if (status.ID == (uint)SID.SphereStatus)
         {
             var extra = status.Extra;
-            if (extra == 0x224u)
+            if (extra == 0x224)
             {
-                spheresWind.Add(actor);
+                UpdateList(spheresWind);
             }
-            else if (extra == 0x225u)
+            else if (extra == 0x225)
             {
-                spheresStone.Add(actor);
+                UpdateList(spheresStone);
             }
+            if (spheres.Count == 4 && _aoe.Casters.Count != 0)
+            {
+                var act = _aoe.Casters[0].Activation.AddSeconds(2.6d);
+                for (var i = 0; i < 4; ++i)
+                {
+                    var sphere = spheres[i];
+                    AOEs.Add(new(circle, sphere.Position.Quantized(), default, act, actorID: sphere.InstanceID));
+                }
+                spheres.Clear();
+            }
+        }
+        void UpdateList(List<Actor> list)
+        {
+            list.Add(actor);
+            spheres.Remove(actor);
+        }
+    }
+
+    public override void OnActorCreated(Actor actor)
+    {
+        if (actor.OID == (uint)OID.HolySphere)
+        {
+            spheres.Add(actor);
         }
     }
 }
@@ -246,13 +228,12 @@ sealed class CE112EternalWatchStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<AncientStoneAncientAeroIIISlow>()
-            .ActivateOnEnter<AncientStoneAncientAeroIIIFast>()
             .ActivateOnEnter<AncientHoly>()
             .ActivateOnEnter<RadiantWave>()
             .ActivateOnEnter<Scratch>()
             .ActivateOnEnter<HolyBlaze>()
-            .ActivateOnEnter<LightSurge>()
-            .ActivateOnEnter<WindStoneSurge>();
+            .ActivateOnEnter<WindStoneLightSurge>()
+            .ActivateOnEnter<AncientStoneAncientAeroIIIFast>();
     }
 }
 

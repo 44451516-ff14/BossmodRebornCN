@@ -3,17 +3,18 @@
 // generic 'rotating aoes' component - a sequence of aoes (typically cones) with same origin and increasing rotation
 public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
 {
-    public record struct Sequence
-    (
-        AOEShape Shape,
-        WPos Origin,
-        Angle Rotation,
-        Angle Increment,
-        DateTime NextActivation,
-        float SecondsBetweenActivations,
-        int NumRemainingCasts,
-        int MaxShownAOEs = 2
-    );
+    public struct Sequence(AOEShape shape, WPos origin, Angle rotation, Angle increment, DateTime nextActivation, double secondsBetweenActivations, int numRemainingCasts, int maxShownAOEs = 2, ulong actorID = default)
+    {
+        public AOEShape Shape = shape;
+        public WPos Origin = origin;
+        public Angle Rotation = rotation;
+        public Angle Increment = increment;
+        public DateTime NextActivation = nextActivation;
+        public double SecondsBetweenActivations = secondsBetweenActivations;
+        public int NumRemainingCasts = numRemainingCasts;
+        public int MaxShownAOEs = maxShownAOEs;
+        public ulong ActorID = actorID;
+    }
 
     public readonly List<Sequence> Sequences = [];
     public virtual uint ImminentColor { get; set; } = Colors.Danger;
@@ -27,9 +28,10 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
 
         var aoes = new List<AOEInstance>();
         var curTime = WorldState.CurrentTime;
+        var sequences = CollectionsMarshal.AsSpan(Sequences);
         for (var j = 0; j < count; ++j)
         {
-            var s = Sequences[j];
+            ref readonly var s = ref sequences[j];
             var remaining = s.NumRemainingCasts;
             var num = Math.Min(remaining, s.MaxShownAOEs);
             var rot = s.Rotation;
@@ -52,7 +54,9 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
             }
             // imminent AOEs
             if (remaining != 0)
+            {
                 aoes.Add(new(shape, origin, s.Rotation, nextAct, remaining > 1 ? ImminentColor : FutureColor));
+            }
         }
         return CollectionsMarshal.AsSpan(aoes);
     }
@@ -64,7 +68,7 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
         if (index < 0 || index >= Sequences.Count)
             return;
 
-        var s = Sequences[index];
+        ref var s = ref Sequences.Ref(index);
         if (--s.NumRemainingCasts <= 0 && removeWhenFinished)
         {
             Sequences.RemoveAt(index);
@@ -73,7 +77,6 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
         {
             s.Rotation += s.Increment;
             s.NextActivation = currentTime.AddSeconds(s.SecondsBetweenActivations);
-            Sequences[index] = s;
         }
     }
 
@@ -81,10 +84,43 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
     public bool AdvanceSequence(WPos origin, Angle rotation, DateTime currentTime, bool removeWhenFinished = true)
     {
         var count = Sequences.Count;
+        var sequences = CollectionsMarshal.AsSpan(Sequences);
         for (var i = 0; i < count; ++i)
         {
-            var s = Sequences[i];
+            ref readonly var s = ref sequences[i];
             if (s.Origin.AlmostEqual(origin, 1f) && s.Rotation.AlmostEqual(rotation, 0.05f))
+            {
+                AdvanceSequence(i, currentTime, removeWhenFinished);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool AdvanceSequence(WPos origin, Angle rotation, ulong instanceID, DateTime currentTime, bool removeWhenFinished = true)
+    {
+        var count = Sequences.Count;
+        var sequences = CollectionsMarshal.AsSpan(Sequences);
+        for (var i = 0; i < count; ++i)
+        {
+            ref readonly var s = ref sequences[i];
+            if (s.ActorID == instanceID && s.Origin.AlmostEqual(origin, 1f) && s.Rotation.AlmostEqual(rotation, 0.05f))
+            {
+                AdvanceSequence(i, currentTime, removeWhenFinished);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool AdvanceSequence(ulong instanceID, DateTime currentTime, bool removeWhenFinished = true)
+    {
+        var count = Sequences.Count;
+        var sequences = CollectionsMarshal.AsSpan(Sequences);
+        for (var i = 0; i < count; ++i)
+        {
+            ref readonly var s = ref sequences[i];
+            if (s.ActorID == instanceID)
             {
                 AdvanceSequence(i, currentTime, removeWhenFinished);
                 return true;

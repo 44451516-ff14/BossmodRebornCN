@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S1Athena;
 
-class EngravementOfSouls3Shock(BossModule module) : Components.CastTowers(module, (uint)AID.Shock, 3)
+sealed class EngravementOfSouls3Shock(BossModule module) : Components.CastTowers(module, (uint)AID.Shock, 3f)
 {
     private BitMask _towers;
     private BitMask _plus;
@@ -8,17 +8,17 @@ class EngravementOfSouls3Shock(BossModule module) : Components.CastTowers(module
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.UmbralbrightSoul:
-            case SID.AstralbrightSoul:
-                _towers.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.UmbralbrightSoul:
+            case (uint)SID.AstralbrightSoul:
+                _towers[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.QuarteredSoul:
-                _plus.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.QuarteredSoul:
+                _plus[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
-            case SID.XMarkedSoul:
-                _cross.Set(Raid.FindSlot(actor.InstanceID));
+            case (uint)SID.XMarkedSoul:
+                _cross[Raid.FindSlot(actor.InstanceID)] = true;
                 break;
         }
     }
@@ -29,8 +29,8 @@ class EngravementOfSouls3Shock(BossModule module) : Components.CastTowers(module
         {
             var forbidden = spell.Location.Z switch
             {
-                < 90 => ~_plus, // TODO: technically cross and plus could switch places
-                > 110 => ~_cross,
+                < 90f => ~_plus, // TODO: technically cross and plus could switch places
+                > 110f => ~_cross,
                 _ => ~_towers // TODO: assign specific towers based on priorities?
             };
             Towers.Add(new(spell.LocXZ, Radius, forbiddenSoakers: forbidden));
@@ -38,7 +38,7 @@ class EngravementOfSouls3Shock(BossModule module) : Components.CastTowers(module
     }
 }
 
-class EngravementOfSouls3Spread(BossModule module) : Components.UniformStackSpread(module, 0, 3, alwaysShowSpreads: true, raidwideOnResolve: false)
+sealed class EngravementOfSouls3Spread(BossModule module) : Components.UniformStackSpread(module, default, 3f, alwaysShowSpreads: true, raidwideOnResolve: false)
 {
     private readonly EngravementOfSoulsTethers? _tethers = module.FindComponent<EngravementOfSoulsTethers>();
     private EngravementOfSoulsTethers.TetherType _soakers;
@@ -53,10 +53,10 @@ class EngravementOfSouls3Spread(BossModule module) : Components.UniformStackSpre
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        var soakers = (SID)status.ID switch
+        var soakers = status.ID switch
         {
-            SID.UmbralbrightSoul => EngravementOfSoulsTethers.TetherType.Dark,
-            SID.AstralbrightSoul => EngravementOfSoulsTethers.TetherType.Light,
+            (uint)SID.UmbralbrightSoul => EngravementOfSoulsTethers.TetherType.Dark,
+            (uint)SID.AstralbrightSoul => EngravementOfSoulsTethers.TetherType.Light,
             _ => EngravementOfSoulsTethers.TetherType.None
         };
         if (soakers != EngravementOfSoulsTethers.TetherType.None)
@@ -68,16 +68,17 @@ class EngravementOfSouls3Spread(BossModule module) : Components.UniformStackSpre
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.UmbralGlow or AID.AstralGlow)
+        if (spell.Action.ID is (uint)AID.UmbralGlow or (uint)AID.AstralGlow)
+        {
             Spreads.Clear();
+        }
     }
 }
 
-class TheosCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheosCross, new AOEShapeCross(40, 3));
-class TheosSaltire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheosSaltire, new AOEShapeCross(40, 3));
+sealed class TheosCrossSaltire(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TheosCross, (uint)AID.TheosSaltire], new AOEShapeCross(40f, 3f));
 
 // TODO: this assumes standard strats, there could be variations i guess...
-class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
+sealed class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
 {
     public enum PlayerState { None, Tower, Plus, Cross, TetherTL, TetherBL, TetherTR, TetherBR }
     public enum Mechanic { Start, FixedTowers, Tethers, CrossPlusBait, TowersBait, WhiteFlameBait, TowersResolve }
@@ -90,44 +91,58 @@ class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
 
     public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
     {
-        foreach (var chain in PositionHints(slot))
+        var hints = PositionHints(slot);
+        var count = hints.Count;
+        if (count != 0)
         {
-            var from = actor.Position;
-            var color = Colors.Safe;
-            foreach (var offset in chain)
+            for (var i = 0; i < count; ++i)
             {
-                var to = Arena.Center + offset;
-                movementHints.Add(from, to, color);
-                from = to;
-                color = Colors.Danger;
+                var chain = hints[i];
+                var count2 = chain.Count;
+                var from = actor.Position;
+                var color = Colors.Safe;
+                for (var j = 0; j < count2; ++j)
+                {
+                    var to = Arena.Center + chain[j];
+                    movementHints.Add(from, to, color);
+                    from = to;
+                    color = Colors.Danger;
+                }
             }
         }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var chain in PositionHints(pcSlot))
-            foreach (var offset in chain.Take(1))
-                Arena.AddCircle(Arena.Center + offset, 1, Colors.Safe);
+        var hints = PositionHints(pcSlot);
+        var count = hints.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var chain = hints[i];
+            if (chain.Count > 0)
+            {
+                Arena.AddCircle(Arena.Center + chain[0], 1f, Colors.Safe);
+            }
+        }
     }
 
     // note: these statuses are assigned before any tethers
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.UmbralbrightSoul:
+            case (uint)SID.UmbralbrightSoul:
                 _towersLight = true;
                 SetState(Raid.FindSlot(actor.InstanceID), PlayerState.Tower);
                 break;
-            case SID.AstralbrightSoul:
+            case (uint)SID.AstralbrightSoul:
                 _towersLight = false;
                 SetState(Raid.FindSlot(actor.InstanceID), PlayerState.Tower);
                 break;
-            case SID.QuarteredSoul:
+            case (uint)SID.QuarteredSoul:
                 SetState(Raid.FindSlot(actor.InstanceID), PlayerState.Plus);
                 break;
-            case SID.XMarkedSoul:
+            case (uint)SID.XMarkedSoul:
                 SetState(Raid.FindSlot(actor.InstanceID), PlayerState.Cross);
                 break;
         }
@@ -135,18 +150,18 @@ class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        switch ((TetherID)tether.ID)
+        switch (tether.ID)
         {
-            case TetherID.LightNear:
-            case TetherID.LightFar:
+            case (uint)TetherID.LightNear:
+            case (uint)TetherID.LightFar:
                 AssignTether(source, Raid.FindSlot(tether.Target), true);
                 break;
-            case TetherID.DarkNear:
-            case TetherID.DarkFar:
+            case (uint)TetherID.DarkNear:
+            case (uint)TetherID.DarkFar:
                 AssignTether(source, Raid.FindSlot(tether.Target), false);
                 break;
-            case TetherID.UnnaturalEnchainment:
-                if (source.Position.Z < 90)
+            case (uint)TetherID.UnnaturalEnchainment:
+                if (source.Position.Z < 90f)
                 {
                     _topLeftSafe = source.Position.X > Arena.Center.X;
                     AdvanceMechanic(Mechanic.FixedTowers);
@@ -157,30 +172,32 @@ class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.TheosCross or AID.TheosSaltire)
+        if (spell.Action.ID is (uint)AID.TheosCross or (uint)AID.TheosSaltire)
+        {
             AdvanceMechanic(Mechanic.TowersBait);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.Shock:
+            case (uint)AID.Shock:
                 AdvanceMechanic(Mechanic.Tethers);
                 break;
-            case AID.SearingRadiance:
-            case AID.Shadowsear:
+            case (uint)AID.SearingRadiance:
+            case (uint)AID.Shadowsear:
                 AdvanceMechanic(Mechanic.CrossPlusBait);
                 break;
-            case AID.UmbralGlow:
-            case AID.AstralGlow:
+            case (uint)AID.UmbralGlow:
+            case (uint)AID.AstralGlow:
                 AdvanceMechanic(Mechanic.WhiteFlameBait);
                 break;
-            case AID.WhiteFlameAOE:
+            case (uint)AID.WhiteFlameAOE:
                 AdvanceMechanic(Mechanic.TowersResolve);
                 break;
-            case AID.UmbralAdvance:
-            case AID.AstralAdvance:
+            case (uint)AID.UmbralAdvance:
+            case (uint)AID.AstralAdvance:
                 _nextMechanic = Mechanic.Start;
                 break;
         }
@@ -214,92 +231,110 @@ class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
         _leftTowerMatchTether = lightStayLeft == _towersLight;
     }
 
-    private IEnumerable<IEnumerable<WDir>> PositionHints(int slot)
+    private List<List<WDir>> PositionHints(int slot)
     {
+        var dirs = new List<List<WDir>>();
         if (_nextMechanic == Mechanic.Start)
-            yield break;
+        {
+            return dirs;
+        }
 
         switch (_playerStates[slot])
         {
             case PlayerState.Tower:
                 // TODO: assign left/right based on prios
-                yield return PositionHintsTower(true);
-                yield return PositionHintsTower(false);
+                dirs.Add(PositionHintsTower(true));
+                dirs.Add(PositionHintsTower(false));
                 break;
             case PlayerState.Plus:
-                yield return PositionHintsPlusCross(true);
+                dirs.Add(PositionHintsPlusCross(true));
                 break;
             case PlayerState.Cross:
-                yield return PositionHintsPlusCross(false);
+                dirs.Add(PositionHintsPlusCross(false));
                 break;
             case PlayerState.TetherTL:
-                yield return PositionHintsTether(true, true);
+                dirs.Add(PositionHintsTether(true, true));
                 break;
             case PlayerState.TetherBL:
-                yield return PositionHintsTether(false, true);
+                dirs.Add(PositionHintsTether(false, true));
                 break;
             case PlayerState.TetherTR:
-                yield return PositionHintsTether(true, false);
+                dirs.Add(PositionHintsTether(true, false));
                 break;
             case PlayerState.TetherBR:
-                yield return PositionHintsTether(false, false);
+                dirs.Add(PositionHintsTether(false, false));
                 break;
         }
+        return dirs;
     }
 
-    private IEnumerable<WDir> PositionHintsTower(bool left)
+    private List<WDir> PositionHintsTower(bool left)
     {
+        var dirs = new List<WDir>(2);
         if (_nextMechanic <= Mechanic.FixedTowers)
         {
-            yield return new(left ? -16 : 16, (left == _topLeftSafe) ? 5 : -5);
+            dirs.Add(new(left ? -16f : 16f, (left == _topLeftSafe) ? 5f : -5f));
         }
         if (_nextMechanic <= Mechanic.TowersBait)
         {
             if (_leftTowerMatchTether == left)
-                yield return new(left ? -1 : 1, (left == _topLeftSafe) ? 1 : -1);
+            {
+                dirs.Add(new(left ? -1f : 1f, (left == _topLeftSafe) ? 1f : -1f));
+            }
             else
-                yield return new(left ? -12 : 12, (left == _topLeftSafe) ? 5 : -5); // 12 is maxmelee
+            {
+                dirs.Add(new(left ? -12f : 12f, (left == _topLeftSafe) ? 5f : -5f)); // 12 is maxmelee
+            }
         }
+        return dirs;
     }
 
-    private IEnumerable<WDir> PositionHintsPlusCross(bool plus)
+    private List<WDir> PositionHintsPlusCross(bool plus)
     {
         // assume plus goes top
         var left = _topLeftSafe == plus;
+        var dirs = new List<WDir>(3);
         if (_nextMechanic <= Mechanic.FixedTowers)
         {
-            yield return new(left ? -16 : 16, plus ? -15 : 15);
+            dirs.Add(new(left ? -16f : 16f, plus ? -15f : 15f));
         }
         if (_nextMechanic <= Mechanic.CrossPlusBait)
         {
-            yield return new((left ? -1 : 1) * (plus ? 19 : 1), plus ? -19 : 19);
+            dirs.Add(new((left ? -1f : 1f) * (plus ? 19f : 1f), plus ? -19f : 19f));
         }
         if (_nextMechanic <= Mechanic.WhiteFlameBait)
         {
-            yield return new(left ? -10 : 10, plus ? -11 : 15);
+            dirs.Add(new(left ? -10f : 10f, plus ? -11f : 15f));
         }
+        return dirs;
     }
 
-    private IEnumerable<WDir> PositionHintsTether(bool top, bool left)
+    private List<WDir> PositionHintsTether(bool top, bool left)
     {
-        var centerZ = left == _topLeftSafe ? 5 : -5;
-        var offZ = centerZ + (top ? -4 : 4);
-        var horiz = Math.Abs(offZ) < 5;
+        var centerZ = left == _topLeftSafe ? 5f : -5f;
+        var offZ = centerZ + (top ? -4f : 4f);
+        var horiz = Math.Abs(offZ) < 5f;
+        var dirs = new List<WDir>(3);
         if (_nextMechanic <= Mechanic.Tethers)
         {
-            yield return new((left ? -1 : 1) * (horiz ? 10 : 8), offZ);
+            dirs.Add(new((left ? -1f : 1f) * (horiz ? 10f : 8f), offZ));
         }
         var baitFlames = _leftTowerMatchTether == left;
         if (_nextMechanic <= Mechanic.WhiteFlameBait && baitFlames)
         {
-            yield return new((left ? -1 : 1) * (horiz ? 10 : 1), offZ);
+            dirs.Add(new((left ? -1f : 1f) * (horiz ? 10f : 1f), offZ));
         }
         if (_nextMechanic <= Mechanic.TowersResolve && !baitFlames)
         {
             if (horiz)
-                yield return new(left ? -1 : 1, offZ);
+            {
+                dirs.Add(new(left ? -1f : 1f, offZ));
+            }
             else
-                yield return new(left ? -12 : 12, centerZ);
+            {
+                dirs.Add(new(left ? -12f : 12f, centerZ));
+            }
         }
+        return dirs;
     }
 }

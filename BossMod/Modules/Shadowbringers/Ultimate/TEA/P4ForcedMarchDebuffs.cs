@@ -4,14 +4,14 @@ abstract class P4ForcedMarchDebuffs(BossModule module) : BossComponent(module)
 {
     public enum Debuff { None, LightBeacon, LightFollow, DarkBeacon, DarkFollow }
 
-    public bool Done { get; protected set; }
+    public bool Done;
     protected Debuff[] Debuffs = new Debuff[PartyState.MaxPartySize];
     protected Actor? LightBeacon;
     protected Actor? DarkBeacon;
 
-    private const float _forcedMarchDistance = 20; // TODO: verify
-    private const float _minLightDistance = 22; // TODO: verify
-    private const float _maxDarkDistance = 5; // TODO: verify
+    private const float _forcedMarchDistance = 20f; // TODO: verify
+    private const float _minLightDistance = 22f; // TODO: verify
+    private const float _maxDarkDistance = 5f; // TODO: verify
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

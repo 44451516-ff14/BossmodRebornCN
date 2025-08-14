@@ -12,9 +12,9 @@ public enum AID : uint
     Mow = 14879, // Boss->self, 3.0s cast, range 6+R 120-degree cone
 }
 
-class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new AOEShapeCone(7.4f, 60f.Degrees()));
+sealed class Mow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mow, new AOEShapeCone(7.4f, 60f.Degrees()));
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -22,7 +22,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage13Act1States : StateMachineBuilder
+sealed class Stage13Act1States : StateMachineBuilder
 {
     public Stage13Act1States(BossModule module) : base(module)
     {
@@ -45,7 +45,7 @@ class Stage13Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 623, NameID = 8104, SortOrder = 1)]
-public class Stage13Act1 : BossModule
+public sealed class Stage13Act1 : BossModule
 {
     public Stage13Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

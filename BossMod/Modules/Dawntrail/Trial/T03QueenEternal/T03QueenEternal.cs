@@ -1,19 +1,16 @@
 ﻿namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class ProsecutionOfWar(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ProsecutionOfWar);
-class VirtualShift1(BossModule module) : Components.RaidwideCast(module, (uint)AID.VirtualShift1);
-class VirtualShift2(BossModule module) : Components.RaidwideCast(module, (uint)AID.VirtualShift2);
-class VirtualShift3(BossModule module) : Components.RaidwideCast(module, (uint)AID.VirtualShift3);
-class BrutalCrown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrutalCrown, new AOEShapeDonut(5f, 60f));
-class RoyalDomain(BossModule module) : Components.RaidwideCast(module, (uint)AID.RoyalDomain);
-class DynasticDiadem(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DynasticDiadem, new AOEShapeDonut(6f, 70f));
-class RoyalBanishment(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.RoyalBanishment], new AOEShapeCone(100f, 15f.Degrees()));
+sealed class ProsecutionOfWar(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ProsecutionOfWar);
+sealed class VirtualShiftRoyalDomain(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.VirtualShift1, (uint)AID.VirtualShift2, (uint)AID.VirtualShift3, (uint)AID.RoyalDomain]);
+sealed class BrutalCrown(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrutalCrown, new AOEShapeDonut(5f, 60f));
+sealed class DynasticDiadem(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DynasticDiadem, new AOEShapeDonut(6f, 70f));
+sealed class RoyalBanishment(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.RoyalBanishment], new AOEShapeCone(100f, 15f.Degrees()));
 
 abstract class RaidwideMulti(BossModule module, uint aid) : Components.RaidwideCast(module, aid, "multiple Raidwides");
-class RoyalBanishmentRaidwide(BossModule module) : RaidwideMulti(module, (uint)AID.RoyalBanishmentVisual);
-class AbsoluteAuthorityRaidwide(BossModule module) : RaidwideMulti(module, (uint)AID.AbsoluteAuthorityRaidwide1);
+sealed class RoyalBanishmentRaidwide(BossModule module) : RaidwideMulti(module, (uint)AID.RoyalBanishmentVisual);
+sealed class AbsoluteAuthorityRaidwide(BossModule module) : RaidwideMulti(module, (uint)AID.AbsoluteAuthorityRaidwide1);
 
-class T03QueenEternalStates : StateMachineBuilder
+sealed class T03QueenEternalStates : StateMachineBuilder
 {
     public T03QueenEternalStates(BossModule module) : base(module)
     {
@@ -26,16 +23,12 @@ class T03QueenEternalStates : StateMachineBuilder
             .ActivateOnEnter<WaltzOfTheRegaliaBait>()
             .ActivateOnEnter<RuthlessRegalia>()
             .ActivateOnEnter<ProsecutionOfWar>()
-            .ActivateOnEnter<VirtualShift1>()
-            .ActivateOnEnter<VirtualShift2>()
-            .ActivateOnEnter<VirtualShift3>()
+            .ActivateOnEnter<VirtualShiftRoyalDomain>()
             .ActivateOnEnter<AbsoluteAuthorityRaidwide>()
             .ActivateOnEnter<DownburstKB>()
-            .ActivateOnEnter<DownburstRaidwide>()
+            .ActivateOnEnter<PowerfulGustDownburstRW>()
             .ActivateOnEnter<BrutalCrown>()
             .ActivateOnEnter<PowerfulGustKB>()
-            .ActivateOnEnter<PowerfulGustRaidwide>()
-            .ActivateOnEnter<RoyalDomain>()
             .ActivateOnEnter<AbsoluteAuthorityCircle>()
             .ActivateOnEnter<AuthoritysGaze>()
             .ActivateOnEnter<AuthoritysHold>()
@@ -48,7 +41,7 @@ class T03QueenEternalStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 984, NameID = 13029)]
-public class T03QueenEternal(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultBounds)
+public sealed class T03QueenEternal(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultBounds)
 {
     public static readonly WPos ArenaCenter = new(100f, 100f), FinalCenter = new(100f, 105f), LeftSplitCenter = new(108f, 94f), RightSplitCenter = new(92f, 94f);
     public static readonly ArenaBoundsRect FinalBounds = new(20f, 15f), SplitGravityBounds = new(12f, 8f);

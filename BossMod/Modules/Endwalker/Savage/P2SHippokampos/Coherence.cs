@@ -6,11 +6,11 @@ class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.Co
 {
     private Actor? _tetherTarget;
     private Actor? _rayTarget;
-    private readonly AOEShapeRect _rayShape = new(50, 3);
+    private readonly AOEShapeRect _rayShape = new(50f, 3f);
     private Angle _rayDirection;
     private BitMask _inRay;
 
-    private const float _aoeRadius = 10; // not sure about this - actual range is 60, but it has some sort of falloff? i have very few data points < 15
+    private const float _aoeRadius = 10f; // not sure about this - actual range is 60, but it has some sort of falloff? i have very few data points < 15
 
     public override void Update()
     {
@@ -69,7 +69,7 @@ class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.Co
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         // TODO: i'm not sure what are the exact mechanics - flare is probably distance-based, and ray is probably shared damage cast at closest target?..
-        var head = Module.Enemies(OID.CataractHead).FirstOrDefault();
+        var head = Module.Enemies((uint)OID.CataractHead).FirstOrDefault();
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
         {
             if (head?.Tether.Target == player.InstanceID)
@@ -91,7 +91,7 @@ class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.Co
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID == TetherID.Coherence)
+        if (tether.ID == (uint)TetherID.Coherence)
             _tetherTarget = WorldState.Actors.Find(tether.Target);
     }
 }

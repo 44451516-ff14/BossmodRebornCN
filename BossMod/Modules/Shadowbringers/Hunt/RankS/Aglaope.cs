@@ -8,6 +8,7 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack = 870, // Boss->player, no cast, single-target
+
     FourfoldSuffering = 16819, // Boss->self, 5.0s cast, range 5-50 donut
     SeductiveSonata = 16824, // Boss->self, 3.0s cast, range 40 circle, applies Seduced for 6s (forced march towards boss at 1.7y/s)
     DeathlyVerse = 17074, // Boss->self, 5.0s cast, range 6 circle (right after Seductive Sonata, instant kill), 6*1.7 = 10.2 + 6 = 16.2y minimum distance to survive
@@ -22,9 +23,9 @@ public enum SID : uint
     Seduced = 991 // Boss->player, extra=0x11
 }
 
-class SongOfTorment(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SongOfTorment, hintExtra: "Raidwide + Bleed");
+sealed class SongOfTorment(BossModule module) : Components.CastInterruptHint(module, (uint)AID.SongOfTorment, hintExtra: "Raidwide + Bleed");
 
-class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
+sealed class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
     bool done;
@@ -35,13 +36,17 @@ class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.SeductiveSonata)
+        {
             _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.SeductiveSonata)
+        {
             done = true;
+        }
     }
 
     public override void Update()
@@ -63,14 +68,14 @@ class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class DeathlyVerse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathlyVerse, 6f);
-class Tornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tornado, 6f);
-class FourfoldSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FourfoldSuffering, new AOEShapeDonut(5f, 50f));
-class AncientAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientAero, new AOEShapeRect(42.4f, 3f));
-class AncientAeroIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.AncientAeroIII);
-class AncientAeroIIIKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AncientAeroIII, 10f, shape: new AOEShapeCircle(30f));
+sealed class DeathlyVerse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeathlyVerse, 6f);
+sealed class Tornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Tornado, 6f);
+sealed class FourfoldSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FourfoldSuffering, new AOEShapeDonut(5f, 50f));
+sealed class AncientAero(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AncientAero, new AOEShapeRect(42.4f, 3f));
+sealed class AncientAeroIII(BossModule module) : Components.RaidwideCast(module, (uint)AID.AncientAeroIII);
+sealed class AncientAeroIIIKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AncientAeroIII, 10f, shape: new AOEShapeCircle(30f));
 
-class AglaopeStates : StateMachineBuilder
+sealed class AglaopeStates : StateMachineBuilder
 {
     public AglaopeStates(BossModule module) : base(module)
     {
@@ -87,4 +92,4 @@ class AglaopeStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 8653)]
-public class Aglaope(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class Aglaope(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

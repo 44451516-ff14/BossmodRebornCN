@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class DivideAndConquer(BossModule module) : Components.GenericBaitAway(module)
+sealed class DivideAndConquer(BossModule module) : Components.GenericBaitAway(module)
 {
     // line baits can be staggered so we can't use BaitAwayIcon which clears all at the same time
     // staggered waves always got 8 casts even if some players are dead, simultan waves got line baits on all alive players

@@ -35,7 +35,7 @@ class SphereShatter(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.IceBoulder)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(8.5d), ActorID: actor.InstanceID));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.5d), actorID: actor.InstanceID));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

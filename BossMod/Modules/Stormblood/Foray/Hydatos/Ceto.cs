@@ -35,14 +35,13 @@ public enum AID : uint
     FireToss = 15449, // HydatosDelphyne->players, 3.0s cast, range 5 circle
 }
 
-class SickleStrike(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SickleStrike);
-class PetrifactionBoss(BossModule module) : Components.CastGaze(module, (uint)AID.PetrifactionBoss, range: 50f);
-class PetrifactionAdds(BossModule module) : Components.CastGaze(module, (uint)AID.PetrifactionAdds, range: 50f);
-class AbyssalReaper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalReaper, 18f);
-class CircleOfFlames(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleOfFlames, 5f);
-class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSlap, new AOEShapeCone(12f, 60f.Degrees()));
-class GrimFate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrimFate, new AOEShapeCone(8f, 60f.Degrees()));
-class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(12f, 4f));
+sealed class SickleStrike(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SickleStrike);
+sealed class Petrifaction(BossModule module) : Components.CastGazes(module, [(uint)AID.PetrifactionBoss, (uint)AID.PetrifactionAdds], range: 50f);
+sealed class AbyssalReaper(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AbyssalReaper, 18f);
+sealed class CircleOfFlames(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleOfFlames, 5f);
+sealed class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSlap, new AOEShapeCone(12f, 60f.Degrees()));
+sealed class GrimFate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrimFate, new AOEShapeCone(8f, 60f.Degrees()));
+sealed class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(12f, 4f));
 
 class Petrattraction(BossModule module) : Components.GenericKnockback(module)
 {
@@ -55,7 +54,7 @@ class Petrattraction(BossModule module) : Components.GenericKnockback(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.PetrattractionVisual)
-            _source = new(caster.Position, 50f, Module.CastFinishAt(spell, 1.4f), circle, Kind: Kind.TowardsOrigin);
+            _source = new(caster.Position, 50f, Module.CastFinishAt(spell, 1.4d), circle, kind: Kind.TowardsOrigin);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -65,24 +64,21 @@ class Petrattraction(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class CircleBlade1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleBlade1, 7);
-class CircleBlade2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CircleBlade2, 7);
-class FireToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireToss, 5f);
+sealed class CircleBlade(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CircleBlade1, (uint)AID.CircleBlade2], 7f);
+sealed class FireToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FireToss, 5f);
 
-class CetoStates : StateMachineBuilder
+sealed class CetoStates : StateMachineBuilder
 {
     public CetoStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<SickleStrike>()
-            .ActivateOnEnter<PetrifactionBoss>()
-            .ActivateOnEnter<PetrifactionAdds>()
+            .ActivateOnEnter<Petrifaction>()
             .ActivateOnEnter<AbyssalReaper>()
             .ActivateOnEnter<CircleOfFlames>()
             .ActivateOnEnter<TailSlap>()
             .ActivateOnEnter<Petrattraction>()
-            .ActivateOnEnter<CircleBlade1>()
-            .ActivateOnEnter<CircleBlade2>()
+            .ActivateOnEnter<CircleBlade>()
             .ActivateOnEnter<GrimFate>()
             .ActivateOnEnter<Desolation>()
             .ActivateOnEnter<FireToss>();
@@ -90,7 +86,7 @@ class CetoStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "xan, Malediktus", GroupType = BossModuleInfo.GroupType.EurekaNM, GroupID = 639, NameID = 1421, SortOrder = 9)]
-public class Ceto(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
+public sealed class Ceto(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
 {
     private static readonly uint[] trash = [(uint)OID.FaithlessGuard, (uint)OID.HydatosDelphyne, (uint)OID.DarkGargoyle];
     protected override void DrawEnemies(int pcSlot, Actor pc)

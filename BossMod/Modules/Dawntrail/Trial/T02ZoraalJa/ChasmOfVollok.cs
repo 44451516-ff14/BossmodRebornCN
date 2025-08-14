@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T02ZoraalJaP2;
 
-class ChasmOfVollok(BossModule module) : Components.GenericAOEs(module)
+sealed class ChasmOfVollok(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(16);
     private const float platformOffset = 21.2132f;
@@ -19,7 +19,7 @@ class ChasmOfVollok(BossModule module) : Components.GenericAOEs(module)
                 var pos = spell.LocXZ;
                 // the visual cast happens on one of the side platforms at intercardinals, offset by 30
                 var offset = new WDir(pos.X > Arena.Center.X ? -platformOffset : +platformOffset, pos.Z > Arena.Center.Z ? -platformOffset : +platformOffset);
-                AOEs.Add(new(rect, WPos.ClampToGrid(pos + offset), spell.Rotation, Module.CastFinishAt(spell)));
+                AOEs.Add(new(rect, (pos + offset).Quantized(), spell.Rotation, Module.CastFinishAt(spell)));
             }
         }
     }

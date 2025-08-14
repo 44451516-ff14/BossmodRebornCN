@@ -7,7 +7,7 @@ sealed class CloudToGround(BossModule module) : Components.Exaflare(module, 6f)
         if (spell.Action.ID == (uint)AID.CloudToGroundFirst)
         {
             var explosions = spell.LocXZ.InRect(Arena.Center, spell.Rotation, 35f, 35f, 15f) ? 8 : spell.LocXZ.InRect(Arena.Center, spell.Rotation, 35f, 35f, 20f) ? 6 : 4;
-            Lines.Add(new() { Next = caster.Position, Advance = 8f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = explosions, MaxShownExplosions = 10 });
+            Lines.Add(new(caster.Position, 8f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, explosions, 10));
         }
     }
 

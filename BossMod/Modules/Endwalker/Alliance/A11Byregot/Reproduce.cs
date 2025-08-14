@@ -7,7 +7,7 @@ class Reproduce(BossModule module) : Components.Exaflare(module, 7f)
         if (spell.Action.ID is (uint)AID.CloudToGroundFast or (uint)AID.CloudToGroundSlow)
         {
             var fast = spell.Action.ID == (uint)AID.CloudToGroundFast;
-            Lines.Add(new() { Next = caster.Position, Advance = new(-8.5f, default), NextExplosion = Module.CastFinishAt(spell), TimeToMove = fast ? 0.6f : 1.4f, ExplosionsLeft = 6, MaxShownExplosions = fast ? 5 : 2 });
+            Lines.Add(new(caster.Position, new(-8.5f, default), Module.CastFinishAt(spell), fast ? 0.6f : 1.4f, 6, fast ? 5 : 2));
         }
     }
 

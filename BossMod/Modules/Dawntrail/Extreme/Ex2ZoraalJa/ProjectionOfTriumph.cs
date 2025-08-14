@@ -25,7 +25,7 @@ sealed class ProjectionOfTriumph(BossModule module) : Components.GenericAOEs(mod
                 var ortho = line.Direction.OrthoL();
                 for (var j = -15; j <= 15; j += 10)
                 {
-                    aoes.Add(new(line.Shape, WPos.ClampToGrid(lineCenter + j * ortho), default, _nextActivation));
+                    aoes.Add(new(line.Shape, (lineCenter + j * ortho).Quantized(), default, _nextActivation));
                 }
             }
         }

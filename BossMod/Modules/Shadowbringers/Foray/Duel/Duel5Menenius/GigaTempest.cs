@@ -10,16 +10,7 @@ abstract class GigaTempest(BossModule module, AOEShapeRect shape, uint aidFirst,
             var advance = GetExaDirection(caster);
             if (advance == null)
                 return;
-            Lines.Add(new()
-            {
-                Next = caster.Position,
-                Advance = advance.Value,
-                NextExplosion = Module.CastFinishAt(caster.CastInfo!),
-                TimeToMove = 0.9f,
-                ExplosionsLeft = 5,
-                MaxShownExplosions = 5,
-                Rotation = caster.Rotation,
-            });
+            Lines.Add(new(caster.Position, advance.Value, Module.CastFinishAt(caster.CastInfo!), 0.9d, 5, 5, caster.Rotation));
         }
     }
 

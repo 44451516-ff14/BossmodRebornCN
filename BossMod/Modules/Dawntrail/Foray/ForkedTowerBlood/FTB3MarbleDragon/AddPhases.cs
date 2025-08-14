@@ -1,7 +1,7 @@
 namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB3MarbleDragon;
 
 sealed class VulnerabilityDown(BossModule module) : Components.Dispel(module, (uint)SID.VulnerabilityDown);
-sealed class DamageUp(BossModule module) : Components.Dispel(module, (uint)SID.DamageUp, (uint)AID.FrozenHeart); // TODO: verify that this can be dispelled
+sealed class DamageUp(BossModule module) : Components.CastHint(module, (uint)AID.FrozenHeart, "Add enrage!");
 sealed class IceGolems(BossModule module) : Components.Adds(module, (uint)OID.IceGolem, 1);
 sealed class IceSprite(BossModule module) : Components.Adds(module, (uint)OID.IceSprite)
 {

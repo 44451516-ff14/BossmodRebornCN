@@ -39,10 +39,10 @@ sealed class GabrielStates : StateMachineBuilder
 
     private void DynamicSensoryJammer(uint id, float delay)
     {
-        ComponentCondition<DynamicSensoryJammer>(id, delay, comp => comp.PlayerStates[0] != default, "Extreme caution starts")
+        ComponentCondition<DynamicSensoryJammer>(id, delay, comp => comp.PlayerStates[0].Requirement != Components.StayMove.Requirement.None, "Extreme caution starts")
             .ActivateOnExit<MissileLauncher>()
             .ActivateOnEnter<DynamicSensoryJammer>();
-        ComponentCondition<DynamicSensoryJammer>(id + 0x10u, 5f, comp => comp.PlayerStates[0] == default, "Extreme caution resolves")
+        ComponentCondition<DynamicSensoryJammer>(id + 0x10u, 5f, comp => comp.PlayerStates[0].Requirement == Components.StayMove.Requirement.None, "Extreme caution resolves")
             .DeactivateOnExit<DynamicSensoryJammer>();
         ComponentCondition<MissileLauncher>(id + 0x20u, 2.1f, comp => comp.NumCasts != 0, "Circle AOEs")
             .DeactivateOnExit<MissileLauncher>();

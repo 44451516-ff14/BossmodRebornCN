@@ -51,15 +51,8 @@ sealed class BanishStorm(BossModule module) : Components.Exaflare(module, 6f)
 
                 for (var i = 0; i < 3; ++i)
                 {
-                    Lines.Add(new()
-                    {
-                        Next = positions[config.position] + (i > 0 ? directions[config.directions[i]] : default),
-                        Advance = directions[config.directions[i]],
-                        NextExplosion = i == 0 ? activation1 : activation2,
-                        TimeToMove = 0.7f,
-                        ExplosionsLeft = config.numExplosions[i],
-                        MaxShownExplosions = config.numExplosions[i]
-                    });
+                    Lines.Add(new(next: positions[config.position] + (i > 0 ? directions[config.directions[i]] : default), directions[config.directions[i]],
+                    i == 0 ? activation1 : activation2, 0.7d, config.numExplosions[i], config.numExplosions[i]));
                 }
             }
             else if (state == 0x00080004u) // rod disappear

@@ -16,7 +16,7 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("目标设置为焦点-Focus target master")]
     public bool FocusTargetMaster = false;
 
-    [PropertyDisplay("将按键广播到其他窗口")]
+    [PropertyDisplay("将按键广播到其他窗口", tooltip: "Can cause hitching on some computers. Only enable it if it is actually needed! It is only useful for multiboxers.")]
     public bool BroadcastToSlaves = false;
 
     [PropertyDisplay("跟随小队位置")]
@@ -60,12 +60,20 @@ sealed class AIConfig : ConfigNode
 
     [PropertyDisplay("启用非战斗离开(AFK)模式", tooltip: "非战斗状态下等待指定秒数后启用离开模式。任何移动将重置计时器，或在离开模式已激活时禁用该模式")]
     public float AFKModeTimer = 10;
+    [PropertyDisplay("Minimum distance to hitbox")]
+    public float MinDistance = default;
+
+    [PropertyDisplay("Preferred distance to forbidden zones")]
+    public float PreferredDistance = default;
+
+
 
     [PropertyDisplay("禁用障碍物地图加载-Disable loading obstacle maps", tooltip: "部分内容（如深层迷宫）可能需要启用此选项。")]
     public bool DisableObstacleMaps = false;
 
     [PropertyDisplay("移动决策延迟-Movement decision delay", tooltip: "谨慎修改此值并保持较低数值！过高可能导致无法及时应对某些机制。请注意根据不同内容调整此值。")]
     public double MoveDelay = 0;
+
 
     [PropertyDisplay("骑乘时保持静止-Idle while mounted")]
     public bool ForbidAIMovementMounted = false;

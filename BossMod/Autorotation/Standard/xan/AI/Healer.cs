@@ -165,7 +165,7 @@ public sealed class HealerAI(RotationModuleManager manager, Actor player) : AIBa
     {
         // set of all statuses called "Resurrection Restricted"
         // TODO maybe this is a flag in sheets somewhere
-        if (Player.Statuses.Any(s => s.ID is 1755 or 2449 or 3380))
+        if (Player.Statuses.Any(s => s.ID is 1755 or 2449 or 3380 or 4262))
             return;
 
         var swiftcast = StatusDetails(Player, (uint)BossMod.WHM.SID.Swiftcast, Player.InstanceID, 15).Left;
@@ -409,9 +409,9 @@ public sealed class HealerAI(RotationModuleManager manager, Actor player) : AIBa
         var rsq = radius * radius;
         var bestCount = 0;
         var bestCenter = allies[0];
-        for (var i = 0; i < allies.Count; i++)
+        for (var i = 0; i < allies.Count; ++i)
         {
-            for (var j = i; j < allies.Count; j++)
+            for (var j = i; j < allies.Count; ++j)
             {
                 var center = WPos.Lerp(allies[i], allies[j], 0.5f);
                 var thisCount = allies.Count(pos => (pos - center).LengthSq() <= rsq);

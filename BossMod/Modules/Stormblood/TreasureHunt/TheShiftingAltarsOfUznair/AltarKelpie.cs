@@ -51,7 +51,7 @@ class BloodyPuddle(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Hydrosphere)
-            AOEs.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(8.6d)));
+            AOEs.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.6d)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -72,11 +72,14 @@ class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, (uin
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var count = _aoe.AOEs.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
         for (var i = 0; i < count; ++i)
         {
-            var caster = _aoe.AOEs[i];
-            if (caster.Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -87,12 +90,15 @@ class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, (uin
         {
             var count = _aoe.AOEs.Count;
             var forbidden = new Func<WPos, float>[count];
+            var center = Arena.Center;
+            var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
             for (var i = 0; i < count; ++i)
             {
-                forbidden[i] = ShapeDistance.Cone(Arena.Center, 20f, Angle.FromDirection(_aoe.AOEs[i].Origin - Arena.Center), cone);
+                ref readonly var aoe = ref aoes[i];
+                forbidden[i] = ShapeDistance.Cone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
             }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(Casters[0].CastInfo));
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
         }
     }
 }

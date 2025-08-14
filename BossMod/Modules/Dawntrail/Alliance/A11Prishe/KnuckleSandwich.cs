@@ -5,14 +5,37 @@ sealed class KnuckleSandwich(BossModule module) : Components.GenericAOEs(module)
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(9f), new AOEShapeCircle(18f), new AOEShapeCircle(27f), new AOEShapeDonut(9f, 60f),
     new AOEShapeDonut(18f, 60f), new AOEShapeDonut(27f, 60f)];
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        var count = _aoes.Count;
+        if (count == 0)
+        {
+            return [];
+        }
+
+        var time = WorldState.CurrentTime;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count == 2)
+        {
+            ref var aoe0 = ref aoes[0];
+            ref var aoe1 = ref aoes[1];
+            var delay = aoe1.Shape is AOEShapeDonut donut ? donut.InnerRadius * 0.25d : default;
+            aoe0.Risky = aoe0.Activation.AddSeconds(-delay) <= time;
+        }
+
+        return aoes[..1];
+    }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         // extra ai hint: stay close to the edge of the first aoe
-        if (_aoes.Count == 2 && _aoes[1].Shape is AOEShapeDonut donut)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(_aoes[0].Origin, donut.InnerRadius + 2f), _aoes[0].Activation);
+        if (_aoes.Count == 2 && _aoes.Ref(1).Shape is AOEShapeDonut donut)
+        {
+            ref var aoe = ref _aoes.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, donut.InnerRadius + 2f), aoe.Activation);
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

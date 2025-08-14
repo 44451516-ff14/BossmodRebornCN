@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M06SSugarRiot;
 
-sealed class ColorRiot(BossModule module) : Components.GenericBaitAway(module, default, true, true, true)
+sealed class ColorRiot(BossModule module) : Components.GenericBaitAway(module, default, true, true, true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private static readonly AOEShapeCircle circle = new(4);
     private bool? warmClose;

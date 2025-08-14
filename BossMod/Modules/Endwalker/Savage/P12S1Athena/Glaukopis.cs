@@ -2,9 +2,9 @@
 
 // TODO: not sure how exactly second target is selected, I think it is snapshotted to the current target when first cast happens? I can definitely taunt between casts without dying...
 // TODO: consider generalizing...
-class Glaukopis(BossModule module) : Components.GenericBaitAway(module)
+sealed class Glaukopis(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeRect _shape = new(60, 2.5f);
+    private static readonly AOEShapeRect _shape = new(60f, 2.5f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -15,7 +15,7 @@ class Glaukopis(BossModule module) : Components.GenericBaitAway(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.Glaukopis)
+        if (spell.Action.ID == (uint)AID.Glaukopis)
         {
             var target = WorldState.Actors.Find(spell.TargetID);
             if (target != null)
@@ -25,7 +25,7 @@ class Glaukopis(BossModule module) : Components.GenericBaitAway(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.Glaukopis or AID.GlaukopisSecond)
+        if (spell.Action.ID is (uint)AID.Glaukopis or (uint)AID.GlaukopisSecond)
         {
             CurrentBaits.Clear();
             if (++NumCasts < 2 && WorldState.Actors.Find(caster.TargetID) is var target && target != null)

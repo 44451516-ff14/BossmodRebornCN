@@ -55,7 +55,7 @@ class Gurgle(BossModule module) : Components.GenericAOEs(module)
             var posX = index < 0x17 ? -20f : 20f;
             var posZ = posX == -20f ? -165 + (index - 0x13) * 10f : -165f + (index - 0x17) * 10f;
             var rot = posX == -20f ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0];
-            _aoes.Add(new(rect, WPos.ClampToGrid(new(posX, posZ)), rot, WorldState.FutureTime(9d)));
+            _aoes.Add(new(rect, new WPos(posX, posZ).Quantized(), rot, WorldState.FutureTime(9d)));
         }
     }
 
@@ -66,7 +66,7 @@ class Gurgle(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: true)
+class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private static readonly AOEShapeRect rect = new(80f, 1.5f);
 
@@ -117,10 +117,11 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
                 }
                 if (closestGeysir != null)
                 {
+                    var id = closestGeysir.Value.ActorID;
                     for (var i = 0; i < count; ++i)
                     {
                         ref var aoe = ref aoes[i];
-                        if (aoe == closestGeysir)
+                        if (aoe.ActorID == id)
                         {
                             aoe.Shape = circle with { InvertForbiddenZone = true };
                             aoe.Color = Colors.SafeFromAOE;
@@ -135,7 +136,7 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x12u)
+        if (index == 0x12)
         {
             if (state == 0x00020001u)
                 active = true;
@@ -147,7 +148,9 @@ class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Geyser)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(3.9d)));
+        {
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(3.9d), actorID: actor.InstanceID));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

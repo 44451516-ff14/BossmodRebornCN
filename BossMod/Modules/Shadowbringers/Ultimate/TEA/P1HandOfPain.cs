@@ -1,15 +1,16 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P1HandOfPain(BossModule module) : Components.CastCounter(module, (uint)AID.HandOfPain)
+sealed class P1HandOfPain(BossModule module) : Components.CastCounter(module, (uint)AID.HandOfPain)
 {
+    private readonly TEA bossmod = (TEA)module;
+
     public override void AddGlobalHints(GlobalHints hints)
     {
-        var boss = Module.Enemies(OID.BossP1).FirstOrDefault();
-        var hand = Module.Enemies(OID.LiquidHand).FirstOrDefault();
-        if (boss != null && hand != null)
+        if (bossmod.LiquidHand2 is Actor hand)
         {
-            var diff = (int)(hand.HPMP.CurHP - boss.HPMP.CurHP) * 100.0f / boss.HPMP.MaxHP;
-            hints.Add($"Hand HP: {(diff > 0 ? "+" : "")}{diff:f1}%");
+            var primary = Module.PrimaryActor;
+            var diff = (int)(hand.HPMP.CurHP - primary.HPMP.CurHP) * 100.0f / primary.HPMP.MaxHP;
+            hints.Add($"Hand HP: {(diff > 0f ? "+" : "")}{diff:f1}%");
         }
     }
 }

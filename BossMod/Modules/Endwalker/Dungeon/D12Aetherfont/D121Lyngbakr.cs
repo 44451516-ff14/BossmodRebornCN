@@ -32,13 +32,22 @@ class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(mod
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -53,9 +62,11 @@ class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(mod
         };
         if (shape != null)
         {
-            _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             if (_aoes.Count == 11)
+            {
                 _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            }
         }
     }
 

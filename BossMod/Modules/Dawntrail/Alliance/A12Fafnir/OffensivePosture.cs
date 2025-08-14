@@ -29,13 +29,13 @@ sealed class DragonBreath(BossModule module) : Components.GenericAOEs(module, (u
         if (spell.Action.ID == (uint)AID.OffensivePostureDragonBreath)
         {
             NumCasts = 0;
-            AOE = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.2f));
+            AOE = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.2d));
         }
     }
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.FireVoidzone && state == 0x00040008u)
+        if (state == 0x00040008u && actor.OID == (uint)OID.FireVoidzone)
             AOE = null;
     }
 }

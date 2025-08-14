@@ -6,7 +6,7 @@ sealed class EasternEwers(BossModule module) : Components.Exaflare(module, 4f)
     {
         if (spell.Action.ID is (uint)AID.NBrimOver or (uint)AID.SBrimOver)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = new(default, 5.1f), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 0.8f, ExplosionsLeft = 11, MaxShownExplosions = int.MaxValue });
+            Lines.Add(new(caster.Position, new(default, 5.1f), Module.CastFinishAt(spell), 0.8d, 11, int.MaxValue));
         }
     }
 

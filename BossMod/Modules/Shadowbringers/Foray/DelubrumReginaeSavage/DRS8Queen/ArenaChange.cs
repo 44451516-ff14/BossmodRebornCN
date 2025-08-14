@@ -10,12 +10,14 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.EmpyreanIniquityAOE && Arena.Bounds == Queen.StartingArena)
-            _aoe = new(Queen.ArenaChange, Arena.Center, default, Module.CastFinishAt(spell, 4.8f));
+        {
+            _aoe = new(Queen.ArenaChange, Arena.Center, default, Module.CastFinishAt(spell, 4.8d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x19u)
+        if (index == 0x19)
         {
             if (state is 0x00020001u or 0x00400001u)
             {

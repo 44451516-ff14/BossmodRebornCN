@@ -10,12 +10,14 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ScarletFever && Module.Arena.Bounds == Ex7Suzaku.Phase1Bounds)
-            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 7f));
+        {
+            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 7d));
+        }
     }
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.RapturousEchoPlatform && state == 0x00040008u)
+        if (state == 0x00040008u && actor.OID == (uint)OID.RapturousEchoPlatform)
         {
             Arena.Bounds = Ex7Suzaku.Phase2Bounds;
             _aoe = null;

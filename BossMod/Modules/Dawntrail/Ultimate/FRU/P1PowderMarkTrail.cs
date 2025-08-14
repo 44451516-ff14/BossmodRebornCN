@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(module, (uint)AID.BurnMark, centerAtTarget: true)
+sealed class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(module, (uint)AID.BurnMark, centerAtTarget: true)
 {
     public bool AllowTankStacking;
     private Actor? _target;
@@ -64,7 +64,7 @@ class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(module, 
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.PowderMarkTrail)
+        if (status.ID == (uint)SID.PowderMarkTrail)
         {
             _target = actor;
             _activation = status.ExpireAt;

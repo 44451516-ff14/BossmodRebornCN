@@ -4,7 +4,7 @@ sealed class CallMeHoney(BossModule module) : Components.RaidwideCast(module, (u
 sealed class TemptingTwist(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TemptingTwist1, (uint)AID.TemptingTwist2], new AOEShapeDonut(7f, 30f));
 sealed class HoneyBeeline(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HoneyBeeline1, (uint)AID.HoneyBeeline2], new AOEShapeRect(60f, 7f));
 
-sealed class HoneyedBreeze(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(40f, 15f.Degrees()), (uint)IconID.HoneyedBreezeTB, (uint)AID.HoneyedBreeze, 5f, tankbuster: true);
+sealed class HoneyedBreeze(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(40f, 15f.Degrees()), (uint)IconID.HoneyedBreezeTB, (uint)AID.HoneyedBreeze, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class HoneyBLive(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.HoneyBLiveVisual, (uint)AID.HoneyBLive, 8.3f);
 sealed class Heartsore(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Heartsore, 6f);

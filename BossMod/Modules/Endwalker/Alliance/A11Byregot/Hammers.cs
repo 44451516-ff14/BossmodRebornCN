@@ -53,7 +53,7 @@ class HammersCells(BossModule module) : Components.GenericAOEs(module, (uint)AID
             };
             if (movement == default)
                 return;
-            var i = index - 0x07u;
+            var i = index - 0x07;
             LineOffset[i] = offset;
             LineMovement[i] = movement;
             MovementPending = true;

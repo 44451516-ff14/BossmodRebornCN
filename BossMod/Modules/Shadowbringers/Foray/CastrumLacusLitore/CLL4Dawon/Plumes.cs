@@ -25,7 +25,7 @@ sealed class VerdantScarletPlume(BossModule module) : Components.GenericAOEs(mod
         }
     }
 
-    private void AddAOE(AOEShape shape, WPos position, DateTime activation) => _aoes.Add(new(shape, WPos.ClampToGrid(position), default, activation));
+    private void AddAOE(AOEShape shape, WPos position, DateTime activation) => _aoes.Add(new(shape, position.Quantized(), default, activation));
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

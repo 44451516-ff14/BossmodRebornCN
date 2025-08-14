@@ -11,10 +11,12 @@ public sealed class AIHintsBuilder : IDisposable
     private readonly BossModuleManager _bmm;
     private readonly ZoneModuleManager _zmm;
     private readonly EventSubscriptions _subscriptions;
+    private readonly RotationSolverRebornModule? _rsr;
     private readonly Dictionary<ulong, (Actor Caster, Actor? Target, AOEShape Shape, bool IsCharge)> _activeAOEs = [];
     private readonly Dictionary<ulong, (Actor Caster, Actor? Target, AOEShape Shape)> _activeGazes = [];
     private readonly List<Actor> _invincible = [];
     private ArenaBoundsCircle? _activeFateBounds;
+    private bool isRSRpaused;
 
     private static readonly uint[] invincibleStatuses =
     [
@@ -25,15 +27,16 @@ public sealed class AIHintsBuilder : IDisposable
         2413u, 2654u, 3012u, 3039u, 3052u, 3054u,
         4410u, 4175u
     ];
-    private static readonly HashSet<uint> ignore = [27503, 33626]; // action IDs that the AI should ignore
+    private static readonly HashSet<uint> ignore = [27503u, 33626u]; // action IDs that the AI should ignore
     private static readonly PartyRolesConfig _config = Service.Config.Get<PartyRolesConfig>();
     private static readonly Dictionary<uint, (byte, byte, byte, uint, string, string, string, int, bool, uint)> _spellCache = [];
 
-    public AIHintsBuilder(WorldState ws, BossModuleManager bmm, ZoneModuleManager zmm)
+    public AIHintsBuilder(WorldState ws, BossModuleManager bmm, ZoneModuleManager zmm, RotationSolverRebornModule? rsr)
     {
         _ws = ws;
         _bmm = bmm;
         _zmm = zmm;
+        _rsr = rsr;
         Obstacles = new(ws);
         _subscriptions = new
         (
@@ -75,12 +78,32 @@ public sealed class AIHintsBuilder : IDisposable
             }
         }
         hints.Normalize();
+        if (_rsr != null)
+        {
+            var soon = _ws.CurrentTime.AddSeconds(0.5);
+            var hasForbiddenDirection = hints.ForbiddenDirections.Count > 0;
+
+            if (!isRSRpaused && (hasForbiddenDirection && hints.ForbiddenDirections[0].activation < soon || hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < soon) && _rsr.IsInstalled)
+            {
+                _rsr.PauseRSR();
+                isRSRpaused = true;
+                if (hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic)
+                {
+                    hints.ForceCancelCast = true;
+                }
+            }
+            else if (isRSRpaused && (!hasForbiddenDirection || hints.ForbiddenDirections[0].activation > soon) && (hints.ImminentSpecialMode.mode != AIHints.SpecialMode.Pyretic || hints.ImminentSpecialMode.activation > soon) && _rsr.IsInstalled)
+            {
+                _rsr.UnPauseRSR();
+                isRSRpaused = false;
+            }
+        }
     }
 
     // Fill list of potential targets from world state
     private void FillEnemies(AIHints hints, bool playerIsDefaultTank, int priorityPassive = AIHints.Enemy.PriorityUndesirable)
     {
-        var allowedFateID = Utils.IsPlayerSyncedToFate(_ws) ? _ws.Client.ActiveFate.ID : 0;
+        var allowedFateID = Utils.IsPlayerSyncedToFate(_ws) ? _ws.Client.ActiveFate.ID : default;
 
         foreach (var actor in _ws.Actors.Actors.Values)
         {
@@ -121,7 +144,7 @@ public sealed class AIHintsBuilder : IDisposable
         if (inFate)
         {
             hints.PathfindMapCenter = new(_ws.Client.ActiveFate.Center.XZ());
-            hints.PathfindMapBounds = (_activeFateBounds ??= new ArenaBoundsCircle(_ws.Client.ActiveFate.Radius, resolution));
+            hints.PathfindMapBounds = (_activeFateBounds ??= new ArenaBoundsCircle(_ws.Client.ActiveFate.Radius, resolution, true));
             if (e != null && bitmap != null)
             {
                 var originCell = (hints.PathfindMapCenter - e.Origin) / resolution;
@@ -151,14 +174,19 @@ public sealed class AIHintsBuilder : IDisposable
             hints.PathfindMapCenter = player.Position.Rounded(5);
             // try to keep player near grid center
             var playerOffset = player.Position - hints.PathfindMapCenter;
-            if (playerOffset.X < -1.25f)
-                hints.PathfindMapCenter.X -= 2.5f;
-            else if (playerOffset.X > 1.25f)
-                hints.PathfindMapCenter.X += 2.5f;
-            if (playerOffset.Z < -1.25f)
-                hints.PathfindMapCenter.Z -= 2.5f;
-            else if (playerOffset.Z > 1.25f)
-                hints.PathfindMapCenter.Z += 2.5f;
+            var playerOffetX = playerOffset.X;
+            var playerOffsetZ = playerOffset.Z;
+            var pathfindMapCenterX = hints.PathfindMapCenter.X;
+            var pathfindMapCenterZ = hints.PathfindMapCenter.Z;
+            if (playerOffetX < -1.25f)
+                pathfindMapCenterX -= 2.5f;
+            else if (playerOffetX > 1.25f)
+                pathfindMapCenterX += 2.5f;
+            if (playerOffsetZ < -1.25f)
+                pathfindMapCenterZ -= 2.5f;
+            else if (playerOffsetZ > 1.25f)
+                pathfindMapCenterZ += 2.5f;
+            hints.PathfindMapCenter = new(pathfindMapCenterX, pathfindMapCenterZ);
             // keep default bounds
         }
 
@@ -169,7 +197,7 @@ public sealed class AIHintsBuilder : IDisposable
             var rot = caster.Rotation;
             var finishAt = _ws.FutureTime(caster.NPCRemainingTime);
             if (aoe.IsCharge)
-                hints.AddForbiddenZone(ShapeDistance.Rect(WPos.ClampToGrid(aoe.Caster.Position), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
+                hints.AddForbiddenZone(ShapeDistance.Rect(aoe.Caster.Position.Quantized(), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
             else
                 hints.AddForbiddenZone(aoe.Shape, target, rot, finishAt);
         }

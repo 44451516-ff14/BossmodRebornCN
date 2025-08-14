@@ -71,12 +71,12 @@ class A22AlthykNymeiaStates : StateMachineBuilder
     {
         ActorCast(id, _module.Nymeia, (uint)AID.Hydrorythmos, delay, 5, false, "Line 1")
             .ActivateOnEnter<Hydrorythmos>();
-        ComponentCondition<Hydrorythmos>(id + 0x10, 2.1f, comp => comp.NumCasts > 1);
-        ComponentCondition<Hydrorythmos>(id + 0x11, 2.1f, comp => comp.NumCasts > 3);
+        ComponentCondition<Hydrorythmos>(id + 0x10, 2.1f, comp => comp.NumCasts == 3);
+        ComponentCondition<Hydrorythmos>(id + 0x11, 2.1f, comp => comp.NumCasts == 5);
         ActorCastStart(id + 0x20, _module.Althyk, (uint)AID.MythrilGreataxe, 0.7f);
-        ComponentCondition<Hydrorythmos>(id + 0x30, 1.4f, comp => comp.NumCasts > 5)
+        ComponentCondition<Hydrorythmos>(id + 0x30, 1.4f, comp => comp.NumCasts == 7)
             .ActivateOnEnter<MythrilGreataxe>();
-        ComponentCondition<Hydrorythmos>(id + 0x31, 2.1f, comp => comp.NumCasts > 7)
+        ComponentCondition<Hydrorythmos>(id + 0x31, 2.1f, comp => comp.NumCasts == 9)
             .DeactivateOnExit<Hydrorythmos>();
         ActorCastEnd(id + 0x40, _module.Althyk, 3.5f, false, "Cleave")
             .DeactivateOnExit<MythrilGreataxe>();
@@ -160,12 +160,12 @@ class A22AlthykNymeiaStates : StateMachineBuilder
             .ActivateOnEnter<SpinnersWheelAttractionReversed>();
         ActorCast(id + 0x20, _module.Nymeia, (uint)AID.Hydrorythmos, 0.6f, 5, false, "Line 1")
             .ActivateOnEnter<Hydrorythmos>();
-        ComponentCondition<Hydrorythmos>(id + 0x30, 2.1f, comp => comp.NumCasts > 1);
-        ComponentCondition<Hydrorythmos>(id + 0x31, 2.1f, comp => comp.NumCasts > 3);
+        ComponentCondition<Hydrorythmos>(id + 0x30, 2.1f, comp => comp.NumCasts == 3);
+        ComponentCondition<Hydrorythmos>(id + 0x31, 2.1f, comp => comp.NumCasts == 5);
         ActorCastEnd(id + 0x40, _module.Althyk, 0.2f);
         // TODO: below should happen faster... didn't see any good logs however...
-        ComponentCondition<Hydrorythmos>(id + 0x50, 1.9f, comp => comp.NumCasts > 5);
-        ComponentCondition<Hydrorythmos>(id + 0x51, 2.1f, comp => comp.NumCasts > 7)
+        ComponentCondition<Hydrorythmos>(id + 0x50, 1.9f, comp => comp.NumCasts == 7);
+        ComponentCondition<Hydrorythmos>(id + 0x51, 2.1f, comp => comp.NumCasts == 9)
             .DeactivateOnExit<Hydrorythmos>();
         SpinnersWheelGazeResolve(id + 0x60, 5.6f);
     }

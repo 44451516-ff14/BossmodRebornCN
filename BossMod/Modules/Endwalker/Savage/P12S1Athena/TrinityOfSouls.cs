@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P12S1Athena;
 
-class TrinityOfSouls(BossModule module) : Components.GenericAOEs(module)
+sealed class TrinityOfSouls(BossModule module) : Components.GenericAOEs(module)
 {
     private bool _invertMiddle;
     private uint _moves; // bit 0 - move after first, bit1 - move after second

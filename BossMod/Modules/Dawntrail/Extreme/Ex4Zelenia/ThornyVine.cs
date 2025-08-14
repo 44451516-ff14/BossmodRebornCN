@@ -16,9 +16,13 @@ sealed class ThornyVine(BossModule module) : Components.Chains(module, (uint)Tet
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!TethersAssigned && _emblazon.WedgeCenterDirection != default)
+        {
             hints.Add("Meet at marked spot for chains!");
+        }
         else
+        {
             base.AddHints(slot, actor, hints);
+        }
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether)

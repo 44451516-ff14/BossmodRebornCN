@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M05SDancingGreen;
 
-sealed class BackUpDance(BossModule module) : Components.GenericBaitAway(module)
+sealed class BackUpDance(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private DateTime _activation;
     private readonly List<Actor> sources = new(4);
@@ -43,7 +43,7 @@ sealed class BackUpDance(BossModule module) : Components.GenericBaitAway(module)
         if (spell.Action.ID == (uint)AID.BackUpDanceVisual)
         {
             sources.Add(caster);
-            _activation = Module.CastFinishAt(spell, 0.6f);
+            _activation = Module.CastFinishAt(spell, 0.6d);
         }
     }
 

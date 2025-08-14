@@ -37,6 +37,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
 
     public List<Tower> Towers = [];
     public readonly bool PrioritizeInsufficient = prioritizeInsufficient; // give priority to towers with more than 0 but less than min soakers
+    public readonly AIHints.PredictedDamageType DamageType = damageType;
 
     public virtual ReadOnlySpan<Tower> ActiveTowers(int slot, Actor actor) => CollectionsMarshal.AsSpan(Towers);
 
@@ -159,7 +160,8 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
         var hasForbiddenSoakers = false;
         for (var i = 0; i < len; ++i)
         {
-            if (towers[i].ForbiddenSoakers[slot])
+            ref readonly var t = ref towers[i];
+            if (t.ForbiddenSoakers[slot])
             {
                 hasForbiddenSoakers = true;
                 break;
@@ -172,7 +174,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
                 List<Tower> insufficientTowers = new(len);
                 for (var i = 0; i < len; ++i)
                 {
-                    var t = towers[i];
+                    ref readonly var t = ref towers[i];
                     if (t.InsufficientAmountInside(Module) && t.NumInside(Module) != 0)
                         insufficientTowers.Add(t);
                 }
@@ -181,7 +183,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
                 var countI = insufficientTowers.Count;
                 for (var i = 0; i < countI; ++i)
                 {
-                    var t = insufficientTowers[i];
+                    ref readonly var t = ref insufficientTowers.Ref(i);
                     var numInside = t.NumInside(Module);
                     if (mostRelevantTower == null || mostRelevantTower is Tower towe && towe.NumInside(Module) is var num && (numInside > num || numInside == num &&
                         (t.Position - pos).LengthSq() < (towe.Position - pos).LengthSq()))
@@ -195,7 +197,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             var inTower = false;
             for (var i = 0; i < len; ++i)
             {
-                var t = towers[i];
+                ref readonly var t = ref towers[i];
                 if (t.IsInside(actor) && t.CorrectAmountInside(Module))
                 {
                     inTower = true;
@@ -208,7 +210,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             {
                 for (var i = 0; i < len; ++i)
                 {
-                    var t = towers[i];
+                    ref readonly var t = ref towers[i];
                     if (t.InsufficientAmountInside(Module))
                     {
                         missingSoakers = true;
@@ -220,7 +222,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             {
                 for (var i = 0; i < len; ++i)
                 {
-                    var t = towers[i];
+                    ref readonly var t = ref towers[i];
                     var isInside = t.IsInside(actor);
                     var correctAmount = t.CorrectAmountInside(Module);
                     if (t.InsufficientAmountInside(Module) || isInside && correctAmount)
@@ -236,42 +238,42 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             var fcount = forbidden.Count;
             if (fcount == 0 || inTower || missingSoakers && forbiddenInverted.Count != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), towers[0].Activation);
+                hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), Towers.Ref(0).Activation);
             }
             else if (fcount != 0 && !inTower)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), towers[0].Activation);
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Towers.Ref(0).Activation);
             }
         }
         else
         {
             for (var i = 0; i < len; ++i)
             {
-                var t = towers[i];
+                ref readonly var t = ref towers[i];
                 forbidden.Add(t.Shape.Distance(t.Position, t.Rotation));
             }
             var fcount = forbidden.Count;
             if (fcount != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), towers[0].Activation);
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Towers.Ref(0).Activation);
             }
         }
+        BitMask mask = default;
+        var actors = Module.Raid.WithSlot();
+        var acount = actors.Length;
         for (var i = 0; i < len; ++i)
         {
-            var t = towers[i];
-            var actors = Module.Raid.WithSlot();
-            var acount = actors.Length;
-            var mask = new BitMask();
+            ref readonly var t = ref towers[i];
             for (var j = 0; j < acount; ++j)
             {
                 ref readonly var indexActor = ref actors[j];
                 if (!t.ForbiddenSoakers[indexActor.Item1] && t.Shape.Check(indexActor.Item2.Position, t.Position, t.Rotation))
                 {
-                    mask[indexActor.Item1] = true;
+                    mask.Set(indexActor.Item1);
                 }
             }
-            hints.AddPredictedDamage(mask, t.Activation, damageType);
         }
+        hints.AddPredictedDamage(mask, Towers.Ref(0).Activation, DamageType);
     }
 }
 
@@ -284,21 +286,25 @@ public class CastTowers(BossModule module, uint aid, float radius, int minSoaker
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
-            Towers.Add(new(spell.LocXZ, Radius, MinSoakers, MaxSoakers, activation: Module.CastFinishAt(spell)));
+        {
+            Towers.Add(new(spell.LocXZ, Radius, MinSoakers, MaxSoakers, activation: Module.CastFinishAt(spell), actorID: caster.InstanceID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
         {
+            var id = caster.InstanceID;
             var count = Towers.Count;
+            var towers = CollectionsMarshal.AsSpan(Towers);
             for (var i = 0; i < count; ++i)
             {
-                var tower = Towers[i];
-                if (tower.Position == spell.LocXZ)
+                ref var tower = ref towers[i];
+                if (tower.ActorID == id)
                 {
-                    Towers.Remove(tower);
-                    break;
+                    Towers.RemoveAt(i);
+                    return;
                 }
             }
         }
@@ -576,7 +582,9 @@ public class CastTowersOpenWorld(BossModule module, uint aid, float radius, int 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             Towers.Add(new(spell.LocXZ, Radius, MinSoakers, MaxSoakers, activation: Module.CastFinishAt(spell), actorID: caster.InstanceID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -585,13 +593,14 @@ public class CastTowersOpenWorld(BossModule module, uint aid, float radius, int 
         {
             var id = caster.InstanceID;
             var count = Towers.Count;
+            var towers = CollectionsMarshal.AsSpan(Towers);
             for (var i = 0; i < count; ++i)
             {
-                var tower = Towers[i];
+                ref var tower = ref towers[i];
                 if (tower.ActorID == id)
                 {
-                    Towers.Remove(tower);
-                    break;
+                    Towers.RemoveAt(i);
+                    return;
                 }
             }
         }

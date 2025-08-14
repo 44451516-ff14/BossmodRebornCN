@@ -14,10 +14,12 @@ sealed class AeroIII(BossModule module) : Components.SimpleKnockbacks(module, (u
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 4f), act);
+            {
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 4f), act);
+            }
         }
     }
 }
@@ -30,14 +32,15 @@ sealed class ProwlingGale(BossModule module) : Components.CastTowers(module, (ui
     {
         if (forbidden.NumSetBits() < 4 && source.OID == (uint)OID.WolfOfWind1 && tether.ID is (uint)TetherID.WindsOfDecayGood or (uint)TetherID.WindsOfDecayBad)
         {
-            forbidden[Raid.FindSlot(tether.Target)] = true;
+            forbidden.Set(Raid.FindSlot(tether.Target));
             if (forbidden.NumSetBits() == 4)
             {
                 var towers = CollectionsMarshal.AsSpan(Towers);
                 var len = towers.Length;
                 for (var i = 0; i < len; ++i)
                 {
-                    towers[i].ForbiddenSoakers = forbidden;
+                    ref var t = ref towers[i];
+                    t.ForbiddenSoakers = forbidden;
                 }
             }
         }
@@ -54,14 +57,15 @@ sealed class WindsOfDecayTether(BossModule module) : Components.StretchTetherDuo
         if (_kb.NumCasts == 1)
         {
             var baits = ActiveBaitsOn(actor);
-            if (baits.Count != 0)
+            if (baits.Count != 0 && _kb.IsImmune(slot, baits.Ref(0).Activation))
             {
-                if (_kb.IsImmune(slot, baits[0].Activation))
-                    base.AddAIHints(slot, actor, assignment, hints);
+                base.AddAIHints(slot, actor, assignment, hints);
             }
         }
         else
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -69,18 +73,19 @@ sealed class WindsOfDecayTether(BossModule module) : Components.StretchTetherDuo
         if (_kb.NumCasts == 1)
         {
             var baits = ActiveBaitsOn(actor);
-            if (baits.Count != 0)
+            if (baits.Count != 0 && _kb.IsImmune(slot, baits.Ref(0).Activation))
             {
-                if (_kb.IsImmune(slot, baits[0].Activation))
-                    base.AddHints(slot, actor, hints);
+                base.AddHints(slot, actor, hints);
             }
         }
         else
+        {
             base.AddHints(slot, actor, hints);
+        }
     }
 }
 
-sealed class WindsOfDecayBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class WindsOfDecayBait(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private static readonly AOEShapeCone cone = new(40f, 15f.Degrees());
     private readonly AeroIII _kb = module.FindComponent<AeroIII>()!;
@@ -89,17 +94,19 @@ sealed class WindsOfDecayBait(BossModule module) : Components.GenericBaitAway(mo
     {
         if (CurrentBaits.Count < 4 && source.OID == (uint)OID.WolfOfWind1 && tether.ID is (uint)TetherID.WindsOfDecayGood or (uint)TetherID.WindsOfDecayBad)
         {
-            var target = WorldState.Actors.Find(tether.Target);
-            if (target is not Actor t)
-                return;
-            CurrentBaits.Add(new(source, t, cone, WorldState.FutureTime(7.1d)));
+            if (WorldState.Actors.Find(tether.Target) is Actor t)
+            {
+                CurrentBaits.Add(new(source, t, cone, WorldState.FutureTime(7.1d)));
+            }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.WindsOfDecay)
+        {
             ++NumCasts;
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -110,10 +117,13 @@ sealed class WindsOfDecayBait(BossModule module) : Components.GenericBaitAway(mo
         var baits = ActiveBaitsOn(pc);
         if (baits.Count != 0)
         {
-            if (_kb.IsImmune(pcSlot, baits[0].Activation))
+            ref readonly var bait = ref baits.Ref(0);
+            if (_kb.IsImmune(pcSlot, bait.Activation))
+            {
                 return;
-            var bait = baits[0].Source;
-            Arena.AddCone(Arena.Center, 4f, bait.Rotation, 20f.Degrees(), Colors.Safe);
+            }
+            var center = Arena.Center;
+            Arena.AddCone(center, 4f, Angle.FromDirection(center - bait.Source.Position), 20f.Degrees(), Colors.Safe);
         }
     }
 
@@ -124,11 +134,13 @@ sealed class WindsOfDecayBait(BossModule module) : Components.GenericBaitAway(mo
             var baits = ActiveBaitsOn(actor);
             if (baits.Count != 0)
             {
-                var b = baits[0];
-                if (_kb.IsImmune(slot, baits[0].Activation))
+                ref readonly var bait = ref baits.Ref(0);
+                if (_kb.IsImmune(slot, bait.Activation))
+                {
                     return;
-                var bait = b.Source;
-                hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 4f, bait.Rotation, 20f.Degrees()), b.Activation);
+                }
+                var center = Arena.Center;
+                hints.AddForbiddenZone(ShapeDistance.InvertedCone(center, 4f, Angle.FromDirection(center - bait.Source.Position), 20f.Degrees()), bait.Activation);
             }
         }
         else
@@ -142,12 +154,16 @@ sealed class WindsOfDecayBait(BossModule module) : Components.GenericBaitAway(mo
             var baits = ActiveBaitsOn(actor);
             if (baits.Count != 0)
             {
-                if (!_kb.IsImmune(slot, baits[0].Activation))
+                if (!_kb.IsImmune(slot, baits.Ref(0).Activation))
+                {
                     hints.Add("Wait in marked spot for knockback!");
+                }
             }
         }
         else
+        {
             base.AddHints(slot, actor, hints);
+        }
     }
 }
 

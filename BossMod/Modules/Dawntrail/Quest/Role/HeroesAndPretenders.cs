@@ -37,18 +37,18 @@ public enum AID : uint
     Visual = 37473 // Boss->self, no cast, single-target
 }
 
-class FledglingFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FledglingFury, 4f);
-class PromisedFall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PromisedFall, 13f);
-class GoldDust(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.GoldDust, 8f, 2, 2);
-class AcidRain(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AcidRain, 8f);
-class UnboundArrow(BossModule module) : Components.BaitAwayCast(module, (uint)AID.UnboundArrow, 5f, tankbuster: true);
+sealed class FledglingFury(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FledglingFury, 4f);
+sealed class PromisedFall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PromisedFall, 13f);
+sealed class GoldDust(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.GoldDust, 8f, 2, 2);
+sealed class AcidRain(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AcidRain, 8f);
+sealed class UnboundArrow(BossModule module) : Components.BaitAwayCast(module, (uint)AID.UnboundArrow, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
-class ForeseenFlurry(BossModule module) : Components.Exaflare(module, 4f)
+sealed class ForeseenFlurry(BossModule module) : Components.Exaflare(module, 4f)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ForeseenFlurryFirst)
-            Lines.Add(new() { Next = caster.Position, Advance = 5f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 8, MaxShownExplosions = 3 });
+            Lines.Add(new(caster.Position, 5f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 8, 3));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -72,7 +72,7 @@ class ForeseenFlurry(BossModule module) : Components.Exaflare(module, 4f)
     }
 }
 
-class HeroesAndPretendersStates : StateMachineBuilder
+sealed class HeroesAndPretendersStates : StateMachineBuilder
 {
     public HeroesAndPretendersStates(BossModule module) : base(module)
     {
@@ -87,7 +87,7 @@ class HeroesAndPretendersStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70383, NameID = 13176)]
-public class HeroesAndPretenders(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class HeroesAndPretenders(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(676f, 41f), 14.5f, 20)]);
 

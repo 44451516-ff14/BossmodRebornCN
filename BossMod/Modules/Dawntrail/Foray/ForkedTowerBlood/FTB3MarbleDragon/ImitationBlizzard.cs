@@ -26,18 +26,29 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
             return [];
         }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var act0 = aoes[0].Activation;
+        ref var aoe0 = ref aoes[0];
+        ref var aoeL = ref aoes[^1];
+        var act0 = aoe0.Activation;
         var deadline1 = act0.AddSeconds(5d);
         var deadline2 = act0.AddSeconds(1d);
+        var actLast = aoeL.Activation;
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline1)
+        while (index < count)
         {
-            ++index;
-            if (!IsRain4 && aoes[index - 1].Activation < deadline2)
+            ref var cur = ref aoes[index];
+            var curAct = cur.Activation;
+
+            if (curAct >= deadline1)
             {
-                aoes[index - 1].Color = wickedWater[slot] ? Colors.SafeFromAOE : Colors.Danger;
+                break;
             }
+
+            if (!IsRain4 && curAct < deadline2)
+            {
+                cur.Color = wickedWater[slot] ? Colors.SafeFromAOE : (curAct != actLast ? Colors.Danger : default);
+            }
+            ++index;
         }
         return aoes[..index];
     }
@@ -55,75 +66,43 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
             if (crossPuddle.Count != 0)
             {
                 var crossP = crossPuddle[0];
-                _aoes.Add(new(cross, WPos.ClampToGrid(crossP.Position), crossP.Rotation, Module.CastFinishAt(spell, 4.1d)));
+                _aoes.Add(new(cross, crossP.Position.Quantized(), crossP.Rotation, Module.CastFinishAt(spell, 4.1d)));
             }
         }
         else if (id == (uint)AID.ImitationIcicle)
         {
             var pos = caster.Position;
-            if (pos.Z == 161f) // there is probably a way to calculate this stuff, but with only 4 possible patterns we might as well hardcode it for easy maintainability
+            if (pos.Z == 161f)
             {
-                (AOEShape, WPos)[] aoes = [];
-                switch (pos.X)
-                {
-                    case -319f:
-                        aoes =
-                        [
-                            (cross, new(-343f, 141f)),
-                            (circle, new(-319f, 173f)),
-                            (cross, new(-331f, 173f)),
-                            (circle, new(-331f, 141f)),
-                            (circle, new(-355f, 141f)),
-                            (circle, new(-343f, 173f)),
-                            (circle, new(-319f, 141f)),
-                            (circle, new(-355f, 173f))
-                        ];
-                        break;
-                    case -331f:
-                        aoes =
-                        [
-                            (circle, new(-331f, 173f)),
-                            (circle, new(-355f, 141f)),
-                            (circle, new(-319f, 173f)),
-                            (circle, new(-343f, 141f)),
-                            (cross, new(-343f, 173f)),
-                            (cross, new(-331f, 141f)),
-                            (circle, new(-355f, 173f)),
-                            (circle, new(-319f, 141f))
-                        ];
-                        break;
-                    case -343f:
-                        aoes =
-                        [
-                            (circle, new(-343f, 173f)),
-                            (circle, new(-319f, 141f)),
-                            (cross, new(-331f, 173f)),
-                            (circle, new(-331f, 141f)),
-                            (circle, new(-355f, 173f)),
-                            (cross, new(-343f, 141f)),
-                            (circle, new(-319f, 173f)),
-                            (circle, new(-355f, 141f))
-                        ];
-                        break;
-                    case -355f:
-                        aoes =
-                        [
-                            (cross, new(-331f, 141f)),
-                            (circle, new(-355f, 173f)),
-                            (cross, new(-343f, 173f)),
-                            (circle, new(-343f, 141f)),
-                            (circle, new(-319f, 141f)),
-                            (circle, new(-331f, 173f)),
-                            (circle, new(-355f, 141f)),
-                            (circle, new(-331f, 173f))
-                        ];
-                        break;
+                WPos[] positions =
+                [
+                    new(-343f, 141f), new(-319f, 173f), new(-331f, 173f), new(-331f, 141f),
+                    new(-355f, 141f), new(-343f, 173f), new(-319f, 141f), new(-355f, 173f)
+                ];
 
-                }
+                var (shapes, order) = pos.X switch
+                {
+                    -319f => (
+                        [cross, circle, cross, circle, circle, circle, circle, circle],
+                        [0, 1, 2, 3, 4, 5, 6, 7]
+                    ),
+                    -331f => (
+                        [circle, circle, circle, circle, cross, cross, circle, circle],
+                        [2, 4, 1, 0, 5, 3, 7, 6]
+                    ),
+                    -343f => (
+                        [circle, circle, cross, circle, circle, cross, circle, circle],
+                        [5, 6, 2, 3, 7, 0, 1, 4]
+                    ),
+                    -355f => (
+                        new AOEShape[] { cross, circle, cross, circle, circle, circle, circle, circle },
+                        new int[] { 3, 7, 5, 0, 6, 2, 4, 1 }
+                    ),
+                    _ => default
+                };
                 var act = Module.CastFinishAt(spell, 4.6d);
                 for (var i = 0; i < 8; ++i)
                 {
-                    ref readonly var aoe = ref aoes[i];
                     var delay = i switch
                     {
                         < 2 => default,
@@ -131,7 +110,7 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
                         < 7 => 2f,
                         _ => 3f
                     };
-                    _aoes.Add(new(aoe.Item1, WPos.ClampToGrid(aoe.Item2), Angle.AnglesCardinals[1], act.AddSeconds(delay)));
+                    _aoes.Add(new(shapes[i], positions[order[i]].Quantized(), Angle.AnglesCardinals[1], act.AddSeconds(delay)));
                 }
             }
         }
@@ -184,66 +163,39 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
             var isCCW = (referenceIcewind.Position - Arena.Center).OrthoR().Dot(referenceIcewind.LastFrameMovement) < 0f;
             if (!IsRain4)
             {
-                // with only 4 possible patterns we might as well hardcode it for easy maintainability
-                (AOEShape, WPos)[] aoes = [];
-                var activationPattern241 = false;
-                switch (isPattern1, isCCW)
+                WPos[] positions =
+                [
+                    new(-353f, 173f), new(-321f, 141f), new(-337f, 133f),
+                    new(-337f, 181f), new(-321f, 173f), new(-353f, 141f), new(-337f, 157f)
+                ];
+
+                var (shapes, order, activationPattern241) = (isPattern1, isCCW) switch
                 {
-                    case (true, true):
-                        aoes =
-                        [
-                            (cross, new(-353f, 173f)),
-                            (cross, new(-321f, 141f)),
-                            (circle, new(-337f, 133f)),
-                            (circle, new(-337f, 181f)),
-                            (circle, new(-321f, 173f)),
-                            (circle, new(-353f, 141f)),
-                            (cross, new(-337f, 157f))
-                        ];
-                        activationPattern241 = true;
-                        break;
-                    case (true, false):
-                        aoes =
-                        [
-                            (circle, new(-353f, 141f)),
-                            (circle, new(-321f, 173f)),
-                            (circle, new(-337f, 133f)),
-                            (circle, new(-337f, 181f)),
-                            (cross, new(-337f, 157f)),
-                            (cross, new(-353f, 173f)),
-                            (cross, new(-321f, 141f))
-                        ];
-                        break;
-                    case (false, true):
-                        aoes =
-                        [
-                            (circle, new(-353f, 173f)),
-                            (circle, new(-321f, 141f)),
-                            (cross, new(-337f, 157f)),
-                            (circle, new(-337f, 133f)),
-                            (circle, new(-337f, 181f)),
-                            (cross, new(-321f, 173f)),
-                            (cross, new(-353f, 141f))
-                        ];
-                        break;
-                    case (false, false):
-                        aoes =
-                        [
-                            (cross, new(-321f, 173f)),
-                            (cross, new(-353f, 141f)),
-                            (circle, new(-337f, 181f)),
-                            (circle, new(-337f, 133f)),
-                            (circle, new(-321f, 141f)),
-                            (circle, new(-353f, 173f)),
-                            (cross, new(-337f, 157f))
-                        ];
-                        activationPattern241 = true;
-                        break;
-                }
+                    (true, true) => (
+                        [cross, cross, circle, circle, circle, circle, cross],
+                        [0, 1, 2, 3, 4, 5, 6],
+                        true
+                    ),
+                    (true, false) => (
+                        [circle, circle, circle, circle, cross, cross, cross],
+                        [5, 4, 2, 3, 6, 0, 1],
+                        false
+                    ),
+                    (false, true) => (
+                        [circle, circle, cross, circle, circle, cross, cross],
+                        [0, 1, 6, 2, 3, 4, 5],
+                        false
+                    ),
+                    (false, false) => (
+                        new AOEShape[] { cross, cross, circle, circle, circle, circle, cross },
+                        new int[] { 4, 5, 3, 2, 1, 0, 6 },
+                        true
+                    ),
+                };
+
                 var act = WorldState.FutureTime(5.8d);
                 for (var i = 0; i < 7; ++i)
                 {
-                    ref readonly var aoe = ref aoes[i];
                     var delay = i switch
                     {
                         < 2 => default,
@@ -251,57 +203,47 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
                         < 5 => 4d,
                         _ => 8d
                     };
-                    _aoes.Add(new(aoe.Item1, WPos.ClampToGrid(aoe.Item2), Angle.AnglesCardinals[1], act.AddSeconds(delay)));
+                    AddAOE(shapes[i], positions[order[i]], act.AddSeconds(delay));
                 }
                 aoesAdded = true;
             }
             else
             {
-                // with only 2 possible patterns we might as well hardcode it for easy maintainability
-                (AOEShape, WPos)[] aoes = [];
-                switch (isPattern1, isCCW) // bool in tuple checks if wind is moving counterclockwise
+                WPos[] positions = [new(-337f, 179f), new(-337f, 135f), new(-359f, 157f), new(-315f, 157f)];
+
+                AOEShape[] shapes = (isPattern1 == isCCW) ? [circle, circle, cross, cross] : [cross, cross, circle, circle];
+
+                int[] order = (isPattern1, isCCW) switch
                 {
-                    case (true, true):
-                    case (false, false):
-                        aoes =
-                        [
-                            (circle, new(-337f, 179f)),
-                            (circle, new(-337f, 135f)),
-                            (cross, new(-359f, 157f)),
-                            (cross, new(-315f, 157f)),
-                        ];
-                        break;
-                    case (true, false):
-                    case (false, true):
-                        aoes =
-                        [
-                            (cross, new(-337f, 179f)),
-                            (cross, new(-337f, 135f)),
-                            (circle, new(-359f, 157f)),
-                            (circle, new(-315f, 157f)),
-                        ];
-                        break;
-                }
+                    (true, true) or (false, true) => [0, 1, 2, 3],
+                    (false, false) or (true, false) => [2, 3, 0, 1]
+                };
+
                 var act = WorldState.FutureTime(5.5d);
                 for (var i = 0; i < 4; ++i)
                 {
-                    ref readonly var aoe = ref aoes[i];
-                    _aoes.Add(new(aoe.Item1, WPos.ClampToGrid(aoe.Item2), Angle.AnglesCardinals[1], act.AddSeconds(i < 2 ? default : 10d)));
+                    AddAOE(shapes[i], positions[order[i]], act.AddSeconds(i < 2 ? default : 10d));
                 }
                 aoesAdded = true;
             }
+            void AddAOE(AOEShape shape, WPos position, DateTime activation) => _aoes.Add(new(shape, position.Quantized(), Angle.AnglesCardinals[1], activation));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.ImitationBlizzardCircle or (uint)AID.ImitationBlizzardCross)
+        var id = spell.Action.ID;
+        if (id is (uint)AID.ImitationBlizzardCircle or (uint)AID.ImitationBlizzardCross)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
             {
                 _aoes.RemoveAt(0);
             }
+        }
+        else if (id == (uint)AID.FrigidDive)
+        {
+            Show = true;
         }
     }
 
@@ -401,7 +343,7 @@ sealed class ImitationBlizzardTowers(BossModule module) : Components.GenericTowe
             for (var i = count; i >= 0; --i)
             {
                 var t = towerPuddles[i].Position;
-                var posClamp = WPos.ClampToGrid(t);
+                var posClamp = t.Quantized();
                 if (t.InRect(origin, dir, 60f, default, 10f))
                 {
                     Towers.Insert(0, new(posClamp, 4f, 4, 8, null, act0));
@@ -433,7 +375,7 @@ sealed class ImitationBlizzardTowers(BossModule module) : Components.GenericTowe
             Towers.Capacity = 6;
             for (var i = count; i >= 0; --i)
             {
-                Towers.Add(new(WPos.ClampToGrid(towerPuddles[i].Position), 4f, 4, 8, null, act));
+                Towers.Add(new(towerPuddles[i].Position.Quantized(), 4f, 4, 8, null, act));
             }
         }
     }
@@ -456,7 +398,7 @@ sealed class BallOfIce(BossModule module) : Components.GenericAOEs(module)
         };
         if (circle != null)
         {
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(12.6d))); // activation time depends on mechanic, this is only the lowest possible
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(12.6d))); // activation time depends on mechanic, this is only the lowest possible
         }
     }
 

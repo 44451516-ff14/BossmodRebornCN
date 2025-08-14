@@ -51,7 +51,9 @@ sealed class LightningBoltDistantClap(BossModule module) : Components.GenericAOE
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.LightningBoltAOE)
+        {
             _aoes.Add(new(_shapeBolt, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -61,11 +63,12 @@ sealed class LightningBoltDistantClap(BossModule module) : Components.GenericAOE
             case (uint)AID.LightningBoltAOE:
                 var count1 = _aoes.Count;
                 var pos1 = spell.TargetXZ;
+                var act = WorldState.FutureTime(6.1d);
                 for (var i = 0; i < count1; ++i)
                 {
                     if (_aoes[i].Origin.AlmostEqual(pos1, 1f))
                     {
-                        _aoes[i] = new(_shapeClap, spell.TargetXZ, default, WorldState.FutureTime(6.1d));
+                        _aoes[i] = new(_shapeClap, pos1, default, act);
                         break;
                     }
                 }
@@ -96,7 +99,7 @@ sealed class CloudToGround(BossModule module) : Components.Exaflare(module, 5f)
     {
         if (spell.Action.ID == (uint)AID.CloudToGroundFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 5f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 4, MaxShownExplosions = 2 });
+            Lines.Add(new(caster.Position, 5f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 4, 2));
         }
     }
 
@@ -113,7 +116,9 @@ sealed class CloudToGround(BossModule module) : Components.Exaflare(module, 5f)
                 {
                     AdvanceLine(line, pos);
                     if (line.ExplosionsLeft == 0)
+                    {
                         Lines.RemoveAt(i);
+                    }
                     return;
                 }
             }
@@ -133,21 +138,30 @@ sealed class Burn(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
-        if (actor.OID == (uint)OID.BallOfFire && animState1 == 1u)
-            _aoes.Add(new(_shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(5d)));
+        if (actor.OID == (uint)OID.BallOfFire && animState1 == 1)
+            _aoes.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(5d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

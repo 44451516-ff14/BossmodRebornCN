@@ -9,7 +9,9 @@ sealed class Break(BossModule module) : Components.GenericGaze(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.BreakBoss or (uint)AID.BreakEye)
-            Eyes.Add(new(spell.LocXZ, Module.CastFinishAt(spell, 0.9f)));
+        {
+            Eyes.Add(new(spell.LocXZ, Module.CastFinishAt(spell, 0.9d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -18,12 +20,14 @@ sealed class Break(BossModule module) : Components.GenericGaze(module)
         {
             var count = Eyes.Count;
             var pos = spell.LocXZ;
+            var eyes = CollectionsMarshal.AsSpan(Eyes);
             for (var i = 0; i < count; ++i)
             {
-                if (Eyes[i].Position == pos)
+                ref var eye = ref eyes[i];
+                if (eye.Position == pos)
                 {
                     Eyes.RemoveAt(i);
-                    break;
+                    return;
                 }
             }
         }

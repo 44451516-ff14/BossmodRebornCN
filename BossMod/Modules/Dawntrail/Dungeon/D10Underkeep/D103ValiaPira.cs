@@ -61,13 +61,13 @@ sealed class EnforcementRay(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x11DAu && !teleported)
+        if (id == 0x11DA && !teleported)
         {
-            _aoes.Add(new(cross, WPos.ClampToGrid(actor.Position)));
+            _aoes.Add(new(cross, actor.Position.Quantized()));
             if (center != default)
                 UpdateAOEs();
         }
-        else if (id == 0x11D5u)
+        else if (id == 0x11D5)
         {
             startingpositions.Add(actor.Position);
             if (startingpositions.Count == 2)
@@ -135,7 +135,7 @@ sealed class EnforcementRay(BossModule module) : Components.GenericAOEs(module)
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin.AlmostEqual(pos, 1f))
                 {
-                    aoe.Origin = WPos.ClampToGrid(source.Position);
+                    aoe.Origin = source.Position.Quantized();
                     break;
                 }
             }

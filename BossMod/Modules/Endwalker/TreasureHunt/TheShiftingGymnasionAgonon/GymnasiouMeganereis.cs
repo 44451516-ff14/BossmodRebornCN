@@ -51,28 +51,33 @@ class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, (ui
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var count = _aoe.Casters.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
         for (var i = 0; i < count; ++i)
         {
-            var caster = _aoe.Casters[i];
-            if (caster.Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var source = Casters.Count != 0 ? Casters[0] : null;
-        if (source != null)
+        if (Casters.Count != 0)
         {
             var count = _aoe.Casters.Count;
+            var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
+            var center = Arena.Center;
             var forbidden = new Func<WPos, float>[count];
             for (var i = 0; i < count; ++i)
             {
-                forbidden[i] = ShapeDistance.Cone(Arena.Center, 20f, Angle.FromDirection(_aoe.Casters[i].Origin - Arena.Center), cone);
+                ref readonly var aoe = ref aoes[i];
+                forbidden[i] = ShapeDistance.Cone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
             }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(source.CastInfo));
+                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
         }
     }
 }

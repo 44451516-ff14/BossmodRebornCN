@@ -4,7 +4,7 @@ class Endsong(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _active = [];
 
-    private static readonly AOEShapeCircle _aoe = new(15);
+    private static readonly AOEShapeCircle _aoe = new(15f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -20,7 +20,7 @@ class Endsong(BossModule module) : BossComponent(module)
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID is TetherID.EndsongFirst or TetherID.EndsongNext)
+        if (tether.ID is (uint)TetherID.EndsongFirst or (uint)TetherID.EndsongNext)
             _active.Add(source);
     }
 

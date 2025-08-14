@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T04Zelenia;
 
-class T04ZeleniaStates : StateMachineBuilder
+sealed class T04ZeleniaStates : StateMachineBuilder
 {
     public T04ZeleniaStates(BossModule module) : base(module)
     {

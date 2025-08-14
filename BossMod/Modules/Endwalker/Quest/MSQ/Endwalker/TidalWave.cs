@@ -7,12 +7,15 @@ sealed class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, 
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoes = _megaflare.Casters;
-        var count = aoes.Count;
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_megaflare.Casters);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

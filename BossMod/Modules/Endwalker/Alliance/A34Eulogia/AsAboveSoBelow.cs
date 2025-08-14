@@ -14,7 +14,7 @@ class AsAboveSoBelow(BossModule module) : Components.Exaflare(module, 6f)
             AddLine(-advance);
 
             void AddLine(WDir dir)
-            => Lines.Add(new() { Next = pos, Advance = dir, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.5f, ExplosionsLeft = numExplosions, MaxShownExplosions = 5 });
+            => Lines.Add(new(pos, dir, Module.CastFinishAt(spell), 1.5d, numExplosions, 5));
         }
     }
 

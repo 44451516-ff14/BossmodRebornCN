@@ -17,11 +17,11 @@ public enum AID : uint
     MagitekRay = 14368 // Boss->location, 3.0s cast, range 6 circle
 }
 
-class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandStrike, new AOEShapeRect(77.5f, 2f));
-class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, 6f);
-class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
+sealed class GrandStrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandStrike, new AOEShapeRect(77.5f, 2f));
+sealed class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, 6f);
+sealed class MagitekField(BossModule module) : Components.CastInterruptHint(module, (uint)AID.MagitekField);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -29,7 +29,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -37,7 +37,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage04Act2States : StateMachineBuilder
+sealed class Stage04Act2States : StateMachineBuilder
 {
     public Stage04Act2States(BossModule module) : base(module)
     {
@@ -51,7 +51,7 @@ class Stage04Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 614, NameID = 8087, SortOrder = 2)]
-public class Stage04Act2 : BossModule
+public sealed class Stage04Act2 : BossModule
 {
     public Stage04Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

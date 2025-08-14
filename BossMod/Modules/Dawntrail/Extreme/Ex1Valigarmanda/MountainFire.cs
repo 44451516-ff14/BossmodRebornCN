@@ -39,9 +39,13 @@ sealed class MountainFire(BossModule module) : Components.GenericTowers(module, 
         {
             ++NumCasts;
             _lastSoakers = default;
-            var count = spell.Targets.Count;
-            for (var i = 0; i < count; ++i)
-                _lastSoakers[Raid.FindSlot(spell.Targets[i].ID)] = true;
+            var targets = CollectionsMarshal.AsSpan(spell.Targets);
+            var len = targets.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var targ = ref targets[i];
+                _lastSoakers.Set(Raid.FindSlot(targ.ID));
+            }
         }
     }
 }

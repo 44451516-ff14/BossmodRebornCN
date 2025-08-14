@@ -20,7 +20,9 @@ sealed class WindfangStonefang(BossModule module) : Components.GenericAOEs(modul
             _ => null
         };
         if (shape != null)
+        {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -35,7 +37,7 @@ sealed class WindfangStonefang(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-sealed class StonefangBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class StonefangBait(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private static readonly AOEShapeCone cone = new(40f, 15f.Degrees());
 
@@ -43,14 +45,14 @@ sealed class StonefangBait(BossModule module) : Components.GenericBaitAway(modul
     {
         if (spell.Action.ID == (uint)AID.StonefangCircle)
         {
-            var act = Module.CastFinishAt(spell);
+            var act = Module.CastFinishAt(spell, 0.1d);
             var party = Raid.WithoutSlot(false, true, true);
             var source = Module.PrimaryActor;
             var len = party.Length;
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 CurrentBaits.Add(new(source, p, cone, act));
             }
         }
@@ -65,16 +67,18 @@ sealed class WindfangBait(BossModule module) : Components.GenericBaitStack(modul
     {
         if (spell.Action.ID == (uint)AID.WindfangDonut)
         {
-            var act = Module.CastFinishAt(spell);
+            var act = Module.CastFinishAt(spell, 0.1d);
             var party = Raid.WithoutSlot(true, true, true);
             var source = Module.PrimaryActor;
             var len = party.Length;
 
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (p.Class.IsSupport())
+                {
                     CurrentBaits.Add(new(source, p, cone, act));
+                }
             }
         }
     }

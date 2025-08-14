@@ -18,7 +18,7 @@ class OnceAboveEverBelow(BossModule module) : Components.Exaflare(module, 6f)
             AddLine(-advance, -dir);
 
             void AddLine(WDir dir, WDir dirRay)
-            => Lines.Add(new() { Next = pos, Advance = dir, NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.5f, ExplosionsLeft = distSq ? 1 : (int)Intersect.RayCircle(offset, dirRay, 34.98f) / 6, MaxShownExplosions = 5 });
+            => Lines.Add(new(pos, dir, Module.CastFinishAt(spell), 1.5d, distSq ? 1 : (int)Intersect.RayCircle(offset, dirRay, 34.98f) / 6, 5));
         }
     }
 

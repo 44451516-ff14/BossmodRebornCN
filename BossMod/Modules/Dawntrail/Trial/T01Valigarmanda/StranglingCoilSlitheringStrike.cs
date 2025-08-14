@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T01Valigarmanda;
 
-class StranglingCoilSusurrantBreath(BossModule module) : Components.GenericAOEs(module)
+sealed class StranglingCoilSusurrantBreath(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(8f, 30f);
     private static readonly AOEShapeCone cone = new(50f, 40f.Degrees());
@@ -18,12 +18,16 @@ class StranglingCoilSusurrantBreath(BossModule module) : Components.GenericAOEs(
             _ => null
         };
         if (shape != null)
+        {
             _aoe = new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.StranglingCoil or (uint)AID.SusurrantBreath)
+        {
             _aoe = null;
+        }
     }
 }

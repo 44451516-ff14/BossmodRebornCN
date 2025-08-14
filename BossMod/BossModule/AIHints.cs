@@ -44,12 +44,14 @@ public sealed class AIHints
         Shared, // cast is expected to hit multiple players; modules might have special behavior when intentionally taking this damage solo
     }
 
-    public record struct DamagePrediction(BitMask Players, DateTime Activation, PredictedDamageType Type = PredictedDamageType.None)
+    public readonly struct DamagePrediction(BitMask players, DateTime activation, PredictedDamageType type = PredictedDamageType.None)
     {
-        public readonly BitMask Players = Players;
+        public readonly BitMask Players = players;
+        public readonly DateTime Activation = activation;
+        public readonly PredictedDamageType Type = type;
     }
 
-    public static readonly ArenaBounds DefaultBounds = new ArenaBoundsSquare(30);
+    public static readonly ArenaBounds DefaultBounds = new ArenaBoundsSquare(30f, AllowObstacleMap: true);
 
     // information needed to build base pathfinding map (onto which forbidden/goal zones are later rasterized), if needed (lazy, since it's somewhat expensive and not always needed)
     public WPos PathfindMapCenter;
@@ -237,11 +239,36 @@ public sealed class AIHints
         {
             var offX = -PathfindMapObstacles.Rect.Left;
             var offY = -PathfindMapObstacles.Rect.Top;
-            var r = PathfindMapObstacles.Rect.Clamped(PathfindMapObstacles.Bitmap.FullRect).Clamped(new(0, 0, map.Width, map.Height), offX, offY);
-            for (var y = r.Top; y < r.Bottom; ++y)
-                for (var x = r.Left; x < r.Right; ++x)
-                    if (PathfindMapObstacles.Bitmap[x, y])
-                        map.PixelMaxG[(y + offY) * map.Width + x + offX] = -900f;
+            var r = PathfindMapObstacles.Rect.Clamped(PathfindMapObstacles.Bitmap.FullRect);
+            var height = map.Height;
+            var width = map.Width;
+            var rTop = r.Top;
+            var rBottom = r.Bottom;
+            var rLeft = r.Left;
+            var rRight = r.Right;
+
+            for (var y = rTop; y < rBottom; ++y)
+            {
+                var my = y + offY;
+                if (my < 0 || my >= height)
+                {
+                    continue;
+                }
+                for (var x = rLeft; x < rRight; ++x)
+                {
+                    if (!PathfindMapObstacles.Bitmap[x, y])
+                    {
+                        continue;
+                    }
+
+                    var mx = x + offX;
+                    if (mx < 0 || mx >= width)
+                    {
+                        continue;
+                    }
+                    map.PixelMaxG[map.GridToIndex(mx, my)] = -900f;
+                }
+            }
         }
     }
 
@@ -264,7 +291,7 @@ public sealed class AIHints
         }
     }
 
-    public IEnumerable<Enemy> ForbiddenTargets
+    public List<Enemy> ForbiddenTargets
     {
         get
         {
@@ -444,6 +471,21 @@ public sealed class AIHints
         };
     }
     public Func<WPos, float> GoalProximity(Actor target, float range, float weight = 1f) => GoalProximity(target.Position, range + target.HitboxRadius, weight);
+
+    public Func<WPos, float> GoalDonut(WPos center, float innerRadius, float outerRadius, float weight = 1f)
+    {
+        var innerR = Math.Max(0f, innerRadius);
+        var outerR = Math.Max(innerR + 1f, outerRadius);
+        var innerSQ = innerR * innerR;
+        var outerSQ = outerR * outerR;
+        return p =>
+        {
+            var distSq = (p - center).LengthSq();
+            if (distSq <= innerSQ || distSq >= outerSQ)
+                return default;
+            return weight;
+        };
+    }
 
     public Func<WPos, float> PullTargetToLocation(Actor target, WPos destination, float destRadius = 2f)
     {

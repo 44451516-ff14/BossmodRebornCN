@@ -28,7 +28,7 @@ class FlamesOfAsphodelos(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.FlamesOfAsphodelosAOE1 or (uint)AID.FlamesOfAsphodelosAOE2 or (uint)AID.FlamesOfAsphodelosAOE3)
         {
-            _aoes.Add(new(cone, caster.Position, spell.Rotation, Module.CastFinishAt(spell), Risky: false));
+            _aoes.Add(new(cone, caster.Position, spell.Rotation, Module.CastFinishAt(spell), risky: false));
             if (_aoes.Count == 6)
                 _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }

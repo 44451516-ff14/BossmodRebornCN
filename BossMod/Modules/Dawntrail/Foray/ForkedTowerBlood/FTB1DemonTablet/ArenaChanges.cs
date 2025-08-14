@@ -4,7 +4,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00u)
+        if (index == 0x00)
         {
             if (state == 0x00020001u)
             {
@@ -15,7 +15,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
                 Arena.Bounds = FTB1DemonTablet.CompleteArena;
             }
         }
-        else if (index == 0x01u && state == 0x00020001u)
+        else if (index == 0x01 && state == 0x00020001u)
         {
             Arena.Bounds = FTB1DemonTablet.RotationArena;
         }

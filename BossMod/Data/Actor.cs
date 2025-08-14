@@ -51,7 +51,11 @@ public sealed record class ActorCastInfo
 // note: 'main' target could be completely different and unrelated to actual affected targets
 public sealed record class ActorCastEvent(ActionID Action, ulong MainTargetID, float AnimationLockTime, uint MaxTargets, Vector3 TargetPos, uint GlobalSequence, uint SourceSequence, Angle Rotation)
 {
-    public readonly record struct Target(ulong ID, ActionEffects Effects);
+    public readonly struct Target(ulong id, ActionEffects effects)
+    {
+        public readonly ulong ID = id;
+        public readonly ActionEffects Effects = effects;
+    }
 
     public readonly List<Target> Targets = [];
 
@@ -79,11 +83,12 @@ public record struct PendingEffectDelta(PendingEffect Effect, int Value);
 public record struct PendingEffectStatus(PendingEffect Effect, uint StatusId);
 public record struct PendingEffectStatusExtra(PendingEffect Effect, uint StatusId, byte ExtraLo);
 
-public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string name, uint nameID, ActorType type, Class classID, int level, Vector4 posRot, float hitboxRadius = 1f, ActorHPMP hpmp = default, bool targetable = true, bool ally = false, ulong ownerID = 0, uint fateID = 0)
+public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layoutID, string name, uint nameID, ActorType type, Class classID, int level, Vector4 posRot, float hitboxRadius = 1f, ActorHPMP hpmp = default, bool targetable = true, bool ally = false, ulong ownerID = default, uint fateID = default, int renderflags = 0)
 {
     public ulong InstanceID = instanceID; // 'uuid'
     public uint OID = oid;
     public int SpawnIndex = spawnIndex; // [0-200) = character (even for normal, odd for dependents like mounts), [200-246) = client-side, [246, 286) = event object, [286, 426) = ???, [426-526) = ???, [526,596) = ???
+    public uint LayoutID = layoutID;
     public uint FateID = fateID;
     public string Name = name;
     public uint NameID = nameID;
@@ -106,6 +111,7 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string nam
     public ulong OwnerID = ownerID; // uuid of owner, for pets and similar
     public ulong TargetID;
     public uint MountId; // ID of current mount, 0 if not mounted
+    public int Renderflags = renderflags; // renderflags = 0 means visible, higher values seem to be invisible actors
     public ActorCastInfo? CastInfo;
     public ActorTetherInfo Tether;
     public ActorStatus[] Statuses = new ActorStatus[60]; // empty slots have ID=0
@@ -123,6 +129,7 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string nam
     public WPos Position => new(PosRot.X, PosRot.Z);
     public WPos PrevPosition => new(PrevPosRot.X, PrevPosRot.Z);
     public WDir LastFrameMovement => Position - PrevPosition;
+    public Vector4 LastFrameMovementVec4 => PosRot - PrevPosRot;
     public Angle Rotation => PosRot.W.Radians();
     public bool Omnidirectional
     {
@@ -133,10 +140,11 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string nam
     public bool IsDeadOrDestroyed => IsDead || IsDestroyed;
 
     private static readonly HashSet<uint> ignoreNPC = [0xE19, 0xE18, 0xE1A, 0x2C11, 0x2C0F, 0x2C10, 0x2C0E, 0x2C12, 0x2EFE, 0x418F, 0x464E,
-    0x4697, 0x35BC, 0x3657, 0x3658, 0x2ED7, 0x2EDB, 0x2EDA, 0x2E92, 0x2ECA, 0x2E94, 0x2E96, 0x2E90, 0x30B7, 0x3265, 0x3264]; // friendly NPCs that should not count as party members
+    0x4697, 0x35BC, 0x3657, 0x3658, 0x2ED7, 0x2EDB, 0x2EDA, 0x2E92, 0x2ECA, 0x2E94, 0x2E96, 0x2E90, 0x30B7, 0x3265, 0x3264, 0x31A8, 0x391B,
+    0x3EFA]; // friendly NPCs that should not count as party members
     public bool IsFriendlyNPC => Type == ActorType.Enemy && IsAlly && IsTargetable && !ignoreNPC.Contains(OID);
-    public bool IsStrikingDummy => NameID == 541; // this is a hack, but striking dummies are special in some ways
-    public int CharacterSpawnIndex => SpawnIndex < 200 && (SpawnIndex & 1) == 0 ? (SpawnIndex >> 1) : -1; // [0,100) for 'real' characters, -1 otherwisepublic int PendingHPDiffence
+    public bool IsStrikingDummy => NameID == 541u; // this is a hack, but striking dummies are special in some ways
+    public int CharacterSpawnIndex => SpawnIndex < 200 && (SpawnIndex & 1) == 0 ? (SpawnIndex >> 1) : -1; // [0,100) for 'real' characters, -1 otherwise
     public float HPRatio => (float)HPMP.CurHP / HPMP.MaxHP;
     public int PendingHPDifference
     {
@@ -197,7 +205,6 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, string nam
     }
 
     public ActorStatus? FindStatus<SID>(SID sid, DateTime? expirationForPending = null) where SID : Enum => FindStatus((uint)(object)sid, expirationForPending);
-    public ActorStatus? FindStatus<SID>(SID sid, ulong source, DateTime? expirationForPending = null) where SID : Enum => FindStatus((uint)(object)sid, source, expirationForPending);
 
     public WDir DirectionTo(WPos other) => (other - Position).Normalized();
     public WDir DirectionTo(Actor other) => DirectionTo(other.Position);

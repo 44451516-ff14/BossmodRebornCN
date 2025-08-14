@@ -50,7 +50,7 @@ sealed class AncientWrath(BossModule module) : Components.GenericAOEs(module)
         if (tether.ID == (uint)TetherID.StatueActivate)
         {
             var aoeShape = GetAOEShape(source.Position) ?? rectLong;
-            _aoes.Add(new(aoeShape, WPos.ClampToGrid(source.Position), source.Rotation, WorldState.FutureTime(8.1d)));
+            _aoes.Add(new(aoeShape, source.Position.Quantized(), source.Rotation, WorldState.FutureTime(8.1d)));
         }
     }
 

@@ -139,7 +139,7 @@ class IntractableLand(BossModule module) : Components.Exaflare(module, 8f)
     {
         if (spell.Action.ID == (uint)AID.IntractableLandFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 8f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 0.8f, ExplosionsLeft = 8, MaxShownExplosions = 4 });
+            Lines.Add(new(caster.Position, 8f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 0.8d, 8, 4));
         }
     }
 
@@ -188,7 +188,7 @@ class Hammerfall(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.Hammer)
         {
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(12.6d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(12.6d)));
         }
     }
 

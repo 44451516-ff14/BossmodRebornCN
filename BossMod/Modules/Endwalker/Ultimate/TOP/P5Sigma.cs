@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
 // note: this is all very tied to LPDU strat
-class P5Sigma(BossModule module) : BossComponent(module)
+sealed class P5Sigma(BossModule module) : BossComponent(module)
 {
     public enum Glitch { Unknown, Mid, Remote }
 
@@ -207,7 +207,7 @@ class P5Sigma(BossModule module) : BossComponent(module)
     }
 }
 
-class P5SigmaHyperPulse(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(100f, 3f), (uint)TetherID.SigmaHyperPulse, (uint)AID.SigmaHyperPulse)
+sealed class P5SigmaHyperPulse(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(100f, 3f), (uint)TetherID.SigmaHyperPulse, (uint)AID.SigmaHyperPulse)
 {
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -217,7 +217,7 @@ class P5SigmaHyperPulse(BossModule module) : Components.BaitAwayTethers(module, 
     }
 }
 
-class P5SigmaWaveCannon(BossModule module) : Components.GenericBaitAway(module, (uint)AID.SigmaWaveCannonAOE)
+sealed class P5SigmaWaveCannon(BossModule module) : Components.GenericBaitAway(module, (uint)AID.SigmaWaveCannonAOE)
 {
     private BitMask _waveCannonTargets;
 
@@ -237,7 +237,7 @@ class P5SigmaWaveCannon(BossModule module) : Components.GenericBaitAway(module, 
     }
 }
 
-class P5SigmaTowers(BossModule module) : Components.GenericTowers(module)
+sealed class P5SigmaTowers(BossModule module) : Components.GenericTowers(module)
 {
     private int _soakerSum;
 
@@ -328,7 +328,7 @@ class P5SigmaTowers(BossModule module) : Components.GenericTowers(module)
     }
 }
 
-class P5SigmaRearLasers(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class P5SigmaRearLasers(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeRect _shape = new(25f, 6f, 25f);
     public Angle StartingDir;
@@ -349,7 +349,7 @@ class P5SigmaRearLasers(BossModule module) : Components.GenericRotatingAOE(modul
             return;
         StartingDir = actor.Rotation;
         Rotation = rot;
-        Sequences.Add(new(_shape, actor.Position, actor.Rotation, rot, WorldState.FutureTime(10.1d), 0.6f, 14, 9));
+        Sequences.Add(new(_shape, actor.Position, actor.Rotation, rot, WorldState.FutureTime(10.1d), 0.6d, 14, 9));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -359,7 +359,7 @@ class P5SigmaRearLasers(BossModule module) : Components.GenericRotatingAOE(modul
     }
 }
 
-class P5SigmaDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
+sealed class P5SigmaDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     public bool Show;
     public List<AOEInstance> AOEs = [];
@@ -376,7 +376,7 @@ class P5SigmaDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
     {
         if (id != 0x1E43 || actor.OID != (uint)OID.BossP5)
             return;
-        var pos = WPos.ClampToGrid(actor.Position);
+        var pos = actor.Position.Quantized();
         var rot = actor.Rotation;
         var act = WorldState.FutureTime(15.1d);
         if (actor.ModelState.ModelState == 4)
@@ -392,7 +392,7 @@ class P5SigmaDoubleAOEs(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P5SigmaNearDistantWorld(BossModule module) : P5NearDistantWorld(module)
+sealed class P5SigmaNearDistantWorld(BossModule module) : P5NearDistantWorld(module)
 {
     private readonly P5SigmaRearLasers? _lasers = module.FindComponent<P5SigmaRearLasers>();
     private BitMask _dynamisStacks;

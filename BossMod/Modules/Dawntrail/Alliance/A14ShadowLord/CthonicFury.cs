@@ -51,7 +51,7 @@ class BurningCourtMoatKeepBattlements(BossModule module) : Components.GenericAOE
     {
         var shape = ShapeForAction(spell.Action);
         if (shape != null)
-            AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -60,14 +60,16 @@ class BurningCourtMoatKeepBattlements(BossModule module) : Components.GenericAOE
         if (shape != null)
         {
             ++NumCasts;
-            var count = AOEs.Count;
+            var aoes = CollectionsMarshal.AsSpan(AOEs);
+            var len = aoes.Length;
             var id = caster.InstanceID;
-            for (var i = 0; i < count; ++i)
+            for (var i = 0; i < len; ++i)
             {
-                if (AOEs[i].ActorID == id)
+                ref var aoe = ref aoes[i];
+                if (aoe.ActorID == id)
                 {
                     AOEs.RemoveAt(i);
-                    break;
+                    return;
                 }
             }
         }

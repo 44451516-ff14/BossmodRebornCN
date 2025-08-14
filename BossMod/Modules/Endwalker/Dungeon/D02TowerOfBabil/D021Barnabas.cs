@@ -40,7 +40,7 @@ public enum IconID : uint
     Stackmarker = 62 // player
 }
 
-class ArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(15f, 19.5f);
     private AOEInstance? _aoe;
@@ -58,15 +58,17 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.GroundAndPound1 or (uint)AID.GroundAndPound2 && Arena.Bounds == D021Barnabas.StartingBounds)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6.1f));
+        if (spell.Action.ID is (uint)AID.GroundAndPound1 or (uint)AID.GroundAndPound2 && Arena.Bounds.Radius > 15f)
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6.1d));
+        }
     }
 }
 
-class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly ElectromagneticRelease1 _aoe1 = module.FindComponent<ElectromagneticRelease1>()!;
-    private readonly ElectromagneticRelease2 _aoe2 = module.FindComponent<ElectromagneticRelease2>()!;
+    private readonly Circles _aoe1 = module.FindComponent<Circles>()!;
+    private readonly Cleaves _aoe2 = module.FindComponent<Cleaves>()!;
     private BitMask positiveCharge;
     private BitMask negativeCharge;
     private DateTime activation;
@@ -89,16 +91,16 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreI
                 return knockback;
             }
             else
-                return new Knockback[1] { new(Arena.Center, 5f, activation, Kind: isPull ? Kind.TowardsOrigin : Kind.AwayFromOrigin) };
+                return new Knockback[1] { new(Arena.Center, 5f, activation, kind: isPull ? Kind.TowardsOrigin : Kind.AwayFromOrigin, ignoreImmunes: true) };
         }
         return [];
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (_aoe1.Casters.Count != 0 && _aoe1.Casters[0].Check(pos))
+        if (_aoe1.Casters.Count != 0 && _aoe1.Casters.Ref(0).Check(pos))
             return true;
-        if (_aoe2.Casters.Count != 0 && _aoe2.Casters[0].Check(pos))
+        if (_aoe2.Casters.Count != 0 && _aoe2.Casters.Ref(0).Check(pos))
             return true;
         return !Module.InBounds(pos);
     }
@@ -177,45 +179,28 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreI
     }
 }
 
-class Cleave(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 3f));
-class ElectromagneticRelease1(BossModule module) : Cleave(module, (uint)AID.ElectromagneticRelease1);
-class GroundAndPound1(BossModule module) : Cleave(module, (uint)AID.GroundAndPound1);
-class GroundAndPound2(BossModule module) : Cleave(module, (uint)AID.GroundAndPound2);
-class DynamicPoundMinus(BossModule module) : Cleave(module, (uint)AID.DynamicPoundMinus);
-class DynamicPoundPlus(BossModule module) : Cleave(module, (uint)AID.DynamicPoundPlus);
+sealed class Cleaves(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ElectromagneticRelease1, (uint)AID.GroundAndPound1, (uint)AID.GroundAndPound2,
+(uint)AID.DynamicPoundMinus, (uint)AID.DynamicPoundPlus], new AOEShapeRect(40f, 3f));
+sealed class Circles(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ElectromagneticRelease2, (uint)AID.DynamicScraplineMinus,
+(uint)AID.DynamicScraplinePlus, (uint)AID.RollingScrapline, (uint)AID.Shock], 8f);
 
-class Circles(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 8f);
-class ElectromagneticRelease2(BossModule module) : Circles(module, (uint)AID.ElectromagneticRelease2);
-class DynamicScraplineMinus(BossModule module) : Circles(module, (uint)AID.DynamicScraplineMinus);
-class DynamicScraplinePlus(BossModule module) : Circles(module, (uint)AID.DynamicScraplinePlus);
-class RollingScrapline(BossModule module) : Circles(module, (uint)AID.RollingScrapline);
-class Shock(BossModule module) : Circles(module, (uint)AID.Shock);
+sealed class ShockingForce(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ShockingForce, 6f, 4, 4);
 
-class ShockingForce(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ShockingForce, 6f, 4, 4);
-
-class D021BarnabasStates : StateMachineBuilder
+sealed class D021BarnabasStates : StateMachineBuilder
 {
     public D021BarnabasStates(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<ArenaChange>()
-            .ActivateOnEnter<ElectromagneticRelease1>()
-            .ActivateOnEnter<ElectromagneticRelease2>()
+            .ActivateOnEnter<Cleaves>()
+            .ActivateOnEnter<Circles>()
             .ActivateOnEnter<Magnetism>()
-            .ActivateOnEnter<GroundAndPound1>()
-            .ActivateOnEnter<GroundAndPound2>()
-            .ActivateOnEnter<DynamicPoundMinus>()
-            .ActivateOnEnter<DynamicPoundPlus>()
-            .ActivateOnEnter<DynamicScraplineMinus>()
-            .ActivateOnEnter<DynamicScraplinePlus>()
-            .ActivateOnEnter<RollingScrapline>()
-            .ActivateOnEnter<Shock>()
             .ActivateOnEnter<ShockingForce>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 785, NameID = 10279)]
-public class D021Barnabas(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, StartingBounds)
+public sealed class D021Barnabas(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, StartingBounds)
 {
     private static readonly WPos arenaCenter = new(-300f, 71f);
     public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(arenaCenter, 19.5f, 48)], [new Rectangle(new(-300f, 91f), 20f, 1.25f), new Rectangle(new(-300f, 51f), 20f, 1.25f)]);

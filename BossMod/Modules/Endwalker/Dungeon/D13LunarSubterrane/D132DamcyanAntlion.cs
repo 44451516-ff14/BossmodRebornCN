@@ -55,6 +55,7 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
     public bool TowerDanger;
     public readonly List<Knockback> Knockbacks = new(4);
     private static readonly AOEShapeRect rect = new(40f, 5f);
+    private Towerfall? _aoe = module.FindComponent<Towerfall>();
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(Knockbacks);
 
@@ -89,15 +90,15 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var comp = Module.FindComponent<Towerfall>();
-        if (comp != null)
+        _aoe ??= Module.FindComponent<Towerfall>();
+        var aoes = _aoe!.ActiveAOEs(slot, actor);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            var aoes = comp.ActiveAOEs(slot, actor);
-            var len = aoes.Length;
-            for (var i = 0; i < len; ++i)
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
             {
-                if (aoes[i].Check(pos))
-                    return true;
+                return true;
             }
         }
         return !Module.InBounds(pos);
@@ -126,14 +127,11 @@ class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count == 0)
             return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 1)
         {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
         }
         return aoes;
     }
@@ -144,7 +142,7 @@ class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
         {
             // actual charge is only 4 halfwidth, but the telegraphs and actual AOEs can be in different positions by upto 0.5y according to my logs
             var dir = spell.LocXZ - caster.Position;
-            _aoes.Add(new(new AOEShapeRect(dir.Length(), 4.5f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(dir), Module.CastFinishAt(spell, 4.2f)));
+            _aoes.Add(new(new AOEShapeRect(dir.Length(), 4.5f), caster.Position.Quantized(), Angle.FromDirection(dir), Module.CastFinishAt(spell, 4.2d)));
         }
     }
 
@@ -167,24 +165,24 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var risky = _kb.TowerDanger;
-        var aoes = new AOEInstance[count];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
 
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
-            aoes[i] = risky ? aoe : aoe with { Risky = false };
+            ref var aoe = ref aoes[i];
+            aoe.Risky = risky;
         }
         return aoes;
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index > 0x00)
+        if (index > 0x00 && state == 0x00020001u)
         {
             var posX = index < 0x05 ? -20f : 20f;
             var posZ = posX == -20f ? 35f + index * 10f : -5f + index * 10f;
             var rot = posX == -20f ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0];
-            _aoes.Add(new(rect, WPos.ClampToGrid(new(posX, posZ)), rot, WorldState.FutureTime(13d - _aoes.Count)));
+            _aoes.Add(new(rect, new WPos(posX, posZ).Quantized(), rot, WorldState.FutureTime(13d - _aoes.Count)));
         }
     }
 
@@ -204,7 +202,7 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
             var activation = _kb.Knockbacks[0].Activation;
             var distance = MathF.Round(Math.Abs(_aoes[0].Origin.Z - _aoes[1].Origin.Z));
             var forbidden = new Func<WPos, float>[2];
-            var check = distance is 10 or 30;
+            var check = distance is 10f or 30f;
             for (var i = 0; i < 2; ++i)
             {
                 var aoe = _aoes[i];

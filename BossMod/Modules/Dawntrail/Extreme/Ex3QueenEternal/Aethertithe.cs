@@ -10,8 +10,10 @@ sealed class Aethertithe(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x00u)
+        if (index != 0x00)
+        {
             return;
+        }
         Angle? dir = state switch
         {
             0x04000100u => -55f.Degrees(),

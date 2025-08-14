@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.Savage.P8S1Hephaistos;
 
-class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuadrupedalImpactAOE, true)
+class QuadrupedalImpact(BossModule module) : Components.GenericKnockback(module, (uint)AID.QuadrupedalImpactAOE)
 {
     private WPos? _source;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_source != null)
-            return new Knockback[1] { new(_source.Value, 30f) }; // TODO: activation
+            return new Knockback[1] { new(_source.Value, 30f, ignoreImmunes: true) }; // TODO: activation
         return [];
     }
 

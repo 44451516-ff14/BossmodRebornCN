@@ -1,12 +1,14 @@
 namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
-class ArenaChanges(BossModule module) : BossComponent(module)
+sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00040004 && index == 0x01)
+        if (index == 0x01 && state == 0x00040004u)
+        {
             SetArena(T03QueenEternal.DefaultBounds, T03QueenEternal.ArenaCenter);
-        else if (state == 0x00020001)
+        }
+        else if (state == 0x00020001u)
         {
             switch (index)
             {
@@ -23,7 +25,9 @@ class ArenaChanges(BossModule module) : BossComponent(module)
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (id == 0x2BFE) // final phase arena
+        {
             SetArena(T03QueenEternal.FinalBounds, T03QueenEternal.FinalCenter);
+        }
     }
 
     private void SetArena(ArenaBounds bounds, WPos center)

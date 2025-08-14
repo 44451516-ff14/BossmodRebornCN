@@ -65,15 +65,18 @@ class StygianDelugeArenaChange(BossModule module) : Components.GenericAOEs(modul
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.StygianDeluge && Arena.Bounds == D113Cagnazzo.StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x00u)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D113Cagnazzo.DefaultBounds;
             _aoe = null;
@@ -81,14 +84,14 @@ class StygianDelugeArenaChange(BossModule module) : Components.GenericAOEs(modul
     }
 }
 
-class VoidTorrent(BossModule module) : Components.BaitAwayCast(module, (uint)AID.VoidTorrent, new AOEShapeRect(60f, 4f), tankbuster: true);
+class VoidTorrent(BossModule module) : Components.BaitAwayCast(module, (uint)AID.VoidTorrent, new AOEShapeRect(60f, 4f), tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class Voidcleaver(BossModule module) : Components.RaidwideCast(module, (uint)AID.Voidcleaver);
 class VoidMiasmaBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(50f, 15f.Degrees()), (uint)TetherID.BaitAway);
 
 class LifescleaverVoidMiasma(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.VoidMiasma, (uint)AID.Lifescleaver], new AOEShapeCone(50f, 15f.Degrees()));
 
-class Tsunami(BossModule module) : Components.RaidwideAfterNPCYell(module, (uint)AID.Tsunami, (uint)NPCYell.LimitBreakStart, 4.5f);
+class Tsunami(BossModule module) : Components.RaidwideAfterNPCYell(module, (uint)AID.Tsunami, (uint)NPCYell.LimitBreakStart, 4.5d);
 class StygianDeluge(BossModule module) : Components.RaidwideCast(module, (uint)AID.StygianDeluge);
 class Antediluvian(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Antediluvian, 15)
 {
@@ -111,8 +114,11 @@ class BodySlamKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -121,8 +127,8 @@ class BodySlamKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)
     {
         if (Casters.Count != 0 && _aoe.NumCasts >= 4)
         {
-            var source = Casters[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 10f), Module.CastFinishAt(source.CastInfo));
+            ref readonly var c = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 10f), c.Activation);
         }
     }
 }
@@ -138,7 +144,10 @@ class HydraulicRam(BossModule module) : Components.GenericAOEs(module)
             return [];
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         if (count > 1)
-            aoes[0].Color = Colors.Danger;
+        {
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
+        }
         return aoes;
     }
 
@@ -147,7 +156,7 @@ class HydraulicRam(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.HydraulicRamTelegraph)
         {
             var dir = spell.LocXZ - caster.Position;
-            _aoes.Add(new(new AOEShapeRect(dir.Length(), 4f), WPos.ClampToGrid(caster.Position), Angle.FromDirection(dir), Module.CastFinishAt(spell, 5.7f)));
+            _aoes.Add(new(new AOEShapeRect(dir.Length(), 4f), caster.Position.Quantized(), Angle.FromDirection(dir), Module.CastFinishAt(spell, 5.7d)));
         }
     }
 
@@ -171,14 +180,17 @@ class Hydrobomb(BossModule module) : Components.GenericAOEs(module)
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var max = count > 2 ? 2 : 0;
         for (var i = 0; i < max; ++i)
-            aoes[i].Color = Colors.Danger;
+        {
+            ref var aoe = ref aoes[i];
+            aoe.Color = Colors.Danger;
+        }
         return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HydrobombTelegraph)
-            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 6.1f)));
+            _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 6.1d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -189,7 +201,7 @@ class Hydrobomb(BossModule module) : Components.GenericAOEs(module)
 }
 
 class Hydrovent(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrovent, 6f);
-class NeapTide(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.NeapTide, 6f, 5);
+class NeapTide(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spreadmarker, (uint)AID.NeapTide, 6f, 5d);
 
 class SpringTideHydroFall(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4) // both use the same icon
 {

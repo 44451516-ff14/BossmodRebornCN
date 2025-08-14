@@ -55,7 +55,7 @@ class TwoThousandMinaSlash : Components.GenericLineOfSightAOE
 
     private void Refresh()
     {
-        var blockers = Module.Enemies(OID.LooseBoulder);
+        var blockers = Module.Enemies((uint)OID.LooseBoulder);
 
         Modify(ActiveCaster?.CastInfo?.LocXZ, blockers.Select(b => (b.Position, b.HitboxRadius)), Module.CastFinishAt(ActiveCaster?.CastInfo));
         Safezones.Clear();
@@ -64,7 +64,7 @@ class TwoThousandMinaSlash : Components.GenericLineOfSightAOE
 }
 
 class FallingRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 4f);
-class ZoomIn(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.ZoomTargetSelect, (uint)AID.ZoomIn, 5.1f, 42)
+class ZoomIn(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.ZoomTargetSelect, (uint)AID.ZoomIn, 5.1d, 42)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P2OptimizedSagittariusArrow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OptimizedSagittariusArrow, new AOEShapeRect(100f, 5f));
+sealed class P2OptimizedSagittariusArrow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OptimizedSagittariusArrow, new AOEShapeRect(100f, 5f));
 
-class P2OptimizedBladedance : Components.BaitAwayTethers
+sealed class P2OptimizedBladedance : Components.BaitAwayTethers
 {
     public P2OptimizedBladedance(BossModule module) : base(module, new AOEShapeCone(100f, 45f.Degrees()), (uint)TetherID.OptimizedBladedance, (uint)AID.OptimizedBladedanceAOE)
     {
@@ -10,7 +10,7 @@ class P2OptimizedBladedance : Components.BaitAwayTethers
     }
 }
 
-class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 3, alwaysShowSpreads: true)
+sealed class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 3, alwaysShowSpreads: true)
 {
     public enum Mechanic { None, Spread, Stack }
 
@@ -54,7 +54,7 @@ class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module,
             case (uint)AID.BeyondDefense:
                 _source = caster;
                 CurMechanic = Mechanic.Spread;
-                _activation = Module.CastFinishAt(spell, 0.2f);
+                _activation = Module.CastFinishAt(spell, 0.2d);
                 break;
         }
     }
@@ -76,17 +76,16 @@ class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module,
     }
 }
 
-class P2CosmoMemory(BossModule module) : Components.CastCounter(module, (uint)AID.CosmoMemoryAOE);
+sealed class P2CosmoMemory(BossModule module) : Components.CastCounter(module, (uint)AID.CosmoMemoryAOE);
 
-class P2OptimizedPassageOfArms(BossModule module) : BossComponent(module)
+sealed class P2OptimizedPassageOfArms(BossModule module) : BossComponent(module)
 {
     public Actor? _invincible;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var e = hints.FindEnemy(_invincible);
-        if (e != null)
-            e.Priority = AIHints.Enemy.PriorityInvincible;
+        e?.Priority = AIHints.Enemy.PriorityInvincible;
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)

@@ -89,7 +89,7 @@ sealed class RightArmRayBuffed(BossModule module) : Components.GenericRotatingAO
         };
         if (increment != default)
         {
-            Sequences.Add(new(_shape, WPos.ClampToGrid(actor.Position), actor.Rotation, increment, _activation, 1.6f, 11));
+            Sequences.Add(new(_shape, actor.Position.Quantized(), actor.Rotation, increment, _activation, 1.6f, 11));
             _spheres.Add(new(actor, increment));
         }
     }

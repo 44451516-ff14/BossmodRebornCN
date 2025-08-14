@@ -21,7 +21,7 @@ sealed class AboveBoard(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
 
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
 
         for (var i = 0; i < count; ++i)
         {

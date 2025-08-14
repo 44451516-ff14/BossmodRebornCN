@@ -69,7 +69,7 @@ public enum SID : uint
 public enum IconID : uint
 {
     MercifulArc = 243, // player
-    DeadIron = 237, // player
+    DeadIron = 237 // player
 }
 
 public enum TetherID : uint

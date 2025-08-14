@@ -159,7 +159,7 @@ class DwarvenDischarge(BossModule module, AOEShape shape, uint oid, uint aid, do
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == oid)
-            _aoes.Add(new(shape, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(delay), ActorID: actor.InstanceID));
+            _aoes.Add(new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(delay), actorID: actor.InstanceID));
     }
 
     public override void OnActorDestroyed(Actor actor)

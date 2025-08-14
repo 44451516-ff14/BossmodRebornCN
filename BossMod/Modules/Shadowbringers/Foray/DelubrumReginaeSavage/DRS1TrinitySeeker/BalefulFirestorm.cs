@@ -21,7 +21,7 @@ sealed class BalefulFirestorm(BossModule module) : Components.GenericAOEs(module
         {
             case (uint)AID.BalefulComet:
                 var delay = 7.6d + AOEs.Count;
-                AOEs.Add(new(_shape, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(delay), ActorID: caster.InstanceID));
+                AOEs.Add(new(_shape, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(delay), actorID: caster.InstanceID));
                 break;
             case (uint)AID.BalefulFirestorm:
                 var count = AOEs.Count;

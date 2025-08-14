@@ -43,7 +43,7 @@ public sealed class ActionTweaksConfig : ConfigNode
 
     [PropertyDisplay("自动错误定向：如果正常运动和错误定向之间的角度大于此阈值，则防止在错误定向下运动（设置为 180 可关闭此功能）。")]
     [PropertySlider(0, 180)]
-    public float MisdirectionThreshold = 180;
+    public float MisdirectionThreshold = 180f;
 
     [PropertyDisplay("使用技能后恢复角色朝向")]
     public bool RestoreRotation = false;

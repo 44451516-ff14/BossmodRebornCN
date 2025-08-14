@@ -1,9 +1,7 @@
 namespace BossMod.Dawntrail.FATE.Ttokrrone;
 
-class DesertTempest(BossModule module) : Components.GenericAOEs(module)
+sealed class DesertTempest(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly Angle aM90 = -90.004f.Degrees();
-    private static readonly Angle a90 = 89.999f.Degrees();
     private static readonly AOEShapeCone cone = new(19f, 90f.Degrees());
     private static readonly AOEShapeCircle circle = new(19f);
     private static readonly AOEShapeDonut donut = new(14f, 60f);
@@ -32,16 +30,21 @@ class DesertTempest(BossModule module) : Components.GenericAOEs(module)
         }
         void AddAOEs(AOEShape first, AOEShape? second = null)
         {
-            var position = Module.PrimaryActor.Position;
-            _aoes.Add(new(first, position, spell.Rotation + a90, Module.CastFinishAt(spell, 1f)));
+            var act = Module.CastFinishAt(spell, 1d);
+            var a90 = 90f.Degrees();
+            AddAOE(first, a90);
             if (second != null)
-                _aoes.Add(new(second, position, spell.Rotation + aM90, Module.CastFinishAt(spell, 1f)));
+            {
+                AddAOE(second, -a90);
+            }
+            void AddAOE(AOEShape shape, Angle offset) => _aoes.Add(new(shape, spell.LocXZ, spell.Rotation + offset, act));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.DesertTempestCircle:
@@ -53,5 +56,6 @@ class DesertTempest(BossModule module) : Components.GenericAOEs(module)
                     _aoes.Clear();
                     break;
             }
+        }
     }
 }

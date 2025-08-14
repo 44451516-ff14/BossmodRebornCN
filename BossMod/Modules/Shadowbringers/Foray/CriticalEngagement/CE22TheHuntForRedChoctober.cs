@@ -55,7 +55,7 @@ sealed class ChocoMeteorStrike(BossModule module) : Components.Exaflare(module, 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ChocoMeteorStrikeFirst)
-            Lines.Add(new() { Next = caster.Position, Advance = 4f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 8, MaxShownExplosions = 4 });
+            Lines.Add(new(caster.Position, 4f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 8, 4));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -138,11 +138,11 @@ sealed class ChocoMeteorStream(BossModule module) : Components.GenericAOEs(modul
                 var closest = distA < distB ? a : b;
                 var dirClosest = closest - center;
 
-                var angle = (WDir.Cross(dirClosest, dir) > 0f ? -1f : 1f) * 45f.Degrees(); // cross product to detect rotation direction
+                var angle = (dirClosest.Cross(dir) > 0f ? -1f : 1f) * 45f.Degrees(); // cross product to detect rotation direction
                 for (var i = 0; i < 13; ++i)
                 {
-                    var pos = i == 0 ? loc : WPos.ClampToGrid(center + dir.Rotate(i * angle));
-                    _aoes.Add(new(circle, pos, default, Module.CastFinishAt(spell, i * 2f)));
+                    var pos = (i == 0 ? loc : center + dir.Rotate(i * angle)).Quantized();
+                    _aoes.Add(new(circle, pos, default, Module.CastFinishAt(spell, i * 2d)));
                 }
 
                 if (_aoes.Count == 28)

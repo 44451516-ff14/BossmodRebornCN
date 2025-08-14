@@ -8,15 +8,8 @@ abstract class PureFire(BossModule module, uint aid) : Components.SimpleAOEs(mod
 sealed class NPureFire(BossModule module) : PureFire(module, (uint)AID.NPureFireAOE);
 sealed class SPureFire(BossModule module) : PureFire(module, (uint)AID.SPureFireAOE);
 
-public abstract class C013Shadowcaster(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
-{
-    public static readonly WPos ArenaCenter = new(289f, -105f);
-    public static readonly ArenaBoundsRect StartingBounds = new(24.5f, 29.5f);
-    public static readonly ArenaBoundsRect DefaultBounds = new(15f, 20f);
-}
-
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 878, NameID = 11393, SortOrder = 5, PlanLevel = 90)]
-public sealed class C013NShadowcaster(WorldState ws, Actor primary) : C013Shadowcaster(ws, primary);
+public sealed class C013NShadowcaster(WorldState ws, Actor primary) : V1SildihnSubterrane.V14ZelessGah.VCZelessGah(ws, primary);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 879, NameID = 11393, SortOrder = 5, PlanLevel = 90)]
-public sealed class C013SShadowcaster(WorldState ws, Actor primary) : C013Shadowcaster(ws, primary);
+public sealed class C013SShadowcaster(WorldState ws, Actor primary) : V1SildihnSubterrane.V14ZelessGah.VCZelessGah(ws, primary);

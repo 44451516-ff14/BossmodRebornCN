@@ -46,11 +46,11 @@ public enum SID : uint
     MagicResistance = 3621 // none->Boss, extra=0x0
 }
 
-class GoldorFireIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorFireIII, 8f);
-class GoldorBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorBlast, new AOEShapeRect(60f, 5f));
-class GoldenCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldenCross, new AOEShapeCross(100f, 3.5f));
+sealed class GoldorFireIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorFireIII, 8f);
+sealed class GoldorBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorBlast, new AOEShapeRect(60f, 5f));
+sealed class GoldenCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldenCross, new AOEShapeCross(100f, 3.5f));
 
-class GoldenBeam(BossModule module) : Components.GenericAOEs(module)
+sealed class GoldenBeam(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
     private AOEInstance? _aoe;
@@ -103,16 +103,18 @@ class GoldenBeam(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TwentyFourCaratSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwentyFourCaratSwing, 12f);
+sealed class TwentyFourCaratSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwentyFourCaratSwing, 12f);
 
-class GoldorQuake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class GoldorQuake(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GoldorQuake1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -131,7 +133,7 @@ class GoldorQuake(BossModule module) : Components.ConcentricAOEs(module, _shapes
     }
 }
 
-class GoldorAeroIII(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GoldorAeroIII, 10f)
+sealed class GoldorAeroIII(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GoldorAeroIII, 10f)
 {
     private readonly GoldenCross _aoe = module.FindComponent<GoldenCross>()!;
 
@@ -141,40 +143,48 @@ class GoldorAeroIII(BossModule module) : Components.SimpleKnockbacks(module, (ui
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
 }
 
-class GoldorAeroIIIRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.GoldorAeroIII);
-class GoldorRush(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GoldorRush, 10f);
-class GoldorRushRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.GoldorRush);
-class TwentyFourCaratInhale(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TwentyFourCaratInhale, 30f, kind: Kind.TowardsOrigin);
-class GoldorGravity(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.GoldorGravity, (uint)AID.GoldorGravity2, 0.8f, "Dmg + Heavy debuff");
-class GoldorThunderIII(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.GoldorThunderIIIVisual, (uint)AID.GoldorThunderIII1, 0.8f, "Prepare to cleanse Electrocution");
-class GoldorThunderIII2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorThunderIII2, 6f);
-class GoldorBlizzardIII(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldorBlizzardIIIVisual);
+sealed class GoldorAeroIIIGoldorRushRaidwide(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.GoldorAeroIII, (uint)AID.GoldorRush]);
+sealed class GoldorRush(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.GoldorRush, 10f);
+sealed class TwentyFourCaratInhale(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TwentyFourCaratInhale, 30f, kind: Kind.TowardsOrigin);
+sealed class GoldorGravity(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.GoldorGravity, (uint)AID.GoldorGravity2, 0.8d, "Dmg + Heavy debuff");
+sealed class GoldorThunderIII(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.GoldorThunderIIIVisual, (uint)AID.GoldorThunderIII1, 0.8d, "Prepare to cleanse Electrocution");
+sealed class GoldorThunderIII2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GoldorThunderIII2, 6f);
+sealed class GoldorBlizzardIII(BossModule module) : Components.CastInterruptHint(module, (uint)AID.GoldorBlizzardIIIVisual);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (Module.PrimaryActor.FindStatus((uint)SID.MagicResistance) != null)
+        {
             hints.Add($"{Module.PrimaryActor.Name} is immune to magic damage! (Destroy crystal to remove buff)");
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (actor.FindStatus((uint)SID.Electrocution) != null)
+        {
             hints.Add($"Cleanse Electrocution!");
+        }
         if (actor.FindStatus((uint)SID.Heavy) != null)
+        {
             hints.Add("Use Loom to dodge AOEs!");
+        }
     }
 }
 
-class Stage31Act2States : StateMachineBuilder
+sealed class Stage31Act2States : StateMachineBuilder
 {
     public Stage31Act2States(BossModule module) : base(module)
     {
@@ -186,9 +196,8 @@ class Stage31Act2States : StateMachineBuilder
             .ActivateOnEnter<TwentyFourCaratInhale>()
             .ActivateOnEnter<GoldorQuake>()
             .ActivateOnEnter<GoldorAeroIII>()
-            .ActivateOnEnter<GoldorAeroIIIRaidwide>()
+            .ActivateOnEnter<GoldorAeroIIIGoldorRushRaidwide>()
             .ActivateOnEnter<GoldorRush>()
-            .ActivateOnEnter<GoldorRushRaidwide>()
             .ActivateOnEnter<TwentyFourCaratSwing>()
             .ActivateOnEnter<GoldorGravity>()
             .ActivateOnEnter<GoldorThunderIII>()
@@ -199,4 +208,4 @@ class Stage31Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 948, NameID = 12471, SortOrder = 2)]
-public class Stage31Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);
+public sealed class Stage31Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);

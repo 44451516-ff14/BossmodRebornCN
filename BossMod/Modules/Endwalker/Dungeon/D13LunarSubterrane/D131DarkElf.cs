@@ -62,7 +62,7 @@ class HexingStaves(BossModule module) : Components.GenericAOEs(module)
                 1 => 25.9d,
                 _ => 32d
             };
-            _aoes.Add(new(cross, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(delay)));
+            _aoes.Add(new(cross, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(delay)));
         }
     }
 

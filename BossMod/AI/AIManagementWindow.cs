@@ -45,26 +45,49 @@ sealed class AIManagementWindow : UIWindow
 
         ImGui.TextUnformatted($"Navi={_manager.Controller.NaviTargetPos}");
 
-        configModified |= ImGui.Checkbox("禁用技能", ref _config.ForbidActions);
+        configModified |= ImGui.Checkbox("Forbid actions", ref _config.ForbidActions);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("禁用移动-Forbid movement", ref _config.ForbidMovement);
+        configModified |= ImGui.Checkbox("Forbid movement", ref _config.ForbidMovement);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("骑乘时保持静止-Idle while mounted", ref _config.ForbidAIMovementMounted);
+        configModified |= ImGui.Checkbox("Idle while mounted", ref _config.ForbidAIMovementMounted);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("战斗中跟随", ref _config.FollowDuringCombat);
+        configModified |= ImGui.Checkbox("Follow during combat", ref _config.FollowDuringCombat);
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Must be enabled for follow target.");
+            ImGui.EndTooltip();
+        }
         ImGui.Spacing();
-        configModified |= ImGui.Checkbox("BOSS模块激活时跟随", ref _config.FollowDuringActiveBossModule);
+        configModified |= ImGui.Checkbox("Follow during active boss module", ref _config.FollowDuringActiveBossModule);
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Must be enabled for following targets during active boss modules.");
+            ImGui.EndTooltip();
+        }
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("脱战时跟随", ref _config.FollowOutOfCombat);
+        configModified |= ImGui.Checkbox("Follow out of combat", ref _config.FollowOutOfCombat);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("跟随目标", ref _config.FollowTarget);
+        configModified |= ImGui.Checkbox("Follow target", ref _config.FollowTarget);
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Follow the target with your distance settings.\nFollow during combat and follow during active boss module need to be activated.");
+            ImGui.EndTooltip();
+        }
         ImGui.Spacing();
-        configModified |= ImGui.Checkbox("手动目标选择", ref _config.ManualTarget);
+        configModified |= ImGui.Checkbox("Manual targeting", ref _config.ManualTarget);
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Allows manual targeting with an active AI autorotation.");
+            ImGui.EndTooltip();
+        }
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("禁用障碍物地图加载", ref _config.DisableObstacleMaps);
+        configModified |= ImGui.Checkbox("Disable loading obstacle maps", ref _config.DisableObstacleMaps);
 
-        ImGui.Text("跟随队伍成员位置");
-
+        ImGui.Text("Follow party slot");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
         ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50f));
@@ -83,8 +106,14 @@ sealed class AIManagementWindow : UIWindow
             }
             ImGui.EndCombo();
         }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Select player to follow to enable AI. Usually you select yourself for this.");
+            ImGui.EndTooltip();
+        }
         ImGui.Separator();
-        ImGui.Text("期望站位-Desired positional");
+        ImGui.Text("Desired positional");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var positionalIndex = (int)_config.DesiredPositional;
@@ -94,7 +123,7 @@ sealed class AIManagementWindow : UIWindow
             configModified = true;
         }
         ImGui.SameLine();
-        ImGui.Text("最大距离 - 至目标");
+        ImGui.Text("Max distance - to targets");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100);
         var maxDistanceTargetStr = _config.MaxDistanceToTarget.ToString(CultureInfo.InvariantCulture);
@@ -106,6 +135,12 @@ sealed class AIManagementWindow : UIWindow
                 _config.MaxDistanceToTarget = maxDistance;
                 configModified = true;
             }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Maximum distance in yalms to keep away from targets.");
+            ImGui.EndTooltip();
         }
         ImGui.SameLine();
         ImGui.Text("- to slots");
@@ -121,8 +156,52 @@ sealed class AIManagementWindow : UIWindow
                 configModified = true;
             }
         }
-
-        ImGui.Text("移动决策延迟-Movement decision delay");
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Maximum distance in yalms to keep away from followed allies.");
+            ImGui.EndTooltip();
+        }
+        ImGui.Text("Minimum distance");
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(100f);
+        var minDistanceStr = _config.MinDistance.ToString(CultureInfo.InvariantCulture);
+        if (ImGui.InputText("##MinDistance", ref minDistanceStr, 64u))
+        {
+            minDistanceStr = minDistanceStr.Replace(',', '.');
+            if (float.TryParse(minDistanceStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var minDistance))
+            {
+                _config.MinDistance = minDistance;
+                configModified = true;
+            }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Distance in yalms to keep away from target hitbox.");
+            ImGui.EndTooltip();
+        }
+        ImGui.SameLine();
+        ImGui.Text("Pref distance to forbidden zones");
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(100f);
+        var prefDistanceStr = _config.PreferredDistance.ToString(CultureInfo.InvariantCulture);
+        if (ImGui.InputText("##PrefDistance", ref prefDistanceStr, 64u))
+        {
+            prefDistanceStr = prefDistanceStr.Replace(',', '.');
+            if (float.TryParse(prefDistanceStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var prefDistance))
+            {
+                _config.PreferredDistance = prefDistance;
+                configModified = true;
+            }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Distance in yalms to keep away from forbidden zones.");
+            ImGui.EndTooltip();
+        }
+        ImGui.Text("Movement decision delay");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var movementDelayStr = _config.MoveDelay.ToString(CultureInfo.InvariantCulture);
@@ -134,6 +213,12 @@ sealed class AIManagementWindow : UIWindow
                 _config.MoveDelay = delay;
                 configModified = true;
             }
+        }
+        if (ImGui.IsItemHovered())
+        {
+            ImGui.BeginTooltip();
+            ImGui.Text("Minimum time to start moving after movement decision has been made.\nAvoid setting this too high depending on the content.");
+            ImGui.EndTooltip();
         }
         ImGui.SameLine();
         ImGui.Text("Autorotation AI preset");

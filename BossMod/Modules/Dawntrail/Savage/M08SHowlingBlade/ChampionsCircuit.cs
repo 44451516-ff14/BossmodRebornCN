@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
-sealed class GleamingBarrage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GleamingBarrage, new AOEShapeRect(31f, 4f));
+sealed class GleamingBarrage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GleamingBarrage, GleamingBeam.Rect);
 
 sealed class ChampionsCircuit(BossModule module) : Components.GenericAOEs(module)
 {
@@ -50,7 +50,7 @@ sealed class ChampionsCircuit(BossModule module) : Components.GenericAOEs(module
                     if (aoe.Shape == donut)
                     {
                         var rotate = (caster.Position - M08SHowlingBlade.ArenaCenter).Rotate(incrAdj) + M08SHowlingBlade.ArenaCenter;
-                        aoe.Origin = WPos.ClampToGrid(rotate);
+                        aoe.Origin = rotate.Quantized();
                     }
                     else
                     {

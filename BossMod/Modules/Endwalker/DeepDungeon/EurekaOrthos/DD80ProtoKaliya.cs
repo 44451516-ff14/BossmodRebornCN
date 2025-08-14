@@ -43,7 +43,7 @@ public enum TetherID : uint
     Magnetism = 38
 }
 
-class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+class Magnetism(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly Knockback?[] _sources = new Knockback?[4];
     private readonly NerveGasRingAndAutoCannons _aoe1 = module.FindComponent<NerveGasRingAndAutoCannons>()!;
@@ -54,9 +54,15 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreI
         if (_sources[slot] is Knockback source)
         {
             var count = _aoe1.AOEs.Count;
+            var aoes = CollectionsMarshal.AsSpan(_aoe1.AOEs);
             for (var i = 0; i < count; ++i)
-                if (_aoe1.AOEs[i].Shape == NerveGasRingAndAutoCannons.donut)
+            {
+                ref var aoe = ref aoes[i];
+                if (aoe.Shape == NerveGasRingAndAutoCannons.donut)
+                {
                     return new Span<Knockback>([source]);
+                }
+            }
         }
         return [];
     }
@@ -64,11 +70,14 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreI
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
         var count = _aoe1.AOEs.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoe1.AOEs);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoe1.AOEs[i];
+            ref readonly var aoe = ref aoes[i];
             if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
 
         return _aoe2.AOE != null && _aoe2.AOE.Value.Check(pos) || !Module.InBounds(pos);
@@ -92,7 +101,7 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module, ignoreI
             else if (IsKnockback(ref target))
                 AddSource(true);
 
-            void AddSource(bool isKnockback) => _sources[Raid.FindSlot(target.InstanceID)] = new(source.Position, 10f, WorldState.FutureTime(10d), Kind: isKnockback ? Kind.AwayFromOrigin : Kind.TowardsOrigin);
+            void AddSource(bool isKnockback) => _sources[Raid.FindSlot(target.InstanceID)] = new(source.Position, 10f, WorldState.FutureTime(10d), kind: isKnockback ? Kind.AwayFromOrigin : Kind.TowardsOrigin, ignoreImmunes: true);
         }
     }
 
@@ -169,7 +178,7 @@ class NerveGasRingAndAutoCannons(BossModule module) : Components.GenericAOEs(mod
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(AOEShape shape) => AOEs.Add(new(shape, spell.LocXZ, shape == rect ? spell.Rotation : default, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+        void AddAOE(AOEShape shape) => AOEs.Add(new(shape, spell.LocXZ, shape == rect ? spell.Rotation : default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
         if (spell.Action.ID == (uint)AID.NerveGasRing)
         {
             AddAOE(donut);
@@ -229,7 +238,7 @@ class AutoAttack(BossModule module) : Components.Cleave(module, (uint)AID.AutoAt
     }
 }
 
-class Resonance(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Resonance, new AOEShapeCone(12f, 45f.Degrees()), endsOnCastEvent: true, tankbuster: true);
+class Resonance(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Resonance, new AOEShapeCone(12f, 45f.Degrees()), endsOnCastEvent: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class DD80ProtoKaliyaStates : StateMachineBuilder
 {

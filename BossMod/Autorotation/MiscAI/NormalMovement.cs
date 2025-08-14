@@ -22,8 +22,7 @@ public sealed class NormalMovement : RotationModule
 
     public override void Dispose()
     {
-        if (Instance == this)
-            Instance = null;
+        Instance = null;
         base.Dispose();
     }
 

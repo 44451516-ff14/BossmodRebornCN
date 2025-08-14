@@ -44,7 +44,7 @@ class CurtainCallArenaChange(BossModule module) : BossComponent(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x05u)
+        if (index == 0x05)
         {
             if (state == 0x00020001u)
                 Arena.Bounds = CurtaincallArena;

@@ -30,7 +30,7 @@ public enum AID : uint
     OdiEtAmo = 25675 // Boss->self, 3.0s cast, single-target
 }
 
-class AglaeaBite(BossModule module) : Components.BaitAwayCast(module, (uint)AID.AglaeaBite, new AOEShapeCone(9f, 60f.Degrees()), endsOnCastEvent: true, tankbuster: true);
+class AglaeaBite(BossModule module) : Components.BaitAwayCast(module, (uint)AID.AglaeaBite, new AOEShapeCone(9f, 60f.Degrees()), endsOnCastEvent: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class AglaeaShot(BossModule module) : Components.GenericAOEs(module)
 {

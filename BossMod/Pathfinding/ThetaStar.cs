@@ -293,7 +293,7 @@ public sealed class ThetaStar
             ref var maxG = ref _map.PixelMaxG[y * _map.Width + x];
 
             // If this pixel is considered impassable
-            if (maxG <= 0)
+            if (maxG < 0f)
                 return false;
 
             // Update the minG we have seen on this line
@@ -367,7 +367,7 @@ public sealed class ThetaStar
             Score = CalculateScore(destPixG, candidateMinG, candidateLeeway, nodeIndex)
         };
 
-        if (currentParentNode.Score == Score.Safe && altNode.Score == Score.JustBad) // don't leave safe cells if it requires going through bad cells
+        if (currentParentNode.Score >= Score.Safe && altNode.Score == Score.JustBad) // don't leave safe cells if it requires going through bad cells
             return;
 
         var grandParentIndex = currentParentNode.ParentIndex;
@@ -380,7 +380,7 @@ public sealed class ThetaStar
             if (LineOfSight(gx, gy, nodeX, nodeY, _nodes[grandParentIndex].GScore, out var losLeeway, out var losDist, out var losMinG))
             {
                 var losScore = CalculateScore(destPixG, losMinG, losLeeway, nodeIndex);
-                if (losScore > altNode.Score || losScore == altNode.Score && losLeeway >= (losScore >= Score.Safe ? 0 : altNode.PathLeeway))
+                if (losScore >= altNode.Score)
                 {
                     parentIndex = grandParentIndex;
                     altNode.GScore = _nodes[parentIndex].GScore + _deltaGSide * losDist;

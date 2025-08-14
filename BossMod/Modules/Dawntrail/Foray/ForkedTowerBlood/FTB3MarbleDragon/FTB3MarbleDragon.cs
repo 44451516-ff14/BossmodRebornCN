@@ -14,7 +14,7 @@ sealed class FrigidTwister(BossModule module) : Components.Voidzone(module, 5.5f
 sealed class FrigidDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidDive, new AOEShapeRect(60f, 10f));
 sealed class GelidGaol(BossModule module) : Components.Adds(module, (uint)OID.GelidGaol, 1);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13838, PlanLevel = 100, SortOrder = 4)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.MarbleDragon, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13838, PlanLevel = 100, SortOrder = 4, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
 public sealed class FTB3MarbleDragon(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
     public static readonly WPos ArenaCenter = new(-337f, 157f);

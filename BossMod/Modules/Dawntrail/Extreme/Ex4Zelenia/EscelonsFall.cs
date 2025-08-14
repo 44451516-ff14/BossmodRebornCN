@@ -19,12 +19,12 @@ sealed class EscelonsFall(BossModule module) : Components.GenericBaitAway(module
         var party = Raid.WithoutSlot(false, true, true);
         var len = party.Length;
 
-        Span<(Actor actor, float distSq)> distances = new (Actor, float)[len];
+        (Actor actor, float distSq)[] distances = new (Actor, float)[len];
         var center = Arena.Center;
 
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             var distSq = (p.Position - center).LengthSq();
             distances[i] = (p, distSq);
         }
@@ -60,7 +60,7 @@ sealed class EscelonsFall(BossModule module) : Components.GenericBaitAway(module
         {
             var sb = new StringBuilder(4 * (count - 1) + count * 4);
             var ord = CollectionsMarshal.AsSpan(order);
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < count; ++i)
             {
                 sb.Append(ord[i]);
 
@@ -102,7 +102,7 @@ sealed class EscelonsFall(BossModule module) : Components.GenericBaitAway(module
                 ForbiddenPlayers = default;
                 CurMechanic = order.Count != 0 ? order[0] : Mechanic.None;
             }
-            ForbiddenPlayers[Raid.FindSlot(spell.MainTargetID)] = true;
+            ForbiddenPlayers.Set(Raid.FindSlot(spell.MainTargetID));
             _activation = WorldState.FutureTime(3d);
         }
     }

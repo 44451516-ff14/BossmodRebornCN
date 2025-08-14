@@ -16,7 +16,7 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
         if (!force && !WantCancel())
             return false;
 
-        _nextCancelAllowed = currentTime.AddSeconds(0.2f);
+        _nextCancelAllowed = currentTime.AddSeconds(0.2d);
         return true;
     }
 

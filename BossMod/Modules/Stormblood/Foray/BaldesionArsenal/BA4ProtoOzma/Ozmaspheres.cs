@@ -26,7 +26,7 @@ sealed class Ozmaspheres(BossModule module) : Components.GenericAOEs(module)
         var count = orbs.Count;
         if (count == 0 || actor.Role == Role.Tank)
             return [];
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var o = orbs[i];

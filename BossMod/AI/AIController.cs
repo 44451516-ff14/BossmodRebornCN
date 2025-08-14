@@ -58,6 +58,8 @@ sealed class AIController(WorldState ws, ActionManagerEx amex, MovementOverride 
         }
 
         if (hints.ForcedMovement == null && desiredPosition != null)
+        {
             hints.ForcedMovement = desiredPosition.Value - player.PosRot.XYZ();
+        }
     }
 }

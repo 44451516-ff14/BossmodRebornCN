@@ -22,25 +22,25 @@ public enum AID : uint
     WheelOfSuffering = 28481 // Boss->self, 3.5s cast, range 7 circle aoe (knockback 12)
 }
 
-class IronUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronUprising, new AOEShapeCone(7, 60.Degrees()));
+class IronUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronUprising, new AOEShapeCone(7f, 60f.Degrees()));
 class SpineShatter(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SpineShatter);
 
-class AugmentedSuffering(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AugmentedSuffering, 12)
+class AugmentedSuffering(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AugmentedSuffering, 12f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, Arena.Bounds.Radius - Distance), Module.CastFinishAt(Casters[0].CastInfo!));
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 8f), Casters.Ref(0).Activation);
     }
 }
 
-class AugmentedShatter(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AugmentedShatter, 6, 4, 4);
-class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedUprising, new AOEShapeCone(45, 45.Degrees()));
-class WheelOfSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WheelOfSuffering, 7);
+class AugmentedShatter(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AugmentedShatter, 6f, 4, 4);
+class AugmentedUprising(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AugmentedUprising, new AOEShapeCone(45f, 45f.Degrees()));
+class WheelOfSuffering(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WheelOfSuffering, 7f);
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(20, 35);
+    private static readonly AOEShapeDonut donut = new(20f, 35f);
     private AOEInstance? _aoe;
     private bool begin;
 
@@ -48,7 +48,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00 && state == 0x00020001)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D142Nero.DefaultBounds;
             Arena.Center = D142Nero.DefaultBounds.Center;
@@ -60,7 +60,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void Update()
     {
         if (!begin && _aoe == null)
-            _aoe = new(donut, Arena.Center, default, WorldState.FutureTime(3.6f));
+            _aoe = new(donut, Arena.Center, default, WorldState.FutureTime(3.6d));
     }
 }
 
@@ -105,16 +105,17 @@ public class D142Nero(WorldState ws, Actor primary) : BossModule(ws, primary, st
     new(-166.99f, -29.45f), new(-165.38f, -29.56f)];
 
     private static readonly ArenaBoundsComplex startingBounds = new([new PolygonCustom(vertices)]);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(-164, 0), 20, 48)]);
+    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(-164f, default), 20f, 48)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            e.Priority = (OID)e.Actor.OID switch
+            e.Priority = e.Actor.OID switch
             {
-                OID.MagitekDeathClaw => 1,
+                (uint)OID.MagitekDeathClaw => 1,
                 _ => 0
             };
         }
@@ -123,6 +124,6 @@ public class D142Nero(WorldState ws, Actor primary) : BossModule(ws, primary, st
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.MagitekDeathClaw), Colors.Danger);
+        Arena.Actors(Enemies((uint)OID.MagitekDeathClaw), Colors.Danger);
     }
 }

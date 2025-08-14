@@ -42,7 +42,7 @@ class Freefire(BossModule module) : Components.GenericAOEs(module, (uint)AID.Fre
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.Helper && id == 0x0449u)
+        if (id == 0x0449 && actor.OID == (uint)OID.Helper)
         {
             _casters.Add(actor);
             _resolve = WorldState.FutureTime(6d);

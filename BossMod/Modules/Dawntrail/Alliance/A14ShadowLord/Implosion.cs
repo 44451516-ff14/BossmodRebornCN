@@ -17,7 +17,9 @@ sealed class Implosion(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
-            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+        {
+            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -26,12 +28,14 @@ sealed class Implosion(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             var count = _aoes.Count;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].ActorID == caster.InstanceID)
+                ref var aoe = ref aoes[i];
+                if (aoe.ActorID == caster.InstanceID)
                 {
                     _aoes.RemoveAt(i);
-                    break;
+                    return;
                 }
             }
         }

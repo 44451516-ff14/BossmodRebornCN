@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P7GigaflaresEdge(BossModule module) : Components.GenericAOEs(module)
+sealed class P7GigaflaresEdge(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -22,8 +22,10 @@ class P7GigaflaresEdge(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID is (uint)AID.GigaflaresEdgeAOE1 or (uint)AID.GigaflaresEdgeAOE2 or (uint)AID.GigaflaresEdgeAOE3)
         {
             ++NumCasts;
-            if (_aoes.Count > 0)
+            if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 }

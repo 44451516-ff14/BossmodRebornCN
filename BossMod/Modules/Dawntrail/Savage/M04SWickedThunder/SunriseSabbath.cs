@@ -28,7 +28,7 @@ sealed class SunriseSabbathSoaringSoulpress(BossModule module) : Components.Gene
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.WickedReplica && id == 0x11D5u)
+        if (id == 0x11D5 && actor.OID == (uint)OID.WickedReplica)
         {
             _birds.Add(actor);
             AddTower(actor, 1);

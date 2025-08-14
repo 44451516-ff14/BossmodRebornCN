@@ -65,9 +65,13 @@ sealed class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (state is 0x00800040u or 0x00200010u)
+        {
             AddAOE(index, state, state == 0x00800040u ? donut : circle);
+        }
         else if (state is 0x02000001u or 0x04000004u or 0x08000004u or 0x01000001u)
+        {
             AOE = null;
+        }
     }
 
     private void AddAOE(byte index, uint state, AOEShape shape)

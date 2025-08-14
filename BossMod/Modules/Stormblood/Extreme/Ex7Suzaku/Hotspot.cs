@@ -38,7 +38,7 @@ sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (id == 0x1E43u && actor.OID == (uint)OID.Helper2)
+        if (id == 0x1E43 && actor.OID == (uint)OID.Helper2)
         {
             startrotation = actor.Rotation + 180f.Degrees();
             GetAOES(startrotation, 6.7d);
@@ -63,7 +63,7 @@ sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
     {
         var songs = Module.Enemies(_songs);
         var count = songs.Count;
-        var pos = WPos.ClampToGrid(Ex7Suzaku.ArenaCenter);
+        var pos = Ex7Suzaku.ArenaCenter.Quantized();
 
         for (var i = 0; i < count; ++i)
         {

@@ -58,7 +58,7 @@ sealed class RavenousGale(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.RavenousGaleVoidzone)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(4.6d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(4.6d)));
     }
 
     public override void OnActorDestroyed(Actor actor)
@@ -124,7 +124,7 @@ sealed class NaturesBlood(BossModule module) : Components.Exaflare(module, 4f)
     {
         if (spell.Action.ID == (uint)AID.NaturesBlood1)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 6f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 7, MaxShownExplosions = 3 });
+            Lines.Add(new(caster.Position, 6f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 7, 3));
         }
     }
 
@@ -159,7 +159,7 @@ sealed class SpitefulFlameCircleVoidzone(BossModule module) : Components.Generic
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.VermillionFlame)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position)));
+            _aoes.Add(new(circle, actor.Position.Quantized()));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

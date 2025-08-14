@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
 class MousasScorn(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.MousasScorn, 4f);
 
-class HerossSundering(BossModule module) : Components.BaitAwayCast(module, (uint)AID.HerossSundering, new AOEShapeCone(40f, 45f.Degrees()), tankbuster: true);
+class HerossSundering(BossModule module) : Components.BaitAwayCast(module, (uint)AID.HerossSundering, new AOEShapeCone(40f, 45f.Degrees()), tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 class HerossRadiance(BossModule module) : Components.RaidwideCast(module, (uint)AID.HerossRadiance);
 class MagossRadiance(BossModule module) : Components.RaidwideCast(module, (uint)AID.MagossRadiance);

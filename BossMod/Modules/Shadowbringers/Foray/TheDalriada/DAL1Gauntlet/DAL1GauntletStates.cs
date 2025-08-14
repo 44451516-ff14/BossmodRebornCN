@@ -4,28 +4,28 @@ sealed class DAL1GauntletStates : StateMachineBuilder
 {
     public DAL1GauntletStates(DAL1Gauntlet module) : base(module)
     {
-        TrivialPhase()
+
+        TrivialPhase(default)
             .ActivateOnEnter<ArenaChange>()
-            .ActivateOnEnter<NihilitysSong>()
             .ActivateOnEnter<BallisticImpact>()
-            .ActivateOnEnter<Stormcall>()
-            .ActivateOnEnter<PainStorm>()
-            .ActivateOnEnter<FrigidPulse>()
-            .ActivateOnEnter<PainfulGust>()
-            .ActivateOnEnter<BroadsideBarrage>()
-            .ActivateOnEnter<NorthSouthwind>()
+            .ActivateOnEnter<SurfaceMissile>()
+            .ActivateOnEnter<TerminusEst>()
+            .ActivateOnEnter<TerminusEstUnseen>()
+            .ActivateOnEnter<CeruleumExplosion>()
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || (module.BossAugur?.IsTargetable ?? false);
+        TrivialPhase(1u)
             .ActivateOnEnter<Pyroclysm>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies((uint)OID.FourthLegionHoplomachus);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return module.PrimaryActor.IsDestroyed && (module.BossAugur()?.IsDestroyed ?? true) && (module.BossAlkonost()?.IsDeadOrDestroyed ?? true) && (module.BossCrow()?.IsDeadOrDestroyed ?? true);
-            };
+            .ActivateOnEnter<SeventyFourDegrees>()
+            .ActivateOnEnter<FlamingCyclone>()
+            .ActivateOnEnter<Turbine>()
+            .ActivateOnEnter<SanctifiedQuakeIII>()
+            .Raw.Update = () => (module.BossAugur?.IsDestroyed ?? true) || (module.BossAlkonost?.IsTargetable ?? false);
+        TrivialPhase(2u)
+            .ActivateOnEnter<Stormcall>()
+            .ActivateOnEnter<NorthSouthwind>()
+            .ActivateOnEnter<NihilitysSong>()
+            .ActivateOnEnter<PainStormFrigidPulsePainfulGust>()
+            .ActivateOnEnter<BroadsideBarrage>()
+            .Raw.Update = () => (module.BossAlkonost?.IsDeadOrDestroyed ?? true) && (module.BossCrow?.IsDeadOrDestroyed ?? true);
     }
 }

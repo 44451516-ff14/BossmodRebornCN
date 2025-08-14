@@ -57,12 +57,12 @@ sealed class WideningNarrowingWitchHuntBait(BossModule module) : Components.Gene
         var party = Raid.WithoutSlot(false, true, true);
         var len = party.Length;
 
-        Span<(Actor actor, float distSq)> distances = new (Actor, float)[len];
+        (Actor actor, float distSq)[] distances = new (Actor, float)[len];
         var center = Arena.Center;
 
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             var distSq = (p.Position - center).LengthSq();
             distances[i] = (p, distSq);
         }

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class TOPStates : StateMachineBuilder
+sealed class TOPStates : StateMachineBuilder
 {
     private readonly TOP _module;
 
@@ -112,7 +112,7 @@ class TOPStates : StateMachineBuilder
         ComponentCondition<P1Pantokrator>(id + 0x30, 6.0f, comp => comp.NumSpreadsDone >= 6, "Spread 3/stack 1");
         ComponentCondition<P1Pantokrator>(id + 0x40, 6.0f, comp => comp.NumSpreadsDone >= 8, "Spread 4/stack 2")
             .DeactivateOnExit<P1Pantokrator>();
-        ComponentCondition<P1FlameThrower>(id + 0x50, 2.0f, comp => comp.Casters.Count == 0, "Last flamethrower")
+        ComponentCondition<P1FlameThrower>(id + 0x50, 2.0f, comp => comp.AOEs.Count == 0, "Last flamethrower")
             .DeactivateOnExit<P1BallisticImpact>()
             .DeactivateOnExit<P1FlameThrower>();
     }

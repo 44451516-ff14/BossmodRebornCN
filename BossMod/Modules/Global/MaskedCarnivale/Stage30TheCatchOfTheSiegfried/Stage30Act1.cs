@@ -27,12 +27,11 @@ public enum SID : uint
     Bind = 564 // Boss->player, extra=0x0, dispellable
 }
 
-class MagicDrain(BossModule module) : Components.CastHint(module, (uint)AID.MagicDrain, "Reflect magic damage for 30s");
-class HyperdriveFirst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HyperdriveFirst, 5f);
-class HyperdriveRest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HyperdriveRest, 5f);
-class AnkleGraze(BossModule module) : Components.CastHint(module, (uint)AID.AnkleGraze, "Applies bind, prepare to use Excuviation!");
+sealed class MagicDrain(BossModule module) : Components.CastHint(module, (uint)AID.MagicDrain, "Reflect magic damage for 30s");
+sealed class Hyperdrive(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HyperdriveFirst, (uint)AID.HyperdriveRest], 5f);
+sealed class AnkleGraze(BossModule module) : Components.CastHint(module, (uint)AID.AnkleGraze, "Applies bind, prepare to use Excuviation!");
 
-class RubberBullet(BossModule module) : Components.GenericKnockback(module)
+sealed class RubberBullet(BossModule module) : Components.GenericKnockback(module)
 {
     private Knockback? _knockback;
     private readonly Explosion _aoe = module.FindComponent<Explosion>()!;
@@ -43,8 +42,11 @@ class RubberBullet(BossModule module) : Components.GenericKnockback(module)
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (aoes[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
@@ -64,7 +66,7 @@ class RubberBullet(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class Explosion(BossModule module) : Components.GenericAOEs(module)
+sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8);
     private readonly List<AOEInstance> _aoes = [];
@@ -74,7 +76,7 @@ class Explosion(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Bomb)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(8.4d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.4d)));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -84,7 +86,7 @@ class Explosion(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -99,7 +101,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -112,13 +114,12 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage30Act1States : StateMachineBuilder
+sealed class Stage30Act1States : StateMachineBuilder
 {
     public Stage30Act1States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<HyperdriveFirst>()
-            .ActivateOnEnter<HyperdriveRest>()
+            .ActivateOnEnter<Hyperdrive>()
             .ActivateOnEnter<AnkleGraze>()
             .ActivateOnEnter<Explosion>()
             .ActivateOnEnter<RubberBullet>()
@@ -129,7 +130,7 @@ class Stage30Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 699, NameID = 9245, SortOrder = 1)]
-public class Stage30Act1 : BossModule
+public sealed class Stage30Act1 : BossModule
 {
     public Stage30Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

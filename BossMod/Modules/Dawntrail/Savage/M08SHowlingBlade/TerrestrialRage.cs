@@ -1,29 +1,32 @@
 namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
-sealed class SuspendedStone(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.SuspendedStone, (uint)AID.SuspendedStone, 6f, 5.1f);
-sealed class Heavensearth(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Heavensearth, (uint)AID.Heavensearth, 6f, 5.1f, 4, 4)
+sealed class HeavensearthSuspendedStone(BossModule module) : Components.IconStackSpread(module, (uint)IconID.Heavensearth, (uint)IconID.SuspendedStone, (uint)AID.Heavensearth, (uint)AID.SuspendedStone, 6f, 6f, 5.1d, 4, 4, true)
 {
     private BitMask forbidden;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        base.OnEventIcon(actor, iconID, targetID);
-        if (iconID == (uint)IconID.SuspendedStone)
+        if (iconID == SpreadIcon) // stack and spreads can appear in any order during the same frame
         {
-            forbidden[Raid.FindSlot(targetID)] = true;
+            AddSpread(actor, WorldState.FutureTime(ActivationDelay));
+            forbidden.Set(Raid.FindSlot(targetID));
+            if (Stacks.Count != 0)
+            {
+                Stacks.Ref(0).ForbiddenPlayers = forbidden;
+            }
+        }
+        else if (iconID == StackIcon)
+        {
+            AddStack(actor, WorldState.FutureTime(ActivationDelay), forbidden);
         }
     }
 
-    public override void Update()
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        base.Update();
-        var count = Stacks.Count;
-        if (count == 0)
-            forbidden = default;
-        else if (count == 1)
+        base.OnEventCast(caster, spell);
+        if (spell.Action.ID == SpreadAction)
         {
-            var stack = CollectionsMarshal.AsSpan(Stacks)[0];
-            stack.ForbiddenPlayers = forbidden;
+            forbidden = default;
         }
     }
 }
@@ -39,24 +42,32 @@ sealed class FangedCharge(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var deadline = aoes[0].Activation.AddSeconds(1d);
+        ref readonly var aoe0 = ref aoes[0];
+        var deadline = aoe0.Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.GleamingFang2 && id == 0x11D2u)
+        if (id == 0x11D2 && actor.OID == (uint)OID.GleamingFang2)
         {
             AddAOE();
             AddAOE(180f.Degrees());
         }
         void AddAOE(Angle offset = default)
-        => _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation + offset, WorldState.FutureTime(6d)));
+        => _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation + offset, WorldState.FutureTime(6d)));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -78,7 +89,7 @@ sealed class FangedCharge(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.FangedCharge)
+        if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.FangedCharge)
         {
             _aoes.RemoveAt(0);
             ++NumCasts;
@@ -95,8 +106,10 @@ sealed class Shadowchase(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.HowlingBladeShadow && id == 0x11D1u)
-            _aoes.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(3.1d)));
+        if (id == 0x11D1 && actor.OID == (uint)OID.HowlingBladeShadow)
+        {
+            _aoes.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(3.1d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

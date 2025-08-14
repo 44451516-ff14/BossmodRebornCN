@@ -43,12 +43,14 @@ sealed class ImmuneResponseArenaChange(BossModule module) : Components.GenericAO
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ImmuneResponseVisualSmall && Arena.Bounds == D061AntivirusX.StartingBounds)
-            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.8f));
+        {
+            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.8d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x03u)
+        if (index == 0x03 && state == 0x00020001u)
         {
             Arena.Bounds = D061AntivirusX.DefaultBounds;
             _aoe = null;
@@ -108,7 +110,7 @@ sealed class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(
         if (actor.OID is (uint)OID.InterferonR or (uint)OID.InterferonC)
         {
             AOEShape shape = actor.OID == (int)OID.InterferonR ? donut : cross;
-            var activationTime = _aoes.Count == 0 ? WorldState.FutureTime(9.9d) : _aoes[0].Activation.AddSeconds(2.5d * _aoes.Count);
+            var activationTime = _aoes.Count == 0 ? WorldState.FutureTime(9.9d) : _aoes.Ref(0).Activation.AddSeconds(2.5d * _aoes.Count);
             AddAOE(new(shape, actor.Position, default, activationTime)); // intentionally not using quantized values here
         }
     }
@@ -164,7 +166,7 @@ sealed class Quarantine(BossModule module) : Components.StackWithIcon(module, (u
     }
 }
 
-sealed class Disinfection(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Tankbuster, (uint)AID.Disinfection, tankbuster: true)
+sealed class Disinfection(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.Tankbuster, (uint)AID.Disinfection, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

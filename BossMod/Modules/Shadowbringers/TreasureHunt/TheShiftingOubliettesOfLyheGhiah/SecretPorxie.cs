@@ -54,7 +54,7 @@ class Sweep(BossModule module) : Components.Exaflare(module, 6f)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.SweepStart)
-            Lines.Add(new() { Next = caster.Position, Advance = 12f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell, 0.9f), TimeToMove = 4.5f, ExplosionsLeft = 4, MaxShownExplosions = 3 });
+            Lines.Add(new(caster.Position, 12f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell, 0.9d), 4.5d, 4, 3));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

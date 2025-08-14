@@ -33,13 +33,24 @@ public struct NavigationDecision
         (Func<WPos, float>, DateTime, ulong)[] localForbiddenZones = [.. hints.ForbiddenZones];
         Func<WPos, float>[] localGoalZones = [.. hints.GoalZones];
         if (hints.ForbiddenZones.Count != 0)
+        {
             RasterizeForbiddenZones(ctx.Map, localForbiddenZones, ws.CurrentTime, ctx.Scratch);
-        if (hints.GoalZones.Count != 0)
-            RasterizeGoalZones(ctx.Map, localGoalZones);
-
-        if (forbiddenZoneCushion > 0)
-            AvoidForbiddenZone(ctx.Map, forbiddenZoneCushion);
-
+        }
+        if (player.CastInfo == null) // don't rasterize goal zones if casting or if inside a very dangerous pixel
+        {
+            var index = ctx.Map.GridToIndex(ctx.Map.WorldToGrid(player.Position));
+            if (ctx.Map.PixelMaxG.Length > index && ctx.Map.PixelMaxG[index] is >= 1f or < 0f) // prioritize safety over uptime, still needs to be active for below 0 MaxG to go back inside arena bounds if needed
+            {
+                if (hints.GoalZones.Count != 0)
+                {
+                    RasterizeGoalZones(ctx.Map, localGoalZones);
+                }
+                if (forbiddenZoneCushion > 0)
+                {
+                    AvoidForbiddenZone(ctx.Map, forbiddenZoneCushion);
+                }
+            }
+        }
         // execute pathfinding
         ctx.ThetaStar.Start(ctx.Map, player.Position, 1.0f / playerSpeed);
         var bestNodeIndex = ctx.ThetaStar.Execute();
@@ -52,9 +63,14 @@ public struct NavigationDecision
     {
         var d = (int)(forbiddenZoneCushion / map.Resolution);
         map.MaxPriority = -1;
-        foreach (var (x, y, _) in map.EnumeratePixels())
+        var pixels = map.EnumeratePixels();
+        var len = pixels.Length;
+        for (var i = 0; i < len; ++i)
         {
-            var cellIndex = map.GridToIndex(x, y);
+            ref readonly var p = ref pixels[i];
+            ref readonly var px = ref p.x;
+            ref readonly var py = ref p.y;
+            var cellIndex = map.GridToIndex(px, py);
             if (map.PixelMaxG[cellIndex] == float.MaxValue)
             {
                 var hasDangerousNeighbour = false;
@@ -63,9 +79,10 @@ public struct NavigationDecision
                     for (var oy = -1; oy <= 1; ++oy)
                     {
                         if (ox == 0 && oy == 0)
+                        {
                             continue;
-
-                        var (nx, ny) = map.ClampToGrid((x + ox * d, y + oy * d));
+                        }
+                        var (nx, ny) = map.ClampToGrid((px + ox * d, py + oy * d));
                         if (map.PixelMaxG[map.GridToIndex(nx, ny)] != float.MaxValue)
                         {
                             hasDangerousNeighbour = true;
@@ -414,7 +431,7 @@ public struct NavigationDecision
         do
         {
             ref var node = ref pf.NodeByIndex(cell);
-            if (pf.NodeByIndex(node.ParentIndex).GScore == 0f || iterations++ == maxIterations)
+            if (pf.NodeByIndex(node.ParentIndex).GScore == 0f || ++iterations == maxIterations)
             {
                 //var dest = pf.CellCenter(cell);
                 // if destination coord matches player coord, do not move along that coordinate, this is used for precise positioning

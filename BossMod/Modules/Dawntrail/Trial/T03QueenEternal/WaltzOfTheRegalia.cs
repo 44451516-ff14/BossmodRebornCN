@@ -5,9 +5,9 @@ namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 // since i have no clue how to find out the final rotation of the rectangles
 // it doesn't seem to be the final rotation of the target and the helpers only spawn as soon as the 1s cast time starts
 
-class WaltzOfTheRegaliaBait(BossModule module) : Components.GenericAOEs(module)
+sealed class WaltzOfTheRegaliaBait(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(MathF.Sqrt(212) * 0.5f);
+    private static readonly AOEShapeCircle circle = new(MathF.Sqrt(212f) * 0.5f);
     private readonly List<(Actor, DateTime)> _targets = new(3);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -26,22 +26,45 @@ class WaltzOfTheRegaliaBait(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (actor.OID == (uint)OID.QueenEternal3 && id == 0x11D7)
-            _targets.Add((actor, WorldState.FutureTime(7)));
+        if (id == 0x11D7 && actor.OID == (uint)OID.QueenEternal3)
+        {
+            _targets.Add((actor, WorldState.FutureTime(7d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.WaltzOfTheRegaliaVisual)
-            _targets.RemoveAll(x => x.Item1.Position.AlmostEqual(caster.Position, 0.5f));
+        {
+            var count = _targets.Count;
+            var pos = caster.Position;
+            for (var i = 0; i < count; ++i)
+            {
+                if (_targets[i].Item1.Position.AlmostEqual(pos, 0.5f))
+                {
+                    _targets.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 
     public override void OnActorDestroyed(Actor actor)
     {
         // not sure if needed, just a safeguard incase the removal by OnEventCast failed for whatever reason
-        if (_targets.Count != 0 && actor.OID == (uint)OID.QueenEternal3)
-            _targets.RemoveAll(x => x.Item1 == actor);
+        if (actor.OID == (uint)OID.QueenEternal3)
+        {
+            var count = _targets.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                if (_targets[i].Item1 == actor)
+                {
+                    _targets.RemoveAt(i);
+                    return;
+                }
+            }
+        }
     }
 }
 
-class WaltzOfTheRegalia(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaltzOfTheRegalia, new AOEShapeRect(14, 2));
+sealed class WaltzOfTheRegalia(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaltzOfTheRegalia, new AOEShapeRect(14f, 2f));

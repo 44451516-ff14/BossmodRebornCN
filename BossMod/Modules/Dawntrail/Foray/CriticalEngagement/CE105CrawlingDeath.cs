@@ -57,8 +57,15 @@ sealed class Clawmarks(BossModule module) : Components.GenericAOEs(module)
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -89,7 +96,7 @@ sealed class Clawmarks(BossModule module) : Components.GenericAOEs(module)
             };
             if (activation != default)
             {
-                AOEs.Add(new(rect, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(activation), ActorID: actor.InstanceID));
+                AOEs.Add(new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(activation), actorID: actor.InstanceID));
             }
         }
     }
@@ -132,7 +139,7 @@ sealed class ClawingShadow(BossModule module) : Components.GenericAOEs(module)
     {
         if (state == 0x00100020u && actor.OID == (uint)OID.ClawsOnFloor)
         {
-            _aoes.Add(new(Cone, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(_aoes.Count < 3 ? 8.1d : 10.6d)));
+            _aoes.Add(new(Cone, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(_aoes.Count < 3 ? 8.1d : 10.6d)));
         }
     }
 
@@ -157,12 +164,9 @@ sealed class Crosshatch(BossModule module) : Components.GenericAOEs(module)
             return [];
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        if (!aoes[0].Risky)
+        for (var i = 0; i < 2; ++i)
         {
-            for (var i = 0; i < 2; ++i)
-            {
-                aoes[i].Risky = true;
-            }
+            aoes[i].Risky = true;
         }
         return aoes;
     }
@@ -196,7 +200,9 @@ sealed class Crosshatch(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return;
+        }
         base.AddAIHints(slot, actor, assignment, hints);
         if (count > 2)
         {

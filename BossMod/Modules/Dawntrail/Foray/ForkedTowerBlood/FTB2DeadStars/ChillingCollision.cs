@@ -10,7 +10,7 @@ sealed class ChillingCollision(BossModule module) : Components.GenericKnockback(
     {
         if (spell.Action.ID == (uint)AID.ChillingCollisionVisual1)
         {
-            _kb = new(spell.LocXZ, 21f, Module.CastFinishAt(spell, 1.2f));
+            _kb = new(spell.LocXZ, 21f, Module.CastFinishAt(spell, 1.2d));
         }
     }
 

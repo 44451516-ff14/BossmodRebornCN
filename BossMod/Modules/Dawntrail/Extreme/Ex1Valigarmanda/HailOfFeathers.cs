@@ -40,7 +40,7 @@ sealed class BlightedBolt : Components.GenericAOEs
         if (count == 6)
             return [];
         var targetsspan = CollectionsMarshal.AsSpan(_targets);
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         var index = 0;
         var hasDead = false;
 

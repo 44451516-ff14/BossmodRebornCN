@@ -17,7 +17,6 @@ public enum OID : uint
     TamedAlkonost = 0x32CB, // R7.5
     VorticalOrb = 0x32CC, // R0.5
     TamedAlkonostsShadow = 0x32CE, // R3.75-7.5
-    FourthLegionHoplomachus = 0x3254, // R0.5
     Helper2 = 0x32CD, // R0.5-3.75
     Helper = 0x233C
 }
@@ -80,7 +79,7 @@ public enum AID : uint
 
     NihilitysSongVisual = 24360, // TamedAlkonost->self, 5.0s cast, single-target
     NihilitysSong = 24361, // Helper->self, 5.6s cast, ???
-    BroadsideBarrage = 24357, // TamedCrow->self, 5.0s cast, range 40 width 40 rect
+    BroadsideBarrage = 24357 // TamedCrow->self, 5.0s cast, range 40 width 40 rect
 }
 
 public enum SID : uint

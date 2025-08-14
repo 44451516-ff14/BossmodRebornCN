@@ -70,7 +70,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
                     }
                 }
                 if (!found)
-                    AOEs.Add(new(_shape, WPos.ClampToGrid(Arena.Center + cellOffset), default, activation));
+                    AOEs.Add(new(_shape, (Arena.Center + cellOffset).Quantized(), default, activation));
             }
         }
     }

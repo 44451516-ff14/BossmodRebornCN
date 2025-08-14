@@ -318,12 +318,11 @@ public enum AID : uint
     MornAfahsEdgeFirst3 = 29457, // Helper->self, 10.7s cast, range 4 circle tower
     MornAfahsEdgeVisual = 28207, // DragonKingThordan->self, no cast, single-target, visual (subsequent)
     MornAfahsEdgeRest = 28208, // Helper->self, no cast, range 4 circle tower
-    MornAfahsEdgeFail = 28209, // Helper->self, no cast, range 60 circle unsoaked tower
+    MornAfahsEdgeFail = 28209 // Helper->self, no cast, range 60 circle unsoaked tower
 }
 
 public enum SID : uint
 {
-    None = 0,
     Prey = 562, // none->player, extra=0x0
     Discomposed = 2733, // none->BossP2, extra=0x0
     Jump1 = 3004, // none->player, extra=0x0, 'First in Line'
@@ -334,57 +333,56 @@ public enum SID : uint
     JumpBackward = 2757, // none->player, extra=0x0, 'Elusive Jump Target'
     Clawbound = 2775, // none->player, extra=0x0, red tether
     Fangbound = 2776, // none->player, extra=0x0, blue tether
-    BoundAndDetermined = 2777, // none->player, extra=0x0, prevents swap for next 3s
+    // BoundAndDetermined = 2777, // none->player, extra=0x0, prevents swap for next 3s
     PiercingResistanceDown = 3131, // NidhoggDrake->player, extra=0x0
+    Skyblind = 2661, // Helper->player, after baiting cones
     Doom = 2976, // Darkscale->player, extra=0x0
-    BurningChains = 769, // none->player, extra=0x0
+    // BurningChains = 769, // none->player, extra=0x0
     MortalVow = 2896, // NidhoggP6/Helper->player, extra=0xFFA1
     MortalAtonement = 2897, // none->player, extra=0x0
-    Suppuration = 3133, // Helper->player, extra=0x0 (extra targets for mortal vow pass)
+    // Suppuration = 3133, // Helper->player, extra=0x0 (extra targets for mortal vow pass)
     SpreadingFlames = 2758, // none->player, extra=0x0
     EntangledFlames = 2759, // none->player, extra=0x0
     Boiling = 2898, // Helper->player, extra=0x0
     Freezing = 2899, // Helper->player, extra=0x0
     Pyretic = 960,
-    GenericMechanic = 2056, // none->SerAdelphel/Haurchefant/DragonKingThordan, extra=0x1B6/0x127/0x12A (fire sword)/0x12B (ice sword)
+    GenericMechanic = 2056 // none->SerAdelphel/Haurchefant/DragonKingThordan, extra=0x1B6/0x127/0x12A (fire sword)/0x12B (ice sword)
 }
 
 public enum TetherID : uint
 {
-    None = 0,
     HolyShieldBash = 84, // SerJanlenoux/SerAdelphel/NidhoggDrake/BossP3->player
-    LeftEye = 178, // LeftEye->Estinien
-    RightEye = 179, // RightEye->Estinien
-    SoulOfFriendshipDevotion = 12, // Haurchefant/Ysayle->player/Alphinaud
-    Fangbound = 51, // player->RightEye, blue tether
-    Clawbound = 52, // player->LeftEye, red tether
-    Incarnation = 165, // Vedrfolnir/VidofnirVisual/DarkscaleVisual->BossP5
+    // LeftEye = 178, // LeftEye->Estinien
+    // RightEye = 179, // RightEye->Estinien
+    // SoulOfFriendshipDevotion = 12, // Haurchefant/Ysayle->player/Alphinaud
+    // Fangbound = 51, // player->RightEye, blue tether
+    // Clawbound = 52, // player->LeftEye, red tether
+    // Incarnation = 165, // Vedrfolnir/VidofnirVisual/DarkscaleVisual->BossP5
     SpiralPierce = 5, // SerVellguine/SerIgnasse->player
     //_Gen_Tether_53 = 53, // player->SerGrinnaux
-    Heavensflame = 9, // player->player
+    // Heavensflame = 9, // player->player
     FlameBreath = 194, // player->NidhoggP6
     IceBreath = 195, // player->HraesvelgrP6
-    FlameIceBreathNear = 196, // player->NidhoggP6
+    FlameIceBreathNear = 196 // player->NidhoggP6
     //_Gen_Tether_1 = 1, // NidhoggP6->HraesvelgrP6
     //_Gen_Tether_2 = 2, // NidhoggP6->HraesvelgrP6
 }
 
 public enum IconID : uint
 {
-    None = 0,
     SacredSever1 = 50, // player
     SacredSever2 = 51, // player
     SkywardLeapP2 = 330, // player
     Prey = 285, // player
-    Jump1 = 319, // player
-    Jump2 = 320, // player
-    Jump3 = 321, // player
-    SoulOfFriendship = 286, // player
-    SoulOfDevotion = 287, // Alphinaud
+    // Jump1 = 319, // player
+    // Jump2 = 320, // player
+    // Jump3 = 321, // player
+    // SoulOfFriendship = 286, // player
+    // SoulOfDevotion = 287, // Alphinaud
     SkywardLeapP5 = 14, // player
     Cauterize = 20, // player
     HeavensflameCircle = 281,
     HeavensflameTriangle = 282,
     HeavensflameSquare = 283,
-    HeavensflameCross = 284,
+    HeavensflameCross = 284
 }

@@ -66,8 +66,8 @@ public enum SID : uint
     TemporaryMisdirectionNPC = 2936 // Helper->LoashkanaTheLeal, extra=0x168
 }
 
-class StingingMalady(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StingingMalady, StingingMaladyBait.Cone);
-class StingingMaladyBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class StingingMalady(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StingingMalady, StingingMaladyBait.Cone);
+sealed class StingingMaladyBait(BossModule module) : Components.GenericBaitAway(module)
 {
     public static readonly AOEShapeCone Cone = new(50f, 30f.Degrees());
 
@@ -80,17 +80,17 @@ class StingingMaladyBait(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class BewilderingBlight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BewilderingBlight, 6f);
-class BewilderingBlightTM(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.BewilderingBlight);
+sealed class BewilderingBlight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BewilderingBlight, 6f);
+sealed class BewilderingBlightTM(BossModule module) : Components.TemporaryMisdirection(module, (uint)AID.BewilderingBlight);
 
-class SkineaterSurge(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SkineaterSurge1, (uint)AID.SkineaterSurge2], new AOEShapeCone(40f, 90f.Degrees()));
-class SkineaterSurgePoisonCloud(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Burst1, (uint)AID.SkineaterSurgePoisonCloud], 10f);
+sealed class SkineaterSurge(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SkineaterSurge1, (uint)AID.SkineaterSurge2], new AOEShapeCone(40f, 90f.Degrees()));
+sealed class SkineaterSurgePoisonCloud(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Burst1, (uint)AID.SkineaterSurgePoisonCloud], 10f);
 
-class SelfDestruct(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDestruct, 5f);
-class SelfDestructKBMammet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDestructKBMammet, 7f, 8);
-class Fester(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Fester);
+sealed class SelfDestruct(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDestruct, 5f);
+sealed class SelfDestructKBMammet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SelfDestructKBMammet, 7f, 8);
+sealed class Fester(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Fester);
 
-class TriDisaster(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TriDisasterFirst, 5f, 2, 2)
+sealed class TriDisaster(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TriDisasterFirst, 5f, 2, 2)
 {
     private int numCasts;
 
@@ -106,17 +106,15 @@ class TriDisaster(BossModule module) : Components.StackWithCastTargets(module, (
     }
 }
 
-class SuffocatingCloud(BossModule module) : Components.Voidzone(module, 9f, GetVoidzone)
+sealed class SuffocatingCloud(BossModule module) : Components.Voidzone(module, 9f, GetVoidzone)
 {
     private static List<Actor> GetVoidzone(BossModule module) => module.Enemies((uint)OID.PoisonVoidzone);
 }
 
-abstract class Raidwides(BossModule module, uint aid) : Components.RaidwideCast(module, aid, "Raidwide + bleed (Esuna!)");
-class StingingAnguish(BossModule module) : Raidwides(module, (uint)AID.StingingAnguish);
-class StingOfTheScorpion(BossModule module) : Raidwides(module, (uint)AID.StingOfTheScorpion);
-class ScornOfTheScorpion(BossModule module) : Raidwides(module, (uint)AID.ScornOfTheScorpion);
+sealed class StingingAnguishStingScornOfTheScorpion(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.StingingAnguish, (uint)AID.StingOfTheScorpion,
+(uint)AID.ScornOfTheScorpion], "Raidwide + bleed (Esuna!)");
 
-class Esuna(BossModule module) : BossComponent(module)
+sealed class Esuna(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _affected = new(2);
 
@@ -150,7 +148,7 @@ class Esuna(BossModule module) : BossComponent(module)
     }
 }
 
-class AnAntidoteForAnarchyStates : StateMachineBuilder
+sealed class AnAntidoteForAnarchyStates : StateMachineBuilder
 {
     public AnAntidoteForAnarchyStates(BossModule module) : base(module)
     {
@@ -166,15 +164,13 @@ class AnAntidoteForAnarchyStates : StateMachineBuilder
             .ActivateOnEnter<Fester>()
             .ActivateOnEnter<TriDisaster>()
             .ActivateOnEnter<SuffocatingCloud>()
-            .ActivateOnEnter<StingingAnguish>()
-            .ActivateOnEnter<ScornOfTheScorpion>()
-            .ActivateOnEnter<StingOfTheScorpion>()
+            .ActivateOnEnter<StingingAnguishStingScornOfTheScorpion>()
             .ActivateOnEnter<Esuna>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70365, NameID = 12743)]
-public class AnAntidoteForAnarchy(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class AnAntidoteForAnarchy(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-5.65f, -84.73f), 14.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.KAModelMammet, (uint)OID.KRModelMammet, (uint)OID.SuffocatingCloud, (uint)OID.PoisonCloud];

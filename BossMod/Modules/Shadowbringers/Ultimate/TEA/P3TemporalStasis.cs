@@ -1,14 +1,14 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP3)
+sealed class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP3)
 {
     public enum Mechanic { None, AvoidDamage, StayClose, StayFar }
 
-    public bool Frozen { get; private set; }
+    public bool Frozen;
     private readonly Mechanic[] _playerMechanics = new Mechanic[PartyState.MaxPartySize];
 
-    private static readonly AOEShapeCone _shapeBJ = new(100, 45.Degrees()); // TODO: verify angle
-    private static readonly AOEShapeCone _shapeCC = new(30, 45.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shapeBJ = new(100f, 45f.Degrees()); // TODO: verify angle
+    private static readonly AOEShapeCone _shapeCC = new(30f, 45f.Degrees()); // TODO: verify angle
 
     public override void Update()
     {
@@ -49,17 +49,17 @@ class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(module, (
         {
             case Mechanic.StayClose:
                 if (FindPartner(pcSlot) is var partner1 && partner1 != null)
-                    Arena.AddLine(pc.Position, partner1.Position, (partner1.Position - pc.Position).LengthSq() > 25f ? Colors.Danger : Colors.Safe);
+                    Arena.AddLine(pc.Position, partner1.Position, (partner1.Position - pc.Position).LengthSq() > 25f ? default : Colors.Safe);
                 break;
             case Mechanic.StayFar:
                 if (FindPartner(pcSlot) is var partner2 && partner2 != null)
-                    Arena.AddLine(pc.Position, partner2.Position, (partner2.Position - pc.Position).LengthSq() < 300f ? Colors.Danger : Colors.Safe);
+                    Arena.AddLine(pc.Position, partner2.Position, (partner2.Position - pc.Position).LengthSq() < 300f ? default : Colors.Safe);
                 break;
         }
 
         Arena.Actor(BJ(), Colors.Enemy, true);
         Arena.Actor(CC(), Colors.Enemy, true);
-        Arena.AddCircle(SafeSpot(pcSlot, pc), 1, Colors.Safe);
+        Arena.AddCircle(SafeSpot(pcSlot, pc), 1f, Colors.Safe);
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
@@ -102,10 +102,10 @@ class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(module, (
         var bjLeft = BJ()?.Position.X < Arena.Center.X;
         return Arena.Center + _playerMechanics[slot] switch
         {
-            Mechanic.AvoidDamage => new WDir(bjLeft ? -20 : +20, 0),
-            Mechanic.StayClose => new WDir(6, actor.Class.IsSupport() ? -2 : +2),
-            Mechanic.StayFar => new WDir(actor.Class.IsSupport() ? (bjLeft ? 15 : 20) : (bjLeft ? -20 : -15), 0),
-            _ => new WDir(-6, actor.Class.IsSupport() ? -2 : +2)
+            Mechanic.AvoidDamage => new WDir(bjLeft ? -20f : +20f, default),
+            Mechanic.StayClose => new WDir(6f, actor.Class.IsSupport() ? -2f : +2f),
+            Mechanic.StayFar => new WDir(actor.Class.IsSupport() ? (bjLeft ? 15f : 20f) : (bjLeft ? -20f : -15f), default),
+            _ => new WDir(-6f, actor.Class.IsSupport() ? -2f : +2f)
         };
     }
 

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P3Geirskogul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geirskogul, new AOEShapeRect(62, 4))
+sealed class P3Geirskogul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geirskogul, new AOEShapeRect(62f, 4f))
 {
     private readonly List<Actor> _predicted = [];
 
@@ -30,7 +30,7 @@ class P3Geirskogul(BossModule module) : Components.SimpleAOEs(module, (uint)AID.
     }
 }
 
-class P3GnashAndLash(BossModule module) : Components.GenericAOEs(module)
+sealed class P3GnashAndLash(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -51,8 +51,8 @@ class P3GnashAndLash(BossModule module) : Components.GenericAOEs(module)
         {
             _aoes.Clear(); // just a precaution, in one pull i had unfortunate cast time updates which 'restarted' the spell several times
             // note: marking aoes as non-risky, so that we don't spam warnings - reconsider (maybe mark as risky when cast ends?)
-            _aoes.Add(new(first, spell.LocXZ, default, WorldState.FutureTime(3.7d), Risky: false));
-            _aoes.Add(new(second, spell.LocXZ, default, WorldState.FutureTime(6.8d), Risky: false));
+            _aoes.Add(new(first, spell.LocXZ, default, WorldState.FutureTime(3.7d), risky: false));
+            _aoes.Add(new(second, spell.LocXZ, default, WorldState.FutureTime(6.8d), risky: false));
         }
     }
 
@@ -72,7 +72,7 @@ class P3GnashAndLash(BossModule module) : Components.GenericAOEs(module)
 // 2. if there are forward/backward jumps at given order, forward takes W spot, backward takes E spot (center takes S) - this can be changed by config
 // 3. otherwise, no specific assignments are assumed until player baits or soaks the tower
 // TODO: split into towers & bait-away?
-class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, (uint)AID.DarkdragonDive, 5f)
+sealed class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, (uint)AID.DarkdragonDive, 5f)
 {
     private struct PlayerState
     {

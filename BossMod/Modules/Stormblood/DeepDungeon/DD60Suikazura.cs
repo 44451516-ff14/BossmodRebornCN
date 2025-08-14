@@ -30,7 +30,7 @@ class InfiniteAnguish(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.AccursedCane)
-            _aoes.Add(new(donut, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(7.9d), ActorID: actor.InstanceID));
+            _aoes.Add(new(donut, actor.Position.Quantized(), default, WorldState.FutureTime(7.9d), actorID: actor.InstanceID));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

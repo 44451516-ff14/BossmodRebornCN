@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P4FateCalibrationAlphaStillnessMotion(BossModule module) : Components.StayMove(module)
+sealed class P4FateCalibrationAlphaStillnessMotion(BossModule module) : Components.StayMove(module)
 {
     public int NumCasts;
     private Requirement _first;
@@ -49,7 +49,7 @@ class P4FateCalibrationAlphaStillnessMotion(BossModule module) : Components.Stay
     }
 }
 
-class P4FateCalibrationAlphaDebuffs(BossModule module) : Components.UniformStackSpread(module, 4f, 30f, 3, alwaysShowSpreads: true)
+sealed class P4FateCalibrationAlphaDebuffs(BossModule module) : Components.UniformStackSpread(module, 4f, 30f, 3, alwaysShowSpreads: true)
 {
     public enum Debuff { None, Defamation, SharedSentence, AggravatedAssault }
 
@@ -69,7 +69,7 @@ class P4FateCalibrationAlphaDebuffs(BossModule module) : Components.UniformStack
                     Debuffs[defamationSlot] = Debuff.Defamation;
                     var defamationTarget = Raid[defamationSlot];
                     if (defamationTarget != null)
-                        AddSpread(defamationTarget, WorldState.FutureTime(20.1f));
+                        AddSpread(defamationTarget, WorldState.FutureTime(20.1d));
                 }
                 break;
             case (uint)AID.FateCalibrationAlphaSharedSentence:
@@ -96,7 +96,7 @@ class P4FateCalibrationAlphaDebuffs(BossModule module) : Components.UniformStack
     }
 }
 
-class P4FateCalibrationAlphaSacrament(BossModule module) : Components.GenericAOEs(module)
+sealed class P4FateCalibrationAlphaSacrament(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<(Actor caster, DateTime activation)> _casters = [];
     private WPos[]? _safespots;

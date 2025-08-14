@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW1;
 
-class DSW1States : StateMachineBuilder
+sealed class DSW1States : StateMachineBuilder
 {
     private readonly DSW1 _module;
 
@@ -11,11 +11,8 @@ class DSW1States : StateMachineBuilder
             .Raw.Update = () => ActorKilled(_module.SerAdelphel()) && ActorKilled(_module.SerGrinnaux());
         SimplePhase(1, PureHeartPhase, "Pure Heart")
             .Raw.Update = () => ActorKilled(_module.SerCharibert());
-    }
 
-    private bool ActorKilled(Actor? actor)
-    {
-        return actor == null || actor.IsDestroyed || actor.HPMP.CurHP < actor.HPMP.MaxHP && !actor.IsTargetable;
+        static bool ActorKilled(Actor? actor) => actor == null || actor.IsDestroyed || actor.HPMP.CurHP < actor.HPMP.MaxHP && !actor.IsTargetable;
     }
 
     private void MainPhase(uint id)
@@ -29,37 +26,37 @@ class DSW1States : StateMachineBuilder
         HoliestHallowing(id + 0x60000, 1.6f, true);
         EmptyFullDimension(id + 0x70000, 4.1f);
         HoliestHallowing(id + 0x80000, 5.1f, false);
-        HoliestOfHoly(id + 0x90000, 5);
+        HoliestOfHoly(id + 0x90000, 5f);
         AdelphelGrinnauxEnrage(id + 0xA0000, 2.2f);
     }
 
     private void PureHeartPhase(uint id)
     {
         // TODO: do we care about shockwaves?..
-        ActorTargetable(id, _module.SerCharibert, false, 0);
-        ActorTargetable(id + 1, _module.SerCharibert, true, 4, "Appear");
+        ActorTargetable(id, _module.SerCharibert, false, default);
+        ActorTargetable(id + 1, _module.SerCharibert, true, 4f, "Appear");
         ActorCastStart(id + 2, _module.SerCharibert, (uint)AID.PureOfHeart, 0.1f, true)
             .ActivateOnEnter<PureOfHeartBrightwing>()
             .ActivateOnEnter<PureOfHeartSkyblindBait>()
             .ActivateOnEnter<PureOfHeartSkyblind>();
         ComponentCondition<PureOfHeartBrightwing>(id + 0x10, 15.4f, comp => comp.NumCasts > 0, "Cone 1");
-        ComponentCondition<PureOfHeartBrightwing>(id + 0x20, 5, comp => comp.NumCasts > 2, "Cone 2");
-        ComponentCondition<PureOfHeartBrightwing>(id + 0x30, 5, comp => comp.NumCasts > 4, "Cone 3");
-        ComponentCondition<PureOfHeartBrightwing>(id + 0x40, 5, comp => comp.NumCasts > 6, "Cone 4")
+        ComponentCondition<PureOfHeartBrightwing>(id + 0x20, 5f, comp => comp.NumCasts > 2, "Cone 2");
+        ComponentCondition<PureOfHeartBrightwing>(id + 0x30, 5f, comp => comp.NumCasts > 4, "Cone 3");
+        ComponentCondition<PureOfHeartBrightwing>(id + 0x40, 5f, comp => comp.NumCasts > 6, "Cone 4")
             .DeactivateOnExit<PureOfHeartBrightwing>();
-        ActorCastEnd(id + 0x50, _module.SerCharibert, 5, true, "Raidwide");
+        ActorCastEnd(id + 0x50, _module.SerCharibert, 5f, true, "Raidwide");
         ActorTargetable(id + 0x60, _module.SerCharibert, false, 2.1f, "Disappear");
     }
 
     private State HoliestOfHoly(uint id, float delay)
     {
-        return ActorCast(id, _module.SerAdelphel, (uint)AID.HoliestOfHoly, delay, 4, false, "Raidwide")
+        return ActorCast(id, _module.SerAdelphel, (uint)AID.HoliestOfHoly, delay, 4f, false, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Heavensblaze(uint id, float delay)
     {
-        ActorCast(id, _module.SerGrinnaux, (uint)AID.EmptyDimension, delay, 5, false, "Donut + Tankbuster")
+        ActorCast(id, _module.SerGrinnaux, (uint)AID.EmptyDimension, delay, 5f, false, "Donut + Tankbuster")
             .ActivateOnEnter<EmptyDimension>()
             .ActivateOnEnter<HolyShieldBash>()
             .ActivateOnEnter<HolyBladedance>()
@@ -138,7 +135,7 @@ class DSW1States : StateMachineBuilder
             .ActivateOnEnter<EmptyDimension>()
             .ActivateOnEnter<FullDimension>()
             .SetHint(StateMachine.StateHint.PositioningStart);
-        ActorCastEnd(id + 0x10, _module.SerGrinnaux, 2, false, "Donut/circle") // holiest-of-holy overlap
+        ActorCastEnd(id + 0x10, _module.SerGrinnaux, 2f, false, "Donut/circle") // holiest-of-holy overlap
             .DeactivateOnExit<EmptyDimension>()
             .DeactivateOnExit<FullDimension>()
             .SetHint(StateMachine.StateHint.PositioningEnd);

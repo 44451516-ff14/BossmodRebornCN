@@ -11,7 +11,7 @@ sealed class Electray(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.GunBattery)
-            AOEs.Add(new(_shape, WPos.ClampToGrid(actor.Position), actor.Rotation, WorldState.FutureTime(6.8d), ActorID: actor.InstanceID));
+            AOEs.Add(new(_shape, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.8d), actorID: actor.InstanceID));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

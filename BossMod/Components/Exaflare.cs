@@ -3,15 +3,15 @@
 // generic 'exaflare' component - these mechanics are a bunch of moving aoes, with different lines either staggered or moving with different speed
 public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : GenericAOEs(module, aid, "GTFO from exaflare!")
 {
-    public sealed class Line
+    public sealed class Line(WPos next, WDir advance, DateTime nextExplosion, double timeToMove, int explosionsLeft, int maxShownExplosions, Angle rotation = default)
     {
-        public WPos Next;
-        public WDir Advance;
-        public Angle Rotation;
-        public DateTime NextExplosion;
-        public float TimeToMove;
-        public int ExplosionsLeft;
-        public int MaxShownExplosions;
+        public WPos Next = next;
+        public WDir Advance = advance;
+        public DateTime NextExplosion = nextExplosion;
+        public double TimeToMove = timeToMove;
+        public int ExplosionsLeft = explosionsLeft;
+        public int MaxShownExplosions = maxShownExplosions;
+        public Angle Rotation = rotation;
     }
 
     public readonly AOEShape Shape = shape;
@@ -33,7 +33,7 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
         var futureCount = futureAOEs.Count;
         var imminentCount = imminentAOEs.Length;
 
-        Span<AOEInstance> aoes = new AOEInstance[futureCount + imminentCount];
+        var aoes = new AOEInstance[futureCount + imminentCount];
         for (var i = 0; i < futureCount; ++i)
         {
             var aoe = futureAOEs[i];
@@ -55,7 +55,9 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
         {
             var l = Lines[i];
             if (l.ExplosionsLeft != 0)
-                exas[i] = (WPos.ClampToGrid(l.Next), l.NextExplosion, l.Rotation);
+            {
+                exas[i] = (l.Next.Quantized(), l.NextExplosion, l.Rotation);
+            }
         }
         return exas;
     }
@@ -74,7 +76,7 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
             {
                 pos += l.Advance;
                 time = time.AddSeconds(l.TimeToMove);
-                exas.Add((WPos.ClampToGrid(pos), time, l.Rotation));
+                exas.Add((pos.Quantized(), time, l.Rotation));
             }
         }
         return exas;
@@ -88,35 +90,28 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
     }
 }
 
-public class SimpleExaflare(BossModule module, AOEShape shape, uint aidFirst, uint aidRest, float distance, float timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false,
-bool locationBased = false) : Exaflare(module, shape)
+public class SimpleExaflare(BossModule module, AOEShape shape, uint aidFirst, uint aidRest, float distance, double timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false,
+bool locationBased = false, Angle rotation = default) : Exaflare(module, shape)
 {
     private readonly uint AIDFirst = aidFirst;
     private readonly uint AIDRest = aidRest;
     private readonly float Distance = distance;
-    private readonly float TimeToMove = timeToMove;
+    private readonly double TimeToMove = timeToMove;
     private readonly int ExplosionsLeft = explosionsLeft;
     private readonly int MaxShownExplosions = maxShownExplosions;
     private readonly bool CastEvent = castEvent; // if exaflare gets advanced by castevent instead of castfinished
     private readonly bool LocationBased = locationBased; // if cast is location based
+    private readonly Angle Rotation = rotation;
     public int NumLinesFinished;
 
-    public SimpleExaflare(BossModule module, float radius, uint aidFirst, uint aidRest, float distance, float timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false, bool locationBased = false)
+    public SimpleExaflare(BossModule module, float radius, uint aidFirst, uint aidRest, float distance, double timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false, bool locationBased = false)
     : this(module, new AOEShapeCircle(radius), aidFirst, aidRest, distance, timeToMove, explosionsLeft, maxShownExplosions, castEvent, locationBased) { }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == AIDFirst)
         {
-            Lines.Add(new()
-            {
-                Next = LocationBased ? spell.LocXZ : caster.Position,
-                Advance = Distance * caster.Rotation.ToDirection(),
-                NextExplosion = Module.CastFinishAt(spell),
-                TimeToMove = TimeToMove,
-                ExplosionsLeft = ExplosionsLeft,
-                MaxShownExplosions = MaxShownExplosions
-            });
+            Lines.Add(new(LocationBased ? spell.LocXZ : caster.Position, Distance * caster.Rotation.ToDirection(), Module.CastFinishAt(spell), TimeToMove, ExplosionsLeft, MaxShownExplosions, Rotation));
         }
     }
 

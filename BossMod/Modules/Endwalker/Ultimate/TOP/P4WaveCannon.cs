@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-class P4WaveCannonProtean(BossModule module) : Components.GenericBaitAway(module)
+sealed class P4WaveCannonProtean(BossModule module) : Components.GenericBaitAway(module)
 {
     private Actor? _source;
 
-    private static readonly AOEShapeRect _shape = new(100, 3);
+    private static readonly AOEShapeRect _shape = new(100f, 3f);
 
     public void Show()
     {
@@ -33,10 +33,10 @@ class P4WaveCannonProtean(BossModule module) : Components.GenericBaitAway(module
     }
 }
 
-class P4WaveCannonProteanAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.P4WaveCannonProteanAOE, new AOEShapeRect(100f, 3f));
+sealed class P4WaveCannonProteanAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.P4WaveCannonProteanAOE, new AOEShapeRect(100f, 3f));
 
 // TODO: generalize (line stack)
-class P4WaveCannonStack : BossComponent
+sealed class P4WaveCannonStack : BossComponent
 {
     public bool Imminent;
     private BitMask _targets;

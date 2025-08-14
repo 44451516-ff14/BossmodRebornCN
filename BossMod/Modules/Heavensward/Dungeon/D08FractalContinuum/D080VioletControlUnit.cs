@@ -51,7 +51,7 @@ class D080VioletControlUnitStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Interact>()
-            .Raw.Update = () => module.PrimaryActor.EventState == 7u;
+            .Raw.Update = () => module.PrimaryActor.EventState == 7;
     }
 }
 

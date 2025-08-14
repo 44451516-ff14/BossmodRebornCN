@@ -77,7 +77,7 @@ abstract class PetrifactionCommon(BossModule module) : Components.GenericGaze(mo
         if (spell.Action.ID == (uint)AID.Petrifaction)
         {
             var dir = Angle.FromDirection(caster.Position - Arena.Center);
-            var priority = (int)MathF.Round((180f - dir.Deg) / 45f) % 8;
+            var priority = (int)MathF.Round((180f - dir.Deg) / 45f) & 7;
             ActiveGorgons.Add((caster, Module.CastFinishAt(spell, 1.1f), priority));
         }
     }
@@ -102,6 +102,6 @@ abstract class PetrifactionCommon(BossModule module) : Components.GenericGaze(mo
         }
     }
 
-    public void DrawPetrify(Actor source, bool delayed) => Arena.AddCone(source.Position, 25f, source.Rotation, 45f.Degrees(), delayed ? Colors.Safe : 0);
-    public void DrawExplode(Actor source, bool delayed) => Arena.AddCircle(source.Position, 5f, delayed ? Colors.Safe : 0);
+    public void DrawPetrify(Actor source, bool delayed) => Arena.AddCone(source.Position, 25f, source.Rotation, 45f.Degrees(), delayed ? Colors.Safe : default);
+    public void DrawExplode(Actor source, bool delayed) => Arena.AddCircle(source.Position, 5f, delayed ? Colors.Safe : default);
 }

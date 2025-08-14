@@ -14,10 +14,10 @@ class BodySlamKB(BossModule module) : Components.GenericKnockback(module, stopAt
         var z = Module.PrimaryActor.Position.Z;
         if (LeviathanZ == default)
             LeviathanZ = z;
-        if (z != LeviathanZ && z != 0)
+        if (z != LeviathanZ && z != default)
         {
             LeviathanZ = z;
-            _knockback = new(Arena.Center, 25f, WorldState.FutureTime(4.8d), Direction: z <= 0 ? 180f.Degrees() : default, Kind: Kind.DirForward);
+            _knockback = new(Arena.Center, 25f, WorldState.FutureTime(4.8d), direction: z <= 0f ? 180f.Degrees() : default, kind: Kind.DirForward);
         }
     }
 
@@ -33,15 +33,21 @@ class BodySlamKB(BossModule module) : Components.GenericKnockback(module, stopAt
         var len1 = aoes1.Length;
         for (var i = 0; i < len1; ++i)
         {
-            if (aoes1[i].Check(pos))
+            ref readonly var aoe = ref aoes1[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         var aoes2 = _aoe2.ActiveAOEs(slot, actor);
         var len2 = aoes1.Length;
         for (var i = 0; i < len2; ++i)
         {
-            if (aoes2[i].Check(pos))
+            ref readonly var aoe = ref aoes2[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }

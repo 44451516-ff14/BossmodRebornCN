@@ -18,12 +18,24 @@ public sealed class PartyState
     public const int MaxAllianceSize = 24;
     public const int MaxAllies = 64;
 
-    public record struct Member(ulong ContentId, ulong InstanceId, bool InCutscene, string Name)
+    public struct Member(ulong contentId, ulong instanceId, bool inCutscene, string name) : IEquatable<Member>
     {
+        public readonly ulong ContentId = contentId;
+        public readonly ulong InstanceId = instanceId;
+        public bool InCutscene = inCutscene;
+        public readonly string Name = name;
         // note that a valid member can have 0 contentid (eg buddy) or 0 instanceid (eg player in a different zone)
-        public readonly bool IsValid() => ContentId != 0 || InstanceId != 0;
+        public readonly bool IsValid() => ContentId != default || InstanceId != default;
+
+        public static bool operator ==(Member left, Member right) => left.ContentId == right.ContentId && left.InstanceId == right.InstanceId && left.InCutscene == right.InCutscene;
+        public static bool operator !=(Member left, Member right) => left.ContentId != right.ContentId || left.InstanceId != right.InstanceId || left.InCutscene != right.InCutscene;
+
+        public override readonly string ToString() => $"ContentID: {ContentId}, " + $"InstanceID: {InstanceId}, " + $"Name: {Name}";
+        public readonly bool Equals(Member other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is Member other && Equals(other);
+        public override readonly int GetHashCode() => (ContentId, InstanceId, InCutscene).GetHashCode();
     }
-    public static readonly Member EmptySlot = new(0, 0, false, "");
+    public static readonly Member EmptySlot = new(default, default, false, "");
 
     public readonly Member[] Members = Utils.MakeArray(MaxAllies, EmptySlot);
     private readonly Actor?[] _actors = new Actor?[MaxAllies]; // transient
@@ -131,12 +143,15 @@ public sealed class PartyState
     // find a slot index containing specified player (by instance ID); returns -1 if not found
     public int FindSlot(ulong instanceID)
     {
-        if (instanceID == 0)
+        if (instanceID == default)
+        {
             return -1;
+        }
         var len = Members.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (Members[i].InstanceId == instanceID)
+            ref readonly var m = ref Members[i];
+            if (m.InstanceId == instanceID)
                 return i;
         }
         return -1;

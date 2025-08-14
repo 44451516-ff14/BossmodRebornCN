@@ -143,7 +143,7 @@ class HeavenlyCyclone(BossModule module) : Components.GenericRotatingAOE(module)
     {
         if (_rotation != default && _increment != default)
         {
-            Sequences.Add(new(_shape, WPos.ClampToGrid(source.Position), _rotation, _increment, _activation, 1.7f, 6));
+            Sequences.Add(new(_shape, source.Position.Quantized(), _rotation, _increment, _activation, 1.7f, 6));
             _rotation = default;
             _increment = default;
         }

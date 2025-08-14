@@ -11,14 +11,14 @@ sealed class TasteOfBloodAndDuelOrDie(BossModule module) : Components.GenericAOE
         var count = Casters.Count;
         if (count == 0)
             return [];
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
             var caster = Casters[i];
             // If the caster did Duel Or Die, the player must get hit by their attack.
             // This is represented by pointing the AOE behind the caster so their front is safe.
             var angle = Duelers.Contains(caster) ? caster.Rotation + 180f.Degrees() : caster.Rotation;
-            aoes[i] = new(_tasteOfBloodShape, WPos.ClampToGrid(caster.Position), angle);
+            aoes[i] = new(_tasteOfBloodShape, caster.Position.Quantized(), angle);
         }
         return aoes;
     }

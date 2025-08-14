@@ -17,28 +17,25 @@ sealed class CollateralColdGasHeatJet(BossModule module) : Components.SimpleAOEG
 sealed class CollateralDamage(BossModule module) : Components.GenericStackSpread(module, true)
 {
     public int NumCasts;
-    private readonly Actor[] allPlayers = AllPlayers(module);
-
-    private static Actor[] AllPlayers(BossModule module)
-    {
-        List<Actor> actors = new(module.WorldState.Actors.Actors.Values.Count);
-        foreach (var a in module.WorldState.Actors.Actors.Values)
-            if (a.OID == default)
-                actors.Add(a);
-        return [.. actors];
-    }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (Spreads.Count == 0 && spell.Action.ID == (uint)AID.CollateralDamage)
         {
-            var len = allPlayers.Length;
-            var act = Module.CastFinishAt(spell, 7.2f);
-            Spreads.Capacity = len;
-            for (var i = 0; i < len; ++i)
+            List<Actor> players = new(Module.WorldState.Actors.Actors.Values.Count);
+            foreach (var a in Module.WorldState.Actors.Actors.Values)
             {
-                ref readonly var p = ref allPlayers[i];
-                Spreads.Add(new(p, 4f, act));
+                if (a.OID == default)
+                {
+                    players.Add(a);
+                }
+            }
+            var count = players.Count;
+            var act = Module.CastFinishAt(spell, 7.2d);
+            Spreads.Capacity = count;
+            for (var i = 0; i < count; ++i)
+            {
+                Spreads.Add(new(players[i], 4f, act));
             }
         }
     }
@@ -50,9 +47,11 @@ sealed class CollateralDamage(BossModule module) : Components.GenericStackSpread
             ++NumCasts;
             var count = Spreads.Count;
             var id = spell.MainTargetID;
+            var spreads = CollectionsMarshal.AsSpan(Spreads);
             for (var i = 0; i < count; ++i)
             {
-                if (Spreads[i].Target.InstanceID == id)
+                ref var spread = ref spreads[i];
+                if (spread.Target.InstanceID == id)
                 {
                     Spreads.RemoveAt(i);
                     return;

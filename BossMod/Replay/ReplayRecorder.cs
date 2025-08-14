@@ -267,13 +267,17 @@ public sealed class ReplayRecorder : IDisposable
     private readonly Output _logger;
     private readonly EventSubscription _subscription;
 
-    public const int Version = 25;
+    public const int Version = 27;
+    public uint CFCID;
+    public string LogPath;
 
     public ReplayRecorder(WorldState ws, ReplayLogFormat format, bool logInitialState, DirectoryInfo targetDirectory, string logPrefix)
     {
         _ws = ws;
+        CFCID = _ws.CurrentCFCID;
         targetDirectory.Create();
-        Stream stream = new FileStream($"{targetDirectory.FullName}/{logPrefix}_{_ws.CurrentTime:yyyy_MM_dd_HH_mm_ss}.log", FileMode.Create, FileAccess.Write, FileShare.Read);
+        LogPath = Path.Combine($"{targetDirectory.FullName}", $"{logPrefix}_{_ws.CurrentTime:yyyy_MM_dd_HH_mm_ss}.log");
+        Stream stream = new FileStream(LogPath, FileMode.Create, FileAccess.Write, FileShare.Read);
         switch (format)
         {
             case ReplayLogFormat.BinaryCompressed:

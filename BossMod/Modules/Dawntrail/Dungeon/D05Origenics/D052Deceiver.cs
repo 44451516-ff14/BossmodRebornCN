@@ -82,7 +82,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds == StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        {
+            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -91,13 +93,13 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         {
             if (ArenaBoundsMap.TryGetValue(index, out var value))
                 Arena.Bounds = value;
-            else if (index == 0x12u)
+            else if (index == 0x12)
             {
                 Arena.Bounds = defaultBounds;
                 _aoe = null;
             }
         }
-        else if (state == 0x00080004)
+        else if (state == 0x00080004u)
             Arena.Bounds = defaultBounds;
     }
 }

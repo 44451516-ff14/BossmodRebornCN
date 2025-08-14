@@ -7,7 +7,7 @@ sealed class AeroquellTwister(BossModule module) : Components.Voidzone(module, 5
 }
 sealed class MissingLink(BossModule module) : Components.Chains(module, (uint)TetherID.MissingLink, default, 25f);
 
-sealed class WindOfChange(BossModule module) : Components.GenericKnockback(module, (uint)AID.WindOfChange, true)
+sealed class WindOfChange(BossModule module) : Components.GenericKnockback(module, (uint)AID.WindOfChange)
 {
     private readonly Angle[] _directions = new Angle[PartyState.MaxPartySize];
     private DateTime _activation;
@@ -15,7 +15,7 @@ sealed class WindOfChange(BossModule module) : Components.GenericKnockback(modul
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_directions[slot] != default)
-            return new Knockback[1] { new(actor.Position, 20f, _activation, null, _directions[slot], Kind.DirForward) };
+            return new Knockback[1] { new(actor.Position, 20f, _activation, null, _directions[slot], Kind.DirForward, ignoreImmunes: true) };
         return [];
     }
 

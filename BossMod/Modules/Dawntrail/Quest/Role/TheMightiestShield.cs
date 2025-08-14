@@ -78,7 +78,7 @@ public enum SID : uint
     BackwardFracture = 4039 // none->CrackedMettle1, extra=0x0
 }
 
-class Fractures(BossModule module) : Components.DirectionalParry(module, [(uint)OID.CrackedMettle1, (uint)OID.CrackedMettle2])
+sealed class Fractures(BossModule module) : Components.DirectionalParry(module, [(uint)OID.CrackedMettle1, (uint)OID.CrackedMettle2])
 {
     private const int sideR = (int)(Side.Front | Side.Back | Side.Left) << 4;
     private const int sideL = (int)(Side.Right | Side.Back | Side.Front) << 4;
@@ -122,13 +122,13 @@ class Fractures(BossModule module) : Components.DirectionalParry(module, [(uint)
     }
 }
 
-class SteelhogsRevenge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SteelhogsRevenge, 12f);
-class RuthlessBombardment1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RuthlessBombardment1, 8f);
-class Bombardment(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RuthlessBombardment2, (uint)AID.AreaBombardment], 4f);
+sealed class SteelhogsRevenge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SteelhogsRevenge, 12f);
+sealed class RuthlessBombardment1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RuthlessBombardment1, 8f);
+sealed class Bombardment(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RuthlessBombardment2, (uint)AID.AreaBombardment], 4f);
 
-class RagingArtillery(BossModule module) : Components.RaidwideCast(module, (uint)AID.RagingArtilleryFirst);
-class MagitekCannon(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MagitekCannon, 6f);
-class MagitekMissile(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones, 5f)
+sealed class RagingArtillery(BossModule module) : Components.RaidwideCast(module, (uint)AID.RagingArtilleryFirst);
+sealed class MagitekCannon(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.MagitekCannon, 6f);
+sealed class MagitekMissile(BossModule module) : Components.Voidzone(module, 3f, GetVoidzones, 5f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -149,7 +149,7 @@ class MagitekMissile(BossModule module) : Components.Voidzone(module, 3f, GetVoi
     }
 }
 
-class NeedleGunOilShower(BossModule module) : Components.GenericAOEs(module)
+sealed class NeedleGunOilShower(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
     private static readonly AOEShapeCone cone1 = new(40f, 135f.Degrees());
@@ -201,10 +201,10 @@ class NeedleGunOilShower(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class HeavySurfaceMissiles(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HeavySurfaceMissiles1, (uint)AID.HeavySurfaceMissiles2,
+sealed class HeavySurfaceMissiles(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HeavySurfaceMissiles1, (uint)AID.HeavySurfaceMissiles2,
 (uint)AID.HeavySurfaceMissiles3, (uint)AID.HeavySurfaceMissiles4], 14f, 2, 8);
 
-class HomingLaser(BossModule module) : Components.GenericBaitAway(module)
+sealed class HomingLaser(BossModule module) : Components.GenericBaitAway(module)
 {
     private static readonly AOEShapeRect rect = new(42f, 4f);
 
@@ -221,7 +221,7 @@ class HomingLaser(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class TheMightiestShieldStates : StateMachineBuilder
+sealed class TheMightiestShieldStates : StateMachineBuilder
 {
     public TheMightiestShieldStates(BossModule module) : base(module)
     {
@@ -240,7 +240,7 @@ class TheMightiestShieldStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70377, NameID = 12923)]
-public class TheMightiestShield(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class TheMightiestShield(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-191f, 72f), 14.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.CravenFollower1, (uint)OID.CravenFollower2, (uint)OID.CravenFollower3, (uint)OID.CravenFollower4,

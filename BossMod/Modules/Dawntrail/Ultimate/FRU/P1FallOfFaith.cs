@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
 // TODO: more positioning options?..
-class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
+sealed class P1FallOfFaith(BossModule module) : Components.CastCounter(module, default)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly int[] _playerOrder = new int[PartyState.MaxPartySize]; // 0 if not assigned, 1-4 if tethered, 5-8 for conga help order (5/6 help group 1, 7/8 help group 2)

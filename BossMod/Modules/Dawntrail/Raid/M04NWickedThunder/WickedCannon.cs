@@ -47,7 +47,7 @@ sealed class WickedCannon(BossModule module) : Components.GenericAOEs(module)
                 0x2D4 => Angle.AnglesCardinals[1],
                 _ => default
             };
-            _aoes.Add(new(rect, Module.PrimaryActor.Position, rotation, WorldState.FutureTime(currentDelays[_aoes.Count]), Risky: false));
+            _aoes.Add(new(rect, Module.PrimaryActor.Position, rotation, WorldState.FutureTime(currentDelays[_aoes.Count]), risky: false));
         }
         if (status.ID == (uint)SID.WickedCannon && currentDelays.Length > _aoes.Count)
             AddAOE(status.Extra);

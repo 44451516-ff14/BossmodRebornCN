@@ -24,11 +24,9 @@ public enum AID : uint
     SphereShatter = 18986 // IceBoulder->self, no cast, range 10 circle
 }
 
-abstract class LawOfTheTorch(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(34f, 10f.Degrees()));
-class LawOfTheTorch1(BossModule module) : LawOfTheTorch(module, (uint)AID.LawOfTheTorch1);
-class LawOfTheTorch2(BossModule module) : LawOfTheTorch(module, (uint)AID.LawOfTheTorch2);
+sealed class LawOfTheTorch(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LawOfTheTorch1, (uint)AID.LawOfTheTorch2], new AOEShapeCone(34f, 10f.Degrees()));
 
-class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.SwiftsteelKB, 10f)
+sealed class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.SwiftsteelKB, 10f)
 {
     private readonly Swiftsteel1 _aoe1 = module.FindComponent<Swiftsteel1>()!;
     private readonly Swiftsteel2 _aoe2 = module.FindComponent<Swiftsteel2>()!;
@@ -39,23 +37,29 @@ class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(module, (uin
         var len1 = aoes1.Length;
         for (var i = 0; i < len1; ++i)
         {
-            if (aoes1[i].Check(pos))
+            ref readonly var aoe = ref aoes1[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         var aoes2 = _aoe2.ActiveAOEs(slot, actor);
         var len2 = aoes2.Length;
         for (var i = 0; i < len2; ++i)
         {
-            if (aoes2[i].Check(pos))
+            ref readonly var aoe = ref aoes2[i];
+            if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return !Module.InBounds(pos);
     }
 }
 
-class Swiftsteel1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swiftsteel1, 4f);
-class Swiftsteel2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swiftsteel2, new AOEShapeDonut(8f, 20f));
-class Sparksteel1(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Sparksteel1, GetVoidzones, 0.8f)
+sealed class Swiftsteel1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swiftsteel1, 4f);
+sealed class Swiftsteel2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Swiftsteel2, new AOEShapeDonut(8f, 20f));
+sealed class SparksteelVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.Sparksteel1, GetVoidzones, 0.8d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -70,67 +74,62 @@ class Sparksteel1(BossModule module) : Components.VoidzoneAtCastTarget(module, 5
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
 
-public class Sparksteel2 : Components.SimpleAOEs
+sealed class SparksteelAOE : Components.SimpleAOEGroupsByTimewindow
 {
-    public Sparksteel2(BossModule module) : base(module, (uint)AID.Sparksteel2, 8f)
+    public SparksteelAOE(BossModule module) : base(module, [(uint)AID.Sparksteel2, (uint)AID.Sparksteel3], 8f, expectedNumCasters: 8)
     {
-        Color = Colors.Danger;
+        MaxDangerColor = 4;
     }
 }
 
-class Sparksteel3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sparksteel3, 8f)
-{
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        base.OnCastFinished(caster, spell);
-        Color = spell.Action.ID == (uint)AID.Sparksteel2 ? Colors.Danger : 0;
-    }
-}
-
-class Shattersteel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shattersteel, 5f);
-class SphereShatter(BossModule module) : Components.GenericAOEs(module)
+sealed class Shattersteel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shattersteel, 5f);
+sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(10f);
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(7);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.IceBoulder)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(8.4d)));
+        {
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.4d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.SphereShatter)
+        {
             _aoes.Clear();
+        }
     }
 }
 
-class Stage30Act2States : StateMachineBuilder
+sealed class Stage30Act2States : StateMachineBuilder
 {
     public Stage30Act2States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<LawOfTheTorch1>()
-            .ActivateOnEnter<LawOfTheTorch2>()
+            .ActivateOnEnter<LawOfTheTorch>()
             .ActivateOnEnter<Swiftsteel1>()
             .ActivateOnEnter<Swiftsteel2>()
             .ActivateOnEnter<SwiftsteelKB>()
-            .ActivateOnEnter<Sparksteel1>()
-            .ActivateOnEnter<Sparksteel2>()
-            .ActivateOnEnter<Sparksteel3>()
+            .ActivateOnEnter<SparksteelVoidzone>()
+            .ActivateOnEnter<SparksteelAOE>()
             .ActivateOnEnter<SphereShatter>()
             .ActivateOnEnter<Shattersteel>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 699, NameID = 9245, SortOrder = 2)]
-public class Stage30Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);
+public sealed class Stage30Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);

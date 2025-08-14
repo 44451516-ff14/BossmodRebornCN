@@ -29,9 +29,11 @@ public enum AID : uint
     Tumblecleave = 40895, // UncannyTumbleclaw1->allies, no cast, single-target
     AdventitiousLash = 40899, // UncannyFlyingPopoto1->allies, no cast, single-target
     ZillionNeedles = 40900, // UncannyCactuar1->self, 3.0s cast, range 4 circle
-    PredatorySwoop1 = 41787, // UncannyYeheheceyaa2->location, 4.0s cast, range 6 circle
-    PredatorySwoop2 = 41958, // UncannyYeheheceyaa2->Tepeke, 8.0s cast, single-target
-    PredatorySwoop3 = 42026, // Helper->Tepeke, no cast, single-target
+
+    PredatorySwoopVisual = 41958, // UncannyYeheheceyaa2->Tepeke, 8.0s cast, single-target
+    PredatorySwoop = 41787, // UncannyYeheheceyaa2->location, 4.0s cast, range 6 circle
+    PredatorySwoopTepeke = 42026, // Helper->Tepeke, no cast, single-target
+
     FlockFrenzy = 41960, // UncannyYeheheceyaa1->self, 3.0s cast, range 50 circle
     Visual = 41959, // UncannyYeheheceyaa2->self, no cast, single-target
     ToxicSpitVisual = 41125, // UncannyHornedLizard->self, 11.0s cast, single-target
@@ -44,20 +46,20 @@ public enum TetherID : uint
     ToxicSpitTepeke = 17, // UncannyHornedLizard->Tepeke
 }
 
-class NopalFan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NopalFan, new AOEShapeRect(15f, 2f));
-class PulverizingPound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PulverizingPound, 5f);
-class BodySlam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BodySlam, 6f);
-class PredatorySwoop1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PredatorySwoop1, 6f);
-class ZillionNeedles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ZillionNeedles, 4f);
-class FlockFrenzy(BossModule module) : Components.RaidwideCast(module, (uint)AID.FlockFrenzy);
-class ToxicSpit(BossModule module) : Components.InterceptTether(module, (uint)AID.ToxicSpitVisual, excludedAllies: [(uint)OID.Boss])
+sealed class NopalFan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NopalFan, new AOEShapeRect(15f, 2f));
+sealed class PulverizingPound(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PulverizingPound, 5f);
+sealed class BodySlamPredatorySwoop(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BodySlam, (uint)AID.PredatorySwoop], 6f);
+sealed class ZillionNeedles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ZillionNeedles, 4f);
+sealed class FlockFrenzy(BossModule module) : Components.RaidwideCast(module, (uint)AID.FlockFrenzy);
+
+sealed class ToxicSpit(BossModule module) : Components.InterceptTether(module, (uint)AID.ToxicSpitVisual, excludedAllies: [(uint)OID.Boss])
 {
     private DateTime _activation;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
         if (spell.Action.ID == (uint)AID.ToxicSpitVisual)
-            _activation = Module.CastFinishAt(spell, 1.1f);
+            _activation = Module.CastFinishAt(spell, 1.1d);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -86,24 +88,23 @@ class ToxicSpit(BossModule module) : Components.InterceptTether(module, (uint)AI
     }
 }
 
-class Trash1States : StateMachineBuilder
+sealed class Trash1States : StateMachineBuilder
 {
     public Trash1States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<NopalFan>()
             .ActivateOnEnter<PulverizingPound>()
-            .ActivateOnEnter<BodySlam>()
-            .ActivateOnEnter<PredatorySwoop1>()
+            .ActivateOnEnter<BodySlamPredatorySwoop>()
             .ActivateOnEnter<ZillionNeedles>()
             .ActivateOnEnter<FlockFrenzy>()
             .ActivateOnEnter<ToxicSpit>()
-            .Raw.Update = () => !module.PrimaryActor.IsTargetable || module.WorldState.CurrentCFCID != 1016;
+            .Raw.Update = () => !module.PrimaryActor.IsTargetable || module.WorldState.CurrentCFCID != 1016u;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1016, NameID = 13720)]
-public class Trash1(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -336.3f), new ArenaBoundsRect(34.6f, 43.7f))
+public sealed class Trash1(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -336.3f), new ArenaBoundsRect(34.6f, 43.7f))
 {
     private static readonly uint[] trash = [(uint)OID.UncannyHornedLizard, (uint)OID.UncannyCactuar1, (uint)OID.UncannyCactuar2, (uint)OID.UncannyFlyingPopoto1,
     (uint)OID.UncannyFlyingPopoto2, (uint)OID.UncannyYeheheceyaa1, (uint)OID.UncannyRroneek, (uint)OID.UncannyTumbleclaw1, (uint)OID.UncannyTumbleclaw2,

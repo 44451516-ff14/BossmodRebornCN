@@ -15,12 +15,12 @@ public enum AID : uint
     InflammableFumes = 14753 // Boss->self, 15.0s cast, range 50 circle
 }
 
-class WildHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildHorn, new AOEShapeCone(16.96f, 60f.Degrees()));
-class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trounce, new AOEShapeCone(46.96f, 30f.Degrees()));
-class SporeSac(BossModule module) : Components.CastHint(module, (uint)AID.SporeSac, "Calls Roselets. Prepare Ice Spikes if available.");
-class InflammableFumes(BossModule module) : Components.CastInterruptHint(module, (uint)AID.InflammableFumes, false, true);
+sealed class WildHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildHorn, new AOEShapeCone(16.96f, 60f.Degrees()));
+sealed class Trounce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trounce, new AOEShapeCone(46.96f, 30f.Degrees()));
+sealed class SporeSac(BossModule module) : Components.CastHint(module, (uint)AID.SporeSac, "Calls Roselets. Prepare Ice Spikes if available.");
+sealed class InflammableFumes(BossModule module) : Components.CastInterruptHint(module, (uint)AID.InflammableFumes, false, true);
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -28,7 +28,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage12Act2States : StateMachineBuilder
+sealed class Stage12Act2States : StateMachineBuilder
 {
     public Stage12Act2States(BossModule module) : base(module)
     {
@@ -42,7 +42,7 @@ class Stage12Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 622, NameID = 8102, SortOrder = 2)]
-public class Stage12Act2 : BossModule
+public sealed class Stage12Act2 : BossModule
 {
     public Stage12Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

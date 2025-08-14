@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P2CompressedWaterLightning(BossModule module) : Components.GenericStackSpread(module)
+sealed class P2CompressedWaterLightning(BossModule module) : Components.GenericStackSpread(module)
 {
     public bool ResolveImminent; // we want to show hints shortly before next resolve
     private BitMask _forbiddenWater;
@@ -28,14 +28,14 @@ class P2CompressedWaterLightning(BossModule module) : Components.GenericStackSpr
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.CompressedWater:
-                Stacks.Add(new(actor, 8, 3, 6, status.ExpireAt, _forbiddenWater));
+            case (uint)SID.CompressedWater:
+                Stacks.Add(new(actor, 8f, 3, 6, status.ExpireAt, _forbiddenWater));
                 _forbiddenWater.Reset();
                 break;
-            case SID.CompressedLightning:
-                Stacks.Add(new(actor, 8, 2, 2, status.ExpireAt, _forbiddenLighting));
+            case (uint)SID.CompressedLightning:
+                Stacks.Add(new(actor, 8f, 2, 2, status.ExpireAt, _forbiddenLighting));
                 _forbiddenLighting.Reset();
                 break;
         }
@@ -45,13 +45,13 @@ class P2CompressedWaterLightning(BossModule module) : Components.GenericStackSpr
     // because of that, cast is the best point to remove previous stacks
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        switch ((AID)spell.Action.ID)
+        switch (spell.Action.ID)
         {
-            case AID.CrashingWave:
+            case (uint)AID.CrashingWave:
                 Stacks.RemoveAll(s => CheckAndRecord(s, 6, ref _forbiddenWater));
                 ResolveImminent = false; // auto disable on resolve
                 break;
-            case AID.CrashingThunder:
+            case (uint)AID.CrashingThunder:
                 Stacks.RemoveAll(s => CheckAndRecord(s, 2, ref _forbiddenLighting));
                 ResolveImminent = false; // auto disable on resolve
                 break;

@@ -7,7 +7,9 @@ sealed class StoneIV(BossModule module) : Components.ConcentricAOEs(module, _sha
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.StoneIV1 or (uint)AID.StoneIV4)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

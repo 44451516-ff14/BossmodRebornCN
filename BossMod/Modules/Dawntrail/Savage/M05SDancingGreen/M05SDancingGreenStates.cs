@@ -111,7 +111,7 @@ sealed class M05SDancingGreenStates : StateMachineBuilder
         {
             var offset = id + (uint)(0x10u * (i + 1));
             var time = i == 1 ? 0.3f : 2.4f;
-            var pattern = i % 2 == 0 ? "donut" : "circle";
+            var pattern = (i & 1) == 0 ? "donut" : "circle";
             var desc = i == 1 ? "Bait 1" : $"Bait {i} + {pattern} + cone repeat";
             var casts = i;
 
@@ -128,7 +128,7 @@ sealed class M05SDancingGreenStates : StateMachineBuilder
         {
             var offset = id + 0xB0u + (uint)((i - 1) * 0x10u);
             var time = i == 1 ? 8.4f : 2.4f;
-            var desc = (i % 2 == 0 ? $"Stack {i / 2} + " : "") + $"Halfroom cleave {i}";
+            var desc = ((i & 1) == 0 ? $"Stack {i / 2} + " : "") + $"Halfroom cleave {i}";
             var casts = i;
             ComponentCondition<LetsDance>(offset, time, comp => comp.NumCasts == casts, desc);
         }
@@ -216,7 +216,7 @@ sealed class M05SDancingGreenStates : StateMachineBuilder
         {
             var offset = id + (uint)(0x20u * (i + 1));
             var time = i == 1 ? 0.3f : 2.4f;
-            var pattern = i % 2 == 0 ? "donut" : "circle";
+            var pattern = (i & 1) == 0 ? "donut" : "circle";
             var desc = i == 1 ? "Bait 1" : $"Bait {i} + {pattern} + cone repeat";
             var casts = i;
 

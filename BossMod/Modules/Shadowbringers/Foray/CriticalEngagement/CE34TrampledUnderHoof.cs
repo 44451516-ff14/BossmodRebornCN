@@ -43,7 +43,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BullHorn)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6d));
+        }
     }
 
     public override void OnActorCreated(Actor actor)
@@ -51,7 +53,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (actor.OID == (uint)OID.Deathwall)
         {
             Arena.Bounds = CE34TrampledUnderHoof.DefaultArena;
-            Arena.Center = WPos.ClampToGrid(Arena.Center);
+            Arena.Center = Arena.Center.Quantized();
             _aoe = null;
         }
     }
@@ -72,7 +74,7 @@ sealed class GlimmerInTheDark(BossModule module) : Components.GenericAOEs(module
     {
         if (actor.OID == (uint)OID.DemonicEye2)
         {
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(4.9d)));
+            _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(4.9d)));
         }
     }
 
@@ -88,7 +90,7 @@ sealed class GlimmerInTheDark(BossModule module) : Components.GenericAOEs(module
                 ref var aoe = ref aoes[i];
                 if (aoe.Origin.AlmostEqual(pos, 0.1f))
                 {
-                    if (++aoe.ActorID == 10u)
+                    if (++aoe.ActorID == 10ul)
                     {
                         _aoes.RemoveAt(i);
                     }
@@ -108,16 +110,20 @@ sealed class DemonEye(BossModule module) : Components.GenericGaze(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.FalseDemonEye)
-            _eyes.Add(new(spell.LocXZ, Module.CastFinishAt(spell), Inverted: inverted));
-        else if (spell.Action.ID == (uint)AID.DemonEye)
+        var id = spell.Action.ID;
+        if (id == (uint)AID.FalseDemonEye)
+        {
+            _eyes.Add(new(spell.LocXZ, Module.CastFinishAt(spell), inverted: inverted));
+        }
+        else if (id == (uint)AID.DemonEye)
         {
             inverted = true; // depending on timing eyes can spawn after cast start
             var count = _eyes.Count;
             var eyes = CollectionsMarshal.AsSpan(_eyes);
             for (var i = 0; i < count; ++i)
             {
-                eyes[i].Inverted = true;
+                ref var eye = ref eyes[i];
+                eyes[i] = new(eye.Position, eye.Activation, inverted: true);
             }
         }
     }

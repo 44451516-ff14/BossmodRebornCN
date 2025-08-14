@@ -32,8 +32,7 @@ class UriangerAI(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
         var positions = new WPos[len];
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
-            positions[i] = p.Position;
+            positions[i] = party[i].Position;
         }
 
         Hints.GoalZones.Add(pos =>
@@ -50,7 +49,7 @@ class UriangerAI(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
 
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             if (!(HeliosLeft(p) < 1 && p.Position.InCircle(Player.Position, 15.5f + p.HitboxRadius)))
             {
                 UseAction(RID.AspectedHelios, Player);
@@ -60,7 +59,7 @@ class UriangerAI(WorldState ws) : QuestBattle.UnmanagedRotation(ws, 25f)
 
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             if (p.HPMP.CurHP < p.HPMP.MaxHP * 0.4f)
             {
                 UseAction(RID.Benefic, p);

@@ -29,10 +29,10 @@ class AngrySeasKnockback(BossModule module) : Components.GenericKnockback(module
         {
             _sources.Clear();
             var activation = Module.CastFinishAt(spell);
-            var pos = WPos.ClampToGrid(Arena.Center);
+            var pos = Arena.Center.Quantized();
             // charge always happens through center, so create two sources with origin at center looking orthogonally
-            _sources.Add(new(pos, 12, activation, _shape, spell.Rotation + 90f.Degrees(), Kind.DirForward));
-            _sources.Add(new(pos, 12, activation, _shape, spell.Rotation - 90f.Degrees(), Kind.DirForward));
+            _sources.Add(new(pos, 12f, activation, _shape, spell.Rotation + 90f.Degrees(), Kind.DirForward));
+            _sources.Add(new(pos, 12f, activation, _shape, spell.Rotation - 90f.Degrees(), Kind.DirForward));
         }
     }
 

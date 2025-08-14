@@ -11,7 +11,7 @@ class EyeOfTheStorm(BossModule module) : Components.GenericAOEs(module, (uint)AI
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_caster != null)
-            return new AOEInstance[1] { new(_shape, WPos.ClampToGrid(_caster.Position), default, _nextCastAt) };
+            return new AOEInstance[1] { new(_shape, _caster.Position.Quantized(), default, _nextCastAt) };
         return [];
     }
 

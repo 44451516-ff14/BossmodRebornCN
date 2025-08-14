@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
-class P6WrothFlames : Components.GenericAOEs
+sealed class P6WrothFlames : Components.GenericAOEs
 {
     private readonly List<AOEInstance> _aoes = []; // cauterize, then flame blasts
     private WPos _startingSpot;
@@ -17,8 +17,8 @@ class P6WrothFlames : Components.GenericAOEs
         var cauterizeCaster = cauterizeCasters.Count != 0 ? cauterizeCasters[0] : null;
         if (cauterizeCaster != null)
         {
-            _aoes.Add(new(_shapeCauterize, WPos.ClampToGrid(cauterizeCaster.Position), cauterizeCaster.Rotation, WorldState.FutureTime(8.1d)));
-            _startingSpot.X = cauterizeCaster.Position.X < 95f ? 120f : 80f; // assume nidhogg is at 78, prefer uptime if possible
+            _aoes.Add(new(_shapeCauterize, cauterizeCaster.Position.Quantized(), cauterizeCaster.Rotation, WorldState.FutureTime(8.1d)));
+            _startingSpot = new(cauterizeCaster.Position.X < 95f ? 120f : 80f, _startingSpot.Z); // assume nidhogg is at 78, prefer uptime if possible
         }
     }
 
@@ -37,7 +37,7 @@ class P6WrothFlames : Components.GenericAOEs
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (ShowStartingSpot)
-            Arena.AddCircle(_startingSpot, 1, Colors.Safe);
+            Arena.AddCircle(_startingSpot, 1f, Colors.Safe);
     }
 
     public override void OnActorCreated(Actor actor)
@@ -45,15 +45,17 @@ class P6WrothFlames : Components.GenericAOEs
         if (actor.OID == (uint)OID.ScarletPrice)
         {
             if (_aoes.Count == 4)
-                _startingSpot.Z = actor.Position.Z < Arena.Center.Z ? 120 : 80;
+            {
+                _startingSpot = new(_startingSpot.X, actor.Position.Z < Arena.Center.Z ? 120f : 80f);
+            }
 
             var delay = _aoes.Count switch
             {
-                < 4 => 8.7f,
-                < 7 => 9.7f,
-                _ => 6.9f
+                < 4 => 8.7d,
+                < 7 => 9.7d,
+                _ => 6.9d
             };
-            _aoes.Add(new(_shapeBlast, WPos.ClampToGrid(actor.Position), default, WorldState.FutureTime(delay)));
+            _aoes.Add(new(_shapeBlast, actor.Position.Quantized(), default, WorldState.FutureTime(delay)));
         }
     }
 
@@ -68,7 +70,7 @@ class P6WrothFlames : Components.GenericAOEs
     }
 }
 
-class P6AkhMorn(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AkhMornFirst, 6f, 8, 8)
+sealed class P6AkhMorn(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.AkhMornFirst, 6f, 8, 8)
 {
     public override void OnCastFinished(Actor caster, ActorCastInfo spell) { } // do not clear stacks on first cast
 
@@ -80,7 +82,7 @@ class P6AkhMorn(BossModule module) : Components.StackWithCastTargets(module, (ui
     }
 }
 
-class P6AkhMornVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
+sealed class P6AkhMornVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -101,7 +103,7 @@ class P6AkhMornVoidzone(BossModule module) : Components.Voidzone(module, 6f, Get
     }
 }
 
-class P6SpreadingEntangledFlames(BossModule module) : Components.UniformStackSpread(module, 4f, 5f, 2, alwaysShowSpreads: true)
+sealed class P6SpreadingEntangledFlames(BossModule module) : Components.UniformStackSpread(module, 4f, 5f, 2, alwaysShowSpreads: true)
 {
     private readonly P6HotWingTail? _wingTail = module.FindComponent<P6HotWingTail>();
     private readonly bool _voidzonesNorth = module.Enemies((uint)OID.VoidzoneAhkMorn).Sum(z => z.Position.Z - module.Center.Z) < 0;
@@ -116,7 +118,7 @@ class P6SpreadingEntangledFlames(BossModule module) : Components.UniformStackSpr
     {
         base.DrawArenaForeground(pcSlot, pc);
         foreach (var p in SafeSpots(pc))
-            Arena.AddCircle(p, 1, Colors.Safe);
+            Arena.AddCircle(p, 1f, Colors.Safe);
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)

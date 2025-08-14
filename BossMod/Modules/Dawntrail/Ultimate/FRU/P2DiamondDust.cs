@@ -1,9 +1,9 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2AxeKick(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AxeKick, 16f);
-class P2ScytheKick(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScytheKick, new AOEShapeDonut(4f, 20f));
+sealed class P2AxeKick(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AxeKick, 16f);
+sealed class P2ScytheKick(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ScytheKick, new AOEShapeDonut(4f, 20f));
 
-class P2IcicleImpact(BossModule module) : Components.GenericAOEs(module, (uint)AID.IcicleImpact)
+sealed class P2IcicleImpact(BossModule module) : Components.GenericAOEs(module, (uint)AID.IcicleImpact)
 {
     public readonly List<AOEInstance> AOEs = []; // note: we don't remove finished aoes, since we use them in other components to detect safespots
 
@@ -16,7 +16,7 @@ class P2IcicleImpact(BossModule module) : Components.GenericAOEs(module, (uint)A
         if (spell.Action.ID == WatchedAction)
         {
             // initially all aoes start as non-risky
-            AOEs.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell), Risky: false));
+            AOEs.Add(new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell), risky: false));
         }
     }
 
@@ -45,10 +45,10 @@ class P2IcicleImpact(BossModule module) : Components.GenericAOEs(module, (uint)A
     }
 }
 
-class P2FrigidNeedleCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidNeedleCircle, 5f);
-class P2FrigidNeedleCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidNeedleCross, new AOEShapeCross(40f, 2.5f));
+sealed class P2FrigidNeedleCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidNeedleCircle, 5f);
+sealed class P2FrigidNeedleCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidNeedleCross, new AOEShapeCross(40f, 2.5f));
 
-class P2FrigidStone : Components.BaitAwayIcon
+sealed class P2FrigidStone : Components.BaitAwayIcon
 {
     public P2FrigidStone(BossModule module) : base(module, 5f, (uint)IconID.FrigidStone, (uint)AID.FrigidStone, 8.1f)
     {
@@ -59,7 +59,7 @@ class P2FrigidStone : Components.BaitAwayIcon
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { }
 }
 
-class P2DiamondDustHouseOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLight)
+sealed class P2DiamondDustHouseOfLight(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLight)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -70,18 +70,19 @@ class P2DiamondDustHouseOfLight(BossModule module) : Components.GenericBaitAway(
     {
         CurrentBaits.Clear();
 
-        if (_source == null || ForbiddenPlayers != default)
+        if (_source == null || ForbiddenPlayers == default)
+        {
             return;
-
+        }
         var party = Raid.WithoutSlot(false, true, true);
         var len = party.Length;
 
-        Span<(Actor actor, float distSq)> distances = new (Actor, float)[len];
+        (Actor actor, float distSq)[] distances = new (Actor, float)[len];
         var sourcePos = _source.Position;
 
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var p = ref party[i];
+            var p = party[i];
             var distSq = (p.Position - sourcePos).LengthSq();
             distances[i] = (p, distSq);
         }
@@ -120,7 +121,7 @@ class P2DiamondDustHouseOfLight(BossModule module) : Components.GenericBaitAway(
         {
             if (baitIndex < 0)
                 hints.Add("Stay closer to bait!");
-            else if (PlayersClippedBy(CurrentBaits[baitIndex]).Count != 0)
+            else if (PlayersClippedBy(ref CurrentBaits.Ref(baitIndex)).Count != 0)
                 hints.Add("Bait cone away from raid!");
         }
 
@@ -135,18 +136,18 @@ class P2DiamondDustHouseOfLight(BossModule module) : Components.GenericBaitAway(
         if (spell.Action.ID is (uint)AID.AxeKick or (uint)AID.ScytheKick)
         {
             _source = caster;
-            _activation = Module.CastFinishAt(spell, 0.8f);
+            _activation = Module.CastFinishAt(spell, 0.8d);
         }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.FrigidStone)
-            ForbiddenPlayers.Set(Raid.FindSlot(actor.InstanceID));
+            ForbiddenPlayers[Raid.FindSlot(actor.InstanceID)] = true;
     }
 }
 
-class P2DiamondDustSafespots(BossModule module) : BossComponent(module)
+sealed class P2DiamondDustSafespots(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private bool? _out;
@@ -240,7 +241,7 @@ class P2DiamondDustSafespots(BossModule module) : BossComponent(module)
     private static bool IsCardinal(WDir off) => Math.Abs(off.X) < 1 || Math.Abs(off.Z) < 1;
 }
 
-class P2HeavenlyStrike(BossModule module) : Components.GenericKnockback(module, (uint)AID.HeavenlyStrike)
+sealed class P2HeavenlyStrike(BossModule module) : Components.GenericKnockback(module, (uint)AID.HeavenlyStrike)
 {
     private readonly WDir[] _safeDirs = BuildSafeDirs(module);
     private readonly DateTime _activation = module.WorldState.FutureTime(3.9d);
@@ -253,7 +254,7 @@ class P2HeavenlyStrike(BossModule module) : Components.GenericKnockback(module, 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (_safeDirs[slot] != default)
-            hints.AddForbiddenZone(ShapeDistance.PrecisePosition(Arena.Center + 6f * _safeDirs[slot], new(1, 0), Arena.Bounds.MapResolution, actor.Position, 0.25f), _activation);
+            hints.AddForbiddenZone(ShapeDistance.PrecisePosition(Arena.Center + 6f * _safeDirs[slot], new(1f, default), Arena.Bounds.MapResolution, actor.Position, 0.25f), _activation);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -269,7 +270,7 @@ class P2HeavenlyStrike(BossModule module) : Components.GenericKnockback(module, 
         var icicle = module.FindComponent<P2IcicleImpact>();
         if (icicle?.AOEs.Count > 0)
         {
-            var safeDir = (icicle.AOEs[0].Origin - module.Center).Normalized();
+            var safeDir = (icicle.AOEs.Ref(0).Origin - module.Center).Normalized();
             if (safeDir.X > 0.5f || safeDir.Z > 0.8f)
                 safeDir = -safeDir; // G1
             foreach (var (slot, group) in Service.Config.Get<FRUConfig>().P2DiamondDustKnockbacks.Resolve(module.Raid))
@@ -279,7 +280,7 @@ class P2HeavenlyStrike(BossModule module) : Components.GenericKnockback(module, 
     }
 }
 
-class P2SinboundHoly(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
+sealed class P2SinboundHoly(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4)
 {
     public int NumCasts;
     private DateTime _nextExplosion;
@@ -371,7 +372,7 @@ class P2SinboundHoly(BossModule module) : Components.UniformStackSpread(module, 
     }
 }
 
-class P2SinboundHolyVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
+sealed class P2SinboundHolyVoidzone(BossModule module) : Components.Voidzone(module, 6f, GetVoidzones)
 {
     public bool AIHintsEnabled = true;
 
@@ -400,7 +401,7 @@ class P2SinboundHolyVoidzone(BossModule module) : Components.Voidzone(module, 6f
     }
 }
 
-class P2ShiningArmor(BossModule module) : Components.GenericGaze(module, (uint)AID.ShiningArmor)
+sealed class P2ShiningArmor(BossModule module) : Components.GenericGaze(module, (uint)AID.ShiningArmor)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -422,10 +423,10 @@ class P2ShiningArmor(BossModule module) : Components.GenericGaze(module, (uint)A
     }
 }
 
-class P2TwinStillnessSilence(BossModule module) : Components.GenericAOEs(module)
+sealed class P2TwinStillnessSilence(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
-    private readonly Actor? _source = module.Enemies(OID.OraclesReflection).FirstOrDefault();
+    private readonly Actor? _source = module.Enemies((uint)OID.OraclesReflection).FirstOrDefault();
     private BitMask _thinIce;
     private readonly WPos[] _slideBackPos = new WPos[PartyState.MaxPartySize]; // used for hints only
     private P2SinboundHolyVoidzone? _voidzones; // used for hints only
@@ -560,7 +561,7 @@ class P2TwinStillnessSilence(BossModule module) : Components.GenericAOEs(module)
         if (shape1 != null && shape2 != null)
         {
             AOEs.Add(new(shape1, spell.LocXZ, spell.Rotation + off1, Module.CastFinishAt(spell)));
-            AOEs.Add(new(shape2, spell.LocXZ, spell.Rotation + off2, Module.CastFinishAt(spell, 2.1f)));
+            AOEs.Add(new(shape2, spell.LocXZ, spell.Rotation + off2, Module.CastFinishAt(spell, 2.1d)));
         }
     }
 
@@ -581,19 +582,24 @@ class P2TwinStillnessSilence(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P2ThinIce(BossModule module) : Components.ThinIce(module, 32f)
+sealed class P2ThinIce(BossModule module) : Components.ThinIce(module, 32f)
 {
+    private P2TwinStillnessSilence? _aoe = module.FindComponent<P2TwinStillnessSilence>();
+
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var comp = Module.FindComponent<P2TwinStillnessSilence>();
-        if (comp != null)
+        _aoe ??= Module.FindComponent<P2TwinStillnessSilence>();
+        if (_aoe != null)
         {
-            var aoes = comp.ActiveAOEs(slot, actor);
+            var aoes = _aoe.ActiveAOEs(slot, actor);
             var len = aoes.Length;
             for (var i = 0; i < len; ++i)
             {
-                if (aoes[i].Check(pos))
+                ref readonly var aoe = ref aoes[i];
+                if (aoe.Check(pos))
+                {
                     return true;
+                }
             }
         }
         return !Module.InBounds(pos);

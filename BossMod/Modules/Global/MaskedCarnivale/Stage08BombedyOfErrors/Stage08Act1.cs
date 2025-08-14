@@ -4,67 +4,70 @@ public enum OID : uint
 {
     Boss = 0x2708, //R=0.6
     Bomb = 0x2709, //R=1.2
-    Snoll = 0x270A, //R=0.9
+    Snoll = 0x270A //R=0.9
 }
 
 public enum AID : uint
 {
     SelfDestruct = 14687, // Boss->self, no cast, range 10 circle
     HypothermalCombustion = 14689, // Snoll->self, no cast, range 6 circle
-    SelfDestruct2 = 14688, // Bomb->self, no cast, range 6 circle
+    SelfDestruct2 = 14688 // Bomb->self, no cast, range 6 circle
 }
 
-class Selfdetonations(BossModule module) : BossComponent(module)
+sealed class Selfdetonation(BossModule module) : BossComponent(module)
 {
     private const string hint = "In bomb explosion radius!";
-    private static readonly uint[] _bombs = [(uint)OID.Bomb, (uint)OID.Snoll];
+    private readonly List<Actor> bombs = new(6);
 
-    private static List<Actor> GetBombs(BossModule module)
+    public override void OnActorCreated(Actor actor)
     {
-        var enemies = module.Enemies(_bombs);
-        var count = enemies.Count;
-        if (count == 0)
-            return [];
-
-        var bombs = new List<Actor>(count);
-        for (var i = 0; i < count; ++i)
+        if (actor.OID is (uint)OID.Bomb or (uint)OID.Snoll)
         {
-            var z = enemies[i];
-            if (!z.IsDead)
-                bombs.Add(z);
+            bombs.Add(actor);
         }
-        return bombs;
+    }
+
+    public override void OnActorDeath(Actor actor)
+    {
+        if (actor.OID is (uint)OID.Bomb or (uint)OID.Snoll)
+        {
+            bombs.Remove(actor);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (!Module.PrimaryActor.IsDead)
+        {
             Arena.AddCircle(Module.PrimaryActor.Position, 10f);
-        var bombs = GetBombs(Module);
+        }
         var count = bombs.Count;
         for (var i = 0; i < count; ++i)
+        {
             Arena.AddCircle(bombs[i].Position, 6f);
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!Module.PrimaryActor.IsDead && actor.Position.InCircle(Module.PrimaryActor.Position, 1f))
+        if (!Module.PrimaryActor.IsDead && actor.Position.InCircle(Module.PrimaryActor.Position, 10f))
         {
             hints.Add(hint);
             return;
         }
-        var bombs = GetBombs(Module);
         var count = bombs.Count;
         for (var i = 0; i < count; ++i)
+        {
             if (actor.Position.InCircle(bombs[i].Position, 6f))
             {
                 hints.Add(hint);
                 return;
             }
+        }
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -72,7 +75,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -80,7 +83,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage08Act1States : StateMachineBuilder
+sealed class Stage08Act1States : StateMachineBuilder
 {
     public Stage08Act1States(BossModule module) : base(module)
     {
@@ -103,12 +106,12 @@ class Stage08Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 618, NameID = 8140, SortOrder = 1)]
-public class Stage08Act1 : BossModule
+public sealed class Stage08Act1 : BossModule
 {
     public Stage08Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {
         ActivateComponent<Hints>();
-        ActivateComponent<Selfdetonations>();
+        ActivateComponent<Selfdetonation>();
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Bomb, (uint)OID.Snoll];
 

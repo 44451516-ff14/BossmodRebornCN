@@ -54,7 +54,7 @@ sealed class Stormcall(BossModule module) : Components.GenericAOEs(module, (uint
     {
         if (status.ID == (uint)SID.OrbMovement)
         {
-            _aoes.Add(new(circle, Arena.Center + 30f * (actor.Position - Arena.Center).Normalized(), default, WorldState.FutureTime(status.Extra == 0x1E ? 9.7f : 19.9f), ActorID: actor.InstanceID));
+            _aoes.Add(new(circle, Arena.Center + 30f * (actor.Position - Arena.Center).Normalized(), default, WorldState.FutureTime(status.Extra == 0x1E ? 9.7f : 19.9f), actorID: actor.InstanceID));
             if (_aoes.Count == 3)
                 _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
         }
@@ -70,7 +70,7 @@ sealed class Stormcall(BossModule module) : Components.GenericAOEs(module, (uint
             {
                 if (_aoes[i].ActorID == id)
                 {
-                    _aoes[i] = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell), ActorID: id);
+                    _aoes[i] = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: id);
                     return;
                 }
             }
@@ -132,7 +132,7 @@ sealed class Foreshadowing(BossModule module) : Components.GenericAOEs(module)
         void StartBossCast(AOEShape shape)
         {
             _bossShape = shape;
-            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), ActorID: caster.InstanceID));
+            _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             var count = _addAOEs.Count;
             for (var i = 0; i < count; ++i)
             {
@@ -154,7 +154,7 @@ sealed class Foreshadowing(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count; ++i)
             {
                 var a = _addAOEs[i];
-                _aoes.Add(new(a.shape!, WPos.ClampToGrid(a.caster.Position), a.caster.Rotation, act, ActorID: a.caster.InstanceID));
+                _aoes.Add(new(a.shape!, a.caster.Position.Quantized(), a.caster.Rotation, act, actorID: a.caster.InstanceID));
             }
         }
     }

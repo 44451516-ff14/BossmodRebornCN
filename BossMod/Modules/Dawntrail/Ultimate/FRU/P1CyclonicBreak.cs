@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P1CyclonicBreakSpreadStack(BossModule module) : Components.UniformStackSpread(module, 6, 6, 2, 2, true)
+sealed class P1CyclonicBreakSpreadStack(BossModule module) : Components.UniformStackSpread(module, 6, 6, 2, 2, true)
 {
     public DateTime Activation = DateTime.MaxValue;
     private bool _fullHints; // we only need to actually stack/spread after first protean bait
@@ -52,12 +52,12 @@ class P1CyclonicBreakSpreadStack(BossModule module) : Components.UniformStackSpr
     }
 }
 
-class P1CyclonicBreakProtean(BossModule module) : Components.BaitAwayEveryone(module, module.PrimaryActor, P1CyclonicBreakCone.Shape, (uint)AID.CyclonicBreakAOEFirst)
+sealed class P1CyclonicBreakProtean(BossModule module) : Components.BaitAwayEveryone(module, module.PrimaryActor, P1CyclonicBreakCone.Shape, (uint)AID.CyclonicBreakAOEFirst)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // handled by dedicated component
 }
 
-class P1CyclonicBreakCone(BossModule module) : Components.GenericAOEs(module)
+sealed class P1CyclonicBreakCone(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
     private DateTime _currentBundle;
@@ -73,7 +73,7 @@ class P1CyclonicBreakCone(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.CyclonicBreakAOEFirst:
-                AOEs.Add(new(Shape, WPos.ClampToGrid(caster.Position), spell.Rotation, WorldState.FutureTime(2d)));
+                AOEs.Add(new(Shape, caster.Position.Quantized(), spell.Rotation, WorldState.FutureTime(2d)));
                 break;
             case (uint)AID.CyclonicBreakAOERest:
                 if (WorldState.CurrentTime > _currentBundle)
@@ -88,7 +88,7 @@ class P1CyclonicBreakCone(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class P1CyclonicBreakAIBait(BossModule module) : BossComponent(module)
+sealed class P1CyclonicBreakAIBait(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P1CyclonicBreakSpreadStack? _spreadStack = module.FindComponent<P1CyclonicBreakSpreadStack>();
@@ -104,7 +104,7 @@ class P1CyclonicBreakAIBait(BossModule module) : BossComponent(module)
     }
 }
 
-class P1CyclonicBreakAIDodgeSpreadStack(BossModule module) : BossComponent(module)
+sealed class P1CyclonicBreakAIDodgeSpreadStack(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P1CyclonicBreakSpreadStack? _spreadStack = module.FindComponent<P1CyclonicBreakSpreadStack>();
@@ -147,7 +147,7 @@ class P1CyclonicBreakAIDodgeSpreadStack(BossModule module) : BossComponent(modul
     }
 }
 
-class P1CyclonicBreakAIDodgeRest(BossModule module) : BossComponent(module)
+sealed class P1CyclonicBreakAIDodgeRest(BossModule module) : BossComponent(module)
 {
     private readonly P1CyclonicBreakCone? _cones = module.FindComponent<P1CyclonicBreakCone>();
 

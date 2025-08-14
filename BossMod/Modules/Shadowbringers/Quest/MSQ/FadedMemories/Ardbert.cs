@@ -87,7 +87,7 @@ class SkyHighDrive(BossModule module) : Components.GenericRotatingAOE(module)
         if (_rotation.Count == 2 && _increment != default)
         {
             for (var i = 0; i < 2; ++i)
-                Sequences.Add(new(rect, WPos.ClampToGrid(source.Position), _rotation[i], _increment, _activation, 0.6f, 10, 4));
+                Sequences.Add(new(rect, source.Position.Quantized(), _rotation[i], _increment, _activation, 0.6f, 10, 4));
             _rotation.Clear();
             _increment = default;
         }
@@ -132,7 +132,7 @@ class GroundbreakerExaflares(BossModule module) : Components.Exaflare(module, 6f
     {
         if (spell.Action.ID == (uint)AID.GroundbreakerExaFirst)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 6f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1f, ExplosionsLeft = 8, MaxShownExplosions = 3 });
+            Lines.Add(new(caster.Position, 6f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1d, 8, 3));
         }
     }
 

@@ -22,6 +22,6 @@ sealed class Pyroclysm(BossModule module) : Components.GenericTowersOpenWorld(mo
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.TowerVisual1)
-            Towers.Add(new(WPos.ClampToGrid(actor.Position), 4f, 1, 1, activation: WorldState.FutureTime(8.7d)));
+            Towers.Add(new(actor.Position.Quantized(), 4f, 1, 1, activation: WorldState.FutureTime(8.7d)));
     }
 }

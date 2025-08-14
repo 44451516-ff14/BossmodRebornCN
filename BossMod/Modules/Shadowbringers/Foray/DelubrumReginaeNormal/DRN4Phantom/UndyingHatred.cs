@@ -10,10 +10,11 @@ sealed class UndyingHatred(BossModule module) : Components.SimpleKnockbacks(modu
             return;
         var count = _aoe.Lines.Count;
         var center = Arena.Center;
-        var act = Module.CastFinishAt(Casters[0].CastInfo);
+        ref readonly var c = ref Casters.Ref(0);
+        var act = c.Activation;
         if (count == 0)
         {
-            var dir = Casters[0].Rotation.ToDirection();
+            var dir = c.Direction.ToDirection();
             hints.AddForbiddenZone(ShapeDistance.Rect(center + 24f * dir, center - 16f * dir, 24f), act);
         }
         else

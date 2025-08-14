@@ -11,7 +11,7 @@ public enum AID : uint
     Fulmination = 14901 // Boss->self, no cast, range 50+R circle, wipe if failed to kill grenade in one hit
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -19,7 +19,7 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -27,7 +27,7 @@ class Hints2(BossModule module) : BossComponent(module)
     }
 }
 
-class Stage22Act1States : StateMachineBuilder
+sealed class Stage22Act1States : StateMachineBuilder
 {
     public Stage22Act1States(BossModule module) : base(module)
     {
@@ -50,7 +50,7 @@ class Stage22Act1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 632, NameID = 8122, SortOrder = 1)]
-public class Stage22Act1 : BossModule
+public sealed class Stage22Act1 : BossModule
 {
     public Stage22Act1(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleBig)
     {

@@ -1,10 +1,8 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-class P1ProteanWaveTornado : Components.GenericBaitAway
+abstract class P1ProteanWaveTornado : Components.GenericBaitAway
 {
     private readonly List<Actor> _liquidRage;
-
-    private static readonly AOEShapeCone _shape = new(40, 15.Degrees());
 
     public P1ProteanWaveTornado(BossModule module, bool enableHints) : base(module, (uint)AID.ProteanWaveTornadoInvis)
     {
@@ -19,11 +17,11 @@ class P1ProteanWaveTornado : Components.GenericBaitAway
         {
             var target = Raid.WithoutSlot(false, true, true).Closest(tornado.Position);
             if (target != null)
-                CurrentBaits.Add(new(tornado, target, _shape));
+                CurrentBaits.Add(new(tornado, target, P1ProteanWaveLiquid.Cone));
         }
     }
 }
 
-class P1ProteanWaveTornadoVisCast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProteanWaveTornadoVis, new AOEShapeCone(40, 15.Degrees()));
-class P1ProteanWaveTornadoVisBait(BossModule module) : P1ProteanWaveTornado(module, false);
-class P1ProteanWaveTornadoInvis(BossModule module) : P1ProteanWaveTornado(module, true);
+sealed class P1ProteanWaveTornadoVisCast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProteanWaveTornadoVis, P1ProteanWaveLiquid.Cone);
+sealed class P1ProteanWaveTornadoVisBait(BossModule module) : P1ProteanWaveTornado(module, false);
+sealed class P1ProteanWaveTornadoInvis(BossModule module) : P1ProteanWaveTornado(module, true);

@@ -53,15 +53,18 @@ sealed class ElectrothermiaArenaChange(BossModule module) : Components.GenericAO
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Electrothermia && Arena.Bounds == D043Zander.StartingBounds)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.5f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.5d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001u && index == 0x00u)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D043Zander.DefaultBounds;
             Arena.Center = D043Zander.DefaultBounds.Center;
@@ -84,19 +87,15 @@ sealed class SlitherbaneBurstCombo(BossModule module) : Components.GenericAOEs(m
             return [];
         var max = count > 2 ? 2 : count;
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < max; ++i)
+        ref var aoe0 = ref aoes[0];
+        aoe0.Risky = true;
+        if (count > 1)
         {
-            ref var aoe = ref aoes[i];
-            if (i == 0)
+            aoe0.Color = Colors.Danger;
+            ref var aoe1 = ref aoes[1];
+            if (aoe0.Rotation.AlmostEqual(aoe1.Rotation + a180, Angle.DegToRad))
             {
-                if (count > 1)
-                    aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-            else
-            {
-                if (aoes[0].Rotation.AlmostEqual(aoe.Rotation + a180, Angle.DegToRad))
-                    aoe.Risky = false;
+                aoe1.Risky = false;
             }
         }
         return aoes[..max];
@@ -124,6 +123,7 @@ sealed class SlitherbaneBurstCombo(BossModule module) : Components.GenericAOEs(m
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.SlitherbaneRearguardCone:
@@ -132,6 +132,7 @@ sealed class SlitherbaneBurstCombo(BossModule module) : Components.GenericAOEs(m
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 }
 

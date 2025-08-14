@@ -79,24 +79,24 @@ sealed class CostOfLiving(BossModule module) : Components.SimpleKnockbacks(modul
     {
         if (Casters.Count != 0)
         {
-            var castinfo = Casters[0].CastInfo!;
-            var act = Module.CastFinishAt(castinfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
             {
                 var center = Arena.Center;
-                var origin = castinfo.LocXZ;
+                var origin = c.Origin;
                 hints.AddForbiddenZone(p =>
                 {
                     if ((p + 30f * (p - origin).Normalized()).InCircle(center, 23f))
                         return 1f;
-                    return -1f;
+                    return default;
                 }, act);
             }
         }
     }
 }
 
-sealed class BuyersRemorseForcedMarch(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+sealed class BuyersRemorseForcedMarch(BossModule module) : Components.GenericKnockback(module)
 {
     private DateTime activation;
     private BitMask affectedPlayers;
@@ -104,7 +104,7 @@ sealed class BuyersRemorseForcedMarch(BossModule module) : Components.GenericKno
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (affectedPlayers[slot])
-            return new Knockback[1] { new(actor.Position, 35f, activation, Direction: actor.Rotation, Kind: Kind.DirForward) };
+            return new Knockback[1] { new(actor.Position, 35f, activation, direction: actor.Rotation, kind: Kind.DirForward, ignoreImmunes: true) };
         return [];
     }
 
@@ -144,10 +144,12 @@ sealed class BuyersRemorseECFreeze(BossModule module) : Components.StayMove(modu
         switch (status.ID)
         {
             case (uint)SID.BuyersRemorseExtremeCaution:
-                SetState(Raid.FindSlot(actor.InstanceID), new(Requirement.Stay, status.ExpireAt));
+                PlayerState stateStay = new(Requirement.Stay, status.ExpireAt);
+                SetState(Raid.FindSlot(actor.InstanceID), ref stateStay);
                 break;
             case (uint)SID.BuyersRemorseDeepFreeze:
-                SetState(Raid.FindSlot(actor.InstanceID), new(Requirement.Move, status.ExpireAt));
+                PlayerState stateMove = new(Requirement.Move, status.ExpireAt);
+                SetState(Raid.FindSlot(actor.InstanceID), ref stateMove);
                 break;
         }
     }
@@ -378,7 +380,7 @@ sealed class CE115CursedConcernStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 45)]
-public sealed class CE115CursedConcern(WorldState ws, Actor primary) : BossModule(ws, primary, WPos.ClampToGrid(new(72f, -545f)), new ArenaBoundsCircle(25f))
+public sealed class CE115CursedConcern(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(72f, -545f).Quantized(), new ArenaBoundsCircle(25f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

@@ -50,10 +50,12 @@ sealed class ImpactArenaChange(BossModule module) : BossComponent(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x0Bu)
+        if (index == 0x0B)
         {
             if (state == 0x00800040u)
+            {
                 active = true;
+            }
             else if (state == 0x00080004u)
             {
                 active = false;

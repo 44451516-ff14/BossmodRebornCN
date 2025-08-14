@@ -21,7 +21,7 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
         for (var i = 0; i < count; ++i)
         {
             var e = origins[i];
-            if (actor != e.target && Shape.Check(WPos.ClampToGrid(actor.Position), e.origin.Position, e.angle))
+            if (actor != e.target && Shape.Check(actor.Position.Quantized(), e.origin.Position, e.angle))
             {
                 hints.Add("GTFO from cleave!");
                 break;
@@ -40,7 +40,7 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
         {
             var e = origins[i];
             if (actor != e.target)
-                hints.AddForbiddenZone(Shape, WPos.ClampToGrid(e.origin.Position), e.angle, NextExpected);
+                hints.AddForbiddenZone(Shape, e.origin.Position.Quantized(), e.angle, NextExpected);
             else
                 AddTargetSpecificHints(ref actor, ref e.origin, ref hints);
         }
@@ -58,13 +58,13 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
             switch (Shape)
             {
                 case AOEShapeCircle circle:
-                    hints.AddForbiddenZone(circle, WPos.ClampToGrid(a.Position));
+                    hints.AddForbiddenZone(circle, a.Position.Quantized());
                     break;
                 case AOEShapeCone cone:
-                    hints.AddForbiddenZone(ShapeDistance.Cone(WPos.ClampToGrid(source.Position), 100f, source.AngleTo(a), cone.HalfAngle));
+                    hints.AddForbiddenZone(ShapeDistance.Cone(source.Position.Quantized(), 100f, source.AngleTo(a), cone.HalfAngle));
                     break;
                 case AOEShapeRect rect:
-                    hints.AddForbiddenZone(ShapeDistance.Cone(WPos.ClampToGrid(source.Position), 100f, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (a.Position - source.Position).Length())));
+                    hints.AddForbiddenZone(ShapeDistance.Cone(source.Position.Quantized(), 100f, source.AngleTo(a), Angle.Asin(rect.HalfWidth / (a.Position - source.Position).Length())));
                     break;
             }
         }
@@ -78,7 +78,7 @@ public class Cleave(BossModule module, uint aid, AOEShape shape, uint[]? enemyOI
         for (var i = 0; i < count; ++i)
         {
             var e = origins[i];
-            Shape.Outline(Arena, WPos.ClampToGrid(e.origin.Position), e.angle);
+            Shape.Outline(Arena, e.origin.Position.Quantized(), e.angle);
         }
     }
 

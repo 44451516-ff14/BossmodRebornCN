@@ -33,44 +33,50 @@ public enum SID : uint
     Doom = 910 // Boss->player, extra=0x0
 }
 
-class Charybdis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Charybdis2, 8f);
+sealed class Charybdis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Charybdis2, 8f);
 
-class Web(BossModule module) : BossComponent(module)
+sealed class Web(BossModule module) : BossComponent(module)
 {
     private bool casting;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Web)
+        {
             casting = true;
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Web)
+        {
             casting = false;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (casting)
+        {
             hints.Add("Bait the Meteor to the edge of the arena!\nUse Loom to escape or Diamondback to survive.");
+        }
     }
 }
 
-class Plaincracker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plaincracker, 7.2f);
-class TremblingEarth(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TremblingEarth, new AOEShapeDonut(10f, 20f));
-class TremblingEarth2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TremblingEarth2, new AOEShapeDonut(20f, 30f));
-class ApocalypticBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ApocalypticBolt, new AOEShapeRect(51.2f, 4f));
-class ApocalypticRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ApocalypticRoar, new AOEShapeCone(36.2f, 60f.Degrees()));
-class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 8f);
-class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(6f, 30f));
-class Maelstrom(BossModule module) : Components.Voidzone(module, 8f, GetMaelstrom)
+sealed class Plaincracker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plaincracker, 7.2f);
+sealed class TremblingEarth(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TremblingEarth, new AOEShapeDonut(10f, 20f));
+sealed class TremblingEarth2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TremblingEarth2, new AOEShapeDonut(20f, 30f));
+sealed class ApocalypticBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ApocalypticBolt, new AOEShapeRect(51.2f, 4f));
+sealed class ApocalypticRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ApocalypticRoar, new AOEShapeCone(36.2f, 60f.Degrees()));
+sealed class TheRamsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheRamsVoice, 8f);
+sealed class TheDragonsVoice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheDragonsVoice, new AOEShapeDonut(6f, 30f));
+sealed class Maelstrom(BossModule module) : Components.Voidzone(module, 8f, GetMaelstrom)
 {
     private static List<Actor> GetMaelstrom(BossModule module) => module.Enemies((uint)OID.Maelstrom);
 }
-class Meteor(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Meteor, 15f);
-class MeteorVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 10f, (uint)AID.Meteor, GetVoidzones, 1.2f)
+sealed class Meteor(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Meteor, 15f);
+sealed class MeteorVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 10f, (uint)AID.Meteor, GetVoidzones, 1.2d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -85,13 +91,15 @@ class MeteorVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -99,24 +107,31 @@ class Hints(BossModule module) : BossComponent(module)
     }
 }
 
-class Hints2(BossModule module) : BossComponent(module)
+sealed class Hints2(BossModule module) : BossComponent(module)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (Module.PrimaryActor.FindStatus((uint)SID.RepellingSpray) != null)
-            hints.Add($"{Module.PrimaryActor.Name} will reflect all magic damage!");
-        if (Module.PrimaryActor.FindStatus((uint)SID.IceSpikes) != null)
-            hints.Add($"{Module.PrimaryActor.Name} will reflect all physical damage!");
+        var primary = Module.PrimaryActor;
+        if (primary.FindStatus((uint)SID.RepellingSpray) != null)
+        {
+            hints.Add($"{primary.Name} will reflect all magic damage!");
+        }
+        else if (primary.FindStatus((uint)SID.IceSpikes) != null)
+        {
+            hints.Add($"{primary.Name} will reflect all physical damage!");
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (actor.FindStatus((uint)SID.Doom) != null)
+        {
             hints.Add("You were doomed! Cleanse it with Exuviation or finish the act fast.");
+        }
     }
 }
 
-class Stage25Act3States : StateMachineBuilder
+sealed class Stage25Act3States : StateMachineBuilder
 {
     public Stage25Act3States(BossModule module) : base(module)
     {
@@ -139,7 +154,7 @@ class Stage25Act3States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 635, NameID = 8129, SortOrder = 3)]
-public class Stage25Act3 : BossModule
+public sealed class Stage25Act3 : BossModule
 {
     public Stage25Act3(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)
     {

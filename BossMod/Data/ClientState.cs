@@ -364,7 +364,7 @@ public sealed class ClientState
         {
             Array.Fill(ws.Client.DutyActions, default);
             var len = Slots.Length;
-            for (var i = 0; i < len; i++)
+            for (var i = 0; i < len; ++i)
                 ws.Client.DutyActions[i] = Slots[i];
             ws.Client.DutyActionsChanged.Fire(this);
         }
@@ -532,8 +532,23 @@ public sealed class ClientState
             output.EmitFourCC("HATE"u8).EmitActor(InstanceID);
             var countNonEmpty = Array.IndexOf(Targets, default);
             output.Emit(countNonEmpty);
-            for (var i = 0; i < countNonEmpty; i++)
+            for (var i = 0; i < countNonEmpty; ++i)
                 output.EmitActor(Targets[i].InstanceID).Emit(Targets[i].Enmity);
+        }
+    }
+
+    public Event<OpProcTimersChange> ProcTimersChanged = new();
+    public sealed record class OpProcTimersChange(float[] Value) : WorldState.Operation
+    {
+        public readonly float[] Value = Value;
+        protected override void Exec(WorldState ws)
+        {
+            ws.Client.ProcTimers = Value;
+            ws.Client.ProcTimersChanged.Fire(this);
+        }
+        public override void Write(ReplayRecorder.Output output)
+        {
+            output.EmitFourCC("CLPR"u8).Emit(Value[0]).Emit(Value[1]).Emit(Value[2]).Emit(Value[3]);
         }
     }
 }

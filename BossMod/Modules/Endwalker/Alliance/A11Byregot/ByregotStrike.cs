@@ -10,10 +10,10 @@ class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(mo
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
-                hints.AddForbiddenZone(ShapeDistance.InvertedCone(source.Position, 14f, source.Rotation + a180, a45), act);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Origin, 14f, c.Direction + a180, a45), act);
         }
     }
 }
@@ -29,8 +29,16 @@ class ByregotStrikeCone(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ByregotStrikeKnockback && Module.PrimaryActor.FindStatus((uint)SID.Glow) != null)
+        {
+            var act = Module.CastFinishAt(spell);
+            var pos = spell.LocXZ;
+            var rot = spell.Rotation;
+            var a90 = 90f.Degrees();
             for (var i = 0; i < 4; ++i)
-                _aoes.Add(new(_shape, spell.LocXZ, spell.Rotation + i * 90f.Degrees(), Module.CastFinishAt(spell)));
+            {
+                _aoes.Add(new(_shape, pos, rot + i * a90, act));
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

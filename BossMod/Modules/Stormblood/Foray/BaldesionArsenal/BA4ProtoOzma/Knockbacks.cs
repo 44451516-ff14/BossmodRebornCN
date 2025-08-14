@@ -6,7 +6,8 @@ sealed class Holy(BossModule module) : Components.SimpleKnockbacks(module, (uint
     {
         if (Casters.Count != 0)
         {
-            var act = Module.CastFinishAt(Casters[0].CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
                 hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Module.PrimaryActor.Position, 21.5f), act);
         }
@@ -23,17 +24,19 @@ sealed class ShootingStar(BossModule module) : Components.SimpleKnockbacks(modul
         var count = Casters.Count;
         if (count == 0)
             return;
-        var act = Module.CastFinishAt(Casters[0].CastInfo);
+        ref readonly var c = ref Casters.Ref(0);
+        var act = c.Activation;
         if (IsImmune(slot, act))
             return;
 
-        var transitionAOE = _aoe.AOEs.Count != 0 ? _aoe.AOEs[0].Shape : null;
+        var transitionAOE = _aoe.AOEs.Count != 0 ? _aoe.AOEs.Ref(0).Shape : null;
         var forbidden = new Func<WPos, float>[transitionAOE != null ? count : 2 * count];
         var index = 0;
+        var casters = CollectionsMarshal.AsSpan(Casters);
         for (var i = 0; i < count; ++i)
         {
-            var caster = Casters[i];
-            var pos = caster.Position;
+            ref readonly var caster = ref casters[i];
+            var pos = caster.Origin;
             void AddForbiddenCone(Angle direction) => forbidden[index++] = ShapeDistance.InvertedCone(pos, 3.5f, direction, a30);
 
             switch ((int)pos.X)

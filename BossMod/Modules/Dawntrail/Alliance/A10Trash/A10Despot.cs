@@ -32,16 +32,19 @@ sealed class ScraplineStorm(BossModule module) : Components.SimpleKnockbacks(mod
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoes = _aoe.AOEs;
-        return aoes.Count != 0 && aoes[0].Check(pos);
+        if (_aoe.AOEs.Count != 0)
+        {
+            return _aoe.AOEs.Ref(0).Check(pos);
+        }
+        return false;
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            hints.AddForbiddenZone(ShapeDistance.Circle(source.Position, 20f), Module.CastFinishAt(source.CastInfo));
+            ref readonly var source = ref Casters.Ref(0);
+            hints.AddForbiddenZone(ShapeDistance.Circle(source.Origin, 20f), source.Activation);
         }
     }
 }

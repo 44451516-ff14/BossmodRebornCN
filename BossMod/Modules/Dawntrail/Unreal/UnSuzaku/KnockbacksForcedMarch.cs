@@ -6,10 +6,10 @@ sealed class MesmerizingMelody(BossModule module) : Components.SimpleKnockbacks(
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
-                hints.AddForbiddenZone(ShapeDistance.Circle(source.Position, 14.5f), act);
+                hints.AddForbiddenZone(ShapeDistance.Circle(c.Origin, 14.5f), act);
         }
     }
 }
@@ -20,10 +20,10 @@ sealed class RuthlessRefrain(BossModule module) : Components.SimpleKnockbacks(mo
     {
         if (Casters.Count != 0)
         {
-            var source = Casters[0];
-            var act = Module.CastFinishAt(source.CastInfo);
+            ref readonly var c = ref Casters.Ref(0);
+            var act = c.Activation;
             if (!IsImmune(slot, act))
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(source.Position, 9f), act);
+                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 9f), act);
         }
     }
 }
@@ -41,15 +41,15 @@ abstract class PayThePiper : Components.GenericForcedMarch
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         var target = WorldState.Actors.Find(tether.Target)!;
-        if (target == Module.PrimaryActor || (TetherID)tether.ID != TetherID.PayThePiper)
+        if (target == Module.PrimaryActor || tether.ID != (uint)TetherID.PayThePiper)
             return;
         Angle? rot = source.OID switch
         {
             (uint)OID.NorthernPyre => 180f.Degrees(),
             (uint)OID.EasternPyre => 90f.Degrees(),
-            (uint)OID.SouthernPyre => new Angle(),
+            (uint)OID.SouthernPyre => (Angle)default,
             (uint)OID.WesternPyre => -90f.Degrees(),
-            _ => default
+            _ => null
         };
         if (rot is Angle direction)
             AddForcedMovement(target, direction, 4f, WorldState.FutureTime(10d));

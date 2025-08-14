@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.FRU;
 
-class P2LightRampant(BossModule module) : BossComponent(module)
+sealed class P2LightRampant(BossModule module) : BossComponent(module)
 {
     private readonly Actor?[] _tetherTargets = new Actor?[PartyState.MaxPartySize];
 
@@ -29,7 +29,7 @@ class P2LightRampant(BossModule module) : BossComponent(module)
     }
 }
 
-class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.LuminousHammer, (uint)AID.LuminousHammer, 7.1f)
+sealed class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.LuminousHammer, (uint)AID.LuminousHammer, 7.1f)
 {
     public readonly int[] BaitsPerPlayer = new int[PartyState.MaxPartySize];
     public readonly WDir[] PrevBaitOffset = new WDir[PartyState.MaxPartySize];
@@ -56,7 +56,7 @@ class P2LuminousHammer(BossModule module) : Components.BaitAwayIcon(module, 6f, 
     }
 }
 
-class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
+sealed class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private BitMask _forbidden;
@@ -117,12 +117,12 @@ class P2BrightHunger1(BossModule module) : Components.GenericTowers(module, (uin
 }
 
 // note: we can start showing aoes ~3s earlier if we check spawns, but it's not really needed
-class P2HolyLightBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HolyLightBurst, 11f, 3)
+sealed class P2HolyLightBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HolyLightBurst, 11f, 3)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // there are dedicated components for hints
 }
 
-class P2PowerfulLight(BossModule module) : Components.UniformStackSpread(module, 5f, default, 4, 4)
+sealed class P2PowerfulLight(BossModule module) : Components.UniformStackSpread(module, 5f, default, 4, 4)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // there are dedicated components for hints
 
@@ -139,7 +139,7 @@ class P2PowerfulLight(BossModule module) : Components.UniformStackSpread(module,
     }
 }
 
-class P2BrightHunger2(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
+sealed class P2BrightHunger2(BossModule module) : Components.GenericTowers(module, (uint)AID.BrightHunger)
 {
     private BitMask _forbidden;
 
@@ -169,7 +169,7 @@ class P2BrightHunger2(BossModule module) : Components.GenericTowers(module, (uin
 }
 
 // note: this also moves to soak or avoid the central tower, because these mechanics overlap
-class P2LightRampantBanish(BossModule module) : P2Banish(module)
+sealed class P2LightRampantBanish(BossModule module) : P2Banish(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
     private readonly P2BrightHunger2? _tower = module.FindComponent<P2BrightHunger2>();
@@ -184,7 +184,7 @@ class P2LightRampantBanish(BossModule module) : P2Banish(module)
             {
                 // we should not be soaking a tower
                 hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, 4f), t.Activation);
-                hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, 6f), WorldState.FutureTime(30));
+                hints.AddForbiddenZone(ShapeDistance.Circle(t.Position, 6f), WorldState.FutureTime(30d));
 
                 var prepos = PrepositionLocation(assignment);
                 if (prepos != null)
@@ -192,7 +192,7 @@ class P2LightRampantBanish(BossModule module) : P2Banish(module)
                     // we know the mechanic, so preposition immediately
                     // there might be puddles covering prepos spot, so add extra rougher hint
                     hints.AddForbiddenZone(ShapeDistance.InvertedCircle(prepos.Value, 1f), DateTime.MaxValue);
-                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 50f, Angle.FromDirection(prepos.Value - Arena.Center), 15f.Degrees()), WorldState.FutureTime(60));
+                    hints.AddForbiddenZone(ShapeDistance.InvertedCone(Arena.Center, 50f, Angle.FromDirection(prepos.Value - Arena.Center), 15f.Degrees()), WorldState.FutureTime(60d));
                 }
             }
             else
@@ -242,7 +242,7 @@ class P2LightRampantBanish(BossModule module) : P2Banish(module)
     }
 }
 
-class P2HouseOfLightBoss(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLightBossAOE, false)
+sealed class P2HouseOfLightBoss(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HouseOfLightBossAOE, false)
 {
     private static readonly AOEShapeCone _shape = new(60f, 30f.Degrees()); // TODO: verify angle
 
@@ -255,7 +255,7 @@ class P2HouseOfLightBoss(BossModule module) : Components.GenericBaitAway(module,
 }
 
 // movement to soak towers and bait first 3 puddles (third puddle is baited right before towers resolve)
-class P2LightRampantAITowers(BossModule module) : BossComponent(module)
+sealed class P2LightRampantAITowers(BossModule module) : BossComponent(module)
 {
     private readonly P2LuminousHammer? _puddles = module.FindComponent<P2LuminousHammer>();
     private readonly P2BrightHunger1? _towers = module.FindComponent<P2BrightHunger1>();
@@ -318,7 +318,7 @@ class P2LightRampantAITowers(BossModule module) : BossComponent(module)
 }
 
 // movement to stack N/S after towers (and bait last two puddles)
-class P2LightRampantAIStackPrepos(BossModule module) : BossComponent(module)
+sealed class P2LightRampantAIStackPrepos(BossModule module) : BossComponent(module)
 {
     private readonly P2LuminousHammer? _puddles = module.FindComponent<P2LuminousHammer>();
 
@@ -338,7 +338,7 @@ class P2LightRampantAIStackPrepos(BossModule module) : BossComponent(module)
 }
 
 // movement to resolve stacks
-class P2LightRampantAIStackResolve(BossModule module) : BossComponent(module)
+sealed class P2LightRampantAIStackResolve(BossModule module) : BossComponent(module)
 {
     private readonly P2PowerfulLight? _stack = module.FindComponent<P2PowerfulLight>();
     private readonly P2HolyLightBurst? _orbs = module.FindComponent<P2HolyLightBurst>();
@@ -396,7 +396,7 @@ class P2LightRampantAIStackResolve(BossModule module) : BossComponent(module)
 }
 
 // movement to dodge orbs after resolving stack
-class P2LightRampantAIOrbs(BossModule module) : BossComponent(module)
+sealed class P2LightRampantAIOrbs(BossModule module) : BossComponent(module)
 {
     private readonly P2HolyLightBurst? _orbs = module.FindComponent<P2HolyLightBurst>();
 

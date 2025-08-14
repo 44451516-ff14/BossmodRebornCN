@@ -47,7 +47,7 @@ public enum SID : uint
     AboutFace = 1959, // Boss->player, extra=0x0
     RightFace = 1961, // Boss->player, extra=0x0
     ForwardMarch = 1958, // Boss->player, extra=0x0
-    LeftFace = 1960, // Boss->player, extra=0x0
+    LeftFace = 1960 // Boss->player, extra=0x0
 }
 
 class LitPath(BossModule module) : Components.GenericAOEs(module)
@@ -59,13 +59,22 @@ class LitPath(BossModule module) : Components.GenericAOEs(module)
     {
         var count = AOEs.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(AOEs);
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -75,26 +84,32 @@ class LitPath(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID is (uint)AID.LoyalFlameBlue or (uint)AID.LoyalFlameRed)
         {
             var isBlue = spell.Action.ID == (uint)AID.LoyalFlameBlue;
-            AddAOEs(Module.Enemies((uint)OID.OrbOfImmolationBlue), spell, isBlue ? 2.2f : 4.4f);
-            AddAOEs(Module.Enemies((uint)OID.OrbOfImmolationRed), spell, isBlue ? 4.4f : 2.2f);
+            AddAOEs(Module.Enemies((uint)OID.OrbOfImmolationBlue), isBlue ? 2.2d : 4.4d);
+            AddAOEs(Module.Enemies((uint)OID.OrbOfImmolationRed), isBlue ? 4.4d : 2.2d);
             if (!isBlue)
+            {
                 AOEs.Reverse();
-        }
-    }
+            }
 
-    private void AddAOEs(List<Actor> orbs, ActorCastInfo spell, float delay)
-    {
-        for (var i = 0; i < orbs.Count; ++i)
-        {
-            var orb = orbs[i];
-            AOEs.Add(new(rect, WPos.ClampToGrid(orb.Position), orb.Position.X < -632f ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[2], Module.CastFinishAt(spell, delay)));
+            void AddAOEs(List<Actor> orbs, double delay)
+            {
+                var count = orbs.Count;
+                var act = Module.CastFinishAt(spell, delay);
+                for (var i = 0; i < count; ++i)
+                {
+                    var orb = orbs[i];
+                    AOEs.Add(new(rect, orb.Position.Quantized(), orb.Position.X < -632f ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[2], act));
+                }
+            }
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (AOEs.Count != 0 && spell.Action.ID is (uint)AID.LitPathBlue or (uint)AID.LitPathRed)
+        {
             AOEs.RemoveAt(0);
+        }
     }
 }
 
@@ -107,12 +122,12 @@ class Burn(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var max = count > 8 ? 8 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i) // 8 AOEs in a wave, no need to iterate on all 16
-            aoes[i] = _aoes[i];
-        return aoes;
+
+        return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -120,26 +135,32 @@ class Burn(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID is (uint)AID.LoyalFlameBlue or (uint)AID.LoyalFlameRed)
         {
             var isBlue = spell.Action.ID == (uint)AID.LoyalFlameBlue;
-            AddAOEs(Module.Enemies((uint)OID.OrbOfConflagrationBlue), spell, isBlue ? 2.2f : 6.2f);
-            AddAOEs(Module.Enemies((uint)OID.OrbOfConflagrationRed), spell, isBlue ? 6.2f : 2.2f);
+            AddAOEs(Module.Enemies((uint)OID.OrbOfConflagrationBlue), isBlue ? 2.2d : 6.2d);
+            AddAOEs(Module.Enemies((uint)OID.OrbOfConflagrationRed), isBlue ? 6.2d : 2.2d);
             if (!isBlue)
+            {
                 _aoes.Reverse();
-        }
-    }
+            }
 
-    private void AddAOEs(List<Actor> orbs, ActorCastInfo spell, float delay)
-    {
-        for (var i = 0; i < orbs.Count; ++i)
-        {
-            var orb = orbs[i];
-            _aoes.Add(new(circle, WPos.ClampToGrid(orb.Position), default, Module.CastFinishAt(spell, delay)));
+            void AddAOEs(List<Actor> orbs, double delay)
+            {
+                var count = orbs.Count;
+                var act = Module.CastFinishAt(spell, delay);
+                for (var i = 0; i < count; ++i)
+                {
+                    var orb = orbs[i];
+                    _aoes.Add(new(circle, orb.Position.Quantized(), default, act));
+                }
+            }
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.BurnBlue or (uint)AID.BurnRed)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -162,11 +183,14 @@ class DivineCall(BossModule module) : Components.StatusDrivenForcedMarch(module,
         if (_aoe.Casters.Count != 0 && _aoe.Casters[0].Check(pos))
             return true;
         var count = _lit.AOEs.Count;
+        var aoes = CollectionsMarshal.AsSpan(_lit.AOEs);
         for (var i = 0; i < count; ++i)
         {
-            var aoe = _lit.AOEs[i];
+            ref readonly var aoe = ref aoes[i];
             if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -195,12 +219,18 @@ class DivineCall(BossModule module) : Components.StatusDrivenForcedMarch(module,
         var movements = ForcedMovements(actor);
         var count = movements.Count;
         if (count == 0)
+        {
             return;
+        }
 
         if (_aoe.Casters.Count != 0)
+        {
             base.AddHints(slot, actor, hints);
+        }
         else if (_lit.AOEs.Count != 0)
+        {
             hints.Add("Aim into AOEs!", DestinationUnsafe(slot, actor, movements[count - 1].to));
+        }
     }
 }
 

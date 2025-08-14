@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
-sealed class Twinbite(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Twinbite, tankbuster: true)
+sealed class Twinbite(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Twinbite, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private static readonly AOEShapeCircle circle = new(8f);
 
@@ -12,9 +12,11 @@ sealed class Twinbite(BossModule module) : Components.GenericBaitAway(module, (u
             var len = party.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (p.Role == Role.Tank)
-                    CurrentBaits.Add(new(new Actor(default, default, default, default!, default, default, default, default, default), p, circle, Module.CastFinishAt(spell, 0.1f)));
+                {
+                    CurrentBaits.Add(new((WPos)default, p, circle, Module.CastFinishAt(spell, 0.1d)));
+                }
             }
         }
     }

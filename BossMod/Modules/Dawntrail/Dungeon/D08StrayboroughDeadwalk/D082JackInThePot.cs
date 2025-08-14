@@ -48,14 +48,16 @@ sealed class PipingPour(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
-        if (_aoes.Count != 0 && id == 0x11DDu && actor.OID == (uint)OID.SpectralSamovar)
+        if (id == 0x11DD && _aoes.Count != 0 && actor.OID == (uint)OID.SpectralSamovar)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if (status.ID == (uint)SID.AreaOfInfluenceUp && status.Extra == 0x1u)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position)));
+        if (status.ID == (uint)SID.AreaOfInfluenceUp && status.Extra == 0x1)
+            _aoes.Add(new(circle, actor.Position.Quantized()));
     }
 }
 

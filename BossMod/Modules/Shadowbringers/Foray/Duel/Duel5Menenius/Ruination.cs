@@ -8,7 +8,7 @@ sealed class RuinationExaflare(BossModule module) : Components.Exaflare(module, 
     {
         if (spell.Action.ID == (uint)AID.RuinationExaStart)
         {
-            Lines.Add(new() { Next = caster.Position, Advance = 4f * spell.Rotation.ToDirection(), NextExplosion = Module.CastFinishAt(spell), TimeToMove = 1.1f, ExplosionsLeft = 6, MaxShownExplosions = 6 });
+            Lines.Add(new(caster.Position, 4f * spell.Rotation.ToDirection(), Module.CastFinishAt(spell), 1.1d, 6, 6));
         }
     }
 

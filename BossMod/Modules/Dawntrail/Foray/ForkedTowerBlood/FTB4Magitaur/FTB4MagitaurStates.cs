@@ -22,7 +22,12 @@ sealed class FTB4MagitaurStates : StateMachineBuilder
         AuraBurstHoly(id + 0xA0000u, 1.8f);
         AssassinsDagger(id + 0xB0000u, 9.2f);
         Unseal(id + 0xC0000u, 15.3f);
-        SimpleState(id + 0xFF0000u, 10000, "???");
+        HolyLance(id + 0xD0000u, 17.2f);
+        UnsealedAura(id + 0xE0000u, 9f);
+        ForkedFury(id + 0xF0000u, 9.2f);
+        AuraBurstHoly(id + 0x100000u, 1.4f);
+        AssassinsDagger(id + 0x110000u, 9.1f);
+        SimpleState(id + 0x120000u, 27f, "Enrage");
     }
 
     private void UnsealedAura(uint id, float delay)
@@ -136,13 +141,13 @@ sealed class FTB4MagitaurStates : StateMachineBuilder
             .ActivateOnEnter<CriticalAxeLanceBlow>();
         ComponentCondition<CriticalAxeLanceBlow>(id + 0x10u, 6.5f, comp => comp.NumCasts > 1, "In OR Out AOEs 1")
             .DeactivateOnExit<CriticalAxeLanceBlow>();
-        ComponentCondition<SagesStaff>(id + 0x20u, 4.8f, comp => comp.NumCasts != 0, "Line stacks 1 resolve")
+        ComponentCondition<SagesStaff>(id + 0x20u, 4.8f, comp => comp.NumCasts == 3, "Line stacks 1 resolve")
             .ResetComp<SagesStaff>()
             .ActivateOnExit<CriticalAxeLanceBlow>();
         ComponentCondition<SagesStaff>(id + 0x30u, 6.1f, comp => comp.CurrentBaits.Count != 0, "Line stacks 2 appear");
         ComponentCondition<CriticalAxeLanceBlow>(id + 0x40u, 6.3f, comp => comp.NumCasts > 1, "In OR Out AOEs 2")
             .DeactivateOnExit<CriticalAxeLanceBlow>();
-        ComponentCondition<SagesStaff>(id + 0x50u, 5.2f, comp => comp.NumCasts != 0, "Line stacks 2 resolve")
+        ComponentCondition<SagesStaff>(id + 0x50u, 5.2f, comp => comp.NumCasts == 3, "Line stacks 2 resolve")
             .DeactivateOnExit<SagesStaff>();
     }
 
@@ -165,5 +170,64 @@ sealed class FTB4MagitaurStates : StateMachineBuilder
             .DeactivateOnExit<RuneAxeAOEs>()
             .DeactivateOnExit<RuneAxeSmallSpreadAOEs>()
             .DeactivateOnExit<RuneAxeStatus>();
+    }
+
+    private void HolyLance(uint id, float delay)
+    {
+        ComponentCondition<CriticalAxeLanceBlow>(id, delay, comp => comp.NumCasts > 1, "In OR Out AOEs")
+            .ActivateOnEnter<CriticalAxeLanceBlow>()
+            .ActivateOnEnter<HolyLance>()
+            .ActivateOnEnter<HolyIV>()
+            .ActivateOnEnter<HolyIVHints>()
+            .ExecOnExit<HolyLance>(comp => comp.Show = true)
+            .DeactivateOnExit<CriticalAxeLanceBlow>();
+        static string GetString(int i)
+        {
+            if (i is 1 or 5 or 9)
+            {
+                var aoeNum = i == 1 ? "1" : i == 5 ? "2" : "3";
+                return $"Outside AOE {aoeNum}";
+            }
+            else if (i is 3 or 7 or 11)
+            {
+                var stackNum = i == 3 ? "1" : i == 7 ? "2" : "3";
+                var squareNum = i == 3 ? "2" : i == 7 ? "5" : "8";
+                return $"Stack {stackNum} + square AOE {squareNum}";
+            }
+            else
+            {
+                var squareNum = i switch
+                {
+                    2 => "1",
+                    4 => "3",
+                    6 => "4",
+                    8 => "6",
+                    10 => "7",
+                    _ => "9"
+                };
+                return $"Square AOE {squareNum}";
+            }
+        }
+        for (var i = 1; i <= 12; ++i)
+        {
+            var offset = id + (uint)(i * 0x10u);
+            var casts = i;
+            var condition = ComponentCondition<HolyIV>(offset, i == 1 ? 3.5f : 2f, comp => comp.NumCasts == casts, GetString(i));
+            if (i is 3 or 7 or 11)
+            {
+                condition
+                    .SetHint(StateMachine.StateHint.Raidwide);
+            }
+            else if (i == 12)
+            {
+                condition
+                    .DeactivateOnExit<HolyIVHints>()
+                    .DeactivateOnExit<HolyIV>()
+                    .DeactivateOnExit<HolyLance>();
+            }
+        }
+        ComponentCondition<CriticalAxeLanceBlow>(id + 0xD0u, 2.6f, comp => comp.NumCasts > 1, "In OR Out AOEs")
+            .ActivateOnEnter<CriticalAxeLanceBlow>()
+            .DeactivateOnExit<CriticalAxeLanceBlow>();
     }
 }

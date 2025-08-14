@@ -29,7 +29,7 @@ class AnalysisRadiance(BossModule module) : Components.GenericGaze(module)
     {
         var (nextGlobe, activation) = NextGlobe();
         if (_analysis != null && nextGlobe != null && activation != default)
-            return new Eye[1] { new(nextGlobe.Position, activation, _analysis.SafeDir[slot], Inverted: true) };
+            return new Eye[1] { new(nextGlobe.Position, activation, _analysis.SafeDir[slot], inverted: true) };
         return [];
     }
 
@@ -64,7 +64,7 @@ class TargetedLight(BossModule module) : Components.GenericGaze(module)
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
         if (Active)
-            return new Eye[1] { new(Arena.Center, _activation, _safeDir[slot], Inverted: true) };
+            return new Eye[1] { new(Arena.Center, _activation, _safeDir[slot], inverted: true) };
         return [];
     }
 

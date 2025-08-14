@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex6Golbez;
 
-class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (uint)AID.DragonsDescent, ignoreImmunes: true)
+class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (uint)AID.DragonsDescent)
 {
     private Actor? _source;
     private DateTime _activation;
@@ -8,7 +8,7 @@ class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (u
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
         if (_source != null && _source != actor)
-            return new Knockback[1] { new(_source.Position, 13f, _activation) };
+            return new Knockback[1] { new(_source.Position, 13f, _activation, ignoreImmunes: true) };
         return [];
     }
 
@@ -22,7 +22,7 @@ class DragonsDescent(BossModule module) : Components.GenericKnockback(module, (u
     }
 }
 
-class DoubleMeteor(BossModule module) : Components.UniformStackSpread(module, 0, 15, alwaysShowSpreads: true) // TODO: verify falloff
+class DoubleMeteor(BossModule module) : Components.UniformStackSpread(module, default, 15f, alwaysShowSpreads: true) // TODO: verify falloff
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {

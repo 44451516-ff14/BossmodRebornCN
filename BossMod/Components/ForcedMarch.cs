@@ -3,9 +3,9 @@
 // generic component dealing with 'forced march' mechanics
 // these mechanics typically feature 'march left/right/forward/backward' debuffs, which rotate player and apply 'forced march' on expiration
 // if there are several active march debuffs, we assume they are chained together
-public class GenericForcedMarch(BossModule module, float activationLimit = float.MaxValue, bool stopAfterWall = false) : BossComponent(module)
+public class GenericForcedMarch(BossModule module, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false) : BossComponent(module)
 {
-    public class PlayerState
+    public sealed class PlayerState
     {
         public List<(Angle dir, float duration, DateTime activation)> PendingMoves = [];
         public DateTime ForcedEnd; // zero if forced march not active
@@ -13,6 +13,8 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
         public bool Active(BossModule module) => ForcedEnd > module.WorldState.CurrentTime || PendingMoves.Count > 0;
     }
 
+    public readonly bool StopAfterWall = stopAfterWall;
+    public readonly bool StopAtWall = stopAtWall;
     public bool OverrideDirection;
     public int NumActiveForcedMarches;
     public readonly Dictionary<ulong, PlayerState> State = []; // key = instance ID
@@ -86,10 +88,13 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
             var movementDistance = MovementSpeed * (float)(state.ForcedEnd - WorldState.CurrentTime).TotalSeconds;
             var wdir = dir.ToDirection();
 
-            if (stopAfterWall)
+            if (StopAfterWall)
             {
-                var maxDistance = Arena.IntersectRayBounds(from, wdir) + maxIntersectionError;
-                movementDistance = Math.Min(movementDistance, maxDistance);
+                movementDistance = Math.Min(movementDistance, Arena.IntersectRayBounds(from, wdir) + maxIntersectionError);
+            }
+            else if (StopAtWall)
+            {
+                movementDistance = Math.Min(movementDistance, Arena.IntersectRayBounds(from, wdir) - maxIntersectionError);
             }
 
             var to = from + movementDistance * wdir;
@@ -110,10 +115,13 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
             var movementDistance = MovementSpeed * move.duration;
             var wdir = dir.ToDirection();
 
-            if (stopAfterWall)
+            if (StopAfterWall)
             {
-                var maxDistance = Arena.IntersectRayBounds(from, wdir) + maxIntersectionError;
-                movementDistance = Math.Min(movementDistance, maxDistance);
+                movementDistance = Math.Min(movementDistance, Arena.IntersectRayBounds(from, wdir) + maxIntersectionError);
+            }
+            else if (StopAtWall)
+            {
+                movementDistance = Math.Min(movementDistance, Arena.IntersectRayBounds(from, wdir) - maxIntersectionError);
             }
 
             var to = from + movementDistance * wdir;
@@ -125,7 +133,7 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
 }
 
 // typical forced march is driven by statuses
-public class StatusDrivenForcedMarch(BossModule module, float duration, uint statusForward, uint statusBackward, uint statusLeft, uint statusRight, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue) : GenericForcedMarch(module, activationLimit)
+public class StatusDrivenForcedMarch(BossModule module, float duration, uint statusForward, uint statusBackward, uint statusLeft, uint statusRight, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false) : GenericForcedMarch(module, activationLimit, stopAfterWall, stopAtWall)
 {
     public float Duration = duration;
     public readonly uint[] Statuses = [statusForward, statusLeft, statusBackward, statusRight, statusForced, statusForcedNPCs]; // 5 elements: fwd, left, back, right, forced, forcedNPCs

@@ -49,7 +49,7 @@ public enum SID : uint
     Fetters = 1849 // none->player, extra=0xEC4
 }
 
-class SludgeVoidzone(BossModule module) : Components.Voidzone(module, 9.8f, GetVoidzones)
+sealed class SludgeVoidzone(BossModule module) : Components.Voidzone(module, 9f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -70,10 +70,10 @@ class SludgeVoidzone(BossModule module) : Components.Voidzone(module, 9.8f, GetV
     }
 }
 
-class ScavengersDaughter(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScavengersDaughter);
-class HeadCrusher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HeadCrusher);
+sealed class ScavengersDaughter(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScavengersDaughter);
+sealed class HeadCrusher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HeadCrusher);
 
-class Fetters(BossModule module) : BossComponent(module)
+sealed class Fetters(BossModule module) : BossComponent(module)
 {
     private bool chained;
     private bool chainsactive;
@@ -138,7 +138,7 @@ class Fetters(BossModule module) : BossComponent(module)
     }
 }
 
-class Aethersup(BossModule module) : Components.GenericAOEs(module)
+sealed class Aethersup(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(24f, 60f.Degrees());
     private AOEInstance? _aoe;
@@ -149,7 +149,8 @@ class Aethersup(BossModule module) : Components.GenericAOEs(module)
         {
             var chain = Module.Enemies((uint)OID.IronChain);
             var count = chain.Count;
-            return new AOEInstance[1] { aoe with { Risky = count == 0 || count != 0 && chain[0].IsDead } };
+            aoe.Risky = count == 0 || count != 0 && chain[0].IsDead;
+            return new AOEInstance[1] { aoe };
         }
         else
             return [];
@@ -177,7 +178,7 @@ class Aethersup(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)IconID.SpreadFlare, (uint)AID.PendulumAOE1, 5.1f)
+sealed class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)IconID.SpreadFlare, (uint)AID.PendulumAOE1, 5.1f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -194,32 +195,36 @@ class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, 20f, (u
     }
 }
 
-class PendulumAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PendulumAOE3, 15f);
+sealed class PendulumAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PendulumAOE3, 15f);
 
-class Knout(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftKnout, (uint)AID.RightKnout], new AOEShapeCone(24f, 105f.Degrees()));
+sealed class Knout(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftKnout, (uint)AID.RightKnout], new AOEShapeCone(24f, 105f.Degrees()));
 
-class Taphephobia(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Taphephobia, 6f);
+sealed class Taphephobia(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Taphephobia, 6f);
 
-class IntoTheLight(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IntoTheLightMarker, (uint)AID.IntoTheLight, 5.3f);
+sealed class IntoTheLight(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IntoTheLightMarker, (uint)AID.IntoTheLight, 5.3f);
 
-class CatONineTails(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class CatONineTails(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCone _shape = new(25f, 60f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FierceBeatingRotationVisual)
+        {
             Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation + 180f.Degrees(), -45f.Degrees(), Module.CastFinishAt(spell), 2f, 8));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.CatONineTails)
+        {
             AdvanceSequence(0, WorldState.CurrentTime);
+        }
     }
 }
 
-class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
+sealed class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
 {
     private static readonly AOEShapeCircle circle = new(4f);
     private readonly List<AOEInstance> _aoes = new(2);
@@ -240,12 +245,12 @@ class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
         for (var i = 0; i < futureCount; ++i)
         {
             var aoe = futureAOEs[i];
-            aoes[index++] = new(Shape, WPos.ClampToGrid(aoe.Item1), aoe.Item3, aoe.Item2, FutureColor);
+            aoes[index++] = new(Shape, aoe.Item1.Quantized(), aoe.Item3, aoe.Item2, FutureColor);
         }
         for (var i = 0; i < imminentCount; ++i)
         {
             var aoe = imminentAOEs[i];
-            aoes[index++] = new(Shape, WPos.ClampToGrid(aoe.Item1), aoe.Item3, aoe.Item2, ImminentColor);
+            aoes[index++] = new(Shape, aoe.Item1.Quantized(), aoe.Item3, aoe.Item2, ImminentColor);
         }
         for (var i = 0; i < aoesCount; ++i)
         {
@@ -297,20 +302,20 @@ class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
     public void AddLine(ref Actor caster, DateTime activation)
     {
         var adv = 2.5f * caster.Rotation.ToDirection();
-        Lines.Add(new() { Next = caster.Position, Advance = adv, NextExplosion = activation, TimeToMove = 1f, ExplosionsLeft = 7, MaxShownExplosions = 3 });
+        Lines.Add(new(caster.Position, adv, activation, 1d, 7, 3));
         ++NumCasts;
         if (_aoes.Count != 0 && NumCasts > 2)
             _aoes.RemoveAt(0);
         if (NumCasts <= 14)
         {
-            _aoes.Add(new(circle, WPos.ClampToGrid(WPos.RotateAroundOrigin(45, D013Philia.ArenaCenter, caster.Position)), default, WorldState.FutureTime(3.7d)));
+            _aoes.Add(new(circle, WPos.RotateAroundOrigin(45, D013Philia.ArenaCenter, caster.Position.Quantized()), default, WorldState.FutureTime(3.7d)));
         }
         if (NumCasts == 16)
             NumCasts = 0;
     }
 }
 
-class D013PhiliaStates : StateMachineBuilder
+sealed class D013PhiliaStates : StateMachineBuilder
 {
     public D013PhiliaStates(BossModule module) : base(module)
     {
@@ -331,10 +336,10 @@ class D013PhiliaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 676, NameID = 8301)]
-public class D013Philia(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D013Philia(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly WPos ArenaCenter = new(134, -465); // slightly different from calculated center due to difference operation
-    private static readonly ArenaBoundsComplex arena = new([new Circle(ArenaCenter, 19.5f)], [new Rectangle(new(134, -445), 20, 1.5f)]);
+    public static readonly WPos ArenaCenter = new(134f, -465f); // slightly different from calculated center due to difference operation
+    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.5f * CosPI.Pi64th, 64)], [new Rectangle(new(134f, -445.277f), 20f, 1.25f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

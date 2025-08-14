@@ -10,32 +10,32 @@ class GraniteGaol(BossModule module) : BossComponent(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.Fetters)
+        if (status.ID == (uint)SID.Fetters)
             PendingFetters.Clear(Raid.FindSlot(actor.InstanceID));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.RockThrow or AID.GaolMarkerHealer)
+        if (spell.Action.ID is (uint)AID.RockThrow or (uint)AID.GaolMarkerHealer)
         {
             // this generally happens after tethers, so don't bother doing anything if targets are already known
             var slot = Raid.FindSlot(spell.MainTargetID);
             if (!PendingFetters[slot])
             {
                 PendingFetters.Set(slot);
-                ResolveAt = WorldState.FutureTime(2.9f);
+                ResolveAt = WorldState.FutureTime(2.9d);
             }
         }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if ((TetherID)tether.ID == TetherID.Gaol)
+        if (tether.ID == (uint)TetherID.Gaol)
         {
             // dps -> healer typically
             PendingFetters.Set(Raid.FindSlot(source.InstanceID));
             PendingFetters.Set(Raid.FindSlot(tether.Target));
-            ResolveAt = WorldState.FutureTime(2.9f);
+            ResolveAt = WorldState.FutureTime(2.9d);
         }
     }
 }

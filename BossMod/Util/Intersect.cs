@@ -89,7 +89,7 @@ public static class Intersect
         // check that intersection point is inside segment
         var p = rayOriginOffset + t * rayDir;
         var u = lineDir.Dot(p - oa);
-        return u >= 0 && u <= lineDir.LengthSq() ? t : float.MaxValue;
+        return u >= 0f && u <= lineDir.LengthSq() ? t : float.MaxValue;
     }
 
     public static float RaySegments(WDir rayOriginOffset, WDir rayDir, ReadOnlySpan<(WDir, WDir)> edges)
@@ -115,7 +115,7 @@ public static class Intersect
 
         var p = rayOrigin + t * rayDir;
         var u = lineDir.Dot(p - vertexA);
-        return u >= 0 && u <= lineDir.LengthSq() ? t : float.MaxValue;
+        return u >= 0f && u <= lineDir.LengthSq() ? t : float.MaxValue;
     }
 
     public static float RayPolygon(WDir rayOriginOffset, WDir rayDir, RelPolygonWithHoles poly)

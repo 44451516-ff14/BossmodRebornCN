@@ -37,7 +37,7 @@ sealed class MeansEnds(BossModule module) : Components.GenericAOEs(module)
             if (distance != 0)
             {
                 var rot = actor.Rotation;
-                _aoes.Add(new(cross, WPos.ClampToGrid(actor.Position + distance * 10f * rot.ToDirection()), rot, WorldState.FutureTime(shortActivation ? 11.7d : 22d), Risky: shortActivation));
+                _aoes.Add(new(cross, (actor.Position + distance * 10f * rot.ToDirection()).Quantized(), rot, WorldState.FutureTime(shortActivation ? 11.7d : 22d), risky: shortActivation));
             }
         }
     }

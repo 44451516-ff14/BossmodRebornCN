@@ -47,26 +47,32 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.LeporineLoaf)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9f));
+        {
+            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x19u && state == 0x00020001u)
+        if (index == 0x19 && state == 0x00020001u)
+        {
             SetArena(D093Lunipyati.DefaultBounds);
-        else if (index == 0x11u && state == 0x00800040u)
+        }
+        else if (index == 0x11 && state == 0x00800040u)
+        {
             SetArena(D093Lunipyati.DonutBounds);
-    }
+        }
 
-    private void SetArena(ArenaBounds bounds)
-    {
-        Arena.Bounds = bounds;
-        Arena.Center = D093Lunipyati.ArenaCenter;
-        _aoe = null;
+        void SetArena(ArenaBounds bounds)
+        {
+            Arena.Bounds = bounds;
+            Arena.Center = D093Lunipyati.ArenaCenter;
+            _aoe = null;
+        }
     }
 }
 
-sealed class CraterCarve(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CraterCarve, 11f, riskyWithSecondsLeft: 2.5f);
+sealed class CraterCarve(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CraterCarve, 11f, riskyWithSecondsLeft: 2.5d);
 
 sealed class RagingClaw(BossModule module) : Components.GenericAOEs(module)
 {
@@ -78,7 +84,9 @@ sealed class RagingClaw(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RagingClawFirst)
+        {
             AOE = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -107,7 +115,9 @@ sealed class BoulderDance(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.BoulderDanceFirst1 or (uint)AID.BoulderDanceFirst2)
+        {
             _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -135,7 +145,7 @@ sealed class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(mo
     {
         if (_aoe.AOE != null && Spreads.Count != 0 && !IsSpreadTarget(actor))
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, default, 1f, 50f), Spreads[0].Activation);
+            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, default, 1f, 50f), Spreads.Ref(0).Activation);
             return;
         }
         base.AddAIHints(slot, actor, assignment, hints);
@@ -143,10 +153,8 @@ sealed class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(mo
 }
 
 sealed class TuraliStoneIV(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.TuraliStoneIV, 6f, 4, 4);
-sealed class LeporineLoaf(BossModule module) : Components.RaidwideCast(module, (uint)AID.LeporineLoaf);
-sealed class BeastlyRoarRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.BeastlyRoar);
+sealed class LeporineLoafSonicHowlBeastlyRoar(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.LeporineLoaf, (uint)AID.BeastlyRoar, (uint)AID.SonicHowl]);
 sealed class BeastlyRoar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BeastlyRoar, 25f);
-sealed class SonicHowl(BossModule module) : Components.RaidwideCast(module, (uint)AID.SonicHowl);
 sealed class Slabber(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Slabber);
 
 sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
@@ -165,7 +173,9 @@ sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var max = count > maxCasts ? maxCasts : count;
         return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
@@ -176,17 +186,29 @@ sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
         {
             angles.Add(spell.Rotation.Rad);
             if (angles.Count < 4)
+            {
                 return;
+            }
             var total = 0f;
             for (var i = 0; i < 4; ++i)
+            {
                 total += angles[i];
+            }
             if ((int)total is 4 or -1)
+            {
                 for (var i = 0; i < 4; ++i)
+                {
                     AddAOEs(WPos.GenerateRotatedVertices(D093Lunipyati.ArenaCenter, spiralSmallPoints, angles[i] * Angle.RadToDeg));
+                }
+            }
             else if ((int)(2 * total) == 3)
+            {
                 GenerateAOEsForMixedPattern(-45f, -135f);
+            }
             else
+            {
                 GenerateAOEsForMixedPattern(45f, -45f);
+            }
             _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
             angles.Clear();
             maxCasts = 16;
@@ -195,7 +217,9 @@ sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
         {
             var rotatedPoints = WPos.GenerateRotatedVertices(D093Lunipyati.ArenaCenter, spiralBigPoints, spell.Rotation.Rad * Angle.RadToDeg);
             for (var i = 0; i < 20; ++i)
+            {
                 _aoes.Add(new(circle, rotatedPoints[i], default, WorldState.FutureTime(4.5d + 0.25d * i)));
+            }
             maxCasts = 10;
         }
     }
@@ -203,7 +227,9 @@ sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.LeapingEarth)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 
     private void GenerateAOEsForMixedPattern(float intercardinalOffset, float cardinalOffset)
@@ -232,7 +258,9 @@ sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
     private void AddAOEs(WPos[] points)
     {
         for (var i = 0; i < 4; ++i)
+        {
             _aoes.Add(new(circle, points[i], default, WorldState.FutureTime(6.5d + 0.2d * i)));
+        }
     }
 }
 
@@ -240,14 +268,15 @@ sealed class RockBlast(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(15);
     private static readonly AOEShapeCircle circle = new(5f);
-
     private static readonly WPos[] clockPositions = [new(34f, -697f), new(48f, -710f), new(21f, -710f), new(34f, -724f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var max = count > 8 ? 8 : count;
         return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
@@ -258,25 +287,31 @@ sealed class RockBlast(BossModule module) : Components.GenericAOEs(module)
         {
             var isClockwise = DetermineClockwise(caster, spell.Rotation);
             var dir = (isClockwise ? 1 : -1) * 22.5f;
+            var pos = caster.Position;
             for (var i = 0; i < 15; ++i)
-                _aoes.Add(new(circle, WPos.RotateAroundOrigin(dir * i, D093Lunipyati.ArenaCenter, caster.Position), default, Module.CastFinishAt(spell, 0.6f * i)));
+            {
+                _aoes.Add(new(circle, WPos.RotateAroundOrigin(dir * i, D093Lunipyati.ArenaCenter, pos), default, Module.CastFinishAt(spell, 0.6d * i)));
+            }
+        }
+        static bool DetermineClockwise(Actor caster, Angle rotation)
+        {
+            for (var i = 0; i < 4; ++i)
+            {
+                if (caster.Position.AlmostEqual(clockPositions[i], 1f))
+                {
+                    return rotation.AlmostEqual(Angle.AnglesCardinals[i], Angle.DegToRad);
+                }
+            }
+            return false;
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.RockBlast)
-            _aoes.RemoveAt(0);
-    }
-
-    private static bool DetermineClockwise(Actor caster, Angle rotation)
-    {
-        for (var i = 0; i < 4; ++i)
         {
-            if (caster.Position.AlmostEqual(clockPositions[i], 1))
-                return rotation.AlmostEqual(Angle.AnglesCardinals[i], Angle.DegToRad);
+            _aoes.RemoveAt(0);
         }
-        return false;
     }
 }
 
@@ -291,10 +326,8 @@ sealed class D093LunipyatiStates : StateMachineBuilder
             .ActivateOnEnter<BoulderDance>()
             .ActivateOnEnter<JaggedEdge>()
             .ActivateOnEnter<TuraliStoneIV>()
-            .ActivateOnEnter<LeporineLoaf>()
-            .ActivateOnEnter<BeastlyRoarRaidwide>()
+            .ActivateOnEnter<LeporineLoafSonicHowlBeastlyRoar>()
             .ActivateOnEnter<BeastlyRoar>()
-            .ActivateOnEnter<SonicHowl>()
             .ActivateOnEnter<Slabber>()
             .ActivateOnEnter<LeapingEarth>()
             .ActivateOnEnter<RockBlast>();

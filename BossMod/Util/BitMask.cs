@@ -18,13 +18,13 @@ public record struct BitMask(ulong Raw)
         }
     }
 
-    public void Reset() => Raw = 0;
+    public void Reset() => Raw = default;
     public void Set(int index) => Raw |= MaskForBit(index);
     public void Clear(int index) => Raw &= ~MaskForBit(index);
     public void Toggle(int index) => Raw ^= MaskForBit(index);
 
-    public readonly bool Any() => Raw != 0;
-    public readonly bool None() => Raw == 0;
+    public readonly bool Any() => Raw != default;
+    public readonly bool None() => Raw == default;
     public readonly int NumSetBits() => BitOperations.PopCount(Raw);
     public readonly int LowestSetBit() => BitOperations.TrailingZeroCount(Raw); // returns out-of-range value (64) if no bits are set
     public readonly int HighestSetBit() => 63 - BitOperations.LeadingZeroCount(Raw); // returns out-of-range value (-1) if no bits are set
@@ -75,7 +75,7 @@ public record struct BitMask(ulong Raw)
         return indices;
     }
 
-    private static ulong MaskForBit(int index) => (uint)index < 64 ? (1ul << index) : 0;
+    private static ulong MaskForBit(int index) => (uint)index < 64u ? (1ul << index) : default;
 
     public override readonly string ToString() => $"{Raw:X}";
 }

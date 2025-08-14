@@ -11,20 +11,16 @@ sealed class TwoFourSnapTwist(BossModule module) : Components.GenericAOEs(module
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var max = _checkerboard.AOEs.Count != 0 || _aoe.Casters.Count != 0 ? 1 : count;
-        for (var i = 0; i < max; ++i)
+        ref var aoe0 = ref aoes[0];
+        aoe0.Risky = true;
+        if (count > 1)
         {
-            ref var aoe = ref aoes[i];
-            if (i == 0)
-            {
-                if (max > 1)
-                    aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-            else
-                aoe.Risky = false;
+            aoe0.Color = Colors.Danger;
         }
         return aoes[..max];
     }
@@ -50,16 +46,16 @@ sealed class TwoFourSnapTwist(BossModule module) : Components.GenericAOEs(module
             case (uint)AID.FourSnapTwistFirst7:
             case (uint)AID.FourSnapTwistFirst8:
                 AddAOE();
-                AddAOE(180f.Degrees(), 3.5f);
+                AddAOE(180f.Degrees(), 3.5d);
                 break;
         }
-        void AddAOE(Angle offset = default, float delay = default) => _aoes.Add(new(rect, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, delay)));
+        void AddAOE(Angle offset = default, double delay = default) => _aoes.Add(new(rect, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, delay), risky: false));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        var count = _aoes.Count;
-        if (count != 0)
+        if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.TwoSnapTwist2:
@@ -69,15 +65,17 @@ sealed class TwoFourSnapTwist(BossModule module) : Components.GenericAOEs(module
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (_aoes.Count != 2)
+        {
             return;
+        }
         // make ai stay close to boss to ensure successfully dodging the combo
-        var aoe = _aoes[0];
-        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 40f), aoe.Activation);
+        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Arena.Center, new WDir(1f, default), 2f, 2f, 40f), _aoes.Ref(0).Activation);
     }
 }

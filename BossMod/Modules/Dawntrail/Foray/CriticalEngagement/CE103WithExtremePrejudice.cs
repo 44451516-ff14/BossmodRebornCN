@@ -45,17 +45,26 @@ sealed class RockSlideStoneSwell(BossModule module) : Components.GenericAOEs(mod
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var deadline1 = aoes[0].Activation.AddSeconds(4.8d);
+        ref var aoe0 = ref aoes[0];
+        var deadline1 = aoe0.Activation.AddSeconds(4.8d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline1)
-            ++index;
-
-        if (index > 1 && aoes[index - 1].Activation > aoes[0].Activation.AddSeconds(1d))
+        while (index < count)
         {
-            aoes[0].Color = Colors.Danger;
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline1)
+            {
+                break;
+            }
+            ++index;
+        }
+        if (index > 1 && aoes[index - 1].Activation > aoe0.Activation.AddSeconds(1d))
+        {
+            aoe0.Color = Colors.Danger;
         }
         return aoes[..index];
     }
@@ -72,16 +81,17 @@ sealed class RockSlideStoneSwell(BossModule module) : Components.GenericAOEs(mod
         if (shape != null)
         {
             var tid = tether.Target;
-            var target = WorldState.Actors.Find(tid);
-            if (target is Actor t)
+            if (WorldState.Actors.Find(tid) is Actor t)
+            {
                 AddAOE(shape, t.Position, t.Rotation, tid);
+            }
             return;
         }
         if (id == (uint)TetherID.StoneSwell2)
         {
             AddAOE(circle, source.Position, default, source.InstanceID);
         }
-        void AddAOE(AOEShape shape, WPos position, Angle rotation, ulong cid) => _aoes.Add(new(shape, WPos.ClampToGrid(position), rotation, WorldState.FutureTime(6.1d), ActorID: cid));
+        void AddAOE(AOEShape shape, WPos position, Angle rotation, ulong cid) => _aoes.Add(new(shape, position.Quantized(), rotation, WorldState.FutureTime(6.1d), actorID: cid));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

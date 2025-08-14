@@ -3,7 +3,7 @@
 // generic tank-swap component for multi-hit tankbusters, with optional aoe
 // assume that target of the first hit is locked when mechanic starts, then subsequent targets are selected based on who the boss targets
 // TODO: this version assumes that boss cast and first-hit are potentially from different actors; the target lock could also be things like icons, etc - generalize more...
-public class TankSwap(BossModule module, uint bossCast, uint firstCast, uint subsequentHit, float timeBetweenHits, AOEShape? shape = null, bool centerAtTarget = false) : GenericBaitAway(module, centerAtTarget: centerAtTarget)
+public class TankSwap(BossModule module, uint bossCast, uint firstCast, uint subsequentHit, float timeBetweenHits, AOEShape? shape = null, bool centerAtTarget = false) : GenericBaitAway(module, centerAtTarget: centerAtTarget, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private Actor? _source;
     private ulong _prevTarget; // before first cast, this is the target of the first hit
@@ -25,7 +25,9 @@ public class TankSwap(BossModule module, uint bossCast, uint firstCast, uint sub
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_source?.TargetID == _prevTarget && actor.Role == Role.Tank)
-            hints.Add(_prevTarget != actor.InstanceID ? "Taunt!" : "Pass aggro!");
+        {
+            hints.Add(_prevTarget != actor.InstanceID ? "Provoke!" : "Pass aggro!");
+        }
         base.AddHints(slot, actor, hints);
     }
 
@@ -48,7 +50,7 @@ public class TankSwap(BossModule module, uint bossCast, uint firstCast, uint sub
         if (spell.Action.ID == firstCast || spell.Action.ID == subsequentHit)
         {
             ++NumCasts;
-            _prevTarget = spell.MainTargetID == caster.InstanceID && spell.Targets.Count != 0 ? spell.Targets[0].ID : spell.MainTargetID;
+            _prevTarget = spell.MainTargetID == caster.InstanceID && spell.Targets.Count != 0 ? spell.Targets.Ref(0).ID : spell.MainTargetID;
             _activation = Module.WorldState.FutureTime(timeBetweenHits);
         }
     }

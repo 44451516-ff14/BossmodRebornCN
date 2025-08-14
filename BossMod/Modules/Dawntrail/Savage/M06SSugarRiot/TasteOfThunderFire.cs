@@ -10,23 +10,24 @@ sealed class TasteOfThunderFire(BossModule module) : Components.GenericStackSpre
         {
             var party = Raid.WithoutSlot(true, true, true);
             var len = party.Length;
-            var act = Module.CastFinishAt(spell, 4.2f);
+            var act = Module.CastFinishAt(spell, 4.2d);
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
+                var p = party[i];
                 if (p.Role == Role.Healer)
+                {
                     Stacks.Add(new(p, 6f, 4, 4, act));
+                }
             }
         }
         else if (spell.Action.ID == (uint)AID.DoubleStyle5)
         {
             var party = Raid.WithoutSlot(false, true, true);
             var len = party.Length;
-            var act = Module.CastFinishAt(spell, 4.2f);
+            var act = Module.CastFinishAt(spell, 4.2d);
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
-                Spreads.Add(new(p, 6f, act));
+                Spreads.Add(new(party[i], 6f, act));
             }
         }
     }

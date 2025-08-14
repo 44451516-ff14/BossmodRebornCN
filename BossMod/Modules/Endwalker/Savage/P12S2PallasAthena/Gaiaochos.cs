@@ -45,7 +45,7 @@ class Geocentrism(BossModule module) : Components.GenericAOEs(module)
                 NumConcurrentAOEs = 3;
                 break;
         }
-        void AddAOE(AOEShape shape, WPos origin, Angle angle) => _aoes.Add(new(shape, WPos.ClampToGrid(origin), angle, Module.CastFinishAt(spell, 0.6f)));
+        void AddAOE(AOEShape shape, WPos origin, Angle angle) => _aoes.Add(new(shape, origin.Quantized(), angle, Module.CastFinishAt(spell, 0.6f)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

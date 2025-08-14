@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Trial.T04Zelenia;
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(4f);
     private AOEInstance? _aoe;
@@ -11,14 +11,16 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.QueensCrusade)
         {
-            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 0.1f));
+            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 0.1d));
         }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index != 0x01u)
+        if (index != 0x01)
+        {
             return;
+        }
         switch (state)
         {
             case 0x00020001u:

@@ -1,13 +1,13 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C023Moko;
 
-class C023MokoStates : StateMachineBuilder
+abstract class C023MokoStates : StateMachineBuilder
 {
     private readonly bool _savage;
 
     public C023MokoStates(BossModule module, bool savage) : base(module)
     {
         _savage = savage;
-        DeathPhase(0, SinglePhase)
+        DeathPhase(default, SinglePhase)
             .ActivateOnEnter<ArenaChange>();
     }
 
@@ -83,9 +83,9 @@ class C023MokoStates : StateMachineBuilder
             .ActivateOnEnter<FleetingIaiGiriBait>()
             .ActivateOnEnter<IaiGiriResolve>()
             .ActivateOnEnter<NBoundlessScarletRest>(!_savage) // first pair starts 0.6 into cast, pairs 7s apart
-            .ActivateOnEnter<SBoundlessScarletRest>(_savage)
-            .DeactivateOnExit<FleetingIaiGiriBait>();
+            .ActivateOnEnter<SBoundlessScarletRest>(_savage);
         CastMulti(id + 0x40, [(uint)AID.NFleetingIaiGiriFront, (uint)AID.NFleetingIaiGiriRight, (uint)AID.NFleetingIaiGiriLeft, (uint)AID.SFleetingIaiGiriFront, (uint)AID.SFleetingIaiGiriRight, (uint)AID.SFleetingIaiGiriLeft], 1.6f, 1, "Cleave")
+            .DeactivateOnExit<FleetingIaiGiriBait>()
             .DeactivateOnExit<IaiGiriResolve>();
         ComponentCondition<InvocationOfVengeance>(id + 0x50, 1.2f, comp => comp.NumMechanics > 0, "Stack/spread"); // first pair of explosions happen right before this
         ComponentCondition<BoundlessScarletRest>(id + 0x60, 6.8f, comp => comp.Casters.Count == 0, "Lines resolve")
@@ -128,9 +128,9 @@ class C023MokoStates : StateMachineBuilder
             .ActivateOnEnter<AccursedEdge>();
         ComponentCondition<AccursedEdge>(id + 0x32, 0.1f, comp => comp.NumCasts > 0, "Jump/bait 1") // also first clearout
             .DeactivateOnExit<AccursedEdge>();
-        ComponentCondition<IaiGiriResolve>(id + 0x40, 2.8f, comp => comp.NumCasts >= 2, "Cleave back")
-            .DeactivateOnExit<DoubleIaiGiriBait>(); // note: this could be deactivated early, but we want to make sure resolve components picks up everything
+        ComponentCondition<IaiGiriResolve>(id + 0x40, 2.8f, comp => comp.NumCasts >= 2, "Cleave back");
         ComponentCondition<IaiGiriResolve>(id + 0x50, 3.1f, comp => comp.NumCasts >= 4, "Cleave 2")
+            .DeactivateOnExit<DoubleIaiGiriBait>() // note: this could be deactivated early, but we want to make sure resolve components picks up everything
             .DeactivateOnExit<Clearout>() // TODO: last aoe ~1.2s before?..
             .DeactivateOnExit<IaiGiriResolve>();
 
@@ -170,5 +170,5 @@ class C023MokoStates : StateMachineBuilder
     }
 }
 
-class C023NMokoStates(BossModule module) : C023MokoStates(module, false);
-class C023SMokoStates(BossModule module) : C023MokoStates(module, true);
+sealed class C023NMokoStates(BossModule module) : C023MokoStates(module, false);
+sealed class C023SMokoStates(BossModule module) : C023MokoStates(module, true);

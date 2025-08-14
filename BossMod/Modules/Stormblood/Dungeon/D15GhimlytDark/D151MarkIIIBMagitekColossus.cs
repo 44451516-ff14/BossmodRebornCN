@@ -58,7 +58,7 @@ class MagitektSlashRotation(BossModule module) : Components.GenericRotatingAOE(m
         if (spell.Action.ID == (uint)AID.MagitekSlashFirst)
         {
             _rotation = spell.Rotation;
-            _activation = Module.CastFinishAt(spell, 2.2f);
+            _activation = Module.CastFinishAt(spell, 2.2d);
         }
         if (_rotation != default)
             InitIfReady();
@@ -74,7 +74,7 @@ class MagitektSlashRotation(BossModule module) : Components.GenericRotatingAOE(m
     {
         if (_rotation != default && _increment != default)
         {
-            Sequences.Add(new(Cone, WPos.ClampToGrid(D151MarkIIIBMagitekColossus.ArenaCenter), _rotation, _increment, _activation, 1.1f, 6));
+            Sequences.Add(new(Cone, D151MarkIIIBMagitekColossus.ArenaCenter.Quantized(), _rotation, _increment, _activation, 1.1d, 6));
             _rotation = default;
             _increment = default;
         }
@@ -91,9 +91,11 @@ class MagitektSlashVoidzone(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID != (uint)OID.FireVoidzone)
             return;
-        if (state == 0x001u)
+        if (state == 0x001)
+        {
             _aoes.Add(new(MagitektSlashRotation.Cone, D151MarkIIIBMagitekColossus.ArenaCenter, actor.Rotation));
-        else if (state == 0x004u)
+        }
+        else if (state == 0x004)
         {
             var count = _aoes.Count;
             var rot = actor.Rotation;

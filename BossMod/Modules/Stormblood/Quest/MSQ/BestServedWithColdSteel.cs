@@ -69,7 +69,7 @@ class MagitekTurret(BossModule module) : Components.GenericAOEs(module, (uint)AI
                     // offset danger zone slightly toward mine so that AI can dodge
                     // if centered on player it doesn't know which direction to go
                     : mineToPlayer * 0.9f;
-                aoes.Add(new(circle, m.source.Position + projectedExplosion, default, Activation: m.tethered.AddSeconds(12d)));
+                aoes.Add(new(circle, m.source.Position + projectedExplosion, default, activation: m.tethered.AddSeconds(12d)));
             }
         }
         return CollectionsMarshal.AsSpan(aoes);

@@ -39,18 +39,18 @@ public enum AID : uint
     ModelChange = 38204 // Boss->self, no cast, single-target
 }
 
-class StormlitShockwave(BossModule module) : Components.RaidwideCast(module, (uint)AID.StormlitShockwave);
-class ValorousAscension(BossModule module) : Components.RaidwideCast(module, (uint)AID.ValorousAscension);
-class RendPower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RendPower, new AOEShapeCone(40f, 15f.Degrees()), 6);
+sealed class StormlitShockwave(BossModule module) : Components.RaidwideCast(module, (uint)AID.StormlitShockwave);
+sealed class ValorousAscension(BossModule module) : Components.RaidwideCast(module, (uint)AID.ValorousAscension);
+sealed class RendPower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RendPower, new AOEShapeCone(40f, 15f.Degrees()), 6);
 
-class BastionBreaker(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BastionBreaker, 6f);
-class HolyBlade(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HolyBlade, 6f);
+sealed class BastionBreaker(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.BastionBreaker, 6f);
+sealed class HolyBlade(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HolyBlade, 6f);
 
-class SearingSlashThrownFlames(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SearingSlash, (uint)AID.ThrownFlames], 8f);
+sealed class SearingSlashThrownFlames(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SearingSlash, (uint)AID.ThrownFlames], 8f);
 
-class Electrobeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrobeam, new AOEShapeRect(40f, 2f));
+sealed class Electrobeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrobeam, new AOEShapeRect(40f, 2f));
 
-class Rush : Components.SimpleChargeAOEGroups
+sealed class Rush : Components.SimpleChargeAOEGroups
 {
     public Rush(BossModule module) : base(module, [(uint)AID.Rush], 2.5f, 4)
     {
@@ -58,9 +58,9 @@ class Rush : Components.SimpleChargeAOEGroups
         MaxRisky = 2;
     }
 }
-class SteadfastWill(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SteadfastWill);
+sealed class SteadfastWill(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SteadfastWill);
 
-class OtisOathbrokenStates : StateMachineBuilder
+sealed class OtisOathbrokenStates : StateMachineBuilder
 {
     public OtisOathbrokenStates(BossModule module) : base(module)
     {
@@ -78,7 +78,7 @@ class OtisOathbrokenStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70478, NameID = 13168)]
-public class OtisOathbroken(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, ArenaBounds)
+public sealed class OtisOathbroken(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, ArenaBounds)
 {
     public static readonly WPos ArenaCenter = new(349f, -14f);
     public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(ArenaCenter, 19.5f, 20)]);

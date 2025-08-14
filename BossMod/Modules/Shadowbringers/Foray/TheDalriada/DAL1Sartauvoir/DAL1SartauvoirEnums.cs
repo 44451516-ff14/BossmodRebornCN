@@ -62,8 +62,7 @@ public enum AID : uint
     ThermalGust = 24180, // Boss->self, 4.0s cast, single-target
     ThermalGustAOE = 24181, // Helper->self, 4.0s cast, range 44 width 10 rect
 
-    UnknownWeaponskill1 = 24185, // Boss->location, no cast, single-target
-    UnknownWeaponskill2 = 24190, // Boss->self, no cast, single-target
-    UnknownWeaponskill3 = 24193, // Boss->self, no cast, single-target
-
+    Visual1 = 24185, // Boss->location, no cast, single-target
+    Visual2 = 24190, // Boss->self, no cast, single-target
+    Visual3 = 24193 // Boss->self, no cast, single-target
 }

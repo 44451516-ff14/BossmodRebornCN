@@ -89,10 +89,7 @@ public enum SID : uint
     EpicHero = 4192, // none->player, extra=0x0
     EpicVillain = 4193, // none->BossMR, extra=0x334
     FatedHero = 4194, // none->player, extra=0x0
-    FatedVillain = 4195, // none->BossGK, extra=0x335
-    VauntedHero = 4196, // none->player, extra=0x0
-    VauntedVillain = 4197, // none->BossTT, extra=0x336
-    Invincibility = 4410, // none->BossHM, extra=0x0
+    VauntedHero = 4196 // none->player, extra=0x0
 }
 
 public enum IconID : uint
@@ -100,9 +97,6 @@ public enum IconID : uint
     Cloudsplitter = 464, // player->self
     RotateCW = 167, // BossMR->self
     RotateCCW = 168, // BossMR->self
-    Dragonfall1 = 557, // player->self
-    Dragonfall2 = 566, // player->self
-    Dragonfall3 = 567, // player->self
     ArroganceIncarnate = 305 // player->self
 }
 
@@ -110,5 +104,5 @@ public enum TetherID : uint
 {
     DecisiveBattle = 299, // player->BossMR/BossGK/BossTT
     Dragonfall = 249, // player->BossGK
-    Utsusemi = 293, // CloneHM->player
+    Utsusemi = 293 // CloneHM->player
 }

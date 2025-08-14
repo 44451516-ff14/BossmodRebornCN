@@ -45,11 +45,12 @@ sealed class EnhancedMobility(BossModule module) : Components.GenericKnockback(m
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var comp = _aoe.ActiveAOEs(slot, actor);
-        var len = comp.Length;
+        var aoes = _aoe.ActiveAOEs(slot, actor);
+        var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            if (comp[i].Check(pos))
+            ref readonly var aoe = ref aoes[i];
+            if (aoe.Check(pos))
             {
                 return true;
             }

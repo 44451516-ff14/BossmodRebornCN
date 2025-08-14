@@ -7,7 +7,7 @@ sealed class BalefulSwathe(BossModule module) : Components.GenericAOEs(module, (
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        Span<AOEInstance> aoes = new AOEInstance[2];
+        var aoes = new AOEInstance[2];
         aoes[0] = new(_shape, Module.PrimaryActor.Position, Module.PrimaryActor.Rotation + 90f.Degrees(), _activation);
         aoes[1] = new(_shape, Module.PrimaryActor.Position, Module.PrimaryActor.Rotation - 90f.Degrees(), _activation);
         return aoes;

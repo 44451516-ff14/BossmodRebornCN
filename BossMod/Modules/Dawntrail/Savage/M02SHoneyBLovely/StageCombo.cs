@@ -18,8 +18,15 @@ sealed class StageCombo(BossModule module) : Components.GenericAOEs(module)
         var deadline = aoes[0].Activation.AddSeconds(1d);
 
         var index = 0;
-        while (index < count && aoes[index].Activation < deadline)
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
+                break;
+            }
             ++index;
+        }
 
         return aoes[..index];
     }
@@ -34,20 +41,22 @@ sealed class StageCombo(BossModule module) : Components.GenericAOEs(module)
         };
         if (first != null && last != null)
         {
-            var firstActivation = Module.CastFinishAt(spell, 1.2f);
-            var lastActivation = Module.CastFinishAt(spell, 7.5f);
+            var firstActivation = Module.CastFinishAt(spell, 1.2d);
+            var lastActivation = Module.CastFinishAt(spell, 7.5d);
             _aoes.Add(new(first, Arena.Center, 180f.Degrees(), firstActivation));
             AddAOEs(firstRot, Angle.AnglesCardinals, firstActivation);
-            _aoes.Add(new(_shapeCross, Arena.Center, 180f.Degrees(), Module.CastFinishAt(spell, 4.2f)));
+            _aoes.Add(new(_shapeCross, Arena.Center, 180f.Degrees(), Module.CastFinishAt(spell, 4.2d)));
             _aoes.Add(new(last, Arena.Center, 180f.Degrees(), lastActivation));
             AddAOEs(firstRot, Angle.AnglesIntercardinals, lastActivation);
-        }
-    }
 
-    private void AddAOEs(Angle firstRot, Angle[] angles, DateTime activation)
-    {
-        for (var i = 0; i < 4; ++i)
-            _aoes.Add(new(_shapeCone, Arena.Center, firstRot + angles[i], activation));
+            void AddAOEs(Angle firstRot, Angle[] angles, DateTime activation)
+            {
+                for (var i = 0; i < 4; ++i)
+                {
+                    _aoes.Add(new(_shapeCone, Arena.Center, firstRot + angles[i], activation));
+                }
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

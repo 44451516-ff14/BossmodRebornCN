@@ -8,4 +8,4 @@ class Bank(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Le
 (uint)AID.HieroglyphikaRightBank], new AOEShapeCone(60f, 90f.Degrees()));
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus, LTS", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 962, NameID = 11298, SortOrder = 2, PlanLevel = 90)]
-public class A31Thaliak(WorldState ws, Actor primary) : BossModule(ws, primary, TetraktysBorder.NormalCenter, TetraktysBorder.NormalBounds);
+public class A31Thaliak(WorldState ws, Actor primary) : BossModule(ws, primary, TetraktysBorder.NormalCenter, new ArenaBoundsSquare(24f));

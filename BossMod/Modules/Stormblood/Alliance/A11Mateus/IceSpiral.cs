@@ -76,7 +76,7 @@ class IceSpiral(BossModule module) : Components.GenericAOEs(module)
             var lastActivationTime = 8d;
             for (var i = 0; i < 228; ++i)
             {
-                var additionalTime = (i % 2 == 0) ? 0.16d : 0.36d;
+                var additionalTime = ((i & 1) == 0) ? 0.16d : 0.36d;
                 var activationTime = WorldState.FutureTime(lastActivationTime);
                 _aoes.Add(new(circle, coordinates[i], default, activationTime));
                 lastActivationTime += additionalTime;

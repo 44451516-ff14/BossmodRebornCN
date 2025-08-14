@@ -31,7 +31,7 @@ public sealed class ActorState : IEnumerable<Actor>
         foreach (var act in Actors.Values)
         {
             ref readonly var instanceID = ref act.InstanceID;
-            ops.Add(new OpCreate(instanceID, act.OID, act.SpawnIndex, act.Name, act.NameID, act.Type, act.Class, act.Level, act.PosRot, act.HitboxRadius, act.HPMP, act.IsTargetable, act.IsAlly, act.OwnerID, act.FateID));
+            ops.Add(new OpCreate(instanceID, act.OID, act.SpawnIndex, act.LayoutID, act.Name, act.NameID, act.Type, act.Class, act.Level, act.PosRot, act.HitboxRadius, act.HPMP, act.IsTargetable, act.IsAlly, act.OwnerID, act.FateID, act.Renderflags));
             if (act.IsDead)
                 ops.Add(new OpDead(instanceID, true));
             if (act.InCombat)
@@ -77,7 +77,7 @@ public sealed class ActorState : IEnumerable<Actor>
             var castinfo = act.CastInfo;
             if (castinfo != null)
                 act.CastInfo!.ElapsedTime = Math.Min(castinfo.ElapsedTime + frame.Duration, castinfo.AdjustedTotalTime);
-            RemovePendingEffects(act, (in PendingEffect p) => p.Expiration < ts);
+            RemovePendingEffects(act, (in p) => p.Expiration < ts);
         }
     }
 
@@ -143,20 +143,21 @@ public sealed class ActorState : IEnumerable<Actor>
 
     // implementation of operations
     public Event<Actor> Added = new();
-    public sealed record class OpCreate(ulong InstanceID, uint OID, int SpawnIndex, string Name, uint NameID, ActorType Type, Class Class, int Level, Vector4 PosRot, float HitboxRadius,
-        ActorHPMP HPMP, bool IsTargetable, bool IsAlly, ulong OwnerID, uint FateID)
+    public sealed record class OpCreate(ulong InstanceID, uint OID, int SpawnIndex, uint LayoutID, string Name, uint NameID, ActorType Type, Class Class, int Level, Vector4 PosRot, float HitboxRadius,
+        ActorHPMP HPMP, bool IsTargetable, bool IsAlly, ulong OwnerID, uint FateID, int Renderflags)
         : Operation(InstanceID)
     {
         protected override void ExecActor(WorldState ws, Actor actor) { }
         protected override void Exec(WorldState ws)
         {
-            var actor = ws.Actors.Actors[InstanceID] = new Actor(InstanceID, OID, SpawnIndex, Name, NameID, Type, Class, Level, PosRot, HitboxRadius, HPMP, IsTargetable, IsAlly, OwnerID, FateID);
+            var actor = ws.Actors.Actors[InstanceID] = new Actor(InstanceID, OID, SpawnIndex, LayoutID, Name, NameID, Type, Class, Level, PosRot, HitboxRadius, HPMP, IsTargetable, IsAlly, OwnerID, FateID, Renderflags);
             ws.Actors.Added.Fire(actor);
         }
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("ACT+"u8)
             .Emit(InstanceID, "X8")
             .Emit(OID, "X")
             .Emit(SpawnIndex)
+            .Emit(LayoutID, "X")
             .Emit(Name)
             .Emit(NameID)
             .Emit((ushort)Type, "X4")
@@ -173,7 +174,8 @@ public sealed class ActorState : IEnumerable<Actor>
             .Emit(IsTargetable)
             .Emit(IsAlly)
             .EmitActor(OwnerID)
-            .Emit(FateID);
+            .Emit(FateID)
+            .Emit(Renderflags);
     }
 
     public Event<Actor> Removed = new();
@@ -280,6 +282,17 @@ public sealed class ActorState : IEnumerable<Actor>
             ws.Actors.IsTargetableChanged.Fire(actor);
         }
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC(Value ? "ATG+"u8 : "ATG-"u8).EmitActor(InstanceID);
+    }
+
+    public Event<Actor, int> RenderflagsChanged = new();
+    public sealed record class OpRenderflags(ulong InstanceID, int Value) : Operation(InstanceID)
+    {
+        protected override void ExecActor(WorldState ws, Actor actor)
+        {
+            actor.Renderflags = Value;
+            ws.Actors.RenderflagsChanged.Fire(actor, Value);
+        }
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("RFLG"u8).EmitActor(InstanceID).Emit(Value);
     }
 
     public Event<Actor> IsAllyChanged = new();
@@ -507,7 +520,7 @@ public sealed class ActorState : IEnumerable<Actor>
             if (Value.GlobalSequence != 0)
             {
                 if (prev.Effects.Any(eff => eff.Type is >= ActionEffectType.Knockback and <= ActionEffectType.AttractCustom3))
-                    actor.PendingKnockbacks.Add(new(Value.GlobalSequence, Value.TargetIndex, Value.SourceInstanceId, ws.FutureTime(3))); // note: sometimes effect can never be applied (eg if source dies shortly after actioneffect), so we need a timeout
+                    actor.PendingKnockbacks.Add(new(Value.GlobalSequence, Value.TargetIndex, Value.SourceInstanceId, ws.FutureTime(3d))); // note: sometimes effect can never be applied (eg if source dies shortly after actioneffect), so we need a timeout
                 ws.Actors.IncomingEffectAdd.Fire(actor, Index);
             }
         }

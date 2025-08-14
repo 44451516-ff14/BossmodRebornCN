@@ -2,8 +2,8 @@ namespace BossMod.Global.MaskedCarnivale.Stage31.Act2;
 
 public enum OID : uint
 {
-    Boss = 0x30F7, //R=2.0
-    Maelstrom = 0x30F9, //R=1.0
+    Boss = 0x30F7, //R2.0
+    Maelstrom = 0x30F9, //R1.0
     Voidzone = 0x1E9684,
     Helper = 0x233C
 }
@@ -40,22 +40,18 @@ public enum SID : uint
     Heavy = 1107 // Helper->player, extra=0x50
 }
 
-class Charybdis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Charybdis, 8);
-class Maelstrom(BossModule module) : Components.Voidzone(module, 8f, GetMaelstrom)
+sealed class Maelstrom(BossModule module) : Components.Voidzone(module, 8f, GetMaelstrom)
 {
     private static List<Actor> GetMaelstrom(BossModule module) => module.Enemies((uint)OID.Maelstrom);
 }
 
-class GogoFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoFlare);
-class GogoHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoHoly);
-class GogoMeteor1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor1, 5f);
-class GogoMeteor2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor2, 16f);
-class GogoMeteor3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor3, 8f);
-class GogoMeteor4(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor4, 8f);
-class GogoMeteor5(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor5, 16f);
-class GogoMeteorBig(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoMeteor6, "Use Diamondback!");
-class Icestorm(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.Icestorm, (uint)AID.Icestorm2, 0.9f, "Raidwide + Frostbite + Heavy");
-class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.GogoThunderIII, GetVoidzones, 0.8f)
+sealed class GogoFlareHoly(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.GogoFlare, (uint)AID.GogoHoly]);
+sealed class GogoMeteorSmall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GogoMeteor1, 5f);
+sealed class GogoMeteorMedCharybdis(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.GogoMeteor3, (uint)AID.GogoMeteor4, (uint)AID.Charybdis], 8f);
+sealed class GogoMeteorLarge(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.GogoMeteor2, (uint)AID.GogoMeteor5], 16f);
+sealed class GogoMeteorBig(BossModule module) : Components.RaidwideCast(module, (uint)AID.GogoMeteor6, "Use Diamondback!");
+sealed class Icestorm(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.Icestorm, (uint)AID.Icestorm2, 0.9d, "Raidwide + Frostbite + Heavy");
+sealed class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.GogoThunderIII, GetVoidzones, 0.8d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -70,77 +66,80 @@ class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f
         {
             var z = enemies[i];
             if (z.EventState != 7)
+            {
                 voidzones[index++] = z;
+            }
         }
         return voidzones[..index];
     }
 }
 
-class GogoBlizzardIII(BossModule module) : Components.GenericAOEs(module)
+sealed class GogoBlizzardIII(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
-    private DateTime _activation;
+    private AOEInstance? _aoe;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (_activation != default)
-            return new AOEInstance[1] { new(circle, Module.PrimaryActor.Position, default, _activation) };
-        return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GogoFireIII)
-            _activation = Module.CastFinishAt(spell, 5.1f);
+        {
+            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 5.1d));
+        }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GogoBlizzardIII)
-            _activation = default;
+        {
+            _aoe = null;
+        }
     }
 }
 
-class GogoFireIIIHint(BossModule module) : Components.CastHint(module, (uint)AID.GogoFireIII, "Pyretic, dodge AOE then stop everything!");
+sealed class GogoFireIIIHint(BossModule module) : Components.CastHint(module, (uint)AID.GogoFireIII, "Pyretic, dodge AOE then stop everything!");
 
-class Pyretic(BossModule module) : Components.StayMove(module)
+sealed class Pyretic(BossModule module) : Components.StayMove(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GogoFireIII)
+        {
             Array.Fill(PlayerStates, new(Requirement.Stay, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if (status.ID == (uint)SID.Pyretic && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
-            PlayerStates[slot] = default;
+        if (status.ID == (uint)SID.Pyretic)
+        {
+            Array.Clear(PlayerStates);
+        }
     }
 }
 
-class Hints(BossModule module) : BossComponent(module)
+sealed class Hints(BossModule module) : BossComponent(module)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (actor.FindStatus((uint)SID.Heavy) != null || actor.FindStatus((uint)SID.Frostbite) != null)
+        {
             hints.Add($"Cleanse debuffs!");
+        }
     }
 }
 
-class Stage31Act2States : StateMachineBuilder
+sealed class Stage31Act2States : StateMachineBuilder
 {
     public Stage31Act2States(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Charybdis>()
             .ActivateOnEnter<Maelstrom>()
-            .ActivateOnEnter<GogoFlare>()
-            .ActivateOnEnter<GogoHoly>()
-            .ActivateOnEnter<GogoMeteor1>()
-            .ActivateOnEnter<GogoMeteor2>()
-            .ActivateOnEnter<GogoMeteor3>()
-            .ActivateOnEnter<GogoMeteor4>()
-            .ActivateOnEnter<GogoMeteor5>()
+            .ActivateOnEnter<GogoFlareHoly>()
+            .ActivateOnEnter<GogoMeteorSmall>()
+            .ActivateOnEnter<GogoMeteorMedCharybdis>()
+            .ActivateOnEnter<GogoMeteorLarge>()
             .ActivateOnEnter<GogoMeteorBig>()
             .ActivateOnEnter<ThunderIII>()
             .ActivateOnEnter<Icestorm>()
@@ -152,4 +151,4 @@ class Stage31Act2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 754, NameID = 9908, SortOrder = 2)]
-public class Stage31Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);
+public sealed class Stage31Act2(WorldState ws, Actor primary) : BossModule(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall);

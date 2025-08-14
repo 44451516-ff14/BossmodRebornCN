@@ -125,7 +125,7 @@ sealed class VasoconstrictorPool(BossModule module) : Components.GenericAOEs(mod
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.VasoconstrictorPool)
-            _aoes.Add(new(circle, WPos.ClampToGrid(actor.Position)));
+            _aoes.Add(new(circle, actor.Position.Quantized()));
     }
 }
 

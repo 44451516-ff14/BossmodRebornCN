@@ -9,7 +9,7 @@ sealed class IncandescentInterlude(BossModule module) : Components.GenericTowers
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Towers)
-            TowerCache.Add(new(WPos.ClampToGrid(actor.Position), 4f, activation: WorldState.FutureTime(9.7d))); // no use to draw towers before spread markers are out
+            TowerCache.Add(new(actor.Position.Quantized(), 4f, activation: WorldState.FutureTime(9.7d))); // no use to draw towers before spread markers are out
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -42,9 +42,12 @@ sealed class IncandescentInterlude(BossModule module) : Components.GenericTowers
         {
             var towers = Module.Enemies((uint)OID.Towers);
             var forbidden = new Func<WPos, float>[4];
+            var a35 = 35f.Degrees();
             for (var i = 0; i < 4; ++i)
-                forbidden[i] = ShapeDistance.Cone(UnSuzaku.ArenaCenter, 20f, _forbidden[slot] ? Angle.AnglesCardinals[i] : Angle.AnglesIntercardinals[i], 35f.Degrees());
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Module.CastFinishAt(_kb.Casters[0].CastInfo));
+            {
+                forbidden[i] = ShapeDistance.Cone(UnSuzaku.ArenaCenter, 20f, _forbidden[slot] ? Angle.AnglesCardinals[i] : Angle.AnglesIntercardinals[i], a35);
+            }
+            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), _kb.Casters.Ref(0).Activation);
         }
     }
 }

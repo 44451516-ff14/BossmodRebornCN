@@ -26,11 +26,11 @@ public enum AID : uint
     DirtySlashRepeat = 40908, // UncannyHuallepen->self, no cast, range 80 width 70 rect
 }
 
-class ArenaChange(BossModule module) : BossComponent(module)
+sealed class ArenaChange(BossModule module) : BossComponent(module)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x03)
+        if (index == 0x03 && state == 0x00020001u)
         {
             Arena.Bounds = Trash2.Arena2;
             Arena.Center = Trash2.Arena2Center;
@@ -38,7 +38,7 @@ class ArenaChange(BossModule module) : BossComponent(module)
     }
 }
 
-class IceAegis(BossModule module) : Components.GenericAOEs(module)
+sealed class IceAegis(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance? _aoe;
 
@@ -65,11 +65,11 @@ class IceAegis(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SavageSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SavageSwipe, new AOEShapeCone(9f, 60f.Degrees()));
-class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 10f);
-class OneOneTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneTonzeSwipe, new AOEShapeCone(10f, 60f.Degrees()));
+sealed class SavageSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SavageSwipe, new AOEShapeCone(9f, 60f.Degrees()));
+sealed class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 10f);
+sealed class OneOneTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneTonzeSwipe, new AOEShapeCone(10f, 60f.Degrees()));
 
-class Trash2States : StateMachineBuilder
+sealed class Trash2States : StateMachineBuilder
 {
     public Trash2States(BossModule module) : base(module)
     {
@@ -79,12 +79,12 @@ class Trash2States : StateMachineBuilder
             .ActivateOnEnter<SavageSwipe>()
             .ActivateOnEnter<OneOneOneTonzeSwing>()
             .ActivateOnEnter<OneOneTonzeSwipe>()
-            .Raw.Update = () => !module.PrimaryActor.IsTargetable || module.WorldState.CurrentCFCID != 1016;
+            .Raw.Update = () => !module.PrimaryActor.IsTargetable || module.WorldState.CurrentCFCID != 1016u;
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1016, NameID = 13676)]
-public class Trash2(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, 28.5f), new ArenaBoundsRect(34.6f, 23.5f))
+public sealed class Trash2(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, 28.5f), new ArenaBoundsRect(34.6f, 23.5f))
 {
     public static readonly WPos Arena2Center = new(default, 57f);
     public static readonly ArenaBoundsRect Arena2 = new(34.6f, 24f);

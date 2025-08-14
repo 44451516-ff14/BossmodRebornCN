@@ -25,55 +25,67 @@ public enum IconID : uint
     RotateCW = 167, // Boss
 }
 
-class GobspinSwipe(BossModule module) : Components.GenericAOEs(module)
+sealed class GobspinSwipe(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(8);
-    private static readonly AOEShapeDonut donut = new(5, 30);
+    public static readonly AOEShapeCircle Circle = new(8f);
+    public static readonly AOEShapeDonut Donut = new(5f, 30f);
     private AOEInstance? _aoe;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var activation = Module.CastFinishAt(spell, 4);
-        if ((AID)spell.Action.ID == AID.GobspinWhooshdropsTelegraph)
-            _aoe = new(circle, Module.PrimaryActor.Position, default, activation);
-        if ((AID)spell.Action.ID == AID.GobswipeConklopsTelegraph)
-            _aoe = new(donut, Module.PrimaryActor.Position, default, activation);
+        var id = spell.Action.ID;
+        if (id == (uint)AID.GobspinWhooshdropsTelegraph)
+        {
+            AddAOE(Circle);
+        }
+        else if (id == (uint)AID.GobswipeConklopsTelegraph)
+        {
+            AddAOE(Donut);
+        }
+        void AddAOE(AOEShape shape) => _aoe = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, 4d));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.GobspinWhooshdrops or AID.GobswipeConklops)
+        if (spell.Action.ID is (uint)AID.GobspinWhooshdrops or (uint)AID.GobswipeConklops)
+        {
             _aoe = null;
+        }
     }
 }
 
-class Knockbacks(BossModule module) : Components.GenericKnockback(module)
+sealed class Knockbacks(BossModule module) : Components.GenericKnockback(module)
 {
-    private static readonly AOEShapeCircle circle = new(8f);
-    private static readonly AOEShapeDonut donut = new(5f, 30f);
     private Knockback? _knockback;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _knockback);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var activation = Module.CastFinishAt(spell, 4);
-        if (spell.Action.ID == (uint)AID.GobspinWhooshdropsTelegraph)
-            _knockback = new(Module.PrimaryActor.Position, 15f, activation, circle);
-        else if (spell.Action.ID == (uint)AID.GobswipeConklopsTelegraph)
-            _knockback = new(Module.PrimaryActor.Position, 15f, activation, donut);
+        var id = spell.Action.ID;
+        if (id == (uint)AID.GobspinWhooshdropsTelegraph)
+        {
+            AddKnockback(GobspinSwipe.Circle);
+        }
+        else if (id == (uint)AID.GobswipeConklopsTelegraph)
+        {
+            AddKnockback(GobspinSwipe.Donut);
+        }
+        void AddKnockback(AOEShape shape) => _knockback = new(spell.LocXZ, 15f, Module.CastFinishAt(spell, 4d), shape);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.GobspinWhooshdrops or (uint)AID.GobswipeConklops)
+        {
             _knockback = null;
+        }
     }
 }
 
-class GobfireShootypops(BossModule module) : Components.GenericRotatingAOE(module)
+sealed class GobfireShootypops(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private Angle _increment;
     private Angle _rotation;
@@ -116,16 +128,16 @@ class GobfireShootypops(BossModule module) : Components.GenericRotatingAOE(modul
     {
         if (_rotation != default && _increment != default)
         {
-            Sequences.Add(new(_shape, WPos.ClampToGrid(source.Position), _rotation, _increment, _activation, 1, 6));
+            Sequences.Add(new(_shape, source.Position.Quantized(), _rotation, _increment, _activation, 1d, 6));
             _rotation = default;
             _increment = default;
         }
     }
 }
 
-class IronKiss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronKiss, 7);
+sealed class IronKiss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronKiss, 7f);
 
-class GoblinMercenaryStates : StateMachineBuilder
+sealed class GoblinMercenaryStates : StateMachineBuilder
 {
     public GoblinMercenaryStates(BossModule module) : base(module)
     {
@@ -139,4 +151,4 @@ class GoblinMercenaryStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 599, NameID = 7906)]
-public class GoblinMercenary(WorldState ws, Actor primary) : BossModule(ws, primary, new(0, primary.Position.Z < 0 ? -124.5f : 144.5f), primary.Position.Z < 0 ? new ArenaBoundsSquare(16) : new ArenaBoundsCircle(30));
+public sealed class GoblinMercenary(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, primary.Position.Z < 0f ? -124.5f : 144.5f), primary.Position.Z < 0f ? new ArenaBoundsSquare(16f) : new ArenaBoundsCircle(30f));

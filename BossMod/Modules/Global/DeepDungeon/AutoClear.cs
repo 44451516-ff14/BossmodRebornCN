@@ -678,12 +678,12 @@ public abstract class AutoClear : ZoneModule
 
         IterAndExpire(Donuts, d => d.Source.CastInfo == null, d =>
         {
-            hints.AddForbiddenZone(ShapeDistance.Donut(WPos.ClampToGrid(d.Source.Position), d.Inner, d.Outer), CastFinishAt(d.Source));
+            hints.AddForbiddenZone(ShapeDistance.Donut(d.Source.Position.Quantized(), d.Inner, d.Outer), CastFinishAt(d.Source));
         });
 
         IterAndExpire(Circles, d => d.Source.CastInfo == null, d =>
         {
-            hints.AddForbiddenZone(ShapeDistance.Circle(WPos.ClampToGrid(d.Source.Position), d.Radius), CastFinishAt(d.Source));
+            hints.AddForbiddenZone(ShapeDistance.Circle(d.Source.Position.Quantized(), d.Radius), CastFinishAt(d.Source));
 
             // some enrages are way bigger than pathfinding map size (e.g. slime explosion is 60y)
             // in these cases, if the player is inside the aoe, add a goal zone telling it to GTFO as far as possible
@@ -731,7 +731,7 @@ public abstract class AutoClear : ZoneModule
 
         IterAndExpire(Voidzones, d => d.Source.IsDeadOrDestroyed, d =>
         {
-            hints.AddForbiddenZone(d.Zone, WPos.ClampToGrid(d.Source.Position), d.Source.Rotation);
+            hints.AddForbiddenZone(d.Zone, d.Source.Position.Quantized(), d.Source.Rotation);
         });
 
         IterAndExpire(KnockbackZones, d => d.Source.CastInfo == null, kb =>

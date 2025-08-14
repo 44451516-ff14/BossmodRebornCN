@@ -9,7 +9,7 @@ sealed class DisasterZoneThunder(BossModule module) : Components.CastCounter(mod
 sealed class Tulidisaster1(BossModule module) : Components.CastCounter(module, (uint)AID.TulidisasterAOE1);
 sealed class Tulidisaster2(BossModule module) : Components.CastCounter(module, (uint)AID.TulidisasterAOE2);
 sealed class Tulidisaster3(BossModule module) : Components.CastCounter(module, (uint)AID.TulidisasterAOE3);
-sealed class IceTalon(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.IceTalon, (uint)AID.IceTalonAOE, 5.1f, tankbuster: true);
+sealed class IceTalon(BossModule module) : Components.BaitAwayIcon(module, 6f, (uint)IconID.IceTalon, (uint)AID.IceTalonAOE, 5.1f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 sealed class WrathUnfurled(BossModule module) : Components.CastCounter(module, (uint)AID.WrathUnfurledAOE);
 sealed class TulidisasterEnrage1(BossModule module) : Components.CastCounter(module, (uint)AID.TulidisasterEnrageAOE1);
 sealed class TulidisasterEnrage2(BossModule module) : Components.CastCounter(module, (uint)AID.TulidisasterEnrageAOE2);

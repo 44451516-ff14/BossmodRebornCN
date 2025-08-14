@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P10SPandaemonium;
 
-class WickedStep(BossModule module) : Components.GenericKnockback(module, ignoreImmunes: true)
+class WickedStep(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly Actor?[] _towers = [null, null];
 
@@ -20,7 +20,7 @@ class WickedStep(BossModule module) : Components.GenericKnockback(module, ignore
             ref readonly var s = ref _towers[i];
             if (s != null && s.Position.InCircle(actor.Position, _towerRadius))
             {
-                sources.Add(new(s.Position, _knockbackRadius, Module.CastFinishAt(s.CastInfo)));
+                sources.Add(new(s.Position, _knockbackRadius, Module.CastFinishAt(s.CastInfo), ignoreImmunes: true));
             }
         }
 

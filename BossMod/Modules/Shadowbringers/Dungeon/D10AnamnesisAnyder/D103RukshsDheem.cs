@@ -133,7 +133,7 @@ class Wavebreaker(BossModule module) : Components.GenericAOEs(module)
             activation = 9.8d;
             shape = rectWide;
         }
-        _aoes.Add(new(shape, WPos.ClampToGrid(caster.Position), caster.Rotation, WorldState.FutureTime(activation)));
+        _aoes.Add(new(shape, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(activation)));
     }
 }
 
@@ -143,18 +143,20 @@ class Drains(BossModule module) : Components.GenericAOEs(module)
     private static readonly float[] xPositions = [-11f, 11f];
     private const float SideLength = 1.25f;
     private static readonly WPos[] drainPositions = GetDrains();
-    private static readonly WDir dir = new(0, 1);
+    private static readonly WDir dir = new(default, 1f);
     private DateTime activation;
 
     private static WPos[] GetDrains()
     {
-        const int zStart = -465;
-        const int zStep = 10;
         var index = 0;
         var drains = new WPos[8];
         for (var i = 0; i < 2; ++i)
-            for (var j = 0; j < 4; ++j)
-                drains[index++] = new(xPositions[i], zStart + j * zStep);
+        {
+            for (var j = 0f; j < 4f; ++j)
+            {
+                drains[index++] = new(xPositions[i], -465f + j * 10f);
+            }
+        }
         return drains;
     }
 
@@ -169,11 +171,11 @@ class Drains(BossModule module) : Components.GenericAOEs(module)
         var aoes = new AOEInstance[countA + countS];
         var index = 0;
         for (var i = 0; i < countA; ++i)
-            aoes[index++] = new(square, activeDrains[i], Color: Colors.SafeFromAOE, Risky: false);
+            aoes[index++] = new(square, activeDrains[i], color: Colors.SafeFromAOE, risky: false);
         for (var i = 0; i < countS; ++i)
         {
             var drain = solvedDrains[i];
-            aoes[index++] = new(square, drain, Color: IsBlockingDrain(actor, drain) ? Colors.SafeFromAOE : 0, Risky: false);
+            aoes[index++] = new(square, drain, color: IsBlockingDrain(actor, drain) ? Colors.SafeFromAOE : default, risky: false);
         }
         return aoes;
     }
@@ -193,19 +195,19 @@ class Drains(BossModule module) : Components.GenericAOEs(module)
 
         switch (state)
         {
-            case 0x00020001:
+            case 0x00020001u:
                 activeDrains.Add(drainPosition);
                 solvedDrains.Remove(drainPosition);
                 if (activation == default)
                     activation = WorldState.FutureTime(12d); // 16s if all 8 drains are active
                 break;
 
-            case 0x00080004:
+            case 0x00080004u:
                 solvedDrains.Add(drainPosition);
                 activeDrains.Remove(drainPosition);
                 break;
 
-            case 0x00200004:
+            case 0x00200004u:
                 activeDrains.Clear();
                 solvedDrains.Clear();
                 activation = default;

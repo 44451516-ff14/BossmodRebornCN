@@ -51,7 +51,7 @@ class EarthQuaker(BossModule module) : Components.ConcentricAOEs(module, _shapes
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.EarthQuakerVisual2)
-            AddSequence(WPos.ClampToGrid(Arena.Center), Module.CastFinishAt(spell, 0.5f));
+            AddSequence(Arena.Center.Quantized(), Module.CastFinishAt(spell, 0.5f));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

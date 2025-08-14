@@ -1,7 +1,7 @@
 ﻿namespace BossMod.Endwalker.Ultimate.DSW2;
 
 // spreads
-class P2StrengthOfTheWard1LightningStorm : Components.UniformStackSpread
+sealed class P2StrengthOfTheWard1LightningStorm : Components.UniformStackSpread
 {
     public P2StrengthOfTheWard1LightningStorm(BossModule module) : base(module, default, 5f)
     {
@@ -16,7 +16,7 @@ class P2StrengthOfTheWard1LightningStorm : Components.UniformStackSpread
 }
 
 // charges
-class P2StrengthOfTheWard1SpiralThrust(BossModule module) : Components.GenericAOEs(module, (uint)AID.SpiralThrust, "GTFO from charge aoe!")
+sealed class P2StrengthOfTheWard1SpiralThrust(BossModule module) : Components.GenericAOEs(module, (uint)AID.SpiralThrust, "GTFO from charge aoe!")
 {
     private readonly List<Actor> _knights = [];
 
@@ -53,4 +53,4 @@ class P2StrengthOfTheWard1SpiralThrust(BossModule module) : Components.GenericAO
 }
 
 // rings
-class P2StrengthOfTheWard1HeavyImpact(BossModule module) : HeavyImpact(module, 8.2f);
+sealed class P2StrengthOfTheWard1HeavyImpact(BossModule module) : HeavyImpact(module, 8.2d);

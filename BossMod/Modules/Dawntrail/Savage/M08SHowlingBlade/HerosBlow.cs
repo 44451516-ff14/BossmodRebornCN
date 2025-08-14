@@ -19,7 +19,9 @@ sealed class HerosBlow(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
+        {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)

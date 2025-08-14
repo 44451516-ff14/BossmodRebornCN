@@ -8,9 +8,12 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
     {
         _module = module;
         SimplePhase(default, Phase1, "")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || (Module.PrimaryActor.CastInfo?.IsSpell(AID.Return) ?? false) || (module.FindComponent<PhaseChange>()?.PhaseChanged ?? false);
+            .Raw.Update = () => _module.PrimaryActor.IsDestroyed || (_module.DeathWall?.IsDestroyed ?? false) || (_module.FindComponent<PhaseChange>()?.PhaseChanged ?? false);
         SimplePhase(1u, Phase2, "")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || module.BossDeadStars()?.HPMP.CurHP <= 1u || (Module.PrimaryActor.CastInfo?.IsSpell(AID.Return) ?? false);
+            .Raw.Update = () => _module.BossDeadStars?.HPMP.CurHP <= 1u || _module.DeathWall!.IsDestroyed;
+        SimplePhase(2u, Wait, "")
+            .OnEnter(() => module.Arena.Bounds = FTB2DeadStars.DefaultArena)
+            .Raw.Update = () => _module.DeathWall!.IsDestroyed;
     }
 
     private void Phase1(uint id)
@@ -33,6 +36,11 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
         VengefulBioIIIBlizzardIIIFireIII(id, 12f, true);
         SixHandedFistfight(id + 0x10000u, 24.9f);
         SimpleState(id + 0x20000u, 15f, "Enrage");
+    }
+
+    private void Wait(uint id)
+    {
+        SimpleState(id, 15f, "Wait for deathwall to disappear!");
     }
 
     private void DecisiveBattle(uint id, float delay)
@@ -156,6 +164,7 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
     {
         ComponentCondition<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>(id, delay, comp => comp.NumCasts != 0, "Circle AOEs")
             .ActivateOnEnter<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
+            .ActivateOnExit<IceboundBuffoonery>()
             .DeactivateOnExit<NoisomeNuisanceIceboundBuffoonBlazingBelligerent>()
             .DeactivateOnExit<DecisiveBattleStatus>();
         for (var i = 1; i <= 3; ++i)
@@ -184,6 +193,7 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
             .DeactivateOnExit<ChillingCollision>();
         ComponentCondition<Avalaunch>(id + 0x50u, 1.6f, comp => comp.NumFinishedStacks != 0, "Stacks resolve")
             .SetHint(StateMachine.StateHint.Raidwide)
+            .DeactivateOnExit<IceboundBuffoonery>()
             .DeactivateOnExit<AvalaunchTether>()
             .DeactivateOnExit<Avalaunch>();
         ActorCastStart(id + 0x60u, _module.BossNereid, (uint)AID.ToTheWinds1, 5.5f, true, "Snowball enrage start")
@@ -206,18 +216,19 @@ sealed class FTB2DeadStarsStates : StateMachineBuilder
         FireSpread(id + 0x40u, 8, 0.5f, 2);
         ElementalImpact(id + 0x50u, 6, 3.6f, 3);
         FireSpread(id + 0x60u, 12, 0.5f, 3);
-        for (var i = 1; i <= 3; i++)
+        for (var i = 1; i <= 3; ++i)
         {
             var offset = id + 0x70u + (uint)((i - 1) * 0x10);
             var casts = 8 * i;
             var cond = ComponentCondition<GeothermalRupture>(offset, (i == 1) ? 7.7f : 2f, comp => comp.NumCasts == casts, $"Baited circles {i}");
             if (i == 1)
-                cond.ActivateOnEnter<GeothermalRupture>();
+                cond
+                    .ActivateOnEnter<FlameThrower>()
+                    .ActivateOnEnter<GeothermalRupture>();
             else if (i == 3)
                 cond.DeactivateOnExit<GeothermalRupture>();
         }
-        ComponentCondition<FlameThrower>(id + 0xA0u, 0.1f, comp => comp.NumCasts != 0, "Raidwide")
-            .ActivateOnEnter<FlameThrower>()
+        ComponentCondition<FlameThrower>(id + 0xA0u, 0.1f, comp => comp.NumCasts != 0, "Line stacks")
             .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<FlameThrower>();
         ElementalImpact(id + 0xB0u, 8, 5f, 4);

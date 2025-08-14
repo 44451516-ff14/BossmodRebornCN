@@ -10,11 +10,10 @@ sealed class StickyMousse(BossModule module) : Components.GenericStackSpread(mod
         {
             var party = Raid.WithoutSlot(false, true, true);
             var len = party.Length;
-            var act = Module.CastFinishAt(spell, 0.8f);
+            var act = Module.CastFinishAt(spell, 0.8d);
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var p = ref party[i];
-                Spreads.Add(new(p, 4f, act));
+                Spreads.Add(new(party[i], 4f, act));
             }
         }
     }

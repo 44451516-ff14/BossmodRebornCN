@@ -1,39 +1,33 @@
 namespace BossMod.Dawntrail.FATE.Ttokrrone;
 
-class Sandspheres(BossModule module) : Components.GenericAOEs(module)
+sealed class Sandspheres(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(6);
     private static readonly AOEShapeCircle circleBig = new(12);
-    private readonly List<AOEInstance> _aoesSmall = [];
-    private readonly List<AOEInstance> _aoesBig = [];
+    private readonly List<AOEInstance> _aoes = new(18);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var aliveSandSpheres = 0;
-        var sandspheres = Module.Enemies((uint)OID.SandSphere);
-        var count = sandspheres.Count;
-        for (var i = 0; i < count; ++i)
+        var count = _aoes.Count;
+        if (count == 0)
         {
-            if (!sandspheres[i].IsDead)
-                ++aliveSandSpheres;
+            return [];
+        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var deadline = aoes[0].Activation.AddSeconds(4.5d);
 
-            if (aliveSandSpheres > 7)
+        var index = 0;
+        while (index < count)
+        {
+            ref readonly var aoe = ref aoes[index];
+            if (aoe.Activation >= deadline)
+            {
                 break;
+            }
+            ++index;
         }
 
-        var max = (aliveSandSpheres == 7) ? 7 : 8;
-        var countS = _aoesSmall.Count;
-        var countB = _aoesBig.Count;
-
-        var aoes = new List<AOEInstance>(max * 2);
-        for (var i = 0; i < max; ++i)
-        {
-            if (countS > i)
-                aoes.Add(_aoesSmall[i]);
-            if (countB > i)
-                aoes.Add(_aoesBig[i]);
-        }
-        return CollectionsMarshal.AsSpan(aoes);
+        return aoes[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -41,27 +35,30 @@ class Sandspheres(BossModule module) : Components.GenericAOEs(module)
         switch (spell.Action.ID)
         {
             case (uint)AID.SummoningSands:
-                _aoesSmall.Add(new(circleSmall, spell.LocXZ, default, Module.CastFinishAt(spell)));
+                AddAOE(circleSmall);
                 break;
             case (uint)AID.Sandburst1:
             case (uint)AID.Sandburst2:
-                _aoesBig.Add(new(circleBig, spell.LocXZ, default, Module.CastFinishAt(spell)));
+                AddAOE(circleBig);
                 break;
         }
+        void AddAOE(AOEShape circle) => _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (_aoesSmall.Count != 0 && spell.Action.ID == (uint)AID.SummoningSands)
-            _aoesSmall.RemoveAt(0);
-        else if (_aoesBig.Count == 0)
-            return;
-        switch (spell.Action.ID)
+        if (spell.Action.ID is (uint)AID.SummoningSands or (uint)AID.Sandburst1 or (uint)AID.Sandburst2)
         {
-            case (uint)AID.Sandburst1:
-            case (uint)AID.Sandburst2:
-                _aoesBig.RemoveAt(0);
-                break;
+            var count = _aoes.Count;
+            var id = caster.InstanceID;
+            for (var i = 0; i < count; ++i)
+            {
+                if (_aoes[i].ActorID == id)
+                {
+                    _aoes.RemoveAt(i);
+                    return;
+                }
+            }
         }
     }
 }

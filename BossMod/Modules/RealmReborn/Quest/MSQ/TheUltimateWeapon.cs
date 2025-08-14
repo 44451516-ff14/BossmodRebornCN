@@ -33,7 +33,7 @@ class BurstFlare(BossModule module) : Components.SimpleKnockbacks(module, (uint)
         if (_aoe.ActiveAOEs(slot, actor).Length != 0)
             return;
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 5f), Module.CastFinishAt(Casters[0].CastInfo));
+            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 5f), Casters.Ref(0).Activation);
     }
 }
 
@@ -67,7 +67,7 @@ class FireSphere(BossModule module) : Components.GenericAOEs(module, (uint)AID.B
             var count = spheres.Count;
             var aoes = new AOEInstance[count];
             for (var i = 0; i < count; ++i)
-                aoes[i] = new(circle, WPos.ClampToGrid(spheres[i].Position), default, dt);
+                aoes[i] = new(circle, spheres[i].Position.Quantized(), default, dt);
             return aoes;
         }
         return [];

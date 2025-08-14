@@ -31,7 +31,7 @@ class BlackTide(BossModule module) : Components.GenericAOEs(module)
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (NumCasts >= 10 && helper != null) // I have seen logs with upto 18 water splashes, not sure how the amount is decided, need more logs to hopefully see a pattern
-            return new AOEInstance[1] { new(circle, WPos.ClampToGrid(helper.Position), default, activation) };
+            return new AOEInstance[1] { new(circle, helper.Position.Quantized(), default, activation) };
         return [];
     }
 

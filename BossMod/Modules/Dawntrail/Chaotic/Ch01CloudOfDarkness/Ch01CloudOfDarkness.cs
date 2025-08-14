@@ -6,7 +6,7 @@ sealed class Atomos(BossModule module) : Components.Adds(module, (uint)OID.Atomo
 sealed class GhastlyGloomCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GhastlyGloomCrossAOE, new AOEShapeCross(40f, 15f));
 sealed class GhastlyGloomDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GhastlyGloomDonutAOE, new AOEShapeDonut(21f, 40f));
 sealed class FloodOfDarknessAdd(BossModule module) : Components.CastInterruptHint(module, (uint)AID.FloodOfDarknessAdd); // TODO: only if add is player's?..
-sealed class Excruciate(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Excruciate, 4f, tankbuster: true);
+sealed class Excruciate(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Excruciate, 4f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 sealed class LoomingChaos(BossModule module) : Components.CastCounter(module, (uint)AID.LoomingChaosAOE);
 sealed class Phaser(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.Phaser], new AOEShapeCone(23f, 30f.Degrees()));
 
