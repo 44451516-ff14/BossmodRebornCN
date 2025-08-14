@@ -220,8 +220,8 @@ sealed class WorldStateGameSync : IDisposable
 
     private unsafe void UpdateWaymarks()
     {
-        
-        
+
+
         var wm = Waymark.A;
         foreach (ref var marker in MarkingController.Instance()->FieldMarkers)
         {
@@ -372,7 +372,7 @@ sealed class WorldStateGameSync : IDisposable
         var castInfo = chr != null ? chr->GetCastInfo() : null;
         if (castInfo != null)
         {
-            var curCast = castInfo->IsCasting
+            var curCast = castInfo->IsCasting != 0
                 ? new ActorCastInfo
                 {
                     Action = new((ActionType)castInfo->ActionType, castInfo->ActionId),
@@ -381,7 +381,7 @@ sealed class WorldStateGameSync : IDisposable
                     Location = _lastCastPositions.GetValueOrDefault(act.InstanceID, castInfo->TargetLocation),
                     ElapsedTime = castInfo->CurrentCastTime,
                     TotalTime = castInfo->BaseCastTime,
-                    Interruptible = castInfo->Interruptible,
+                    Interruptible = castInfo->Interruptible!= 0,
                 } : null;
             UpdateActorCastInfo(act, curCast);
         }
@@ -497,7 +497,7 @@ sealed class WorldStateGameSync : IDisposable
         {
             // in normal mode, the primary data source is playerstate
             var ui = UIState.Instance();
-            if (ui->PlayerState.IsLoaded)
+            if (ui->PlayerState.IsLoaded!= 0)
             {
                 var inCutscene = Service.Condition[ConditionFlag.OccupiedInCutSceneEvent] || Service.Condition[ConditionFlag.WatchingCutscene78] || Service.Condition[ConditionFlag.Occupied33] || Service.Condition[ConditionFlag.BetweenAreas] || Service.Condition[ConditionFlag.OccupiedInQuestEvent];
                 player = new(ui->PlayerState.ContentId, ui->PlayerState.EntityId, inCutscene, ui->PlayerState.CharacterNameString);

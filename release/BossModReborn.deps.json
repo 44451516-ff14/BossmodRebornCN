@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v9.0": {
-      "BossModReborn/7.2.4.42": {
+      "BossModReborn/7.2.5.109": {
         "dependencies": {
           "DalamudPackager": "12.0.0",
           "SharpDX.Mathematics": "4.2.0"
@@ -708,7 +708,7 @@
     }
   },
   "libraries": {
-    "BossModReborn/7.2.4.42": {
+    "BossModReborn/7.2.5.109": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
