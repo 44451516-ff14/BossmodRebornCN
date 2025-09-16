@@ -172,7 +172,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
 
     public void GetCooldown(ref Cooldown result, RecastDetail* data)
     {
-        if (data->IsActive!= 0)
+        if (data->IsActive)
         {
             result.Elapsed = data->Elapsed;
             result.Total = data->Total;
@@ -397,7 +397,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         // to finish a spell without interruption, by the beginning of the slide-cast window target has to be within 75 degrees of character orientation (empirical)
         var castInfo = player->GetCastInfo();
         // with <500ms remaining on cast timer, player can face and move wherever they want and still complete the cast successfully (slidecast)
-        var isCasting = castInfo != null && castInfo->IsCasting!= 0 && castInfo->CurrentCastTime + 0.5f < castInfo->TotalCastTime;
+        var isCasting = castInfo != null && castInfo->IsCasting && castInfo->CurrentCastTime + 0.5f < castInfo->TotalCastTime;
         var currentAction = isCasting ? new((ActionType)castInfo->ActionType, castInfo->ActionId) : actionImminent ? AutoQueue.Action : default;
         var currentTargetId = isCasting ? (ulong)castInfo->TargetId : (AutoQueue.Target?.InstanceID ?? InvalidEntityId);
         var currentTargetSelf = currentTargetId == player->EntityId;
@@ -419,7 +419,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         var imminentActionAdj = imminentAction.Type == ActionType.Spell ? new(ActionType.Spell, GetAdjustedActionID(imminentAction.ID)) : imminentAction;
         var imminentRecast = imminentActionAdj ? _inst->GetRecastGroupDetail(GetRecastGroup(imminentActionAdj)) : null;
 
-        _cooldownTweak.StartAdjustment(_inst->AnimationLock, imminentRecast != null && imminentRecast->IsActive!= 0 ? imminentRecast->Total - imminentRecast->Elapsed : 0, dt);
+        _cooldownTweak.StartAdjustment(_inst->AnimationLock, imminentRecast != null && imminentRecast->IsActive ? imminentRecast->Total - imminentRecast->Elapsed : 0, dt);
         _updateHook.Original(self);
 
         // check whether movement is safe; block movement if not and if desired

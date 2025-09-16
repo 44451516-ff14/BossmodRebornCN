@@ -119,9 +119,9 @@
                                Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'PInvoke.User32' 
                                    and $([System.String]::Copy('%(RuntimeCopyLocalItems.Extension)').ToLower()) == '.dll'" />
         </ItemGroup>
-        <Copy SourceFiles="@(_PInvokeFromNuGet)"
-              DestinationFolder="$(OutputPath)"
-              SkipUnchangedFiles="true" />
+<!--        <Copy SourceFiles="@(_PInvokeFromNuGet)"-->
+<!--              DestinationFolder="$(OutputPath)"-->
+<!--              SkipUnchangedFiles="true" />-->
     </Target>
 
 

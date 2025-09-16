@@ -70,7 +70,6 @@ sealed class DebugParty
         ImGui.TableNextColumn();
         ImGui.TextUnformatted($"{member.HomeWorld}");
         ImGui.TableNextColumn();
-        // ImGui.TextUnformatted(Utils.Vec3String(member.Position));
-        ImGui.TextUnformatted(Utils.Vec3String(new(member.X, member.Y, member.Z)));
+        ImGui.TextUnformatted(Utils.Vec3String(member.Position));
     }
 }

@@ -164,13 +164,16 @@ sealed class AIExperiment(RotationModuleManager manager, Actor player) : AIRotat
         return GCD + timeToSafety >= timeToDodge ? safePos : defaultPos;
     }
 
+
     private WPos IonPlatformAOEs(M04SWickedThunder module, IonClusterPlatformStrategy strategy, bool nextIsDeadly)
     {
         var thunder = module.FindComponent<StampedingThunder>();
         if (thunder?.AOE == null)
             return new(module.Center.X, module.Center.Z - 15);
 
-        var offset = thunder.AOE.Value.Origin.X > module.Center.X ? -1 : 1;
+
+        // var offset = thunder.AOE.Value.Origin.X > module.Center.X ? -1 : 1;
+        var offset = thunder.AOE.Length > 0 && thunder.AOE[0].Origin.X > module.Center.X ? -1 : 1;
         var uptimePos = module.PrimaryActor.Position + new WDir(offset * 7.8f, 0.1f);
         var downtimePos = module.PrimaryActor.Position + new WDir(offset * 10.2f, 0.1f);
 
