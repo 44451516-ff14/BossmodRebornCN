@@ -1,5 +1,4 @@
-﻿using ImGuiNET;
-
+﻿using Dalamud.Bindings.ImGui;
 namespace BossMod;
 
 public sealed class StateMachineWindow : UIWindow

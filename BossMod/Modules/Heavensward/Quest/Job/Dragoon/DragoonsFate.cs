@@ -52,7 +52,7 @@ class Prey(BossModule module) : BossComponent(module)
         else
         {
             // prevent premature swap, even though it doesn't really matter, because the debuff generally falls off with plenty of time left
-            hints.AddForbiddenZone(ShapeDistance.Circle(partner.Position, 5), WorldState.FutureTime(1));
+            hints.AddForbiddenZone(new SDCircle(partner.Position, 5), WorldState.FutureTime(1));
 
             if (Module.PrimaryActor.IsTargetable)
                 hints.AddForbiddenZone(Cleave.Distance(Module.PrimaryActor.Position, Module.PrimaryActor.AngleTo(partner)), WorldState.FutureTime(1));
@@ -89,5 +89,5 @@ class GraoullyStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 67231, NameID = 4190)]
 public class Graoully(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(-483.91f, -299.22f), new(-519.70f, -272.85f), new(-546.66f, -309.50f), new(-510.38f, -336.53f)])]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(-483.91f, -299.22f), new(-519.70f, -272.85f), new(-546.66f, -309.50f), new(-510.38f, -336.53f)])]);
 }

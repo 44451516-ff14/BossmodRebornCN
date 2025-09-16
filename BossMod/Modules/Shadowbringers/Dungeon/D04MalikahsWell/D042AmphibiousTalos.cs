@@ -119,5 +119,5 @@ class D042AmphibiousTalosStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 656, NameID = 8250)]
 public class D042AmphibiousTalos(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(208f, 275f), 19.5f, 48)], [new Rectangle(new(208f, 255.45f), 20f, 1f), new Rectangle(new(208.089f, 294.664f), 20f, 1.25f, -1.92f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(208f, 275f), 19.5f, 48)], [new Rectangle(new(208f, 255.45f), 20f, 1f), new Rectangle(new(208.089f, 294.664f), 20f, 1.25f, -1.92f.Degrees())]);
 }

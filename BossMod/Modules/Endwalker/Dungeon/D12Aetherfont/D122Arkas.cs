@@ -38,16 +38,15 @@ public enum AID : uint
 
 public enum IconID : uint
 {
-    Tankbuster = 218, // player
     Stackmarker = 161 // player
 }
 
-class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(10f, 15f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -57,7 +56,7 @@ class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
             {
                 Arena.Bounds = D122Arkas.SmallerBounds;
                 Arena.Center = D122Arkas.SmallerBounds.Center;
-                _aoe = null;
+                _aoe = [];
             }
             else if (state == 0x00080004u)
             {
@@ -71,15 +70,15 @@ class BattleCryArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.BattleCry2)
         {
-            _aoe = new(donut, D122Arkas.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d));
+            _aoe = [new(donut, D122Arkas.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d))];
         }
     }
 }
 
-class SpunLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpunLightning, new AOEShapeRect(30f, 4f));
-class LightningClaw(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.LightningClaw2, 6, 5.2f, 4, 4);
+sealed class SpunLightning(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpunLightning, new AOEShapeRect(30f, 4f));
+sealed class LightningClaw(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stackmarker, (uint)AID.LightningClaw2, 6, 5.2f, 4, 4);
 
-class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
+sealed class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly (WPos[] Start, WPos[] End) pattern0x01 = (
         [
@@ -163,8 +162,8 @@ class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
                 var ends = pattern.End;
                 for (var i = 15; i >= 0; --i)
                 {
-                    ref readonly var start = ref starts[i];
-                    ref readonly var end = ref ends[i];
+                    var start = starts[i];
+                    var end = ends[i];
                     _aoes.Add(new(new AOEShapeRect((start - end).Length(), 2f), start, Angle.FromDirection(end - start), WorldState.FutureTime(6d)));
                 }
             }
@@ -174,52 +173,39 @@ class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.ForkedFissures)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
-class ElectricEruption(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectricEruption);
+sealed class ElectrifyLightningLeapRampageSpinningClaw(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Electrify, (uint)AID.LightningLeap1,
+(uint)AID.LightningLeap2, (uint)AID.LightningRampage1, (uint)AID.LightningRampage2, (uint)AID.SpinningClaw], 10f);
 
-class Leaps(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f);
-class Electrify(BossModule module) : Leaps(module, (uint)AID.Electrify);
-class LightningLeap1(BossModule module) : Leaps(module, (uint)AID.LightningLeap1);
-class LightningLeap2(BossModule module) : Leaps(module, (uint)AID.LightningLeap2);
-class LightningRampage1(BossModule module) : Leaps(module, (uint)AID.LightningRampage1);
-class LightningRampage2(BossModule module) : Leaps(module, (uint)AID.LightningRampage2);
+sealed class RipperClaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RipperClaw);
+sealed class Shock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shock, 6f);
+sealed class BattleCryElectricEruption(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.BattleCry1, (uint)AID.BattleCry2, (uint)AID.ElectricEruption]);
 
-class RipperClaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RipperClaw);
-class Shock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shock, 6f);
-class SpinningClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinningClaw, 10f);
-class BattleCry1(BossModule module) : Components.RaidwideCast(module, (uint)AID.BattleCry1);
-class BattleCry2(BossModule module) : Components.RaidwideCast(module, (uint)AID.BattleCry2);
-
-class D122ArkasStates : StateMachineBuilder
+sealed class D122ArkasStates : StateMachineBuilder
 {
     public D122ArkasStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<BattleCryArenaChange>()
+            .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<LightningClaw>()
             .ActivateOnEnter<SpunLightning>()
             .ActivateOnEnter<ForkedFissures>()
-            .ActivateOnEnter<ElectricEruption>()
-            .ActivateOnEnter<Electrify>()
-            .ActivateOnEnter<LightningLeap1>()
-            .ActivateOnEnter<LightningLeap2>()
-            .ActivateOnEnter<LightningRampage1>()
-            .ActivateOnEnter<LightningRampage2>()
+            .ActivateOnEnter<ElectrifyLightningLeapRampageSpinningClaw>()
             .ActivateOnEnter<RipperClaw>()
             .ActivateOnEnter<Shock>()
-            .ActivateOnEnter<SpinningClaw>()
-            .ActivateOnEnter<BattleCry1>()
-            .ActivateOnEnter<BattleCry2>();
+            .ActivateOnEnter<BattleCryElectricEruption>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "dhoggpt, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 822, NameID = 12337, SortOrder = 6)]
-public class D122Arkas(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
+public sealed class D122Arkas(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
     public static readonly WPos ArenaCenter = new(425f, -440f);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(ArenaCenter, 14.5f, 48)], [new Rectangle(new(425f, -424f), 20, 2.4f), new Rectangle(new(425f, -455f), 10, 1.25f)]);
-    public static readonly ArenaBoundsComplex SmallerBounds = new([new Polygon(ArenaCenter, 10f, 48)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(ArenaCenter, 14.5f, 48)], [new Rectangle(new(425f, -424f), 20f, 2.4f), new Rectangle(new(425f, -455f), 10f, 1.25f)]);
+    public static readonly ArenaBoundsCustom SmallerBounds = new([new Polygon(ArenaCenter, 10f, 48)]);
 }

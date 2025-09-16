@@ -12,6 +12,7 @@ public enum AID : uint
 {
     AutoAttack = 29004, // Boss->player, no cast, single-target
     Teleport = 28628, // Boss->location, no cast, single-target
+
     TankPurge = 29022, // Boss->self, 5.0s cast, raidwide
     HomingLasers = 29023, // Boss->player, 5.0s cast, single-target, tankbuster
 
@@ -41,18 +42,16 @@ public enum AID : uint
     Ultima = 29024 // Boss->self, 71.0s cast, enrage
 }
 
-class TankPurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.TankPurge);
-class HomingLasers(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HomingLasers);
+sealed class TankPurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.TankPurge);
+sealed class HomingLasers(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HomingLasers);
 
-abstract class MagitekRay(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 3f));
-class MagitekRayF(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayAOEForward);
-class MagitekRayR(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayAOERight);
-class MagitekRayL(BossModule module) : MagitekRay(module, (uint)AID.MagitekRayAOELeft);
+sealed class MagitekRay(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MagitekRayAOEForward, (uint)AID.MagitekRayAOERight,
+(uint)AID.MagitekRayAOELeft], new AOEShapeRect(40f, 3f));
 
-class HomingRay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HomingRayAOE, 6f);
-class LaserFocus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.LaserFocusAOE, 6f, 4, 4);
+sealed class HomingRay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HomingRayAOE, 6f);
+sealed class LaserFocus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.LaserFocusAOE, 6f, 4, 4);
 
-class AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AethericBoom, 30f, stopAtWall: true)
+sealed class AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AethericBoom, 30f, stopAtWall: true)
 {
     public override void AddGlobalHints(GlobalHints hints)
     {
@@ -64,13 +63,13 @@ class AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, (uin
     {
         if (Casters.Count > 0)
         {
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.ArmsLength), actor, ActionQueue.Priority.High);
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Surecast), actor, ActionQueue.Priority.High);
+            hints.ActionsToExecute.Push(ActionDefinitions.Armslength, actor, ActionQueue.Priority.High);
+            hints.ActionsToExecute.Push(ActionDefinitions.Surecast, actor, ActionQueue.Priority.High);
         }
     }
 }
 
-class Aetheroplasm(BossModule module) : BossComponent(module)
+sealed class Aetheroplasm(BossModule module) : BossComponent(module)
 {
     public static List<Actor> GetOrbs(BossModule module)
     {
@@ -102,14 +101,14 @@ class Aetheroplasm(BossModule module) : BossComponent(module)
         var count = orbs.Count;
         if (count != 0)
         {
-            var orbz = new Func<WPos, float>[count];
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Sprint), actor, ActionQueue.Priority.High);
+            var orbz = new ShapeDistance[count];
+            hints.ActionsToExecute.Push(ActionDefinitions.IDSprint, actor, ActionQueue.Priority.High);
             for (var i = 0; i < count; ++i)
             {
                 var o = orbs[i];
-                orbz[i] = ShapeDistance.InvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(default, 1f), 0.5f, 0.5f, 0.5f);
+                orbz[i] = new SDInvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(default, 1f), 0.5f, 0.5f, 0.5f);
             }
-            hints.AddForbiddenZone(ShapeDistance.Intersection(orbz), DateTime.MaxValue);
+            hints.AddForbiddenZone(new SDIntersection(orbz), DateTime.MaxValue);
         }
     }
 
@@ -124,10 +123,10 @@ class Aetheroplasm(BossModule module) : BossComponent(module)
     }
 }
 
-class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCannon, new AOEShapeRect(40f, 2f));
-class CitadelBuster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CitadelBuster, new AOEShapeRect(40f, 6f));
+sealed class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCannon, new AOEShapeRect(40f, 2f));
+sealed class CitadelBuster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CitadelBuster, new AOEShapeRect(40f, 6f));
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 16f) // TODO: verify falloff
+sealed class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 16f) // TODO: verify falloff
 {
     private readonly AssaultCannon _aoe = module.FindComponent<AssaultCannon>()!;
 
@@ -139,18 +138,16 @@ class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Exp
     }
 }
 
-class Ultima(BossModule module) : Components.CastHint(module, (uint)AID.Ultima, "Enrage!", true);
+sealed class Ultima(BossModule module) : Components.CastHint(module, (uint)AID.Ultima, "Enrage!", true);
 
-class T04PortaDecumana2States : StateMachineBuilder
+sealed class T04PortaDecumana2States : StateMachineBuilder
 {
     public T04PortaDecumana2States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<TankPurge>()
             .ActivateOnEnter<HomingLasers>()
-            .ActivateOnEnter<MagitekRayF>()
-            .ActivateOnEnter<MagitekRayR>()
-            .ActivateOnEnter<MagitekRayL>()
+            .ActivateOnEnter<MagitekRay>()
             .ActivateOnEnter<HomingRay>()
             .ActivateOnEnter<LaserFocus>()
             .ActivateOnEnter<AethericBoom>()
@@ -162,12 +159,21 @@ class T04PortaDecumana2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830, NameID = 2137, SortOrder = 2)]
-public class T04PortaDecumana2(WorldState ws, Actor primary) : BossModule(ws, primary, new(-704, 480), new ArenaBoundsCircle(19.5f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830u, NameID = 2137u, SortOrder = 2)]
+public sealed class T04PortaDecumana2(WorldState ws, Actor primary) : BossModule(ws, primary, new(-704f, 480f), new ArenaBoundsCircle(19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor, Colors.Enemy, true);
-        Arena.Actors(Enemies(OID.Aetheroplasm).Where(x => !x.IsDead), Colors.Object, true);
+        var plasm = Enemies((uint)OID.Aetheroplasm);
+        var count = plasm.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var p = plasm[i];
+            if (!p.IsDead)
+            {
+                Arena.Actor(plasm[i], Colors.Object, true);
+            }
+        }
     }
 }

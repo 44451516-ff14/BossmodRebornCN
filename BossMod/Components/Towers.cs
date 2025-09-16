@@ -154,8 +154,8 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
         if (len == 0)
             return;
 
-        var forbiddenInverted = new List<Func<WPos, float>>(len);
-        var forbidden = new List<Func<WPos, float>>(len);
+        var forbiddenInverted = new List<ShapeDistance>(len);
+        var forbidden = new List<ShapeDistance>(len);
 
         var hasForbiddenSoakers = false;
         for (var i = 0; i < len; ++i)
@@ -238,11 +238,11 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             var fcount = forbidden.Count;
             if (fcount == 0 || inTower || missingSoakers && forbiddenInverted.Count != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), Towers.Ref(0).Activation);
+                hints.AddForbiddenZone(new SDIntersection([.. forbiddenInverted]), Towers.Ref(0).Activation);
             }
             else if (fcount != 0 && !inTower)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Towers.Ref(0).Activation);
+                hints.AddForbiddenZone(new SDUnion([.. forbidden]), Towers.Ref(0).Activation);
             }
         }
         else
@@ -255,7 +255,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             var fcount = forbidden.Count;
             if (fcount != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Towers.Ref(0).Activation);
+                hints.AddForbiddenZone(new SDUnion([.. forbidden]), Towers.Ref(0).Activation);
             }
         }
         BitMask mask = default;
@@ -461,8 +461,8 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
         var len = towers.Length;
         if (len == 0)
             return;
-        var forbiddenInverted = new List<Func<WPos, float>>(len);
-        var forbidden = new List<Func<WPos, float>>(len);
+        var forbiddenInverted = new List<ShapeDistance>(len);
+        var forbidden = new List<ShapeDistance>(len);
 
         var hasForbiddenSoakers = false;
         for (var i = 0; i < len; ++i)
@@ -483,7 +483,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
                 {
                     ref readonly var t = ref towers[i];
                     if (t.NumInside(Module) == 0)
-                        forbiddenInverted.Add(ShapeDistance.InvertedCircle(t.Position, t.Radius));
+                        forbiddenInverted.Add(new SDInvertedCircle(t.Position, t.Radius));
                 }
             }
             else if (PrioritizeInsufficient) // less soakers than max
@@ -505,7 +505,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
                         mostRelevantTower = t;
                 }
                 if (mostRelevantTower != null)
-                    forbiddenInverted.Add(ShapeDistance.InvertedCircle(mostRelevantTower.Position, mostRelevantTower.Radius));
+                    forbiddenInverted.Add(new SDInvertedCircle(mostRelevantTower.Position, mostRelevantTower.Radius));
             }
             var inTower = false;
             for (var i = 0; i < len; ++i)
@@ -538,11 +538,11 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
                     ref readonly var t = ref towers[i];
                     if (t.InsufficientAmountInside(Module) || t.IsInside(actor) && t.CorrectAmountInside(Module))
                     {
-                        forbiddenInverted.Add(ShapeDistance.InvertedCircle(t.Position, t.Radius));
+                        forbiddenInverted.Add(new SDInvertedCircle(t.Position, t.Radius));
                     }
                     else if (t.TooManyInside(Module) || !t.IsInside(actor) && t.CorrectAmountInside(Module))
                     {
-                        forbidden.Add(ShapeDistance.Circle(t.Position, t.Radius));
+                        forbidden.Add(new SDCircle(t.Position, t.Radius));
                     }
                 }
             }
@@ -550,11 +550,11 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
             var fcount = forbidden.Count;
             if (fcount == 0 || inTower || missingSoakers && ficount != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), towers[0].Activation);
+                hints.AddForbiddenZone(new SDIntersection([.. forbiddenInverted]), towers[0].Activation);
             }
             else if (fcount != 0 && !inTower)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), towers[0].Activation);
+                hints.AddForbiddenZone(new SDUnion([.. forbidden]), towers[0].Activation);
             }
         }
         else
@@ -562,12 +562,12 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
             for (var i = 0; i < len; ++i)
             {
                 ref readonly var t = ref towers[i];
-                forbidden.Add(ShapeDistance.Circle(t.Position, t.Radius));
+                forbidden.Add(new SDCircle(t.Position, t.Radius));
             }
 
             if (forbidden.Count != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), towers[0].Activation);
+                hints.AddForbiddenZone(new SDUnion([.. forbidden]), towers[0].Activation);
             }
         }
     }

@@ -131,7 +131,13 @@ sealed class MoltAOEs(BossModule module) : Components.GenericAOEs(module)
                             AOEs.Add(new(mech.shape!, position.Quantized(), husk.Rotation, mech.activation));
                             if (AOEs.Count == 2)
                             {
-                                AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                                var aoes = CollectionsMarshal.AsSpan(AOEs);
+                                ref var aoe1 = ref aoes[0];
+                                ref var aoe2 = ref aoes[1];
+                                if (aoe1.Activation > aoe2.Activation)
+                                {
+                                    (aoe1, aoe2) = (aoe2, aoe1);
+                                }
                             }
                             RemovePendingMechanic(position);
                             return;
@@ -170,51 +176,54 @@ sealed class MoltAOEs(BossModule module) : Components.GenericAOEs(module)
 
 sealed class MoltKB(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _kb;
+    private Knockback[] _kb = [];
     private MoltAOEs? _aoe;
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _kb);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
-    public void AddKnockback(WPos position, DateTime activation) => _kb = new(position, 20f, activation);
+    public void AddKnockback(WPos position, DateTime activation) => _kb = [new(position, 20f, activation)];
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Blowout)
         {
-            _kb = null;
+            _kb = [];
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_kb is Knockback kb)
+        if (_kb.Length != 0)
         {
+            ref var kb = ref _kb[0];
             var act = kb.Activation;
             if (!IsImmune(slot, act))
             {
-                var center = Arena.Center;
-                var origin = kb.Origin;
-                hints.AddForbiddenZone(p =>
-                {
-                    if ((p + 20f * (p - origin).Normalized()).InCircle(center, 18f))
-                        return 1f;
-                    return default;
-                }, act);
+                // circle intentionally slightly smaller to prevent sus knockback
+                hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOrigin(Arena.Center, kb.Origin, 20f, 18f), act);
             }
         }
     }
 
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (_kb is Knockback kb)
+        if (_kb.Length != 0)
         {
             _aoe ??= Module.FindComponent<MoltAOEs>();
             if (_aoe!.AOEs.Count == 0)
+            {
                 return;
-            if (_aoe.AOEs[0].Activation > kb.Activation)
+            }
+            ref var aoe = ref _aoe.AOEs.Ref(0);
+            ref var kb = ref _kb[0];
+            if (aoe.Activation > kb.Activation)
+            {
                 hints.Add("Order: Knockback -> AOE");
+            }
             else
+            {
                 hints.Add("Order: AOE -> Knockback");
+            }
         }
     }
 }
@@ -231,7 +240,7 @@ sealed class CE110FlameOfDuskStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 47)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 47)]
 public sealed class CE110FlameOfDusk(WorldState ws, Actor primary) : BossModule(ws, primary, new WPos(-570f, -160f).Quantized(), new ArenaBoundsCircle(20f))
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);

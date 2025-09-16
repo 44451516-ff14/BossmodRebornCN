@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using System.Globalization;
 
@@ -94,13 +94,19 @@ sealed class AIManagementWindow : UIWindow
         if (ImRaii.Combo("##Leader", _manager.Beh == null ? "<idle>" : _manager.WorldState.Party[_manager.MasterSlot]?.Name ?? "<unknown>"))
         {
             if (ImGui.Selectable("<idle>", _manager.Beh == null))
-                _manager.SwitchToIdle();
-            foreach (var (i, p) in _manager.WorldState.Party.WithSlot(true))
             {
-                if (ImGui.Selectable(p.Name, _manager.MasterSlot == i))
+                _manager.SwitchToIdle();
+            }
+            var party = _manager.WorldState.Party.WithSlot(true);
+            var len = party.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var p = ref party[i];
+                var slot = p.Item1;
+                if (ImGui.Selectable(p.Item2.Name, _manager.MasterSlot == slot))
                 {
-                    _manager.SwitchToFollow(i);
-                    _config.FollowSlot = i;
+                    _manager.SwitchToFollow(slot);
+                    _config.FollowSlot = slot;
                     configModified = true;
                 }
             }
@@ -127,7 +133,7 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100);
         var maxDistanceTargetStr = _config.MaxDistanceToTarget.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MaxDistanceToTarget", ref maxDistanceTargetStr, 64u))
+        if (ImGui.InputText("##MaxDistanceToTarget", ref maxDistanceTargetStr, 64))
         {
             maxDistanceTargetStr = maxDistanceTargetStr.Replace(',', '.');
             if (float.TryParse(maxDistanceTargetStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var maxDistance))
@@ -147,7 +153,7 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var maxDistanceSlotStr = _config.MaxDistanceToSlot.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MaxDistanceToSlot", ref maxDistanceSlotStr, 64u))
+        if (ImGui.InputText("##MaxDistanceToSlot", ref maxDistanceSlotStr, 64))
         {
             maxDistanceSlotStr = maxDistanceSlotStr.Replace(',', '.');
             if (float.TryParse(maxDistanceSlotStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var maxDistance))
@@ -166,7 +172,7 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var minDistanceStr = _config.MinDistance.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MinDistance", ref minDistanceStr, 64u))
+        if (ImGui.InputText("##MinDistance", ref minDistanceStr, 64))
         {
             minDistanceStr = minDistanceStr.Replace(',', '.');
             if (float.TryParse(minDistanceStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var minDistance))
@@ -186,7 +192,7 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var prefDistanceStr = _config.PreferredDistance.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##PrefDistance", ref prefDistanceStr, 64u))
+        if (ImGui.InputText("##PrefDistance", ref prefDistanceStr, 64))
         {
             prefDistanceStr = prefDistanceStr.Replace(',', '.');
             if (float.TryParse(prefDistanceStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var prefDistance))
@@ -205,7 +211,7 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var movementDelayStr = _config.MoveDelay.ToString(CultureInfo.InvariantCulture);
-        if (ImGui.InputText("##MovementDelay", ref movementDelayStr, 64u))
+        if (ImGui.InputText("##MovementDelay", ref movementDelayStr, 64))
         {
             movementDelayStr = movementDelayStr.Replace(',', '.');
             if (float.TryParse(movementDelayStr, NumberStyles.Float, CultureInfo.InvariantCulture, out var delay))

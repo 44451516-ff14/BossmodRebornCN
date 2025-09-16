@@ -28,25 +28,31 @@ class SelfDetonate(BossModule module) : Components.CastHint(module, (uint)AID.Se
 
 class UnbreakableCermetBlade(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
-    private const string Hint = "Go under shield!";
-
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle circle = new(4.5f, true);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.ElementalBlessing)
-            _aoe = new(circle, caster.Position, default, default, Colors.SafeFromAOE);
-        else if (spell.Action.ID == (uint)AID.UnbreakableCermetBlade)
-            _aoe = null;
+        var id = spell.Action.ID;
+        if (id == (uint)AID.ElementalBlessing)
+        {
+            _aoe = [new(circle, caster.Position, default, default, Colors.SafeFromAOE)];
+        }
+        else if (id == (uint)AID.UnbreakableCermetBlade)
+        {
+            _aoe = [];
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is AOEInstance aoe)
-            hints.Add(Hint, !aoe.Check(actor.Position));
+        if (_aoe.Length != 0)
+        {
+            ref var aoe = ref _aoe[0];
+            hints.Add("Go under shield!", !aoe.Check(actor.Position));
+        }
     }
 }
 
@@ -95,7 +101,7 @@ public class D0150ScholaMarkIIColossus(WorldState ws, Actor primary) : BossModul
     new(355.28f, -154.19f), new(355.64f, -154.63f), new(356.02f, -155.06f), new(356.41f, -155.49f), new(358.53f, -157.45f),
     new(359.01f, -157.79f), new(359.53f, -158.04f), new(360.06f, -158.21f), new(361.13f, -158.48f), new(371.63f, -161.31f),
     new(373.18f, -161.7f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

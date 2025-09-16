@@ -55,13 +55,13 @@ class EnterNightPull(BossModule module) : Components.GenericKnockback(module)
     {
         if (target.Item1 == actor)
         {
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.ArmsLength), actor, ActionQueue.Priority.High);
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Surecast), actor, ActionQueue.Priority.High);
+            hints.ActionsToExecute.Push(ActionDefinitions.Armslength, actor, ActionQueue.Priority.High);
+            hints.ActionsToExecute.Push(ActionDefinitions.Surecast, actor, ActionQueue.Priority.High);
         }
     }
 }
 
-class EnterNight(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.EnterNight, 16f, activationDelay: 4.3f);
+class EnterNight(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.EnterNight, 16f, activationDelay: 4.3d);
 
 class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
 {
@@ -109,5 +109,5 @@ class DO12TheGovernorStates : StateMachineBuilder
 public class DO12TheGovernor(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(-8, 79);
-    private static readonly ArenaBoundsComplex arena = new([new Circle(ArenaCenter, 19.25f)], [new Rectangle(new(-1.5f, 60.5f), 20, 1.25f, -20.Degrees()), new Rectangle(new(-8, 99), 20, 1)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(ArenaCenter, 19.25f)], [new Rectangle(new(-1.5f, 60.5f), 20, 1.25f, -20.Degrees()), new Rectangle(new(-8, 99), 20, 1)]);
 }

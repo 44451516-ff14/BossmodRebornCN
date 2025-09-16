@@ -117,7 +117,13 @@ sealed class DualPyresSteelfoldStrike(BossModule module) : Components.GenericAOE
                 AddAOE(cone);
                 if (_aoes.Count == 2)
                 {
-                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                    var aoes = CollectionsMarshal.AsSpan(_aoes);
+                    ref var aoe1 = ref aoes[0];
+                    ref var aoe2 = ref aoes[1];
+                    if (aoe1.Activation > aoe2.Activation)
+                    {
+                        (aoe1, aoe2) = (aoe2, aoe1);
+                    }
                 }
                 break;
             case (uint)AID.SteelfoldStrike:
@@ -203,16 +209,16 @@ sealed class SublimeHeat(BossModule module) : Components.GenericAOEs(module)
 
 sealed class NobleTrail(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe != null && Module.PrimaryActor.IsTargetable ? new AOEInstance[1] { _aoe.Value } : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Module.PrimaryActor.IsTargetable ? _aoe : [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.NobleTrail)
         {
             var dir = spell.LocXZ - caster.Position;
-            _aoe = new(new AOEShapeRect(dir.Length(), 10f), caster.Position, Angle.FromDirection(dir), Module.CastFinishAt(spell));
+            _aoe = [new(new AOEShapeRect(dir.Length(), 10f), caster.Position, Angle.FromDirection(dir), Module.CastFinishAt(spell))];
         }
     }
 
@@ -220,7 +226,7 @@ sealed class NobleTrail(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.NobleTrail)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -263,7 +269,7 @@ sealed class HeartOfTuralRaidwides(BossModule module) : Components.RaidwideCast(
 
 sealed class HeartOfTural : Components.SimpleAOEs
 {
-    public HeartOfTural(BossModule module) : base(module, (uint)AID.HeartOfTural, new AOEShapeRect(20f, 20f, InvertForbiddenZone: true)) { Color = Colors.SafeFromAOE; }
+    public HeartOfTural(BossModule module) : base(module, (uint)AID.HeartOfTural, new AOEShapeRect(20f, 20f, invertForbiddenZone: true)) { Color = Colors.SafeFromAOE; }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

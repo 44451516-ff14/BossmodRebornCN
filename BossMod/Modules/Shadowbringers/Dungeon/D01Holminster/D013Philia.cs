@@ -119,7 +119,7 @@ sealed class Fetters(BossModule module) : BossComponent(module)
         var chain = Module.Enemies((uint)OID.IronChain);
         var ironchain = chain.Count != 0 ? chain[0] : null;
         if (ironchain != null && !ironchain.IsDead)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(ironchain.Position, 3.6f));
+            hints.AddForbiddenZone(new SDInvertedCircle(ironchain.Position, 3.6f));
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -141,25 +141,26 @@ sealed class Fetters(BossModule module) : BossComponent(module)
 sealed class Aethersup(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(24f, 60f.Degrees());
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoe is AOEInstance aoe)
+        if (_aoe.Length != 0)
         {
             var chain = Module.Enemies((uint)OID.IronChain);
             var count = chain.Count;
+            ref var aoe = ref _aoe[0];
             aoe.Risky = count == 0 || count != 0 && chain[0].IsDead;
-            return new AOEInstance[1] { aoe };
         }
-        else
-            return [];
+        return _aoe;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.AethersupFirst)
-            _aoe = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -170,7 +171,7 @@ sealed class Aethersup(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.AethersupRest:
                 if (++NumCasts == 4)
                 {
-                    _aoe = default;
+                    _aoe = [];
                     NumCasts = 0;
                 }
                 break;
@@ -178,13 +179,13 @@ sealed class Aethersup(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-sealed class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)IconID.SpreadFlare, (uint)AID.PendulumAOE1, 5.1f)
+sealed class PendulumFlare(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)IconID.SpreadFlare, (uint)AID.PendulumAOE1, 5.1d)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Circle(D013Philia.ArenaCenter, 18.5f));
+            hints.AddForbiddenZone(new SDCircle(D013Philia.ArenaCenter, 18.5f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -201,7 +202,7 @@ sealed class Knout(BossModule module) : Components.SimpleAOEGroups(module, [(uin
 
 sealed class Taphephobia(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Taphephobia, 6f);
 
-sealed class IntoTheLight(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IntoTheLightMarker, (uint)AID.IntoTheLight, 5.3f);
+sealed class IntoTheLight(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IntoTheLightMarker, (uint)AID.IntoTheLight, 5.3d);
 
 sealed class CatONineTails(BossModule module) : Components.GenericRotatingAOE(module)
 {
@@ -211,7 +212,7 @@ sealed class CatONineTails(BossModule module) : Components.GenericRotatingAOE(mo
     {
         if (spell.Action.ID == (uint)AID.FierceBeatingRotationVisual)
         {
-            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation + 180f.Degrees(), -45f.Degrees(), Module.CastFinishAt(spell), 2f, 8));
+            Sequences.Add(new(_shape, spell.LocXZ, spell.Rotation + 180f.Degrees(), -45f.Degrees(), Module.CastFinishAt(spell), 2d, 8));
         }
     }
 
@@ -227,37 +228,40 @@ sealed class CatONineTails(BossModule module) : Components.GenericRotatingAOE(mo
 sealed class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
 {
     private static readonly AOEShapeCircle circle = new(4f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _predictions = new(2);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override void Update()
     {
         var linesCount = Lines.Count;
-        if (linesCount == 0)
-            return [];
-        var futureAOEs = FutureAOEs(linesCount);
-        var imminentAOEs = ImminentAOEs(linesCount);
-        var futureCount = futureAOEs.Count;
-        var imminentCount = imminentAOEs.Length;
-        var aoesCount = _aoes.Count;
-        var total = futureCount + imminentCount + aoesCount;
-        var index = 0;
-        var aoes = new AOEInstance[total];
-        for (var i = 0; i < futureCount; ++i)
+        if (lastCount != linesCount || currentVersion != lastVersion)
         {
-            var aoe = futureAOEs[i];
-            aoes[index++] = new(Shape, aoe.Item1.Quantized(), aoe.Item3, aoe.Item2, FutureColor);
+            var futureAOEs = CollectionsMarshal.AsSpan(FutureAOEs(linesCount));
+            var imminentAOEs = ImminentAOEs(linesCount);
+            var futureLen = futureAOEs.Length;
+            var imminentLen = imminentAOEs.Length;
+            var predictionsCount = _predictions.Count;
+            var total = futureLen + imminentLen + predictionsCount;
+            var index = 0;
+            _aoes = new AOEInstance[total];
+            for (var i = 0; i < futureLen; ++i)
+            {
+                ref var aoe = ref futureAOEs[i];
+                _aoes[index++] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, FutureColor);
+            }
+            for (var i = 0; i < imminentLen; ++i)
+            {
+                ref var aoe = ref imminentAOEs[i];
+                _aoes[index++] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, ImminentColor);
+            }
+            var predictions = CollectionsMarshal.AsSpan(_predictions);
+            for (var i = 0; i < predictionsCount; ++i)
+            {
+                ref var aoe = ref predictions[i];
+                _aoes[index++] = aoe;
+            }
+            lastCount = linesCount;
+            lastVersion = currentVersion;
         }
-        for (var i = 0; i < imminentCount; ++i)
-        {
-            var aoe = imminentAOEs[i];
-            aoes[index++] = new(Shape, aoe.Item1.Quantized(), aoe.Item3, aoe.Item2, ImminentColor);
-        }
-        for (var i = 0; i < aoesCount; ++i)
-        {
-            var aoe = _aoes[i];
-            aoes[index++] = aoe;
-        }
-        return aoes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -270,16 +274,21 @@ sealed class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.FierceBeatingExaRestFirst)
+        var id = spell.Action.ID;
+        if (id == (uint)AID.FierceBeatingExaRestFirst)
         {
             AddLine(ref caster, WorldState.FutureTime(1d));
         }
         if (Lines.Count != 0)
         {
-            if (spell.Action.ID is (uint)AID.FierceBeatingExaFirst or (uint)AID.FierceBeatingExaRestFirst)
+            if (id is (uint)AID.FierceBeatingExaFirst or (uint)AID.FierceBeatingExaRestFirst)
+            {
                 Advance(caster.Position);
-            else if (spell.Action.ID == (uint)AID.FierceBeatingExaRestRest)
+            }
+            else if (id == (uint)AID.FierceBeatingExaRestRest)
+            {
                 Advance(spell.TargetXZ);
+            }
         }
 
         void Advance(WPos pos)
@@ -304,14 +313,20 @@ sealed class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
         var adv = 2.5f * caster.Rotation.ToDirection();
         Lines.Add(new(caster.Position, adv, activation, 1d, 7, 3));
         ++NumCasts;
-        if (_aoes.Count != 0 && NumCasts > 2)
-            _aoes.RemoveAt(0);
+        if (_predictions.Count != 0 && NumCasts > 2)
+        {
+            _predictions.RemoveAt(0);
+            ++currentVersion;
+        }
         if (NumCasts <= 14)
         {
-            _aoes.Add(new(circle, WPos.RotateAroundOrigin(45, D013Philia.ArenaCenter, caster.Position.Quantized()), default, WorldState.FutureTime(3.7d)));
+            _predictions.Add(new(circle, WPos.RotateAroundOrigin(45f, D013Philia.ArenaCenter, caster.Position.Quantized()), default, WorldState.FutureTime(3.7d)));
+            ++currentVersion;
         }
         if (NumCasts == 16)
+        {
             NumCasts = 0;
+        }
     }
 }
 
@@ -339,7 +354,7 @@ sealed class D013PhiliaStates : StateMachineBuilder
 public sealed class D013Philia(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(134f, -465f); // slightly different from calculated center due to difference operation
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.5f * CosPI.Pi64th, 64)], [new Rectangle(new(134f, -445.277f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 19.5f * CosPI.Pi64th, 64)], [new Rectangle(new(134f, -445.277f), 20f, 1.25f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

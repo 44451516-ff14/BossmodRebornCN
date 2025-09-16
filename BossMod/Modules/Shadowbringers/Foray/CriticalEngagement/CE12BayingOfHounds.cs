@@ -39,9 +39,9 @@ sealed class ScorchingLash(BossModule module) : Components.SimpleAOEs(module, (u
 
 sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _charge;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _charge);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -62,7 +62,7 @@ sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
                 Activate(loc, center - offset, WorldState.FutureTime(3.7d));
                 break;
             case (uint)AID.HellpounceSecond:
-                _charge = null;
+                _aoe = [];
                 break;
         }
     }
@@ -70,7 +70,7 @@ sealed class Hellpounce(BossModule module) : Components.GenericAOEs(module)
     private void Activate(WPos source, WPos target, DateTime activation)
     {
         var toTarget = target - source;
-        _charge = new(new AOEShapeRect(toTarget.Length(), 5f), source.Quantized(), Angle.FromDirection(toTarget), activation);
+        _aoe = [new(new AOEShapeRect(toTarget.Length(), 5f), source.Quantized(), Angle.FromDirection(toTarget), activation)];
     }
 }
 
@@ -131,7 +131,7 @@ sealed class CE12BayingOfHoundsStates : StateMachineBuilder
 public sealed class CE12BayingOfHounds(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(154f, 785f);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 24.5f, 32)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 24.5f, 32)]);
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
 }

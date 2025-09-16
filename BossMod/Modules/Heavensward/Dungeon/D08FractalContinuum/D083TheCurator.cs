@@ -141,7 +141,7 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
         Square[] brokenTiles = [.. brokenTilesList];
         if (brokenTiles.Length == 16) // prevents empty sequence incase all tiles are active
             brokenTiles = [];
-        var arena = new ArenaBoundsComplex(defaultSquare, brokenTiles);
+        var arena = new ArenaBoundsCustom(defaultSquare, brokenTiles);
         Arena.Bounds = arena;
         Arena.Center = arena.Center;
     }

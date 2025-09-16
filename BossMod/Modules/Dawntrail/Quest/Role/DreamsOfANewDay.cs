@@ -95,32 +95,40 @@ sealed class Daggerflight(BossModule module) : Components.InterceptTether(module
         if (Active)
         {
             var source = Module.PrimaryActor;
-            var target = Module.Enemies(OID.TentoawaTheWideEye)[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f), _activation);
+            var target = Module.Enemies((uint)OID.TentoawaTheWideEye)[0];
+            hints.AddForbiddenZone(new SDInvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f), _activation);
         }
     }
 }
 
 sealed class CradleOfTheSleepless(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    private static readonly AOEShapeCone cone = new(8f, 60f.Degrees(), InvertForbiddenZone: true);
+    private static readonly AOEShapeCone cone = new(8f, 60f.Degrees(), invertForbiddenZone: true);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.ActivateShield)
-            _aoe = new(cone, caster.Position, caster.Rotation + 180f.Degrees(), default, Colors.SafeFromAOE);
-        else if (spell.Action.ID == (uint)AID.CradleOfTheSleepless)
-            _aoe = null;
+        var id = spell.Action.ID;
+        if (id == (uint)AID.ActivateShield)
+        {
+            _aoe = [new(cone, caster.Position, caster.Rotation + 180f.Degrees(), default, Colors.SafeFromAOE)];
+        }
+        else if (id == (uint)AID.CradleOfTheSleepless)
+        {
+            _aoe = [];
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is not AOEInstance aoe)
+        if (_aoe.Length == 0)
+        {
             return;
+        }
+        ref var aoe = ref _aoe[0];
         hints.Add("Go behind shield or duty fails!", !aoe.Check(actor.Position));
     }
 }
@@ -146,13 +154,13 @@ abstract class DreamsOfANewDayStates : StateMachineBuilder
 
 public abstract class DreamsOfANewDay(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-757f, -719f), 19.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-757f, -719f), 19.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.UnboundRaider1, (uint)OID.UnboundRaider2, (uint)OID.UnboundRaider3, (uint)OID.UnboundRaider4,
     (uint)OID.UnboundRavager1, (uint)OID.UnboundRavager4, (uint)OID.UnboundRavager6, (uint)OID.UnboundRavager7, (uint)OID.UnboundRavager8, (uint)OID.BossP2];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
     }
 
     protected override bool CheckPull() => Raid.Player()!.InCombat;

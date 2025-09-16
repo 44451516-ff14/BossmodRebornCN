@@ -254,7 +254,7 @@ public sealed class Plugin : IDalamudPlugin
         _zonemod.ActiveModule?.Update();
         _hintsBuilder.Update(_hints, PartyState.PlayerSlot, moveImminent);
         _amex.QueueManualActions();
-        _rotation.Update(_amex.AnimationLockDelayEstimate, _movementOverride.IsMoving());
+        _rotation.Update(_amex.AnimationLockDelayEstimate, _movementOverride.IsMoving(), Service.Condition[ConditionFlag.DutyRecorderPlayback]);
         _ai.Update();
         _broadcast.Update();
         _amex.FinishActionGather();
@@ -284,6 +284,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         _movementOverride.DesiredDirection = _hints.ForcedMovement;
         _movementOverride.MisdirectionThreshold = _hints.MisdirectionThreshold;
+        _movementOverride.DesiredSpinDirection = _hints.SpinDirection;
         // update forced target, if needed (TODO: move outside maybe?)
         if (_hints.ForcedTarget != null && _hints.ForcedTarget.IsTargetable)
         {

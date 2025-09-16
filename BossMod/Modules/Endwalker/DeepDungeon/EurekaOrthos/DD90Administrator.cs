@@ -109,15 +109,17 @@ class AetheroChemicalLaserCombo(BossModule module) : Components.GenericAOEs(modu
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        AOEInstance? aoe = spell.Action.ID switch
+        var shape = spell.Action.ID switch
         {
-            (uint)AID.PeripheralLasers => new(_shapes[4], spell.LocXZ, default, Module.CastFinishAt(spell)),
-            (uint)AID.CrossLaser => new(_shapes[3], spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)),
+            (uint)AID.PeripheralLasers => _shapes[4],
+            (uint)AID.CrossLaser => _shapes[3],
             _ => null
         };
 
-        if (aoe != null)
-            AOEs.Add(aoe.Value);
+        if (shape != null)
+        {
+            AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -130,7 +132,9 @@ class AetheroChemicalLaserCombo(BossModule module) : Components.GenericAOEs(modu
             case (uint)AID.PeripheralLasers:
             case (uint)AID.CrossLaser:
                 if (AOEs.Count != 0)
+                {
                     AOEs.RemoveAt(0);
+                }
                 break;
         }
     }

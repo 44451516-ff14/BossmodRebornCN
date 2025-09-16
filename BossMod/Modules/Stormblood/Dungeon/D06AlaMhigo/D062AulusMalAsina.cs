@@ -82,7 +82,7 @@ class MindJack(BossModule module) : BossComponent(module)
             var t = _tethers[i];
             if (t.target == id)
             {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(t.source, 2f));
+                hints.AddForbiddenZone(new SDInvertedCircle(t.source, 2f));
                 return;
             }
         }
@@ -106,5 +106,5 @@ class D062AulusMalAsinaStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 247, NameID = 6038)]
 public class D062AulusMalAsina(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(250, -70), 19.75f)], [new Rectangle(new(250, -50), 20, 1.25f), new Rectangle(new(250, -90), 20, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(250, -70), 19.75f)], [new Rectangle(new(250, -50), 20, 1.25f), new Rectangle(new(250, -90), 20, 1.25f)]);
 }

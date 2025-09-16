@@ -199,6 +199,6 @@ public sealed class D121Locksmith(WorldState ws, Actor primary) : BossModule(ws,
     new(40f, 1.779f), new(41f, 2f), new(42f, 2.381f), new(43f, 2.418f), new(44f, 2f), new(45f, 2f), new(46f, 1.5f), new(47f, 2f),
     new(47.41f, 2.747f), new(48f, 3.178f), new(49f, 3.035f), new(49.569f, 3.424f), new(50f, 4f), new(51f, 4f), new(52f, 3.665f), new(52.5f, 2.891f),
     new(53.141f, 2.404f), new(54f, 2f), new(54.633f, 2.117f), new(55.265f, 2f), new(56f, 1.317f), new(56.479f, 1.101f), new(57f, 0.5f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)], [new PolygonCustom(verticesPuddle1),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)], [new PolygonCustom(verticesPuddle1),
     new PolygonCustom(verticesPuddle2), new PolygonCustom(verticesPuddle3)]);
 }

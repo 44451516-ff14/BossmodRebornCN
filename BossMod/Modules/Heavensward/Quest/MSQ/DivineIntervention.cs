@@ -48,30 +48,31 @@ class SerGrinnauxStates : StateMachineBuilder
             .ActivateOnEnter<Rive>()
             .ActivateOnEnter<Heartstopper>()
             .ActivateOnEnter<ThunderThrust>()
-            .Raw.Update = () => module.Enemies(SerGrinnaux.Bosses).All(x => x.IsDeadOrDestroyed);
+            .Raw.Update = () => AllDeadOrDestroyed(SerGrinnaux.Bosses);
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 67133, NameID = 3850)]
 public class SerGrinnaux(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Capsule(new(default, 1.979f), 3.66f, 11.45f, 50, 90f.Degrees())], [new Rectangle(new(default, -9.995f), 4f, 0.7f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Capsule(new(default, 1.979f), 3.66f, 11.45f, 50, 90f.Degrees())], [new Rectangle(new(default, -9.995f), 4f, 0.7f)]);
     public static readonly uint[] Bosses = [(uint)OID.Boss, (uint)OID.SerPaulecrainColdfire];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Bosses));
-        Arena.Actors(Enemies(OID.IshgardianSteelChain), Colors.Object);
+        Arena.Actors(this, Bosses);
+        Arena.Actors(Enemies((uint)OID.IshgardianSteelChain), Colors.Object);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            e.Priority = (OID)e.Actor.OID switch
+            e.Priority = e.Actor.OID switch
             {
-                OID.IshgardianSteelChain => 1,
+                (uint)OID.IshgardianSteelChain => 1,
                 _ => 0
             };
         }

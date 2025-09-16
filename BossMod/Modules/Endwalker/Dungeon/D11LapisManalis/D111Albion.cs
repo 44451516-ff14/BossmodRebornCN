@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.Dungeon.D11LapisManalis.D111Albion;
 
 public enum OID : uint
 {
-    Boss = 0x3CFE, //R=4.6
+    Albion = 0x3CFE, //R=4.6
     WildBeasts = 0x3D03, //R=0.5
     WildBeasts1 = 0x3CFF, // R1.32
     WildBeasts2 = 0x3D00, // R1.7
@@ -14,195 +14,170 @@ public enum OID : uint
 
 public enum AID : uint
 {
-    AutoAttack = 872, // Boss->player, no cast, single-target
-    Teleport = 32812, // Boss->location, no cast, single-target, boss teleports mid
+    AutoAttack = 872, // Albion->player, no cast, single-target
+    Teleport = 32812, // Albion->location, no cast, single-target, Albion teleports mid
 
-    CallOfTheMountain = 31356, // Boss->self, 3.0s cast, single-target, boss calls wild beasts
+    CallOfTheMountain = 31356, // Albion->self, 3.0s cast, single-target, Albion calls wild beasts
     WildlifeCrossing = 31357, // WildBeasts->self, no cast, range 7 width 10 rect
-    AlbionsEmbrace = 31365, // Boss->player, 5.0s cast, single-target
+    AlbionsEmbrace = 31365, // Albion->player, 5.0s cast, single-target
 
-    RightSlam = 32813, // Boss->self, 5.0s cast, range 80 width 20 rect
-    LeftSlam = 32814, // Boss->self, 5.0s cast, range 80 width 20 rect
+    RightSlam = 32813, // Albion->self, 5.0s cast, range 80 width 20 rect
+    LeftSlam = 32814, // Albion->self, 5.0s cast, range 80 width 20 rect
 
-    KnockOnIceVisual = 31358, // Boss->self, 4.0s cast, single-target
+    KnockOnIceVisual = 31358, // Albion->self, 4.0s cast, single-target
     KnockOnIce = 31359, // Helper->self, 6.0s cast, range 5 circle
 
-    Icebreaker = 31361, // Boss->IcyCrystal, 5.0s cast, range 17 circle
-    IcyThroesVisual = 31362, // Boss->self, no cast, single-target
+    Icebreaker = 31361, // Albion->IcyCrystal, 5.0s cast, range 17 circle
+    IcyThroesVisual = 31362, // Albion->self, no cast, single-target
     IcyThroes1 = 32783, // Helper->self, 5.0s cast, range 6 circle
     IcyThroes2 = 32697, // Helper->self, 5.0s cast, range 6 circle
     IcyThroesSpread = 31363, // Helper->player, 5.0s cast, range 6 circle
-    RoarOfAlbion = 31364 // Boss->self, 7.0s cast, range 60 circle
+    RoarOfAlbion = 31364 // Albion->self, 7.0s cast, range 60 circle
 }
 
-class WildlifeCrossing(BossModule module) : Components.GenericAOEs(module)
+sealed class WildlifeCrossing(BossModule module) : Components.GenericAOEs(module)
 {
+    struct Stampede(bool active, WPos pos, Angle rot, List<Actor> beasts)
+    {
+        public bool Active = active;
+        public WPos Position = pos;
+        public Angle Rotation = rot;
+        public int Count;
+        public DateTime Reset;
+        public List<Actor> Beasts = beasts;
+    }
+
     private static readonly AOEShapeRect rect = new(20f, 5f, 20f);
+    private readonly Stampede[] _stampedes = [default, default];
+    private readonly List<AOEInstance> _aoes = new(2);
+    private int numActiveStampedes;
+    private readonly List<Actor> animals = new(40);
 
-    private Queue<Stampede> stampedes = [];
-    private static readonly uint[] animals = [(uint)OID.WildBeasts1, (uint)OID.WildBeasts2, (uint)OID.WildBeasts3, (uint)OID.WildBeasts4];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
-    private static readonly WPos[] stampedePositions =
-    [
-        new(4f, -759f), new(44f, -759f),
-        new(4f, -749f), new(44f, -749f),
-        new(4f, -739f), new(44f, -739f),
-        new(4f, -729f), new(44f, -729f)
-    ];
-
-    private static Stampede NewStampede(WPos stampede) => new(true, stampede, stampede.X == 4 ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0], new(40));
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override void OnActorCreated(Actor actor)
     {
-        foreach (var stampede in stampedes)
-            if (stampede.Active)
-                return stampede.Beasts.Count != 0 ? CreateAOEInstance(stampede) : [new(rect, stampede.Position, Angle.AnglesCardinals[3])];
-        return [];
+        if (actor.OID is (uint)OID.WildBeasts1 or (uint)OID.WildBeasts2 or (uint)OID.WildBeasts3 or (uint)OID.WildBeasts4)
+        {
+            animals.Add(actor);
+        }
     }
 
-    private static AOEInstance[] CreateAOEInstance(Stampede stampede)
+    public override void OnActorDestroyed(Actor actor)
     {
-        return [new(new AOEShapeRect(CalculateStampedeLength(stampede.Beasts) + 30f, 5f), new(stampede.Beasts[^1].Position.X, stampede.Position.Z), stampede.Rotation)];
+        if (actor.OID is (uint)OID.WildBeasts1 or (uint)OID.WildBeasts2 or (uint)OID.WildBeasts3 or (uint)OID.WildBeasts4)
+        {
+            animals.Remove(actor);
+        }
     }
-
-    private static float CalculateStampedeLength(List<Actor> beasts) => (beasts[0].Position - beasts[^1].Position).Length();
 
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (state != 0x00020001u)
-            return;
-
-        var stampedePosition = GetStampedePosition(index);
-        if (stampedePosition == null)
-            return;
-
-        var stampede = GetOrCreateStampede(stampedePosition.Value);
-        if (!stampedes.Contains(stampede))
-            stampedes.Enqueue(stampede);
-    }
-
-    private Stampede GetOrCreateStampede(WPos stampedePosition)
-    {
-        var inactiveStampede = stampedes.FirstOrDefault(s => !s.Active);
-
-        if (inactiveStampede != default)
-            return ResetStampede(inactiveStampede, stampedePosition);
-
-        if (stampedes.Count < 2)
-            return NewStampede(stampedePosition);
-
-        var oldest = stampedes.Dequeue();
-        return NewStampede(stampedePosition);
-    }
-
-    private static Stampede ResetStampede(Stampede stampede, WPos position)
-    {
-        stampede.Active = true;
-        stampede.Position = position;
-        stampede.Rotation = stampede.Position.X == 4 ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0];
-        stampede.Count = default;
-        stampede.Reset = default;
-        stampede.Beasts.Clear();
-        return stampede;
-    }
-
-    private static WPos? GetStampedePosition(byte index)
-    {
-        return index switch
         {
-            0x21 => stampedePositions[0],
-            0x25 => stampedePositions[1],
-            0x22 => stampedePositions[2],
-            0x26 => stampedePositions[3],
-            0x23 => stampedePositions[4],
-            0x27 => stampedePositions[5],
-            0x24 => stampedePositions[6],
-            0x28 => stampedePositions[7],
+            return;
+        }
+
+        WPos pos = index switch
+        {
+            0x21 => new(4f, -759f),
+            0x25 => new(44f, -759f),
+            0x22 => new(4f, -749f),
+            0x26 => new(44f, -749f),
+            0x23 => new(4f, -739f),
+            0x27 => new(44f, -739f),
+            0x24 => new(4f, -729f),
+            0x28 => new(44f, -729f),
             _ => default
         };
+        if (pos == default)
+        {
+            return;
+        }
+
+        _stampedes[numActiveStampedes] = new Stampede(true, pos, pos.X == 4f ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[0], []);
+        ++numActiveStampedes;
     }
 
     public override void Update()
     {
-        List<Stampede> stampedeList = [.. stampedes];
-        var count = stampedeList.Count;
-        for (var i = 0; i < count; ++i)
+        if (numActiveStampedes == 0)
         {
-            var stampede = stampedeList[i];
-            UpdateStampede(ref stampede);
-            ResetStampede(ref stampede);
-            stampedeList[i] = stampede;
+            return;
         }
-        stampedes = new Queue<Stampede>(stampedeList);
-    }
-
-    private void UpdateStampede(ref Stampede stampede)
-    {
-        var beasts = Module.Enemies(animals);
-        var updatedBeasts = stampede.Beasts == null ? new HashSet<Actor>(40) : [.. stampede.Beasts]; // use HashSet to easily prevent duplicates
-        for (var i = 0; i < beasts.Count; ++i)
+        _aoes.Clear();
+        for (var i = 0; i < 2; ++i)
         {
-            var b = beasts[i];
-            if (b.Position.InRect(stampede.Position, stampede.Rotation, default, 10f, 5f) && stampede.Active)
-                updatedBeasts.Add(b);
-        }
-        stampede.Beasts = [.. updatedBeasts];
-    }
+            ref var s = ref _stampedes[i];
+            if (!s.Active)
+            {
+                continue;
+            }
+            var reset = s.Reset;
+            if (reset != default && WorldState.CurrentTime > reset)
+            {
+                _stampedes[i] = default;
+                --numActiveStampedes;
+                if (numActiveStampedes == 0)
+                {
+                    _aoes.Clear();
+                }
+                return;
+            }
 
-    private void ResetStampede(ref Stampede stampede)
-    {
-        if (stampede.Reset != default && WorldState.CurrentTime > stampede.Reset)
-            stampede = default;
+            var count = animals.Count;
+
+            HashSet<Actor> updatedBeasts = [.. s.Beasts];
+            for (var j = 0; j < count; ++j)
+            {
+                var b = animals[j];
+                if (b.Position.InRect(s.Position, s.Rotation, default, 10f, 5f))
+                {
+                    updatedBeasts.Add(b);
+                }
+            }
+            var currentbeasts = s.Beasts = [.. updatedBeasts];
+            _aoes.Add(currentbeasts.Count == 0 ? new(rect, s.Position, Angle.AnglesCardinals[3])
+            : new(new AOEShapeRect((currentbeasts[0].Position - currentbeasts[^1].Position).Length() + 30f, 5f), new(currentbeasts[^1].PosRot.X, s.Position.Z), s.Rotation));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.WildlifeCrossing)
         {
-            List<Stampede> stampedeList = [.. stampedes];
-            var count = stampedeList.Count;
-            for (var i = 0; i < count; ++i)
+            var len = _stampedes.Length;
+            var posZ = caster.PosRot.Z;
+            for (var i = 0; i < len; ++i)
             {
-                var stampede = stampedeList[i];
-                UpdateStampedeCount(ref stampede, caster.Position.Z);
-                stampedeList[i] = stampede;
+                ref var s = ref _stampedes[i];
+                if (Math.Abs(posZ - s.Position.Z) < 1f)
+                {
+                    if (++s.Count == 30)
+                    {
+                        s.Reset = WorldState.FutureTime(0.5d);
+                    }
+                }
             }
-            stampedes = new Queue<Stampede>(stampedeList);
         }
     }
-
-    private void UpdateStampedeCount(ref Stampede stampede, float casterZ)
-    {
-        if (Math.Abs(casterZ - stampede.Position.Z) < 1f)
-            ++stampede.Count;
-
-        if (stampede.Count == 30)
-            stampede.Reset = WorldState.FutureTime(0.5d);
-    }
 }
 
-public record struct Stampede(bool Active, WPos Position, Angle Rotation, List<Actor> Beasts)
-{
-    public int Count;
-    public DateTime Reset;
-    public List<Actor> Beasts = Beasts;
-}
+sealed class Icebreaker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icebreaker, 17f);
 
-class Icebreaker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Icebreaker, 17f);
+sealed class IcyThroes(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.IcyThroes1, (uint)AID.IcyThroes2], 6f);
+sealed class IcyThroesSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.IcyThroesSpread, 6f);
+sealed class KnockOnIce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KnockOnIce, 5f);
 
-class IcyThroes(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.IcyThroes1, (uint)AID.IcyThroes2], 6f);
-class IcyThroesSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.IcyThroesSpread, 6f);
-class KnockOnIce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.KnockOnIce, 5f);
+sealed class Slam(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightSlam, (uint)AID.LeftSlam], new AOEShapeRect(80f, 10f));
+sealed class AlbionsEmbrace(BossModule module) : Components.SingleTargetCast(module, (uint)AID.AlbionsEmbrace);
 
-class Slam(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightSlam, (uint)AID.LeftSlam], new AOEShapeRect(80f, 10f));
-class AlbionsEmbrace(BossModule module) : Components.SingleTargetCast(module, (uint)AID.AlbionsEmbrace);
-
-class RoarOfAlbion(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.RoarOfAlbion, 60f)
+sealed class RoarOfAlbion(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.RoarOfAlbion, 60f)
 {
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(Module.Enemies((uint)OID.IcyCrystal));
 }
 
-class D111AlbionStates : StateMachineBuilder
+sealed class D111AlbionStates : StateMachineBuilder
 {
     public D111AlbionStates(BossModule module) : base(module)
     {
@@ -218,5 +193,5 @@ class D111AlbionStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 896, NameID = 11992)]
-public class D111Albion(WorldState ws, Actor primary) : BossModule(ws, primary, new(24f, -744f), new ArenaBoundsSquare(19.5f));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Albion, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 896u, NameID = 11992u, Category = BossModuleInfo.Category.Dungeon, Expansion = BossModuleInfo.Expansion.Endwalker, SortOrder = 2)]
+public sealed class D111Albion(WorldState ws, Actor primary) : BossModule(ws, primary, new(24f, -744f), new ArenaBoundsSquare(19.5f));

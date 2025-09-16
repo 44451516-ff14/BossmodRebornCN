@@ -34,5 +34,5 @@ class D032IchorousIreStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 3, NameID = 554)]
 public class D032IchorousIre(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly ArenaBoundsComplex arena = new([new Circle(new(27, 114), 19.5f)], [new Rectangle(new(37.5f, 95), 20, 2.4f, -25.Degrees()), new Rectangle(new(6, 112), 20, 1.75f, -270.Degrees())]);
+    public static readonly ArenaBoundsCustom arena = new([new Circle(new(27, 114), 19.5f)], [new Rectangle(new(37.5f, 95), 20, 2.4f, -25.Degrees()), new Rectangle(new(6, 112), 20, 1.75f, -270.Degrees())]);
 }

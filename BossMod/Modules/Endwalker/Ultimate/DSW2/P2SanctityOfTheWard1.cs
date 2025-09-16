@@ -153,12 +153,12 @@ sealed class P2SanctityOfTheWard1Flares(BossModule module) : Components.GenericA
             return default;
 
         // so far I've only seen both enemies starting at (+-5, 0)
-        if (!Utils.AlmostEqual(actor.Position.Z, Arena.Center.Z, 1f))
+        if (!Utils.AlmostEqual(actor.PosRot.Z, Arena.Center.Z, 1f))
             return default;
-        if (!Utils.AlmostEqual(Math.Abs(actor.Position.X - Arena.Center.X), 5f, 1f))
+        if (!Utils.AlmostEqual(Math.Abs(actor.PosRot.X - Arena.Center.X), 5f, 1f))
             return default;
 
-        var right = actor.Position.X > Arena.Center.X;
+        var right = actor.PosRot.X > Arena.Center.X;
         var facingSouth = Utils.AlmostEqual(actor.Rotation.Rad, default, 0.1f);
         var cw = right == facingSouth;
         var res = new ChargeInfo(actor);

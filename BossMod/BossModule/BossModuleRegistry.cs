@@ -4,7 +4,7 @@ namespace BossMod;
 
 public static class BossModuleRegistry
 {
-    public class Info
+    public sealed class Info
     {
         public Type ModuleType;
         public Type StatesType;
@@ -44,52 +44,11 @@ public static class BossModuleRegistry
                 return null;
             }
 
-            if (configType != null && !configType.IsSubclassOf(typeof(ConfigNode)))
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has incorrect associated config type: it should be derived from ConfigNode");
-                configType = null;
-            }
-
-            if (oidType != null && !oidType.IsEnum)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has incorrect associated object ID type: it should be an enum");
-                oidType = null;
-            }
-
-            if (aidType != null && !aidType.IsEnum)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has incorrect associated action ID type: it should be an enum");
-                aidType = null;
-            }
-
-            if (sidType != null && !sidType.IsEnum)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has incorrect associated status ID type: it should be an enum");
-                sidType = null;
-            }
-
-            if (tidType != null && !tidType.IsEnum)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has incorrect associated tether ID type: it should be an enum");
-                tidType = null;
-            }
-
-            if (iidType != null && !iidType.IsEnum)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has incorrect associated icon ID type: it should be an enum");
-                iidType = null;
-            }
-
             var primaryOID = infoAttr?.PrimaryActorOID ?? default;
             if (primaryOID == default && oidType != null)
             {
                 if (Enum.TryParse(oidType, "Boss", out var oid))
                     primaryOID = (uint)oid!;
-            }
-            if (primaryOID == default)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} has no associated primary actor OID: either specify one explicitly or ensure OID enum has Boss entry");
-                return null;
             }
 
             var splitNamespace = module.Namespace?.Split('.') ?? []; // expected to be 'BossMod.expansion.category.rest'
@@ -117,12 +76,8 @@ public static class BossModuleRegistry
             }
 
             var groupType = infoAttr?.GroupType ?? BossModuleInfo.GroupType.None;
-            var groupID = infoAttr?.GroupID ?? 0;
-            var nameID = infoAttr?.NameID ?? 0;
-            if (groupType == BossModuleInfo.GroupType.None && groupID == default)
-            {
-                Service.Log($"[ModuleRegistry] Module {module.FullName} does not have group type/id assignments.");
-            }
+            var groupID = infoAttr?.GroupID ?? default;
+            var nameID = infoAttr?.NameID ?? default;
 
             var sortOrder = infoAttr?.SortOrder ?? 0;
 
@@ -217,7 +172,12 @@ public static class BossModuleRegistry
 
     public static BossModule? CreateModuleForActor(WorldState ws, Actor primary, BossModuleInfo.Maturity minMaturity)
     {
-        var info = primary.Type is ActorType.Enemy or ActorType.EventObj ? FindByOID(primary.OID) : null;
+        if (primary.Type is not ActorType.Enemy and not ActorType.EventObj)
+        {
+            return null;
+        }
+
+        var info = FindByOID(primary.OID);
         return info?.Maturity >= minMaturity ? CreateModule(info, ws, primary) : null;
     }
 

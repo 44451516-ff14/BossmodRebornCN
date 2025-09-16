@@ -1,7 +1,5 @@
 ﻿using BossMod.Network.ServerIPC;
 using Dalamud.Memory;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace BossMod.Network;
 
@@ -33,8 +31,9 @@ public abstract unsafe class PacketDecoder
     public TextNode Decode(NetworkState.ServerIPC ipc, DateTime now)
     {
         Now = now;
-        var sb = new StringBuilder($"Server IPC {ipc.ID} [0x{ipc.Opcode:X4} / 0x{ipc.Opcode - 101:X4}]: {DecodeActor(ipc.SourceServerActor)}, sent {(now - ipc.SendTimestamp).TotalMilliseconds:f3}ms ago, epoch={ipc.Epoch}, data=");
-        for (var i = 0; i < ipc.Payload.Length; ++i)
+        var sb = new StringBuilder($"Server IPC {ipc.ID} [0x{ipc.Opcode:X4} / 0x{ipc.Opcode - 102:X4}]: {DecodeActor(ipc.SourceServerActor)}, sent {(now - ipc.SendTimestamp).TotalMilliseconds:f3}ms ago, epoch={ipc.Epoch}, data=");
+        var len = ipc.Payload.Length;
+        for (var i = 0; i < len; ++i)
             sb.Append($"{ipc.Payload[i]:X2}");
         var node = new TextNode(sb.ToString());
         var child = DecodePacket(ipc.ID, ipc.Opcode, (byte*)Unsafe.AsPointer(ref ipc.Payload[0]));

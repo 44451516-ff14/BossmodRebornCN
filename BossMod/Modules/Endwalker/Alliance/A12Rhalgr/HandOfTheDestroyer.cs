@@ -1,32 +1,34 @@
 ﻿namespace BossMod.Endwalker.Alliance.A12Rhalgr;
 
-class HandOfTheDestroyer(BossModule module) : Components.GenericAOEs(module)
+sealed class HandOfTheDestroyer(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect _shape = new(90f, 20f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.HandOfTheDestroyerWrathAOE or (uint)AID.HandOfTheDestroyerJudgmentAOE)
-            _aoe = new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.HandOfTheDestroyerWrathAOE or (uint)AID.HandOfTheDestroyerJudgmentAOE)
         {
-            _aoe = null;
+            _aoe = [];
             ++NumCasts;
         }
     }
 }
 
-class BrokenWorld(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrokenWorldAOE, 30f); // TODO: determine falloff
+sealed class BrokenWorld(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BrokenWorldAOE, 30f); // TODO: determine falloff
 
 // this is not an official mechanic name - it refers to broken world + hand of the destroyer combo, which creates multiple small aoes
-class BrokenShards(BossModule module) : Components.GenericAOEs(module)
+sealed class BrokenShards(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(9);
 
@@ -68,4 +70,4 @@ class BrokenShards(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class LightningStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.LightningStorm, 5f);
+sealed class LightningStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.LightningStorm, 5f);

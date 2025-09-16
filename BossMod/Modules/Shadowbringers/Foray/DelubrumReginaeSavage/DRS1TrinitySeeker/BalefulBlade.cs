@@ -3,14 +3,17 @@
 sealed class BalefulBlade(BossModule module) : Components.GenericAOEs(module)
 {
     private bool _phantomEdge;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is not AOEInstance aoe)
+        if (_aoe.Length == 0)
+        {
             return;
+        }
+        ref var aoe = ref _aoe[0];
         hints.Add(_phantomEdge ? "Stay in front of barricade!" : "Hide behind barricade!", !aoe.Check(actor.Position));
     }
 
@@ -37,7 +40,7 @@ sealed class BalefulBlade(BossModule module) : Components.GenericAOEs(module)
                 }
                 _phantomEdge = true;
             }
-            _aoe = new(new AOEShapeCustom(shapes, InvertForbiddenZone: true), centerPos, default, Module.CastFinishAt(spell, 0.1f), Colors.SafeFromAOE);
+            _aoe = [new(new AOEShapeCustom(shapes, invertForbiddenZone: true), centerPos, default, Module.CastFinishAt(spell, 0.1d), Colors.SafeFromAOE)];
         }
     }
 
@@ -45,7 +48,7 @@ sealed class BalefulBlade(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.BalefulBlade1 or (uint)AID.BalefulBlade2)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }

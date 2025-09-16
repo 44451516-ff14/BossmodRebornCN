@@ -40,11 +40,11 @@ class T02HydaelynStates : StateMachineBuilder
 public class T02Hydaelyn(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, ArenaBounds)
 {
     public static readonly WPos ArenaCenter = new(100, 100);
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(ArenaCenter, 20, 48)]);
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(ArenaCenter, 20, 48)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.CrystalOfLight), Colors.Object);
+        Arena.Actors(Enemies((uint)OID.CrystalOfLight), Colors.Object);
     }
 }

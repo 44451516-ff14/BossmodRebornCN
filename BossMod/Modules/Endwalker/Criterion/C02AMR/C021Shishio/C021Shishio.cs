@@ -13,7 +13,7 @@ public abstract class C021Shishio(WorldState ws, Actor primary) : BossModule(ws,
     public static readonly WPos ArenaCenter = new(default, -100f);
     public static readonly ArenaBoundsSquare StartingBounds = new(24.5f);
     public static readonly ArenaBoundsSquare DefaultBounds = new(20f);
-    public static readonly ArenaBoundsComplex CircleBounds = new([new Polygon(ArenaCenter, 20f, 64)]);
+    public static readonly ArenaBoundsCustom CircleBounds = new([new Polygon(ArenaCenter, 20f, 64)]);
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NBoss, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 946, NameID = 12428, SortOrder = 2, PlanLevel = 90)]

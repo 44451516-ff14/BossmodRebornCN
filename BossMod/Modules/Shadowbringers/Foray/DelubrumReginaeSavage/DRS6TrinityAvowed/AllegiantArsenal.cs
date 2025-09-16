@@ -5,14 +5,13 @@ sealed class AllegiantArsenal(BossModule module) : Components.GenericAOEs(module
     public enum Order { Unknown, SwordSecond, BowSecond, StaffSecond, StaffSwordBow, BowSwordStaff, SwordBowStaff, StaffBowSword, SwordStaffBow, BowStaffSword }
 
     public Order Mechanics;
-    private AOEInstance? _aoe;
-
-    public bool Active => _aoe != null;
+    private AOEInstance[] _aoe = [];
+    public bool Active => _aoe.Length != 0;
 
     private static readonly AOEShapeCone cone = new(70f, 135f.Degrees());
     private static readonly AOEShapeCircle circle = new(10f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -48,15 +47,19 @@ sealed class AllegiantArsenal(BossModule module) : Components.GenericAOEs(module
         }
         void Activate(AOEShape shape, Order newOrder, Angle offset = default)
         {
-            _aoe = new(shape, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, 5.2f));
+            _aoe = [new(shape, spell.LocXZ, spell.Rotation + offset, Module.CastFinishAt(spell, 5.2d))];
             if (newOrder != Order.Unknown)
+            {
                 Mechanics = newOrder;
+            }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.InfernalSlash or (uint)AID.Flashvane or (uint)AID.FuryOfBozja)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }

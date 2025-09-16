@@ -62,7 +62,7 @@ public class D062ManorSteward(WorldState ws, Actor primary) : BossModule(ws, pri
     new(1.70f, -15.13f), new(5.91f, -15.34f), new(6.54f, -15.30f), new(6.90f, -15.67f), new(6.80f, -17.54f)];
     // Centroid of the polygon is at: (0.980f, 0.260f)
 
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(shape)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(shape)]);
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;

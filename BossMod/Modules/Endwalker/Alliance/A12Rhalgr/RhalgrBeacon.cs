@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Alliance.A12Rhalgr;
 
-class RhalgrBeaconAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RhalgrsBeaconAOE, 10f);
+sealed class RhalgrBeaconAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RhalgrsBeaconAOE, 10f);
 
-class RhalgrBeaconShock(BossModule module) : Components.GenericAOEs(module, (uint)AID.Shock)
+sealed class RhalgrBeaconShock(BossModule module) : Components.GenericAOEs(module, (uint)AID.Shock)
 {
     private readonly List<AOEInstance> _aoes = new(7);
     private static readonly AOEShapeCircle _shape = new(8);
@@ -43,38 +43,38 @@ class RhalgrBeaconShock(BossModule module) : Components.GenericAOEs(module, (uin
     }
 }
 
-class RhalgrBeaconKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.RhalgrsBeaconKnockback, stopAfterWall: true)
+sealed class RhalgrBeaconKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.RhalgrsBeaconKnockback, stopAfterWall: true)
 {
-    private Knockback? _kb;
-    private static readonly List<SafeWall> safewalls = [new(new(9.09f, 293.91f), new(3.31f, 297.2f)), new(new(-6.23f, 304.72f), new(-13.9f, 303.98f)),
+    private Knockback[] _kb = [];
+    private static readonly SafeWall[] safewalls = [new(new(9.09f, 293.91f), new(3.31f, 297.2f)), new(new(-6.23f, 304.72f), new(-13.9f, 303.98f)),
     new(new(-22.35f, 306.16f), new(-31.3f, 304.94f)), new(new(-40.96f, 300.2f), new(-49.39f, 296.73f))];
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _kb);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
         {
-            _kb = new(spell.LocXZ, 50f, Module.CastFinishAt(spell), safeWalls: safewalls, ignoreImmunes: true);
+            _kb = [new(spell.LocXZ, 50f, Module.CastFinishAt(spell), safeWalls: safewalls, ignoreImmunes: true)];
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_kb is not Knockback knockback)
+        if (_kb.Length == 0)
         {
             return;
         }
-        ref readonly var kb = ref knockback;
+        ref readonly var kb = ref _kb[0];
         var shock = Module.Enemies((uint)OID.LightningOrb);
         var count = shock.Count;
         var z = kb.Origin.Z;
         var forbidden = DetermineForbiddenZones(kb.Origin, shock, count, z);
 
-        hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), DateTime.MaxValue);
+        hints.AddForbiddenZone(new SDIntersection(forbidden), DateTime.MaxValue);
     }
 
-    private static Func<WPos, float>[] DetermineForbiddenZones(WPos sourcePos, List<Actor> shock, int count, float z)
+    private static ShapeDistance[] DetermineForbiddenZones(WPos sourcePos, List<Actor> shock, int count, float z)
     {
         var isZone268 = z == 268.5f;
         WPos zone1, zone2;
@@ -91,7 +91,9 @@ class RhalgrBeaconKnockback(BossModule module) : Components.GenericKnockback(mod
         }
 
         if (count == 0)
-            return [ShapeDistance.InvertedRect(sourcePos, zone1, 0.5f), ShapeDistance.InvertedRect(sourcePos, zone2, 0.5f)];
+        {
+            return [new SDInvertedRect(sourcePos, zone1, 0.5f), new SDInvertedRect(sourcePos, zone2, 0.5f)];
+        }
         var inFirstZone = false;
         for (var i = 0; i < count; ++i)
         {
@@ -101,6 +103,6 @@ class RhalgrBeaconKnockback(BossModule module) : Components.GenericKnockback(mod
                 break;
             }
         }
-        return [ShapeDistance.InvertedRect(sourcePos, inFirstZone ? zone2 : zone1, 0.5f)];
+        return [new SDInvertedRect(sourcePos, inFirstZone ? zone2 : zone1, 0.5f)];
     }
 }

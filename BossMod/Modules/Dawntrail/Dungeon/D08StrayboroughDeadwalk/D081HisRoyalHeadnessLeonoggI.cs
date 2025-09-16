@@ -48,15 +48,15 @@ public enum IconID : uint
 sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(14f, 20f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.MaliciousMist && Arena.Bounds == D081HisRoyalHeadnessLeonoggI.StartingBounds)
+        if (spell.Action.ID == (uint)AID.MaliciousMist && Arena.Bounds.Radius > 14f)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d))];
         }
     }
 
@@ -65,7 +65,7 @@ sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOE
         if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D081HisRoyalHeadnessLeonoggI.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -92,7 +92,7 @@ sealed class LoomingNightmare(BossModule module) : Components.StandardChasingAOE
         base.AddAIHints(slot, actor, assignment, hints);
         if (Targets[slot])
         {
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 13.5f), Activation);
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 13.5f), Activation);
         }
     }
 }
@@ -208,7 +208,7 @@ sealed class D081HisRoyalHeadnessLeonoggIStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 13073)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 13073)]
 public sealed class D081HisRoyalHeadnessLeonoggI(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(default, 150f);

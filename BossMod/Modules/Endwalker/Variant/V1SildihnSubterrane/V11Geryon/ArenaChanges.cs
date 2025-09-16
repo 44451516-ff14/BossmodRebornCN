@@ -42,7 +42,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         else if (state == 0x08000400u && squares.Count != 0 && index is >= 0x05 and <= 0x08)
         {
             _aoes.Clear();
-            var arena = new ArenaBoundsComplex([new Square(Arena.Center, 19.5f)], [.. squares]);
+            var arena = new ArenaBoundsCustom([new Square(Arena.Center, 19.5f)], [.. squares]);
             Arena.Bounds = arena;
             Arena.Center = arena.Center;
             squares.Clear();

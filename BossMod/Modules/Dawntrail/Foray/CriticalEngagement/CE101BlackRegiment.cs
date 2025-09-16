@@ -56,13 +56,14 @@ sealed class ChocoBeak(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.ChocoBeak)
+        if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.ChocoBeak)
         {
             var count = _aoes.Count;
             var id = caster.InstanceID;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].ActorID == id)
+                if (aoes[i].ActorID == id)
                 {
                     _aoes.RemoveAt(i);
                     return;
@@ -98,35 +99,30 @@ sealed class CE101BlackRegimentStates : StateMachineBuilder
                 {
                     var enemy = enemies[i];
                     if (!enemy.IsDestroyed)
+                    {
                         return false;
+                    }
                 }
-                return module.BossBlackStar()?.IsDeadOrDestroyed ?? true;
+                return module.BossBlackStar?.IsDeadOrDestroyed ?? true;
             };
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 34)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 34)]
 public sealed class CE101BlackRegiment(WorldState ws, Actor primary) : BossModule(ws, primary, new(450f, 357f), new ArenaBoundsSquare(20f))
 {
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.BlackChocobo2, (uint)OID.BlackChocobo4];
-    private Actor? _bossBlackStar;
-    public Actor? BossBlackStar() => _bossBlackStar;
+    public Actor? BossBlackStar;
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossBlackStar == null)
-        {
-            var b = Enemies((uint)OID.BlackStar);
-            _bossBlackStar = b.Count != 0 ? b[0] : null;
-        }
+        BossBlackStar ??= GetActor((uint)OID.BlackStar);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
-        Arena.Actor(_bossBlackStar);
+        Arena.Actors(this, Trash);
+        Arena.Actor(BossBlackStar);
     }
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 20f); // not targetable at start

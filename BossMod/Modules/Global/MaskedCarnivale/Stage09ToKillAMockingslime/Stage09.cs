@@ -97,6 +97,6 @@ public sealed class Stage09 : BossModule
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds), Colors.Object);
+        Arena.Actors(this, adds, Colors.Object);
     }
 }

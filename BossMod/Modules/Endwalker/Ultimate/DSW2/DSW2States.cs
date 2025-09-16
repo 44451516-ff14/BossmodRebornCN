@@ -1,4 +1,6 @@
-﻿namespace BossMod.Endwalker.Ultimate.DSW2;
+﻿using BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB2DeadStars;
+
+namespace BossMod.Endwalker.Ultimate.DSW2;
 
 sealed class DSW2States : StateMachineBuilder
 {
@@ -7,28 +9,27 @@ sealed class DSW2States : StateMachineBuilder
     private bool IsReset => Module.PrimaryActor.IsDestroyed && (_module.ArenaFeatures?.IsDestroyed ?? true);
     private bool IsResetOrRewindFailed => IsReset || Module.Enemies((uint)OID.BossP2).Count != 0;
     private bool IsDead(Actor? actor) => actor != null && actor.IsDeadOrDestroyed;
-    private bool IsEffectivelyDead(Actor? actor) => actor != null && (actor.IsDeadOrDestroyed || !actor.IsTargetable && actor.HPMP.CurHP <= 1);
 
     public DSW2States(DSW2 module) : base(module)
     {
         _module = module;
-        SimplePhase(1, Phase2Thordan, "P2: Thordan") // TODO: auto-attack cleave component
+        SimplePhase(1u, Phase2Thordan, "P2: Thordan") // TODO: auto-attack cleave component
             .Raw.Update = () => IsReset || Module.PrimaryActor.IsDead;
-        SimplePhase(2, Phase3Nidhogg, "P3: Nidhogg") // TODO: auto-attack cleave component
-            .OnEnter(() => Module.Arena.Bounds = DSW2.BoundsSquare)
+        SimplePhase(2u, Phase3Nidhogg, "P3: Nidhogg") // TODO: auto-attack cleave component
+            .OnEnter(() => Module.Arena.Bounds = new ArenaBoundsSquare(22f))
             .Raw.Update = () => IsReset || IsDead(_module.BossP3());
-        SimplePhase(3, Phase4Eyes, "P4: Eyes")
+        SimplePhase(3u, Phase4Eyes, "P4: Eyes")
             .Raw.Update = () => IsReset || IsDead(_module.LeftEyeP4()) && IsDead(_module.RightEyeP4()) && IsDead(_module.NidhoggP4());
-        SimplePhase(4, Phase4Intermission, "P4: Intermission")
+        SimplePhase(4u, Phase4Intermission, "P4: Intermission")
             .OnEnter(() => Module.Arena.Bounds = DSW2.BoundsCircle)
             .Raw.Update = () => IsResetOrRewindFailed || IsDead(_module.Spear());
-        SimplePhase(5, Phase5KingThordan, "P5: King Thordan") // TODO: auto-attack cleave component
+        SimplePhase(5u, Phase5KingThordan, "P5: King Thordan") // TODO: auto-attack cleave component
             .ActivateOnEnter<P5Surrender>()
             .Raw.Update = () => IsResetOrRewindFailed || _module.FindComponent<P5Surrender>()?.NumCasts > 0;
-        SimplePhase(6, Phase6Dragons, "P6: Nidhogg + Hraesvelgr")
-            .OnEnter(() => Module.Arena.Bounds = DSW2.BoundsSquare)
-            .Raw.Update = () => IsResetOrRewindFailed || IsEffectivelyDead(_module.NidhoggP6()) && IsEffectivelyDead(_module.HraesvelgrP6());
-        SimplePhase(7, Phase7DragonKingThordan, "P7: DKT")
+        SimplePhase(6u, Phase6Dragons, "P6: Nidhogg + Hraesvelgr")
+            .OnEnter(() => Module.Arena.Bounds = new ArenaBoundsSquare(22f))
+            .Raw.Update = () => IsResetOrRewindFailed || (_module.FindComponent<P7PhaseChange>()?.PhaseChanged ?? false);
+        SimplePhase(7u, Phase7DragonKingThordan, "P7: DKT")
             .Raw.Update = () => IsResetOrRewindFailed || IsDead(_module.BossP7());
     }
 
@@ -575,6 +576,7 @@ sealed class DSW2States : StateMachineBuilder
         // +1.0s: 4x spreading flames, 2x entangling flames
         ActorTargetable(id + 0x20, _module.HraesvelgrP6, true, 1.3f);
         ActorCastStart(id + 0x30, _module.NidhoggP6, (uint)AID.AkhMornFirst, 1.0f, true)
+            .ActivateOnEnter<P7PhaseChange>()
             .ActivateOnEnter<P6WrothFlames>(); // first set spawns soon after hraesvelgr reappears, then next set spawns in 2s, then in 3s
         // +3.1s: hraesvelgr starts cauterize
         ActorCastEnd(id + 0x31, _module.NidhoggP6, 8, true, "Stack start") // stacks repeat every 1.6s
@@ -611,16 +613,17 @@ sealed class DSW2States : StateMachineBuilder
             .ActivateOnEnter<P6TouchdownCauterize>()
             .ActivateOnEnter<P6TouchdownPyretic>()
             .DeactivateOnExit<P6TouchdownCauterize>();
-        ComponentCondition<P6Touchdown>(id + 0x20, 7.0f, comp => comp.NumCasts > 0, "Proximity")
+        ComponentCondition<P6Touchdown>(id + 0x20, 7.0f, comp => comp.NumCasts > 1, "Proximity")
             .ActivateOnEnter<P6Touchdown>()
             .DeactivateOnExit<P6TouchdownPyretic>()
             .DeactivateOnExit<P6Touchdown>();
 
-        ActorCastStart(id + 0x100, _module.NidhoggP6, (uint)AID.RevengeOfTheHordeP6, 1.2f, true)
+        ComponentCondition<P6Enrage>(id + 0x100, 1.3f, comp => comp.Enrage)
+            .ActivateOnEnter<P6Enrage>()
             .ExecOnEnter<P6MortalVow>(comp => comp.ShowNextPass());
         ComponentCondition<P6MortalVow>(id + 0x101, 2.3f, comp => comp.Progress > 4, "Mortal vow pass 4")
             .DeactivateOnExit<P6MortalVow>();
-        ActorCastEnd(id + 0x102, _module.NidhoggP6, 22.7f, true, "Enrage");
+        ComponentCondition<P6Enrage>(id + 0x102, 22.7f, comp => !comp.Enrage, "Enrage");
     }
 
     private void P7Start(uint id)

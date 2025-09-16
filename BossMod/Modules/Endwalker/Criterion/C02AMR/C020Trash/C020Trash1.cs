@@ -44,85 +44,85 @@ public enum AID : uint
     NRightSwipe = 34437, // NYuki->self, 4.0s cast, range 60 180-degree cone
     NLeftSwipe = 34438, // NYuki->self, 4.0s cast, range 60 180-degree cone
     SRightSwipe = 34440, // SYuki->self, 4.0s cast, range 60 180-degree cone
-    SLeftSwipe = 34441, // SYuki->self, 4.0s cast, range 60 180-degree cone
+    SLeftSwipe = 34441 // SYuki->self, 4.0s cast, range 60 180-degree cone
 }
 
 abstract class BloodyCaress(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(12f, 60f.Degrees()))
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NBloodyCaress(BossModule module) : BloodyCaress(module, (uint)AID.NBloodyCaress);
-class SBloodyCaress(BossModule module) : BloodyCaress(module, (uint)AID.SBloodyCaress);
+sealed class NBloodyCaress(BossModule module) : BloodyCaress(module, (uint)AID.NBloodyCaress);
+sealed class SBloodyCaress(BossModule module) : BloodyCaress(module, (uint)AID.SBloodyCaress);
 
 abstract class DisciplesOfLevin(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, (uint)AID.NDisciplesOfLevin);
-class SDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, (uint)AID.SDisciplesOfLevin);
+sealed class NDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, (uint)AID.NDisciplesOfLevin);
+sealed class SDisciplesOfLevin(BossModule module) : DisciplesOfLevin(module, (uint)AID.SDisciplesOfLevin);
 
 abstract class BarrelingSmash(BossModule module, uint aid) : Components.BaitAwayChargeCast(module, aid, 3.5f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NBarrelingSmash(BossModule module) : BarrelingSmash(module, (uint)AID.NBarrelingSmash);
-class SBarrelingSmash(BossModule module) : BarrelingSmash(module, (uint)AID.SBarrelingSmash);
+sealed class NBarrelingSmash(BossModule module) : BarrelingSmash(module, (uint)AID.NBarrelingSmash);
+sealed class SBarrelingSmash(BossModule module) : BarrelingSmash(module, (uint)AID.SBarrelingSmash);
 
 abstract class Howl(BossModule module, uint aid) : Components.RaidwideCast(module, aid)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NHowl(BossModule module) : Howl(module, (uint)AID.NHowl);
-class SHowl(BossModule module) : Howl(module, (uint)AID.SHowl);
+sealed class NHowl(BossModule module) : Howl(module, (uint)AID.NHowl);
+sealed class SHowl(BossModule module) : Howl(module, (uint)AID.SHowl);
 
 abstract class MasterOfLevin(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(5f, 30f))
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NMasterOfLevin(BossModule module) : MasterOfLevin(module, (uint)AID.NMasterOfLevin);
-class SMasterOfLevin(BossModule module) : MasterOfLevin(module, (uint)AID.SMasterOfLevin);
+sealed class NMasterOfLevin(BossModule module) : MasterOfLevin(module, (uint)AID.NMasterOfLevin);
+sealed class SMasterOfLevin(BossModule module) : MasterOfLevin(module, (uint)AID.SMasterOfLevin);
 
 abstract class Swipe(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(60f, 90f.Degrees()))
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NRightSwipe(BossModule module) : Swipe(module, (uint)AID.NRightSwipe);
-class SRightSwipe(BossModule module) : Swipe(module, (uint)AID.SRightSwipe);
-class NLeftSwipe(BossModule module) : Swipe(module, (uint)AID.NLeftSwipe);
-class SLeftSwipe(BossModule module) : Swipe(module, (uint)AID.SLeftSwipe);
+sealed class NRightSwipe(BossModule module) : Swipe(module, (uint)AID.NRightSwipe);
+sealed class SRightSwipe(BossModule module) : Swipe(module, (uint)AID.SRightSwipe);
+sealed class NLeftSwipe(BossModule module) : Swipe(module, (uint)AID.NLeftSwipe);
+sealed class SLeftSwipe(BossModule module) : Swipe(module, (uint)AID.SLeftSwipe);
 
 abstract class Tornado(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NTornado(BossModule module) : Tornado(module, (uint)AID.NTornado);
-class STornado(BossModule module) : Tornado(module, (uint)AID.STornado);
+sealed class NTornado(BossModule module) : Tornado(module, (uint)AID.NTornado);
+sealed class STornado(BossModule module) : Tornado(module, (uint)AID.STornado);
 
 abstract class ScytheTail(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 10f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NScytheTail(BossModule module) : ScytheTail(module, (uint)AID.NScytheTail);
-class SScytheTail(BossModule module) : ScytheTail(module, (uint)AID.SScytheTail);
+sealed class NScytheTail(BossModule module) : ScytheTail(module, (uint)AID.NScytheTail);
+sealed class SScytheTail(BossModule module) : ScytheTail(module, (uint)AID.SScytheTail);
 
 abstract class Twister(BossModule module, uint aid) : Components.StackWithCastTargets(module, aid, 8f, 4, 4)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NTwister(BossModule module) : Twister(module, (uint)AID.NTwister);
-class STwister(BossModule module) : Twister(module, (uint)AID.STwister);
+sealed class NTwister(BossModule module) : Twister(module, (uint)AID.NTwister);
+sealed class STwister(BossModule module) : Twister(module, (uint)AID.STwister);
 
 abstract class Crosswind(BossModule module, uint aid) : Components.SimpleKnockbacks(module, aid, 25f)
 {
     public override bool KeepOnPhaseChange => true;
 }
-class NCrosswind(BossModule module) : Crosswind(module, (uint)AID.NCrosswind);
-class SCrosswind(BossModule module) : Crosswind(module, (uint)AID.SCrosswind);
+sealed class NCrosswind(BossModule module) : Crosswind(module, (uint)AID.NCrosswind);
+sealed class SCrosswind(BossModule module) : Crosswind(module, (uint)AID.SCrosswind);
 
-class C020NTrash1States(Trash1Arena module) : C020Trash1States(module, false);
-class C020STrash1States(Trash1Arena module) : C020Trash1States(module, true);
+sealed class C020NTrash1States(Trash1Arena module) : C020Trash1States(module, false);
+sealed class C020STrash1States(Trash1Arena module) : C020Trash1States(module, true);
 
-class C020Trash1States : StateMachineBuilder
+abstract class C020Trash1States : StateMachineBuilder
 {
     private readonly bool _savage;
     private readonly Trash1Arena _module;
@@ -156,22 +156,7 @@ class C020Trash1States : StateMachineBuilder
             .ActivateOnEnter<SLeftSwipe>(savage)
             .Raw.Update = () => (_module.Raiko()?.IsDeadOrDestroyed ?? true) || _module.PrimaryActor.IsDeadOrDestroyed;
         DeathPhase(1, Fuko)
-            .Raw.Update = () =>
-            {
-                var allDeadOrDestroyed = true;
-                var enemies = _module.Enemies(savage ? Trash1Arena.TrashSavage : Trash1Arena.TrashNormal);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                    {
-                        allDeadOrDestroyed = false;
-                        break;
-                    }
-                }
-                return allDeadOrDestroyed || _module.PrimaryActor.IsDeadOrDestroyed;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(savage ? Trash1Arena.TrashSavage : Trash1Arena.TrashNormal);
     }
 
     private void Raiko(uint id)
@@ -229,37 +214,22 @@ class C020Trash1States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.NYuki, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 946, NameID = 12425, SortOrder = 1)]
-public class C020NTrash1(WorldState ws, Actor primary) : Trash1Arena(ws, primary, false);
+public sealed class C020NTrash1(WorldState ws, Actor primary) : Trash1Arena(ws, primary, false);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", PrimaryActorOID = (uint)OID.SYuki, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 947, NameID = 12425, SortOrder = 1)]
-public class C020STrash1(WorldState ws, Actor primary) : Trash1Arena(ws, primary, true);
+public sealed class C020STrash1(WorldState ws, Actor primary) : Trash1Arena(ws, primary, true);
 
 public abstract class Trash1Arena(WorldState ws, Actor primary, bool savage) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Square(default, 19.5f), new Rectangle(new(default, -20f), 4.5f, 9.5f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Square(default, 19.5f), new Rectangle(new(default, -20f), 4.5f, 9.5f)]);
     public static readonly uint[] TrashNormal = [(uint)OID.NYuki, (uint)OID.NFuko, (uint)OID.NFurutsubaki, (uint)OID.NRaiko, (uint)OID.NPenghou];
     public static readonly uint[] TrashSavage = [(uint)OID.SYuki, (uint)OID.SFuko, (uint)OID.SFurutsubaki, (uint)OID.SRaiko, (uint)OID.SPenghou];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(savage ? TrashSavage : TrashNormal);
-        var count = enemies.Count;
-        var inCombat = false;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-            {
-                inCombat = true;
-                break;
-            }
-        }
-        return inCombat && !Raid.Player()!.IsDead;
-    }
+    protected override bool CheckPull() => !Raid.Player()!.IsDead && IsAnyActorInCombat(savage ? TrashSavage : TrashNormal);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(savage ? TrashSavage : TrashNormal));
+        Arena.Actors(this, savage ? TrashSavage : TrashNormal);
     }
 
     private Actor? _raiko;
@@ -269,9 +239,7 @@ public abstract class Trash1Arena(WorldState ws, Actor primary, bool savage) : B
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _raiko ??= StateMachine.ActivePhaseIndex >= 0 ? Enemies(savage ? (uint)OID.SRaiko : (uint)OID.NRaiko)[0] : null;
-        _fuko ??= StateMachine.ActivePhaseIndex >= 0 ? Enemies(savage ? (uint)OID.SFuko : (uint)OID.NFuko)[0] : null;
+        _raiko ??= GetActor(savage ? (uint)OID.SRaiko : (uint)OID.NRaiko);
+        _fuko ??= GetActor(savage ? (uint)OID.SFuko : (uint)OID.NFuko);
     }
 }

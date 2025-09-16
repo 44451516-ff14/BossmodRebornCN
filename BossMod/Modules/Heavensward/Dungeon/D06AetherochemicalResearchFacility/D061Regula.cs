@@ -63,7 +63,7 @@ public class D061Regula(WorldState ws, Actor primary) : BossModule(ws, primary, 
     private static readonly WPos[] vertices = [new(-89.11f, -301.95f), new(-93.32f, -310.37f), new(-106.99f, -318.19f), new(-115.01f, -318.19f),
     new(-128.64f, -310.32f), new(-132.28f, -303.07f), new(-132.29f, -287.96f), new(-128.64f, -280.69f), new(-115.04f, -272.8f), new(-107.04f, -272.8f),
     new(-93.35f, -280.7f), new(-89.11f, -289.1f)];
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

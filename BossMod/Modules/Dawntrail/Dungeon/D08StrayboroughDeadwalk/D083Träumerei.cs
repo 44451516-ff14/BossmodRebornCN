@@ -77,8 +77,8 @@ sealed class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
 
     private static readonly WPos[] positions = [new(137.5f, -443.5f), new(158.5f, -443.5f), new(137.5f, -422.5f), new(158.5f, -422.5f)];
     private static readonly Circle[] circles = GenerateCircles();
-    private static readonly AOEShapeCustom circlesInverted = new(circles, InvertForbiddenZone: true);
-    private static readonly AOEShapeCustom circlesAvoid = new(circles, []);
+    private static readonly AOEShapeCustom circlesInverted = new(circles, invertForbiddenZone: true);
+    private static readonly AOEShapeCustom circlesAvoid = new(circles);
     private bool activated;
     private (bool isActive, DateTime activation) fleshbuster;
 
@@ -118,7 +118,7 @@ sealed class GhostlyGuise(BossModule module) : Components.GenericAOEs(module)
         else if (_seek.ActiveBaits.Count != 0)
             shape = IsGhostly(actor) ? circlesAvoid : circlesInverted;
 
-        return new AOEInstance[1] { new(shape, Arena.Center, default, activation, shape == circlesInverted ? Colors.SafeFromAOE : 0) };
+        return new AOEInstance[1] { new(shape, Arena.Center, default, activation, shape == circlesInverted ? Colors.SafeFromAOE : default) };
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -164,7 +164,7 @@ sealed class BitterRegret1(BossModule module) : Components.SimpleAOEs(module, (u
 sealed class BitterRegret2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BitterRegret2, new AOEShapeRect(50f, 6f));
 sealed class BitterRegret3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BitterRegret3, new AOEShapeRect(40f, 2f), 5);
 sealed class Impact(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Impact, new AOEShapeRect(40f, 2f));
-sealed class Ghostcrusher(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.GhostcrusherMarker, (uint)AID.Ghostcrusher, 5f, 80f, maxStackSize: 4);
+sealed class Ghostcrusher(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.GhostcrusherMarker, (uint)AID.Ghostcrusher, 5d, 80f, maxStackSize: 4);
 sealed class Ghostduster(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Ghostduster, 8f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -192,10 +192,10 @@ sealed class D083TräumereiStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 12763)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 981, NameID = 12763)]
 public sealed class D083Träumerei(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(19.5f))
 {
     public static readonly WPos ArenaCenter = new(148f, -433f);
     public static readonly ArenaBoundsSquare DefaultBounds = new(19.5f);
-    public static readonly ArenaBoundsComplex CrossBounds = new([new Square(ArenaCenter, 19.5f)], [new Cross(ArenaCenter, 20f, 1.5f)]); // for some reason the obstacle cross is smaller than the AOE
+    public static readonly ArenaBoundsCustom CrossBounds = new([new Square(ArenaCenter, 19.5f)], [new Cross(ArenaCenter, 20f, 1.5f)]); // for some reason the obstacle cross is smaller than the AOE
 }

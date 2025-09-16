@@ -23,7 +23,7 @@ sealed class EffectResultMispredict
                 {
                     var expectConfirmSource = false;
                     var expectConfirmTarget = false;
-                    foreach (var eff in t.Effects)
+                    foreach (var eff in t.Effects.ValidEffects())
                     {
                         if (eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage or ActionEffectType.Heal or ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource or ActionEffectType.RecoveredFromStatusEffect)
                         {
@@ -56,7 +56,7 @@ sealed class EffectResultMispredict
         {
             foreach (var t in tree.Nodes(e.a.Targets, t => new(ReplayUtils.ActionTargetString(t, e.a.Timestamp))))
             {
-                tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
             }
         }
     }

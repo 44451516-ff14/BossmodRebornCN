@@ -321,5 +321,5 @@ sealed class WeightyBlow(BossModule module) : Components.CastCounter(module, (ui
         }
     }
 
-    private WPos BaitSource(Actor player) => new(player.Position.X < Ex3QueenEternal.ArenaCenter.X ? 92f : 108f, 79.5f);
+    private WPos BaitSource(Actor player) => new(player.PosRot.X < Ex3QueenEternal.ArenaCenter.X ? 92f : 108f, 79.5f);
 }

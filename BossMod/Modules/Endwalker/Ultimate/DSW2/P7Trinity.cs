@@ -3,7 +3,7 @@
 // TODO: improve...
 sealed class P7Trinity(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
-    private readonly Actor? _source = module.Enemies(OID.DragonKingThordan).FirstOrDefault();
+    private readonly Actor? _source = module.Enemies((uint)OID.DragonKingThordan).FirstOrDefault();
 
     private static readonly AOEShapeCircle _shape = new(3);
 

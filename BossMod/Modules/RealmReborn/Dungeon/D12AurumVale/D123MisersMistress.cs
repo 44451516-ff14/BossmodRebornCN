@@ -284,7 +284,7 @@ public sealed class D123MisersMistress(WorldState ws, Actor primary) : BossModul
     new(-418f, -135f), new(-417.892f, -135.5f), new(-418f, -136f), new(-418.5f, -136.5f), new(-418.627f, -137f), new(-418.5f, -137.5f),
     new(-419f, -138f), new(-419.288f, -138.487f), new(-419.422f, -138.973f), new(-419.346f, -139.488f), new(-419.305f, -140.003f), new(-419.414f, -140.418f),
     new(-419.414f, -140.418f), new(-419.524f, -140.833f), new(-419.661f, -143.331f), new(-430f, -133f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)], [new PolygonCustom(verticesPuddle1),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)], [new PolygonCustom(verticesPuddle1),
     new PolygonCustom(verticesPuddle2), new PolygonCustom(verticesPuddle3), new PolygonCustom(verticesPuddle4), new PolygonCustom(verticesPuddle5),
     new PolygonCustom(verticesPuddle6), new PolygonCustom(verticesPuddle7), new PolygonCustom(verticesPuddle8), new PolygonCustom(verticesPuddle9),
     new PolygonCustom(verticesPuddle10), new PolygonCustom(verticesPuddle11), new PolygonCustom(verticesPuddle12)]);

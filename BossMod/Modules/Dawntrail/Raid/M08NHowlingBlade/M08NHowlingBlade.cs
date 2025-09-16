@@ -35,7 +35,7 @@ sealed class TerrestrialTitans(BossModule module) : Components.SimpleAOEs(module
 public sealed class M08NHowlingBlade(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, startingArena)
 {
     public static readonly WPos ArenaCenter = new(100f, 100f);
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(ArenaCenter, 17f, 40)]);
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(ArenaCenter, 17f, 40)]);
     public static readonly Polygon[] EndArenaPolygon = [new Polygon(ArenaCenter, 12f, 40)]; // 11.2s after 0x200010 then 0x00 20001
-    public static readonly ArenaBoundsComplex EndArena = new(EndArenaPolygon);
+    public static readonly ArenaBoundsCustom EndArena = new(EndArenaPolygon);
 }

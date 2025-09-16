@@ -295,17 +295,7 @@ sealed class CE23FiresOfWarStates : StateMachineBuilder
             .ActivateOnEnter<ScaldingScolding>()
             .Raw.Update = () =>
             {
-                if (module.BossMater()?.IsDead ?? false)
-                    return true;
-                var enemies = module.Enemies(CE23FiresOfWar.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDestroyed)
-                        return false;
-                }
-                return true;
+                return (module.BossMater()?.IsDead ?? false) || AllDeadOrDestroyed(CE23FiresOfWar.Trash);
             };
         ;
     }
@@ -314,7 +304,7 @@ sealed class CE23FiresOfWarStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 9)]
 public sealed class CE23FiresOfWar(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(83f, 563f), 19.5f, 32)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(83f, 563f), 19.5f, 32)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.ImperialPyromancer1, (uint)OID.ImperialPyromancer2, (uint)OID.PyrobolusFrater];
     private Actor? _bossMater;
     public Actor? BossMater() => _bossMater;
@@ -323,18 +313,12 @@ public sealed class CE23FiresOfWar(WorldState ws, Actor primary) : BossModule(ws
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossMater == null)
-        {
-            var b = Enemies((uint)OID.PyrobolusMater);
-            _bossMater = b.Count != 0 ? b[0] : null;
-        }
+        _bossMater ??= GetActor((uint)OID.PyrobolusMater);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(_bossMater);
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

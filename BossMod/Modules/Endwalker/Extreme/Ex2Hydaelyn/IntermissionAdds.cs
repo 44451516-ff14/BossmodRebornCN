@@ -7,11 +7,11 @@ class IntermissionAdds(BossModule module) : BossComponent(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var echo in Module.Enemies(OID.Echo))
+        foreach (var echo in Module.Enemies((uint)OID.Echo))
             Arena.Actor(echo);
 
         // note that there are two crystals per position, one targetable and one not - untargetable one can be tethered to second echo
-        foreach (var crystal in Module.Enemies(OID.CrystalOfLight))
+        foreach (var crystal in Module.Enemies((uint)OID.CrystalOfLight))
         {
             if (crystal.IsTargetable && !crystal.IsDead)
             {

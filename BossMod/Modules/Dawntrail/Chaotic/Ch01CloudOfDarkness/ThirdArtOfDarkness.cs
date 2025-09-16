@@ -14,7 +14,7 @@ sealed class ThirdArtOfDarknessCleave(BossModule module) : Components.GenericAOE
         var count = Mechanics.Count;
         if (count == 0)
             return [];
-        Span<AOEInstance> aoes = new AOEInstance[count];
+        var aoes = new AOEInstance[count];
         var index = 0;
         foreach (var (caster, m) in Mechanics)
         {
@@ -27,21 +27,21 @@ sealed class ThirdArtOfDarknessCleave(BossModule module) : Components.GenericAOE
             if (dir != default)
                 aoes[index++] = new(_shape, caster.Position.Quantized(), caster.Rotation + dir, m[0].activation);
         }
-        return aoes[..index];
+        return aoes.AsSpan()[..index];
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (PlatformPlayers[slot])
         {
-            var playerSide = actor.Position.X - Arena.Center.X;
+            var playerSide = actor.PosRot.X - Arena.Center.X;
 
             Actor? matchingActor = null;
             List<(Mechanic mechanic, DateTime activation)>? matchingMechanics = null;
 
             foreach (var kv in Mechanics)
             {
-                var actorSide = kv.Key.Position.X - Arena.Center.X;
+                var actorSide = kv.Key.PosRot.X - Arena.Center.X;
                 if (actorSide * playerSide > 0)
                 {
                     matchingActor = kv.Key;
@@ -53,11 +53,14 @@ sealed class ThirdArtOfDarknessCleave(BossModule module) : Components.GenericAOE
             if (matchingActor != null && matchingMechanics != null && matchingMechanics.Count > 0)
             {
                 var order = "";
-                for (var i = 0; i < matchingMechanics.Count; ++i)
+                var count = matchingMechanics.Count;
+                var mechs = CollectionsMarshal.AsSpan(matchingMechanics);
+                for (var i = 0; i < count; ++i)
                 {
+                    ref var m = ref mechs[i];
                     if (i > 0)
                         order += " > ";
-                    order += matchingMechanics[i].mechanic.ToString();
+                    order += m.mechanic.ToString();
                 }
                 hints.Add($"Order: {order}", false);
             }

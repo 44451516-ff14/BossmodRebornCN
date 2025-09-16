@@ -3,21 +3,25 @@
 // aoe starts at cast and ends with envcontrol; it's not considered 'risky' when paired with quick march
 class FlamesOfBozja(BossModule module, bool risky) : Components.GenericAOEs(module, (uint)AID.FlamesOfBozjaAOE)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private readonly bool _risky = risky;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
-            AOE = new(TrinityAvowed.ArenaChange2, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: _risky);
+        {
+            AOE = [new(TrinityAvowed.ArenaChange2, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: _risky)];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 }
 
@@ -113,7 +117,7 @@ class ShimmeringShot(BossModule module, double spawnToActivation) : TemperatureA
         if (arrow == null)
             return;
 
-        if ((arrow.Position.X < Arena.Center.X) != _pattern is Pattern.WENormal or Pattern.WEInverted)
+        if ((arrow.PosRot.X < Arena.Center.X) != _pattern is Pattern.WENormal or Pattern.WEInverted)
             ReportError("Unexpected arrow X coord");
         var srcRow = RowIndex(arrow.Position);
         var destRow = _remap[(int)_pattern, srcRow];
@@ -129,7 +133,15 @@ sealed class QuickMarchBow1(BossModule module) : QuickMarch(module)
 {
     private readonly FlamesOfBozja1? _flames = module.FindComponent<FlamesOfBozja1>();
 
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => !Module.InBounds(pos) || (_flames?.AOE?.Shape.Check(pos, _flames.AOE.Value.Origin, _flames.AOE.Value.Rotation) ?? false);
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
+    {
+        if (_flames != null && _flames.AOE.Length != 0)
+        {
+            ref var aoe = ref _flames.AOE[0];
+            return aoe.Check(pos);
+        }
+        return !Arena.InBounds(pos);
+    }
 }
 
 sealed class ShimmeringShot1(BossModule module) : ShimmeringShot(module, 12.8d)
@@ -152,5 +164,5 @@ sealed class QuickMarchBow2(BossModule module) : QuickMarch(module)
 {
     private readonly ShimmeringShot2? _shimmering = module.FindComponent<ShimmeringShot2>();
 
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => !Module.InBounds(pos) || (_shimmering?.ActorUnsafeAt(actor, pos) ?? false);
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => !Arena.InBounds(pos) || (_shimmering?.ActorUnsafeAt(actor, pos) ?? false);
 }

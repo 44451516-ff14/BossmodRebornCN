@@ -10,5 +10,5 @@ sealed class UnconventionalVoltage(BossModule module) : Components.BaitAwayIcon(
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 736, NameID = 9650, SortOrder = 4)]
 public sealed class A23HeavyArtilleryUnit(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new DonutV(new(200f, -100f), 6.5f, 29.5f, 192)]);
+    private static readonly ArenaBoundsCustom arena = new([new DonutV(new(200f, -100f), 6.5f, 29.5f, 192)]);
 }

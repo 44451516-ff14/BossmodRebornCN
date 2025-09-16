@@ -54,16 +54,16 @@ sealed class HallOfSorrow(BossModule module) : Components.SimpleAOEs(module, (ui
 
 sealed class MenaceCharge(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle circle = new(20f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.MenacingCharge)
         {
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 5.2f));
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 5.2d))];
         }
     }
 
@@ -71,7 +71,7 @@ sealed class MenaceCharge(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.MenaceCharge)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -90,5 +90,5 @@ sealed class ServingDarknessStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1972)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1972)]
 public sealed class ServingDarkness(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

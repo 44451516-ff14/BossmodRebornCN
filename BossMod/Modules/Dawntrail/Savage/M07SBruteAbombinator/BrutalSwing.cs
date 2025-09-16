@@ -6,9 +6,9 @@ sealed class BrutalSwing(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeCircle circle = new(12f);
     private static readonly AOEShapeDonut donut = new(9f, 60f);
     private static readonly AOEShapeDonutSector donutSector = new(22f, 88f, 90f.Degrees());
-    public AOEInstance? AOE;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -21,7 +21,9 @@ sealed class BrutalSwing(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
-            AOE = new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -34,7 +36,7 @@ sealed class BrutalSwing(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.BrutishSwingDonut:
             case (uint)AID.BrutishSwingDonutSegment1:
             case (uint)AID.BrutishSwingDonutSegment2:
-                AOE = null;
+                _aoe = [];
                 ++NumCasts;
                 break;
         }

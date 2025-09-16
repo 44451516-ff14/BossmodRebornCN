@@ -70,17 +70,7 @@ class GymnasiouSphinxStates : StateMachineBuilder
             .ActivateOnEnter<AeroII>()
             .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<HeavySmash>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(GymnasiouSphinx.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(GymnasiouSphinx.All);
     }
 }
 
@@ -95,7 +85,7 @@ public class GymnasiouSphinx(WorldState ws, Actor primary) : THTemplate(ws, prim
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.GymnasiouGryps));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

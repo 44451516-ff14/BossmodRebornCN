@@ -90,5 +90,5 @@ public sealed class D091Ambujam(WorldState ws, Actor primary) : BossModule(ws, p
     new(129.83f, -71.42f), new(118.02f, -71.42f), new(111.47f, -74.97f), new(107.83f, -78.98f), new(105.23f, -84.47f),
     new(104.52f, -90.06f), new(105.90f, -97.34f), new(106.21f, -97.99f), new(109.00f, -102.54f), new(112.96f, -106.12f),
     new(113.55f, -106.48f), new(117.17f, -108.19f), new(130.52f, -108.34f)];
-    private static readonly ArenaBoundsComplex DefaultBounds = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom DefaultBounds = new([new PolygonCustom(vertices)]);
 }

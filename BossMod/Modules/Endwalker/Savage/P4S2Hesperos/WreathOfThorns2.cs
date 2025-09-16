@@ -7,18 +7,18 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
 {
     public enum State { DarkDesign, FirstSet, SecondSet, Done }
 
-    public State CurState { get; private set; } = State.DarkDesign;
+    public State CurState = State.DarkDesign;
     private readonly List<Actor> _relevantHelpers = []; // 2 aoes -> 8 towers -> 2 aoes
     private (Actor?, Actor?) _darkTH; // first is one having tether
     private (Actor?, Actor?) _fireTH;
     private (Actor?, Actor?) _fireDD;
-    private readonly IconID[] _playerIcons = new IconID[8];
+    private readonly uint[] _playerIcons = new uint[8];
     private int _numAOECasts;
 
     private IEnumerable<Actor> FirstSet => _relevantHelpers.Take(4);
     private IEnumerable<Actor> SecondSet => _relevantHelpers.Skip(4);
 
-    private const float _fireExplosionRadius = 6;
+    private const float _fireExplosionRadius = 6f;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -29,14 +29,14 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
             {
                 hints.Add("Stay in center", false);
             }
-            else if (_darkTH.Item1!.Tether.ID != 0) // tether not broken yet
+            else if (_darkTH.Item1!.Tether.ID != default) // tether not broken yet
             {
                 hints.Add("Break tether!");
             }
         }
         else
         {
-            var curFirePair = (_fireTH.Item1 != null && _fireTH.Item1.Tether.ID != 0) ? _fireTH : ((_fireDD.Item1 != null && _fireDD.Item1.Tether.ID != 0) ? _fireDD : (null, null));
+            var curFirePair = (_fireTH.Item1 != null && _fireTH.Item1.Tether.ID != default) ? _fireTH : ((_fireDD.Item1 != null && _fireDD.Item1.Tether.ID != default) ? _fireDD : (null, null));
             var isFromCurrentPair = actor == curFirePair.Item1 || actor == curFirePair.Item2;
             if (isFromCurrentPair)
             {
@@ -93,8 +93,8 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
         {
             var tetherColor = _playerIcons[pcSlot] switch
             {
-                IconID.AkanthaiFire => Colors.Danger,
-                IconID.AkanthaiWind => Colors.Safe,
+                (uint)IconID.AkanthaiFire => default,
+                (uint)IconID.AkanthaiWind => Colors.Safe,
                 _ => Colors.Vulnerable
             };
             Arena.AddLine(pc.Position, pcPartner.Position, tetherColor);
@@ -104,16 +104,16 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
         var isTowerSoaker = pc == _darkTH.Item1 || pc == _darkTH.Item2;
         if (isTowerSoaker && CurState != State.Done)
             foreach (var tower in (CurState == State.SecondSet ? SecondSet : FirstSet).Where(IsTower))
-                Arena.AddCircle(tower.Position, P4S2.WreathTowerRadius, CurState == State.DarkDesign ? Colors.Danger : Colors.Safe);
+                Arena.AddCircle(tower.Position, P4S2.WreathTowerRadius, CurState == State.DarkDesign ? default : Colors.Safe);
 
         // draw circles around next imminent fire explosion
         if (CurState != State.DarkDesign)
         {
-            var curFirePair = (_fireTH.Item1 != null && _fireTH.Item1.Tether.ID != 0) ? _fireTH : ((_fireDD.Item1 != null && _fireDD.Item1.Tether.ID != 0) ? _fireDD : (null, null));
+            var curFirePair = (_fireTH.Item1 != null && _fireTH.Item1.Tether.ID != default) ? _fireTH : ((_fireDD.Item1 != null && _fireDD.Item1.Tether.ID != default) ? _fireDD : (null, null));
             if (curFirePair.Item1 != null)
             {
-                Arena.AddCircle(curFirePair.Item1!.Position, _fireExplosionRadius, isTowerSoaker ? Colors.Danger : Colors.Safe);
-                Arena.AddCircle(curFirePair.Item2!.Position, _fireExplosionRadius, isTowerSoaker ? Colors.Danger : Colors.Safe);
+                Arena.AddCircle(curFirePair.Item1!.Position, _fireExplosionRadius, isTowerSoaker ? default : Colors.Safe);
+                Arena.AddCircle(curFirePair.Item2!.Position, _fireExplosionRadius, isTowerSoaker ? default : Colors.Safe);
             }
         }
     }
@@ -132,11 +132,11 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (CurState == State.DarkDesign && (AID)spell.Action.ID == AID.DarkDesign)
+        if (CurState == State.DarkDesign && spell.Action.ID == (uint)AID.DarkDesign)
             CurState = State.FirstSet;
-        else if (CurState == State.FirstSet && (AID)spell.Action.ID == AID.AkanthaiExplodeAOE && ++_numAOECasts >= 2)
+        else if (CurState == State.FirstSet && spell.Action.ID == (uint)AID.AkanthaiExplodeAOE && ++_numAOECasts >= 2)
             CurState = State.SecondSet;
-        else if (CurState == State.SecondSet && (AID)spell.Action.ID == AID.AkanthaiExplodeAOE && ++_numAOECasts >= 4)
+        else if (CurState == State.SecondSet && spell.Action.ID == (uint)AID.AkanthaiExplodeAOE && ++_numAOECasts >= 4)
             CurState = State.Done;
     }
 
@@ -146,24 +146,24 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
         if (slot == -1)
             return;
 
-        _playerIcons[slot] = (IconID)iconID;
+        _playerIcons[slot] = iconID;
         PlayerTetherOrIconAssigned(slot, actor);
     }
 
     private void PlayerTetherOrIconAssigned(int slot, Actor actor)
     {
-        if (slot == -1 || _playerIcons[slot] == IconID.None || actor.Tether.Target == 0)
+        if (slot == -1 || _playerIcons[slot] == default || actor.Tether.Target == default)
             return; // icon or tether not assigned yet
 
         var tetherTarget = WorldState.Actors.Find(actor.Tether.Target);
         if (tetherTarget == null)
             return; // weird
 
-        if (_playerIcons[slot] == IconID.AkanthaiDark)
+        if (_playerIcons[slot] == (uint)IconID.AkanthaiDark)
         {
             _darkTH = (actor, tetherTarget);
         }
-        else if (_playerIcons[slot] == IconID.AkanthaiFire)
+        else if (_playerIcons[slot] == (uint)IconID.AkanthaiFire)
         {
             if (actor.Role is Role.Tank or Role.Healer)
                 _fireTH = (actor, tetherTarget);
@@ -174,19 +174,21 @@ class WreathOfThorns2(BossModule module) : BossComponent(module)
 
     private static bool IsTower(Actor actor)
     {
-        return actor.Position.X < 90
-            ? actor.Position.Z > 100
-            : actor.Position.Z < 90
-            ? actor.Position.X < 100
-            : actor.Position.X > 110 ? actor.Position.Z < 100 : actor.Position.Z > 110 && actor.Position.X > 100;
+        var pos = actor.Position;
+        return pos.X < 90f
+            ? pos.Z > 100f
+            : pos.Z < 90f
+            ? pos.X < 100f
+            : pos.X > 110f ? pos.Z < 100f : pos.Z > 110f && pos.X > 100f;
     }
 
     private static bool IsAOE(Actor actor)
     {
-        return actor.Position.X < 90
-            ? actor.Position.Z < 100
-            : actor.Position.Z < 90
-            ? actor.Position.X > 100
-            : actor.Position.X > 110 ? actor.Position.Z > 100 : actor.Position.Z > 110 && actor.Position.X < 100;
+        var pos = actor.Position;
+        return pos.X < 90f
+            ? pos.Z < 100f
+            : pos.Z < 90f
+            ? pos.X > 100f
+            : pos.X > 110f ? pos.Z > 100f : pos.Z > 110f && pos.X < 100f;
     }
 }

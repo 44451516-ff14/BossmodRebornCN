@@ -89,13 +89,13 @@ sealed class HeroesAndPretendersStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70383, NameID = 13176)]
 public sealed class HeroesAndPretenders(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(676f, 41f), 14.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(676f, 41f), 14.5f, 20)]);
 
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.PerchOfTheApex, (uint)OID.CultivatedMossFungus, (uint)OID.CultivatedOchu1, (uint)OID.CultivatedOchu2,
     (uint)OID.CultivatedMorbolSeedling];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
     }
 }

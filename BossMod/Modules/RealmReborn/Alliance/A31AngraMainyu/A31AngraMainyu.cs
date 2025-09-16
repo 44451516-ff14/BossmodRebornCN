@@ -11,8 +11,8 @@ public class A31AngraMainyu(WorldState ws, Actor primary) : BossModule(ws, prima
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.FinalHourglass));
-        Arena.Actors(Enemies(OID.GrimReaper));
-        Arena.Actors(Enemies(OID.AngraMainyusDaewa));
+        Arena.Actors(Enemies((uint)OID.FinalHourglass));
+        Arena.Actors(Enemies((uint)OID.GrimReaper));
+        Arena.Actors(Enemies((uint)OID.AngraMainyusDaewa));
     }
 }

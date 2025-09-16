@@ -57,6 +57,6 @@ public class Chains(BossModule module, uint tetherID, uint aid = default, float 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (_partner[slot] is var partner && partner != null)
-            hints.AddForbiddenZone(spreadChains ? ShapeDistance.Circle(partner.Position, (partner.Position - actor.Position).Length() + 1f) : ShapeDistance.InvertedCircle(partner.Position, chainLength), WorldState.FutureTime(10d));
+            hints.AddForbiddenZone(spreadChains ? new SDCircle(partner.Position, (partner.Position - actor.Position).Length() + 1f) : new SDInvertedCircle(partner.Position, chainLength), WorldState.FutureTime(10d));
     }
 }

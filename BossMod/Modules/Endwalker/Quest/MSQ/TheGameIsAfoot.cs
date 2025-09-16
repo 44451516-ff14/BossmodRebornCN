@@ -70,6 +70,6 @@ class GiantColibriStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70288, NameID = 12499)]
 public class GiantColibri(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly ArenaBoundsComplex arena = new([new Polygon(new(425, -440), 14.5f, 48),
+    public static readonly ArenaBoundsCustom arena = new([new Polygon(new(425, -440), 14.5f, 48),
     new Rectangle(new(425.27f, -426.5f), 3.8f, 1), new Rectangle(new(424.95f, -453.5f), 4.15f, 1)]);
 }

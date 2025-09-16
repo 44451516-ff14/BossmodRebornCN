@@ -64,38 +64,42 @@ public enum IconID : uint
     ChasingAOE = 197 // player
 }
 
-class ArenaChange(BossModule module) : BossComponent(module)
+sealed class ArenaChange(BossModule module) : BossComponent(module)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (index == 0x03)
         {
-            if (state == 0x00020001)
+            if (state == 0x00020001u)
+            {
                 Arena.Center = D023Anima.LowerArenaCenter;
-            else if (state == 0x00080004)
+            }
+            else if (state == 0x00080004u)
+            {
                 Arena.Center = D023Anima.UpperArenaCenter;
+            }
         }
     }
 }
 
-class BoundlessPain(BossModule module) : Components.GenericAOEs(module)
+sealed class BoundlessPain(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle circle = new(18f);
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         switch (spell.Action.ID)
         {
             case (uint)AID.BoundlessPainPull:
-                _aoe = new(circle, Arena.Center);
+                _aoe = [new(circle, Arena.Center)];
                 break;
             case (uint)AID.BoundlessPainFirst:
             case (uint)AID.BoundlessPainRest:
                 if (++NumCasts == 20)
                 {
-                    _aoe = null;
+                    _aoe = [];
                     NumCasts = 0;
                 }
                 break;
@@ -105,12 +109,15 @@ class BoundlessPain(BossModule module) : Components.GenericAOEs(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveAOEs(slot, actor).Length != 0)
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center, Arena.Center + new WDir(default, 20f), 20f));
+        if (_aoe.Length != 0)
+        {
+            var center = Arena.Center;
+            hints.AddForbiddenZone(new SDRect(center, center + new WDir(default, 20f), 20f));
+        }
     }
 }
 
-class Gravitons(BossModule module) : Components.Voidzone(module, 1f, GetVoidzones)
+sealed class Gravitons(BossModule module) : Components.Voidzone(module, 1f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -131,19 +138,20 @@ class Gravitons(BossModule module) : Components.Voidzone(module, 1f, GetVoidzone
     }
 }
 
-class AetherialPull(BossModule module) : Components.StretchTetherDuo(module, 33f, 7.9f, tetherIDGood: (uint)TetherID.AetherialPullGood, knockbackImmunity: true);
-class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1, 5, true, (uint)IconID.ChasingAOE)
+sealed class AetherialPull(BossModule module) : Components.StretchTetherDuo(module, 33f, 7.9d, tetherIDGood: (uint)TetherID.AetherialPullGood, knockbackImmunity: true);
+sealed class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1, 5, true, (uint)IconID.ChasingAOE)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (Targets[slot])
         {
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center + new WDir(18.5f, default), Arena.Center + new WDir(-18.5f, default), 20f), Activation);
+            var center = Arena.Center;
+            hints.AddForbiddenZone(new SDRect(center + new WDir(18.5f, default), center + new WDir(-18.5f, default), 20f), Activation);
         }
         else if (IsChaserTarget(actor))
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(actor.Position, new WDir(1f, default), 40f, 40f, 3f));
+            hints.AddForbiddenZone(new SDInvertedRect(actor.Position, new WDir(1f, default), 40f, 40f, 3f));
         }
     }
 
@@ -157,15 +165,15 @@ class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 
     }
 }
 
-class PhantomPain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PhantomPain, new AOEShapeRect(20f, 10f));
-class PaterPatriaeAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PaterPatriaeAOE, new AOEShapeRect(60f, 4f));
-class CharnelClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CharnelClaw, new AOEShapeRect(40f, 2.5f), 5);
-class ErruptingPain(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.EruptingPain, 6f);
-class ObliviatingClawSpawnAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ObliviatingClawSpawnAOE, 3f);
-class Oblivion(BossModule module) : Components.RaidwideCast(module, (uint)AID.OblivionVisual, "Raidwide x16");
-class MegaGraviton(BossModule module) : Components.RaidwideCast(module, (uint)AID.MegaGraviton);
+sealed class PhantomPain(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PhantomPain, new AOEShapeRect(20f, 10f));
+sealed class PaterPatriaeAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PaterPatriaeAOE, new AOEShapeRect(60f, 4f));
+sealed class CharnelClaw(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CharnelClaw, new AOEShapeRect(40f, 2.5f), 5);
+sealed class ErruptingPain(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.EruptingPain, 6f);
+sealed class ObliviatingClawSpawnAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ObliviatingClawSpawnAOE, 3f);
+sealed class Oblivion(BossModule module) : Components.RaidwideCast(module, (uint)AID.OblivionVisual, "Raidwide x16");
+sealed class MegaGraviton(BossModule module) : Components.RaidwideCast(module, (uint)AID.MegaGraviton);
 
-class D023AnimaStates : StateMachineBuilder
+sealed class D023AnimaStates : StateMachineBuilder
 {
     public D023AnimaStates(BossModule module) : base(module)
     {
@@ -185,11 +193,12 @@ class D023AnimaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 785, NameID = 10285)]
-public class D023Anima(WorldState ws, Actor primary) : BossModule(ws, primary, UpperArenaCenter, new ArenaBoundsSquare(19.5f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 785u, NameID = 10285u)]
+public sealed class D023Anima(WorldState ws, Actor primary) : BossModule(ws, primary, UpperArenaCenter, new ArenaBoundsSquare(19.5f))
 {
     public static readonly WPos UpperArenaCenter = new(default, -180f);
     public static readonly WPos LowerArenaCenter = new(default, -400f);
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

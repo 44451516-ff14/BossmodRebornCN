@@ -30,11 +30,11 @@ public class A34Scathach(WorldState ws, Actor primary) : BossModule(ws, primary,
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Connla));
-        Arena.Actors(Enemies(OID.Connla2));
-        Arena.Actors(Enemies(OID.ShadowLimb));
-        Arena.Actors(Enemies(OID.ShadowcourtJester));
-        Arena.Actors(Enemies(OID.ChimeraPoppet));
-        Arena.Actors(Enemies(OID.ShadowcourtHound));
+        Arena.Actors(Enemies((uint)OID.Connla));
+        Arena.Actors(Enemies((uint)OID.Connla2));
+        Arena.Actors(Enemies((uint)OID.ShadowLimb));
+        Arena.Actors(Enemies((uint)OID.ShadowcourtJester));
+        Arena.Actors(Enemies((uint)OID.ChimeraPoppet));
+        Arena.Actors(Enemies((uint)OID.ShadowcourtHound));
     }
 }

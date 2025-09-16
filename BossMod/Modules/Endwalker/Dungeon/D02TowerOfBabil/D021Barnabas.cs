@@ -34,25 +34,22 @@ public enum AID : uint
 public enum IconID : uint
 {
     Plus = 162, // player
-    Minus = 163, // player
-    BossMinus = 290, // Boss
-    BossPlus = 291, // Boss
-    Stackmarker = 62 // player
+    Minus = 163 // player
 }
 
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(15f, 19.5f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00 && state == 0x00020001)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D021Barnabas.SmallerBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 
@@ -60,7 +57,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.GroundAndPound1 or (uint)AID.GroundAndPound2 && Arena.Bounds.Radius > 15f)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6.1d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6.1d))];
         }
     }
 }
@@ -102,7 +99,7 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
             return true;
         if (_aoe2.Casters.Count != 0 && _aoe2.Casters.Ref(0).Check(pos))
             return true;
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -110,11 +107,11 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         switch (iconID)
         {
             case (uint)IconID.Plus:
-                positiveCharge[Raid.FindSlot(actor.InstanceID)] = true;
+                positiveCharge.Set(Raid.FindSlot(actor.InstanceID));
                 activation = WorldState.FutureTime(8.1d);
                 break;
             case (uint)IconID.Minus:
-                negativeCharge[Raid.FindSlot(actor.InstanceID)] = true;
+                negativeCharge.Set(Raid.FindSlot(actor.InstanceID));
                 activation = WorldState.FutureTime(8.1d);
                 break;
         }
@@ -166,12 +163,12 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         var isKnockback = bossCharge && isPositive || !bossCharge && isNegative;
         var pos = Arena.Center;
 
-        var forbidden = shape
-            ? isPull ? ShapeDistance.Rect(pos, new WDir(default, 1f), 15f, 15f, 12f)
-            : isKnockback ? ShapeDistance.InvertedCircle(pos, 6f)
+        ShapeDistance? forbidden = shape
+            ? isPull ? new SDRect(pos, new WDir(default, 1f), 15f, 15f, 12f)
+            : isKnockback ? new SDInvertedCircle(pos, 6f)
             : null
-            : isPull ? ShapeDistance.Circle(pos, 13f)
-            : isKnockback ? ShapeDistance.InvertedCircle(pos, 10f)
+            : isPull ? new SDCircle(pos, 13f)
+            : isKnockback ? new SDInvertedCircle(pos, 10f)
             : null;
 
         if (forbidden != null)
@@ -203,6 +200,6 @@ sealed class D021BarnabasStates : StateMachineBuilder
 public sealed class D021Barnabas(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, StartingBounds)
 {
     private static readonly WPos arenaCenter = new(-300f, 71f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(arenaCenter, 19.5f, 48)], [new Rectangle(new(-300f, 91f), 20f, 1.25f), new Rectangle(new(-300f, 51f), 20f, 1.25f)]);
-    public static readonly ArenaBoundsComplex SmallerBounds = new([new Polygon(arenaCenter, 15f, 48)]);
+    public static readonly ArenaBoundsCustom StartingBounds = new([new Polygon(arenaCenter, 19.5f, 48)], [new Rectangle(new(-300f, 91f), 20f, 1.25f), new Rectangle(new(-300f, 51f), 20f, 1.25f)]);
+    public static readonly ArenaBoundsCustom SmallerBounds = new([new Polygon(arenaCenter, 15f, 48)]);
 }

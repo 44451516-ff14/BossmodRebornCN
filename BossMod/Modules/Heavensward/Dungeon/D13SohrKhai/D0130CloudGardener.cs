@@ -37,27 +37,14 @@ class D130CloudGardenerStates : StateMachineBuilder
             .ActivateOnEnter<TightTornado>()
             .ActivateOnEnter<DarkBlizzardIII>()
             .ActivateOnEnter<Venom>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D130CloudGardener.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D130CloudGardener.Trash);
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 171, NameID = 4928, SortOrder = 1)]
 public class D130CloudGardener(WorldState ws, Actor primary) : BossModule(ws, primary, IsArena1(primary) ? arena1.Center : arena2.Center, IsArena1(primary) ? arena1 : arena2)
 {
-    private static bool IsArena1(Actor primary) => primary.Position.Z > 80f;
+    private static bool IsArena1(Actor primary) => primary.PosRot.Z > 80f;
     private static readonly WPos[] vertices1 = [new(-397.21f, 80.53f), new(-396.7f, 80.92f), new(-395.75f, 81.87f), new(-395.65f, 83.98f), new(-395.55f, 84.54f),
     new(-393.56f, 84.66f), new(-392.7f, 84.66f), new(-392.24f, 84.41f), new(-392.2f, 82.13f), new(-384.32f, 81.86f),
     new(-383.38f, 82.76f), new(-383.32f, 83.44f), new(-383.42f, 84.07f), new(-383.54f, 84.69f), new(-383.68f, 85.35f),
@@ -165,24 +152,15 @@ public class D130CloudGardener(WorldState ws, Actor primary) : BossModule(ws, pr
     new(-416.1f, -77.74f), new(-407.93f, -78.13f), new(-407.75f, -75.56f), new(-406, -75.33f), new(-405.44f, -75.17f),
     new(-404.84f, -75.31f), new(-404.37f, -75.59f), new(-404.33f, -78.08f), new(-402.92f, -79.49f), new(-397.01f, -79.49f)];
 
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices1)]);
-    private static readonly ArenaBoundsComplex arena2 = new([new PolygonCustom(vertices2)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices1)]);
+    private static readonly ArenaBoundsCustom arena2 = new([new PolygonCustom(vertices2)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.EnchantedFan, (uint)OID.GardenCloudtrap, (uint)OID.SanctuarySkipper, (uint)OID.GardenSankchinni, (uint)OID.GardenMelia];
 
-    protected override bool CheckPull() => InBounds(Raid.Player()!.Position);
+    protected override bool CheckPull() => Arena.InBounds(Raid.Player()!.Position);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

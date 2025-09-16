@@ -39,11 +39,11 @@ public enum AID : uint
     ConvulsiveCrush = 36518, // Boss->player, 5.0s cast, single-target, tb
 }
 
-sealed class CollectiveAgony(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.CollectiveAgonyMarker, (uint)AID.CollectiveAgony, 5.6f);
+sealed class CollectiveAgony(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.CollectiveAgonyMarker, (uint)AID.CollectiveAgony, 5.6d);
 sealed class StridentShriek(BossModule module) : Components.RaidwideCast(module, (uint)AID.StridentShriek);
 sealed class ConvulsiveCrush(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.ConvulsiveCrush);
 sealed class PoisonHeartSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.PoisonHeartSpread, 5f);
-sealed class PoisonHeartVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 2f, (uint)AID.PoisonHeartVoidzone, GetVoidzones, 0.9f)
+sealed class PoisonHeartVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 2f, (uint)AID.PoisonHeartVoidzone, GetVoidzones, 0.9d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -128,8 +128,8 @@ sealed class WrithingRiot(BossModule module) : Components.GenericAOEs(module)
         // stay close to the middle if there is next imminent aoe
         if (_aoes.Count > 1)
         {
-            var aoe = _aoes[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
+            ref var aoe = ref _aoes.Ref(0);
+            hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 3f), aoe.Activation);
         }
     }
 }
@@ -149,5 +149,5 @@ sealed class D051HerpekarisStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12741, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12741, SortOrder = 1)]
 public sealed class D051Herpekaris(WorldState ws, Actor primary) : BossModule(ws, primary, new(-88f, -180f), new ArenaBoundsSquare(17.5f));

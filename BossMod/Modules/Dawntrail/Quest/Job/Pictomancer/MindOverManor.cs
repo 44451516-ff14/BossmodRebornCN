@@ -67,5 +67,5 @@ public sealed class MindOverManor(WorldState ws, Actor primary) : BossModule(ws,
     new(6.7f, -15.12f), new(7.14f, -15.4f), new(9.4f, -17.6f), new(9.88f, -17.77f), new(10.93f, -17.75f),
     new(11.73f, -18.5f), new(12.76f, -18.5f), new(13.29f, -18.52f), new(13.82f, -18.49f), new(14.32f, -18.53f),
     new(15.13f, -19.18f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

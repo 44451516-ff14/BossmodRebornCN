@@ -65,7 +65,7 @@ sealed class FireBreak(BossModule module) : Components.SimpleAOEs(module, (uint)
 sealed class TornadoIncubusRottenSpores(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Tornado, (uint)AID.Incubus, (uint)AID.RottenSpores], 6f);
 sealed class FireIIBitterNectar(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.FireII, (uint)AID.BitterNectar], 5f);
 
-sealed class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11);
+sealed class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
 sealed class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 sealed class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
 (uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 7f);
@@ -96,7 +96,7 @@ public sealed class Room3(WorldState ws, Actor primary) : BossModule(ws, primary
     private static readonly WPos arenaCenter = new(160f, 19f);
     private static readonly Angle a135 = 135.Degrees();
     private static readonly WDir dir135 = a135.ToDirection(), dirM135 = (-a135).ToDirection();
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(arenaCenter, 19.5f * CosPI.Pi36th, 36), new Rectangle(arenaCenter + 8.65f * dir135, 20f, 6.15f, -a135),
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(arenaCenter, 19.5f * CosPI.Pi36th, 36), new Rectangle(arenaCenter + 8.65f * dir135, 20f, 6.15f, -a135),
     new Rectangle(arenaCenter + 8.65f * dirM135, 20f, 6.15f, a135), new Rectangle(arenaCenter + 12f * dir135, 20f, 4.3f, -a135), new Rectangle(arenaCenter + 12f * dirM135, 20f, 4.3f, a135),
     new Rectangle(arenaCenter + 14.3f * dir135, 20f, 3.5f, -a135), new Rectangle(arenaCenter + 14.3f * dirM135, 20f, 3.5f, a135)], [new Rectangle(new(160f, 39f), 20f, 1.7f)]);
     private static readonly uint[] bonusAdds = [(uint)OID.TuligoraQueen, (uint)OID.TuraliTomato, (uint)OID.TuraliOnion, (uint)OID.TuraliEggplant,
@@ -107,8 +107,9 @@ public sealed class Room3(WorldState ws, Actor primary) : BossModule(ws, primary
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(trash));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        var m = this;
+        Arena.Actors(m, trash);
+        Arena.Actors(m, bonusAdds, Colors.Vulnerable);
     }
 
     protected override bool CheckPull() => Enemies(trash).Count != 0;

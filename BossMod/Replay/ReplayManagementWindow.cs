@@ -3,7 +3,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.ImGuiFileDialog;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System.Diagnostics;
 using System.IO;
@@ -31,7 +31,7 @@ public sealed class ReplayManagementWindow : UIWindow
 
     private const string _windowID = "###Replay recorder";
 
-    public ReplayManagementWindow(WorldState ws, BossModuleManager bmm, RotationDatabase rotationDB, DirectoryInfo logDir) : base(_windowID, false, new(300, 200))
+    public ReplayManagementWindow(WorldState ws, BossModuleManager bmm, RotationDatabase rotationDB, DirectoryInfo logDir) : base(_windowID, false, new(300f, 200f))
     {
         _ws = ws;
         _logDir = logDir;
@@ -148,17 +148,17 @@ public sealed class ReplayManagementWindow : UIWindow
     {
         if (_config.ImportantDutyAlert && IsImportantDuty(cfcId) && !ShouldAutoRecord)
         {
-            _startLinkPayload ??= Service.PluginInterface.AddChatLinkHandler(0, (id, str) =>
+            _startLinkPayload ??= Service.ChatGui.AddChatLinkHandler(default, (id, str) =>
             {
-                if (id == 0)
+                if (id == default)
                 {
                     StartRecording("");
                     Service.ChatGui.Print("[BMR] Replay recording started");
                 }
             });
-            _disableAlertLinkPayload ??= Service.PluginInterface.AddChatLinkHandler(2, (id, str) =>
+            _disableAlertLinkPayload ??= Service.ChatGui.AddChatLinkHandler(2u, (id, str) =>
             {
-                if (id == 2)
+                if (id == 2u)
                 {
                     _config.ImportantDutyAlert = false;
                     _config.Modified.Fire();
@@ -185,7 +185,7 @@ public sealed class ReplayManagementWindow : UIWindow
         if (!ShouldAutoRecord || _recordingManual)
             return false; // don't care
 
-        var isDuty = cfcId != 0;
+        var isDuty = cfcId != default;
         if (_recordingDuty == isDuty)
             return false; // don't care
         _recordingDuty = isDuty;
@@ -211,9 +211,18 @@ public sealed class ReplayManagementWindow : UIWindow
     {
         var map = new Dictionary<uint, bool>();
 
-        uint[] alwaysImportantDuties = [280u, 539u, 694u, 788u, 908u, 1006u, 700u, 736u, 779u, 878u, 879u, 946u, 947u, 979u, 980u,
-        801u, 807u, 809u, 811u, 873u, 877u, 881u, 884u, 937u, 939u, 941u, 943u];
-        for (var i = 0; i < 27; ++i)
+        uint[] alwaysImportantDuties =
+        [
+            280u, 539u, 694u, 788u, 908u,
+            1006u, 700u, 736u, 779u, 878u,
+            879u, 946u, 947u, 979u, 980u,
+            801u, 807u, 809u, 811u, 873u,
+            877u, 881u, 884u, 937u, 939u,
+            941u, 943u, 993u, 1060u, 819u,
+            909u, 688u, 745u, 268u, 276u,
+            586u
+        ];
+        for (var i = 0; i < 36; ++i)
         {
             map[alwaysImportantDuties[i]] = true;
         }
@@ -233,21 +242,22 @@ public sealed class ReplayManagementWindow : UIWindow
             }
         }
 
-        AddRange(map, 197, 199); // lord of verminion
-        AddRange(map, 481, 535); // chocobo races
-        AddRange(map, 552, 579); // lord of verminion
-        AddRange(map, 599, 608); // hidden gorge + leap of faith
-        AddRange(map, 640, 645); // air force one + mahjong
-        AddRange(map, 705, 713); // leap of faith
-        AddRange(map, 730, 734); // ocean fishing
-        AddRange(map, 766, 775); // mahjong + ocean fishing
-        AddRange(map, 835, 843); // crystalline conflict
-        AddRange(map, 847, 864); // crystalline conflict
-        AddRange(map, 912, 923); // crystalline conflict
-        AddRange(map, 927, 935); // leap of faith
-        AddRange(map, 952, 957); // ocean fishing
-        AddRange(map, 967, 978); // crystalline conflict
-        AddRange(map, 1012, 1014); // tutorial
+        AddRange(map, 197u, 199u); // lord of verminion
+        AddRange(map, 481u, 535u); // chocobo races
+        AddRange(map, 552u, 579u); // lord of verminion
+        AddRange(map, 599u, 608u); // hidden gorge + leap of faith
+        AddRange(map, 640u, 645u); // air force one + mahjong
+        AddRange(map, 705u, 713u); // leap of faith
+        AddRange(map, 730u, 734u); // ocean fishing
+        AddRange(map, 766u, 775u); // mahjong + ocean fishing
+        AddRange(map, 835u, 843u); // crystalline conflict
+        AddRange(map, 847u, 864u); // crystalline conflict
+        AddRange(map, 912u, 923u); // crystalline conflict
+        AddRange(map, 927u, 935u); // leap of faith
+        AddRange(map, 952u, 957u); // ocean fishing
+        AddRange(map, 967u, 978u); // crystalline conflict
+        AddRange(map, 1012u, 1014u); // tutorial
+        AddRange(map, 1046u, 1057u); // crystalline conflict
 
         // check modules for WIP and non existing
         foreach (var module in BossModuleRegistry.RegisteredModules.Values)
@@ -299,13 +309,14 @@ public sealed class ReplayManagementWindow : UIWindow
         if (IsRecording())
             return; // already recording
 
+        _logDir.Create();
+
         // if there are too many replays, delete oldest
         if (_config.MaxReplays > 0)
         {
             try
             {
-                var replayFolder = new DirectoryInfo(_config.ReplayFolder);
-                var replays = replayFolder.GetFiles();
+                var replays = _logDir.GetFiles();
                 replays.Sort((a, b) => a.LastWriteTime.CompareTo(b.LastWriteTime));
                 foreach (var f in replays.Take(replays.Length - _config.MaxReplays))
                     f.Delete();
@@ -318,8 +329,7 @@ public sealed class ReplayManagementWindow : UIWindow
 
         try
         {
-            var replayFolder = string.IsNullOrEmpty(_config.ReplayFolder) ? _logDir : new DirectoryInfo(_config.ReplayFolder);
-            _recorder = new(_ws, _config.WorldLogFormat, true, replayFolder, prefix + GetPrefix());
+            _recorder = new(_ws, _config.WorldLogFormat, true, _logDir, prefix + GetPrefix());
         }
         catch (Exception ex)
         {
@@ -331,12 +341,12 @@ public sealed class ReplayManagementWindow : UIWindow
 
     public void StopRecording()
     {
-        if (_config.ImportantDutyAlert && IsImportantDuty(_recorder?.CFCID ?? 0))
+        if (_config.ImportantDutyAlert && IsImportantDuty(_recorder?.CFCID ?? default))
         {
             var path = _recorder?.LogPath;
-            _uploadLinkPayload ??= Service.PluginInterface.AddChatLinkHandler(1, (id, str) =>
+            _uploadLinkPayload ??= Service.ChatGui.AddChatLinkHandler(1u, (id, str) =>
             {
-                if (id == 1)
+                if (id == 1u)
                 {
                     Task.Run(() =>
                     {
@@ -398,7 +408,6 @@ public sealed class ReplayManagementWindow : UIWindow
 
             prefix += string.Join("_", shortenedParts);
         }
-
 
         var cf = FFXIVClientStructs.FFXIV.Client.Game.UI.ContentsFinder.Instance();
         if (cf->IsUnrestrictedParty)

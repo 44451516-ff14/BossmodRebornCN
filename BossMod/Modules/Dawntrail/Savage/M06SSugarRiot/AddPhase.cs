@@ -134,53 +134,41 @@ class WaterIIIVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(modu
 
 class ManxomeWindersnatch(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.ManxomeWindersnatch, 5f)
 {
-    private Actor? _target;
-
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (_target is Actor target)
-            hints.Add($"Big hit on {target.Name}!");
+        if (Targets.Count != 0)
+        {
+            ref readonly var t = ref Targets.Ref(0);
+            hints.Add($"Big hit on {t.target.Name}!");
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.ManxomeWindersnatch)
         {
-            _target = actor;
-            Targets.Add((Raid.FindSlot(targetID), WorldState.FutureTime(5d), targetID));
-        }
-    }
-
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        base.OnEventCast(caster, spell);
-        if (spell.Action.ID == WatchedAction)
-        {
-            _target = null;
-        }
-    }
-
-    public override void Update()
-    {
-        if (_target is Actor target)
-        {
             var jabberwocks = Module.Enemies((uint)OID.Jabberwock);
             var count = jabberwocks.Count;
-            var allDead = true;
             for (var i = 0; i < count; ++i)
             {
                 var enemy = jabberwocks[i];
                 if (!enemy.IsDeadOrDestroyed)
                 {
-                    allDead = false;
+                    Targets.Add((Raid.FindSlot(targetID), WorldState.FutureTime(5d), targetID, enemy, actor));
                     break;
                 }
             }
-            if (target.IsDead || allDead)
+        }
+    }
+
+    public override void Update()
+    {
+        if (Targets.Count != 0)
+        {
+            ref readonly var t = ref Targets.Ref(0);
+            if (t.target.IsDead || t.caster.IsDead)
             {
-                _target = null;
                 Targets.Clear();
-                return;
             }
         }
     }

@@ -2,11 +2,11 @@
 
 sealed class Aethertithe(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
     private static readonly AOEShapeCone _shape = new(100f, 35f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -23,7 +23,7 @@ sealed class Aethertithe(BossModule module) : Components.GenericAOEs(module)
         };
         if (dir != null)
         {
-            AOE = new(_shape, Module.PrimaryActor.Position, dir.Value, WorldState.FutureTime(5.1d));
+            AOE = [new(_shape, Module.PrimaryActor.Position, dir.Value, WorldState.FutureTime(5.1d))];
         }
     }
 
@@ -31,7 +31,7 @@ sealed class Aethertithe(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.AethertitheAOER or (uint)AID.AethertitheAOEC or (uint)AID.AethertitheAOEL)
         {
-            AOE = null;
+            AOE = [];
             ++NumCasts;
         }
     }

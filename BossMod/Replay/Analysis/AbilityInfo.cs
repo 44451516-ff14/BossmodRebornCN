@@ -1,5 +1,5 @@
 ﻿using BossMod.Components;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Globalization;
 
 namespace BossMod.ReplayAnalysis;
@@ -169,19 +169,35 @@ sealed class AbilityInfo : CommonEnumInfo
 
         public GazeAnalysis(List<Instance> infos)
         {
-            _plot.DataMin = new(-180, 0);
-            _plot.DataMax = new(180, 2);
-            _plot.TickAdvance = new(45, 1);
-            foreach (var i in infos)
+            _plot.DataMin = new(-180f, 0f);
+            _plot.DataMax = new(180f, 2f);
+            _plot.TickAdvance = new(45f, 1f);
+            var countI = infos.Count;
+            for (var i = 0; i < countI; ++i)
             {
-                var src = new WPos(i.Action.Source.PosRotAt(i.Action.Timestamp).XZ());
-                foreach (var target in i.Action.Targets)
+                var info = infos[i];
+                var src = new WPos(info.Action.Source.PosRotAt(info.Action.Timestamp).XZ());
+                var targets = info.Action.Targets;
+                var countT = targets.Count;
+                for (var j = 0; j < countT; ++j)
                 {
-                    var posRot = target.Target.PosRotAt(i.Action.Timestamp);
+                    var target = info.Action.Targets[j];
+                    var posRot = target.Target.PosRotAt(info.Action.Timestamp);
                     var toSource = Angle.FromDirection(src - new WPos(posRot.XZ()));
                     var angle = (toSource - posRot.W.Radians()).Normalized();
-                    var hit = !target.Effects.All(eff => eff.Type is ActionEffectType.Miss or ActionEffectType.StartActionCombo);
-                    _points.Add((i, target.Target, angle, hit));
+                    var effects = target.Effects.ValidEffects();
+                    var len = effects.Length;
+                    var hit = false;
+                    for (var k = 0; k < len; ++k)
+                    {
+                        ref readonly var e = ref effects[k];
+                        if (e.Type is ActionEffectType.Miss or ActionEffectType.StartActionCombo)
+                        {
+                            hit = true;
+                            break;
+                        }
+                    }
+                    _points.Add((info, target.Target, angle, hit));
                 }
             }
         }
@@ -209,53 +225,70 @@ sealed class AbilityInfo : CommonEnumInfo
 
         public KnockbackAnalysis(List<Instance> infos)
         {
-            foreach (var i in infos)
+            var countI = infos.Count;
+            for (var i = 0; i < countI; ++i)
             {
-                foreach (var target in i.Action.Targets)
+                var info = infos[i];
+                var targets = info.Action.Targets;
+                var countT = targets.Count;
+                for (var j = 0; j < countT; ++j)
                 {
+                    var target = info.Action.Targets[j];
                     var hasKnockbacks = false;
-                    foreach (var eff in target.Effects)
+                    var effects = target.Effects.ValidEffects();
+                    var len = effects.Length;
+
+                    for (var k = 0; k < len; ++k)
                     {
-                        switch (eff.Type)
+                        ref readonly var eff = ref effects[k];
                         {
-                            case ActionEffectType.Knockback:
-                                var kbData = Service.LuminaRow<Lumina.Excel.Sheets.Knockback>(eff.Value);
-                                var kind = kbData != null ? (KnockbackDirection)kbData.Value.Direction switch
-                                {
-                                    KnockbackDirection.AwayFromSource => GenericKnockback.Kind.AwayFromOrigin,
-                                    KnockbackDirection.SourceForward => GenericKnockback.Kind.DirForward,
-                                    KnockbackDirection.SourceRight => GenericKnockback.Kind.DirRight,
-                                    KnockbackDirection.SourceLeft => GenericKnockback.Kind.DirLeft,
-                                    KnockbackDirection.AwayFromSource2 => GenericKnockback.Kind.AwayFromOrigin,
-                                    _ => GenericKnockback.Kind.None
-                                } : GenericKnockback.Kind.None;
-                                AddPoint(i, target, (kbData?.Distance ?? 0) + eff.Param0, kind);
-                                hasKnockbacks = true;
-                                break;
-                            case ActionEffectType.Attract1:
-                            case ActionEffectType.Attract2:
+                            switch (eff.Type)
+                            {
+                                case ActionEffectType.Knockback:
+                                    var kbData = Service.LuminaRow<Lumina.Excel.Sheets.Knockback>(eff.Value);
+                                    var kind = kbData != null ? (KnockbackDirection)kbData.Value.Direction switch
+                                    {
+                                        KnockbackDirection.AwayFromSource => GenericKnockback.Kind.AwayFromOrigin,
+                                        KnockbackDirection.SourceForward => GenericKnockback.Kind.DirForward,
+                                        KnockbackDirection.SourceRight => GenericKnockback.Kind.DirRight,
+                                        KnockbackDirection.SourceLeft => GenericKnockback.Kind.DirLeft,
+                                        KnockbackDirection.AwayFromSource2 => GenericKnockback.Kind.AwayFromOrigin,
+                                        _ => GenericKnockback.Kind.None
+                                    } : GenericKnockback.Kind.None;
+                                    AddPoint(info, target, (kbData?.Distance ?? default) + eff.Param0, kind);
+                                    hasKnockbacks = true;
+                                    break;
+                                case ActionEffectType.Attract1:
+                                case ActionEffectType.Attract2:
 
-                                var attrData = Service.LuminaRow<Lumina.Excel.Sheets.Attract>(eff.Value);
-                                AddPoint(i, target, attrData?.MaxDistance ?? 0, GenericKnockback.Kind.TowardsOrigin);
-                                hasKnockbacks = true;
-                                break;
-                            case ActionEffectType.AttractCustom1:
-                            case ActionEffectType.AttractCustom2:
-                            case ActionEffectType.AttractCustom3:
-                                AddPoint(i, target, eff.Value, GenericKnockback.Kind.TowardsOrigin);
-                                hasKnockbacks = true;
-                                break;
+                                    var attrData = Service.LuminaRow<Lumina.Excel.Sheets.Attract>(eff.Value);
+                                    AddPoint(info, target, attrData?.MaxDistance ?? default, GenericKnockback.Kind.TowardsOrigin);
+                                    hasKnockbacks = true;
+                                    break;
+                                case ActionEffectType.AttractCustom1:
+                                case ActionEffectType.AttractCustom2:
+                                case ActionEffectType.AttractCustom3:
+                                    AddPoint(info, target, eff.Value, GenericKnockback.Kind.TowardsOrigin);
+                                    hasKnockbacks = true;
+                                    break;
+                            }
                         }
-                    }
 
-                    if (!hasKnockbacks)
-                    {
-                        if (IsImmune(i.Replay, target.Target, i.Action.Timestamp))
-                            _immuneMisses.Add(new(i, target));
-                        else if (IsTranscendent(i.Replay, target.Target, i.Action.Timestamp))
-                            _transcendentMisses.Add(new(i, target));
-                        else
-                            _otherMisses.Add(new(i, target));
+                        if (!hasKnockbacks)
+                        {
+                            if (IsImmune(info.Replay, target.Target, info.Action.Timestamp))
+                            {
+                                _immuneMisses.Add(new(info, target));
+                            }
+                            else if (IsTranscendent(info.Replay, target.Target, info.Action.Timestamp))
+                            {
+                                _transcendentMisses.Add(new(info, target));
+                            }
+                            else
+                            {
+                                _otherMisses.Add(new(info, target));
+                            }
+                        }
                     }
                 }
             }
@@ -290,12 +323,12 @@ sealed class AbilityInfo : CommonEnumInfo
             {
                 foreach (var an in tree.Nodes(points, p => new($"{p.Inst.TimestampString()}: {ReplayUtils.ParticipantPosRotString(p.Inst.Action.Source, p.Inst.Action.Timestamp)} -> {ReplayUtils.ParticipantString(p.Target.Target, p.Inst.Action.Timestamp)}")))
                 {
-                    tree.LeafNodes(an.Target.Effects, ReplayUtils.ActionEffectString);
+                    tree.LeafNodes(an.Target.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
                 }
             }
         }
 
-        private static bool IsImmune(uint sid) => sid is 3054 or (uint)WHM.SID.Surecast or (uint)WAR.SID.ArmsLength or 1722 or (uint)WAR.SID.InnerStrength or 2345; // see Knockback component
+        private static bool IsImmune(uint sid) => sid is 3054u or (uint)WHM.SID.Surecast or (uint)WAR.SID.ArmsLength or 1722u or (uint)WAR.SID.InnerStrength or 2345u; // see Knockback component
         private static bool IsImmune(Replay replay, Replay.Participant participant, DateTime timestamp) => replay.Statuses.Any(status => status.Target == participant && status.Time.Contains(timestamp) && IsImmune(status.ID));
 
         // transcendent (after rez) is kind of immune too
@@ -423,7 +456,7 @@ sealed class AbilityInfo : CommonEnumInfo
                 {
                     foreach (var tn in tree.Nodes(an.Action.Targets, t => new(ReplayUtils.ActionTargetString(t, an.Action.Timestamp))))
                     {
-                        tree.LeafNodes(tn.Effects, ReplayUtils.ActionEffectString);
+                        tree.LeafNodes(tn.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
                     }
                 }
             }

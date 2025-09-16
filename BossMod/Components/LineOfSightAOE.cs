@@ -14,7 +14,7 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
     public readonly List<(float Distance, Angle Dir, Angle HalfWidth)> Visibility = [];
     public readonly List<AOEInstance> Safezones = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Safezones.Count != 0 && !IgnoredPlayers[slot] ? new AOEInstance[1] { Safezones[0] } : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Safezones.Count != 0 && !IgnoredPlayers[slot] ? CollectionsMarshal.AsSpan(Safezones)[..1] : [];
 
     public void Modify(WPos? origin, IEnumerable<(WPos Center, float Radius)> blockers, DateTime nextExplosion = default)
     {
@@ -100,7 +100,7 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
             }
             if (unionShapes.Count != 0)
             {
-                Safezones.Add(new(new AOEShapeCustom([.. unionShapes], [.. differenceShapes], InvertForbiddenZone: true), Arena.Center, default, activation, Colors.SafeFromAOE));
+                Safezones.Add(new(new AOEShapeCustom([.. unionShapes], [.. differenceShapes], invertForbiddenZone: true), Arena.Center, default, activation, Colors.SafeFromAOE));
             }
         }
     }

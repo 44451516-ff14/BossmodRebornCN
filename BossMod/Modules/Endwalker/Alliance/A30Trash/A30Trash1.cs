@@ -53,17 +53,7 @@ public class A30Trash1States : StateMachineBuilder
             .ActivateOnEnter<PelagicCleaver1Hint>()
             .ActivateOnEnter<PelagicCleaver2Hint>()
             .ActivateOnEnter<WaterDivineFlood>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(A30Trash1.Trash);
-                for (var i = 0; i < enemies.Count; ++i)
-                {
-                    var e = enemies[i];
-                    if (!e.IsDeadOrDestroyed)
-                        return false;
-                }
-                return module.Enemies((uint)OID.Serpent).Count == 0;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(A30Trash1.Trash) && module.Enemies((uint)OID.Serpent).Count == 0;
     }
 }
 
@@ -75,6 +65,6 @@ public class A30Trash1(WorldState ws, Actor primary) : BossModule(ws, primary, n
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actors(Enemies((uint)OID.Serpent));
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

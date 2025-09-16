@@ -30,7 +30,7 @@ public enum AID : uint
     Whorl = 35375, // Boss->self, 7.0s cast, range 40 circle, raidwide and arena transition
 
     QuintessencePrepare = 35336, // Boss->self, no cast, single-target, visual (before first form / eudaimon)
-    FirstFormRight = 35338, // Boss->self, 7.0s cast, single-target, visual
+    FirstFormRight = 35338, // Boss->self, 7.0s cast, single-target, visual 38, 39, 40, 41, 42 , 43, 44,45,46
     FirstFormLeft = 35341, // Boss->self, 7.0s cast, single-target, visual
     FirstFormDonut = 35344, // Boss->self, 7.0s cast, single-target, visual
     SecondFormRight = 35339, // Boss->self, 7.0s cast, single-target, visual

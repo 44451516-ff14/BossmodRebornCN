@@ -26,24 +26,11 @@ sealed class D90ForestBatStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<FlashFlood>()
             .ActivateOnEnter<LineVoltage>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D90ForestBat.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D90ForestBat.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13572, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13572, SortOrder = 1)]
 public sealed class D90ForestBat(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-16.78f, 468.11f), new(-15.92f, 468.13f), new(-17.46f, 472.46f), new(-17.41f, 473.1f), new(-16.79f, 476),
@@ -74,34 +61,14 @@ public sealed class D90ForestBat(WorldState ws, Actor primary) : BossModule(ws, 
     new(-35.43f, 488.71f), new(-35.31f, 488.11f), new(-35.47f, 486.77f), new(-35.28f, 483.61f), new(-35.49f, 483.01f),
     new(-35.64f, 482.3f), new(-35.43f, 481.68f), new(-35.42f, 479.49f), new(-34.93f, 471.44f), new(-34.95f, 470.74f),
     new(-34.79f, 470.06f), new(-34.9f, 469.45f), new(-35.73f, 468.5f), new(-16.78f, 468.11f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Electrogolem1, (uint)OID.Electrogolem1, (uint)OID.ForestWoolback];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

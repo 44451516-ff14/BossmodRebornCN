@@ -99,7 +99,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         _processPacketActionEffectHook = new(ActionEffectHandler.Addresses.Receive, ProcessPacketActionEffectDetour);
         _setAutoAttackStateHook = new(AutoAttackState.Addresses.SetImpl, SetAutoAttackStateDetour);
 
-        var executeCommandGTAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? EB 1E 48 8B 53 08");
+        var executeCommandGTAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? EB 3D 8B 93 ?? ?? ?? ??");
         Service.Log($"ExecuteCommandGT address: 0x{executeCommandGTAddress:X}");
         _executeCommandGT = Marshal.GetDelegateForFunctionPointer<ExecuteCommandGTDelegate>(executeCommandGTAddress);
 
@@ -161,7 +161,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         var player = (Character*)GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
         if (player != null)
         {
-            var position = player->Position.ToSystem() + direction.ToDirection().ToVec3();
+            var position = (Vector3)player->Position + direction.ToDirection().ToVec3();
             _inst->AutoFaceTargetPosition(&position);
 
             var pm = (PlayerMove*)player;
@@ -541,7 +541,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         return res;
     }
 
-    private bool UseActionLocationDetour(ActionManager* self, CSActionType actionType, uint actionId, ulong targetId, Vector3* location, uint extraParam)
+    private bool UseActionLocationDetour(ActionManager* self, CSActionType actionType, uint actionId, ulong targetId, Vector3* location, uint extraParam, byte a7)
     {
         var targetSystem = TargetSystem.Instance();
         var player = GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
@@ -551,7 +551,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
         var preventAutos = _autoAutosTweak.ShouldPreventAutoActivation(ActionManager.GetSpellIdForAction(actionType, actionId));
         if (preventAutos)
             targetSystem->Target = null;
-        bool ret = _useActionLocationHook.Original(self, actionType, actionId, targetId, location, extraParam);
+        bool ret = _useActionLocationHook.Original(self, actionType, actionId, targetId, location, extraParam, a7);
         if (preventAutos)
             targetSystem->Target = hardTarget;
         var currSeq = _inst->LastUsedActionSequence;

@@ -1,12 +1,12 @@
 ﻿namespace BossMod.QuestBattle.Endwalker.MSQ;
 
-class ImperialAI(WorldState ws) : UnmanagedRotation(ws, 3)
+class ImperialAI(WorldState ws) : UnmanagedRotation(ws, 3f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
-        if (Player.FindStatus(2736) != null)
+        if (Player.FindStatus(2736u) != null)
         {
-            var someTarget = Hints.PotentialTargets.FirstOrDefault(x => x.Actor.Position.InRect(new WPos(68, -222), new WDir(52, 0), 16) && (x.Actor.Position - Player.Position).Length() <= 30);
+            var someTarget = Hints.PotentialTargets.FirstOrDefault(x => x.Actor.Position.InRect(new WPos(68f, -222f), new WDir(52f, default), 16f) && (x.Actor.Position - Player.Position).LengthSq() <= 900f);
             if (someTarget != null)
             {
                 UseAction(Roleplay.AID.DiffractiveMagitekCannonIFTC, someTarget.Actor, 0, someTarget.Actor.PosRot.XYZ());
@@ -17,22 +17,22 @@ class ImperialAI(WorldState ws) : UnmanagedRotation(ws, 3)
         }
 
         if (Player.HPMP.CurHP < Player.HPMP.MaxHP * 0.75f && World.Client.DutyActions[0].CurCharges > 0)
-            UseAction(Roleplay.AID.MedicalKit, Player, -50);
+            UseAction(Roleplay.AID.MedicalKit, Player, -50f);
 
         if (primaryTarget is not { IsAlly: false })
             return;
 
         if (Player.InCombat)
-            UseAction(Roleplay.AID.RampartIFTC, Player, -50);
+            UseAction(Roleplay.AID.RampartIFTC, Player, -50f);
 
         switch (ComboAction)
         {
             case Roleplay.AID.RiotBladeIFTC:
-                UseAction(Roleplay.AID.FightOrFlightIFTC, Player, -50);
+                UseAction(Roleplay.AID.FightOrFlightIFTC, Player, -50f);
                 UseAction(Roleplay.AID.RageOfHaloneIFTC, primaryTarget);
                 break;
             case Roleplay.AID.FastBladeIFTC:
-                UseAction(Roleplay.AID.FightOrFlightIFTC, Player, -50);
+                UseAction(Roleplay.AID.FightOrFlightIFTC, Player, -50f);
                 UseAction(Roleplay.AID.RiotBladeIFTC, primaryTarget);
                 break;
         }
@@ -41,16 +41,16 @@ class ImperialAI(WorldState ws) : UnmanagedRotation(ws, 3)
     }
 }
 
-[ZoneModuleInfo(BossModuleInfo.Maturity.Contributed, 793)]
+[ZoneModuleInfo(BossModuleInfo.Maturity.Contributed, 793u)]
 internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
 {
     private readonly ImperialAI _ai = new(ws);
 
     public override void AddQuestAIHints(Actor player, AIHints hints)
     {
-        foreach (var h in hints.PotentialTargets.Where(p => p.Actor.Position.InCircle(player.Position, 40)))
-            if (!h.Actor.InCombat && !h.Actor.Position.AlmostEqual(new(111, -317), 10))
-                hints.AddForbiddenZone(ShapeDistance.Cone(h.Actor.Position, 8.5f + h.Actor.HitboxRadius, h.Actor.Rotation, 45.Degrees()));
+        foreach (var h in hints.PotentialTargets.Where(p => p.Actor.Position.InCircle(player.Position, 40f)))
+            if (!h.Actor.InCombat && !h.Actor.Position.AlmostEqual(new(111f, -317f), 10f))
+                hints.AddForbiddenZone(new SDCone(h.Actor.Position, 8.5f + h.Actor.HitboxRadius, h.Actor.Rotation, 45f.Degrees()));
 
         _ai.Execute(player, hints);
     }
@@ -58,26 +58,26 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
     public override List<QuestObjective> DefineObjectives(WorldState ws) => [
         new QuestObjective(ws)
             .Named("Combat")
-            .Hints((player, hints) => hints.ForcedMovement = new(0, 0, 1))
+            .Hints((player, hints) => hints.ForcedMovement = new(default, default, 1f))
             .With(obj => {
-                obj.Update += () => obj.CompleteIf(World.Party.Player()?.Position.Z > -320);
+                obj.Update += () => obj.CompleteIf(World.Party.Player()?.PosRot.Z > -320f);
             }),
 
         new QuestObjective(ws)
             .Named("Medkit")
             .Hints((player, hints) => hints.PrioritizeTargetsByOID(0x3507))
-            .WithInteract(0x3507)
-            .With(obj => obj.OnDutyActionsChange += (op) => obj.CompleteIf(op.Slots[0].Action.ID == 27315)),
+            .WithInteract(0x3507u)
+            .With(obj => obj.OnDutyActionsChange += (op) => obj.CompleteIf(op.Slots[0].Action.ID == 27315u)),
 
         new QuestObjective(ws)
             .Named("F")
-            .WithInteract(0x3507)
-            .With(obj => obj.OnEventObjectAnimation += (act, p1, p2) => obj.CompleteIf(act.OID == 0x1EA1A1 && p1 == 4 && p2 == 8)),
+            .WithInteract(0x3507u)
+            .With(obj => obj.OnEventObjectAnimation += (act, p1, p2) => obj.CompleteIf(act.OID == 0x1EA1A1u && p1 == 4 && p2 == 8)),
 
         new QuestObjective(ws)
             .Named("Reaper 1")
-            .WithInteract(0x1EB456)
-            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002 && diru.Param1 == 0x76DF)),
+            .WithInteract(0x1EB456u)
+            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76DFu)),
 
         new QuestObjective(ws)
             .Named("Wounded Imperial")
@@ -86,53 +86,53 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
                 if (player.Position.AlmostEqual(new WPos(111.218f, -257.802f), 2))
                     hints.WantJump = true;
             })
-            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002 && diru.Param1 == 0x76E0)),
+            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76E0u)),
 
         new QuestObjective(ws)
             .Named("Key")
-            .WithInteract(0xFE20B)
-            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002 && diru.Param1 == 0x76E2)),
+            .WithInteract(0xFE20Bu)
+            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76E2u)),
 
         new QuestObjective(ws)
             .Named("Fuel")
-            .WithInteract(0x1EB69E)
+            .WithInteract(0x1EB69Eu)
             .Hints((player, hints) => {
-                if (player.Position.AlmostEqual(new WPos(109, -257.263f), 2))
+                if (player.Position.AlmostEqual(new WPos(109, -257.263f), 2f))
                     hints.WantJump = true;
             })
-            .With(obj => obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == 0 && st.ID == 404)),
+            .With(obj => obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == default && st.ID == 404u)),
 
         new QuestObjective(ws)
             .Named("Refuel")
             .Hints((player, hints) => {
-                hints.InteractWithOID(World, 0x1EB56F);
+                hints.InteractWithOID(World, 0x1EB56Fu);
                 if (hints.InteractWithTarget == null)
-                    hints.InteractWithOID(World, 0x1EB4F1);
+                    hints.InteractWithOID(World, 0x1EB4F1u);
             })
-            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002 && diru.Param1 == 0x76C1)),
+            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76C1u)),
 
         new QuestObjective(ws)
             .Named("Mount")
             .WithInteract(0x1EB45B)
-            .With(obj => obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == 0 && st.ID == 2736)),
+            .With(obj => obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == default && st.ID == 2736u)),
 
         new QuestObjective(ws)
             .Named("Combat")
-            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002 && diru.Param1 == 0x76C2)),
+            .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76C2u)),
 
         new QuestObjective(ws)
             .Named("Help the townspeople")
             .Hints((player, hints) => {
                 hints.WantDismount = true;
-                hints.GoalZones.Add(hints.GoalSingleTarget(new WPos(12, -148), 5, 0.5f));
-                hints.GoalZones.Add(hints.GoalSingleTarget(new WPos(-81, -180), 5, 0.75f));
+                hints.GoalZones.Add(hints.GoalSingleTarget(new WPos(12f, -148f), 5f, 0.5f));
+                hints.GoalZones.Add(hints.GoalSingleTarget(new WPos(-81f, -180f), 5f, 0.75f));
             })
             .With(obj => {
-                obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == 0 && st.ID == 2737);
+                obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == default && st.ID == 2737u);
             }),
 
         new QuestObjective(ws)
             .Named("Leave")
-            .Hints((player, hints) => hints.ForcedMovement = new(-0.33f, 0, 0.67f))
+            .Hints((player, hints) => hints.ForcedMovement = new(-0.33f, default, 0.67f))
     ];
 }

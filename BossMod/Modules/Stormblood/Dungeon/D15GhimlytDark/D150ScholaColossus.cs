@@ -52,5 +52,5 @@ public class D0150ScholaColossus(WorldState ws, Actor primary) : BossModule(ws, 
     new(277.31f, -120.43f), new(280.05f, -123.51f), new(280.49f, -123.91f), new(282.29f, -125.31f), new(282.78f, -125.64f),
     new(283.28f, -125.94f), new(283.79f, -126.2f), new(284.32f, -126.44f), new(284.86f, -126.65f), new(285.41f, -126.82f),
     new(286.47f, -127.13f), new(293.71f, -128.74f), new(294.29f, -128.82f), new(294.86f, -128.87f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

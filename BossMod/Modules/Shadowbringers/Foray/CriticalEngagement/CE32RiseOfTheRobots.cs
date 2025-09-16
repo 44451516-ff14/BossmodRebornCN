@@ -54,15 +54,15 @@ public enum SID : uint
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(25f, 30f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BootCampMode)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 4.3d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 4.3d))];
         }
     }
 
@@ -70,9 +70,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.Deathwall)
         {
-            Arena.Bounds = CE32RiseOfTheRobots.DefaultArena;
+            Arena.Bounds = new ArenaBoundsCircle(25f); // default arena got no extra collision, just a donut aoe
             Arena.Center = Arena.Center.Quantized();
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -153,7 +153,7 @@ sealed class Train(BossModule module) : Components.GenericRotatingAOE(module)
             base.AddAIHints(slot, actor, assignment, hints);
             var sequences = CollectionsMarshal.AsSpan(Sequences);
             ref readonly var sequence = ref sequences[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(CE32RiseOfTheRobots.ArenaCenter, 3f), sequence.NextActivation);
+            hints.AddForbiddenZone(new SDInvertedCircle(CE32RiseOfTheRobots.ArenaCenter, 3f), sequence.NextActivation);
         }
     }
 }
@@ -231,7 +231,7 @@ sealed class OrderTowers(BossModule module) : Components.GenericAOEs(module)
                         shapes.Add(new Polygon(TowerPositions[j - 1], 5f, 20));
                     }
                 }
-                AOEs[p.Item1] = [new(new AOEShapeCustom(shapes, InvertForbiddenZone: !outsideSafe), Arena.Center, default, Module.CastFinishAt(spell), !outsideSafe ? Colors.SafeFromAOE : default)];
+                AOEs[p.Item1] = [new(new AOEShapeCustom(shapes, invertForbiddenZone: !outsideSafe), Arena.Center, default, Module.CastFinishAt(spell), !outsideSafe ? Colors.SafeFromAOE : default)];
             }
         }
     }
@@ -282,7 +282,7 @@ sealed class OrderForcedMarch(BossModule module) : Components.StatusDrivenForced
             var isInside = aoe.Check(pos);
             return _math.Numbers[slot][0] == default ? isInside : !isInside;
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -296,7 +296,7 @@ sealed class OrderForcedMarch(BossModule module) : Components.StatusDrivenForced
             var act = move0.activation;
             var isDefault = num[0] == default;
             var angleToTower = isDefault ? default : (num[0] - 1) * am90;
-            hints.AddForbiddenZone(isDefault ? ShapeDistance.InvertedCone(CE32RiseOfTheRobots.ArenaCenter, 7f, a45 * randomOdd, a225) : ShapeDistance.InvertedCone(CE32RiseOfTheRobots.ArenaCenter, 7f, a180 + angleToTower, a225), act);
+            hints.AddForbiddenZone(isDefault ? new SDInvertedCone(CE32RiseOfTheRobots.ArenaCenter, 7f, a45 * randomOdd, a225) : new SDInvertedCone(CE32RiseOfTheRobots.ArenaCenter, 7f, a180 + angleToTower, a225), act);
             hints.ForbiddenDirections.Add(isDefault ? (a45 * randomOdd, a175, act) : (angleToTower - move0.dir, a175, act));
         }
     }
@@ -321,8 +321,7 @@ sealed class CE32RiseOfTheRobotsStates : StateMachineBuilder
 public sealed class CE32RiseOfTheRobots(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, startingArena)
 {
     public static readonly WPos ArenaCenter = new(104f, 237f);
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(ArenaCenter, 29.5f, 32)]);
-    public static readonly ArenaBoundsCircle DefaultArena = new(25f); // default arena got no extra collision, just a donut aoe
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(ArenaCenter, 29.5f, 32)]);
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

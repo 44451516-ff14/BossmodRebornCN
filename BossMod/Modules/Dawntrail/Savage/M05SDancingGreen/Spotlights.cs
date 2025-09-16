@@ -168,8 +168,8 @@ class Spotlights1(BossModule module) : Components.GenericTowers(module)
         if (len == 0)
             return;
         var now = WorldState.CurrentTime;
-        var forbiddenInverted = new List<Func<WPos, float>>(len);
-        var forbidden = new List<Func<WPos, float>>(len);
+        var forbiddenInverted = new List<ShapeDistance>(len);
+        var forbidden = new List<ShapeDistance>(len);
         var inTower = false;
         for (var i = 0; i < len; ++i)
         {
@@ -208,11 +208,11 @@ class Spotlights1(BossModule module) : Components.GenericTowers(module)
         var fcount = forbidden.Count;
         if (fcount == 0 || inTower || missingSoakers && forbiddenInverted.Count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), towers[0].Activation);
+            hints.AddForbiddenZone(new SDIntersection([.. forbiddenInverted]), towers[0].Activation);
         }
         else if (fcount != 0 && !inTower)
         {
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), towers[0].Activation);
+            hints.AddForbiddenZone(new SDUnion([.. forbidden]), towers[0].Activation);
         }
     }
 

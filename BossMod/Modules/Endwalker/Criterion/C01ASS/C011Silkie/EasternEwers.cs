@@ -15,7 +15,7 @@ sealed class EasternEwers(BossModule module) : Components.Exaflare(module, 4f)
         if (spell.Action.ID is (uint)AID.NBrimOver or (uint)AID.SBrimOver or (uint)AID.NRinse or (uint)AID.SRinse)
         {
             var count = Lines.Count;
-            var pos = caster.Position.X;
+            var pos = caster.PosRot.X;
             for (var i = 0; i < count; ++i)
             {
                 var line = Lines[i];

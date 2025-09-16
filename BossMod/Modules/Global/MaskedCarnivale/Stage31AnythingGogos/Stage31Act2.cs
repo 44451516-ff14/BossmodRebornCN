@@ -77,15 +77,15 @@ sealed class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(mod
 sealed class GogoBlizzardIII(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GogoFireIII)
         {
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 5.1d));
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 5.1d))];
         }
     }
 
@@ -93,7 +93,7 @@ sealed class GogoBlizzardIII(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.GogoBlizzardIII)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }

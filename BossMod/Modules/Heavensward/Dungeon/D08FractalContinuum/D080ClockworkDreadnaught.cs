@@ -22,20 +22,7 @@ class D080ClockworkDreadnaughtStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Rotoswipe>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D080ClockworkDreadnaught.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D080ClockworkDreadnaught.Trash);
     }
 }
 
@@ -82,34 +69,14 @@ public class D080ClockworkDreadnaught(WorldState ws, Actor primary) : BossModule
     new(228.18f, 90.47f), new(228.05f, 89.88f), new(227.72f, 89.32f), new(227.29f, 88.85f), new(228.05f, 80.15f),
     new(227.09f, 68.84f), new(225.69f, 63.23f), new(226.12f, 62.65f), new(226.17f, 62.11f), new(226.08f, 61.45f),
     new(225.86f, 60.92f), new(225.44f, 60.29f), new(225.86f, 59.98f), new(232.5f, 57.45f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.ImmortalizedClockworkSoldier, (uint)OID.ImmortalizedClockworkKnight];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -4,7 +4,7 @@ class EntanglingWebAOE(BossModule module) : Components.SimpleAOEs(module, (uint)
 
 class EntanglingWebHints(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> _pillars = module.Enemies(OID.Pillar);
+    private readonly List<Actor> _pillars = module.Enemies((uint)OID.Pillar);
     private readonly List<Actor> _targets = [];
 
     private const float _radius = 5;

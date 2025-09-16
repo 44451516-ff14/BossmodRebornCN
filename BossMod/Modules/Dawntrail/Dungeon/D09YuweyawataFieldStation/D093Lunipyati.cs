@@ -40,15 +40,15 @@ public enum AID : uint
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(15f, 35f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.LeporineLoaf)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d))];
         }
     }
 
@@ -67,7 +67,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         {
             Arena.Bounds = bounds;
             Arena.Center = D093Lunipyati.ArenaCenter;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -76,16 +76,16 @@ sealed class CraterCarve(BossModule module) : Components.SimpleAOEs(module, (uin
 
 sealed class RagingClaw(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RagingClawFirst)
         {
-            AOE = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+            AOE = [new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
         }
     }
 
@@ -97,7 +97,7 @@ sealed class RagingClaw(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.RagingClawRepeat:
                 if (++NumCasts == 6)
                 {
-                    AOE = null;
+                    AOE = [];
                     NumCasts = 0;
                 }
                 break;
@@ -143,9 +143,9 @@ sealed class JaggedEdge(BossModule module) : Components.SpreadFromCastTargets(mo
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe.AOE != null && Spreads.Count != 0 && !IsSpreadTarget(actor))
+        if (_aoe.AOE.Length != 0 && Spreads.Count != 0 && !IsSpreadTarget(actor))
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, default, 1f, 50f), Spreads.Ref(0).Activation);
+            hints.AddForbiddenZone(new SDInvertedRect(Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, default, 1f, 50f), Spreads.Ref(0).Activation);
             return;
         }
         base.AddAIHints(slot, actor, assignment, hints);
@@ -334,7 +334,7 @@ sealed class D093LunipyatiStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13610, SortOrder = 9)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13610, SortOrder = 9)]
 public sealed class D093Lunipyati(WorldState ws, Actor primary) : BossModule(ws, primary, startingBounds.Center, startingBounds)
 {
     private const int Edges = 64;
@@ -378,7 +378,7 @@ public sealed class D093Lunipyati(WorldState ws, Actor primary) : BossModule(ws,
     new(13.37f, -725.1f), new(13, -725.68f), new(13.04f, -726.39f), new(12.92f, -727.82f), new(13.56f, -728.87f),
     new(15.96f, -732.29f), new(18.22f, -733.88f), new(20.71f, -735.26f), new(24.26f, -737.13f), new(25.6f, -737.63f),
     new(26.83f, -737.85f), new(28.9f, -737.89f), new(31.82f, -738.23f), new(32.55f, -738.24f), new(33.9f, -738.37f)];
-    private static readonly ArenaBoundsComplex startingBounds = new([new PolygonCustom(vertices)]);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(ArenaCenter, 15, Edges)]);
-    public static readonly ArenaBoundsComplex DonutBounds = new([new DonutV(ArenaCenter, 11, 15, Edges)]);
+    private static readonly ArenaBoundsCustom startingBounds = new([new PolygonCustom(vertices)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(ArenaCenter, 15, Edges)]);
+    public static readonly ArenaBoundsCustom DonutBounds = new([new DonutV(ArenaCenter, 11, 15, Edges)]);
 }

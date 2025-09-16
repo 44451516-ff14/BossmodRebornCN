@@ -1,7 +1,7 @@
 ﻿using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -9,22 +9,37 @@ public static class UIMisc
 {
     public static bool Button(string label, float width, params (bool disabled, string reason)[] disabled)
     {
-        var isDisabled = disabled.Any(d => d.disabled);
+        var len = disabled.Length;
+        var isDisabled = false;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var d = ref disabled[i];
+            if (d.disabled)
+            {
+                isDisabled = true;
+                break;
+            }
+        }
         using var disable = ImRaii.Disabled(isDisabled);
-        var res = ImGui.Button(label, new(width, 0));
+        var res = ImGui.Button(label, new(width, default));
         if (isDisabled && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
         {
             using var tooltip = ImRaii.Tooltip();
-            foreach (var d in disabled)
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var d = ref disabled[i];
                 if (d.disabled)
+                {
                     ImGui.TextUnformatted(d.reason);
+                }
+            }
         }
         return res;
     }
-    public static bool Button(string label, bool disabled, string reason, float width = 0) => Button(label, width, (disabled, reason));
+    public static bool Button(string label, bool disabled, string reason, float width = default) => Button(label, width, (disabled, reason));
 
     // button that is disabled unless shift is held, useful for 'dangerous' operations like deletion
-    public static bool DangerousButton(string label, float width = 0) => Button(label, !ImGui.IsKeyDown(ImGuiKey.ModShift), "Hold shift", width);
+    public static bool DangerousButton(string label, float width = default) => Button(label, !ImGui.IsKeyDown(ImGuiKey.ModShift), "Hold shift", width);
 
     public static void TextUnderlined(Vector4 colour, string text)
     {
@@ -42,7 +57,7 @@ public static class UIMisc
     {
         var wrap = icon?.GetWrapOrDefault();
         if (wrap != null)
-            ImGui.Image(wrap.ImGuiHandle, size);
+            ImGui.Image(wrap.Handle, size);
         else
             ImGui.Dummy(size);
     }
@@ -51,7 +66,7 @@ public static class UIMisc
     {
         var cursor = ImGui.GetCursorPos();
         var padding = ImGui.GetStyle().FramePadding;
-        ImGui.SetCursorPos(new(cursor.X + size.X + 2 * padding.X, cursor.Y + 0.5f * (size.Y - ImGui.GetFontSize())));
+        ImGui.SetCursorPos(new(cursor.X + size.X + 2f * padding.X, cursor.Y + 0.5f * (size.Y - ImGui.GetFontSize())));
         ImGui.TextUnformatted(text);
         ImGui.SetCursorPos(cursor);
 
@@ -59,7 +74,7 @@ public static class UIMisc
         if (wrap != null)
         {
             Vector4 tintColor = state ? new(1f, 1f, 1f, 1f) : new(0.5f, 0.5f, 0.5f, 0.85f);
-            return ImGui.ImageButton(wrap.ImGuiHandle, size, Vector2.Zero, Vector2.One, 1, Vector4.Zero, tintColor);
+            return ImGui.ImageButton(wrap.Handle, size, Vector2.Zero, Vector2.One, 1, Vector4.Zero, tintColor);
         }
         else
         {

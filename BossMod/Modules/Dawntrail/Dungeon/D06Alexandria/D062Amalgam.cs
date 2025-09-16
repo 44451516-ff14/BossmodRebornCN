@@ -41,21 +41,24 @@ public enum AID : uint
 sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D062Amalgam.ArenaCenter, 23f)], [new Square(D062Amalgam.ArenaCenter, 20f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds == D062Amalgam.StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.5f));
+        if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds.Radius > 20f)
+        {
+            _aoe = [new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.5d))];
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x27)
+        if (index == 0x27 && state == 0x00020001u)
         {
             Arena.Bounds = D062Amalgam.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -78,7 +81,9 @@ sealed class TernaryCharge(BossModule module) : Components.ConcentricAOEs(module
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.TernaryCharge1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -116,7 +121,7 @@ sealed class D062AmalgamStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12864)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12864)]
 public sealed class D062Amalgam(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-533f, -373f);

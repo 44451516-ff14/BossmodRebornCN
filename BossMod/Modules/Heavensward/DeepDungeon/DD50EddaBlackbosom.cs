@@ -46,5 +46,5 @@ class DD50EddaBlackbosomStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "LegendofIceman", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 178, NameID = 5038)]
 public class DD50EddaBlackbosom(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(300f, 374f), 24.18f, 32)], [new Rectangle(new(300f, 349.299f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(300f, 374f), 24.18f, 32)], [new Rectangle(new(300f, 349.299f), 20f, 1.25f)]);
 }

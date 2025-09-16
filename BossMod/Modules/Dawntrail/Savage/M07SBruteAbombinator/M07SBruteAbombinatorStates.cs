@@ -32,7 +32,7 @@ sealed class M07SBruteAbombinatorStates : StateMachineBuilder
         Slaminator(id + 0x120000u, 6.7f);
         StoneRingerBrutalSmash(id + 0x130000u, 4.2f);
         BrutalImpact(id + 0x140000u, 4.1f, 7.7f, 8);
-        SimpleState(id + 0x150000u, 24.7f, "Enrage");
+        Targetable(id + 0x150000u, false, 19.7f, "Enrage");
     }
 
     private void BrutalImpact(uint id, float delay1, float delay2, int numcasts)
@@ -166,7 +166,7 @@ sealed class M07SBruteAbombinatorStates : StateMachineBuilder
             .DeactivateOnExit<BrutalSwing>();
         ComponentCondition<ElectrogeneticForce>(id + 0x20u, 4.7f, comp => comp.NumCasts != 0, "Spreads resolve")
             .DeactivateOnExit<ElectrogeneticForce>();
-        ComponentCondition<GlowerPower>(id + 0x30u, 0.1f, comp => comp.AOE == null, "Line AOE resolves")
+        ComponentCondition<GlowerPower>(id + 0x30u, 0.1f, comp => comp.AOE.Length == 0, "Line AOE resolves")
             .DeactivateOnExit<GlowerPower>();
         Cast(id + 0x40, (uint)AID.RevengeOfTheVines1, 0.9f, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -199,7 +199,7 @@ sealed class M07SBruteAbombinatorStates : StateMachineBuilder
             .DeactivateOnExit<BrutalSwing>();
         ComponentCondition<ElectrogeneticForce>(id + 0x70u, 4.8f, comp => comp.NumCasts != 0, "Spreads resolve")
             .DeactivateOnExit<ElectrogeneticForce>();
-        ComponentCondition<GlowerPower>(id + 0x80u, 0.2f, comp => comp.AOE == null, "Line AOE resolves")
+        ComponentCondition<GlowerPower>(id + 0x80u, 0.2f, comp => comp.AOE.Length == 0, "Line AOE resolves")
             .DeactivateOnExit<GlowerPower>();
         Cast(id + 0x90, (uint)AID.RevengeOfTheVines1, 0.8f, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -250,7 +250,7 @@ sealed class M07SBruteAbombinatorStates : StateMachineBuilder
             .DeactivateOnExit<BrutalSwing>();
         ComponentCondition<ElectrogeneticForce>(id + 0x140u, 4.8f, comp => comp.NumCasts != 0, "Spreads resolve")
             .DeactivateOnExit<ElectrogeneticForce>();
-        ComponentCondition<GlowerPower>(id + 0x150u, 0.2f, comp => comp.AOE == null, "Line AOE resolves")
+        ComponentCondition<GlowerPower>(id + 0x150u, 0.2f, comp => comp.AOE.Length == 0, "Line AOE resolves")
             .DeactivateOnExit<GlowerPower>();
         Cast(id + 0x160, (uint)AID.RevengeOfTheVines1, 0.9f, 5f, "Raidwide")
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -278,7 +278,7 @@ sealed class M07SBruteAbombinatorStates : StateMachineBuilder
             .DeactivateOnExit<BrutalSwing>();
         ComponentCondition<ElectrogeneticForce>(id + 0x50u, 2.9f, comp => comp.NumCasts != 0, "Spreads resolve")
             .DeactivateOnExit<ElectrogeneticForce>();
-        ComponentCondition<GlowerPower>(id + 0x60u, 0.1f, comp => comp.AOE == null, "Line AOE resolves")
+        ComponentCondition<GlowerPower>(id + 0x60u, 0.1f, comp => comp.AOE.Length == 0, "Line AOE resolves")
             .DeactivateOnExit<GlowerPower>();
     }
 

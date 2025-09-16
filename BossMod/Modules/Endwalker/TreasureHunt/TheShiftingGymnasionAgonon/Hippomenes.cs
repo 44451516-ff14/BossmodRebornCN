@@ -112,7 +112,7 @@ class DibridTetrabridBlaster(BossModule module) : Components.GenericAOEs(module)
         {
             var aoe = _aoes[0];
             // stay close to the middle if there is more than one aoe left
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 5f), aoe.Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 5f), aoe.Activation);
         }
     }
 }
@@ -143,17 +143,7 @@ class HippomenesStates : StateMachineBuilder
             .ActivateOnEnter<ElectricWhisker>()
             .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<HeavySmash>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(Hippomenes.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(Hippomenes.All);
     }
 }
 
@@ -167,7 +157,7 @@ public class Hippomenes(WorldState ws, Actor primary) : THTemplate(ws, primary)
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

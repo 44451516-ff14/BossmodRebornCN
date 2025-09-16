@@ -124,17 +124,7 @@ class LyssaChrysineStates : StateMachineBuilder
             .ActivateOnEnter<FrigidStone>()
             .ActivateOnEnter<HeavySmash2>()
             .ActivateOnEnter<PillarPierce>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(LyssaChrysine.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(LyssaChrysine.All);
     }
 }
 
@@ -147,7 +137,7 @@ public class LyssaChrysine(WorldState ws, Actor primary) : THTemplate(ws, primar
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

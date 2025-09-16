@@ -25,10 +25,9 @@ sealed class Vasoconstrictor(BossModule module) : Components.SimpleAOEs(module, 
 sealed class RightLeftSwipe(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightSwipe, (uint)AID.LeftSwipe], new AOEShapeCone(40f, 90f.Degrees()));
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Shishio, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 945, NameID = 12428, SortOrder = 6, Category = BossModuleInfo.Category.VariantCriterion, Expansion = BossModuleInfo.Expansion.Endwalker)]
-public sealed class V24Shishio(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, NormalBounds)
+public sealed class V24Shishio(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(20f))
 {
     public static readonly WPos ArenaCenter = new(-40f, -300f);
-    public static readonly ArenaBoundsSquare NormalBounds = new(19.5f);
-    public static readonly ArenaBoundsComplex CircleBounds = new([new Circle(ArenaCenter, 20f)], [new Rectangle(ArenaCenter + new WDir(-20f, default), 0.5f, 20f),
+    public static readonly ArenaBoundsCustom CircleBounds = new([new Circle(ArenaCenter, 20f)], [new Rectangle(ArenaCenter + new WDir(-20f, default), 0.5f, 20f),
     new Rectangle(ArenaCenter + new WDir(20f, default), 0.5f, 20f), new Rectangle(ArenaCenter + new WDir(default, 20f), 20f, 0.5f), new Rectangle(ArenaCenter + new WDir(default, -20f), 20f, 0.5f)]);
 }

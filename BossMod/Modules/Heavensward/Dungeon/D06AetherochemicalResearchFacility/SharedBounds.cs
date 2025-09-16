@@ -50,5 +50,5 @@ public static class ShabtiConjurer2Bounds
     new(174.75f, 128.19f), new(174.92f, 127.16f), new(174.91f, 126.65f), new(174.78f, 126.15f), new(175.09f, 125.72f),
     new(176.55f, 124.25f), new(177.02f, 124.04f)];
 
-    public static readonly ArenaBoundsComplex Arena = new([new PolygonCustom(vertices2)], [new PolygonCustom(vertices2h1), new PolygonCustom(vertices2h2), new PolygonCustom(vertices2h3)]);
+    public static readonly ArenaBoundsCustom Arena = new([new PolygonCustom(vertices2)], [new PolygonCustom(vertices2h1), new PolygonCustom(vertices2h2), new PolygonCustom(vertices2h3)]);
 }

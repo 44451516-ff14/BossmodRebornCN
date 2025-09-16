@@ -1,10 +1,12 @@
 ﻿using BossMod.AI;
 using BossMod.Autorotation;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Gui.Dtr;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using FFXIVClientStructs.FFXIV.Client.System.Input;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace BossMod;
 
@@ -21,8 +23,12 @@ internal sealed class DTRProvider : IDisposable
     {
         _mgr = manager;
         _ai = ai;
-        _autorotationEntry.OnClick = () => _wantOpenPopup = true;
-        _aiEntry.OnClick = () =>
+
+        _autorotationEntry.OnClick = _ => _wantOpenPopup = true;
+        _aiEntry.Tooltip = "Left Click => Toggle Enabled, Right Click => Toggle DrawUI";
+
+        // FIXME: onClick event should have the mouse flags now
+        _aiEntry.OnClick = _ =>
         {
             if (_ai.Beh == null)
                 _ai.SwitchToFollow(_aiConfig.FollowSlot);

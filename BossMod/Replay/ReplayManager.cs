@@ -1,7 +1,7 @@
 ﻿using BossMod.Autorotation;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
 using System.IO;
 using System.Threading;
 
@@ -65,7 +65,7 @@ public sealed class ReplayManager : IDisposable
         public void Show()
         {
             Analysis ??= new([.. Replays.Where(r => r.Replay.IsCompletedSuccessfully && r.Replay.Result.Ops.Count > 0).Select(r => r.Replay.Result)]);
-            Window ??= new($"Multiple logs: {Identifier}", Analysis.Draw, false, new(1200, 800));
+            Window ??= new($"Multiple logs: {Identifier}", Analysis.Draw, false, new(1200f, 800f));
             Window.IsOpen = true;
         }
     }
@@ -153,8 +153,8 @@ public sealed class ReplayManager : IDisposable
         if (!table)
             return;
         var dispose = false;
-        ImGui.TableSetupColumn("op", ImGuiTableColumnFlags.WidthFixed, 100);
-        ImGui.TableSetupColumn("unload", ImGuiTableColumnFlags.WidthFixed, 50);
+        ImGui.TableSetupColumn("op", ImGuiTableColumnFlags.WidthFixed, 100f);
+        ImGui.TableSetupColumn("unload", ImGuiTableColumnFlags.WidthFixed, 70f);
 
         foreach (var e in _replayEntries)
         {
@@ -163,7 +163,7 @@ public sealed class ReplayManager : IDisposable
             ImGui.TableNextColumn();
             if (!e.Replay.IsCompleted)
             {
-                ImGui.ProgressBar(e.Progress, new(100, 0));
+                ImGui.ProgressBar(e.Progress, new Vector2(100f, default));
             }
             else if (e.Replay.IsFaulted || e.Replay.Result.Ops.Count == 0)
             {
@@ -171,7 +171,7 @@ public sealed class ReplayManager : IDisposable
             }
             else
             {
-                if (ImGui.Button("Actions...", new(100, 0)))
+                if (ImGui.Button("Actions...", new(100f, default)))
                     ImGui.OpenPopup("ctx");
                 using var popup = ImRaii.Popup("ctx");
                 if (popup)
@@ -193,7 +193,7 @@ public sealed class ReplayManager : IDisposable
             }
 
             ImGui.TableNextColumn();
-            if (ImGui.Button(e.Replay.IsCompleted ? "Unload" : "Cancel", new(50, 0)))
+            if (ImGui.Button(e.Replay.IsCompleted ? "Unload" : "Cancel"))
             {
                 e.Dispose();
                 foreach (var a in _analysisEntries.Where(a => !a.Disposed && a.Replays.Contains(e)))
@@ -216,7 +216,7 @@ public sealed class ReplayManager : IDisposable
         var dispose = false;
         var numSelected = _replayEntries.Count(e => e.Selected);
         var shouldSelectAll = _replayEntries.Count == 0 || numSelected < _replayEntries.Count;
-        if (ImGui.Button(shouldSelectAll ? "Select all" : "Unselect all", new(80, 0)))
+        if (ImGui.Button(shouldSelectAll ? "Select all" : "Unselect all"))
         {
             foreach (var e in _replayEntries)
                 e.Selected = shouldSelectAll;

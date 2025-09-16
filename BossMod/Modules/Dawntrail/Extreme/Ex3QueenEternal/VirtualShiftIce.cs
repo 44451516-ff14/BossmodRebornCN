@@ -44,7 +44,7 @@ sealed class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module,
         }
 
         void RemoveUnsafeBridges() => _unsafeBridges.RemoveAll(s => s.Origin == center);
-        void UpdateArena() => Arena.Bounds = new ArenaBoundsComplex(Ex3QueenEternal.IceRectsAll, [.. _destroyedBridges]);
+        void UpdateArena() => Arena.Bounds = new ArenaBoundsCustom(Ex3QueenEternal.IceRectsAll, [.. _destroyedBridges]);
     }
 }
 
@@ -148,9 +148,10 @@ sealed class Rush(BossModule module) : Components.GenericBaitAway(module)
     private static WPos SafeSpot(Actor source, Ex3QueenEternalConfig config)
     {
         var center = Ex3QueenEternal.ArenaCenter;
-        var safeSide = source.Position.X > center.X ? -1 : +1;
-        var offX = Math.Abs(source.Position.X - center.X);
-        if (source.Position.Z > 110f)
+        var pos = source.Position;
+        var safeSide = pos.X > center.X ? -1 : +1;
+        var offX = Math.Abs(pos.X - center.X);
+        if (pos.Z > 110f)
         {
             // first order
             var inner = offX < 6f;
@@ -159,7 +160,7 @@ sealed class Rush(BossModule module) : Components.GenericBaitAway(module)
         else
         {
             // second order
-            var central = source.Position.Z < 96f;
+            var central = pos.Z < 96f;
             var strat = !config.SideTethersCrossStrategy ? (central ? -2f : 9f) : (central ? 9f : -9f);
             return center + new WDir(safeSide * 15f, strat);
         }

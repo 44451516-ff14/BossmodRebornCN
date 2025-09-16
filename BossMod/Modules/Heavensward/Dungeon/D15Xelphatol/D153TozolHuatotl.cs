@@ -61,5 +61,5 @@ class D153TozolHuatotlStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182, NameID = 5272, SortOrder = 7)]
 public class D153TozolHuatotl(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(317.8f, -416.19f), 19.5f * CosPI.Pi48th, 48)], [new Rectangle(new(336.69f, -409.415f), 20f, 1f, 70f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(317.8f, -416.19f), 19.5f * CosPI.Pi48th, 48)], [new Rectangle(new(336.69f, -409.415f), 20f, 1f, 70f.Degrees())]);
 }

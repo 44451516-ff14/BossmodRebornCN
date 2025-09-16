@@ -20,16 +20,16 @@ public enum AID : uint
     Scratch = 27348 // Boss->player, 5.0s cast, single-target
 }
 
-class Maw(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightMaw, (uint)AID.LeftMaw], new AOEShapeCone(30, 90.Degrees()));
+sealed class Maw(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RightMaw, (uint)AID.LeftMaw], new AOEShapeCone(30f, 90f.Degrees()));
 
-class PyricCircleBurst(BossModule module) : Components.GenericAOEs(module)
+sealed class PyricCircleBurst(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
     private static readonly AOEShapeCircle circle = new(10f); // TODO: verify falloff
     private static readonly AOEShapeDonut donut = new(5f, 40f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -41,20 +41,22 @@ class PyricCircleBurst(BossModule module) : Components.GenericAOEs(module)
         };
         if (shape != null)
         {
-            _aoe = new(shape, caster.Position, spell.Rotation, Module.CastFinishAt(spell, spell.Action.ID <= (uint)AID.LeapingPyricBurst ? 5f : default));
+            _aoe = [new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, spell.Action.ID <= (uint)AID.LeapingPyricBurst ? 5d : default))];
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.PyricCircle or (uint)AID.PyricBurst or (uint)AID.LeapingPyricCircleAOE or (uint)AID.LeapingPyricBurstAOE)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
-class Scratch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Scratch);
+sealed class Scratch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Scratch);
 
-class OphioneusStates : StateMachineBuilder
+sealed class OphioneusStates : StateMachineBuilder
 {
     public OphioneusStates(BossModule module) : base(module)
     {
@@ -65,5 +67,5 @@ class OphioneusStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 10621)]
-public class Ophioneus(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.S, NameID = 10621u)]
+public sealed class Ophioneus(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

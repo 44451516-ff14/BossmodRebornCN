@@ -8,11 +8,11 @@ class Level5Petrify(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 92, NameID = 706)]
 public class A11BoneDragon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(-450, 30), 15), new Rectangle(new(-450, 0), 10, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(-450, 30), 15), new Rectangle(new(-450, 0), 10, 20)]);
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Platinal));
-        Arena.Actors(Enemies(OID.RottingEye));
+        Arena.Actors(Enemies((uint)OID.Platinal));
+        Arena.Actors(Enemies((uint)OID.RottingEye));
     }
 }

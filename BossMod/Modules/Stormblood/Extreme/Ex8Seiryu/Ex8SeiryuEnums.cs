@@ -106,7 +106,7 @@ public enum AID : uint
     SerpentsJaws = 14304, // Helper->self, no cast, range 80 circle, tower fail
     SerpentsFang = 14303, // Helper->self, no cast, range 3 circle, tower
 
-    FifthElementEnrage = 15529, // Seiryu->self, 18.0s cast, range 100 circle
+    FifthElementEnrage = 15529 // Seiryu->self, 18.0s cast, range 100 circle
 }
 
 public enum IconID : uint

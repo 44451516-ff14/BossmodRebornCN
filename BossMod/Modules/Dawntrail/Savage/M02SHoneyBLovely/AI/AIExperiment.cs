@@ -78,8 +78,8 @@ sealed class AIExperiment(RotationModuleManager manager, Actor player) : AIRotat
 
     private WPos? GetDragBossPosition(M02SHoneyBLovely module, DragBossStrategy strategy) => strategy switch
     {
-        DragBossStrategy.SCenterFaceN => module.PrimaryActor.Position.Z < module.Center.Z ? MoveTarget(module.PrimaryActor, module.Center, GCD) : module.PrimaryActor.Position + new WDir(0, -5),
-        DragBossStrategy.NorthFaceS => module.PrimaryActor.Position.Z > module.Center.Z - 10 ? MoveTarget(module.PrimaryActor, module.Center - new WDir(0, 10), GCD) : module.Center,
+        DragBossStrategy.SCenterFaceN => module.PrimaryActor.PosRot.Z < module.Center.Z ? MoveTarget(module.PrimaryActor, module.Center, GCD) : module.PrimaryActor.Position + new WDir(0, -5),
+        DragBossStrategy.NorthFaceS => module.PrimaryActor.PosRot.Z > module.Center.Z - 10 ? MoveTarget(module.PrimaryActor, module.Center - new WDir(0, 10), GCD) : module.Center,
         _ => null
     };
 

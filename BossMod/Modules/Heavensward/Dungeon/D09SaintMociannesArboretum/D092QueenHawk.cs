@@ -92,7 +92,7 @@ class D092QueenHawkStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 41, NameID = 4656, SortOrder = 4)]
 public class D092QueenHawk(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
 {
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(new(-268f, -134f), 19.5f * CosPI.Pi48th, 48)]);
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(new(-268f, -134f), 19.5f * CosPI.Pi48th, 48)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

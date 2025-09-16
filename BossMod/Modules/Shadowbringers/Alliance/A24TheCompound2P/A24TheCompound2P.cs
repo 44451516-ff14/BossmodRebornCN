@@ -12,13 +12,7 @@ public sealed class A24TheCompound2P(WorldState ws, Actor primary) : BossModule(
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (BossP2 == null)
-        {
-            var b = Enemies((uint)OID.Compound2P);
-            BossP2 = b.Count != 0 ? b[0] : null;
-        }
+        BossP2 ??= GetActor((uint)OID.Compound2P);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

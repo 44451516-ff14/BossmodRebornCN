@@ -3,7 +3,7 @@
 class P3AethericProfusion(BossModule module) : Components.CastCounter(module, (uint)AID.AethericProfusion)
 {
     public bool Active;
-    private readonly List<Actor> _neurolinks = module.Enemies(OID.Neurolink);
+    private readonly List<Actor> _neurolinks = module.Enemies((uint)OID.Neurolink);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

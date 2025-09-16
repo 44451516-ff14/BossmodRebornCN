@@ -136,20 +136,7 @@ sealed class D260NorthernBateleurStates : StateMachineBuilder
             .ActivateOnEnter<WingCutter>()
             .ActivateOnEnter<DoubleSmash>()
             .ActivateOnEnter<SicklySneeze>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D260NorthernBateleur.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D260NorthernBateleur.Trash);
     }
 }
 
@@ -227,34 +214,14 @@ public sealed class D260NorthernBateleur(WorldState ws, Actor primary) : BossMod
     new(-45.05f, -153.96f), new(-45.32f, -154.4f), new(-48.66f, -156.18f), new(-48.98f, -156.6f), new(-49.53f, -157.66f),
     new(-49.02f, -157.71f), new(-48.47f, -157.89f), new(-47.9f, -158.01f)];
 
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices1)]);
-    public static readonly ArenaBoundsComplex Arena2 = new([new PolygonCustom(vertices1), new PolygonCustom(vertices2)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices1)]);
+    public static readonly ArenaBoundsCustom Arena2 = new([new PolygonCustom(vertices1), new PolygonCustom(vertices2)]);
     public static readonly uint[] Trash = [(uint)OID.IceSprite, (uint)OID.Boss, (uint)OID.Hrimthurs, (uint)OID.SnowcloakGoobbue];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 }

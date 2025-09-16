@@ -18,34 +18,40 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
     public uint ImminentColor = Colors.Danger;
     public uint FutureColor = Colors.AOE;
     public readonly List<Line> Lines = [];
+    protected AOEInstance[] _aoes = [];
+    protected int currentVersion, lastVersion, lastCount;
 
     public bool Active => Lines.Count != 0;
 
     public Exaflare(BossModule module, float radius, uint aid = default) : this(module, new AOEShapeCircle(radius), aid) { }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes;
+
+    public override void Update()
     {
         var linesCount = Lines.Count;
-        if (linesCount == 0)
-            return [];
-        var futureAOEs = FutureAOEs(linesCount);
-        var imminentAOEs = ImminentAOEs(linesCount);
-        var futureCount = futureAOEs.Count;
-        var imminentCount = imminentAOEs.Length;
-
-        var aoes = new AOEInstance[futureCount + imminentCount];
-        for (var i = 0; i < futureCount; ++i)
+        if (lastCount != linesCount || currentVersion != lastVersion)
         {
-            var aoe = futureAOEs[i];
-            aoes[i] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, FutureColor);
-        }
+            var futureAOEs = CollectionsMarshal.AsSpan(FutureAOEs(linesCount));
+            var imminentAOEs = ImminentAOEs(linesCount);
+            var futureLen = futureAOEs.Length;
+            var imminentLen = imminentAOEs.Length;
 
-        for (var i = 0; i < imminentCount; ++i)
-        {
-            var aoe = imminentAOEs[i];
-            aoes[futureCount + i] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, ImminentColor);
+            _aoes = new AOEInstance[futureLen + imminentLen];
+            for (var i = 0; i < futureLen; ++i)
+            {
+                ref var aoe = ref futureAOEs[i];
+                _aoes[i] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, FutureColor);
+            }
+
+            for (var i = 0; i < imminentLen; ++i)
+            {
+                ref var aoe = ref imminentAOEs[i];
+                _aoes[futureLen + i] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, ImminentColor);
+            }
+            lastCount = linesCount;
+            lastVersion = currentVersion;
         }
-        return aoes;
     }
 
     protected (WPos, DateTime, Angle)[] ImminentAOEs(int count)
@@ -87,6 +93,7 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
         l.Next = pos + l.Advance;
         l.NextExplosion = WorldState.FutureTime(l.TimeToMove);
         --l.ExplosionsLeft;
+        ++currentVersion;
     }
 }
 

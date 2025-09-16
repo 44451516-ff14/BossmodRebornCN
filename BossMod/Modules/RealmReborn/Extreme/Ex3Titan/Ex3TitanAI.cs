@@ -39,13 +39,13 @@ class Ex3TitanAI(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        if (KillNextBomb && Module.Enemies(OID.BombBoulder).Count == 0)
+        if (KillNextBomb && Module.Enemies((uint)OID.BombBoulder).Count == 0)
             KillNextBomb = false;
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        bool haveGaolers = Module.Enemies(OID.GraniteGaoler).Any(a => a.IsTargetable && !a.IsDead);
+        bool haveGaolers = Module.Enemies((uint)OID.GraniteGaoler).Any(a => a.IsTargetable && !a.IsDead);
         foreach (var e in hints.PotentialTargets)
         {
             e.StayAtLongRange = true;
@@ -95,13 +95,13 @@ class Ex3TitanAI(BossModule module) : BossComponent(module)
                 var pos = actor.Role == Role.Healer
                     ? Arena.Center + Arena.Bounds.Radius * (-30).Degrees().ToDirection() // healers should go to the back; 30 degrees will be safe if landslide is baited straight to south (which it should, since it will follow upheaval)
                     : Module.PrimaryActor.Position + new WDir(0, 1);
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(pos, 2), _rockThrow.ResolveAt);
+                hints.AddForbiddenZone(new SDInvertedCircle(pos, 2), _rockThrow.ResolveAt);
             }
             else
             {
                 var pos = StackPosition();
                 if (pos != null)
-                    hints.AddForbiddenZone(ShapeDistance.InvertedCircle(pos.Value, 2), /*module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.BossCastStart)*/DateTime.MaxValue);
+                    hints.AddForbiddenZone(new SDInvertedCircle(pos.Value, 2), /*module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.BossCastStart)*/DateTime.MaxValue);
             }
         }
     }

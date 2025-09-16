@@ -27,17 +27,7 @@ sealed class A13ArkAngelsStates : StateMachineBuilder
             .ActivateOnEnter<Rampage>()
             .ActivateOnEnter<Raiton>()
             .ActivateOnEnter<ArroganceIncarnate>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(A13ArkAngels.Bosses);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(A13ArkAngels.Bosses);
     }
 
     private void SinglePhase(uint id)

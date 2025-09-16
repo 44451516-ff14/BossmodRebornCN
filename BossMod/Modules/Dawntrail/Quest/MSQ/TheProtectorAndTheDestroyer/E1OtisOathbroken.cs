@@ -81,7 +81,7 @@ sealed class OtisOathbrokenStates : StateMachineBuilder
 public sealed class OtisOathbroken(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, ArenaBounds)
 {
     public static readonly WPos ArenaCenter = new(349f, -14f);
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(ArenaCenter, 19.5f, 20)]);
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(ArenaCenter, 19.5f, 20)]);
 
     protected override bool CheckPull() => Raid.Player()!.InCombat;
 
@@ -90,6 +90,6 @@ public sealed class OtisOathbroken(WorldState ws, Actor primary) : BossModule(ws
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
     }
 }

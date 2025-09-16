@@ -26,7 +26,7 @@ class SpreadingFire(BossModule module) : Components.ConcentricAOEs(module, _shap
                 (uint)AID.SpreadingFire4th => 3,
                 _ => -1
             };
-            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2));
+            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2d));
         }
     }
 }
@@ -159,7 +159,7 @@ class BurningStrike(BossModule module) : BossComponent(module)
 
     public override void Update()
     {
-        var clives = Module.Enemies(OID.DefendClive);
+        var clives = Module.Enemies((uint)OID.DefendClive);
         var clive = clives.Count != 0 ? clives[0] : null;
         if (clive == null)
             return;
@@ -169,7 +169,7 @@ class BurningStrike(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var clives = Module.Enemies(OID.DefendClive);
+        var clives = Module.Enemies((uint)OID.DefendClive);
         var clive = clives.Count != 0 ? clives[0] : null;
         if (clive == null)
             return;
@@ -181,7 +181,7 @@ class BurningStrike(BossModule module) : BossComponent(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        var clives = Module.Enemies(OID.DefendClive);
+        var clives = Module.Enemies((uint)OID.DefendClive);
         var clive = clives.Count != 0 ? clives[0] : null;
         if (clive == null)
             return;

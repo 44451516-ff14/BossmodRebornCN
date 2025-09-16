@@ -25,27 +25,31 @@ public enum AID : uint
 
 public enum SID : uint
 {
-    Seduced = 991, // Boss->player, extra=0x19 (run speed is status extra * 0.1)
+    Seduced = 991 // Boss->player, extra=0x19 (run speed is status extra * 0.1)
 }
 
 class DarkMistVoidFireIII(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     bool done;
     private static readonly AOEShapeCircle circle = new(25f); // circle + minimum distance to survive seducing status
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DarkMist)
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.VoidFireIII)
+        {
             done = true;
+        }
     }
 
     public override void Update()
@@ -54,14 +58,17 @@ class DarkMistVoidFireIII(BossModule module) : Components.GenericAOEs(module)
         if (done)
         {
             var player = Module.Raid.Player()!;
-            var statuses = player.PendingStatuses;
-            var count = statuses.Count;
-            for (var i = 0; i < count; ++i)
+            var statuses = CollectionsMarshal.AsSpan(player.PendingStatuses);
+            var len = statuses.Length;
+            for (var i = 0; i < len; ++i)
             {
-                if (statuses[i].StatusId == (uint)SID.Seduced)
+                ref var s = ref statuses[i];
+                if (s.StatusId == (uint)SID.Seduced)
+                {
                     return;
+                }
             }
-            _aoe = null;
+            _aoe = [];
             done = false;
         }
     }
@@ -83,7 +90,7 @@ sealed class FatalAllureStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1971)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1971)]
 public sealed class FatalAllure(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)

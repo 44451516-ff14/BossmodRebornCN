@@ -4,11 +4,11 @@ namespace BossMod.Shadowbringers.Alliance.A33RedGirl;
 sealed class WipeBlackWhite(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly WPos[] positions = new WPos[2];
     private DateTime activation;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _arena.NumWalls < 10 ? Utils.ZeroOrOne(ref _aoe) : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _arena.NumWalls < 10 ? _aoe : [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -85,7 +85,7 @@ sealed class WipeBlackWhite(BossModule module) : Components.GenericAOEs(module)
             }
         }
 
-        var aoe = new AOEShapeCustom(shapes1, shapes2, null, true);
+        var aoe = new AOEShapeCustom(shapes1, shapes2, invertForbiddenZone: true);
         if (positions[1] != default && positions[0] != default) // if there are 2 meteors, we need to intersect the union of each meteor's rectangles
         {
             var clipper = new PolygonClipper();
@@ -104,14 +104,14 @@ sealed class WipeBlackWhite(BossModule module) : Components.GenericAOEs(module)
                 return clipper.Simplify(operand);
             }
         }
-        _aoe = new(aoe, center, default, activation, Colors.SafeFromAOE);
+        _aoe = [new(aoe, center, default, activation, Colors.SafeFromAOE)];
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.WipeBlack or (uint)AID.WipeWhite)
         {
-            _aoe = null;
+            _aoe = [];
             activation = default;
             Array.Clear(positions);
         }
@@ -119,9 +119,9 @@ sealed class WipeBlackWhite(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is AOEInstance a)
+        if (_aoe.Length != 0)
         {
-            ref var aoe = ref a;
+            ref var aoe = ref _aoe[0];
             hints.Add("Wait in safe area!", !aoe.Check(actor.Position));
         }
     }

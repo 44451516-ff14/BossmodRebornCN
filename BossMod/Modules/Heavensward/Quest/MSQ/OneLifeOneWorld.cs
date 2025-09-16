@@ -124,5 +124,5 @@ class WarriorOfDarknessStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 67885, NameID = 5240)]
 public class WarriorOfDarkness(WorldState ws, Actor primary) : BossModule(ws, primary, default, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(default, 19.5f, 36)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(default, 19.5f, 36)]);
 }

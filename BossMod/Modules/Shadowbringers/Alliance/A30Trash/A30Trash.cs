@@ -45,20 +45,7 @@ sealed class A30TrashStates : StateMachineBuilder
             .ActivateOnEnter<ManeuverStandardLaser>()
             .ActivateOnEnter<WhirlingAssault>()
             .ActivateOnEnter<BalancedEdge>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(A30Trash.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var e = enemies[i];
-                    if (!e.IsDestroyed)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDestroyed(A30Trash.All);
     }
 }
 
@@ -70,6 +57,6 @@ public sealed class A30Trash(WorldState ws, Actor primary) : BossModule(ws, prim
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(All));
+        Arena.Actors(this, All);
     }
 }

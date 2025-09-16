@@ -28,21 +28,11 @@ public sealed class A10VanguardPathfinderStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<Seismostomp>()
             .ActivateOnEnter<BombToss>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(A10VanguardPathfinder.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(A10VanguardPathfinder.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13599, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13599, SortOrder = 1)]
 public sealed class A10VanguardPathfinder(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(802.28f, 621.41f), new(807.98f, 621.43f), new(808.32f, 621.98f), new(808.56f, 622.62f), new(808.64f, 623.2f),
@@ -63,11 +53,11 @@ public sealed class A10VanguardPathfinder(WorldState ws, Actor primary) : BossMo
     new(789.76f, 628.14f), new(789.53f, 627.49f), new(788.77f, 626.62f), new(788.84f, 625.36f), new(789.15f, 624.94f),
     new(790.4f, 624.3f), new(790.66f, 623.66f), new(790.86f, 623), new(790.61f, 622.49f), new(791.1f, 622.42f),
     new(791.62f, 622.18f), new(791.71f, 621.53f), new(802.28f, 621.41f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.VanguardsSlime1, (uint)OID.VanguardsSlime2, (uint)OID.GoblinReplica];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

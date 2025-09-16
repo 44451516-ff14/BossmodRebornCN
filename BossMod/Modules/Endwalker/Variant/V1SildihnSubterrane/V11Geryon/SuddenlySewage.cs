@@ -30,7 +30,7 @@ sealed class SuddenlySewage(BossModule module) : Components.GenericAOEs(module)
             };
             if (pos != default)
             {
-                _aoes.Add(new(square, (pos - 10f * new WDir(default, 1f)).Quantized(), Angle.AnglesCardinals[1], WorldState.FutureTime(8d)));
+                _aoes.Add(new(square, (pos + new WDir(default, -10f)).Quantized(), Angle.AnglesCardinals[1], WorldState.FutureTime(8d)));
             }
         }
     }
@@ -52,6 +52,6 @@ sealed class SuddenlySewage(BossModule module) : Components.GenericAOEs(module)
         }
         // make ai stay close to middle of the aoes to ensure successfully dodging the combo
         ref var aoe = ref _aoes.Ref(0);
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 6f), aoe.Activation.AddSeconds(2d));
+        hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 6f), aoe.Activation.AddSeconds(2d));
     }
 }

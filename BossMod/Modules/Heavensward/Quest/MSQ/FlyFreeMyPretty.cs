@@ -127,8 +127,8 @@ class GrynewahtStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 67894, NameID = 5576)]
 public class Grynewaht(WorldState ws, Actor primary) : BossModule(ws, primary, default, hexBounds)
 {
-    private static readonly ArenaBoundsComplex hexBounds = new([new Polygon(default, 10.675f, 6, 30f.Degrees())]);
-    public static readonly ArenaBoundsComplex CircleBounds = new([new Polygon(new(-0.092f, 0.101f), 19.5f, 20)]);
+    private static readonly ArenaBoundsCustom hexBounds = new([new Polygon(default, 10.675f, 6, 30f.Degrees())]);
+    public static readonly ArenaBoundsCustom CircleBounds = new([new Polygon(new(-0.092f, 0.101f), 19.5f, 20)]);
 
     private Actor? _bossP2;
     public Actor? BossP2() => _bossP2;
@@ -138,20 +138,11 @@ public class Grynewaht(WorldState ws, Actor primary) : BossModule(ws, primary, d
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossP2 == null)
-        {
-            if (StateMachine.ActivePhaseIndex > 0)
-            {
-                var b = Enemies((uint)OID.GrynewahtP2);
-                _bossP2 = b.Count != 0 ? b[0] : null;
-            }
-        }
+        _bossP2 ??= GetActor((uint)OID.GrynewahtP2);
     }
 }

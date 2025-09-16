@@ -48,17 +48,7 @@ class CanalIcebeastStates : StateMachineBuilder
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(CanalIcebeast.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(CanalIcebeast.All);
     }
 }
 
@@ -71,7 +61,7 @@ public class CanalIcebeast(WorldState ws, Actor primary) : FinalRoomArena(ws, pr
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
         Arena.Actors(Enemies((uint)OID.Abharamu), Colors.Vulnerable);
     }
 

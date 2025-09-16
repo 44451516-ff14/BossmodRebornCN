@@ -68,6 +68,6 @@ public class A31DeathgazeHollow(WorldState ws, Actor primary) : BossModule(ws, p
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.VoidSprite));
+        Arena.Actors(Enemies((uint)OID.VoidSprite));
     }
 }

@@ -27,25 +27,27 @@ public enum IconID : uint
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom donut = new(D152DotoliCiloc.StartingBoundsP, D152DotoliCiloc.DefaultBoundsP);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private bool begin;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00010002 && actor.OID == (uint)OID.ArenaVoidzone)
+        if (state == 0x00010002u && actor.OID == (uint)OID.ArenaVoidzone)
         {
             Arena.Bounds = D152DotoliCiloc.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
             begin = true;
         }
     }
 
     public override void Update()
     {
-        if (!begin && _aoe == null)
-            _aoe = new(donut, Arena.Center, default, WorldState.FutureTime(4d));
+        if (!begin && _aoe.Length == 0)
+        {
+            _aoe = [new(donut, Arena.Center, default, WorldState.FutureTime(4d))];
+        }
     }
 }
 
@@ -64,33 +66,43 @@ class OnLowHaste(BossModule module) : Components.Cleave(module, (uint)AID.Swiftf
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Swiftfeather)
+        {
             active = true;
+        }
         else if (spell.Action.ID == (uint)AID.OnLow)
+        {
             active = false;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (active)
+        {
             base.AddHints(slot, actor, hints);
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (active)
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (active)
+        {
             base.DrawArenaForeground(pcSlot, pc);
+        }
     }
 }
 
 class OnHigh(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _source;
+    private Knockback[] _kb = [];
     private static readonly SafeWall[] safeWallsW = [new(new(227.487f, 16.825f), new(226.567f, 13.39f)), new(new(226.567f, 13.39f), new(227.392f, 10.301f))];
     private static readonly SafeWall[] safeWallsN = GenerateRotatedSafeWalls(ref safeWallsW, 90f);
     private static readonly SafeWall[] safeWallsE = GenerateRotatedSafeWalls(ref safeWallsW, 180f);
@@ -127,30 +139,33 @@ class OnHigh(BossModule module) : Components.GenericKnockback(module)
 
     private static WPos GenerateRotatedVertice(WPos vertex, float rotationAngle) => WPos.RotateAroundOrigin(rotationAngle, D152DotoliCiloc.ArenaCenter, vertex);
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _source);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OnHigh)
-            _source = new(spell.LocXZ, 30f, Module.CastFinishAt(spell), safeWalls: allSafeWalls);
+        {
+            _kb = [new(spell.LocXZ, 30f, Module.CastFinishAt(spell), safeWalls: allSafeWalls)];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OnHigh)
-            _source = null;
+        {
+            _kb = [];
+        }
     }
 }
 
 class OnHighHint(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<ConeHA> cones = new(4);
-    private AOEInstance? _aoe;
-    private const string RiskHint = "Use safewalls for knockback!";
+    private AOEInstance[] _aoe = [];
     private static readonly Angle angle = 11.25f.Degrees();
     private DateTime activation;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -163,12 +178,12 @@ class OnHighHint(BossModule module) : Components.GenericAOEs(module)
 
     private void GenerateHints()
     {
+        var whirlwinds = Module.Enemies((uint)OID.Whirlwind);
+        var count = whirlwinds.Count;
         for (var i = 0; i < 4; ++i)
         {
             var deg = (i * 90f).Degrees();
             var enemyInCone = false;
-            var whirlwinds = Module.Enemies((uint)OID.Whirlwind);
-            var count = whirlwinds.Count;
             for (var j = 0; j < count; ++j)
             {
                 if (whirlwinds[j].Position.InCone(D152DotoliCiloc.ArenaCenter, deg, angle))
@@ -178,9 +193,11 @@ class OnHighHint(BossModule module) : Components.GenericAOEs(module)
                 }
             }
             if (!enemyInCone)
+            {
                 cones.Add(new(D152DotoliCiloc.ArenaCenter, 20f, deg, angle));
+            }
         }
-        _aoe = new(new AOEShapeCustom([.. cones], InvertForbiddenZone: true), D152DotoliCiloc.ArenaCenter, default, activation, Colors.SafeFromAOE);
+        _aoe = [new(new AOEShapeCustom([.. cones], invertForbiddenZone: true), D152DotoliCiloc.ArenaCenter, default, activation, Colors.SafeFromAOE)];
     }
 
     public override void OnActorCreated(Actor actor)
@@ -197,18 +214,16 @@ class OnHighHint(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.OnHigh)
         {
             cones.Clear();
-            _aoe = null;
+            _aoe = [];
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is AOEInstance aoe)
+        if (_aoe.Length != 0)
         {
-            var check = true;
-            if (aoe.Check(actor.Position))
-                check = false;
-            hints.Add(RiskHint, check);
+            ref var aoe = ref _aoe[0];
+            hints.Add("Use safewalls for knockback!", !aoe.Check(actor.Position));
         }
     }
 }
@@ -242,6 +257,6 @@ public class D152DotoliCiloc(WorldState ws, Actor primary) : BossModule(ws, prim
     private static readonly WPos[] verticesS = WPos.GenerateRotatedVertices(ArenaCenter, verticesW, 270f);
     private static readonly PolygonCustomO[] difference = [new PolygonCustomO(verticesW, offset), new PolygonCustomO(verticesN, offset),
     new PolygonCustomO(verticesE, offset), new PolygonCustomO(verticesS, offset)];
-    public static readonly ArenaBoundsComplex StartingBounds = new(StartingBoundsP, difference);
-    public static readonly ArenaBoundsComplex DefaultBounds = new(DefaultBoundsP, difference);
+    public static readonly ArenaBoundsCustom StartingBounds = new(StartingBoundsP, difference);
+    public static readonly ArenaBoundsCustom DefaultBounds = new(DefaultBoundsP, difference);
 }

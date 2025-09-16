@@ -46,7 +46,7 @@ public sealed class ReplayParserLog : IDisposable
 
     sealed class TextInput(Stream stream) : Input
     {
-        public DateTime Timestamp { get; private set; }
+        public DateTime Timestamp;
         private readonly StreamReader _input = new(stream);
         private string[] _line = [];
         private int _nextPayload;
@@ -81,7 +81,7 @@ public sealed class ReplayParserLog : IDisposable
         }
 
         public override bool CanRead() => _nextPayload < _line.Length;
-        public override void ReadVoid() => _nextPayload++;
+        public override void ReadVoid() => ++_nextPayload;
         public override string ReadString() => _line[_nextPayload++];
         public override float ReadFloat() => float.Parse(ReadString());
         public override double ReadDouble() => double.Parse(ReadString());
@@ -235,7 +235,18 @@ public sealed class ReplayParserLog : IDisposable
         public override bool ReadBool() => _input.ReadBoolean();
         public override sbyte ReadSByte() => _input.ReadSByte();
         public override short ReadShort() => _input.ReadInt16();
-        public override int ReadInt() => _input.ReadInt32();
+        public override int ReadInt()
+        {
+            try
+            {
+                return _input.ReadInt32();
+            }
+            catch (EndOfStreamException)
+            {
+                Service.Log("ReadInt: Reached the end of the file unexpectedly. Returning default value.");
+                return default;
+            }
+        }
         public override long ReadLong() => _input.ReadInt64();
         public override byte ReadByte(bool hex) => _input.ReadByte();
         public override ushort ReadUShort(bool hex) => _input.ReadUInt16();
@@ -263,14 +274,36 @@ public sealed class ReplayParserLog : IDisposable
                 return default;
             }
         }
-        public override byte[] ReadBytes() => _input.ReadBytes(_input.ReadInt32());
+        public override byte[] ReadBytes()
+        {
+            try
+            {
+                return _input.ReadBytes(_input.ReadInt32());
+            }
+            catch (EndOfStreamException)
+            {
+                Service.Log("ReadBytes: Reached the end of the file unexpectedly. Returning default value.");
+                return [];
+            }
+        }
         public override ActionID ReadAction() => new(_input.ReadUInt32());
         public override Class ReadClass() => (Class)_input.ReadByte();
-        public override ActorStatus ReadStatus() => new(_input.ReadUInt32(), _input.ReadUInt16(), new(_input.ReadInt64()), _input.ReadUInt64());
+        public override ActorStatus ReadStatus()
+        {
+            try
+            {
+                return new(_input.ReadUInt32(), _input.ReadUInt16(), new(_input.ReadInt64()), _input.ReadUInt64());
+            }
+            catch (EndOfStreamException)
+            {
+                Service.Log("ReadStatus: Reached the end of the file unexpectedly. Returning default value.");
+                return default;
+            }
+        }
         public override ActionEffects ReadActionEffects()
         {
             var effects = new ActionEffects();
-            for (int i = 0; i < ActionEffects.MaxCount; ++i)
+            for (var i = 0; i < ActionEffects.MaxCount; ++i)
                 effects[i] = ReadULong(true);
             return effects;
         }
@@ -755,29 +788,24 @@ public sealed class ReplayParserLog : IDisposable
 
     private ClientState.OpActionRequest ParseClientActionRequest()
     {
-        var req = new ClientActionRequest()
-        {
-            Action = _input.ReadAction(),
-            TargetID = _input.ReadActorID(),
-            TargetPos = _input.ReadVec3(),
-            SourceSequence = _input.ReadUInt(false),
-            InitialAnimationLock = _input.ReadFloat(),
-        };
-        (req.InitialCastTimeElapsed, req.InitialCastTimeTotal) = _input.ReadFloatPair();
-        (req.InitialRecastElapsed, req.InitialRecastTotal) = _input.ReadFloatPair();
-        return new(req);
+        var action = _input.ReadAction();
+        var targetId = _input.ReadActorID();
+        var targetPos = _input.ReadVec3();
+        var sequence = _input.ReadUInt(false);
+        var animLock = _input.ReadFloat();
+        var (castElapsed, castTotal) = _input.ReadFloatPair();
+        var (recastElapsed, recastTotal) = _input.ReadFloatPair();
+
+        return new(new(action, targetId, targetPos, sequence, animLock, castElapsed, castTotal, recastElapsed, recastTotal));
     }
 
     private ClientState.OpActionReject ParseClientActionReject()
     {
-        var rej = new ClientActionReject()
-        {
-            Action = _input.ReadAction(),
-            SourceSequence = _input.ReadUInt(false),
-        };
-        (rej.RecastElapsed, rej.RecastTotal) = _input.ReadFloatPair();
-        rej.LogMessageID = _input.ReadUInt(false);
-        return new(rej);
+        var action = _input.ReadAction();
+        var sourceSequence = _input.ReadUInt(false);
+        var (recastElapsed, recastTotal) = _input.ReadFloatPair();
+        var logMessageID = _input.ReadUInt(false);
+        return new(new(action, sourceSequence, recastElapsed, recastTotal, logMessageID));
     }
 
     private ClientState.OpCountdownChange ParseClientCountdown(bool start) => new(start ? _input.ReadFloat() : null);

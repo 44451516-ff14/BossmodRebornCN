@@ -112,18 +112,7 @@ sealed class Stage18Act2States : StateMachineBuilder
             .ActivateOnEnter<RipperClaw>()
             .ActivateOnEnter<TailSmash>()
             .ActivateOnEnter<WildCharge>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(Stage18Act2.Kegs);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(Stage18Act2.Kegs);
     }
 }
 
@@ -137,18 +126,7 @@ public sealed class Stage18Act2 : BossModule
     }
     public static readonly uint[] Kegs = [(uint)OID.Boss, (uint)OID.Keg];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Kegs);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Kegs);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

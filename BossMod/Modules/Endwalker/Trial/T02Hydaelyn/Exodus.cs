@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
-class Exodus(BossModule module) : Components.RaidwideInstant(module, (uint)AID.Exodus, 7.2f)
+class Exodus(BossModule module) : Components.RaidwideInstant(module, (uint)AID.Exodus, 7.2d)
 {
     private int _numCrystalsDestroyed;
 
@@ -9,7 +9,7 @@ class Exodus(BossModule module) : Components.RaidwideInstant(module, (uint)AID.E
         if (actor.OID == (uint)OID.CrystalOfLight)
         {
             if (++_numCrystalsDestroyed == 6)
-                Activation = WorldState.FutureTime(7.2f);
+                Activation = WorldState.FutureTime(Delay);
         }
     }
 }

@@ -56,16 +56,16 @@ class FireShot(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fire
 
 class FiresOfMtGulg(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeDonut _shape = new(10f, 50f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FiresOfMtGulg)
         {
-            _aoe = new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell));
+            _aoe = [new(_shape, spell.LocXZ, default, Module.CastFinishAt(spell))];
             NumCasts = 0;
         }
     }
@@ -74,10 +74,15 @@ class FiresOfMtGulg(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.FiresOfMtGulg or (uint)AID.FiresOfMtGulgRepeat)
         {
-            if (_aoe is AOEInstance aoe)
-                _aoe = aoe with { Activation = WorldState.FutureTime(3.1d) };
+            if (_aoe.Length != 0)
+            {
+                ref var aoe = ref _aoe[0];
+                aoe.Activation = WorldState.FutureTime(3.1d);
+            }
             if (++NumCasts >= 7)
-                _aoe = null;
+            {
+                _aoe = [];
+            }
         }
     }
 }
@@ -104,9 +109,11 @@ class DrillShot(BossModule module) : Components.StackWithCastTargets(module, (ui
         {
             var count = Stacks.Count;
             var id = spell.MainTargetID;
+            var stacks = CollectionsMarshal.AsSpan(Stacks);
             for (var i = 0; i < count; ++i)
             {
-                if (Stacks[i].Target.InstanceID == id)
+                ref var stack = ref stacks[i];
+                if (stack.Target.InstanceID == id)
                 {
                     Stacks.RemoveAt(i);
                     return;
@@ -177,9 +184,11 @@ class DwarvenDischarge(BossModule module, AOEShape shape, uint oid, uint aid, do
     private void RemoveAOE(ulong instanceID)
     {
         var count = _aoes.Count;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         for (var i = 0; i < count; ++i)
         {
-            if (_aoes[i].ActorID == instanceID)
+            ref var aoe = ref aoes[i];
+            if (aoe.ActorID == instanceID)
             {
                 _aoes.RemoveAt(i);
                 return;

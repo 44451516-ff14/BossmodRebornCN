@@ -15,41 +15,49 @@ public class ConcentricAOEs(BossModule module, AOEShape[] shapes, bool showall =
 
     public readonly AOEShape[] Shapes = shapes;
     public readonly List<Sequence> Sequences = [];
+    protected readonly List<AOEInstance> _aoes = [];
+    protected int lastVersion, lastCount;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+
+    public override void Update()
     {
         var count = Sequences.Count;
-        if (count == 0)
+        if (lastCount != count || lastVersion != NumCasts)
         {
-            return [];
-        }
-        var aoes = new AOEInstance[count];
-        var time = WorldState.CurrentTime;
-        var sequences = CollectionsMarshal.AsSpan(Sequences);
+            lastCount = count;
+            lastVersion = NumCasts;
+            _aoes.Clear();
+            if (count == 0)
+            {
+                return;
+            }
+            var time = WorldState.CurrentTime;
+            var sequences = CollectionsMarshal.AsSpan(Sequences);
 
-        for (var i = 0; i < count; ++i)
-        {
-            ref var s = ref sequences[i];
-            var risky = true;
-            var act = s.NextActivation;
-            if (RiskyWithSecondsLeft != default)
+            for (var i = 0; i < count; ++i)
             {
-                risky = act.AddSeconds(-RiskyWithSecondsLeft) <= time;
-            }
-            if (!showall)
-            {
-                aoes[i] = new(Shapes[s.NumCastsDone], s.Origin, s.Rotation, act, risky: risky);
-            }
-            else
-            {
-                var len = Shapes.Length;
-                for (var j = s.NumCastsDone; j < len; ++j)
+                ref var s = ref sequences[i];
+                var risky = true;
+                var act = s.NextActivation;
+                if (RiskyWithSecondsLeft != default)
                 {
-                    aoes[i] = new(Shapes[j], s.Origin, s.Rotation, act, risky: risky);
+                    risky = act.AddSeconds(-RiskyWithSecondsLeft) <= time;
+                }
+                if (!showall)
+                {
+                    _aoes.Add(new(Shapes[s.NumCastsDone], s.Origin, s.Rotation, act, risky: risky));
+                }
+                else
+                {
+                    var len = Shapes.Length;
+                    for (var j = s.NumCastsDone; j < len; ++j)
+                    {
+                        _aoes.Add(new(Shapes[j], s.Origin, s.Rotation, act, risky: risky));
+                    }
                 }
             }
         }
-        return aoes;
     }
 
     public void AddSequence(WPos origin, DateTime activation = default, Angle rotation = default) => Sequences.Add(new() { Origin = origin, Rotation = rotation, NextActivation = activation });

@@ -21,9 +21,11 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
             void UpdateCurrentOrder(List<(int Order, Actor, DateTime)> list)
             {
                 var count = list.Count;
+                var statuses = CollectionsMarshal.AsSpan(list);
                 for (var i = 0; i < count; ++i)
                 {
-                    var order = list[i].Order;
+                    ref var s = ref statuses[i];
+                    var order = s.Order;
                     if (curOrder > order)
                     {
                         curOrder = order;
@@ -51,14 +53,14 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
                 break;
             case (uint)SID.PreyLesserAxebit:
                 AddTarget(StatusSmall);
-                IsTargetSmall[Raid.FindSlot(actor.InstanceID)] = true;
+                IsTargetSmall.Set(Raid.FindSlot(actor.InstanceID));
                 break;
         }
         void AddTarget(List<(int, Actor, DateTime)> list)
         {
             list.Add((order, actor, expire));
             ++numStatuses;
-            IsTargetAny[Raid.FindSlot(actor.InstanceID)] = true;
+            IsTargetAny.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -71,15 +73,17 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
                 break;
             case (uint)SID.PreyLesserAxebit:
                 RemoveStatus(StatusSmall);
-                IsTargetSmall[Raid.FindSlot(actor.InstanceID)] = false;
+                IsTargetSmall.Clear(Raid.FindSlot(actor.InstanceID));
                 break;
         }
         void RemoveStatus(List<(int, Actor, DateTime)> list)
         {
             var count = list.Count;
+            var statuses = CollectionsMarshal.AsSpan(list);
             for (var i = 0; i < count; ++i)
             {
-                if (list[i].Item2 == actor)
+                ref var s = ref statuses[i];
+                if (s.Item2 == actor)
                 {
                     list.RemoveAt(i);
                     IsTargetAny[Raid.FindSlot(actor.InstanceID)] = false;
@@ -101,7 +105,7 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
 sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly RuneAxeStatus _status = module.FindComponent<RuneAxeStatus>()!;
-    private AOEInstance? _aoePrepare;
+    private AOEInstance[] _aoePrepare = [];
     private readonly List<AOEInstance>[] _aoeHintsForStatus = [new(1), new(1), new(1), new(1)];
     private readonly List<AOEInstance>[] _aoeHintsNoStatus = [new(1), new(1)];
     private bool prepare;
@@ -115,7 +119,7 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
         }
         if (prepare)
         {
-            return Utils.ZeroOrOne(ref _aoePrepare);
+            return _aoePrepare;
         }
 
         if (_status.IsTargetAny[slot])
@@ -133,9 +137,10 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
             void CheckListForOrder(List<(int Order, Actor Actor, DateTime)> list)
             {
                 var count = list.Count;
+                var span = CollectionsMarshal.AsSpan(list);
                 for (var i = 0; i < count; ++i)
                 {
-                    var s = list[i];
+                    ref var s = ref span[i];
                     if (s.Actor == actor)
                     {
                         playerOrder = s.Order;
@@ -165,7 +170,7 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
             prepare = true;
             var act = Module.CastFinishAt(spell);
             var center = Arena.Center;
-            _aoePrepare = new(FTB4Magitaur.CircleMinusSquares, center, default, act);
+            _aoePrepare = [new(FTB4Magitaur.CircleMinusSquares, center, default, act)];
             var actOrder1 = act.AddSeconds(10.2d);
             var actOrder2 = act.AddSeconds(14.2d);
             var actOrder3 = act.AddSeconds(22.2d);
@@ -185,7 +190,7 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
         if (status.ID is (uint)SID.PreyGreaterAxebit or (uint)SID.PreyLesserAxebit)
         {
             prepare = false;
-            _aoePrepare = null;
+            _aoePrepare = [];
         }
     }
 }

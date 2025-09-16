@@ -82,8 +82,8 @@ sealed class NinefoldCurse(BossModule module) : Components.RaidwideCastDelay(mod
 sealed class NinetyNinefoldCurse(BossModule module) : Components.RaidwideCast(module, (uint)AID.NinetyNinefoldCurse);
 sealed class Roar(BossModule module) : Components.RaidwideCast(module, (uint)AID.Roar);
 sealed class SonicStorm(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SonicStorm, 6f);
-sealed class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4f, 8.3f, (uint)AID.RushBait, (uint)AID.RushBaitFail, (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30f);
-sealed class RushLineStack(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.RushLineStackMarker, (uint)AID.RushLineStack, 4.9f, markerIsFinalTarget: false);
+sealed class RushBait(BossModule module) : Components.BaitAwayChargeTether(module, 4f, 8.3d, (uint)AID.RushBait, (uint)AID.RushBaitFail, (uint)TetherID.TetherBad, (uint)TetherID.TetherGood, (uint)OID.Dzo, 30f);
+sealed class RushLineStack(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.RushLineStackMarker, (uint)AID.RushLineStack, 4.9d, markerIsFinalTarget: false);
 sealed class Trample(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Trample, 15f);
 
 sealed class FallingDusk(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingDusk, 15f)
@@ -103,7 +103,7 @@ sealed class DancingWind(BossModule module) : Components.SimpleKnockbacks(module
         if (Casters.Count != 0)
         {
             ref readonly var c = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.Circle(c.Origin, 18.5f), c.Activation);
+            hints.AddForbiddenZone(new SDCircle(c.Origin, 18.5f), c.Activation);
         }
     }
 }
@@ -173,12 +173,12 @@ sealed class AHunterTrueStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70371, NameID = 12846)]
 public sealed class AHunterTrue(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(4, 248), 19.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(4, 248), 19.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.Garula, (uint)OID.Dzo, (uint)OID.SteppeEagle, (uint)OID.BallOfNaught];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
         Arena.Actors(Enemies((uint)OID.FilthyShackle), Colors.Object);
     }
 }

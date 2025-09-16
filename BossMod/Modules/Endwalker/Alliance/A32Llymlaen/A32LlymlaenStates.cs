@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Alliance.A32Llymlaen;
 
-class A32LlymlaenStates : StateMachineBuilder
+sealed class A32LlymlaenStates : StateMachineBuilder
 {
     public A32LlymlaenStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase);
+        DeathPhase(default, SinglePhase);
     }
 
     private void SinglePhase(uint id)
@@ -98,8 +98,8 @@ class A32LlymlaenStates : StateMachineBuilder
             .ActivateOnEnter<SurgingWaveAOE>()
             .ActivateOnEnter<SurgingWaveShockwave>()
             .ActivateOnEnter<SurgingWaveSeaFoam>()
-            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Center = A32Llymlaen.DefaultCenter + A32Llymlaen.CorridorHalfLength * comp.CorridorDir)
-            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Bounds = comp.CorridorDir.X > 0 ? A32Llymlaen.EastCorridorBounds : A32Llymlaen.WestCorridorBounds);
+            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Center = comp.CorridorDir.X > 0f ? A32Llymlaen.EastCorridorBounds.Center : A32Llymlaen.WestCorridorBounds.Center)
+            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Bounds = comp.CorridorDir.X > 0f ? A32Llymlaen.EastCorridorBounds : A32Llymlaen.WestCorridorBounds);
         ComponentCondition<SurgingWaveAOE>(id + 0x10, 1, comp => comp.NumCasts > 0)
             .DeactivateOnExit<SurgingWaveAOE>();
         ComponentCondition<SurgingWaveShockwave>(id + 0x11, 0.2f, comp => comp.NumCasts > 0, "Knockback")
@@ -211,8 +211,8 @@ class A32LlymlaenStates : StateMachineBuilder
         Cast(id, (uint)AID.SurgingWave, delay, 9)
             .ActivateOnEnter<SurgingWaveAOE>()
             .ActivateOnEnter<SurgingWaveShockwave>()
-            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Center = A32Llymlaen.DefaultCenter + A32Llymlaen.CorridorHalfLength * comp.CorridorDir)
-            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Bounds = comp.CorridorDir.X > 0 ? A32Llymlaen.EastCorridorBounds : A32Llymlaen.WestCorridorBounds);
+            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Center = comp.CorridorDir.X > 0f ? A32Llymlaen.EastCorridorBounds.Center : A32Llymlaen.WestCorridorBounds.Center)
+            .ExecOnEnter<SurgingWaveCorridor>(comp => Module.Arena.Bounds = comp.CorridorDir.X > 0f ? A32Llymlaen.EastCorridorBounds : A32Llymlaen.WestCorridorBounds);
         ComponentCondition<SurgingWaveAOE>(id + 0x10, 1, comp => comp.NumCasts > 0)
             .DeactivateOnExit<SurgingWaveAOE>();
         ComponentCondition<SurgingWaveShockwave>(id + 0x11, 0.2f, comp => comp.NumCasts > 0, "Knockback")

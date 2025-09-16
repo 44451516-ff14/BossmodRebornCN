@@ -76,7 +76,7 @@ class P3HeavensfallTowers(BossModule module) : Components.CastTowers(module, (ui
 
         if (spell.Action.ID == WatchedAction && Towers.Count == 8)
         {
-            var nael = Module.Enemies(OID.NaelDeusDarnus).FirstOrDefault();
+            var nael = Module.Enemies((uint)OID.NaelDeusDarnus).FirstOrDefault();
             if (nael != null)
             {
                 var dirToNael = Angle.FromDirection(nael.Position - Arena.Center);

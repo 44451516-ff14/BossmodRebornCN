@@ -48,15 +48,15 @@ public enum SID : uint
 sealed class Voidzone(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEState(Actor actor, ushort state)
     {
         if (state == 0x0004 && actor.OID == (uint)OID.Voidzone)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 
@@ -64,7 +64,7 @@ sealed class Voidzone(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.ArticulatedBits)
         {
-            _aoe = new(circle, Arena.Center, default, Module.CastFinishAt(spell, 0.8d));
+            _aoe = [new(circle, Arena.Center, default, Module.CastFinishAt(spell, 0.8d))];
         }
     }
 }

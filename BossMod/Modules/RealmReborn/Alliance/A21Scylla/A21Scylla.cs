@@ -11,9 +11,9 @@ public class A21Scylla(WorldState ws, Actor primary) : BossModule(ws, primary, n
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.StaffOfEldering));
-        Arena.Actors(Enemies(OID.ShudderingSoul));
-        Arena.Actors(Enemies(OID.ShiveringSoul));
-        Arena.Actors(Enemies(OID.SmolderingSoul));
+        Arena.Actors(Enemies((uint)OID.StaffOfEldering));
+        Arena.Actors(Enemies((uint)OID.ShudderingSoul));
+        Arena.Actors(Enemies((uint)OID.ShiveringSoul));
+        Arena.Actors(Enemies((uint)OID.SmolderingSoul));
     }
 }

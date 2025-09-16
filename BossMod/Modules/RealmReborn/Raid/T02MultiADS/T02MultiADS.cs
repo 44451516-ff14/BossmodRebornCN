@@ -65,7 +65,7 @@ class Firestream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fi
 class Ballast1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallastAOE1, new AOEShapeCone(5.5f, 135.Degrees()));
 class Ballast2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallastAOE2, new AOEShapeDonutSector(5.5f, 10.5f, 135.Degrees()));
 class Ballast3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BallastAOE3, new AOEShapeDonutSector(10.5f, 15.5f, 135.Degrees()));
-class GravityField(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.GravityField, m => m.Enemies(OID.GravityField), 1);
+class GravityField(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.GravityField, m => m.Enemies((uint)OID.GravityField), 1);
 
 class T02AI(BossModule module) : BossComponent(module)
 {
@@ -136,7 +136,7 @@ class T02QuarantineNodeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.QuarantineNode, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 94, NameID = 1468, SortOrder = 2)]
 public class T02QuarantineNode(WorldState ws, Actor primary) : BossModule(ws, primary, new(0, 112), new ArenaBoundsRect(14, 13))
 {
-    protected override bool CheckPull() => base.CheckPull() && !Enemies(OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
+    protected override bool CheckPull() => base.CheckPull() && !Enemies((uint)OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
 }
 
 class T02AttackNodeStates : StateMachineBuilder
@@ -155,7 +155,7 @@ class T02AttackNodeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.AttackNode, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 94, NameID = 1469, SortOrder = 3)]
 public class T02AttackNode(WorldState ws, Actor primary) : BossModule(ws, primary, new(-44, 94), new ArenaBoundsSquare(17))
 {
-    protected override bool CheckPull() => base.CheckPull() && !Enemies(OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
+    protected override bool CheckPull() => base.CheckPull() && !Enemies((uint)OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
 }
 
 class T02SanitaryNodeStates : StateMachineBuilder
@@ -176,7 +176,7 @@ class T02SanitaryNodeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.SanitaryNode, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 94, NameID = 1470, SortOrder = 4)]
 public class T02SanitaryNode(WorldState ws, Actor primary) : BossModule(ws, primary, new(-43, 52), new ArenaBoundsRect(18, 15))
 {
-    protected override bool CheckPull() => base.CheckPull() && !Enemies(OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
+    protected override bool CheckPull() => base.CheckPull() && !Enemies((uint)OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
 }
 
 class T02MonitoringNodeStates : StateMachineBuilder
@@ -194,7 +194,7 @@ class T02MonitoringNodeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.MonitoringNode, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 94, NameID = 1471, SortOrder = 5)]
 public class T02MonitoringNode(WorldState ws, Actor primary) : BossModule(ws, primary, new(0, 39), new ArenaBoundsRect(17, 15))
 {
-    protected override bool CheckPull() => base.CheckPull() && !Enemies(OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
+    protected override bool CheckPull() => base.CheckPull() && !Enemies((uint)OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
 }
 
 class T02DefenseNodeStates : StateMachineBuilder
@@ -212,7 +212,7 @@ class T02DefenseNodeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.DefenseNode, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 94, NameID = 1472, SortOrder = 6)]
 public class T02DefenseNode(WorldState ws, Actor primary) : BossModule(ws, primary, new(46, 52), new ArenaBoundsRect(17, 14))
 {
-    protected override bool CheckPull() => base.CheckPull() && !Enemies(OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
+    protected override bool CheckPull() => base.CheckPull() && !Enemies((uint)OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
 }
 
 class T02DisposalNodeStates : StateMachineBuilder
@@ -231,5 +231,5 @@ class T02DisposalNodeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.DisposalNode, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 94, NameID = 1473, SortOrder = 7)]
 public class T02DisposalNode(WorldState ws, Actor primary) : BossModule(ws, primary, new(41, 94), new ArenaBoundsRect(14, 20))
 {
-    protected override bool CheckPull() => base.CheckPull() && !Enemies(OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
+    protected override bool CheckPull() => base.CheckPull() && !Enemies((uint)OID.ADS).Any(e => e.InCombat); // don't start modules for temporary node actors spawned during main boss fight
 }

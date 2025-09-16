@@ -36,33 +36,38 @@ class TenTonzeSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
 {
     private bool casting;
-    private static readonly uint[] _incubators = [(uint)OID.BiomassIncubator1, (uint)OID.BiomassIncubator2, (uint)OID.BiomassIncubator3, (uint)OID.BiomassIncubator4];
+    private readonly List<Actor> _incubators = module.Enemies([(uint)OID.BiomassIncubator1, (uint)OID.BiomassIncubator2, (uint)OID.BiomassIncubator3, (uint)OID.BiomassIncubator4]);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OneOneOneOneTonzeSwing)
+        {
             casting = true;
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OneOneOneOneTonzeSwing)
+        {
             casting = false;
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (!casting)
+        {
             return;
+        }
 
-        var incubators = Module.Enemies(_incubators);
         Actor? closest = null;
         var minDistSq = float.MaxValue;
 
-        var count = incubators.Count;
+        var count = _incubators.Count;
         for (var i = 0; i < count; ++i)
         {
-            var incubator = incubators[i];
+            var incubator = _incubators[i];
             if (incubator.IsTargetable)
             {
                 hints.GoalZones.Add(hints.GoalSingleTarget(incubator, 2f, 5f));
@@ -80,12 +85,14 @@ class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (!casting)
+        {
             return;
-        var incubators = Module.Enemies(_incubators);
-        var count = incubators.Count;
+        }
+
+        var count = _incubators.Count;
         for (var i = 0; i < count; ++i)
         {
-            if (incubators[i].IsTargetable)
+            if (_incubators[i].IsTargetable)
             {
                 hints.Add("Use an incubator to stun the boss!");
                 return;
@@ -96,15 +103,18 @@ class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (!casting)
+        {
             return;
+        }
 
-        var incubators = Module.Enemies(_incubators);
-        var count = incubators.Count;
+        var count = _incubators.Count;
         for (var i = 0; i < count; ++i)
         {
-            var incubator = incubators[i];
+            var incubator = _incubators[i];
             if (incubator.IsTargetable)
+            {
                 Arena.AddCircle(incubator.Position, 3f, Colors.Safe);
+            }
         }
     }
 }
@@ -127,7 +137,7 @@ class D082MinotaurStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35, NameID = 3429, SortOrder = 5)]
 public class D082Minotaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-160.632f, 91.323f), 19.5f, 24)],
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-160.632f, 91.323f), 19.5f, 24)],
     [new Rectangle(new(-180.138f, 96.181f), 20f, 1.25f, -74.089f.Degrees()), new Rectangle(new(-141.271f, 85.777f), 20f, 1.25f, -74.205f.Degrees())]);
 
     private static readonly uint[] adds = [(uint)OID.FlawedShabti, (uint)OID.ContinuumConservator, (uint)OID.Urstrix, (uint)OID.FlawedNaga];
@@ -135,7 +145,7 @@ public class D082Minotaur(WorldState ws, Actor primary) : BossModule(ws, primary
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -14,11 +14,11 @@ sealed class FrigidTwister(BossModule module) : Components.Voidzone(module, 5.5f
 sealed class FrigidDive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FrigidDive, new AOEShapeRect(60f, 10f));
 sealed class GelidGaol(BossModule module) : Components.Adds(module, (uint)OID.GelidGaol, 1);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.MarbleDragon, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13838, PlanLevel = 100, SortOrder = 4, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.MarbleDragon, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018u, NameID = 13838u, PlanLevel = 100, SortOrder = 4, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
 public sealed class FTB3MarbleDragon(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
     public static readonly WPos ArenaCenter = new(-337f, 157f);
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(ArenaCenter, 39.5f, 48)], [new Rectangle(new(-337f, 116.853f), 11f, 1.25f),
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(ArenaCenter, 39.5f, 48)], [new Rectangle(new(-337f, 116.853f), 11f, 1.25f),
     new Rectangle(new(-337f, 197.413f), 11f, 1.25f)]);
     public static readonly ArenaBoundsCircle DefaultArena = new(30f);
 

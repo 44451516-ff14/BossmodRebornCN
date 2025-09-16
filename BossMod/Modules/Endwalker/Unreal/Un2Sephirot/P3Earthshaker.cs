@@ -10,7 +10,7 @@ class P3Earthshaker(BossModule module) : Components.GenericAOEs(module, (uint)AI
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var origin = Module.Enemies(OID.BossP3).FirstOrDefault();
+        var origin = Module.Enemies((uint)OID.BossP3).FirstOrDefault();
         if (origin == null)
             return [];
 

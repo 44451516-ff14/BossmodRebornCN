@@ -34,21 +34,21 @@ class PalladianGrasp(BossModule module) : Components.CastCounter(module, default
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (Target() is var target && target != default)
-            _shape.Draw(Arena, Origin(target), default, pc.InstanceID == target.InstanceID ? Colors.SafeFromAOE : Colors.AOE);
+            _shape.Draw(Arena, Origin(target), default, pc.InstanceID == target.InstanceID ? Colors.SafeFromAOE : default);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.PalladianGrasp1)
+        if (spell.Action.ID == (uint)AID.PalladianGrasp1)
             _firstPrimaryTarget = caster.TargetID;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.PalladianGraspL or AID.PalladianGraspR)
+        if (spell.Action.ID is (uint)AID.PalladianGraspL or (uint)AID.PalladianGraspR)
             ++NumCasts;
     }
 
     private Actor? Target() => WorldState.Actors.Find(NumCasts == 0 ? _firstPrimaryTarget : Module.PrimaryActor.TargetID);
-    private WPos Origin(Actor target) => Arena.Center + new WDir(target.Position.X < Arena.Center.X ? -_shape.HalfWidth : +_shape.HalfWidth, 0);
+    private WPos Origin(Actor target) => Arena.Center + new WDir(target.PosRot.X < Arena.Center.X ? -_shape.HalfWidth : +_shape.HalfWidth, 0);
 }

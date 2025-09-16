@@ -64,17 +64,7 @@ class GoliathStates : StateMachineBuilder
             .ActivateOnEnter<Incinerate>()
             .ActivateOnEnter<MechanicalBlow>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(Goliath.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(Goliath.All);
     }
 }
 
@@ -107,7 +97,7 @@ public class Goliath(WorldState ws, Actor primary) : BossModule(ws, primary, are
     new(7.16f, -408.2f), new(7.77f, -407.95f), new(10.71f, -406.38f), new(11.27f, -406.26f), new(11.72f, -406.65f),
     new(12.16f, -407.15f), new(12.85f, -408.31f), new(13.38f, -409.48f), new(13.72f, -410.7f), new(13.83f, -411.98f),
     new(13.6f, -413.3f), new(12.62f, -414.9f), new(12.36f, -415.55f), new(12.47f, -416.28f), new(12.81f, -416.95f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     private static readonly uint[] bonusAdds = [(uint)OID.DungeonEgg, (uint)OID.DungeonGarlic, (uint)OID.DungeonTomato, (uint)OID.DungeonOnion,
     (uint)OID.DungeonQueen, (uint)OID.KeeperOfKeys];
@@ -117,7 +107,7 @@ public class Goliath(WorldState ws, Actor primary) : BossModule(ws, primary, are
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.GoliathsJavelin));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

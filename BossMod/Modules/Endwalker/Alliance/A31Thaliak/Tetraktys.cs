@@ -1,15 +1,15 @@
 ﻿namespace BossMod.Endwalker.Alliance.A31Thaliak;
 
-class TetraktysBorder(BossModule module) : Components.GenericAOEs(module)
+sealed class TetraktysBorder(BossModule module) : Components.GenericAOEs(module)
 {
     public static readonly WPos NormalCenter = new(-945f, 945f);
     private static readonly Polygon[] triangle = [new(new(-945, 948.71267f), 27.71281f, 3, 180f.Degrees())];
-    private static readonly ArenaBoundsComplex TriangleBounds = new(triangle);
+    private static readonly ArenaBoundsCustom TriangleBounds = new(triangle);
     private static readonly AOEShapeCustom transition = new([new Square(NormalCenter, 24f)], triangle);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     public bool Active;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -18,10 +18,10 @@ class TetraktysBorder(BossModule module) : Components.GenericAOEs(module)
             switch (state)
             {
                 case 0x00200010u:
-                    _aoe = new(transition, NormalCenter, default, WorldState.FutureTime(6.5d));
+                    _aoe = [new(transition, NormalCenter, default, WorldState.FutureTime(6.5d))];
                     break;
                 case 0x00020001u:
-                    _aoe = null;
+                    _aoe = [];
                     Arena.Bounds = TriangleBounds;
                     Arena.Center = TriangleBounds.Center;
                     Active = true;
@@ -36,7 +36,7 @@ class TetraktysBorder(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Tetraktys(BossModule module) : Components.GenericAOEs(module)
+sealed class Tetraktys(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
 
@@ -102,9 +102,9 @@ class Tetraktys(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TetraktuosKosmosCounter(BossModule module) : Components.CastCounter(module, (uint)AID.TetraktuosKosmosAOETri); // to handle tutorial of TetraktuosKosmos
+sealed class TetraktuosKosmosCounter(BossModule module) : Components.CastCounter(module, (uint)AID.TetraktuosKosmosAOETri); // to handle tutorial of TetraktuosKosmos
 
-class TetraktuosKosmos(BossModule module) : Components.GenericAOEs(module)
+sealed class TetraktuosKosmos(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(6);
     private static readonly AOEShapeTriCone _shapeTri = new(16f, 30f.Degrees());

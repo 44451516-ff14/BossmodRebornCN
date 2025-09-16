@@ -80,22 +80,24 @@ public enum IconID : uint
 
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly AOEShapeDonut donut = new(20f, 25f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Kleos)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.3f));
+        {
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.3d))];
+        }
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.DeathWall)
         {
-            _aoe = null;
+            _aoe = [];
             Arena.Bounds = WorthyOfHisBack.DefaultBounds;
         }
     }
@@ -130,7 +132,9 @@ class ParhelionCone(BossModule module) : Components.GenericRotatingAOE(module)
         if (_rotation.Count == 3 && _increment != default)
         {
             for (var i = 0; i < 3; ++i)
-                Sequences.Add(new(_shape, Arena.Center.Quantized(), _rotation[i], _increment, _activation, 2.6f, 9));
+            {
+                Sequences.Add(new(_shape, Arena.Center.Quantized(), _rotation[i], _increment, _activation, 2.6d, 9));
+            }
             _rotation.Clear();
             _increment = default;
         }
@@ -184,36 +188,36 @@ class EpeaPteroenta(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 2 ? 2 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        ref var aoe = ref aoes[0];
+        if (count > 1)
         {
-            var aoe = _aoes[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
+            aoe.Color = Colors.Danger;
         }
-        return aoes;
+        aoe.Risky = true;
+        return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.EpeaPteroentaFirst or (uint)AID.EpeaPteroentaRest)
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        {
+            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: false));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.EpeaPteroentaFirst or (uint)AID.EpeaPteroentaRest)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
 class CrepuscularRay(BossModule module) : Components.ChargeAOEs(module, (uint)AID.CrepuscularRay, 4f);
 
-abstract class CircumzenithalArc(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(40f, 90f.Degrees()));
-class CircumzenithalArcFirst(BossModule module) : CircumzenithalArc(module, (uint)AID.CircumzenithalArcFirst);
-class CircumzenithalArcSecond(BossModule module) : CircumzenithalArc(module, (uint)AID.CircumzenithalArcSecond)
+sealed class CircumzenithalArc(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CircumzenithalArcFirst, (uint)AID.CircumzenithalArcSecond], new AOEShapeCone(40f, 90f.Degrees()))
 {
     private readonly CrepuscularRay _aoe = module.FindComponent<CrepuscularRay>()!;
 
@@ -258,7 +262,7 @@ class Enomotos(BossModule module) : Components.Exaflare(module, 6f, (uint)AID.En
 }
 
 class Windage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Windage, 5f);
-class AfflatusAzem(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(5f), (uint)AID.AfflatusAzemFirst, (uint)AID.AfflatusAzemChase, 5f, 2.1f, 5, true);
+class AfflatusAzem(BossModule module) : Components.StandardChasingAOEs(module, 5f, (uint)AID.AfflatusAzemFirst, (uint)AID.AfflatusAzemChase, 5f, 2.1f, 5, true);
 class WindageSlow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindageSlow, 5f);
 class TrueHoly(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TrueHoly, 20f)
 {
@@ -266,7 +270,7 @@ class TrueHoly(BossModule module) : Components.SimpleKnockbacks(module, (uint)AI
     {
         if (Casters.Count != 0)
         {
-            var action = actor.Class.GetClassCategory() is ClassCategory.Healer or ClassCategory.Caster ? ActionID.MakeSpell(ClassShared.AID.Surecast) : ActionID.MakeSpell(ClassShared.AID.ArmsLength);
+            var action = actor.Class.GetClassCategory() is ClassCategory.Healer or ClassCategory.Caster ? ActionDefinitions.Surecast : ActionDefinitions.Armslength;
             hints.ActionsToExecute.Push(action, actor, ActionQueue.Priority.High);
         }
     }
@@ -287,8 +291,7 @@ public class WorthyOfHisBackStates : StateMachineBuilder
             .ActivateOnEnter<TrueAeroIV>()
             .ActivateOnEnter<TrueHolyRaidwide>()
             .ActivateOnEnter<CrepuscularRay>()
-            .ActivateOnEnter<CircumzenithalArcFirst>()
-            .ActivateOnEnter<CircumzenithalArcSecond>()
+            .ActivateOnEnter<CircumzenithalArc>()
             .ActivateOnEnter<CircleOfBrilliance>()
             .ActivateOnEnter<Enomotos>()
             .ActivateOnEnter<EpeaPteroenta>()
@@ -308,6 +311,6 @@ public class WorthyOfHisBackStates : StateMachineBuilder
 public class WorthyOfHisBack(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos arenaCenter = new(-630f, 72f);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(arenaCenter, 20f, 20)]);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(arenaCenter, 24.5f, 20)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(arenaCenter, 20f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(arenaCenter, 24.5f, 20)]);
 }

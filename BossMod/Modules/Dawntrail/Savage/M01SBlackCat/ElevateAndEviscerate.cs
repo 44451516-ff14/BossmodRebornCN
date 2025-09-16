@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Savage.M01SBlackCat;
 
 sealed class ElevateAndEviscerateShockwave(BossModule module) : Components.GenericAOEs(module, default, "GTFO from shockwave!")
 {
-    private AOEInstance? aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCross cross = new(60f, 5f);
     private readonly ElevateAndEviscerate _kb = module.FindComponent<ElevateAndEviscerate>()!;
     public static readonly AOEShapeRect Rect = new(5f, 5f, 5f);
@@ -13,28 +13,40 @@ sealed class ElevateAndEviscerateShockwave(BossModule module) : Components.Gener
         if (_kb.CurrentTarget != null && _kb.CurrentTarget != actor)
         {
             aoes.Add(new(cross, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.CurrentTarget.Position)), default, _kb.CurrentDeadline.AddSeconds(3.2d)));
-            if (_kb.CurrentKnockbackDistance == 0)
+            if (_kb.CurrentKnockbackDistance == default)
+            {
                 aoes.Add(new(Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.CurrentTarget.Position)), default, _kb.CurrentDeadline.AddSeconds(2d)));
-            else if (_kb.CurrentKnockbackDistance == 10 && Module.InBounds(_kb.Cache))
+            }
+            else if (_kb.CurrentKnockbackDistance == 10f && Arena.InBounds(_kb.Cache))
+            {
                 aoes.Add(new(Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, _kb.CurrentDeadline.AddSeconds(4.2d)));
+            }
         }
-        if (aoe != null && _kb.LastTarget != actor)
-            aoes.Add(aoe.Value);
+        if (_aoe.Length != 0 && _kb.LastTarget != actor)
+        {
+            aoes.Add(_aoe[0]);
+        }
         return CollectionsMarshal.AsSpan(aoes);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID is (uint)AID.ElevateAndEviscerateHitAOE or (uint)AID.ElevateAndEviscerateKnockbackAOE && Module.InBounds(_kb.Cache))
-            aoe = new(Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, WorldState.FutureTime(_kb.CurrentKnockbackDistance == 0f ? 1.4d : 3.6d));
+        if (spell.Action.ID is (uint)AID.ElevateAndEviscerateHitAOE or (uint)AID.ElevateAndEviscerateKnockbackAOE && Arena.InBounds(_kb.Cache))
+        {
+            _aoe = [new(Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, WorldState.FutureTime(_kb.CurrentKnockbackDistance == default ? 1.4d : 3.6d))];
+        }
         else if (spell.Action.ID is (uint)AID.ElevateAndEviscerateImpactHit or (uint)AID.ElevateAndEviscerateImpactKnockback)
-            aoe = null;
+        {
+            _aoe = [];
+        }
     }
 
     public override void Update()
     {
-        if (aoe != null && _kb.CurrentTarget != null && _kb.CurrentTarget.IsDead) // impact doesn't happen if player dies between ElevateAndEviscerate and Impact
-            aoe = null;
+        if (_aoe.Length != 0 && _kb.CurrentTarget != null && _kb.CurrentTarget.IsDead) // impact doesn't happen if player dies between ElevateAndEviscerate and Impact
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -78,14 +90,14 @@ sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockba
     {
         base.AddHints(slot, actor, hints);
         if (CurrentTarget == actor)
-            hints.Add($"{(CurrentKnockbackDistance > 0 ? "Knockback" : "Hit")} in {Math.Max(0, (CurrentDeadline - WorldState.CurrentTime).TotalSeconds):f1}s", false);
+            hints.Add($"{(CurrentKnockbackDistance > 0 ? "Knockback" : "Hit")} in {Math.Max(default, (CurrentDeadline - WorldState.CurrentTime).TotalSeconds):f1}s", false);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.ElevateAndEviscerateKnockback or (uint)AID.ElevateAndEviscerateHit)
         {
-            CurrentDeadline = Module.CastFinishAt(spell, 1.8f);
+            CurrentDeadline = Module.CastFinishAt(spell, 1.8d);
             CurrentKnockbackDistance = spell.Action.ID == (uint)AID.ElevateAndEviscerateKnockback ? 10f : 0f;
             InitIfReady();
         }
@@ -122,14 +134,13 @@ sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockba
             var len = aoes.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var aoe = ref aoes[i];
-                if (aoe.Check(pos))
+                if (aoes[i].Check(pos))
                 {
                     return true;
                 }
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 

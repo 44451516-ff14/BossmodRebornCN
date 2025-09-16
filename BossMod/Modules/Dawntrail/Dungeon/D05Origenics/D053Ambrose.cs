@@ -45,15 +45,15 @@ public enum AID : uint
 sealed class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom rect = new([new Rectangle(D053Ambrose.ArenaCenter, 33f, 24f)], [new Rectangle(D053Ambrose.ArenaCenter, 15f, 19.5f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.PsychicWave && Arena.Bounds == D053Ambrose.StartingBounds)
         {
-            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+            _aoe = [new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.7d))];
         }
     }
 
@@ -62,7 +62,7 @@ sealed class PsychicWaveArenaChange(BossModule module) : Components.GenericAOEs(
         if (index == 0x28 && state == 0x00020001u)
         {
             Arena.Bounds = D053Ambrose.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -72,54 +72,66 @@ sealed class Psychokinesis(BossModule module) : Components.SimpleAOEs(module, (u
 
 sealed class ExtrasensoryExpulsion(BossModule module) : Components.GenericKnockback(module, maxCasts: 1)
 {
-    public readonly List<Knockback> Sourcez = new(4);
+    public readonly List<Knockback> KBs = new(4);
     public static readonly AOEShapeRect RectNS = new(20f, 7.5f);
     public static readonly AOEShapeRect RectEW = new(15f, 10f);
+    private OverwhelmingCharge? _aoe;
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(Sourcez);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(KBs);
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoe = Module.FindComponent<OverwhelmingCharge>();
-        if (aoe != null && aoe.AOE != null)
+        _aoe ??= Module.FindComponent<OverwhelmingCharge>();
+        if (_aoe!.AOE.Length != 0)
         {
-            var activeAOE = aoe.AOE.Value;
+            ref var activeAOE = ref _aoe.AOE[0];
             if (activeAOE.Check(pos))
             {
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddSource(AOEShape shape) => Sourcez.Add(new(spell.LocXZ, 20f, Module.CastFinishAt(spell), shape, spell.Rotation, Kind.DirForward));
-        if (spell.Action.ID == (uint)AID.ExtrasensoryExpulsionNorthSouth)
+        void AddSource(AOEShape shape) => KBs.Add(new(spell.LocXZ, 20f, Module.CastFinishAt(spell), shape, spell.Rotation, Kind.DirForward));
+        var id = spell.Action.ID;
+        if (id == (uint)AID.ExtrasensoryExpulsionNorthSouth)
+        {
             AddSource(RectNS);
-        else if (spell.Action.ID == (uint)AID.ExtrasensoryExpulsionWestEast)
+        }
+        else if (id == (uint)AID.ExtrasensoryExpulsionWestEast)
+        {
             AddSource(RectEW);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (Sourcez.Count != 0 && spell.Action.ID is (uint)AID.ExtrasensoryExpulsionNorthSouth or (uint)AID.ExtrasensoryExpulsionWestEast)
-            Sourcez.Clear();
+        if (KBs.Count != 0 && spell.Action.ID is (uint)AID.ExtrasensoryExpulsionNorthSouth or (uint)AID.ExtrasensoryExpulsionWestEast)
+        {
+            KBs.Clear();
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var count = Sourcez.Count;
-        if (Sourcez.Count != 0)
+        var count = KBs.Count;
+        if (KBs.Count != 0)
         {
-            var forbidden = new List<Func<WPos, float>>(2);
+            var forbidden = new List<ShapeDistance>(2);
+            var kbs = CollectionsMarshal.AsSpan(KBs);
             for (var i = 0; i < count; ++i)
             {
-                var recti = Sourcez[i];
+                ref var recti = ref kbs[i];
                 if (recti.Shape is AOEShapeRect rect && rect == RectNS)
-                    forbidden.Add(ShapeDistance.InvertedRect(recti.Origin, recti.Direction, 19f, default, 7f));
+                {
+                    forbidden.Add(new SDInvertedRect(recti.Origin, recti.Direction, 19f, default, 7f));
+                }
             }
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Sourcez[0].Activation);
+            ref var kb0 = ref kbs[0];
+            hints.AddForbiddenZone(new SDIntersection([.. forbidden]), kb0.Activation);
         }
     }
 }
@@ -132,35 +144,44 @@ sealed class OverwhelmingCharge(BossModule module) : Components.GenericAOEs(modu
     private static readonly AOEShapeCone cone = new(26f, 90f.Degrees());
     private static readonly AOEShapeRect rectAdj = new(19f, 7f); // the knockback rectangles are placed poorly with significant error from visuals plus half height of the arena is smaller than 20 knockback distance
 
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private static readonly Angle a180 = 180f.Degrees();
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = _kb.Sourcez.Count;
+        var count = _kb.KBs.Count;
         var componentActive = count != 0 || actor.PendingKnockbacks.Count != 0;
 
-        if (AOE is AOEInstance aoe)
+        if (AOE.Length != 0)
         {
             if (componentActive)
             {
+                var kbs = CollectionsMarshal.AsSpan(_kb.KBs);
+                ref var aoe = ref AOE[0];
                 for (var i = 0; i < count; ++i)
                 {
-                    var source = _kb.Sourcez[i];
-                    if (aoe.Rotation.AlmostEqual(source.Direction + a180, Angle.DegToRad))
-                        return new AOEInstance[1] { new(rectAdj, source.Origin, source.Direction, source.Activation, Colors.SafeFromAOE, false) };
+                    ref var kb = ref kbs[i];
+                    if (aoe.Rotation.AlmostEqual(kb.Direction + a180, Angle.DegToRad))
+                    {
+                        return new AOEInstance[1] { new(rectAdj, kb.Origin, kb.Direction, kb.Activation, Colors.SafeFromAOE, false) };
+                    }
                 }
             }
             else
-                return new AOEInstance[1] { aoe };
+            {
+                return AOE;
+            }
         }
         else if (componentActive)
         {
+            var kbs = CollectionsMarshal.AsSpan(_kb.KBs);
             for (var i = 0; i < count; ++i)
             {
-                var recti = _kb.Sourcez[i];
+                ref var recti = ref kbs[i];
                 if (recti.Shape is AOEShapeRect rect && rect == ExtrasensoryExpulsion.RectNS)
+                {
                     return new AOEInstance[1] { new(rectAdj, recti.Origin, recti.Direction, recti.Activation, Colors.SafeFromAOE, false) };
+                }
             }
         }
         return [];
@@ -169,24 +190,31 @@ sealed class OverwhelmingCharge(BossModule module) : Components.GenericAOEs(modu
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.OverwhelmingCharge1 or (uint)AID.OverwhelmingCharge2)
-            AOE = new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            AOE = [new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.OverwhelmingCharge1 or (uint)AID.OverwhelmingCharge2)
-            AOE = default;
+        {
+            AOE = [];
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var component = _kb.Sourcez.Count != 0;
-        if (component && AOE is AOEInstance aoe)
+        var component = _kb.KBs.Count != 0;
+        if (component && AOE.Length != 0)
         {
+            ref var aoe = ref AOE[0];
             hints.AddForbiddenZone(aoe.Shape, aoe.Origin, aoe.Rotation + a180, aoe.Activation);
         }
         else
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -200,7 +228,7 @@ sealed class OverwhelmingCharge(BossModule module) : Components.GenericAOEs(modu
             var actorInSafespot = false;
             for (var i = 0; i < len; ++i)
             {
-                var aoe = aoes[i];
+                ref readonly var aoe = ref aoes[i];
                 if (aoe.Shape == rectAdj && aoe.Check(actor.Position))
                 {
                     actorInSafespot = true;
@@ -242,16 +270,22 @@ sealed class Rush(BossModule module) : Components.GenericAOEs(module)
             var dir = spell.LocXZ - caster.Position;
 
             if (_aoes.Count < 7)
+            {
                 _aoes.Add(new(new AOEShapeRect(dir.Length(), 5f), caster.Position, Angle.FromDirection(dir), activation));
+            }
             else
+            {
                 _aoes.Add(new(rect, new(190f, 19.5f), -180f.Degrees(), activation));
+            }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.Rush or (uint)AID.ElectrolanceAssimilation)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -272,7 +306,7 @@ sealed class D053AmbroseStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12695, SortOrder = 4)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825u, NameID = 12695u, SortOrder = 4)]
 public sealed class D053Ambrose(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(190f, default);
@@ -283,6 +317,6 @@ public sealed class D053Ambrose(WorldState ws, Actor primary) : BossModule(ws, p
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 }

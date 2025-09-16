@@ -15,7 +15,6 @@ public sealed class Map
     public int Height; // always even
     public float[] PixelMaxG = []; // == MaxValue if not dangerous (TODO: consider changing to a byte per pixel?), < 0 if impassable
     public float[] PixelPriority = [];
-    private const float Epsilon = 1e-5f;
 
     public WPos Center; // position of map center in world units
     public Angle Rotation; // rotation relative to world space (=> ToDirection() is equal to direction of local 'height' axis in world space)
@@ -31,7 +30,7 @@ public sealed class Map
     public int MaxY;
 
     public Map() { }
-    public Map(float resolution, WPos center, float worldHalfWidth, float worldHalfHeight, Angle rotation = new()) => Init(resolution, center, worldHalfWidth, worldHalfHeight, rotation);
+    public Map(float resolution, WPos center, float worldHalfWidth, float worldHalfHeight, Angle rotation = default) => Init(resolution, center, worldHalfWidth, worldHalfHeight, rotation);
 
     public void Init(float resolution, WPos center, float worldHalfWidth, float worldHalfHeight, Angle rotation = default)
     {
@@ -41,12 +40,18 @@ public sealed class Map
 
         var numPixels = Width * Height;
         if (PixelMaxG.Length < numPixels)
+        {
             PixelMaxG = new float[numPixels];
-        Array.Fill(PixelMaxG, float.MaxValue, 0, numPixels); // fill is unconditional, can we avoid it by changing storage?..
+        }
+        new Span<float>(PixelMaxG, 0, numPixels).Fill(float.MaxValue); // fill is unconditional, can we avoid it by changing storage?..
         if (PixelPriority.Length < numPixels)
+        {
             PixelPriority = new float[numPixels];
+        }
         else
-            Array.Fill(PixelPriority, 0f, 0, numPixels);
+        {
+            new Span<float>(PixelPriority, 0, numPixels).Clear();
+        }
 
         Center = center;
         Rotation = rotation;
@@ -112,7 +117,7 @@ public sealed class Map
     }
 
     // block all pixels for which function returns value smaller than threshold ('inside' shape + extra cushion)
-    public void BlockPixelsInside(Func<WPos, float> shape, float maxG, float threshold)
+    public void BlockPixelsInside(ShapeDistance shape, float maxG, float threshold)
     {
         MaxG = Math.Max(MaxG, maxG);
         var width = Width;
@@ -122,70 +127,23 @@ public sealed class Map
         var dx = dir.OrthoL() * resolution;
         var dy = dir * resolution;
         var startPos = Center - ((width >> 1) - 0.5f) * dx - ((height >> 1) - 0.5f) * dy;
+        var maxG_ = maxG;
+        var threshold_ = threshold;
+        var shape_ = shape;
 
-        Parallel.For(0, height, y =>
+        for (var y = 0; y < height; ++y)
         {
             var posY = startPos + y * dy;
             var rowBaseIndex = y * width;
             for (var x = 0; x < width; ++x)
             {
                 var pos = posY + x * dx;
-                if (shape(pos) <= threshold)
+                if (shape_.Distance(pos) <= threshold_)
                 {
-                    ref var pixelMaxG = ref PixelMaxG[rowBaseIndex + x];
-                    pixelMaxG = pixelMaxG < maxG ? pixelMaxG : maxG;
+                    PixelMaxG[rowBaseIndex + x] = maxG_;
                 }
             }
-        });
-    }
-
-    private static readonly (float, float)[] offsets =
-            [
-                (Epsilon, Epsilon),
-                (Epsilon, 1f - Epsilon),
-                (1f - Epsilon, Epsilon),
-                (1f - Epsilon, 1f - Epsilon)
-            ];
-
-    // for testing 4 points per pixel for increased accuracy to rasterize circle and rectangle arena bounds
-    public void BlockPixelsInside2(Func<WPos, float> shape, float maxG)
-    {
-        MaxG = Math.Max(MaxG, maxG);
-        var width = Width;
-        var height = Height;
-        var resolution = Resolution;
-        var dir = Rotation.ToDirection();
-        var dx = dir.OrthoL() * resolution;
-        var dy = dir * resolution;
-        var startPos = Center - (width >> 1) * dx - (height >> 1) * dy;
-
-        Parallel.For(0, height, y =>
-        {
-            var posY = startPos + y * dy;
-            var rowBaseIndex = y * width;
-
-            for (var x = 0; x < width; ++x)
-            {
-                var posBase = posY + x * dx;
-                var isBlocked = false;
-                for (var i = 0; i < 4; ++i)
-                {
-                    ref var points = ref offsets[i];
-                    var pos = posBase + points.Item1 * dx + points.Item2 * dy;
-
-                    if (shape(pos) <= 0)
-                    {
-                        isBlocked = true;
-                        break;
-                    }
-                }
-                if (isBlocked)
-                {
-                    ref var pixelMaxG = ref PixelMaxG[rowBaseIndex + x];
-                    pixelMaxG = pixelMaxG < maxG ? pixelMaxG : maxG;
-                }
-            }
-        });
+        }
     }
 
     public (int x, int y, WPos center)[] EnumeratePixels()

@@ -82,5 +82,5 @@ sealed class D073TheTycoonStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 655, NameID = 8167)]
 public sealed class D073TheTycoon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(default, -329f), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(default, -309f), 20, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(default, -329f), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(default, -309f), 20, 1.25f)]);
 }

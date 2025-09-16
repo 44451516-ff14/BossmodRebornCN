@@ -34,8 +34,8 @@ public sealed class BossModuleConfig : ConfigNode
     [PropertyDisplay("雷达竞技场缩放比例", tooltip: "雷达窗口中竞技场的显示比例")]
     [PropertySlider(0.1f, 10, Speed = 0.1f, Logarithmic = true)]
     public float ArenaScale = 1;
-    
-    
+
+
     [PropertyDisplay("雷达元素厚度[thickness]缩放因子", tooltip: "全局缩放雷达元素厚度[thickness]的厚度")]
     [PropertySlider(0.1f, 10, Speed = 0.1f, Logarithmic = true)]
     public float ThicknessScale = 1;
@@ -61,15 +61,15 @@ public sealed class BossModuleConfig : ConfigNode
 
     [PropertyDisplay("方位名称字体大小")]
     [PropertySlider(0.1f, 100, Speed = 1)]
-    public float CardinalsFontSize = 17;
+    public float CardinalsFontSize = 17f;
 
     [PropertyDisplay("标记字体大小")]
     [PropertySlider(0.1f, 100, Speed = 1)]
-    public float WaymarkFontSize = 22;
+    public float WaymarkFontSize = 22f;
 
     [PropertyDisplay("角色三角标记缩放比例")]
     [PropertySlider(0.1f, 10, Speed = 0.1f)]
-    public float ActorScale = 1;
+    public float ActorScale = 1f;
 
     [PropertyDisplay("在雷达上显示标记")]
     public bool ShowWaymarks = false;
@@ -105,4 +105,8 @@ public sealed class BossModuleConfig : ConfigNode
 
     [PropertyDisplay("显示近战范围指示器")]
     public bool ShowMeleeRangeIndicator = false;
+
+    [PropertyDisplay("Maximum load distance", tooltip: "Maximum load distance in yalms")]
+    [PropertySlider(0.1f, 500f, Speed = 0.1f, Logarithmic = true)]
+    public float MaxLoadDistance = 500f;
 }

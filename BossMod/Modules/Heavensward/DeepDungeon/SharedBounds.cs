@@ -2,8 +2,8 @@ namespace BossMod.Heavensward.DeepDungeon.PalaceOfTheDead;
 
 public static class SharedBounds
 {
-    public static readonly ArenaBoundsComplex ArenaBounds607080 = new([new Polygon(new(-300f, -220f), 24.94f, 48)], [new Rectangle(new(-300f, -245.68f), 20f, 1.55f)]);
-    public static readonly ArenaBoundsComplex ArenaBounds2090110 = new([new Polygon(new(-300f, -236f), 24.5f, 24)], [new Rectangle(new(-298.763f, -261.119f), 20f, 1.55f)]);
+    public static readonly ArenaBoundsCustom ArenaBounds607080 = new([new Polygon(new(-300f, -220f), 24.94f, 48)], [new Rectangle(new(-300f, -245.68f), 20f, 1.55f)]);
+    public static readonly ArenaBoundsCustom ArenaBounds2090110 = new([new Polygon(new(-300f, -236f), 24.5f, 24)], [new Rectangle(new(-298.763f, -261.119f), 20f, 1.55f)]);
     private static readonly WPos[] vertices120130 = [new(-290.26f, -259.65f), new(-289.73f, -259.2f), new(-288.76f, -258.22f), new(-288.25f, -257.85f), new(-284.66f, -255.87f),
     new(-284.15f, -255.44f), new(-282.3f, -252.9f), new(-280.65f, -251.85f), new(-280.23f, -251.36f), new(-279.47f, -250.25f),
     new(-278.54f, -249.28f), new(-278.25f, -248.68f), new(-277.55f, -245.63f), new(-276.36f, -243.41f), new(-275.84f, -241.48f),
@@ -18,7 +18,7 @@ public static class SharedBounds
     new(-323.76f, -242.46f), new(-322.69f, -246.47f), new(-320.62f, -248.97f), new(-319.69f, -250.83f), new(-319.32f, -251.38f),
     new(-317.59f, -253.47f), new(-313.43f, -256.21f), new(-312.98f, -256.61f), new(-312.12f, -257.62f), new(-311.61f, -258.06f),
     new(-308.02f, -259.6f), new(-290.26f, -259.65f)];
-    public static readonly ArenaBoundsComplex ArenaBounds120130 = new([new PolygonCustom(vertices120130)]);
+    public static readonly ArenaBoundsCustom ArenaBounds120130 = new([new PolygonCustom(vertices120130)]);
     private static readonly WPos[] vertices140150 = [new(-289.68f, -259.66f), new(-289.06f, -259.36f), new(-285.88f, -257.19f), new(-283.86f, -255.6f), new(-281.04f, -252.7f),
     new(-280.77f, -252.07f), new(-278.87f, -250.28f), new(-278.04f, -249.24f), new(-278.14f, -247.41f), new(-277.98f, -246.78f),
     new(-277.25f, -244.87f), new(-276.94f, -244.36f), new(-276.19f, -243.32f), new(-275.96f, -242.68f), new(-275.92f, -241.34f),
@@ -37,6 +37,6 @@ public static class SharedBounds
     new(-323.24f, -245.28f), new(-323.12f, -245.93f), new(-321.47f, -248.78f), new(-321.06f, -249.98f), new(-320.8f, -250.57f),
     new(-319.71f, -252.23f), new(-316.45f, -254.46f), new(-314.86f, -256.49f), new(-313.24f, -257.64f), new(-312.55f, -258.64f),
     new(-312.09f, -259.12f), new(-311.56f, -259.5f), new(-310.91f, -259.67f)];
-    public static readonly ArenaBoundsComplex ArenaBounds140150 = new([new PolygonCustom(vertices140150)]);
-    public static readonly ArenaBoundsComplex ArenaBounds160170180190 = new([new Polygon(new(-300f, -300f), 24.256f, 64)], [new Rectangle(new(-300f, -325.134f), 20f, 1.55f)]);
+    public static readonly ArenaBoundsCustom ArenaBounds140150 = new([new PolygonCustom(vertices140150)]);
+    public static readonly ArenaBoundsCustom ArenaBounds160170180190 = new([new Polygon(new(-300f, -300f), 24.256f, 64)], [new Rectangle(new(-300f, -325.134f), 20f, 1.55f)]);
 }

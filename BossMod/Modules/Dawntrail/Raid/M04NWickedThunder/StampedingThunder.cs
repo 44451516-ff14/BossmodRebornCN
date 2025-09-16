@@ -3,23 +3,30 @@ namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 15f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        var activation = WorldState.FutureTime(9.4d);
-        if (spell.Action.ID == (uint)AID.StampedingThunderVisualWest)
-            _aoe = new(rect, new(95f, 80f), caster.Rotation, activation);
-        else if (spell.Action.ID == (uint)AID.StampedingThunderVisualEast)
-            _aoe = new(rect, new(105f, 80f), caster.Rotation, activation);
+        var id = spell.Action.ID;
+        if (id == (uint)AID.StampedingThunderVisualWest)
+        {
+            AddAOE(new(95f, 80f));
+        }
+        else if (id == (uint)AID.StampedingThunderVisualEast)
+        {
+            AddAOE(new(105f, 80f));
+        }
+        void AddAOE(WPos position) => _aoe = [new(rect, position.Quantized(), caster.Rotation, WorldState.FutureTime(9.4d))];
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (index == 0x00 && state is 0x00200010u or 0x00020001u)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -38,20 +45,21 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
         // 0x00020001 - east 3/4 disappears
         if (index == 0x00)
         {
-            if (state == 0x00020001u)
+            switch (state)
             {
-                Arena.Bounds = damagedPlatform;
-                Arena.Center = EastremovedCenter;
-            }
-            else if (state == 0x00200010u)
-            {
-                Arena.Bounds = damagedPlatform;
-                Arena.Center = WestRemovedCenter;
-            }
-            else if (state is 0x00400004u or 0x00800004u)
-            {
-                Arena.Bounds = DefaultBounds;
-                Arena.Center = DefaultCenter;
+                case 0x00020001u:
+                    Arena.Bounds = damagedPlatform;
+                    Arena.Center = EastremovedCenter;
+                    break;
+                case 0x00200010u:
+                    Arena.Bounds = damagedPlatform;
+                    Arena.Center = WestRemovedCenter;
+                    break;
+                case 0x00400004u:
+                case 0x00800004u:
+                    Arena.Bounds = DefaultBounds;
+                    Arena.Center = DefaultCenter;
+                    break;
             }
         }
     }

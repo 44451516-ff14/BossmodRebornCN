@@ -77,17 +77,17 @@ class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, (ui
         if (Casters.Count != 0)
         {
             var count = _aoe.Casters.Count;
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
             var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
             var center = Arena.Center;
             for (var i = 0; i < count; ++i)
             {
                 ref readonly var aoe = ref aoes[i];
-                forbidden[i] = ShapeDistance.Cone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
+                forbidden[i] = new SDCone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
             }
             if (count != 0)
             {
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
+                hints.AddForbiddenZone(new SDUnion(forbidden), Casters.Ref(0).Activation);
             }
         }
     }
@@ -111,17 +111,7 @@ class DaenOseTheAvariciousUltrosStates : StateMachineBuilder
             .ActivateOnEnter<ThunderIII>()
             .ActivateOnEnter<WaveOfTurmoil>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(DaenOseTheAvariciousUltros.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(DaenOseTheAvariciousUltros.All);
     }
 }
 
@@ -135,7 +125,7 @@ public class DaenOseTheAvariciousUltros(WorldState ws, Actor primary) : THTempla
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -1,5 +1,5 @@
 ﻿using Dalamud.Memory;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 

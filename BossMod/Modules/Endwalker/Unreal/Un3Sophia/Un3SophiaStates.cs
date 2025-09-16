@@ -9,7 +9,7 @@ class Un3SophiaStates : StateMachineBuilder
         SimplePhase(1, Phase2, "Adds + next few mechanics (until 75%)")
             .Raw.Update = () => Module.PrimaryActor.IsDestroyed || (Module.PrimaryActor.CastInfo?.IsSpell(AID.ThunderCone) ?? false);
         SimplePhase(2, Phase3, "Skippable mechanics (until 68%)")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.Enemies(OID.AionTeleos).Count != 0;
+            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.Enemies((uint)OID.AionTeleos).Count != 0;
         DeathPhase(3, Phase4);
     }
 
@@ -90,7 +90,7 @@ class Un3SophiaStates : StateMachineBuilder
 
     private void Gnosis(uint id, float delay)
     {
-        ActorCast(id, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.Gnosis, delay, 3, false, "Knockback")
+        ActorCast(id, Module.Enemies((uint)OID.Barbelo).FirstOrDefault, (uint)AID.Gnosis, delay, 3, false, "Knockback")
             .ActivateOnEnter<Gnosis>()
             .DeactivateOnExit<Gnosis>();
     }
@@ -165,11 +165,11 @@ class Un3SophiaStates : StateMachineBuilder
         ArmsOfWisdom(id + 0x200, 5.2f);
 
         CastStart(id + 0x300, (uint)AID.Execute, 7.3f);
-        ActorCastStart(id + 0x301, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.LightDewShort, 2.1f)
+        ActorCastStart(id + 0x301, Module.Enemies((uint)OID.Barbelo).FirstOrDefault, (uint)AID.LightDewShort, 2.1f)
             .ActivateOnEnter<ExecuteDonut>()
             .ActivateOnEnter<ExecuteAero>()
             .ActivateOnEnter<ExecuteCone>();
-        ActorCastEnd(id + 0x302, Module.Enemies(OID.Barbelo).FirstOrDefault, 2, false, "Line")
+        ActorCastEnd(id + 0x302, Module.Enemies((uint)OID.Barbelo).FirstOrDefault, 2, false, "Line")
             .ActivateOnEnter<LightDewShort>()
             .DeactivateOnExit<LightDewShort>();
         CastEnd(id + 0x303, 0.9f, "Repeat by copies")
@@ -250,7 +250,7 @@ class Un3SophiaStates : StateMachineBuilder
             .ActivateOnEnter<Quasar>();
         ComponentCondition<Quasar>(id + 0x20, 7.8f, comp => comp.NumCasts > 0, "Tilt")
             .DeactivateOnExit<Quasar>();
-        ActorCast(id + 0x30, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.LightDewShort, 0.5f, 2, false, "Line")
+        ActorCast(id + 0x30, Module.Enemies((uint)OID.Barbelo).FirstOrDefault, (uint)AID.LightDewShort, 0.5f, 2, false, "Line")
             .ActivateOnEnter<LightDewShort>()
             .DeactivateOnExit<LightDewShort>();
     }
@@ -261,7 +261,7 @@ class Un3SophiaStates : StateMachineBuilder
         Targetable(id + 0x10, false, 0.9f, "Boss disappear");
         ComponentCondition<Quasar>(id + 0x20, 0, comp => comp.WeightLeft + comp.WeightRight > 0)
             .ActivateOnEnter<Quasar>();
-        ActorCastStart(id + 0x30, Module.Enemies(OID.Barbelo).FirstOrDefault, (uint)AID.LightDewLong, 3.3f);
+        ActorCastStart(id + 0x30, Module.Enemies((uint)OID.Barbelo).FirstOrDefault, (uint)AID.LightDewLong, 3.3f);
         CastStart(id + 0x31, (uint)AID.Onrush, 3.0f)
             .ActivateOnEnter<LightDewLong>();
         ComponentCondition<Quasar>(id + 0x40, 1.5f, comp => comp.NumCasts > 0, "Tilt")
@@ -269,7 +269,7 @@ class Un3SophiaStates : StateMachineBuilder
             .DeactivateOnExit<Quasar>();
         CastEnd(id + 0x42, 1.5f, "Half room aoe")
             .DeactivateOnExit<Onrush>();
-        ActorCastEnd(id + 0x43, Module.Enemies(OID.Barbelo).FirstOrDefault, 1, false, "Line")
+        ActorCastEnd(id + 0x43, Module.Enemies((uint)OID.Barbelo).FirstOrDefault, 1, false, "Line")
             .DeactivateOnExit<LightDewLong>();
         Targetable(id + 0x50, true, 4.2f, "Boss reappear");
     }

@@ -21,25 +21,32 @@ public enum AID : uint
 class Divebomb(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(30f, 5.5f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoe != null)
-            return new AOEInstance[1] { _aoe.Value with { Rotation = Module.PrimaryActor.Rotation } }; // aoe aims at a player, so rotation can change for a moment after cast started
-        return [];
+        if (_aoe.Length != 0)
+        {
+            ref var aoe = ref _aoe[0];
+            aoe.Rotation = Module.PrimaryActor.Rotation; // aoe aims at a player, so rotation can change for a moment after cast started
+        }
+        return _aoe;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Divebomb)
-            _aoe = new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Divebomb)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 

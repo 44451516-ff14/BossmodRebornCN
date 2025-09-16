@@ -38,17 +38,7 @@ class FuathTroublemakerStates : StateMachineBuilder
             .ActivateOnEnter<Spittle>()
             .ActivateOnEnter<Hydrocannon>()
             .ActivateOnEnter<FrigidNeedle>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(FuathTroublemaker.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(FuathTroublemaker.All);
     }
 }
 

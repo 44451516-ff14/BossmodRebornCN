@@ -46,25 +46,15 @@ class ScarmiglioneP1States : StateMachineBuilder
 public class ScarmiglioneP1(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
 {
     public static readonly WPos ArenaCenter = new(0, -148);
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(ArenaCenter, 19.5f * CosPI.Pi36th, 36),
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(ArenaCenter, 19.5f * CosPI.Pi36th, 36),
     new Rectangle(new(0, -129.2f), 3.2f, 1), new Rectangle(new(0, -166.8f), 3.2f, 1)]);
     private static readonly uint[] trash = [(uint)OID.PlunderedButler, (uint)OID.PlunderedSteward, (uint)OID.PlunderedPawn];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            if (enemies[i].InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }
 

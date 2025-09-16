@@ -48,12 +48,6 @@ public static class ActorEnumeration
         return range.Where(x => !actorSet.Contains(x));
     }
 
-    public static IEnumerable<(int, Actor)> Exclude(this IEnumerable<(int, Actor)> range, IEnumerable<Actor> actors)
-    {
-        var actorSet = new HashSet<Actor>(actors);
-        return range.WhereActor(x => !actorSet.Contains(x));
-    }
-
     // select actors that have their corresponding bit in mask set
     public static IEnumerable<(int, Actor)> IncludedInMask(this IEnumerable<(int, Actor)> range, BitMask mask)
     {
@@ -109,21 +103,6 @@ public static class ActorEnumeration
             if (shape.Check(actor.Position, origin))
             {
                 result.Add(actor);
-            }
-        }
-
-        return result;
-    }
-
-    public static List<(int, Actor)> InShape(this IEnumerable<(int, Actor)> range, AOEShape shape, Actor origin)
-    {
-        List<(int, Actor)> result = [];
-
-        foreach (var tuple in range)
-        {
-            if (shape.Check(tuple.Item2.Position, origin))
-            {
-                result.Add(tuple);
             }
         }
 
@@ -277,65 +256,5 @@ public static class ActorEnumeration
                 ++mismatch;
         }
         return (match, mismatch);
-    }
-
-    // find the centroid of actor positions
-    public static WPos PositionCentroid(this IEnumerable<Actor> range)
-    {
-        WDir sum = default;
-        int count = 0;
-        foreach (var a in range)
-        {
-            sum += a.Position.ToWDir();
-            ++count;
-        }
-        if (count > 0)
-            sum /= count;
-        return sum.ToWPos();
-    }
-
-    public static (int, Actor)[] ExcludedFromMask(this List<(int, Actor)> range, BitMask mask)
-    {
-        var count = range.Count;
-        var result = new List<(int, Actor)>(count);
-        for (var i = 0; i < count; ++i)
-        {
-            var indexActor = range[i];
-            if (!mask[indexActor.Item1])
-            {
-                result.Add(indexActor);
-            }
-        }
-        return [.. result];
-    }
-
-    public static (int, Actor)[] WhereSlot(this List<(int, Actor)> range, Func<int, bool> predicate)
-    {
-        var count = range.Count;
-        var result = new List<(int, Actor)>(count);
-        for (var i = 0; i < count; ++i)
-        {
-            var indexActor = range[i];
-            if (predicate(indexActor.Item1))
-            {
-                result.Add(indexActor);
-            }
-        }
-        return [.. result];
-    }
-
-    public static (int, Actor)[] InRadius(this List<(int, Actor)> range, WPos origin, float radius)
-    {
-        var count = range.Count;
-        var result = new List<(int, Actor)>(count);
-        for (var i = 0; i < count; ++i)
-        {
-            var indexActor = range[i];
-            if (indexActor.Item2.Position.InCircle(origin, radius))
-            {
-                result.Add(indexActor);
-            }
-        }
-        return [.. result];
     }
 }

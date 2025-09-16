@@ -28,28 +28,28 @@ public sealed class ActionQueue
     // note that actions with priority < 0 will never be executed; they can still be added to the queue if it's convenient for the implementation
     public static class Priority
     {
-        public const float Minimal = 0; // minimal priority for action to be still considered for execution; do not use directly
+        public const float Minimal = default; // minimal priority for action to be still considered for execution; do not use directly
         // priorities > Minimal and < VeryLow should be used for ??? (don't know good usecases)
-        public const float VeryLow = 1000; // only use this action if there is nothing else to press
+        public const float VeryLow = 1000f; // only use this action if there is nothing else to press
         // priorities > VeryLow and < Low should be used for actions that can be safely delayed without affecting dps (eg. ability with charges when there is no risk of overcapping or losing raidbuffs any time soon)
-        public const float Low = 2000; // only use this action if it won't delay dps action (eg. delay if there are any ogcds that need to be used)
+        public const float Low = 2000f; // only use this action if it won't delay dps action (eg. delay if there are any ogcds that need to be used)
         // priorities > Low and < Medium should be used for normal ogcds that are part of the rotation
-        public const float Medium = 3000; // use this action in first possible ogcd slot, unless there's some hugely important rotational ogcd; you should always have at least 1 slot per gcd to execute Medium actions
+        public const float Medium = 3000f; // use this action in first possible ogcd slot, unless there's some hugely important rotational ogcd; you should always have at least 1 slot per gcd to execute Medium actions
         // priorities > Medium and < High should be used for ogcds that can't be delayed (eg. GNB continuation); code should be careful not to queue more than one such action per gcd window
-        public const float High = 4000; // use this action asap, unless it would delay gcd (that is - in first possible ogcd slot); careless use could severely affect dps
+        public const float High = 4000f; // use this action asap, unless it would delay gcd (that is - in first possible ogcd slot); careless use could severely affect dps
         // priorities > High and < VeryHigh should be used for gcds, or any other actions that need to delay gcd
-        public const float VeryHigh = 5000; // drop everything and use this action asap, delaying gcd if needed; almost guaranteed to severely affect dps
+        public const float VeryHigh = 5000f; // drop everything and use this action asap, delaying gcd if needed; almost guaranteed to severely affect dps
         // priorities > VeryHigh should not be used by general code
 
-        public const float ManualOGCD = 4001; // manually pressed ogcd should be higher priority than any non-gcd, but lower than any gcd
-        public const float ManualGCD = 4999; // manually pressed gcd should be higher priority than any gcd; it's still lower priority than VeryHigh, since presumably that action is planned to delay gcd
-        public const float ManualEmergency = 9000; // this action should be used asap, because user is spamming it
+        public const float ManualOGCD = 4001f; // manually pressed ogcd should be higher priority than any non-gcd, but lower than any gcd
+        public const float ManualGCD = 4999f; // manually pressed gcd should be higher priority than any gcd; it's still lower priority than VeryHigh, since presumably that action is planned to delay gcd
+        public const float ManualEmergency = 9000f; // this action should be used asap, because user is spamming it
     }
 
     public readonly List<Entry> Entries = [];
 
     public void Clear() => Entries.Clear();
-    public void Push(ActionID action, Actor? target, float priority, float expire = float.MaxValue, float delay = 0, float castTime = 0, Vector3 targetPos = default, Angle? facingAngle = null, bool manual = false) => Entries.Add(new(action, target, priority, expire, delay, castTime, targetPos, facingAngle, manual));
+    public void Push(in ActionID action, Actor? target, float priority, float expire = float.MaxValue, float delay = default, float castTime = default, Vector3 targetPos = default, Angle? facingAngle = null, bool manual = false) => Entries.Add(new(action, target, priority, expire, delay, castTime, targetPos, facingAngle, manual));
 
     public Entry FindBest(WorldState ws, Actor player, ReadOnlySpan<Cooldown> cooldowns, float animationLock, AIHints hints, float instantAnimLockDelay, bool allowDismount)
     {
@@ -113,7 +113,7 @@ public sealed class ActionQueue
         {
             var to = entry.Target?.Position ?? new(entry.TargetPos.XZ());
             var distSq = (to - player.Position).LengthSq();
-            var effRange = def.Range + player.HitboxRadius + (entry.Target?.HitboxRadius ?? 0);
+            var effRange = def.Range + player.HitboxRadius + (entry.Target?.HitboxRadius ?? default);
             if (distSq > effRange * effRange)
                 return false;
         }

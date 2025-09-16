@@ -55,9 +55,9 @@ sealed class FusefieldVoidzone(BossModule module) : Components.GenericAOEs(modul
 {
     public bool Active;
     private static readonly AOEShapeCircle circle = new(5);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -66,11 +66,11 @@ sealed class FusefieldVoidzone(BossModule module) : Components.GenericAOEs(modul
             switch (state)
             {
                 case 0x00020001u:
-                    _aoe = new(circle, Arena.Center, default, WorldState.FutureTime(9.1d));
+                    _aoe = [new(circle, Arena.Center, default, WorldState.FutureTime(9.1d))];
                     break;
                 case 0x00200010u:
                     Arena.Bounds = M03SBruteBomber.FuseFieldBounds;
-                    _aoe = null;
+                    _aoe = [];
                     Active = true;
                     break;
                 case 0x00080004u:

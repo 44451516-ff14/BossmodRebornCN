@@ -44,10 +44,10 @@ sealed class DecisiveBattleStatus(BossModule module) : BossComponent(module)
 
 sealed class DecisiveBattleAOEs(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly List<Polygon> circles = new(3);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -63,8 +63,8 @@ sealed class DecisiveBattleAOEs(BossModule module) : Components.GenericAOEs(modu
                 var clipper = new PolygonClipper();
                 exclusiveArea = clipper.Difference(new(exclusiveArea), new(donut.ToPolygon(center)));
 
-                AOEShapeCustom shape = new([.. circles], InvertForbiddenZone: true) { Polygon = exclusiveArea };
-                _aoe = new(shape, center, default, Module.CastFinishAt(spell), Colors.SafeFromAOE);
+                AOEShapeCustom shape = new([.. circles], invertForbiddenZone: true) { Polygon = exclusiveArea };
+                _aoe = [new(shape, center, default, Module.CastFinishAt(spell), Colors.SafeFromAOE)];
             }
         }
     }
@@ -110,8 +110,9 @@ sealed class DecisiveBattleAOEs(BossModule module) : Components.GenericAOEs(modu
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is AOEInstance aoe)
+        if (_aoe.Length != 0)
         {
+            ref var aoe = ref _aoe[0];
             hints.Add("Stand inside AOE of assigned boss!", !aoe.Check(actor.Position));
         }
     }

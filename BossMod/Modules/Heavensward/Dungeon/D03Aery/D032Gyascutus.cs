@@ -27,15 +27,15 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(19.9f, 27);
     private static readonly ArenaBoundsCircle defaultbounds = new(19.9f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.InflammableFumes && Arena.Bounds == D032Gyascutus.StartingBounds)
         {
-            _aoe = new(donut, D032Gyascutus.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d));
+            _aoe = [new(donut, D032Gyascutus.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d))];
         }
     }
 
@@ -44,7 +44,7 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = defaultbounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -59,7 +59,7 @@ class BodySlam(BossModule module) : Components.SimpleKnockbacks(module, (uint)AI
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 9f), Casters.Ref(0).Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 9f), Casters.Ref(0).Activation);
     }
 }
 
@@ -83,5 +83,5 @@ class D032GyascutusStates : StateMachineBuilder
 public class D032Gyascutus(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(11.978f, 67.979f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Circle(ArenaCenter, 26.5f)], [new Rectangle(new(38.805f, 66.371f), 20f, 0.8f, -86.104f.Degrees()), new Rectangle(new(-11.441f, 56.27f), 20f, 0.9f, 64.554f.Degrees()), new Circle(new(-16.5f, 66.1f), 2.5f)]);
+    public static readonly ArenaBoundsCustom StartingBounds = new([new Circle(ArenaCenter, 26.5f)], [new Rectangle(new(38.805f, 66.371f), 20f, 0.8f, -86.104f.Degrees()), new Rectangle(new(-11.441f, 56.27f), 20f, 0.9f, 64.554f.Degrees()), new Circle(new(-16.5f, 66.1f), 2.5f)]);
 }

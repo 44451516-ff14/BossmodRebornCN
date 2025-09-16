@@ -101,7 +101,7 @@ public class TheSapphireWeapon(WorldState ws, Actor primary) : SleepNowInSapphir
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies([(uint)OID.MagitekTurret, (uint)OID.CeruleumServant]));
+        Arena.Actors(this, [(uint)OID.MagitekTurret, (uint)OID.CeruleumServant]);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

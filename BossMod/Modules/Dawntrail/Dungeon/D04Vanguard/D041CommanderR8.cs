@@ -43,15 +43,15 @@ public enum AID : uint
 sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D041CommanderR8.ArenaCenter, 20f)], [new Square(D041CommanderR8.ArenaCenter, 17f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds == D041CommanderR8.StartingBounds)
+        if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds.Radius > 19f)
         {
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.4d));
+            _aoe = [new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.4d))];
         }
     }
 
@@ -60,7 +60,7 @@ sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(
         if (index == 0x0A && state == 0x00020001u)
         {
             Arena.Bounds = D041CommanderR8.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -85,7 +85,15 @@ sealed class EnhancedMobility(BossModule module) : Components.GenericAOEs(module
         {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
             if (_aoes.Count == 2)
-                _aoes.Sort((x, y) => x.Activation.CompareTo(y.Activation));
+            {
+                var aoes = CollectionsMarshal.AsSpan(_aoes);
+                ref var aoe1 = ref aoes[0];
+                ref var aoe2 = ref aoes[1];
+                if (aoe1.Activation > aoe2.Activation)
+                {
+                    (aoe1, aoe2) = (aoe2, aoe1);
+                }
+            }
         }
     }
 
@@ -123,14 +131,17 @@ sealed class RapidRotary(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         if (count > 2)
         {
+            var color = Colors.Danger;
             for (var i = 0; i < 2; ++i)
             {
                 ref var aoe = ref aoes[i];
-                aoe.Color = Colors.Danger;
+                aoe.Color = color;
             }
         }
         return aoes;
@@ -169,7 +180,9 @@ sealed class RapidRotary(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID is (uint)AID.RapidRotaryCone or (uint)AID.RapidRotaryDonutSegmentBig or (uint)AID.RapidRotaryDonutSegmentSmall)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
@@ -194,7 +207,7 @@ sealed class D041CommanderR8States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12750, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831u, NameID = 12750u, SortOrder = 3)]
 public sealed class D041CommanderR8(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-100f, 207f);

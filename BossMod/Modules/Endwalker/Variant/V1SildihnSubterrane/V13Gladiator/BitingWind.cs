@@ -9,7 +9,7 @@ sealed class BitingWindSmall(BossModule module) : Components.VoidzoneAtCastTarge
 
 sealed class BitingWindUpdraftVoidzone(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance[] _aoe = new AOEInstance[1];
+    private AOEInstance[] _aoe = [];
     private bool active;
     private static readonly AOEShapeCircle circle = new(6f), circleInverted = new(6f, true);
     private DateTime activation = DateTime.MaxValue;
@@ -80,7 +80,7 @@ sealed class BitingWindUpdraftVoidzone(BossModule module) : Components.GenericAO
         if (activation != DateTime.MaxValue && WorldState.CurrentTime < activation)
         {
             ref var aoe = ref _aoe[0];
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 12f), activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 12f), activation);
         }
     }
 }

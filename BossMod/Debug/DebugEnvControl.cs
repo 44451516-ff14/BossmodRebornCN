@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Globalization;
 
 namespace BossMod;

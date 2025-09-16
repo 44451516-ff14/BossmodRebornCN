@@ -29,24 +29,11 @@ sealed class D90StationSpecterStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<GlassPunch>()
             .ActivateOnEnter<Catapult>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D90StationSpecter.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D90StationSpecter.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13577, SortOrder = 5)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13577, SortOrder = 5)]
 public sealed class D90StationSpecter(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(117.43f, -25.65f), new(119.51f, -25.64f), new(120.13f, -25.32f), new(120.8f, -25.13f), new(121.36f, -24.64f),
@@ -86,28 +73,15 @@ public sealed class D90StationSpecter(WorldState ws, Actor primary) : BossModule
     new(111.26f, -15.73f), new(110.8f, -15.94f), new(110.21f, -16.29f), new(109.99f, -16.97f), new(109.99f, -17.66f),
     new(110.65f, -18.55f), new(110.54f, -19.18f), new(110.07f, -19.71f), new(109.97f, -23.91f), new(110.22f, -24.35f),
     new(110.66f, -24.76f), new(111.26f, -25.17f), new(111.95f, -25.35f), new(117.43f, -25.65f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.RottenResearcher1, (uint)OID.RottenResearcher2, (uint)OID.RottenResearcher3,
     (uint)OID.GiantCorse, (uint)OID.StationSpecter];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat && enemy.Position.AlmostEqual(center, radius))
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

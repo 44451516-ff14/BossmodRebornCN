@@ -17,15 +17,9 @@ public sealed class M08SHowlingBlade(WorldState ws, Actor primary) : BossModule(
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossP2 == null)
+        if (StateMachine.ActivePhaseIndex == 1)
         {
-            if (StateMachine.ActivePhaseIndex == 1)
-            {
-                var b = Enemies((uint)OID.BossP2);
-                _bossP2 = b.Count != 0 ? b[0] : null;
-            }
+            _bossP2 ??= GetActor((uint)OID.BossP2);
         }
     }
 
@@ -37,6 +31,6 @@ public sealed class M08SHowlingBlade(WorldState ws, Actor primary) : BossModule(
 
     public static readonly WPos ArenaCenter = new(100f, 100f);
     public static readonly Polygon[] StartingArenaPolygon = [new(ArenaCenter, 12f, 40)];
-    public static readonly ArenaBoundsComplex StartingArena = new(StartingArenaPolygon, MapResolution: 0.25f);
-    public static readonly ArenaBoundsComplex DonutArena = new(StartingArenaPolygon, [new Polygon(ArenaCenter, 8f, 40)]);
+    public static readonly ArenaBoundsCustom StartingArena = new(StartingArenaPolygon, MapResolution: 0.25f);
+    public static readonly ArenaBoundsCustom DonutArena = new(StartingArenaPolygon, [new Polygon(ArenaCenter, 8f, 40)]);
 }

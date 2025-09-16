@@ -28,9 +28,9 @@ sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockba
             if (bounds != Arena.Bounds)
             {
                 bounds = Arena.Bounds;
-                if (bounds is ArenaBoundsComplex arena)
+                if (bounds is ArenaBoundsCustom arena)
                 {
-                    poly = arena.poly.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
+                    poly = arena.Polygon.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
                 }
             }
         }
@@ -88,7 +88,7 @@ sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockba
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -112,27 +112,8 @@ sealed class ElevateAndEviscerate(BossModule module) : Components.GenericKnockba
             {
                 temp[len + i] = aoes2[i].Origin;
             }
-            var center = Arena.Center;
-            var origin = Tether.source.Position;
-            var polygon = poly;
-            hints.AddForbiddenZone(p =>
-            {
-                var offsetSource = (p - origin).Normalized();
-                var offsetCenter = p - center;
-                if (polygon.Contains(offsetCenter + 10f * offsetSource.Normalized()))
-                {
-                    var offset = p + 10f * offsetSource;
-                    for (var i = 0; i < total; ++i)
-                    {
-                        if (offset.InSquare(temp[i], 5f))
-                        {
-                            return default;
-                        }
-                    }
-                    return 1f;
-                }
-                return default;
-            }, kb[0].Activation);
+
+            hints.AddForbiddenZone(new SDKnockbackInComplexPolygonAwayFromOriginPlusAOEAABBSquares(Arena.Center, Tether.source.Position, 10f, poly, temp, 5f, total), kb[0].Activation);
         }
     }
 }
@@ -166,27 +147,27 @@ sealed class ElevateAndEviscerateHint(BossModule module) : Components.GenericAOE
 sealed class ElevateAndEviscerateImpact(BossModule module) : Components.GenericAOEs(module, default, "GTFO from impact!")
 {
     private readonly ElevateAndEviscerate _kb = module.FindComponent<ElevateAndEviscerate>()!;
-    private AOEInstance? aoe;
+    private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var aoes = new List<AOEInstance>();
-        if (_kb.Tether != default && _kb.Tether.target != actor && Module.InBounds(_kb.Cache))
+        if (_kb.Tether != default && _kb.Tether.target != actor && Arena.InBounds(_kb.Cache))
         {
             aoes.Add(new(ElevateAndEviscerateHint.Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, _kb.Activation.AddSeconds(3.6d)));
         }
-        if (aoe != null)
+        if (_aoe.Length != 0)
         {
-            aoes.Add(aoe.Value);
+            aoes.Add(_aoe[0]);
         }
         return CollectionsMarshal.AsSpan(aoes);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.ElevateAndEviscerate && Module.InBounds(_kb.Cache))
+        if (spell.Action.ID == (uint)AID.ElevateAndEviscerate && Arena.InBounds(_kb.Cache))
         {
-            aoe = new(ElevateAndEviscerateHint.Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, Module.CastFinishAt(spell, 3.6f));
+            _aoe = [new(ElevateAndEviscerateHint.Rect, ArenaChanges.CellCenter(ArenaChanges.CellIndex(_kb.Cache)), default, Module.CastFinishAt(spell, 3.6d))];
         }
     }
 
@@ -194,15 +175,15 @@ sealed class ElevateAndEviscerateImpact(BossModule module) : Components.GenericA
     {
         if (spell.Action.ID == (uint)AID.Impact)
         {
-            aoe = null;
+            _aoe = [];
         }
     }
 
     public override void Update()
     {
-        if (aoe != null && _kb.Tether != default && _kb.Tether.target.IsDead) // impact doesn't happen if player dies between ElevateAndEviscerate and Impact
+        if (_aoe.Length != 0 && _kb.Tether != default && _kb.Tether.target.IsDead) // impact doesn't happen if player dies between ElevateAndEviscerate and Impact
         {
-            aoe = null;
+            _aoe = [];
         }
     }
 }

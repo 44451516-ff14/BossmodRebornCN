@@ -7,7 +7,7 @@ public enum OID : uint
 
 public enum AID : uint
 {
-    AutoAttack = 872, // Boss->player, no cast, single-target
+    AutoAttack = 18129, // Boss->player, no cast, single-target
 
     HigherPower1 = 39095, // Boss->self, 2.0s cast, single-target, spin x3
     HigherPower2 = 39096, // Boss->self, 2.0s cast, single-target, spin x4
@@ -20,15 +20,14 @@ public enum AID : uint
     ShockingCross = 39102, // Boss->self, 1.7s cast, range 50 width 10 cross, last spin rotation + 45°
     XMarksTheShock = 39103, // Boss->self, 1.7s cast, range 50 width 10 cross, last spin rotation + 90°
     LightningBolt = 39104, // Boss->location, 2.0s cast, range 5 circle
-    ElectricalOverload = 39105, // Boss->self, 4.0s cast, range 50 circle
+    ElectricalOverload = 39105 // Boss->self, 4.0s cast, range 50 circle
 }
 
 public enum SID : uint
 {
     ElectricalCharge = 3979, // Boss->Boss, extra=0x4/0x3/0x2/0x1/0x6/0x5
     ShockingCross = 3977, // Boss->Boss, extra=0x0
-    XMarksTheShock = 3978, // Boss->Boss, extra=0x0
-    NumbingCurrent = 3980, // Boss->player, extra=0x0
+    XMarksTheShock = 3978 // Boss->Boss, extra=0x0
 }
 
 sealed class SpinShock(BossModule module) : Components.GenericRotatingAOE(module)
@@ -47,17 +46,27 @@ sealed class SpinShock(BossModule module) : Components.GenericRotatingAOE(module
             _ => 0
         };
         if (spincount != 0)
-            Spins = spincount;
-        switch (spell.Action.ID)
         {
-            case (uint)AID.SpinshockFirstCCW:
-                AddSequence(90f.Degrees());
-                break;
-            case (uint)AID.SpinshockFirstCW:
-                AddSequence(-90f.Degrees());
-                break;
+            Spins = spincount;
         }
-        void AddSequence(Angle increment) => Sequences.Add(new(cone, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.7f, Spins));
+        var increment = spell.Action.ID switch
+        {
+            (uint)AID.SpinshockFirstCCW => 90f.Degrees(),
+            (uint)AID.SpinshockFirstCW => -90f.Degrees(),
+            _ => default
+        };
+        if (increment != default)
+        {
+            if (Spins == 0)
+            {
+                var status = Module.PrimaryActor.FindStatus((uint)SID.ElectricalCharge);
+                if (status is ActorStatus stat)
+                {
+                    Spins = stat.Extra;
+                }
+            }
+            Sequences.Add(new(cone, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.7d, Spins));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -75,15 +84,10 @@ sealed class ShockingCrossXMarksTheShock(BossModule module) : Components.Generic
     private readonly SpinShock _rotation = module.FindComponent<SpinShock>()!;
     private bool currentShape; // false = intercards, true cardinal
     private static readonly AOEShapeCross _cross = new(50f, 5f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
+    private bool aoeInit;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (_aoe is AOEInstance aoe && _rotation.Spins < 3)
-            return new AOEInstance[1] { aoe };
-        else
-            return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => aoeInit && _rotation.Spins < 3 ? _aoe : [];
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -102,18 +106,19 @@ sealed class ShockingCrossXMarksTheShock(BossModule module) : Components.Generic
     {
         if (spell.Action.ID is (uint)AID.XMarksTheShock or (uint)AID.ShockingCross)
         {
-            _aoe = null;
+            aoeInit = false;
         }
     }
 
     public override void Update()
     {
-        if (_aoe == null && _rotation.Sequences.Count > 0)
+        if (!aoeInit && _rotation.Sequences.Count != 0)
         {
-            var sequence = _rotation.Sequences[0];
+            var sequence = _rotation.Sequences.Ref(0);
             var rotationOffset = currentShape ? default : 45f.Degrees();
             var activation = WorldState.FutureTime(11.5d + _rotation.Spins * 2d);
-            _aoe = new(_cross, sequence.Origin, sequence.Rotation + rotationOffset, activation);
+            _aoe = [new(_cross, sequence.Origin, sequence.Rotation + rotationOffset, activation)];
+            aoeInit = true;
         }
     }
 }

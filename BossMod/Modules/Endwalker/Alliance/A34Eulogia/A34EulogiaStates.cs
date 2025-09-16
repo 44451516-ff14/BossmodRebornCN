@@ -58,8 +58,7 @@ class A34EulogiaStates : StateMachineBuilder
              .ActivateOnEnter<Hydrostasis>()
              .ActivateOnEnter<DestructiveBolt>()
              .ActivateOnEnter<Hieroglyphika>()
-             .ActivateOnEnter<HandOfTheDestroyerWrath>()
-             .ActivateOnEnter<HandOfTheDestroyerJudgment>()
+             .ActivateOnEnter<HandOfTheDestroyer>()
              .ActivateOnEnter<MatronsBreath>()
              .ActivateOnEnter<TorrentialTrident>()
              .ActivateOnEnter<ByregotStrikeJump>()
@@ -163,13 +162,11 @@ class A34EulogiaStates : StateMachineBuilder
         ComponentCondition<Hieroglyphika>(id + 0x20, 12.8f, comp => comp.BindsAssigned, "Binds");
         CastStartMulti(id + 0x30, [(uint)AID.HandOfTheDestroyerWrath, (uint)AID.HandOfTheDestroyerJudgment], 0.5f);
         ComponentCondition<Hieroglyphika>(id + 0x31, 2.8f, comp => comp.NumCasts > 0, "Squares")
-            .ActivateOnEnter<HandOfTheDestroyerWrath>()
-            .ActivateOnEnter<HandOfTheDestroyerJudgment>()
+            .ActivateOnEnter<HandOfTheDestroyer>()
             .DeactivateOnExit<Hieroglyphika>();
         CastEnd(id + 0x32, 4.7f);
-        Condition(id + 0x33, 0.5f, () => Module.FindComponent<HandOfTheDestroyerWrath>()?.NumCasts > 0 || Module.FindComponent<HandOfTheDestroyerJudgment>()?.NumCasts > 0, "Half-arena cleave")
-            .DeactivateOnExit<HandOfTheDestroyerWrath>()
-            .DeactivateOnExit<HandOfTheDestroyerJudgment>();
+        ComponentCondition<HandOfTheDestroyer>(id + 0x33, 0.5f, comp => comp.NumCasts != 0, "Half-arena cleave")
+            .DeactivateOnExit<HandOfTheDestroyer>();
     }
 
     private void MatronsBreath(uint id, float delay)

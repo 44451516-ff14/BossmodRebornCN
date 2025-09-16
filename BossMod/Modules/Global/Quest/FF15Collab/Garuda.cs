@@ -64,7 +64,7 @@ class Microburst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mi
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (casting)
-            hints.Add($"Keep using duty action on the {Module.Enemies(OID.Monolith)[0].Name}s to stay out of the AOE!");
+            hints.Add($"Keep using duty action on the {Module.Enemies((uint)OID.Monolith)[0].Name}s to stay out of the AOE!");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -98,7 +98,7 @@ class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (casting)
-            hints.Add($"Use duty action to teleport to the {Module.Enemies(OID.Monolith)[0].Name} at the opposite side of Garuda!");
+            hints.Add($"Use duty action to teleport to the {Module.Enemies((uint)OID.Monolith)[0].Name} at the opposite side of Garuda!");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -128,7 +128,7 @@ class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 
 class MistralSong(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralSong, new AOEShapeCone(20f, 75f.Degrees()));
 class WickedTornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WickedTornado, new AOEShapeDonut(8f, 20f));
-class MiniSupercell(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.MiniSupercell, (uint)AID.MiniSupercell2, 5f, 45f, 3f, 2);
+class MiniSupercell(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.MiniSupercell, (uint)AID.MiniSupercell2, 5d, 45f, 3f, 2);
 class MiniSupercellKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.MiniSupercell2, 50f, shape: new AOEShapeRect(45f, 3f), stopAtWall: true);
 
 class GravitationalForce(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.GravitationalForce2, GetVoidzones, 0f)

@@ -91,7 +91,7 @@ sealed class M06SSugarRiotStates : StateMachineBuilder
         ComponentCondition<StickyMousse>(id + 0xB0u, 5.7f, comp => comp.Stacks.Count != 0, "Spreads resolve");
         ComponentCondition<StickyMousse>(id + 0xC0u, 6f, comp => comp.NumCasts != 0, "Light party stacks resolve")
             .DeactivateOnExit<StickyMousse>();
-        ComponentCondition<Quicksand>(id + 0xD0u, 8.7f, comp => comp.AOE != null, "Quicksand 1 appears")
+        ComponentCondition<Quicksand>(id + 0xD0u, 8.7f, comp => comp.AOE.Length != 0, "Quicksand 1 appears")
             .ActivateOnEnter<SprayPain2>()
             .ActivateOnEnter<QuicksandDoubleStyleHeavenBomb>()
             .ActivateOnEnter<QuicksandDoubleStylePaintBomb>()

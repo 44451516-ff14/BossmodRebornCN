@@ -13,5 +13,5 @@ class MagmaticSpell(BossModule module) : Components.StackWithCastTargets(module,
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 866, NameID = 11286, SortOrder = 6, PlanLevel = 90)]
 public class A14Naldthal(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(750f, -750f), 29f, 180)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(750f, -750f), 29f, 180)]);
 }

@@ -29,18 +29,7 @@ class D080ManikinConjurerStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<Overpower>()
             .ActivateOnEnter<Rive>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D080ManikinConjurer.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D080ManikinConjurer.Trash);
     }
 }
 
@@ -83,28 +72,15 @@ public class D080ManikinConjurer(WorldState ws, Actor primary) : BossModule(ws, 
     new(193.23f, 14.85f), new(193.31f, 14.17f), new(193.11f, 13.63f), new(193.48f, 13.05f), new(200.62f, 6.52f),
     new(201.2f, 6.15f), new(206.07f, 3.73f), new(206.71f, 3.53f), new(210.47f, 3.06f), new(210.97f, 3.11f),
     new(211.36f, 3.65f), new(211.99f, 3.9f), new(212.55f, 4.05f), new(213.72f, 3.54f), new(214.11f, 2.99f)];
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.ImmortalizedClockworkSoldier, (uint)OID.ImmortalizedClockworkKnight, (uint)OID.ManikinMarauder,
     (uint)OID.ManikinPugilist];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat && enemy.Position.AlmostEqual(center, radius))
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -68,7 +68,7 @@ class JitteringJounceLOS(BossModule module) : Components.GenericAOEs(module)
             {
                 cones[i] = new(D112Ziggy.ArenaCenter, 11.1f, 20f, Angle.FromDirection(Module.PrimaryActor.DirectionTo(stardust[i])), halfAngle);
             }
-            return new AOEInstance[1] { new(new AOEShapeCustom([.. cones], InvertForbiddenZone: true), Arena.Center, color: Colors.SafeFromAOE) };
+            return new AOEInstance[1] { new(new AOEShapeCustom([.. cones], invertForbiddenZone: true), Arena.Center, color: Colors.SafeFromAOE) };
         }
         return [];
     }
@@ -129,6 +129,6 @@ class D112ZiggyStates : StateMachineBuilder
 public class D112Ziggy(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(185.8f, 137.5f);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 20.06f * CosPI.Pi36th, 36)], [new Rectangle(new(166, 138), 1.1f, 20f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 20.06f * CosPI.Pi36th, 36)], [new Rectangle(new(166, 138), 1.1f, 20f),
     new Rectangle(new(207, 137), 2.6f, 20f)]);
 }

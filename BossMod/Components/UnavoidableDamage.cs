@@ -96,6 +96,39 @@ public class RaidwideCastDelay(BossModule module, uint actionVisual, uint action
     }
 }
 
+public class RaidwideCastsDelay(BossModule module, uint[] aidsVisual, uint[] aidsAOE, double delay, string hint = "Raidwide") : RaidwideCastDelay(module, default, default, delay, hint)
+{
+    private readonly uint[] AIDsVisual = aidsVisual;
+    private readonly uint[] AIDsAOE = aidsAOE;
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        var len = AIDsVisual.Length;
+        var id = spell.Action.ID;
+        for (var i = 0; i < len; ++i)
+        {
+            if (id == AIDsVisual[i])
+            {
+                Activation = Module.CastFinishAt(spell, Delay);
+            }
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        var len = AIDsAOE.Length;
+        var id = spell.Action.ID;
+        for (var i = 0; i < len; ++i)
+        {
+            if (id == AIDsAOE[i])
+            {
+                ++NumCasts;
+                Activation = default;
+            }
+        }
+    }
+}
+
 // generic unavoidable instant raidwide cast initiated by NPC yell
 public class RaidwideAfterNPCYell(BossModule module, uint aid, uint npcYellID, double delay, string hint = "Raidwide") : RaidwideInstant(module, aid, delay, hint)
 {
@@ -175,18 +208,29 @@ public class SingleTargetInstant(BossModule module, uint aid, double delay = def
 {
     public readonly double Delay = delay; // delay from visual cast end to cast event
     public readonly string Hint = hint;
-    public readonly List<(int slot, DateTime activation, ulong instanceID)> Targets = [];
+    public readonly List<(int slot, DateTime activation, ulong instanceID, Actor caster, Actor target)> Targets = [];
 
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (Targets.Count != 0 && Hint.Length != 0)
+        {
             hints.Add(Hint);
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var t in Targets)
+        var count = Targets.Count;
+        if (count == 0)
+        {
+            return;
+        }
+        var targets = CollectionsMarshal.AsSpan(Targets);
+        for (var i = 0; i < count; ++i)
+        {
+            ref var t = ref targets[i];
             hints.AddPredictedDamage(new BitMask().WithBit(t.slot), t.activation, damageType);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -194,7 +238,18 @@ public class SingleTargetInstant(BossModule module, uint aid, double delay = def
         if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
-            Targets.RemoveAll(t => t.instanceID == spell.MainTargetID);
+            var targets = CollectionsMarshal.AsSpan(Targets);
+            var len = targets.Length;
+            var id = spell.MainTargetID;
+            for (var i = 0; i < len; ++i)
+            {
+                ref var t = ref targets[i];
+                if (t.instanceID == id)
+                {
+                    Targets.RemoveAt(i);
+                    return;
+                }
+            }
         }
     }
 }
@@ -209,7 +264,10 @@ public class SingleTargetCastDelay(BossModule module, uint actionVisual, uint ac
         if (spell.Action.ID == ActionVisual)
         {
             var target = spell.TargetID != caster.InstanceID ? spell.TargetID : caster.TargetID; // assume self-targeted casts actually hit main target
-            Targets.Add((Raid.FindSlot(target), Module.CastFinishAt(spell, Delay), target));
+            if (WorldState.Actors.Find(target) is Actor t)
+            {
+                Targets.Add((Raid.FindSlot(target), Module.CastFinishAt(spell, Delay), target, caster, t));
+            }
         }
     }
 }
@@ -225,10 +283,60 @@ public class SingleTargetEventDelay(BossModule module, uint actionVisual, uint a
         if (spell.Action.ID == ActionVisual)
         {
             var target = spell.MainTargetID != caster.InstanceID ? spell.MainTargetID : caster.TargetID; // assume self-targeted casts actually hit main target
-            Targets.Add((Raid.FindSlot(target), WorldState.FutureTime(Delay), target));
+            if (WorldState.Actors.Find(target) is Actor t)
+            {
+                Targets.Add((Raid.FindSlot(target), WorldState.FutureTime(Delay), target, caster, t));
+            }
         }
     }
 }
 
 // generic unavoidable single-target damage, started and finished by a single cast, that can be delayed by moving out of range (typically tankbuster, but not necessary)
 public class SingleTargetDelayableCast(BossModule module, uint aid, string hint = "Tankbuster", AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Tankbuster) : SingleTargetCastDelay(module, aid, aid, default, hint, damageType);
+
+public class SingleTargetDelayableCasts(BossModule module, uint[] aids, string hint = "Tankbuster", AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Tankbuster) : SingleTargetCastDelay(module, default, default, default, hint, damageType)
+{
+    private readonly uint[] AIDs = aids;
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        var len = AIDs.Length;
+        var id = spell.Action.ID;
+        for (var i = 0; i < len; ++i)
+        {
+            if (id == AIDs[i])
+            {
+                var target = spell.TargetID != caster.InstanceID ? spell.TargetID : caster.TargetID; // assume self-targeted casts actually hit main target
+                if (WorldState.Actors.Find(target) is Actor t)
+                {
+                    Targets.Add((Raid.FindSlot(target), Module.CastFinishAt(spell, Delay), target, caster, t));
+                }
+            }
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        var len = AIDs.Length;
+        var id = spell.Action.ID;
+        for (var i = 0; i < len; ++i)
+        {
+            if (id == AIDs[i])
+            {
+                ++NumCasts;
+                var targets = CollectionsMarshal.AsSpan(Targets);
+                var lenT = targets.Length;
+                var tid = spell.MainTargetID;
+                for (var j = 0; j < lenT; ++j)
+                {
+                    ref var t = ref targets[j];
+                    if (t.instanceID == tid)
+                    {
+                        Targets.RemoveAt(j);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}

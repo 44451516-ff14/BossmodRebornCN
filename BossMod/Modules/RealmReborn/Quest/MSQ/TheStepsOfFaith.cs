@@ -140,15 +140,17 @@ class BodySlam(BossModule module) : Components.SimpleKnockbacks(module, (uint)AI
 
 class FlameBreath(BossModule module) : Components.GenericAOEs(module, (uint)AID.FlameBreathChannel)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect rect = new(500f, 10f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FlameBreath1)
-            _aoe = new(rect, Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, Module.CastFinishAt(spell).AddSeconds(1));
+        {
+            _aoe = [new(rect, Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, Module.CastFinishAt(spell, 1d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -156,7 +158,7 @@ class FlameBreath(BossModule module) : Components.GenericAOEs(module, (uint)AID.
         base.OnEventCast(caster, spell);
         if (NumCasts >= 35)
         {
-            _aoe = null;
+            _aoe = [];
             NumCasts = 0;
         }
     }
@@ -164,17 +166,17 @@ class FlameBreath(BossModule module) : Components.GenericAOEs(module, (uint)AID.
 
 class FlameBreath2(BossModule module) : Components.GenericAOEs(module, (uint)AID.FlameBreathChannel)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect rect = new(60f, 10f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FlameBreath2)
         {
             NumCasts = 0;
-            _aoe = new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+            _aoe = [new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
         }
     }
 
@@ -183,7 +185,7 @@ class FlameBreath2(BossModule module) : Components.GenericAOEs(module, (uint)AID
         base.OnEventCast(caster, spell);
         if (NumCasts >= 14)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -227,7 +229,9 @@ class ScorchingBreath(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ScorchingBreath)
+        {
             ++NumCasts;
+        }
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -251,7 +255,7 @@ class ScrollingBounds(BossModule module) : BossComponent(module)
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001)
+        if (state == 0x00020001u)
         {
             if (index == 0x03)
             {
@@ -269,7 +273,7 @@ class ScrollingBounds(BossModule module) : BossComponent(module)
                 Phase = 6;
             }
         }
-        else if (state == 0x00800040)
+        else if (state == 0x00800040u)
         {
             if (index == 0x00)
             {
@@ -287,18 +291,18 @@ class ScrollingBounds(BossModule module) : BossComponent(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         // force player to walk south to aggro vishap (status 1268 = In Event, not actionable)
-        if (Phase == 1 && !actor.InCombat && actor.FindStatus(1268) == null)
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center, new WDir(default, 1f), 38f, 22f, 40f));
+        if (Phase == 1 && !actor.InCombat && actor.FindStatus(1268u) == null)
+            hints.AddForbiddenZone(new SDRect(Arena.Center, new WDir(default, 1f), 38f, 22f, 40f));
         // subsequent state transitions don't trigger until player moves into the area
-        else if (Phase == 3 && actor.Position.Z > 25f || Phase == 5 && actor.Position.Z > -135f)
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center, new WDir(default, 1f), 40f, 22f, 38f));
+        else if (Phase == 3 && actor.PosRot.Z > 25f || Phase == 5 && actor.PosRot.Z > -135f)
+            hints.AddForbiddenZone(new SDRect(Arena.Center, new WDir(default, 1f), 40f, 22f, 38f));
     }
 
     public override void Update()
     {
         if (WorldState.Party.Player() is not Actor p)
             return;
-        Arena.Center = new(0, Math.Clamp(p.Position.Z, ZBounds.Min + HalfHeight, ZBounds.Max - HalfHeight));
+        Arena.Center = new(0, Math.Clamp(p.PosRot.Z, ZBounds.Min + HalfHeight, ZBounds.Max - HalfHeight));
     }
 }
 
@@ -331,7 +335,7 @@ class VishapStates : StateMachineBuilder
 public class Vishap(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, 245f), ScrollingBounds.Bounds)
 {
     // vishap doesn't start targetable
-    private static readonly uint[] opponents = [(uint)OID.HordeWyvern1, (uint)OID.HordeWyvern2, (uint)OID.HordeWyvern3, (uint)OID.HordeWyvern4, (uint)OID.HordeWyvern5,
+    private static readonly uint[] all = [(uint)OID.HordeWyvern1, (uint)OID.HordeWyvern2, (uint)OID.HordeWyvern3, (uint)OID.HordeWyvern4, (uint)OID.HordeWyvern5,
     (uint)OID.HordeWyvern6, (uint)OID.HordeWyvern7, (uint)OID.HordeWyvern8, (uint)OID.HordeWyvern8, (uint)OID.HordeWyvern9, (uint)OID.HordeWyvern10, (uint)OID.HordeDragonfly1,
     (uint)OID.HordeDragonfly2, (uint)OID.HordeDragonfly3, (uint)OID.HordeDragonfly4, (uint)OID.HordeDragonfly5, (uint)OID.HordeDragonfly6, (uint)OID.HordeDragonfly7,
     (uint)OID.HordeDragonfly8, (uint)OID.HordeAevis1, (uint)OID.HordeAevis2, (uint)OID.HordeAevis3, (uint)OID.HordeAevis4, (uint)OID.HordeAevis5, (uint)OID.HordeAevis6,
@@ -343,7 +347,7 @@ public class Vishap(WorldState ws, Actor primary) : BossModule(ws, primary, new(
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(opponents));
+        Arena.Actors(this, all);
         Arena.Actor(PrimaryActor, allowDeadAndUntargetable: true);
     }
 }

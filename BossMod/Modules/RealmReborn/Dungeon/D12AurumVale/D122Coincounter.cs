@@ -105,5 +105,5 @@ public sealed class D122Coincounter(WorldState ws, Actor primary) : BossModule(w
     new(-146.65f, -176.59f), new(-146.21f, -176.95f), new(-145.81f, -177.54f), new(-145.32f, -177.31f), new(-144.8f, -176.9f),
     new(-144.21f, -176.74f), new(-143.58f, -176.73f), new(-142.97f, -176.41f), new(-142.38f, -176.29f), new(-141.8f, -176.49f),
     new(-140.92f, -177.39f), new(-139.18f, -177.68f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

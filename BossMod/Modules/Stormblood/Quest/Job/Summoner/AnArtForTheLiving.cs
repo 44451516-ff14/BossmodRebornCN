@@ -131,5 +131,5 @@ public class SummoningNode(WorldState ws, Actor primary) : BossModule(ws, primar
     new(-88.8f, -287.6f), new(-88.3f, -287.6f), new(-88.3f, -302.4f), new(-88.8f, -302.4f), new(-92.85f, -310.77f),
     new(-106.5f, -318.68f), new(-115.5f, -318.68f), new(-129.15f, -310.77f), new(-133.2f, -302.4f), new(-133.7f, -302.4f),
     new(-133.7f, -288.6f), new(-133.2f, -288.6f), new(-129f, -280.25f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

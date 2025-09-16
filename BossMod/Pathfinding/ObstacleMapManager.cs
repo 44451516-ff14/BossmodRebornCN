@@ -17,7 +17,7 @@ public sealed class ObstacleMapManager : IDisposable
 {
     public readonly WorldState World;
     public readonly ObstacleMapDatabase Database = new();
-    public string RootPath { get; private set; } = ""; // empty or ends with slash
+    public string RootPath = ""; // empty or ends with slash
     private readonly ObstacleMapConfig _config = Service.Config.Get<ObstacleMapConfig>();
     private readonly EventSubscriptions _subscriptions;
     private readonly List<(ObstacleMapDatabase.Entry entry, Bitmap data)> _entries = [];

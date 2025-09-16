@@ -60,7 +60,7 @@ public class D072InfernoDrake(WorldState ws, Actor primary) : BossModule(ws, pri
     new(-14.60f, -103.63f), new(-14.71f, -104.28f), new(-14.37f, -104.64f), new(-6.83f, -107.50f), new(-6.17f, -107.64f)];
     // Centroid of the polygon is at: (113.403f, -14.391f)
 
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(shape)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(shape)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -80,6 +80,6 @@ public class D072InfernoDrake(WorldState ws, Actor primary) : BossModule(ws, pri
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.TemplestBiast));
+        Arena.Actors(Enemies((uint)OID.TemplestBiast));
     }
 }

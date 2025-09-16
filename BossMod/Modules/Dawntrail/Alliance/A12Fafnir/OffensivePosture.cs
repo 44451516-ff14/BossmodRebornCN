@@ -11,31 +11,33 @@ sealed class Touchdown(BossModule module) : Components.SimpleAOEs(module, (uint)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        return Casters.Count != 0 && (Module.FindComponent<DragonBreath>()?.AOE == null || Arena.Bounds != A12Fafnir.FireArena) ? new AOEInstance[1] { Casters[0] } : [];
+        return Casters.Count != 0 && (Module.FindComponent<DragonBreath>()?.AOE.Length == 0 || Arena.Bounds != A12Fafnir.FireArena) ? CollectionsMarshal.AsSpan(Casters) : [];
     }
 }
 
 sealed class DragonBreath(BossModule module) : Components.GenericAOEs(module, (uint)AID.DragonBreath)
 {
     public override bool KeepOnPhaseChange => true;
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
     private static readonly AOEShapeDonut donut = new(16f, 30f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OffensivePostureDragonBreath)
         {
             NumCasts = 0;
-            AOE = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.2d));
+            AOE = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.2d))];
         }
     }
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
         if (state == 0x00040008u && actor.OID == (uint)OID.FireVoidzone)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 }

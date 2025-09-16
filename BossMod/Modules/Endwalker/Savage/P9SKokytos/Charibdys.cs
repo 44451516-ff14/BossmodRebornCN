@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Savage.P9SKokytos;
 
-class Charibdys(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.CharybdisAOE, m => m.Enemies(OID.Charybdis).Where(v => v.EventState != 7), 0.6f);
+class Charibdys(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.CharybdisAOE, m => m.Enemies((uint)OID.Charybdis).Where(v => v.EventState != 7), 0.6f);
 
 class Comet(BossModule module) : Components.Adds(module, (uint)OID.Comet)
 {
@@ -97,7 +97,7 @@ class EclipticMeteor(BossModule module) : Components.GenericLineOfSightAOE(modul
     {
         if (iconID == (uint)IconID.EclipticMeteor)
         {
-            Modify(actor.Position, Module.Enemies(OID.Comet).Where(c => c != actor && !Comet.IsFinished(c)).Select(c => (c.Position, c.HitboxRadius)));
+            Modify(actor.Position, Module.Enemies((uint)OID.Comet).Where(c => c != actor && !Comet.IsFinished(c)).Select(c => (c.Position, c.HitboxRadius)));
         }
     }
 }

@@ -34,5 +34,5 @@ public class D061ManorClaviger(WorldState ws, Actor primary) : BossModule(ws, pr
     private static readonly PolygonCustom[] shape = [new ([new(-21.5f, 3), new(-14, 9.2f), new(-14.1f, 14),
     new(8.2f, 14.7f), new(16.5f, 12.3f), new(16.5f, 7), new(22.1f, 7),
     new(21.5f, -9.4f), new(12.6f, -14.5f), new(-15.9f, -13.1f), new(-16.1f, -10), new(-20.3f, -10)])];
-    public static readonly ArenaBoundsComplex arena = new(shape);
+    public static readonly ArenaBoundsCustom arena = new(shape);
 }

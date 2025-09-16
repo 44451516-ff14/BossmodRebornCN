@@ -65,23 +65,25 @@ public enum SID : uint
 class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(25f, 30f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.GallowsMarch && Arena.Bounds != CE42FromBeyondTheGrave.DefaultArena)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.8f));
+        if (spell.Action.ID == (uint)AID.GallowsMarch && Arena.Bounds.Radius > 25f)
+        {
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.8d))];
+        }
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Deathwall)
         {
-            Arena.Bounds = CE42FromBeyondTheGrave.DefaultArena;
+            Arena.Bounds = new ArenaBoundsCircle(25f); // default arena got no extra collision, just a donut aoe
             Arena.Center = Arena.Center.Quantized();
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -229,8 +231,7 @@ class CE42FromBeyondTheGraveStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 20)] // bnpcname=9931
 public class CE42FromBeyondTheGrave(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(new(-60f, 800f), 29.5f, 32)]);
-    public static readonly ArenaBoundsCircle DefaultArena = new(25f); // default arena got no extra collision, just a donut aoe
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(new(-60f, 800f), 29.5f, 32)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

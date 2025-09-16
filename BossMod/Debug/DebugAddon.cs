@@ -1,7 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -47,12 +47,12 @@ public sealed unsafe class DebugAddon : IDisposable
         }
 
         ImGui.InputText("Addon name / agent id", ref _newHook, 256);
-        if (_newHook.Length > 0 && !_addonRcvs.ContainsKey(_newHook) && (AtkUnitBase*)Service.GameGui.GetAddonByName(_newHook) is var addon && addon != null)
+        if (_newHook.Length > 0 && !_addonRcvs.ContainsKey(_newHook) && Service.GameGui.GetAddonByName(_newHook) is var addon && addon != null)
         {
             ImGui.SameLine();
             if (ImGui.Button("Hook addon!"))
             {
-                var address = (nint)addon->VirtualTable->ReceiveEvent;
+                var address = addon.Address;
                 _addonRcvs[_newHook] = address;
                 if (!_rcvAddonHooks.ContainsKey(address))
                 {

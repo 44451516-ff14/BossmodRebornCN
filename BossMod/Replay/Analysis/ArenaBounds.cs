@@ -1,5 +1,5 @@
 ﻿using Clipper2Lib;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System.Globalization;
 
 namespace BossMod.ReplayAnalysis;

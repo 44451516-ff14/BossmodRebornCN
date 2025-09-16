@@ -54,7 +54,7 @@ public enum TetherID : uint
 class ShadowFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShadowFlare);
 class GripOfNight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GripOfNight, new AOEShapeCone(40f, 75f.Degrees()));
 class DarkFireIIAOE(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkFireIIAOE, 6f);
-class EndOfDays(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.EndOfDays, (uint)AID.EndOfDays2, 5.1f);
+class EndOfDays(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.EndOfDays, (uint)AID.EndOfDays2);
 
 class Stars(BossModule module) : Components.GenericAOEs(module)
 {
@@ -73,7 +73,8 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
         {
             var target = WorldState.Actors.Find(tether.Target)!;
             var targetPos = target.Position;
-            var midpoint = new WPos((source.Position.X + targetPos.X) * 0.5f, (source.Position.Z + targetPos.Z) * 0.5f).Quantized();
+            var sourcePos = source.Position;
+            var midpoint = new WPos((sourcePos.X + targetPos.X) * 0.5f, (sourcePos.Z + targetPos.Z) * 0.5f).Quantized();
             switch (source.OID)
             {
                 case (uint)OID.FrozenStar:
@@ -180,7 +181,7 @@ class D063LahabreaIgeyorhmStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 2143, SortOrder = 10)]
 public class D063LahabreaIgeyorhm(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly ArenaBoundsComplex arena = new([new Polygon(new(230f, -181f), 20.26f, 24)], [new Rectangle(new(230f, -160f), 20f, 1.94f)]);
+    public static readonly ArenaBoundsCustom arena = new([new Polygon(new(230f, -181f), 20.26f, 24)], [new Rectangle(new(230f, -160f), 20f, 1.94f)]);
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

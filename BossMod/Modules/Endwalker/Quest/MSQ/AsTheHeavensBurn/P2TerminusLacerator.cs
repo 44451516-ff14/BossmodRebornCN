@@ -114,5 +114,5 @@ class TerminusLaceratorStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 804, NameID = 10933)]
 public class TerminusLacerator(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
 {
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(new(-260.28f, 80.73f), 19.5f, 20)]);
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(new(-260.28f, 80.73f), 19.5f, 20)]);
 }

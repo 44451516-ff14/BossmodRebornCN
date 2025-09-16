@@ -2,11 +2,10 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System.Text.RegularExpressions;
 using Lumina.Text.ReadOnly;
-using System.Data;
 using System.Globalization;
 
 namespace BossMod;
@@ -286,6 +285,7 @@ public sealed class ModuleViewer : IDisposable
                             {
                                 BossModuleInfo.Maturity.WIP => Colors.TextColor3,
                                 BossModuleInfo.Maturity.Verified => Colors.TextColor4,
+                                BossModuleInfo.Maturity.AISupport => Colors.TextColor2,
                                 _ => Colors.TextColor1
                             };
                             using (ImRaii.PushColor(ImGuiCol.Text, textColor))

@@ -66,7 +66,7 @@ public class T02TitanN : BossModule
 
     public T02TitanN(WorldState ws, Actor primary) : base(ws, primary, default, new ArenaBoundsCircle(20)) // note: initial area is size 25, but it becomes smaller at 75%
     {
-        _heart = Enemies(OID.TitansHeart);
+        _heart = Enemies((uint)OID.TitansHeart);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

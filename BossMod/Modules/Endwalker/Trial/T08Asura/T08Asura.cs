@@ -45,10 +45,10 @@ class T08AsuraStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 944, NameID = 12351)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 944u, NameID = 12351u)]
 public class T08Asura(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, StartingArena)
 {
-    private static readonly WPos arenaCenter = new(100, 100);
-    public static readonly ArenaBoundsComplex StartingArena = new([new Polygon(arenaCenter, 19.5f * CosPI.Pi32th, 32)]);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(arenaCenter, 19.165f, 32)]);
+    private static readonly WPos arenaCenter = new(100f, 100f);
+    public static readonly ArenaBoundsCustom StartingArena = new([new Polygon(arenaCenter, 19.5f * CosPI.Pi32th, 32)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(arenaCenter, 19.165f, 32)]);
 }

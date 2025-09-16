@@ -18,7 +18,7 @@ abstract class Firestrike(BossModule module, uint aidMarker, double delay) : Com
 sealed class Firestrike1(BossModule module) : Firestrike(module, (uint)AID.FirestrikeMarker1, 5.1d);
 sealed class Firestrike2(BossModule module) : Firestrike(module, (uint)AID.FirestrikeMarker2, 6.2d);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.Triton, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13737, PlanLevel = 100, SortOrder = 3, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.Triton, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018u, NameID = 13737u, PlanLevel = 100, SortOrder = 3, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
 public sealed class FTB2DeadStars(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
     public static readonly WPos ArenaCenter = new(-800f, 360f);
@@ -36,64 +36,22 @@ public sealed class FTB2DeadStars(WorldState ws, Actor primary) : BossModule(ws,
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossPhobos == null)
-        {
-            var b = Enemies((uint)OID.Phobos);
-            _bossPhobos = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossNereid == null)
-        {
-            var b = Enemies((uint)OID.Nereid);
-            _bossNereid = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossLiquifiedTriton == null)
-        {
-            var b = Enemies((uint)OID.LiquifiedTriton);
-            _bossLiquifiedTriton = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossLiquifiedNereid == null)
-        {
-            var b = Enemies((uint)OID.LiquifiedNereid);
-            _bossLiquifiedNereid = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossFrozenTriton == null)
-        {
-            var b = Enemies((uint)OID.FrozenTriton);
-            _bossFrozenTriton = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossFrozenPhobos == null)
-        {
-            var b = Enemies((uint)OID.FrozenPhobos);
-            _bossFrozenPhobos = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossGaseousNereid == null)
-        {
-            var b = Enemies((uint)OID.GaseousNereid);
-            _bossGaseousNereid = b.Count != 0 ? b[0] : null;
-        }
-        if (_bossGaseousPhobos == null)
-        {
-            var b = Enemies((uint)OID.GaseousPhobos);
-            _bossGaseousPhobos = b.Count != 0 ? b[0] : null;
-        }
-        if (BossDeadStars == null)
-        {
-            var b = Enemies((uint)OID.DeadStars);
-            BossDeadStars = b.Count != 0 ? b[0] : null;
-        }
-        if (DeathWall == null)
-        {
-            var b = Enemies((uint)OID.Deathwall);
-            DeathWall = b.Count != 0 ? b[0] : null;
-        }
+        _bossPhobos ??= GetActor((uint)OID.Phobos);
+        _bossNereid ??= GetActor((uint)OID.Nereid);
+        _bossLiquifiedTriton ??= GetActor((uint)OID.LiquifiedTriton);
+        _bossLiquifiedNereid ??= GetActor((uint)OID.LiquifiedNereid);
+        _bossFrozenTriton ??= GetActor((uint)OID.FrozenTriton);
+        _bossFrozenPhobos ??= GetActor((uint)OID.FrozenPhobos);
+        _bossGaseousNereid ??= GetActor((uint)OID.GaseousNereid);
+        _bossGaseousPhobos ??= GetActor((uint)OID.GaseousPhobos);
+        BossDeadStars ??= GetActor((uint)OID.DeadStars);
+        DeathWall ??= GetActor((uint)OID.Deathwall);
     }
 
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(ArenaCenter, 39.5f * CosPI.Pi48th, 48)], [new Rectangle(new(-800f, 400f), 7.5f, 1.25f),
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(ArenaCenter, 39.5f * CosPI.Pi48th, 48)], [new Rectangle(new(-800f, 400f), 7.5f, 1.25f),
     new Rectangle(new(-800f, 320f), 7.5f, 1.25f)]);
     public static readonly ArenaBoundsCircle DefaultArena = new(30f);
-    public static readonly ArenaBoundsComplex FistFightArena = new([new DonutV(ArenaCenter.Quantized(), 12f, 30f, 64)]);
+    public static readonly ArenaBoundsCustom FistFightArena = new([new DonutV(ArenaCenter.Quantized(), 12f, 30f, 64)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

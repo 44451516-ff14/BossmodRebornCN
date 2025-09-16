@@ -2,13 +2,13 @@
 
 sealed class Stance(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
     private static readonly AOEShapeCone _shapeCone = new(50f, 40f.Degrees());
     private static readonly AOEShapeCone _shapeOut = new(24f, 90f.Degrees());
     private static readonly AOEShapeDonut _shapeIn = new(8f, 30f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -20,13 +20,17 @@ sealed class Stance(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
-            _aoe = new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.SusurrantBreathAOE or (uint)AID.SlitheringStrikeAOE or (uint)AID.StranglingCoilAOE)
+        {
             ++NumCasts;
+        }
     }
 }
 
@@ -50,11 +54,11 @@ sealed class CharringCataclysm(BossModule module) : Components.UniformStackSprea
 
 sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(module, (uint)AID.ChillingCataclysmAOE)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    public readonly List<AOEInstance> AOEs = [];
 
     private static readonly AOEShapeCross _shape = new(40f, 2.5f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
     public override void OnActorCreated(Actor actor)
     {
@@ -62,8 +66,8 @@ sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(modul
         {
             var act = WorldState.FutureTime(5.6d);
             var pos = actor.Position.Quantized();
-            _aoes.Add(new(_shape, pos, Angle.AnglesCardinals[1], act));
-            _aoes.Add(new(_shape, pos, Angle.AnglesIntercardinals[1], act));
+            AOEs.Add(new(_shape, pos, Angle.AnglesCardinals[1], act));
+            AOEs.Add(new(_shape, pos, Angle.AnglesIntercardinals[1], act));
         }
     }
 }

@@ -55,20 +55,24 @@ class DiveTwister(BossModule module) : Components.CastTwister(module, 1.5f, (uin
 
 class TwistingDive(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect rect = new(50f, 7.5f);
     private bool preparing;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (actor == Module.PrimaryActor)
         {
             if (id == 0x1E3A)
+            {
                 preparing = true;
+            }
             else if (preparing && id == 0x1E43)
-                _aoe = new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.9d));
+            {
+                _aoe = [new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.9d))];
+            }
         }
     }
 
@@ -76,7 +80,7 @@ class TwistingDive(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.TwistingDive)
         {
-            _aoe = null;
+            _aoe = [];
             preparing = false;
         }
     }
@@ -94,13 +98,13 @@ class Turbine(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID
             ref readonly var c = ref Casters.Ref(0);
             var component = _aoe.ActiveAOEs(slot, actor);
             var len = component.Length;
-            var forbidden = new Func<WPos, float>[len + 1];
-            forbidden[len] = ShapeDistance.InvertedCircle(Arena.Center, 5f);
+            var forbidden = new ShapeDistance[len + 1];
+            forbidden[len] = new SDInvertedCircle(Arena.Center, 5f);
             for (var i = 0; i < len; ++i)
             {
-                forbidden[i] = ShapeDistance.Cone(Arena.Center, 20f, Angle.FromDirection(component[i].Origin - Arena.Center), a20);
+                forbidden[i] = new SDCone(Arena.Center, 20f, Angle.FromDirection(component[i].Origin - Arena.Center), a20);
             }
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), c.Activation);
+            hints.AddForbiddenZone(new SDIntersection(forbidden), c.Activation);
         }
     }
 
@@ -116,7 +120,7 @@ class Turbine(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 

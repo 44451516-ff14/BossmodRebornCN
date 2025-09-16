@@ -72,7 +72,7 @@ class SunshadowTether(BossModule module) : BossComponent(module)
             Arena.Actor(player, _playersInAOE[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
 
         // draw my tether
-        var myBird = Module.Enemies(OID.Sunshadow).FirstOrDefault(bird => BirdTarget(bird) == pc.InstanceID);
+        var myBird = Module.Enemies((uint)OID.Sunshadow).FirstOrDefault(bird => BirdTarget(bird) == pc.InstanceID);
         if (myBird != null && !_chargedSunshadows.Contains(myBird.InstanceID))
         {
             Arena.AddLine(myBird.Position, pc.Position, myBird.Tether.ID != (uint)TetherID.LargeBirdFar ? Colors.Danger : Colors.Safe);
@@ -95,6 +95,6 @@ class SunshadowTether(BossModule module) : BossComponent(module)
 
     private IEnumerable<Actor> ActiveBirds()
     {
-        return Module.Enemies(OID.Sunshadow).Where(bird => !_chargedSunshadows.Contains(bird.InstanceID));
+        return Module.Enemies((uint)OID.Sunshadow).Where(bird => !_chargedSunshadows.Contains(bird.InstanceID));
     }
 }

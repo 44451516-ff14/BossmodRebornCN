@@ -99,7 +99,7 @@ sealed class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(mo
         // - 'far' E (th) / W (dd), whoever is closer to CC baits third aoe outside
         // - 'avoid' staying E/W, closer to BJ
         // BJ/CC are located at center +/- (6, 0)
-        var bjLeft = BJ()?.Position.X < Arena.Center.X;
+        var bjLeft = BJ()?.PosRot.X < Arena.Center.X;
         return Arena.Center + _playerMechanics[slot] switch
         {
             Mechanic.AvoidDamage => new WDir(bjLeft ? -20f : +20f, default),

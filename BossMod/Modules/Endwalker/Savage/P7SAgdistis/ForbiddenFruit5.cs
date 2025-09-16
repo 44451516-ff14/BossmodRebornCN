@@ -3,7 +3,7 @@
 // TODO: improve!
 class ForbiddenFruit5(BossModule module) : ForbiddenFruitCommon(module, (uint)AID.Burst)
 {
-    private readonly List<Actor> _towers = module.Enemies(OID.Tower);
+    private readonly List<Actor> _towers = module.Enemies((uint)OID.Tower);
 
     private const float _towerRadius = 5;
 

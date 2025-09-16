@@ -12,7 +12,7 @@ public class Ex2Lakshmi : BossModule
 
     public Ex2Lakshmi(WorldState ws, Actor primary) : base(ws, primary, new(0, 0), new ArenaBoundsCircle(20))
     {
-        DreamingKshatriya = Enemies(OID.DreamingKshatriya);
+        DreamingKshatriya = Enemies((uint)OID.DreamingKshatriya);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

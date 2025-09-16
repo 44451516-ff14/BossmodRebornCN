@@ -26,31 +26,33 @@ public enum AID : uint
     PoundSand = 34443 // Boss->location, 6.0s cast, range 12 circle
 }
 
-class Sandblast(BossModule module) : Components.RaidwideCast(module, (uint)AID.Sandblast);
-
-class SandblastVoidzone(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom rect = new([new Rectangle(D132DamcyanAntlion.ArenaCenter, 19.5f, 25f)], [new Rectangle(D132DamcyanAntlion.ArenaCenter, 19.5f, 20f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.Sandblast && Arena.Bounds == D132DamcyanAntlion.StartingBounds)
-            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell));
+        if (spell.Action.ID == (uint)AID.Sandblast && Arena.Bounds.Radius > 20f)
+        {
+            _aoe = [new(rect, Arena.Center, default, Module.CastFinishAt(spell))];
+        }
     }
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x00)
+        if (index == 0x00 && state == 0x00020001u)
         {
-            Arena.Bounds = D132DamcyanAntlion.DefaultBounds;
-            _aoe = null;
+            Arena.Bounds = new ArenaBoundsRect(19.5f, 20f);
+            _aoe = [];
         }
     }
 }
 
-class Landslip(BossModule module) : Components.GenericKnockback(module)
+sealed class Sandblast(BossModule module) : Components.RaidwideCast(module, (uint)AID.Sandblast);
+
+sealed class Landslip(BossModule module) : Components.GenericKnockback(module)
 {
     public bool TowerDanger;
     public readonly List<Knockback> Knockbacks = new(4);
@@ -62,7 +64,9 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Landslip)
+        {
             Knockbacks.Add(new(spell.LocXZ, 20f, Module.CastFinishAt(spell), rect, spell.Rotation, Kind.DirForward));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -71,7 +75,9 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
         {
             Knockbacks.Clear();
             if (++NumCasts > 4)
+            {
                 TowerDanger = true;
+            }
         }
     }
 
@@ -84,7 +90,7 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
         for (var i = 0; i < count; ++i)
         {
             var c = Knockbacks[i];
-            hints.AddForbiddenZone(ShapeDistance.Rect(c.Origin, c.Direction, length, 20f - length, 5f), c.Activation);
+            hints.AddForbiddenZone(new SDRect(c.Origin, c.Direction, length, 20f - length, 5f), c.Activation);
         }
     }
 
@@ -101,12 +107,12 @@ class Landslip(BossModule module) : Components.GenericKnockback(module)
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 
-class EarthenGeyser(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.EarthenGeyser, 10f, 4, 4);
-class QuicksandVoidzone(BossModule module) : Components.Voidzone(module, 10f, GetVoidzone)
+sealed class EarthenGeyser(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.EarthenGeyser, 10f, 4, 4);
+sealed class QuicksandVoidzone(BossModule module) : Components.Voidzone(module, 10f, GetVoidzone)
 {
     private static Actor[] GetVoidzone(BossModule module)
     {
@@ -116,9 +122,9 @@ class QuicksandVoidzone(BossModule module) : Components.Voidzone(module, 10f, Ge
         return [];
     }
 }
-class PoundSand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoundSand, 12f);
+sealed class PoundSand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoundSand, 12f);
 
-class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
+sealed class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(5);
 
@@ -149,11 +155,13 @@ class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.AntlionMarch)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
-class Towerfall(BossModule module) : Components.GenericAOEs(module)
+sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Landslip _kb = module.FindComponent<Landslip>()!;
     private readonly List<AOEInstance> _aoes = new(2);
@@ -199,28 +207,31 @@ class Towerfall(BossModule module) : Components.GenericAOEs(module)
     {
         if (_kb.Knockbacks.Count != 0 & _aoes.Count == 2)
         {
-            var activation = _kb.Knockbacks[0].Activation;
-            var distance = MathF.Round(Math.Abs(_aoes[0].Origin.Z - _aoes[1].Origin.Z));
-            var forbidden = new Func<WPos, float>[2];
+            var activation = _kb.Knockbacks.Ref(0).Activation;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            ref var aoe0 = ref aoes[0];
+            ref var aoe1 = ref aoes[1];
+            var distance = MathF.Round(Math.Abs(aoe0.Origin.Z - aoe1.Origin.Z));
+            var forbidden = new ShapeDistance[2];
             var check = distance is 10f or 30f;
             for (var i = 0; i < 2; ++i)
             {
-                var aoe = _aoes[i];
-                forbidden[i] = check ? ShapeDistance.InvertedRect(aoe.Origin, aoe.Rotation, 40f, default, 5f) : ShapeDistance.Rect(aoe.Origin, aoe.Rotation, 40f, default, 5f);
+                ref var aoe = ref aoes[i];
+                forbidden[i] = check ? new SDInvertedRect(aoe.Origin, aoe.Rotation, 40f, default, 5f) : new SDRect(aoe.Origin, aoe.Rotation, 40f, default, 5f);
             }
-            hints.AddForbiddenZone(check ? ShapeDistance.Intersection(forbidden) : ShapeDistance.Union(forbidden), activation);
+            hints.AddForbiddenZone(check ? new SDIntersection(forbidden) : new SDUnion(forbidden), activation);
         }
         else
             base.AddAIHints(slot, actor, assignment, hints);
     }
 }
 
-class D132DamcyanAntlionStates : StateMachineBuilder
+sealed class D132DamcyanAntlionStates : StateMachineBuilder
 {
     public D132DamcyanAntlionStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<SandblastVoidzone>()
+            .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<Sandblast>()
             .ActivateOnEnter<Landslip>()
             .ActivateOnEnter<EarthenGeyser>()
@@ -232,9 +243,7 @@ class D132DamcyanAntlionStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 823, NameID = 12484)]
-public class D132DamcyanAntlion(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D132DamcyanAntlion(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsRect(19.5f, 25f))
 {
     public static readonly WPos ArenaCenter = new(default, 60f);
-    public static readonly ArenaBounds StartingBounds = new ArenaBoundsRect(19.5f, 25f);
-    public static readonly ArenaBounds DefaultBounds = new ArenaBoundsRect(19.5f, 20f);
 }

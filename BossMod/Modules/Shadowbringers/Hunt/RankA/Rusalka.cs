@@ -21,26 +21,38 @@ class AetherialPull(BossModule module) : Components.SimpleKnockbacks(module, (ui
 {
     private readonly Flood _aoe = module.FindComponent<Flood>()!;
 
-    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos) => _aoe.AOE is Components.GenericAOEs.AOEInstance aoe && aoe.Check(pos);
+    public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
+    {
+        if (_aoe.AOE.Length != 0)
+        {
+            ref var aoe = ref _aoe.AOE[0];
+            return aoe.Check(pos);
+        }
+        return false;
+    }
 }
 
 class Flood(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private static readonly AOEShapeCircle circle = new(8f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.AetherialPull)
-            AOE = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 3.6f));
+        {
+            AOE = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 3.6d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Flood)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 }
 

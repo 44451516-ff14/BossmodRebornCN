@@ -60,7 +60,7 @@ sealed class P4CrystallizeTime(BossModule module) : BossComponent(module)
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        if (tether.ID == (uint)TetherID.UltimateRelativitySlow && source.Position.Z < Arena.Center.Z)
+        if (tether.ID == (uint)TetherID.UltimateRelativitySlow && source.PosRot.Z < Arena.Center.Z)
             NorthSlowHourglass = source.Position - Arena.Center;
     }
 
@@ -132,7 +132,7 @@ sealed class P4CrystallizeTimeDragonHead(BossModule module) : BossComponent(modu
                 if (p.puddle.EventState != 7)
                 {
                     if (p.soaker != pcAssignment)
-                        hints.AddForbiddenZone(ShapeDistance.Circle(p.puddle.Position, 2f));
+                        hints.AddForbiddenZone(new SDCircle(p.puddle.Position, 2f));
                     else if (_numMaelstroms >= 6)
                         hints.GoalZones.Add(hints.GoalProximity(p.puddle.Position, 15f, 0.25f));
                 }
@@ -175,11 +175,11 @@ sealed class P4CrystallizeTimeDragonHead(BossModule module) : BossComponent(modu
         switch (actor.OID)
         {
             case (uint)OID.DrachenWanderer:
-                Heads.Add((actor, actor.Position.X > Arena.Center.X ? 1 : -1));
+                Heads.Add((actor, actor.PosRot.X > Arena.Center.X ? 1 : -1));
                 break;
             case (uint)OID.DragonPuddle:
                 // TODO: this is very arbitrary
-                var mechanic = actor.Position.X < Arena.Center.X
+                var mechanic = actor.PosRot.X < Arena.Center.X
                     ? AssignPuddle(P4CrystallizeTime.Mechanic.FangEruption, P4CrystallizeTime.Mechanic.FangBlizzard)
                     : AssignPuddle(P4CrystallizeTime.Mechanic.FangDarkness, P4CrystallizeTime.Mechanic.FangWater);
                 _puddles.Add((actor, mechanic));
@@ -329,7 +329,7 @@ sealed class P4CrystallizeTimeDarkWater(BossModule module) : Components.UniformS
     }
 }
 
-sealed class P4CrystallizeTimeDarkEruption(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DarkEruption)
+sealed class P4CrystallizeTimeDarkEruption(BossModule module) : Components.GenericBaitAway(module, (uint)AID.DarkEruption, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle _shape = new(6f);
 
@@ -339,7 +339,7 @@ sealed class P4CrystallizeTimeDarkEruption(BossModule module) : Components.Gener
     {
         if (status.ID == (uint)SID.SpellInWaitingDarkEruption)
         {
-            CurrentBaits.Add(new(actor, actor, _shape, status.ExpireAt));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, _shape, status.ExpireAt));
         }
     }
 }
@@ -502,12 +502,12 @@ sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
             }
             if (hint.hint.HasFlag(Hint.SafespotRough))
             {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center + hint.offset, 1f), DateTime.MaxValue);
+                hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + hint.offset, 1f), DateTime.MaxValue);
             }
             if (hint.hint.HasFlag(Hint.SafespotPrecise))
             {
                 hints.PathfindMapBounds = FRU.PathfindHugBorderBounds;
-                hints.AddForbiddenZone(ShapeDistance.PrecisePosition(Arena.Center + hint.offset, new(default, 1f), Arena.Bounds.MapResolution, actor.Position, 0.1f));
+                hints.AddForbiddenZone(new SDPrecisePosition(Arena.Center + hint.offset, new(default, 1f), Arena.Bounds.MapResolution, actor.Position, 0.1f));
             }
             if (hint.hint.HasFlag(Hint.Maelstrom) && _hourglass != null)
             {
@@ -526,7 +526,7 @@ sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
                 {
                     var h = _heads.Heads[i];
                     if (_heads.FindInterceptor(h.head, h.side) is var interceptor && interceptor != null && interceptor != actor)
-                        hints.AddForbiddenZone(ShapeDistance.Circle(interceptor.Position, 12f));
+                        hints.AddForbiddenZone(new SDCircle(interceptor.Position, 12f));
                 }
             }
             if (hint.hint.HasFlag(Hint.Knockback) && _ct != null)
@@ -534,7 +534,7 @@ sealed class P4CrystallizeTimeHints(BossModule module) : BossComponent(module)
                 var source = _ct.FindPlayerByAssignment(P4CrystallizeTime.Mechanic.ClawAir, _ct.NorthSlowHourglass.X > 0f ? -1 : 1);
                 var dest = Arena.Center + SafeOffsetDarknessStack(_ct.NorthSlowHourglass.X > 0 ? 1 : -1);
                 var pos = source != null ? source.Position + 2 * (dest - source.Position).Normalized() : Arena.Center + hint.offset;
-                hints.AddForbiddenZone(ShapeDistance.PrecisePosition(pos, new(default, 1f), Arena.Bounds.MapResolution, actor.Position, 0.1f));
+                hints.AddForbiddenZone(new SDPrecisePosition(pos, new(default, 1f), Arena.Bounds.MapResolution, actor.Position, 0.1f));
             }
             if (hint.hint.HasFlag(Hint.Mid) && _hourglass != null)
             {
@@ -682,9 +682,9 @@ sealed class P4CrystallizeTimeRewind(BossModule module) : Components.GenericKnoc
         if (!RewindDone && _ct != null && _exalines != null && _ct.Cleansed[slot])
         {
             var players = Raid.WithoutSlot(false, true, true);
-            players.Sort((a, b) => a.Position.X.CompareTo(b.Position.X));
+            players.Sort((a, b) => a.PosRot.X.CompareTo(b.PosRot.X));
             var xOrder = Array.IndexOf(players, actor);
-            players.Sort((a, b) => a.Position.Z.CompareTo(b.Position.Z));
+            players.Sort((a, b) => a.PosRot.Z.CompareTo(b.PosRot.Z));
             var zOrder = Array.IndexOf(players, actor);
             if (xOrder >= 0 && zOrder >= 0)
             {

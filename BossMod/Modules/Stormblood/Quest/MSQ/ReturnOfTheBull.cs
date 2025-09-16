@@ -36,7 +36,7 @@ class FordolaShield(BossModule module) : BossComponent(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Shield != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Shield.Position, 4f), WorldState.FutureTime(5d));
+            hints.AddForbiddenZone(new SDInvertedCircle(Shield.Position, 4f), WorldState.FutureTime(5d));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -48,7 +48,7 @@ class FordolaShield(BossModule module) : BossComponent(module)
 
 class Deflect(BossModule module) : BossComponent(module)
 {
-    public IEnumerable<Actor> Spheres => Module.Enemies(OID.Aether).Where(x => !x.IsDeadOrDestroyed);
+    public IEnumerable<Actor> Spheres => Module.Enemies((uint)OID.Aether).Where(x => !x.IsDeadOrDestroyed);
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
@@ -58,9 +58,9 @@ class Deflect(BossModule module) : BossComponent(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var deflectAction = WorldState.Client.DutyActions[0].Action;
-        var deflectRadius = deflectAction.ID == 10006 ? 4 : 20;
+        var deflectRadius = deflectAction.ID == 10006u ? 4 : 20;
 
-        var closestSphere = Spheres.MaxBy(x => x.Position.Z);
+        var closestSphere = Spheres.MaxBy(x => x.PosRot.Z);
         if (closestSphere != null)
         {
             var pos = closestSphere.Position;

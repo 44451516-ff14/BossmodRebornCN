@@ -45,15 +45,15 @@ sealed class Ex3QueenEternalStates : StateMachineBuilder
     private void P1Aethertithe(uint id, float delay)
     {
         Cast(id, (uint)AID.Aethertithe, delay, 3);
-        ComponentCondition<Aethertithe>(id + 0x10, 5, comp => comp.AOE != null)
+        ComponentCondition<Aethertithe>(id + 0x10, 5, comp => comp.AOE.Length != 0)
             .ActivateOnEnter<Aethertithe>();
         ComponentCondition<Aethertithe>(id + 0x11, 5.1f, comp => comp.NumCasts >= 1, "Cone 1")
             .ActivateOnEnter<Retribute>();
         ComponentCondition<Retribute>(id + 0x12, 2.9f, comp => comp.NumCasts > 0, "Line stacks 1");
-        ComponentCondition<Aethertithe>(id + 0x20, 1.2f, comp => comp.AOE != null);
+        ComponentCondition<Aethertithe>(id + 0x20, 1.2f, comp => comp.AOE.Length != 0);
         ComponentCondition<Aethertithe>(id + 0x21, 5.1f, comp => comp.NumCasts >= 2, "Cone 2");
         ComponentCondition<Retribute>(id + 0x22, 2.9f, comp => comp.NumCasts > 2, "Line stacks 2");
-        ComponentCondition<Aethertithe>(id + 0x30, 1.2f, comp => comp.AOE != null);
+        ComponentCondition<Aethertithe>(id + 0x30, 1.2f, comp => comp.AOE.Length != 0);
         ComponentCondition<Aethertithe>(id + 0x31, 5.1f, comp => comp.NumCasts >= 3, "Cone 3")
             .DeactivateOnExit<Aethertithe>();
         ComponentCondition<Retribute>(id + 0x32, 2.9f, comp => comp.NumCasts > 4, "Line stacks 3")

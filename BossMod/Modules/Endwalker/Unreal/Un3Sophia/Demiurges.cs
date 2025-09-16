@@ -22,7 +22,7 @@ class Demiurges(BossModule module) : Components.DirectionalParry(module, [(uint)
 class DivineSpark(BossModule module) : Components.CastGaze(module, (uint)AID.DivineSpark);
 class GnosticRant(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GnosticRant, new AOEShapeCone(40f, 135f.Degrees()));
 class GnosticSpear(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GnosticSpear, new AOEShapeRect(20.75f, 2f));
-class RingOfPain(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.RingOfPain, m => m.Enemies(OID.RingOfPain).Where(z => z.EventState != 7), 1.7f);
+class RingOfPain(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.RingOfPain, m => m.Enemies((uint)OID.RingOfPain).Where(z => z.EventState != 7), 1.7f);
 
 class Infusion(BossModule module) : Components.GenericWildCharge(module, 5f, (uint)AID.Infusion)
 {

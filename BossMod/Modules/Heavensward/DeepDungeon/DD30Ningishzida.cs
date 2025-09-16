@@ -72,9 +72,9 @@ class Hints(BossModule module) : BossComponent(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (NumCasts < 4)
-            hints.AddForbiddenZone(ShapeDistance.Circle(FearCastSource, 11f), WorldState.FutureTime(10d));
+            hints.AddForbiddenZone(new SDCircle(FearCastSource, 11f), WorldState.FutureTime(10d));
         else
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(FearCastSource, 5f), WorldState.FutureTime(10d));
+            hints.AddForbiddenZone(new SDInvertedCircle(FearCastSource, 5f), WorldState.FutureTime(10d));
     }
 }
 
@@ -101,5 +101,5 @@ public class DD30Ningishzida(WorldState ws, Actor primary) : BossModule(ws, prim
     new(-317.2f, -220.47f), new(-320.75f, -225.10f), new(-321.04f, -225.68f), new(-323.28f, -231.07f), new(-324.03f, -236.80f),
     new(-324.06f, -237.44f), new(-323.29f, -243.30f), new(-323.08f, -243.94f), new(-321.31f, -248.22f), new(-317.93f, -252.79f),
     new(-317.48f, -253.28f), new(-312.6f, -257.12f), new(-307.27f, -259.75f), new(-307.11f, -260.30f), new(-292.06f, -260.52f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)], [new Rectangle(new(-299.312f, -261.765f), 20f, 1.325f)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)], [new Rectangle(new(-299.312f, -261.765f), 20f, 1.325f)]);
 }

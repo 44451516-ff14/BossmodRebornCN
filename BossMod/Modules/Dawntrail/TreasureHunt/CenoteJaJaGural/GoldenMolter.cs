@@ -76,7 +76,7 @@ sealed class Crypsis(BossModule module) : BossComponent(module)
         if (IsConcealed)
         {
             hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Sprint), actor, ActionQueue.Priority.High);
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Module.PrimaryActor.Position, RevealDistance));
+            hints.AddForbiddenZone(new SDInvertedCircle(Module.PrimaryActor.Position, RevealDistance));
         }
     }
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -153,17 +153,7 @@ sealed class GoldenMolterStates : StateMachineBuilder
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Scoop>()
             .ActivateOnEnter<RottenSpores>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(GoldenMolter.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(GoldenMolter.All);
     }
 }
 
@@ -177,7 +167,7 @@ public sealed class GoldenMolter(WorldState ws, Actor primary) : SharedBoundsBos
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor, allowDeadAndUntargetable: true);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

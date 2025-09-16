@@ -33,11 +33,11 @@ class FlameGeneralAldynnStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69311, NameID = 4739)]
 public class FlameGeneralAldynn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-143f, 357f), new ArenaBoundsCircle(20f))
 {
-    public static readonly uint[] opponents = [(uint)OID.Boss, (uint)OID.Lucia, (uint)OID.Aymeric];
+    public static readonly uint[] all = [(uint)OID.Boss, (uint)OID.Lucia, (uint)OID.Aymeric];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(opponents));
+        Arena.Actors(this, all);
     }
 }
 

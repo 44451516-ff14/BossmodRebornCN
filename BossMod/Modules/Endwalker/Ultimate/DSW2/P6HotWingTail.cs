@@ -20,7 +20,9 @@ sealed class P6HotWingTail(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
+        {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     // note: we don't remove aoe's, since that is used e.g. by spreads component
@@ -30,7 +32,9 @@ sealed class P6HotWingTail(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_aoes.Count != 0)
+            {
                 _aoes.RemoveAt(0);
+            }
         }
     }
 }

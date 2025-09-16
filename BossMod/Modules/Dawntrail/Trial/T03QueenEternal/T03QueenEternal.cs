@@ -26,9 +26,9 @@ sealed class T03QueenEternalStates : StateMachineBuilder
             .ActivateOnEnter<VirtualShiftRoyalDomain>()
             .ActivateOnEnter<AbsoluteAuthorityRaidwide>()
             .ActivateOnEnter<DownburstKB>()
+            .ActivateOnEnter<PowerfulGustKB>()
             .ActivateOnEnter<PowerfulGustDownburstRW>()
             .ActivateOnEnter<BrutalCrown>()
-            .ActivateOnEnter<PowerfulGustKB>()
             .ActivateOnEnter<AbsoluteAuthorityCircle>()
             .ActivateOnEnter<AuthoritysGaze>()
             .ActivateOnEnter<AuthoritysHold>()
@@ -48,7 +48,7 @@ public sealed class T03QueenEternal(WorldState ws, Actor primary) : BossModule(w
     public static readonly ArenaBoundsSquare DefaultBounds = new(20f);
     public static readonly Shape[] XArenaRects = [new Rectangle(new(100f, 82.5f), 12.5f, 2.5f), new Rectangle(new(100f, 102.5f), 12.5f, 2.5f),
     new Cross(new(100f, 92.5f), 15f, 2.5f, 45f.Degrees())];
-    public static readonly ArenaBoundsComplex XArena = new(XArenaRects);
+    public static readonly ArenaBoundsCustom XArena = new(XArenaRects);
     public static readonly Rectangle[] SplitArenaRects = [new Rectangle(LeftSplitCenter, 4f, 8f), new Rectangle(RightSplitCenter, 4f, 8f)];
-    public static readonly ArenaBoundsComplex SplitArena = new(SplitArenaRects);
+    public static readonly ArenaBoundsCustom SplitArena = new(SplitArenaRects);
 }

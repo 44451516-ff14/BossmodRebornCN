@@ -69,6 +69,6 @@ public class D022GalvanthTheDominator(WorldState ws, Actor primary) : BossModule
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }

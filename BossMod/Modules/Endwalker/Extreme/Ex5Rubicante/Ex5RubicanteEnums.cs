@@ -9,7 +9,7 @@ public enum OID : uint
     CircleOfPurgatoryMiddle = 0x3D96, // R1.000, x1
     CircleOfPurgatoryOuter = 0x3D97, // R1.000, x1
     CircleOfPurgatoryFireball = 0x3D98, // R1.000, x2
-    CircleOfPurgatoryTriange = 0x3D8F, // R1.000, x8
+    CircleOfPurgatoryTriangle = 0x3D8F, // R1.000, x8
     CircleOfPurgatorySquare = 0x3D90, // R1.000, x8
     GreaterFlamesent = 0x3D91, // R5.000, spawn during fight
     FlamesentNS = 0x3D92, // R2.600, spawn during fight (northern side adds)

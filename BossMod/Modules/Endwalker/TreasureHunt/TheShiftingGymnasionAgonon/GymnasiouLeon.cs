@@ -63,17 +63,7 @@ class GymnasiouLeonStates : StateMachineBuilder
             .ActivateOnEnter<MagmaChamber>()
             .ActivateOnEnter<HeavySmash>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(GymnasiouLeon.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(GymnasiouLeon.All);
     }
 }
 
@@ -88,7 +78,7 @@ public class GymnasiouLeon(WorldState ws, Actor primary) : THTemplate(ws, primar
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.GymnasiouLeonMikros));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

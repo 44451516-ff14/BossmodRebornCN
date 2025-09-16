@@ -5,7 +5,7 @@ namespace BossMod.Autorotation.MiscAI;
 // TODO this module is now useless and has been merged with AutoFarm, but some plugins still use it, like Questionable (rip)
 public sealed class AutoPull(RotationModuleManager manager, Actor player) : RotationModule(manager, player)
 {
-    public enum Track { QuestBattle, DeepDungeon, EpicEcho, Hunt }
+    public enum Track { QuestBattle, DeepDungeon, EpicEcho, Hunt, TreasureHunt }
 
     public static RotationModuleDefinition Definition()
     {
@@ -15,7 +15,7 @@ public sealed class AutoPull(RotationModuleManager manager, Actor player) : Rota
         def.AbilityTrack(Track.DeepDungeon, "Automatically attack deep dungeon bosses when solo");
         def.AbilityTrack(Track.EpicEcho, "Automatically attack all targets if the Epic Echo status is present (i.e. when unsynced)");
         def.AbilityTrack(Track.Hunt, "Automatically attack hunt marks once they are below 95% HP");
-
+        def.AbilityTrack(Track.TreasureHunt, "Automatically attack treasure hunt bosses");
         return def;
     }
 
@@ -37,15 +37,17 @@ public sealed class AutoPull(RotationModuleManager manager, Actor player) : Rota
         if (strategy.Enabled(Track.QuestBattle))
             enabled |= Bossmods.ActiveModule?.Info?.Category == BossModuleInfo.Category.Quest;
 
+        if (strategy.Enabled(Track.TreasureHunt))
+            enabled |= Bossmods.ActiveModule?.Info?.Category == BossModuleInfo.Category.TreasureHunt;
+
         if (strategy.Enabled(Track.DeepDungeon))
             enabled |= Bossmods.ActiveModule?.Info?.Category == BossModuleInfo.Category.DeepDungeon && World.Party.WithoutSlot().Length == 1;
 
         if (strategy.Enabled(Track.EpicEcho))
-            enabled |= Player.Statuses.Any(s => s.ID == 2734);
+            enabled |= Player.Statuses.Any(s => s.ID == 2734u);
 
         if (enabled)
         {
-            Hints.PrioritizeAll();
             Hints.PotentialTargets.Sort((b, a) => a.Priority.CompareTo(b.Priority));
             Hints.HighestPotentialTargetPriority = Math.Max(0, Hints.PotentialTargets[0].Priority);
 

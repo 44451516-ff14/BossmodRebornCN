@@ -57,56 +57,55 @@ class BarbequeCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 class BarbequeRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbequeRect, new AOEShapeRect(50f, 2.5f));
 class Buffet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Buffet, new AOEShapeRect(40f, 3f));
 
-abstract class MediumRear(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeDonut(5f, 40f))
+sealed class MediumRearNeerDoneWell(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MediumRear1, (uint)AID.MediumRear2, (uint)AID.NeerDoneWell], new AOEShapeDonut(5f, 40f))
 {
     private readonly HuffAndPuff1 _kb1 = module.FindComponent<HuffAndPuff1>()!;
     private readonly HuffAndPuff2 _kb2 = module.FindComponent<HuffAndPuff2>()!;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_kb1.Casters.Count == 0 && _kb2.Source == null)
+        if (_kb1.Casters.Count == 0 && _kb2.KB.Length == 0)
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 }
-class MediumRear1(BossModule module) : MediumRear(module, (uint)AID.MediumRear1);
-class MediumRear2(BossModule module) : MediumRear(module, (uint)AID.MediumRear2);
-class NeerDoneWell(BossModule module) : MediumRear(module, (uint)AID.NeerDoneWell);
 
-class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HuffAndPuff1, 15, true, stopAtWall: true, kind: Kind.DirForward)
+class HuffAndPuff1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.HuffAndPuff1, 15f, true, stopAtWall: true, kind: Kind.DirForward)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Casters.Ref(0).Origin, 5f));
+            hints.AddForbiddenZone(new SDInvertedCircle(Casters.Ref(0).Origin, 5f));
     }
 }
 
 class HuffAndPuff2(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
 {
-    private Knockback? _sourceCache;
-    public Knockback? Source;
+    private Knockback[] _kbCache = [];
+    public Knockback[] KB = [];
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref Source);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => KB;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HuffAndPuffVisual)
         {
-            _sourceCache = new(spell.LocXZ, 15f, default, null, spell.Rotation, Kind.DirForward, ignoreImmunes: true);
+            _kbCache = [new(spell.LocXZ, 15f, default, null, spell.Rotation, Kind.DirForward, ignoreImmunes: true)];
         }
-        else if (_sourceCache is Knockback knockback && spell.Action.ID == (uint)AID.NeerDoneWell)
+        else if (_kbCache.Length != 0 && spell.Action.ID == (uint)AID.NeerDoneWell)
         {
-            ref readonly var kb = ref knockback;
-            Source = new(kb.Origin, 50f, WorldState.FutureTime(5.4d), null, kb.Direction, kb.Kind, ignoreImmunes: true);
+            ref readonly var kb = ref _kbCache[0];
+            KB = [new(kb.Origin, 50f, WorldState.FutureTime(5.4d), null, kb.Direction, kb.Kind, ignoreImmunes: true)];
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (_sourceCache is Knockback knockback && spell.Action.ID == (uint)AID.Explosion)
+        if (_kbCache.Length != 0 && spell.Action.ID == (uint)AID.Explosion)
         {
-            ref readonly var kb = ref knockback;
-            Source = new(kb.Origin, 15f, WorldState.FutureTime(10.9d), null, kb.Direction, kb.Kind, ignoreImmunes: true);
+            ref readonly var kb = ref _kbCache[0];
+            KB = [new(kb.Origin, 15f, WorldState.FutureTime(10.9d), null, kb.Direction, kb.Kind, ignoreImmunes: true)];
         }
     }
 
@@ -114,17 +113,17 @@ class HuffAndPuff2(BossModule module) : Components.GenericKnockback(module, stop
     {
         if (spell.Action.ID is (uint)AID.HuffAndPuff2 or (uint)AID.BlowItAllDown)
         {
-            Source = null;
-            _sourceCache = null;
+            KB = [];
+            _kbCache = [];
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Source is Knockback knockback)
+        if (KB.Length != 0)
         {
-            ref readonly var kb = ref knockback;
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(kb.Origin, 5f));
+            ref readonly var kb = ref KB[0];
+            hints.AddForbiddenZone(new SDInvertedCircle(kb.Origin, 5f));
         }
     }
 }
@@ -132,47 +131,57 @@ class HuffAndPuff2(BossModule module) : Components.GenericKnockback(module, stop
 class Barbeque(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(10f, 20f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private bool imminent;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (index == 0x10 && state == 0x00020001u)
         {
-            _aoe = new(rect, new(-19.5f, default), Angle.AnglesCardinals[3]); // activates 22.2s later, but should never be entered anyway, since you must go to the opposite of the arena
+            _aoe = [new(rect, new(-19.5f, default), Angle.AnglesCardinals[3])]; // activates 22.2s later, but should never be entered anyway, since you must go to the opposite of the arena
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Barbeque)
+        {
             imminent = true;
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BarbequeRect)
+        {
             imminent = false;
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.ToACrisp)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(new(imminent ? 18.5f : actor.Position.X + 0.1f, default), new(19f, default), 20f));
+        if (_aoe.Length != 0)
+        {
+            hints.AddForbiddenZone(new SDInvertedRect(new(imminent ? 18.5f : actor.PosRot.X + 0.1f, default), new(19f, default), 20f));
+        }
     }
 
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (imminent)
+        {
             hints.Add("Go to the opposite side of the arena and work against getting sucked in!");
+        }
     }
 }
 
@@ -190,14 +199,12 @@ class D123MotherPorxieStates : StateMachineBuilder
             .ActivateOnEnter<BarbequeCircle>()
             .ActivateOnEnter<BarbequeRect>()
             .ActivateOnEnter<Buffet>()
-            .ActivateOnEnter<MediumRear1>()
-            .ActivateOnEnter<MediumRear2>()
-            .ActivateOnEnter<NeerDoneWell>()
+            .ActivateOnEnter<MediumRearNeerDoneWell>()
             .ActivateOnEnter<Barbeque>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 746, NameID = 9741)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 746u, NameID = 9741u)]
 public class D123MotherPorxie(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsSquare(19.5f))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)

@@ -84,7 +84,7 @@ public class D022Myath(WorldState ws, Actor primary) : BossModule(ws, primary, a
     new(143.03f, -122.33f), new(145.37f, -123.93f), new(145.86f, -124.17f), new(146.89f, -124.46f), new(147.38f, -124.63f),
     new(148.39f, -125.22f), new(148.94f, -125.42f), new(153, -125.85f), new(153.54f, -125.97f), new(155.21f, -126.39f),
     new(155.78f, -126.44f), new(157.51f, -126.26f), new(158.11f, -126.24f), new(159.83f, -126.55f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

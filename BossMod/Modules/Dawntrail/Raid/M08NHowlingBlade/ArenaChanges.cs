@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M08NHowlingBlade;
 
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeDonut donut = new(12f, 17f);
     private readonly List<Polygon> pillars = new(3);
     private static readonly WPos[] pillarPositions = [new(100f, 88.5f), new(109.959f, 94.25f), new(109.917f, 105.619f),
@@ -29,17 +29,17 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         new(pillarPositions[5], 3.5f, 20, 30f.Degrees()), // northwest, ENVC 0x19
     ];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (index == 0x00)
         {
             if (state == 0x00200010u)
-                _aoe = new(donut, Arena.Center, default, WorldState.FutureTime(11.2d));
+                _aoe = [new(donut, Arena.Center, default, WorldState.FutureTime(11.2d))];
             else if (state == 0x00020001u)
             {
-                _aoe = null;
+                _aoe = [];
                 Arena.Bounds = M08NHowlingBlade.EndArena;
             }
         }
@@ -50,7 +50,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 pillars.Add(pillarPolygons[index - 0x08]);
                 if (pillars.Count == 3)
                 {
-                    var arena = new ArenaBoundsComplex(M08NHowlingBlade.EndArenaPolygon, [.. pillars]);
+                    var arena = new ArenaBoundsCustom(M08NHowlingBlade.EndArenaPolygon, [.. pillars]);
                     Arena.Bounds = arena;
                     Arena.Center = arena.Center;
                 }

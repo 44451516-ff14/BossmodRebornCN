@@ -69,5 +69,5 @@ public class DD100NybethObdilord : BossModule
     new(278f, 309.45f), new(275.71f, 307.13f), new(275.73f, 293.36f), new(275.86f, 292.68f), new(277.75f, 290.77f),
     new(278.12f, 290.27f), new(278.20f, 288.37f), new(278.33f, 287.73f), new(287.51f, 278.59f), new(288.05f, 278.21f),
     new(290.12f, 278.13f), new(290.61f, 277.91f), new(291.97f, 276.56f), new(302.11f, 276.34f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

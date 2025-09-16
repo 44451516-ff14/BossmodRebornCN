@@ -39,5 +39,5 @@ public class D101ChudoYudo(WorldState ws, Actor primary) : BossModule(ws, primar
     new Square(new(20.1f, 116), 0.5f), new Square(new(20.1f, 124), 0.5f), new Square(new(20, 132.2f), 0.5f, a45), new Square(new(16.2f, 136), 0.5f, a45), new Square(new(7.6f, 136.2f), 0.5f),
     new Square(new(-8, 136.2f), 0.5f), new Square(new(-16.2f, 136), 0.5f, a45), new Square(new(-20, 132.2f), 0.5f, a45), new Square(new(-20.1f, 124), 0.5f), new Square(new(-20.1f, 116), 0.5f),
     new Square(new(-20.1f, 108), 0.5f), new Square(new(-16.3f, 96.2f), 0.45f, a45), new Square(new(-20, 99.8f), 0.5f, a45), new Square(new(-7.7f, 95.9f), 0.5f)];
-    public static readonly ArenaBoundsComplex arena = new([new Square(new(0, 116), 19.7f)], difference);
+    public static readonly ArenaBoundsCustom arena = new([new Square(new(0, 116), 19.7f)], difference);
 }

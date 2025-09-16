@@ -75,7 +75,7 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
         {
             var primary = Module.PrimaryActor;
             return new AOEInstance[1] { _target == actor
-                ? new(new AOEShapeCustom(rects, InvertForbiddenZone: true), Arena.Center, color: Colors.SafeFromAOE)
+                ? new(new AOEShapeCustom(rects, invertForbiddenZone: true), Arena.Center, color: Colors.SafeFromAOE)
                 : new(new AOEShapeCustom([new RectangleSE(primary.Position, primary.Position + Length * primary.DirectionTo(_target), 2f)], rects), Arena.Center) };
         }
         return [];
@@ -174,5 +174,5 @@ class D131HedetetStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 585, NameID = 7667)]
 public class D131Hedetet(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(174f, 178f), 19.5f)], [new Rectangle(new(174f, 197.6f), 20f, 1f), new Rectangle(new(174f, 158.3f), 20f, 1f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(174f, 178f), 19.5f)], [new Rectangle(new(174f, 197.6f), 20f, 1f), new Rectangle(new(174f, 158.3f), 20f, 1f)]);
 }

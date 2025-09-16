@@ -5,9 +5,9 @@ sealed class DawnOfAnAgeArenaChange(BossModule module) : Components.GenericAOEs(
     private static readonly Square square = new(T02ZoraalJa.ZoraalJa.ArenaCenter, 20f, T02ZoraalJa.ZoraalJa.ArenaRotation);
     private static readonly Square smallsquare = new(T02ZoraalJa.ZoraalJa.ArenaCenter, 10f, T02ZoraalJa.ZoraalJa.ArenaRotation);
     private static readonly AOEShapeCustom transition = new([square], [smallsquare]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -16,10 +16,10 @@ sealed class DawnOfAnAgeArenaChange(BossModule module) : Components.GenericAOEs(
             switch (state)
             {
                 case 0x00020001u:
-                    _aoe = new(transition, T02ZoraalJa.ZoraalJa.ArenaCenter, default, WorldState.FutureTime(8d));
+                    _aoe = [new(transition, T02ZoraalJa.ZoraalJa.ArenaCenter, default, WorldState.FutureTime(8d))];
                     break;
                 case 0x00080004u:
-                    _aoe = null;
+                    _aoe = [];
                     Arena.Bounds = T02ZoraalJa.ZoraalJa.SmallBounds;
                     break;
             }

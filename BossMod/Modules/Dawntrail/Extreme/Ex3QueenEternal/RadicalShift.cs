@@ -4,13 +4,13 @@ sealed class RadicalShift(BossModule module) : Components.GenericAOEs(module)
 {
     public enum Rotation { None, Left, Right }
 
-    private ArenaBoundsComplex? _left;
-    private ArenaBoundsComplex? _right;
+    private ArenaBoundsCustom? _left;
+    private ArenaBoundsCustom? _right;
     private Rotation _nextRotation;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly Square[] defaultSquare = [new(Ex3QueenEternal.ArenaCenter, 20f)];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -47,8 +47,10 @@ sealed class RadicalShift(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
     {
-        if (_aoe != null && updateID == 0x8000000D && param1 is 0x02u or 0x04u or 0x08u)
-            _aoe = null;
+        if (_aoe.Length != 0 && updateID == 0x8000000D && param1 is 0x02u or 0x04u or 0x08u)
+        {
+            _aoe = [];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -60,25 +62,33 @@ sealed class RadicalShift(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    private ArenaBoundsComplex? NextPlatform => _nextRotation switch
+    private ArenaBoundsCustom? NextPlatform => _nextRotation switch
     {
         Rotation.Left => _left,
         Rotation.Right => _right,
         _ => null
     };
 
-    private void UpdateAOE(ArenaBoundsComplex? platform)
+    private void UpdateAOE(ArenaBoundsCustom? platform)
     {
         AOEShapeCustom? aoe = null;
         var center = Arena.Center;
         if (platform == Ex3QueenEternal.WindBounds)
-            aoe = new(defaultSquare, Trial.T03QueenEternal.T03QueenEternal.XArenaRects, Origin: center);
+        {
+            aoe = new(defaultSquare, Trial.T03QueenEternal.T03QueenEternal.XArenaRects, origin: center);
+        }
         else if (platform == Ex3QueenEternal.EarthBounds)
-            aoe = new(defaultSquare, Trial.T03QueenEternal.T03QueenEternal.SplitArenaRects, Origin: center);
+        {
+            aoe = new(defaultSquare, Trial.T03QueenEternal.T03QueenEternal.SplitArenaRects, origin: center);
+        }
         else if (platform == Ex3QueenEternal.IceBounds)
-            aoe = new(defaultSquare, Ex3QueenEternal.IceRectsAll, Origin: center);
+        {
+            aoe = new(defaultSquare, Ex3QueenEternal.IceRectsAll, origin: center);
+        }
         if (aoe != null)
-            _aoe = new(aoe, center, default, WorldState.FutureTime(6d));
+        {
+            _aoe = [new(aoe, center, default, WorldState.FutureTime(6d))];
+        }
     }
 }
 

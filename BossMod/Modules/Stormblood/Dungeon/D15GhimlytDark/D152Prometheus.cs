@@ -24,9 +24,9 @@ public enum AID : uint
 class NitrospinArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom donut = new([new Circle(D152Prometheus.ArenaCenter, 50)], D152Prometheus.Polygon);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEState(Actor actor, ushort state)
     {
@@ -34,7 +34,7 @@ class NitrospinArenaChange(BossModule module) : Components.GenericAOEs(module)
         {
             Arena.Bounds = D152Prometheus.DefaultArena;
             Arena.Center = D152Prometheus.ArenaCenter;
-            _aoe = null;
+            _aoe = [];
         }
     }
 
@@ -42,7 +42,7 @@ class NitrospinArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.Nitrospin && Arena.Bounds == D152Prometheus.StartingArena)
         {
-            _aoe = new(donut, D152Prometheus.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d));
+            _aoe = [new(donut, D152Prometheus.ArenaCenter, default, Module.CastFinishAt(spell, 0.8d))];
         }
     }
 }
@@ -63,9 +63,9 @@ class Heat(BossModule module) : Components.GenericAOEs(module)
         {-68f.Degrees(), (new(188.498f, -57.598f), -67.482f.Degrees())},
     };
 
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
@@ -74,7 +74,7 @@ class Heat(BossModule module) : Components.GenericAOEs(module)
             foreach (var r in aoeSources.Keys)
                 if (actor.Rotation.AlmostEqual(r, Angle.DegToRad))
                 {
-                    _aoe = new(rect, aoeSources[r].origin, aoeSources[r].rotation, WorldState.FutureTime(6.7d));
+                    _aoe = [new(rect, aoeSources[r].origin, aoeSources[r].rotation, WorldState.FutureTime(6.7d))];
                     break;
                 }
         }
@@ -86,7 +86,7 @@ class Heat(BossModule module) : Components.GenericAOEs(module)
         {
             if (++NumCasts == 5)
             {
-                _aoe = null;
+                _aoe = [];
                 NumCasts = 0;
             }
         }
@@ -142,7 +142,7 @@ public class D152Prometheus(WorldState ws, Actor primary) : BossModule(ws, prima
     new(100.64f, -51.95f), new(102.58f, -55.52f), new(102.96f, -56.02f), new(106.95f, -60.07f), new(107.37f, -60.38f),
     new(107.86f, -60.7f), new(113.62f, -65.44f), new(113.96f, -65.87f), new(114.52f, -66.88f), new(115.01f, -67.22f),
     new(119.29f, -69.57f), new(119.76f, -69.79f), new(126.44f, -71.78f)];
-    public static readonly ArenaBoundsComplex StartingArena = new([new PolygonCustom(vertices)]);
+    public static readonly ArenaBoundsCustom StartingArena = new([new PolygonCustom(vertices)]);
     public static readonly Polygon[] Polygon = [new(ArenaCenter, 20f, 24)];
-    public static readonly ArenaBoundsComplex DefaultArena = new(Polygon);
+    public static readonly ArenaBoundsCustom DefaultArena = new(Polygon);
 }

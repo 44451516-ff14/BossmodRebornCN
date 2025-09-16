@@ -15,14 +15,17 @@ sealed class DefilersDesertsPredict(BossModule module) : Components.GenericAOEs(
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(Angle angle) => _aoes.Add(new(cross, spell.LocXZ, angle, Module.CastFinishAt(spell, 6.9f)));
-        if (spell.Action.ID == (uint)AID.LegendaryGeas)
+        void AddAOE(Angle angle) => _aoes.Add(new(cross, spell.LocXZ, angle, Module.CastFinishAt(spell, 6.9d)));
+        var id = spell.Action.ID;
+        if (id == (uint)AID.LegendaryGeas)
         {
             AddAOE(45f.Degrees());
             AddAOE(default);
         }
-        else if (spell.Action.ID == (uint)AID.DefilersDeserts)
+        else if (id == (uint)AID.DefilersDeserts)
+        {
             _aoes.Clear();
+        }
     }
 }
 
@@ -33,9 +36,13 @@ sealed class LegendaryGeasStay(BossModule module) : Components.StayMove(module)
         if (actor.OID == (uint)OID.ShadowLinksHelper && actor.Position.AlmostEqual(new(-135f, 750f), 1f))
         {
             if (state == 0x00010002u)
+            {
                 Array.Fill(PlayerStates, new(Requirement.Stay2, WorldState.CurrentTime, 1));
+            }
             else if (state == 0x00040008u)
+            {
                 Array.Clear(PlayerStates);
+            }
         }
     }
 }
@@ -46,6 +53,8 @@ sealed class PiercingDark(BossModule module) : Components.SpreadFromCastTargets(
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7968, PlanLevel = 70, SortOrder = 1)]
 public sealed class BA1Art(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-128.98f, 748f), 29.5f, 64)], [new Rectangle(new(-129f, 718f), 20, 1.15f), new Rectangle(new(-129f, 778f), 20f, 1.48f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-128.98f, 748f), 29.5f, 64)], [new Rectangle(new(-129f, 718f), 20, 1.15f), new Rectangle(new(-129f, 778f), 20f, 1.48f),
     new Polygon(new(-123.5f, 778f), 1.7f, 8), new Polygon(new(-134.5f, 778f), 1.7f, 8), new Polygon(new(-123.5f, 718f), 1.5f, 8), new Polygon(new(-134.5f, 718f), 1.5f, 8)]);
+
+    protected override bool CheckPull() => base.CheckPull() && (Center - Raid.Player()!.Position).LengthSq() < 1e4f;
 }

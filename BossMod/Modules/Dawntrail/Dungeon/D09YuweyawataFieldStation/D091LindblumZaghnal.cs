@@ -115,10 +115,10 @@ sealed class ElectricalOverloadSparkingFissure(BossModule module) : Components.R
 sealed class CellShock(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(26f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly LineVoltage _aoes = module.FindComponent<LineVoltage>()!;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.AOEs.Count == 0 ? Utils.ZeroOrOne(ref _aoe) : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.AOEs.Count == 0 ? _aoe : [];
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -142,7 +142,7 @@ sealed class CellShock(BossModule module) : Components.GenericAOEs(module)
                 0x10 => new(64.868f, 285.132f),
                 _ => default
             };
-            _aoe = new(circle, position.Quantized(), default, WorldState.FutureTime(8d));
+            _aoe = [new(circle, position.Quantized(), default, WorldState.FutureTime(8d))];
         }
     }
 
@@ -150,7 +150,7 @@ sealed class CellShock(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.CellShock)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -168,10 +168,10 @@ sealed class D091LindblumZaghnalStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13623, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13623, SortOrder = 3)]
 public sealed class D091LindblumZaghnal(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(73f, 277f), 19.5f, 64)], [new Rectangle(new(72f, 297f), 20f, 1.1f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(73f, 277f), 19.5f, 64)], [new Rectangle(new(72f, 297f), 20f, 1.1f),
     new Rectangle(new(72f, 257f), 20f, 1.05f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

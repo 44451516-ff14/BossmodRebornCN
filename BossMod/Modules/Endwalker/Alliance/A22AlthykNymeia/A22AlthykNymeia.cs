@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.Alliance.A22AlthykNymeia;
 
-class MythrilGreataxe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MythrilGreataxe, new AOEShapeCone(71, 30.Degrees()));
-class Hydroptosis(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HydroptosisAOE, 6);
+class MythrilGreataxe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MythrilGreataxe, new AOEShapeCone(71f, 30f.Degrees()));
+class Hydroptosis(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HydroptosisAOE, 6f);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.Althyk, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 911, NameID = 12244, PlanLevel = 90)]
-public class A22AlthykNymeia(WorldState ws, Actor primary) : BossModule(ws, primary, new(50, -750), new ArenaBoundsSquare(25))
+public class A22AlthykNymeia(WorldState ws, Actor primary) : BossModule(ws, primary, new(50f, -750f), new ArenaBoundsSquare(25f))
 {
     private Actor? _nymeia;
 
@@ -13,9 +13,7 @@ public class A22AlthykNymeia(WorldState ws, Actor primary) : BossModule(ws, prim
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _nymeia ??= Enemies((uint)OID.Nymeia)[0];
+        _nymeia ??= GetActor((uint)OID.Nymeia);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

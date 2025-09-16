@@ -2,14 +2,13 @@
 
 sealed class P6HPCheck(BossModule module) : BossComponent(module)
 {
-    private readonly Actor? _nidhogg = module.Enemies((uint)OID.NidhoggP6).FirstOrDefault();
-    private readonly Actor? _hraesvelgr = module.Enemies((uint)OID.HraesvelgrP6).FirstOrDefault();
+    private readonly DSW2 bossmodule = (DSW2)module;
 
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (_nidhogg != null && _hraesvelgr != null)
+        if (bossmodule._NidhoggP6 is Actor nidhogg && bossmodule._HraesvelgrP6 is Actor hraesvelgr)
         {
-            var diff = (int)(_nidhogg.HPMP.CurHP - _hraesvelgr.HPMP.CurHP) * 100.0f / _nidhogg.HPMP.MaxHP;
+            var diff = (int)(nidhogg.HPMP.CurHP - hraesvelgr.HPMP.CurHP) * 100.0f / nidhogg.HPMP.MaxHP;
             hints.Add($"Nidhogg HP: {(diff > 0 ? "+" : "")}{diff:f1}%");
         }
     }
@@ -17,7 +16,7 @@ sealed class P6HPCheck(BossModule module) : BossComponent(module)
 
 sealed class P6AkhAfah(BossModule module) : Components.UniformStackSpread(module, 4f, default, 4)
 {
-    public bool Done { get; private set; }
+    public bool Done;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

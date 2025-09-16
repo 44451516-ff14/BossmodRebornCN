@@ -40,27 +40,34 @@ sealed class ArenaChange(BossModule module) : BossComponent(module)
 
 sealed class IceAegis(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
+    private static readonly AOEShapeCone cone = new(5f, 60f.Degrees(), invertForbiddenZone: true);
 
-    private static readonly AOEShapeCone cone = new(5f, 60f.Degrees(), InvertForbiddenZone: true);
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.IceAegis)
-            _aoe = new(cone, caster.Position, caster.Rotation + 180f.Degrees(), default, Colors.SafeFromAOE);
-        else if (spell.Action.ID is (uint)AID.DirtySlashFirst or (uint)AID.DirtySlashRepeat)
+        var id = spell.Action.ID;
+        if (id == (uint)AID.IceAegis)
+        {
+            _aoe = [new(cone, caster.Position, caster.Rotation + 180f.Degrees(), default, Colors.SafeFromAOE)];
+        }
+        else if (id is (uint)AID.DirtySlashFirst or (uint)AID.DirtySlashRepeat)
         {
             if (++NumCasts == 5)
-                _aoe = null;
+            {
+                _aoe = [];
+            }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is not AOEInstance aoe)
+        if (_aoe.Length == 0)
+        {
             return;
+        }
+        ref var aoe = ref _aoe[0];
         hints.Add("Go behind shield!", !aoe.Check(actor.Position));
     }
 }
@@ -83,7 +90,7 @@ sealed class Trash2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1016, NameID = 13676)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1016u, NameID = 13676u)]
 public sealed class Trash2(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, 28.5f), new ArenaBoundsRect(34.6f, 23.5f))
 {
     public static readonly WPos Arena2Center = new(default, 57f);
@@ -93,6 +100,6 @@ public sealed class Trash2(WorldState ws, Actor primary) : BossModule(ws, primar
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }

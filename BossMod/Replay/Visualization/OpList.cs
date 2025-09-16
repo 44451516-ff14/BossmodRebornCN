@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using System.IO;
 
 namespace BossMod.ReplayVisualization;
@@ -18,7 +18,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
     0x1EB167, 0x1EB168, 0x4339, 0x4144, 0x4146, 0x4348, 0x4339, 0x4337, 0x35F5, 0x3226, 0x35FA, 0x35F6, 0x35F9, 0x35F7, 0x361A, 0x35F5, 0x34A4, 0x35F4, 0x3605, 0x35F2,
     0x375C, 0x375A, 0x3759, 0x375B, 0x35E0, 0x35E1, 0x35F1, 0x35F3, 0x3604, 0x39BF, 0x39BD, 0x39C0, 0x39C1, 0x39BE, 0x402D, 0x402E, 0x40B1, 0x3D7F, 0x3D80, 0x3D7E, 0x465C, 0x465D, 0x465E,
     0x466D, 0x466E, 0x466F, 0x466B, 0x466C, 0x2ED7, 0x2EDB, 0x2EDA, 0x2EF2, 0x2EDC, 0x2EF5, 0x2EF6, 0x2EF4, 0x2EDD, 0x2EF1, 0x2EDC, 0x2EF3, 0x2EEE, 0x2EED, 0x2EF0,
-    0x2EEF, 0x2FCC, 0x2FCB, 0x195D, 0x195B, 0x195C, 0x338F, 0x326A, 0x3269, 0x334B, 0x3267, 0x3268, 0x3266, 0x31A8];
+    0x2EEF, 0x2FCC, 0x2FCB, 0x195D, 0x195B, 0x195C, 0x338F, 0x326A, 0x3269, 0x334B, 0x3267, 0x3268, 0x3266, 0x31A8, 0x488E];
     public static readonly HashSet<uint> BoringSIDs = [43, 44, 418, 364, 902, 414, 1050, 368, 362, 1086, 1461, 1463, 365, 1778, 1755, 360, 1411, 2625, 2626, 2627, 2415, 2449, 361, 367, 2355, 413,
     4233, 4244, 4227, 4239, 4226, 4229, 4209, 4265, 2932, 4266, 4267, 4268, 4262, 4228];
     private readonly HashSet<ActionID> _filteredActions = [];
@@ -27,6 +27,16 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
     private bool _nodesUpToDate;
 
     public bool ShowActorSizeEvents
+    {
+        get;
+        set
+        {
+            field = value;
+            _nodesUpToDate = false;
+        }
+    } = false;
+
+    public bool ShowCLMVEvents
     {
         get;
         set
@@ -80,7 +90,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
     private bool FilterInterestingActor(ulong instanceID, DateTime timestamp, bool allowPlayers)
     {
         var p = replay.FindParticipant(instanceID, timestamp)!;
-        if ((p.OwnerID & 0xFF000000) == 0x10000000 && p.Type != ActorType.Buddy)
+        if ((p.OwnerID & 0xFF000000) == 0x10000000ul && p.Type != ActorType.Buddy)
             return false; // player's pet/area
         return (p.Type is not ActorType.Player and not ActorType.Buddy and not ActorType.Pet || allowPlayers) && !_filteredOIDs.Contains(p.OID) && !BoringOIDs.Contains(p.OID);
     }
@@ -127,6 +137,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
             ActorState.OpIncomingEffect => false,
             PartyState.OpLimitBreakChange => false,
             PartyState.OpModify => false,
+            ActorState.OpModelState op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpEventNpcYell op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpEventObjectStateChange op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
             ActorState.OpEventObjectAnimation op => FilterInterestingActor(op.InstanceID, op.Timestamp, false),
@@ -143,6 +154,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
             ClientState.OpForcedMovementDirectionChange => false,
             ClientState.OpProcTimersChange => false,
             WorldState.OpRSVData => false,
+            ClientState.OpMoveSpeedChange => ShowCLMVEvents,
             NetworkState.OpServerIPC => false,
             _ => true
         };
@@ -208,14 +220,14 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
         {
             foreach (var t in tree.Nodes(action.Targets, t => new(ReplayUtils.ActionTargetString(t, op.Timestamp))))
             {
-                tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
             }
         }
         else
         {
             foreach (var t in tree.Nodes(op.Value.Targets, t => new(ActorString(t.ID, op.Timestamp))))
             {
-                tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
             }
         }
     }

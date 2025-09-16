@@ -93,7 +93,7 @@ public sealed class Room2(WorldState ws, Actor primary) : BossModule(ws, primary
     private static readonly WPos arenaCenter = new(default, 192f);
     private static readonly Angle a135 = 135.Degrees();
     private static readonly WDir dir135 = a135.ToDirection(), dirM135 = (-a135).ToDirection();
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(arenaCenter, 19.5f * CosPI.Pi36th, 36), new Rectangle(arenaCenter + 8.65f * dir135, 20f, 6.15f, -a135),
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(arenaCenter, 19.5f * CosPI.Pi36th, 36), new Rectangle(arenaCenter + 8.65f * dir135, 20f, 6.15f, -a135),
     new Rectangle(arenaCenter + 8.65f * dirM135, 20f, 6.15f, a135), new Rectangle(arenaCenter + 12f * dir135, 20f, 4.3f, -a135), new Rectangle(arenaCenter + 12f * dirM135, 20f, 4.3f, a135),
     new Rectangle(arenaCenter + 14.3f * dir135, 20f, 3.5f, -a135), new Rectangle(arenaCenter + 14.3f * dirM135, 20f, 3.5f, a135)], [new Rectangle(new(default, 212f), 20f, 1.7f)]);
     private static readonly uint[] bonusAdds = [(uint)OID.TuligoraQueen, (uint)OID.TuraliTomato, (uint)OID.TuraliOnion, (uint)OID.TuraliEggplant,
@@ -103,8 +103,9 @@ public sealed class Room2(WorldState ws, Actor primary) : BossModule(ws, primary
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(trash));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        var m = this;
+        Arena.Actors(m, trash);
+        Arena.Actors(m, bonusAdds, Colors.Vulnerable);
     }
 
     protected override bool CheckPull() => Enemies(trash).Count != 0;

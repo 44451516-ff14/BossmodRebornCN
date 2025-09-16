@@ -376,10 +376,10 @@ sealed class TOPStates : StateMachineBuilder
         ComponentCondition<P5DeltaHyperPulse>(id + 0x72, 0.2f, comp => comp.NumCasts >= 36)
             .DeactivateOnExit<P5DeltaHyperPulse>();
 
-        ComponentCondition<P5DeltaSwivelCannon>(id + 0x80, 2.4f, comp => comp.AOE != null)
+        ComponentCondition<P5DeltaSwivelCannon>(id + 0x80, 2.4f, comp => comp.AOE.Length != 0)
             .ActivateOnEnter<P5DeltaSwivelCannon>();
         // third tether break happens somewhere here (inner green)
-        ComponentCondition<P5DeltaSwivelCannon>(id + 0x82, 10, comp => comp.AOE == null, "Cleave")
+        ComponentCondition<P5DeltaSwivelCannon>(id + 0x82, 10, comp => comp.AOE.Length == 0, "Cleave")
             .ActivateOnEnter<P5NearDistantWorld>()
             .DeactivateOnExit<P5DeltaSwivelCannon>();
         ComponentCondition<P5NearDistantWorld>(id + 0x83, 0.7f, comp => comp.NumNearJumpsDone > 0, "Near/far 1");

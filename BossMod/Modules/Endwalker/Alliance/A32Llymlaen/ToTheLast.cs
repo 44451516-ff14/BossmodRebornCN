@@ -1,6 +1,6 @@
 namespace BossMod.Endwalker.Alliance.A32Llymlaen;
 
-class ToTheLast(BossModule module) : Components.GenericAOEs(module)
+sealed class ToTheLast(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(80f, 5f);
     private readonly List<AOEInstance> _aoes = new(3);

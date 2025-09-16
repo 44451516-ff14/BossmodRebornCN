@@ -21,7 +21,7 @@ class Hints(BossModule module) : BossComponent(module)
             }
         }
 
-        var spumes = Module.Enemies((uint)OID.WavetoothSahagin);
+        var spumes = Module.Enemies((uint)OID.Spume);
         var countS = spumes.Count;
         for (var i = 0; i < countS; ++i)
         {

@@ -23,12 +23,10 @@ public enum AID : uint
 
 public enum SID : uint
 {
-    Aetherstock = 4136, // Boss->Boss, extra=0x0
     AboutFace = 2162, // Boss->player, extra=0x0
     LeftFace = 2163, // Boss->player, extra=0x0
     RightFace = 2164, // Boss->player, extra=0x0
-    ForwardMarch = 2161, // Boss->player, extra=0x0
-    ForcedMarch = 1257 // Boss->player, extra=0x1/0x2/0x4/0x8
+    ForwardMarch = 2161 // Boss->player, extra=0x0
 }
 
 sealed class AetherstockAbyssalSmog(BossModule module) : Components.GenericAOEs(module)

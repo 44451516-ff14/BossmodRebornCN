@@ -3,15 +3,15 @@ namespace BossMod.Dawntrail.Alliance.A12Fafnir;
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(30f, 35f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DarkMatterBlast && Arena.Bounds != A12Fafnir.DefaultBounds)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.1d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 1.1d))];
         }
     }
 
@@ -20,7 +20,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (index == 0x22 && state == 0x00020001u)
         {
             Arena.Bounds = A12Fafnir.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -62,7 +62,7 @@ sealed class DragonBreathArenaChange(BossModule module) : BossComponent(module)
                 Arena.Center = A12Fafnir.ArenaCenter;
                 return;
             }
-            ArenaBoundsComplex refresh = new([circle, new Cone(A12Fafnir.ArenaCenter, 30f, angle, initialRot)]);
+            ArenaBoundsCustom refresh = new([circle, new Cone(A12Fafnir.ArenaCenter, 30f, angle, initialRot)]);
             Arena.Bounds = refresh;
             Arena.Center = refresh.Center;
         }

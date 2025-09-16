@@ -10,7 +10,7 @@ abstract class WaterIV(BossModule module, uint aid) : Components.SimpleKnockback
         if (Casters.Count != 0)
         {
             ref readonly var c = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 13f), c.Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(c.Origin, 13f), c.Activation);
         }
     }
 }
@@ -33,9 +33,9 @@ sealed class Twister(BossModule module) : Components.Voidzone(module, 6.5f, GetT
 public sealed class CLL3Adrammelech(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
     private static readonly WPos arenaCenter = new(80f, -606f);
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(arenaCenter, 29.5f, 48)], [new Rectangle(new(80f, -575.788f), 20f, 1.25f),
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(arenaCenter, 29.5f, 48)], [new Rectangle(new(80f, -575.788f), 20f, 1.25f),
     new Rectangle(new(80f, -636.413f), 20f, 1.25f)]);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(arenaCenter, 25f, 48)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(arenaCenter, 25f, 48)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

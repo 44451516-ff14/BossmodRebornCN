@@ -30,7 +30,7 @@ sealed class WindsPeakKB(BossModule module) : Components.SimpleKnockbacks(module
         if (!_arena.IsDawonArena && Casters.Count != 0)
         {
             ref readonly var c = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 10f), c.Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(c.Origin, 10f), c.Activation);
         }
     }
 }
@@ -163,11 +163,11 @@ sealed class TwinAgonies(BossModule module) : Components.SingleTargetCast(module
 public sealed class CLL4Dawon(WorldState ws, Actor primary) : BossModule(ws, primary, DawonStartingArena.Center, DawonStartingArena)
 {
     public static readonly WPos LyonCenter = new(80f, -874f);
-    public static readonly ArenaBoundsComplex LyonStartingArena = new([new Polygon(LyonCenter, 24.5f, 48)]);
-    public static readonly ArenaBoundsComplex LyonDefaultArena = new([new Polygon(LyonCenter, 20f, 48)]);
+    public static readonly ArenaBoundsCustom LyonStartingArena = new([new Polygon(LyonCenter, 24.5f, 48)]);
+    public static readonly ArenaBoundsCustom LyonDefaultArena = new([new Polygon(LyonCenter, 20f, 48)]);
     public static readonly WPos DawonCenter = new(80f, -813f);
-    public static readonly ArenaBoundsComplex DawonStartingArena = new([new Polygon(DawonCenter, 34.5f, 96)], [new Rectangle(new(80f, -778f), 20f, 1.25f)]);
-    public static readonly ArenaBoundsComplex DawonDefaultArena = new([new Polygon(DawonCenter, 30f, 96)]);
+    public static readonly ArenaBoundsCustom DawonStartingArena = new([new Polygon(DawonCenter, 34.5f, 96)], [new Rectangle(new(80f, -778f), 20f, 1.25f)]);
+    public static readonly ArenaBoundsCustom DawonDefaultArena = new([new Polygon(DawonCenter, 30f, 96)]);
     private static readonly uint[] adds = [(uint)OID.TamedBeetle, (uint)OID.TamedCoeurl, (uint)OID.TamedManticore];
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -205,7 +205,7 @@ public sealed class CLL4Dawon(WorldState ws, Actor primary) : BossModule(ws, pri
         }
         else
         {
-            Arena.Actors(Enemies(adds));
+            Arena.Actors(this, adds);
             Arena.Actor(PrimaryActor);
         }
     }

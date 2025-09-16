@@ -4,68 +4,70 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
 {
     public readonly List<AOEInstance> AOEs = new(2);
     private readonly Actor?[] _tetherSource = new Actor?[PartyState.MaxPartySize];
-    private readonly AOEInstance?[] _safespot = new AOEInstance?[PartyState.MaxPartySize];
+    private readonly AOEInstance[][] _safespot = new AOEInstance[PartyState.MaxPartySize][];
     private const string Hint = "Go to correct spot!";
     private static readonly AOEShapeRect rect = new(70f, 17f);
-    private ConeHA? cone;
+    private ConeHA[] cone = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = AOEs.Count;
         if (count == 0)
+        {
             return [];
+        }
         if (_tetherSource[slot] != null)
         {
-            ref var aoe = ref _safespot[slot];
-            if (aoe == null)
+            var safespot = _safespot[slot];
+            if (safespot == null)
             {
-                var (safeShapes, dangerShapes) = GetShapesForAOEs(slot);
-                ConeHA[] coneShapes = cone != null ? [cone] : [];
+                var safeShapes = new RectangleSE[1];
+                var dangerShapes = new RectangleSE[1];
+                var aoes = CollectionsMarshal.AsSpan(AOEs);
+                for (var i = 0; i < count; ++i)
+                {
+                    ref var aoe = ref aoes[i];
+                    var isSafe = _tetherSource[slot]!.Position.AlmostEqual(aoe.Origin, 25f);
+                    var shape = new RectangleSE(aoe.Origin, aoe.Origin + rect.LengthFront * aoe.Rotation.ToDirection(), rect.HalfWidth);
 
-                aoe = new(new AOEShapeCustom(safeShapes, dangerShapes, coneShapes, true, cone != null ? OperandType.Intersection : OperandType.Union),
-                    Arena.Center, default, AOEs[0].Activation, Colors.SafeFromAOE);
+                    if (isSafe)
+                    {
+                        safeShapes[0] = shape;
+                    }
+                    else
+                    {
+                        dangerShapes[0] = shape;
+                    }
+                }
+
+                ref var aoe0 = ref aoes[0];
+                _safespot[slot] = [new(new AOEShapeCustom(safeShapes, dangerShapes, cone, cone.Length != 0 ? OperandType.Intersection : OperandType.Union, invertForbiddenZone: true),
+                    Arena.Center, default, aoe0.Activation, Colors.SafeFromAOE)];
             }
-            return Utils.ZeroOrOne(ref aoe);
+            return safespot;
         }
-        else
-            return CollectionsMarshal.AsSpan(AOEs);
-    }
-
-    private (RectangleSE[] safeShapes, RectangleSE[] dangerShapes) GetShapesForAOEs(int slot)
-    {
-        var safeShapes = new RectangleSE[1];
-        var dangerShapes = new RectangleSE[1];
-        var count = AOEs.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var aoe = AOEs[i];
-            var isSafe = _tetherSource[slot]?.Position.AlmostEqual(aoe.Origin, 25f) ?? false;
-            var shape = new RectangleSE(aoe.Origin, aoe.Origin + rect.LengthFront * aoe.Rotation.ToDirection(), rect.HalfWidth);
-
-            if (isSafe)
-                safeShapes[0] = shape;
-            else
-                dangerShapes[0] = shape;
-        }
-        return (safeShapes, dangerShapes);
+        return CollectionsMarshal.AsSpan(AOEs);
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var count = AOEs.Count;
-        if (count == 0)
-            return;
-        ref readonly var aoe = ref _safespot[slot];
         if (_tetherSource[slot] == null)
+        {
             base.AddHints(slot, actor, hints);
-        else if (aoe != null)
-            hints.Add(Hint, !aoe.Value.Check(actor.Position));
+        }
+        else if (_safespot[slot] is AOEInstance[] aoes)
+        {
+            ref var aoe = ref aoes[0];
+            hints.Add(Hint, !aoe.Check(actor.Position));
+        }
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.ChainDeathmatch && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
+        {
             _tetherSource[slot] = source;
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -79,14 +81,15 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
                 AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
                 break;
             case (uint)AID.FusesOfFuryMurderousMist:
-                cone = new(spell.LocXZ, 40f, spell.Rotation, 135f.Degrees());
+                cone = [new(spell.LocXZ, 40f, spell.Rotation, 135f.Degrees())];
                 break;
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch (spell.Action.ID)
+        var id = spell.Action.ID;
+        switch (id)
         {
             case (uint)AID.TagTeamLariatComboFirstRAOE:
             case (uint)AID.TagTeamLariatComboFirstLAOE:
@@ -97,16 +100,28 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
             case (uint)AID.FusesOfFuryLariatComboSecondRAOE:
             case (uint)AID.FusesOfFuryLariatComboSecondLAOE:
                 ++NumCasts;
-                Array.Fill(_tetherSource, null);
-                var index = AOEs.FindIndex(aoe => aoe.Origin.AlmostEqual(spell.LocXZ, 1));
+                new Span<Actor?>(_tetherSource, 0, PartyState.MaxPartySize).Clear();
+                var index = -1;
+                var aoes = CollectionsMarshal.AsSpan(AOEs);
+                var len = aoes.Length;
+                var pos = spell.LocXZ;
+                for (var i = 0; i < len; ++i)
+                {
+                    ref var aoe = ref aoes[i];
+                    if (aoe.Origin == pos)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
                 if (index < 0)
                 {
                     ReportError($"Failed to find AOE for {spell.LocXZ}");
                 }
-                else if (spell.Action.ID is (uint)AID.TagTeamLariatComboFirstRAOE or (uint)AID.TagTeamLariatComboFirstLAOE or (uint)AID.FusesOfFuryLariatComboFirstRAOE or (uint)AID.FusesOfFuryLariatComboFirstLAOE)
+                else if (id is (uint)AID.TagTeamLariatComboFirstRAOE or (uint)AID.TagTeamLariatComboFirstLAOE or (uint)AID.FusesOfFuryLariatComboFirstRAOE or (uint)AID.FusesOfFuryLariatComboFirstLAOE)
                 {
-                    ref var aoe = ref AOEs.Ref(index);
-                    aoe.Origin = Arena.Center - (aoe.Origin - Arena.Center.Quantized());
+                    ref var aoe = ref aoes[index];
+                    aoe.Origin = (Arena.Center - (aoe.Origin - Arena.Center)).Quantized();
                     aoe.Rotation += 180f.Degrees();
                     aoe.Activation = WorldState.FutureTime(4.3d);
                 }
@@ -114,9 +129,6 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
                 {
                     AOEs.RemoveAt(index);
                 }
-                break;
-            case (uint)AID.FusesOfFuryMurderousMist:
-                cone = null;
                 break;
         }
     }

@@ -208,6 +208,6 @@ sealed class CE63WornToShadowStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 28)] // bnpcname=9973
 public sealed class CE63WornToShadow(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-480f, -690f), 29.5f, 32)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-480f, -690f), 29.5f, 32)]);
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

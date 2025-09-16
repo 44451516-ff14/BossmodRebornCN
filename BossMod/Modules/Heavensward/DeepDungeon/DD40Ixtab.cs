@@ -65,5 +65,5 @@ class DD40IxtabStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "LegendofIceman", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 177, NameID = 5025)]
 public class DD40Ixtab(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-300f, -226f), 24.18f, 32)], [new Rectangle(new(-300f, -250.954f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-300f, -226f), 24.18f, 32)], [new Rectangle(new(-300f, -250.954f), 20f, 1.25f)]);
 }

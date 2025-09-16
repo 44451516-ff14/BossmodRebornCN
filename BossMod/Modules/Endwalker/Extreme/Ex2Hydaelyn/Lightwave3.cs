@@ -8,7 +8,7 @@ class Lightwave3(BossModule module) : LightwaveCommon(module)
         // try to find two helpers with Z=70 before first cast
         if (Waves.Count == 0)
         {
-            foreach (var wave in Module.Enemies(OID.Helper).Where(IsInitialLightwave))
+            foreach (var wave in Module.Enemies((uint)OID.Helper).Where(IsInitialLightwave))
             {
                 Waves.Add(wave);
             }

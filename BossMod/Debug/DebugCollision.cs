@@ -3,7 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision.Math;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
 
@@ -260,7 +260,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                 color = Colors.TextColor3;
         }
         using var n = _tree.Node2($"{type} {(nint)coll:X}, layers={coll->LayerMask:X8}, layout-id={coll->LayoutObjectId:X16}, refs={coll->NumRefs}, material={coll->ObjectMaterialValue:X}/{coll->ObjectMaterialMask:X}, flags={flagsText}###{(nint)coll:X}", false, color);
-        if (ImGui.BeginPopupContextItem())
+        if (ImGui.BeginPopupContextItem($"###{(nint)coll:X}"))
         {
             ContextCollider(coll);
             ImGui.EndPopup();
@@ -430,7 +430,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     VisualizeVertex(vertex, Colors.CollisionColor2);
                 }
 
-                if (ImGui.BeginPopupContextItem())
+                if (ImGui.BeginPopupContextItem($"##popup_vertex_{index}"))
                 {
                     if (ImGui.MenuItem("Copy to Clipboard"))
                     {

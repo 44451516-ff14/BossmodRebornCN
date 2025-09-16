@@ -8,7 +8,7 @@ class HarrowingHell(BossModule module) : BossComponent(module)
     public override void Update()
     {
         // boss always points to (0,1) => offset dot dir == z + const
-        _closestTargets = Raid.WithSlot(false, true, true).OrderBy(ia => ia.Item2.Position.Z).Take(2).Mask();
+        _closestTargets = Raid.WithSlot(false, true, true).OrderBy(ia => ia.Item2.PosRot.Z).Take(2).Mask();
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -21,7 +21,7 @@ class HarrowingHell(BossModule module) : BossComponent(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.HarrowingHellAOE1 or AID.HarrowingHellAOE2 or AID.HarrowingHellAOE3 or AID.HarrowingHellAOE4 or AID.HarrowingHellAOE5 or AID.HarrowingHellAOE6 or AID.HarrowingHellAOE7 or AID.HarrowingHellAOE8 or AID.HarrowingHellKnockback)
+        if (spell.Action.ID is (uint)AID.HarrowingHellAOE1 or (uint)AID.HarrowingHellAOE2 or (uint)AID.HarrowingHellAOE3 or (uint)AID.HarrowingHellAOE4 or (uint)AID.HarrowingHellAOE5 or (uint)AID.HarrowingHellAOE6 or (uint)AID.HarrowingHellAOE7 or (uint)AID.HarrowingHellAOE8 or (uint)AID.HarrowingHellKnockback)
             ++NumCasts;
     }
 }

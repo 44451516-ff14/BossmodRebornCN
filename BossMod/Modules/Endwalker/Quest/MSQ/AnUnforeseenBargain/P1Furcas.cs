@@ -84,13 +84,13 @@ class FurcasStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70209, NameID = 12066)]
 public class Furcas(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
 {
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(new(97.85f, 286), 19.5f, 20)]);
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(new(97.85f, 286), 19.5f, 20)]);
     private static readonly uint[] trash = [(uint)OID.VisitantTaurus, (uint)OID.VisitantDahak, (uint)OID.VisitantVoidskipper,
     (uint)OID.VisitantPersona, (uint)OID.VisitantBlackguard, (uint)OID.VisitantArchDemon];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }

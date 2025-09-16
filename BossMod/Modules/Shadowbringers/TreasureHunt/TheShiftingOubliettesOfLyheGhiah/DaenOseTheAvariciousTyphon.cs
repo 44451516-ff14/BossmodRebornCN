@@ -58,25 +58,31 @@ class SnortsaultCircle(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly LingeringSnort _aoes = module.FindComponent<LingeringSnort>()!;
     private static readonly AOEShapeCircle circle = new(5f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (_aoes.ActiveCasters.Length == 0 && _aoe != null)
-            return new AOEInstance[1] { _aoe.Value };
+        if (_aoes.ActiveCasters.Length == 0)
+        {
+            return _aoe;
+        }
         return [];
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.DaenOseTheAvaricious2)
-            _aoe = new(circle, Arena.Center.Quantized(), default, WorldState.FutureTime(14.3d));
+        {
+            _aoe = [new(circle, Arena.Center.Quantized(), default, WorldState.FutureTime(14.3d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.SnortAssaultEnd)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -102,7 +108,7 @@ class Snortsault(BossModule module) : Components.GenericRotatingAOE(module)
             var rotationIncrement = isClockwise ? increment : -increment;
             AddSequence(default);
             AddSequence(180f.Degrees());
-            void AddSequence(Angle offset) => Sequences.Add(new(cone, Arena.Center.Quantized(), actor.Rotation + offset, rotationIncrement, WorldState.FutureTime(14.5d), 1.1f, 31, 9));
+            void AddSequence(Angle offset) => Sequences.Add(new(cone, Arena.Center.Quantized(), actor.Rotation + offset, rotationIncrement, WorldState.FutureTime(14.5d), 1.1d, 31, 9));
         }
     }
 
@@ -149,17 +155,7 @@ class DaenOseTheAvariciousTyphonStates : StateMachineBuilder
             .ActivateOnEnter<Snortsault>()
             .ActivateOnEnter<SnortsaultKB>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(DaenOseTheAvariciousTyphon.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(DaenOseTheAvariciousTyphon.All);
     }
 }
 
@@ -174,7 +170,7 @@ public class DaenOseTheAvariciousTyphon(WorldState ws, Actor primary) : THTempla
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.WrigglingMenace));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

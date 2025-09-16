@@ -48,5 +48,5 @@ sealed class D011ForgivenDissonanceStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "legendoficeman, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 676, NameID = 8299)]
 public sealed class D011ForgivenDissonance(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-15f, 240f), 19.5f, 36)], [new Rectangle(new(-15f, 259.689f), 20f, 1.062f), new Rectangle(new(-15f, 220.127f), 20f, 1.062f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-15f, 240f), 19.5f, 36)], [new Rectangle(new(-15f, 259.689f), 20f, 1.062f), new Rectangle(new(-15f, 220.127f), 20f, 1.062f)]);
 }

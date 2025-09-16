@@ -38,6 +38,6 @@ class Parhelion(BossModule module) : BossComponent(module)
         if (_subparhelions)
             return _completedParhelions.Take(10);
         else
-            return Module.Enemies(OID.Parhelion).Where(p => p.CastInfo != null);
+            return Module.Enemies((uint)OID.Parhelion).Where(p => p.CastInfo != null);
     }
 }

@@ -6,10 +6,10 @@ sealed class LashingLariat(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeRect rect = new(70f, 16f);
     private Actor? tetheredWall;
     private Angle angle;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly M07SBruteAbombinatorConfig _config = Service.Config.Get<M07SBruteAbombinatorConfig>();
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
@@ -37,7 +37,7 @@ sealed class LashingLariat(BossModule module) : Components.GenericAOEs(module)
     {
         if (_config.EnableLariatPrediction && tetheredWall != null && angle != default)
         {
-            _aoe = new(rectPrediction, tetheredWall.Position, tetheredWall.Rotation + angle, WorldState.FutureTime(13.8d));
+            _aoe = [new(rectPrediction, tetheredWall.Position, tetheredWall.Rotation + angle, WorldState.FutureTime(13.8d))];
         }
     }
 
@@ -47,7 +47,7 @@ sealed class LashingLariat(BossModule module) : Components.GenericAOEs(module)
         {
             case (uint)AID.LashingLariat1:
             case (uint)AID.LashingLariat2:
-                _aoe = new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+                _aoe = [new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
                 break;
         }
     }

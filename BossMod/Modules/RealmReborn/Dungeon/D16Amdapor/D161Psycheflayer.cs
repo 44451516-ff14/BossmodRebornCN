@@ -40,7 +40,7 @@ class D161PsycheflayerStates : StateMachineBuilder
 {
     public D161PsycheflayerStates(D161Psycheflayer module) : base(module)
     {
-        SimplePhase(0, id => { SimpleState(id, 10000, "Enrage"); }, "Boss death")
+        SimplePhase(default, id => { SimpleState(id, 10000f, "Enrage"); }, "Boss death")
             .ActivateOnEnter<VoidFireCleave>()
             .ActivateOnEnter<VoidFireAOE>()
             .ActivateOnEnter<VoidThunder>()
@@ -61,14 +61,16 @@ public class D161Psycheflayer(WorldState ws, Actor primary) : BossModule(ws, pri
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var e in hints.PotentialTargets)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
-            e.Priority = (OID)e.Actor.OID switch
+            var e = hints.PotentialTargets[i];
+            e.Priority = e.Actor.OID switch
             {
-                OID.MarbleMarionette => 4,
-                OID.StoneMarionette => 3,
-                OID.BossP1 => 2,
-                OID.BossP2 => 1,
+                (uint)OID.MarbleMarionette => 4,
+                (uint)OID.StoneMarionette => 3,
+                (uint)OID.BossP1 => 2,
+                (uint)OID.BossP2 => 1,
                 _ => 0
             };
         }
@@ -76,9 +78,7 @@ public class D161Psycheflayer(WorldState ws, Actor primary) : BossModule(ws, pri
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _bossP2 ??= StateMachine.ActivePhaseIndex == 0 ? Enemies(OID.BossP2).FirstOrDefault() : null;
+        _bossP2 ??= GetActor((uint)OID.BossP2);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

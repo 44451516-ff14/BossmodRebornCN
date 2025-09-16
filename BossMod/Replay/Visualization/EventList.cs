@@ -1,5 +1,5 @@
 ﻿using BossMod.Autorotation;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayVisualization;
 
@@ -218,7 +218,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         {
             foreach (var t in _tree.Nodes(a.Targets, t => new(ReplayUtils.ActionTargetString(t, a.Timestamp))))
             {
-                _tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                _tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
             }
         }
     }
@@ -294,6 +294,10 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         if (ImGui.MenuItem("Show actor-size events", "", list.ShowActorSizeEvents, true))
         {
             list.ShowActorSizeEvents = !list.ShowActorSizeEvents;
+        }
+        if (ImGui.MenuItem("Show CLMV events", "", list.ShowCLMVEvents, true))
+        {
+            list.ShowCLMVEvents = !list.ShowCLMVEvents;
         }
         if (ImGui.MenuItem("Pop out"))
         {

@@ -1,28 +1,30 @@
 ﻿namespace BossMod.Endwalker.Alliance.A31Thaliak;
 
-class RheognosisKnockback(BossModule module) : Components.GenericKnockback(module)
+sealed class RheognosisKnockback(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _knockback;
+    private Knockback[] _kb = [];
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _knockback);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.Rheognosis or (uint)AID.RheognosisPetrine)
-            _knockback = new(Arena.Center, 25f, Module.CastFinishAt(spell, 20.3d), direction: spell.Rotation + 180f.Degrees(), kind: Kind.DirForward);
+        {
+            _kb = [new(Arena.Center, 25f, Module.CastFinishAt(spell, 20.3d), direction: spell.Rotation + 180f.Degrees(), kind: Kind.DirForward)];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RheognosisKnockback)
         {
-            _knockback = null;
+            _kb = [];
             ++NumCasts;
         }
     }
 }
 
-public class RheognosisCrash : Components.Exaflare
+sealed class RheognosisCrash : Components.Exaflare
 {
     public RheognosisCrash(BossModule module) : base(module, new AOEShapeRect(10f, 12f)) => ImminentColor = Colors.AOE;
 

@@ -13,7 +13,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
     public WDir SafeSideDir;
     public readonly List<AOEInstance> AOEs = new(14);
 
-    private static readonly AOEShapeRect _shape = new(6f, 6f, 6f);
+    private static readonly AOEShapeRect _shape = new(12f, 6f);
     private static readonly WDir[] _canonicalSafespots = [new(6f, -18f), new(-18f, 18f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
@@ -26,8 +26,10 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state != 0x00020001)
+        if (state != 0x00020001u)
+        {
             return;
+        }
 
         WDir dir = index switch
         {
@@ -36,7 +38,9 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
             _ => default
         };
         if (dir != default)
+        {
             SafeSideDir = dir;
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -48,11 +52,15 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
             _ => default
         };
         if (dir == default)
+        {
             return;
+        }
 
         var safespots = new WDir[2];
         for (var i = 0; i < 2; ++i)
+        {
             safespots[i] = _canonicalSafespots[i].Rotate(dir);
+        }
 
         var activation = WorldState.FutureTime(17.1d);
         for (var z = -3; z <= 3; z += 2)
@@ -60,17 +68,16 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
             for (var x = -3; x <= 3; x += 2)
             {
                 var cellOffset = new WDir(x * 6f, z * 6f);
-                var found = false;
                 for (var i = 0; i < 2; ++i)
                 {
-                    if (safespots[i].AlmostEqual(cellOffset, 1f))
+                    if (safespots[i] == cellOffset)
                     {
-                        found = true;
-                        break;
+                        goto next;
                     }
                 }
-                if (!found)
-                    AOEs.Add(new(_shape, (Arena.Center + cellOffset).Quantized(), default, activation));
+                AOEs.Add(new(_shape, (Arena.Center + cellOffset + new WDir(default, -6f)).Quantized(), Angle.AnglesCardinals[1], activation));
+            next:
+                ;
             }
         }
     }

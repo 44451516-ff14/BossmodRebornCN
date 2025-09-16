@@ -101,7 +101,7 @@ sealed class D263FenrirStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3044, SortOrder = 4)]
 public sealed class D263Fenrir(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(4.25f, 39.50f), new(10.54f, 41.14f), new(11.16f, 41.39f), new(16.75f, 44.63f), new(21.32f, 49.20f),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(4.25f, 39.50f), new(10.54f, 41.14f), new(11.16f, 41.39f), new(16.75f, 44.63f), new(21.32f, 49.20f),
     new(21.72f, 49.74f), new(24.72f, 54.95f), new(24.97f, 55.57f), new(26.62f, 61.89f), new(26.62f, 68.44f),
     new(24.95f, 74.69f), new(24.68f, 75.31f), new(21.73f, 80.43f), new(21.31f, 81f), new(16.70f, 85.60f),
     new(11.10f, 88.83f), new(10.48f, 89.06f), new(4.23f, 90.69f), new(-2.31f, 90.69f), new(-8.60f, 89.01f),

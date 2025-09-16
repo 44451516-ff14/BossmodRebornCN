@@ -57,23 +57,28 @@ sealed class ProteanWave(BossModule module) : Components.SimpleAOEGroups(module,
 
 sealed class KnockbackPull(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _knockback;
+    private Knockback[] _kb = [];
     private readonly FluidConvectionDynamic _aoe = module.FindComponent<FluidConvectionDynamic>()!;
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _knockback);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (_aoe.AOE != null)
-            if (_aoe.AOE.Value.Check(pos))
+        if (_aoe.AOE.Length != 0)
+        {
+            ref var aoe = ref _aoe.AOE[0];
+            if (aoe.Check(pos))
+            {
                 return true;
-        return !Module.InBounds(pos);
+            }
+        }
+        return !Arena.InBounds(pos);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         void AddSource(Kind kind)
-            => _knockback = new(spell.LocXZ, 6f, Module.CastFinishAt(spell), kind: kind);
+            => _kb = [new(spell.LocXZ, 6f, Module.CastFinishAt(spell), kind: kind)];
         if (spell.Action.ID == (uint)AID.FerrofluidKB)
         {
             AddSource(Kind.AwayFromOrigin);
@@ -87,7 +92,9 @@ sealed class KnockbackPull(BossModule module) : Components.GenericKnockback(modu
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.FerrofluidKB or (uint)AID.FerrofluidAttract)
-            _knockback = null;
+        {
+            _kb = [];
+        }
     }
 }
 
@@ -98,9 +105,9 @@ sealed class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(
 {
     private static readonly AOEShapeDonut donut = new(10f, 40f);
     private static readonly AOEShapeCircle circle = new(6f);
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -112,7 +119,7 @@ sealed class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(
         };
         if (shape != null)
         {
-            AOE = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell));
+            AOE = [new(shape, spell.LocXZ, default, Module.CastFinishAt(spell))];
         }
     }
 
@@ -120,7 +127,7 @@ sealed class FluidConvectionDynamic(BossModule module) : Components.GenericAOEs(
     {
         if (spell.Action.ID is (uint)AID.FluidConvection or (uint)AID.FluidDynamic)
         {
-            AOE = null;
+            AOE = [];
         }
     }
 }
@@ -187,7 +194,7 @@ sealed class Stage29Act2States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 698, NameID = 9241, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.MaskedCarnivale, GroupID = 698u, NameID = 9241u, SortOrder = 2)]
 public sealed class Stage29Act2 : BossModule
 {
     public Stage29Act2(WorldState ws, Actor primary) : base(ws, primary, Layouts.ArenaCenter, Layouts.CircleSmall)

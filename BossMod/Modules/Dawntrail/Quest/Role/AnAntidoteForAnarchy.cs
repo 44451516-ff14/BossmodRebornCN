@@ -132,7 +132,7 @@ sealed class Esuna(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var loashkanaL = Module.Enemies(OID.LoashkanaTheLeal);
+        var loashkanaL = Module.Enemies((uint)OID.LoashkanaTheLeal);
         var loashkana = loashkanaL.Count != 0 ? loashkanaL[0] : null;
         if (_affected.Contains(actor))
             hints.Add("Use Esuna on yourself.");
@@ -172,11 +172,11 @@ sealed class AnAntidoteForAnarchyStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70365, NameID = 12743)]
 public sealed class AnAntidoteForAnarchy(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-5.65f, -84.73f), 14.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-5.65f, -84.73f), 14.5f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.KAModelMammet, (uint)OID.KRModelMammet, (uint)OID.SuffocatingCloud, (uint)OID.PoisonCloud];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
     }
 }

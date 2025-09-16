@@ -50,30 +50,34 @@ sealed class FieldOfScorn(BossModule module) : Components.RaidwideCast(module, (
 sealed class ThunderousSlash(BossModule module) : Components.SingleTargetCast(module, (uint)AID.ThunderousSlash);
 sealed class OrderedFire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OrderedFire, new AOEShapeRect(55f, 4f));
 sealed class ElectricExcess(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ElectricExcess, 6f);
-sealed class StaticForce(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(60f, 15f.Degrees()), (uint)IconID.StaticForce, (uint)AID.StaticForce, 5.1f);
+sealed class StaticForce(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(60f, 15f.Degrees()), (uint)IconID.StaticForce, (uint)AID.StaticForce, 5.1d);
 
 sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
 {
     // this solution looks a bit complex and confusing, but that is because the pretty and easy solution of just using the tether order only works with good ping + fps
     // at higher latencies the time stamps merge together and tethers start to appear in random order in the logs...
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly List<(Actor source, Actor target)> tethers = new(8);
     private int cloneCount;
     private bool direction; // false = left, true = right
     private bool active;
     private Actor? firstClone;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)
     {
         if (actor.OID == (uint)OID.SoldierS0Clone)
         {
             if (modelState == 5)
+            {
                 direction = false;
+            }
             else if (modelState == 6)
+            {
                 direction = true;
+            }
         }
     }
 
@@ -109,7 +113,7 @@ sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.SectorBisector1 or (uint)AID.SectorBisector2)
         {
-            _aoe = null;
+            _aoe = [];
             cloneCount = 0;
             tethers.Clear();
             firstClone = null;
@@ -127,7 +131,7 @@ sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
 
     public override void Update()
     {
-        if (active && firstClone != null && _aoe == null && tethers.Count < cloneCount)
+        if (active && firstClone != null && _aoe.Length == 0 && tethers.Count < cloneCount)
         {
             var count = tethers.Count;
             for (var i = 0; i < count; ++i)
@@ -136,7 +140,7 @@ sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
                 if (tether.source == firstClone)
                 {
                     active = false;
-                    _aoe = new(cone, tether.target.Position.Quantized(), tether.target.Rotation + (direction ? -1f : 1f) * 90f.Degrees(), WorldState.FutureTime(cloneCount == 6 ? 4.2d : 5.9d));
+                    _aoe = [new(cone, tether.target.Position.Quantized(), tether.target.Rotation + (direction ? -1f : 1f) * 90f.Degrees(), WorldState.FutureTime(cloneCount == 6 ? 4.2d : 5.9d))];
                     return;
                 }
             }
@@ -158,5 +162,5 @@ sealed class D102SoldierS0States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1027, NameID = 13757)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1027u, NameID = 13757u)]
 public sealed class D102SoldierS0(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -182f), new ArenaBoundsSquare(15.5f));

@@ -94,28 +94,17 @@ public class D080EmeraldControlUnit(WorldState ws, Actor primary) : BossModule(w
     new(59.89f, -465.54f), new(59.06f, -467.3f), new(58.83f, -468.01f), new(68.92f, -468.4f), new(70.18f, -467.88f),
     new(70.7f, -468.02f), new(78.35f, -472.9f), new(78.69f, -473.39f), new(81.11f, -478.57f), new(81.51f, -479.14f),
     new(92.74f, -479.98f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)], [new Rectangle(new(127.436f, -423.387f), 1.39f, 0.9f, -60f.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)], [new Rectangle(new(127.436f, -423.387f), 1.39f, 0.9f, -60f.Degrees()),
     new Circle(new(147.318f, -368.699f), 1.5f), new Circle(new(90.074f, -467.885f), 1.5f)]);
     private static readonly uint[] trash = [(uint)OID.ImmortalizedColossus, (uint)OID.ImmortalizedInterceptorDrone, (uint)OID.ClockworkPredator, (uint)OID.ClockworkReservoir];
 
     public override bool CheckReset() => !Raid.Player()!.Position.InSquare(Arena.Center, 70f);
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
         Arena.Actor(PrimaryActor, Colors.Object);
     }
 

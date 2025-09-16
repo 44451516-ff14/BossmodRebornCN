@@ -75,7 +75,7 @@ class RahuCometKB(BossModule module, uint aid, float distance) : Components.Simp
         {
             ref readonly var c = ref Casters.Ref(0);
             var center = Arena.Center;
-            hints.AddForbiddenZone(ShapeDistance.InvertedCone(center, 20f, Angle.FromDirection(center - c.Origin), 20f.Degrees()), c.Activation);
+            hints.AddForbiddenZone(new SDInvertedCone(center, 20f, Angle.FromDirection(center - c.Origin), 20f.Degrees()), c.Activation);
         }
     }
 
@@ -85,8 +85,7 @@ class RahuCometKB(BossModule module, uint aid, float distance) : Components.Simp
         var aoes1 = CollectionsMarshal.AsSpan(_aoe1.Casters);
         for (var i = 0; i < count1; ++i)
         {
-            ref readonly var aoe = ref aoes1[i];
-            if (aoe.Check(pos))
+            if (aoes1[i].Check(pos))
             {
                 return true;
             }
@@ -95,8 +94,7 @@ class RahuCometKB(BossModule module, uint aid, float distance) : Components.Simp
         var aoes2 = CollectionsMarshal.AsSpan(_aoe1.Casters);
         for (var i = 0; i < count2; ++i)
         {
-            ref readonly var aoe = ref aoes2[i];
-            if (aoe.Check(pos))
+            if (aoes2[i].Check(pos))
             {
                 return true;
             }
@@ -133,7 +131,7 @@ class D053InfernoStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242, NameID = 6268)]
 public class D053Inferno(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(282.5f, -27.25f), 19.51f)], [new Rectangle(new(277.157f, -7.933f), 20, 1.25f, -17.532f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(282.5f, -27.25f), 19.51f)], [new Rectangle(new(277.157f, -7.933f), 20, 1.25f, -17.532f.Degrees())]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

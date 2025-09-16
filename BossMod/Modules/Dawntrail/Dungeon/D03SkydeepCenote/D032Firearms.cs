@@ -38,13 +38,16 @@ public enum AID : uint
 sealed class DynamicDominanceArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D032Firearms.ArenaCenter, 25f)], [new Square(D032Firearms.ArenaCenter, 20f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.DynamicDominance && Arena.Bounds == D032Firearms.StartingBounds)
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.6f));
+        if (spell.Action.ID == (uint)AID.DynamicDominance && Arena.Bounds.Radius > 20f)
+        {
+            _aoe = [new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.6d))];
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -52,7 +55,7 @@ sealed class DynamicDominanceArenaChange(BossModule module) : Components.Generic
         if (state == 0x00020001 && index == 0x14)
         {
             Arena.Bounds = D032Firearms.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -90,7 +93,7 @@ sealed class D032FirearmsStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12888)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12888)]
 public sealed class D032Firearms(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-85f, -155f);

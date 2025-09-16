@@ -17,28 +17,30 @@ public enum AID : uint
     TheRamsVoice = 16962 // Boss->self, 4.0s cast, range 9 circle
 }
 
-abstract class Breath(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(30f, 60f.Degrees()));
-class TheDragonsBreath(BossModule module) : Breath(module, (uint)AID.TheDragonsBreath);
-class TheRamsBreath(BossModule module) : Breath(module, (uint)AID.TheRamsBreath);
-class TheLionsBreath(BossModule module) : Breath(module, (uint)AID.TheLionsBreath);
+sealed class Breaths(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TheDragonsBreath, (uint)AID.TheRamsBreath,
+(uint)AID.TheLionsBreath], new AOEShapeCone(30f, 60f.Degrees()));
 
 class TheScorpionsSting(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCone cone = new(18f, 45f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.TheRamsVoice or (uint)AID.TheDragonsVoice) // timing varies, just used the lowest I could find, probably depends on interrupt status
-            _aoe = new(cone, spell.LocXZ, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 2.3f));
+        {
+            _aoe = [new(cone, spell.LocXZ, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 2.3d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.TheScorpionsSting)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -53,12 +55,10 @@ class TygerStates : StateMachineBuilder
     public TygerStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<TheDragonsBreath>()
+            .ActivateOnEnter<Breaths>()
             .ActivateOnEnter<TheScorpionsSting>()
             .ActivateOnEnter<TheDragonsVoice>()
             .ActivateOnEnter<TheDragonsVoiceHint>()
-            .ActivateOnEnter<TheLionsBreath>()
-            .ActivateOnEnter<TheRamsBreath>()
             .ActivateOnEnter<TheRamsEmbrace>()
             .ActivateOnEnter<TheRamsVoice>()
             .ActivateOnEnter<TheRamsVoiceHint>();

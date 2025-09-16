@@ -16,7 +16,7 @@ internal class EscapeFromCastrumCentri(WorldState ws) : QuestBattle(ws)
         new QuestObjective(ws)
             .Hints((player, hints) => hints.PrioritizeAll())
             .With(obj => {
-                obj.Update += () => obj.CompleteIf(World.Party.Player()?.Position.X < -470);
+                obj.Update += () => obj.CompleteIf(World.Party.Player()?.PosRot.X < -470f);
             }),
 
         Generator(ws, new Vector3(-428.83f, -3.99f, -242.18f)),

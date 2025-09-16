@@ -1,10 +1,10 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C02AMR.C021Shishio;
 
 abstract class LightningBolt(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 6f);
-class NLightningBolt(BossModule module) : LightningBolt(module, (uint)AID.NLightningBoltAOE);
-class SLightningBolt(BossModule module) : LightningBolt(module, (uint)AID.SLightningBoltAOE);
+sealed class NLightningBolt(BossModule module) : LightningBolt(module, (uint)AID.NLightningBoltAOE);
+sealed class SLightningBolt(BossModule module) : LightningBolt(module, (uint)AID.SLightningBoltAOE);
 
-class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
+sealed class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
 
@@ -40,7 +40,7 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        var shape = ShapeForAction(spell.Action);
+        var shape = ShapeForAction(spell.Action.ID);
         if (shape != null)
         {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
@@ -49,7 +49,7 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (ShapeForAction(spell.Action) != null)
+        if (ShapeForAction(spell.Action.ID) != null)
         {
             ++NumCasts;
             var numRemoved = _aoes.RemoveAll(aoe => aoe.Origin.AlmostEqual(caster.Position, 1f));
@@ -60,7 +60,7 @@ class CloudToCloud(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    private static AOEShapeRect? ShapeForAction(ActionID action) => action.ID switch
+    private static AOEShapeRect? ShapeForAction(uint action) => action switch
     {
         (uint)AID.NCloudToCloud1 or (uint)AID.SCloudToCloud1 => _shape1,
         (uint)AID.NCloudToCloud2 or (uint)AID.SCloudToCloud2 => _shape2,

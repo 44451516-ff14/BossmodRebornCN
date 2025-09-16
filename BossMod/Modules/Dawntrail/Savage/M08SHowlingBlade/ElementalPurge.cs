@@ -63,7 +63,7 @@ sealed class HuntersHarvestBait(BossModule module) : Components.GenericBaitAway(
 
 sealed class HuntersHarvest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HuntersHarvest, HuntersHarvestBait.Cone);
 
-sealed class GeotemporalBlast(BossModule module) : Components.GenericBaitAway(module, (uint)AID.GeotemporalBlast, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster)
+sealed class GeotemporalBlast(BossModule module) : Components.GenericBaitAway(module, (uint)AID.GeotemporalBlast, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(16f);
 
@@ -71,7 +71,7 @@ sealed class GeotemporalBlast(BossModule module) : Components.GenericBaitAway(mo
     {
         if (iconID == (uint)IconID.StalkingStoneWind && actor.Role == Role.Tank)
         {
-            CurrentBaits.Add(new(actor, actor, circle, WorldState.FutureTime(10.3d)));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, WorldState.FutureTime(10.3d)));
         }
     }
 }

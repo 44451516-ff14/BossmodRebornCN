@@ -28,17 +28,17 @@ public enum IconID : uint
     DigestiveFluid = 14, // player
 }
 
-class DigestiveFluid(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.Digest, m => m.Enemies(OID.WaterVoidzone).Where(z => z.EventState != 7), 0.7f);
-class BindVoidzone(BossModule module) : Components.Voidzone(module, 3, m => m.Enemies(OID.BindVoidzone).Where(z => z.EventState != 7));
+class DigestiveFluid(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.Digest, m => m.Enemies((uint)OID.WaterVoidzone).Where(z => z.EventState != 7), 0.7f);
+class BindVoidzone(BossModule module) : Components.Voidzone(module, 3, m => m.Enemies((uint)OID.BindVoidzone).Where(z => z.EventState != 7));
 
-class DigestiveFluidBait(BossModule module) : Components.GenericBaitAway(module)
+class DigestiveFluidBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(5f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.DigestiveFluid)
-            CurrentBaits.Add(new(actor, actor, circle, WorldState.FutureTime(7.2d)));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, WorldState.FutureTime(7.2d)));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -51,7 +51,7 @@ class DigestiveFluidBait(BossModule module) : Components.GenericBaitAway(module)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 17.5f));
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -67,14 +67,14 @@ class DigestiveFluidBait(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class BindBait(BossModule module) : Components.GenericBaitAway(module)
+class BindBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(3f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Bind)
-            CurrentBaits.Add(new(actor, actor, circle));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle));
     }
 
     public override void OnActorCreated(Actor actor)
@@ -99,7 +99,7 @@ class D021AmikiriStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 235, NameID = 6237)]
 public class D021Amikiri(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(0, 69.221f), 19.5f * CosPI.Pi8th, 8, 22.5f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(0, 69.221f), 19.5f * CosPI.Pi8th, 8, 22.5f.Degrees())]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

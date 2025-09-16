@@ -61,17 +61,7 @@ class D060EnforcementDroid210States : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<PassiveInfraredGuidanceSystem>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D060Trash1.TrashP1);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D060Trash1.TrashP1);
     }
 }
 
@@ -87,17 +77,7 @@ class D060ScrambledIronGiantStates : StateMachineBuilder
             .ActivateOnEnter<Headspin2>()
             .ActivateOnEnter<GrandSword>()
             .ActivateOnEnter<TheHand>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D060Trash1.TrashP2);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D060Trash1.TrashP2);
     }
 }
 
@@ -111,34 +91,25 @@ public abstract class D060Trash1(WorldState ws, Actor primary) : BossModule(ws, 
     new(-191.6f, -357.44f), new(-191.59f, -364.77f), new(-191.74f, -365.29f), new(-192.26f, -365.39f), new(-208.3f, -365.39f),
     new(-208.56f, -366.03f), new(-208.63f, -376.44f), new(-208.68f, -377.15f), new(-208.91f, -379.31f), new(-191.94f, -379.47f),
     new(-191.32f, -379.56f), new(-191.13f, -387.25f), new(-161.42f, -387.38f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     public static readonly uint[] TrashP1 = [(uint)OID.Boss, (uint)OID.ClockworkHunter, (uint)OID.ClockworkAvenger];
     public static readonly uint[] TrashP2 = [(uint)OID.ScrambledEngineer, (uint)OID.ScrambledIronClaw, (uint)OID.ScrambledIronGiant, (uint)OID.ScrambledPaladin];
     public static readonly uint[] Trash = [.. TrashP1, .. TrashP2];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

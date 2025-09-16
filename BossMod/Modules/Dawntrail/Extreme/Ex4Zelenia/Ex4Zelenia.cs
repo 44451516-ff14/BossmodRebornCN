@@ -18,6 +18,6 @@ sealed class ThunderSlash : Components.SimpleAOEs
 public sealed class Ex4Zelenia(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, DefaultArena)
 {
     private static readonly WPos arenaCenter = new(100f, 100f);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(arenaCenter, 16f, 64)]);
-    public static readonly ArenaBoundsComplex DonutArena = new([new DonutV(arenaCenter, 2f, 16f, 64)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(arenaCenter, 16f, 64)]);
+    public static readonly ArenaBoundsCustom DonutArena = new([new DonutV(arenaCenter, 2f, 16f, 64)]);
 }

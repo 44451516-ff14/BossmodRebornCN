@@ -39,6 +39,6 @@ sealed class MagicBarrage(BossModule module) : Components.SimpleAOEs(module, (ui
 public sealed class A31KnaveofHearts(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, new ArenaBoundsSquare(30f))
 {
     private static readonly WPos arenaCenter = new(-800f, -724.40625f);
-    public static readonly Square[] BaseSquare = [new Square(arenaCenter, 30f)];
+    public static readonly Square[] BaseSquare = [new Square(arenaCenter, 30.5f)];
     public static readonly ArenaBoundsSquare DefaultArena = new(30f);
 }

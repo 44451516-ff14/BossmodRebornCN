@@ -15,11 +15,11 @@ public static class Layouts
     private static readonly Square[] squares = [new(new(110f, 110f), sideLength, a45), new(new(90f, 110f), sideLength, a45),
     new(new(110f, 90f), sideLength, a45), new(new(90f, 90f), sideLength, a45)];
 
-    public static readonly ArenaBoundsComplex Layout4Quads = new(_circleBig, squares);
-    public static readonly ArenaBoundsComplex Layout2Corners = new(_circleBig, wallsInflated);
+    public static readonly ArenaBoundsCustom Layout4Quads = new(_circleBig, squares);
+    public static readonly ArenaBoundsCustom Layout2Corners = new(_circleBig, wallsInflated);
     public static readonly RelSimplifiedComplexPolygon Layout2CornersBlockers = new AOEShapeCustom(_circleBig, walls).GetCombinedPolygon(ArenaCenter);
-    public static readonly ArenaBoundsComplex LayoutBigQuad = new(_circleBig, [new Square(ArenaCenter, 5.4f, a45)]);
+    public static readonly ArenaBoundsCustom LayoutBigQuad = new(_circleBig, [new Square(ArenaCenter, 5.4f, a45)]);
     public static readonly RelSimplifiedComplexPolygon LayoutBigQuadBlockers = new AOEShapeCustom(_circleBig, [new Square(ArenaCenter, 4.9f, a45)]).GetCombinedPolygon(ArenaCenter);
-    public static readonly ArenaBoundsComplex CircleSmall = new([new Polygon(ArenaCenter, 16.01379f, 32)]) { IsCircle = true };
-    public static readonly ArenaBoundsComplex CircleBig = new(_circleBig) { IsCircle = true };
+    public static readonly ArenaBoundsCustom CircleSmall = new([new Polygon(ArenaCenter, 16.01379f, 32)]) { IsCircle = true };
+    public static readonly ArenaBoundsCustom CircleBig = new(_circleBig) { IsCircle = true };
 }

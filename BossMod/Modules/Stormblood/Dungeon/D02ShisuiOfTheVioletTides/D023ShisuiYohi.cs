@@ -75,7 +75,7 @@ public class D023ShisuiYohi(WorldState ws, Actor primary) : BossModule(ws, prima
     new(6.6f, -414.16f), new(-6.31f, -414.07f), new(-6.89f, -414.27f), new(-10.64f, -415.82f), new(-11.2f, -416.27f),
     new(-16.59f, -421.66f), new(-16.93f, -422.06f), new(-19.43f, -428.1f), new(-19.6f, -436.96f), new(-19.42f, -437.47f),
     new(-17.08f, -443.11f), new(-16.81f, -443.66f), new(-10.96f, -449.52f), new(-10.52f, -449.78f), new(-4.32f, -452.34f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

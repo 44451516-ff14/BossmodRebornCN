@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 
 sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoePrepare;
+    private AOEInstance[] _aoePrepare = [];
     private readonly List<AOEInstance> _aoes = new(12);
     private bool prepare;
     public bool Show;
@@ -15,7 +15,7 @@ sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
         }
         if (prepare)
         {
-            return Utils.ZeroOrOne(ref _aoePrepare);
+            return _aoePrepare;
         }
         else
         {
@@ -34,7 +34,7 @@ sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.RuneAxe)
         {
-            _aoePrepare = new(FTB4Magitaur.CircleMinusSquares, Arena.Center, default, Module.CastFinishAt(spell));
+            _aoePrepare = [new(FTB4Magitaur.CircleMinusSquares, Arena.Center, default, Module.CastFinishAt(spell))];
         }
     }
 
@@ -63,7 +63,7 @@ sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
         if (status.ID == (uint)SID.PreyLancepoint)
         {
             prepare = false;
-            _aoePrepare = null;
+            _aoePrepare = [];
         }
     }
 }
@@ -164,9 +164,11 @@ sealed class HolyIV(BossModule module) : Components.GenericStackSpread(module)
         {
             var count = Status.Count;
             var id = actor.InstanceID;
+            var statuses = CollectionsMarshal.AsSpan(Status);
             for (var i = 0; i < count; ++i)
             {
-                if (Status[i].Actor.InstanceID == id)
+                ref var s = ref statuses[i];
+                if (s.Actor.InstanceID == id)
                 {
                     Status.RemoveAt(i);
                     return;
@@ -196,9 +198,10 @@ sealed class HolyIV(BossModule module) : Components.GenericStackSpread(module)
             if (order >= 0)
             {
                 var count = Status.Count;
+                var statuses = CollectionsMarshal.AsSpan(Status);
                 for (var i = 0; i < count; ++i)
                 {
-                    var p = Status[i];
+                    ref var p = ref statuses[i];
                     if (p.Order == order)
                     {
                         Stacks.Add(new(p.Actor, 6f, 16, 16, p.expireAt));
@@ -220,15 +223,15 @@ sealed class HolyIVHints(BossModule module) : Components.GenericAOEs(module)
         {
             var count = _status.Status.Count;
             var index = _status.InitialPositions[slot];
-
+            var statuses = CollectionsMarshal.AsSpan(_status.Status);
             for (var i = 0; i < count; ++i)
             {
-                var s = _status.Status[i];
+                ref var s = ref statuses[i];
                 if (s.squareIndex == index) // there might be no spread for the square if player died
                 {
                     var casts = _status.NumCasts;
                     var isOutsideStack = index == 1 && casts < 3 || index == 0 && casts is > 3 and < 7 || index == 2 && casts is > 7 and < 11;
-                    return new AOEInstance[1] { new(isOutsideStack ? FTB4Magitaur.StackOutsideSquare[index] : FTB4Magitaur.StackInsideSquare[index], Arena.Center, default, _status.Stacks[0].Activation) };
+                    return new AOEInstance[1] { new(isOutsideStack ? FTB4Magitaur.StackOutsideSquare[index] : FTB4Magitaur.StackInsideSquare[index], Arena.Center, default, _status.Stacks.Ref(0).Activation) };
                 }
             }
         }

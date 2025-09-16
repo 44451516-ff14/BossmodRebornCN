@@ -47,8 +47,30 @@ sealed class AbsoluteAuthorityHeel(BossModule module) : Components.GenericStackS
         if (Stacks.Count != 0)
         {
             var player = Raid.Player()!;
-            var actor = Raid.WithoutSlot(false, true, true).Exclude(player).OrderBy(a => (player.Position - a.Position).LengthSq()).First();
-            Stacks[0] = Stacks[0] with { Target = actor ?? player };
+            var party = Raid.WithoutSlot(false, true, true);
+            var len = party.Length;
+
+            Actor? closestActor = null;
+            var closestDistance = float.MaxValue;
+
+            for (var i = 0; i < len; ++i)
+            {
+                var p = party[i];
+                if (p == player)
+                {
+                    continue;
+                }
+
+                var dx = player.Position - p.Position;
+                var dist = dx.LengthSq();
+
+                if (dist < closestDistance)
+                {
+                    closestDistance = dist;
+                    closestActor = p;
+                }
+            }
+            Stacks.Ref(0).Target = closestActor ?? player;
         }
     }
 

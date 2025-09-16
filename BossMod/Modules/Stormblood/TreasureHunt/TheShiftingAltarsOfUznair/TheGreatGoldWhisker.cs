@@ -29,17 +29,7 @@ class TheGreatGoldWhiskerStates : StateMachineBuilder
             .ActivateOnEnter<TripleTrident>()
             .ActivateOnEnter<FishOutOfWater>()
             .ActivateOnEnter<Tingle>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(TheGreatGoldWhisker.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(TheGreatGoldWhisker.All);
     }
 }
 

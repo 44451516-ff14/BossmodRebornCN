@@ -42,21 +42,25 @@ class FlutterfallSpread(BossModule module) : Components.SpreadFromIcon(module, (
 
 class FeatherSquall(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect rect = new(42.8f, 3f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (id == 0x1E43 && actor == Module.PrimaryActor && !actor.Position.AlmostEqual(new(24f, -475.5f), 1f))
-            _aoe = new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.7d));
+        {
+            _aoe = [new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.7d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.FeatherSquall)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -99,7 +103,7 @@ public class D033Yol(WorldState ws, Actor primary) : BossModule(ws, primary, are
     new(11.14f, -489.57f), new(12.51f, -490.54f), new(13.31f, -491.39f), new(13.76f, -491.83f), new(14.34f, -491.8f),
     new(14.83f, -491.96f), new(15.35f, -492.1f), new(17.65f, -493.47f), new(18.15f, -493.73f), new(20.83f, -494.52f),
     new(21.4f, -494.52f), new(22.55f, -494.49f), new(23.63f, -494.68f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     private static readonly uint[] adds = [(uint)OID.LeftWing, (uint)OID.RightWing, (uint)OID.CorpsecleanerEagle];
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -119,6 +123,6 @@ public class D033Yol(WorldState ws, Actor primary) : BossModule(ws, primary, are
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 }

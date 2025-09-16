@@ -4,7 +4,13 @@ using System.Threading;
 
 namespace BossMod.AI;
 
-public record struct Targeting(AIHints.Enemy Target, float PreferredRange = 2.6f, Positional PreferredPosition = Positional.Any, bool PreferTanking = false);
+public struct Targeting(AIHints.Enemy target, float preferredRange = 2.6f, Positional preferredPosition = Positional.Any, bool preferTanking = false)
+{
+    public AIHints.Enemy Target = target;
+    public readonly float PreferredRange = preferredRange;
+    public Positional PreferredPosition = preferredPosition;
+    public readonly bool PreferTanking = preferTanking;
+}
 
 // constantly follow master
 sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Preset? aiPreset) : IDisposable
@@ -45,14 +51,14 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                     FocusMaster(master);
 
                 _afkMode = _config.AutoAFK && !master.InCombat && (WorldState.CurrentTime - _masterLastMoved).TotalSeconds > _config.AFKModeTimer;
-                var gazeImminent = autorot.Hints.ForbiddenDirections.Count != 0 && autorot.Hints.ForbiddenDirections[0].activation <= WorldState.FutureTime(0.5d);
+                var gazeImminent = autorot.Hints.ForbiddenDirections.Count != 0 && autorot.Hints.ForbiddenDirections.Ref(0).activation <= WorldState.FutureTime(0.5d);
                 var pyreticImminent = autorot.Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && autorot.Hints.ImminentSpecialMode.activation <= WorldState.FutureTime(1d);
                 var misdirectionMode = autorot.Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Misdirection && autorot.Hints.ImminentSpecialMode.activation <= WorldState.CurrentTime;
                 var forbidTargeting = _config.ForbidActions || _afkMode || gazeImminent || pyreticImminent;
                 var hadNavi = _naviDecision.Destination != null;
 
                 Targeting target = default;
-                if (!forbidTargeting && AIPreset != null && (!_config.ForbidAIMovementMounted || _config.ForbidAIMovementMounted && player.MountId == 0))
+                if (!forbidTargeting && AIPreset != null && (!_config.ForbidAIMovementMounted || _config.ForbidAIMovementMounted && player.MountId == default))
                 {
                     target = SelectPrimaryTarget(player, master);
                     if (_config.ManualTarget)
@@ -86,7 +92,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
                 var masterIsMoving = TrackMasterMovement(master);
                 var moveWithMaster = masterIsMoving && _followMaster && master != player;
-                ForceMovementIn = moveWithMaster || gazeImminent || pyreticImminent ? 0f : _naviDecision.LeewaySeconds;
+                ForceMovementIn = moveWithMaster || gazeImminent || pyreticImminent ? default : _naviDecision.LeewaySeconds;
 
                 if (_config.MoveDelay != 0d && !hadNavi && _naviDecision.Destination != null)
                     _navStartTime = WorldState.FutureTime(_config.MoveDelay);
@@ -95,7 +101,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                 {
                     autorot.Preset = target.Target != null ? AIPreset : null;
                 }
-                UpdateMovement(player, master, target, gazeImminent || pyreticImminent, misdirectionMode ? autorot.Hints.MisdirectionThreshold : default, !forbidTargeting ? autorot.Hints.ActionsToExecute : null);
+                UpdateMovement(player, master, gazeImminent || pyreticImminent, misdirectionMode ? autorot.Hints.MisdirectionThreshold : default, !forbidTargeting ? autorot.Hints.ActionsToExecute : null);
             }
             finally
             {
@@ -149,7 +155,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
         // if target-of-target is player, don't try flanking, it's probably impossible... - unless target is currently casting (TODO: reconsider?)
         // skip if targeting a dummy, they don't rotate
-        if (targeting.Target.Actor.TargetID == player.InstanceID && targeting.Target.Actor.CastInfo == null && targeting.Target.Actor.NameID != 541)
+        if (targeting.Target.Actor.TargetID == player.InstanceID && targeting.Target.Actor.CastInfo == null && targeting.Target.Actor.NameID != 541u)
             targeting.PreferredPosition = Positional.Any;
     }
 
@@ -163,7 +169,8 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         {
             var randomO1 = random.NextSingle() * 2f - 1f;
             var randomO2 = random.NextSingle() * 2f - 1f;
-            autorot.Hints.ForcedMovement = new WPos(player.Position.X * randomO1, player.Position.Z * randomO2).ToVec3();
+            var pos = player.Position;
+            autorot.Hints.ForcedMovement = new WPos(pos.X * randomO1, pos.Z * randomO2).ToVec3();
             return new() { LeewaySeconds = float.MaxValue };
         }
 
@@ -246,7 +253,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         return masterIsMoving;
     }
 
-    private void UpdateMovement(Actor player, Actor master, Targeting target, bool gazeOrPyreticImminent, Angle misdirectionAngle, ActionQueue? queueForSprint)
+    private void UpdateMovement(Actor player, Actor master, bool gazeOrPyreticImminent, Angle misdirectionAngle, ActionQueue? queueForSprint)
     {
         if (gazeOrPyreticImminent)
         {
@@ -281,7 +288,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                 var len = pixels.Length;
                 for (var i = 0; i < len; ++i)
                 {
-                    ref readonly var p = ref pixels[i];
+                    var p = pixels[i];
                     var px = p.x;
                     var py = p.y;
                     if (!_naviCtx.Map.InBounds(px, py) || _naviCtx.Map.PixelMaxG[_naviCtx.Map.GridToIndex(px, py)] < startG)

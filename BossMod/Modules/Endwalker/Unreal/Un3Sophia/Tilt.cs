@@ -70,7 +70,7 @@ class Quasar(BossModule module) : Tilt(module)
         };
         if (weight != 0)
         {
-            if (caster.Position.X < 0)
+            if (caster.PosRot.X < 0)
                 WeightLeft += weight;
             else
                 WeightRight += weight;

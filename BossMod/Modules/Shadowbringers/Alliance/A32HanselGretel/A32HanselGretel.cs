@@ -39,13 +39,7 @@ public sealed class A32HanselGretel(WorldState ws, Actor primary) : BossModule(w
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (BossHansel == null)
-        {
-            var b = Enemies((uint)OID.Hansel);
-            BossHansel = b.Count != 0 ? b[0] : null;
-        }
+        BossHansel ??= GetActor((uint)OID.Hansel);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

@@ -2,23 +2,26 @@
 
 class DemolishStructureArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect square = new(5, 5, 5, InvertForbiddenZone: true);
-    private AOEInstance? _aoe;
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    private static readonly AOEShapeRect square = new(5f, 5f, 5f, invertForbiddenZone: true);
+    private AOEInstance[] _aoe = [];
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.DemolishStructure2 && Arena.Bounds == A13MarxEngels.StartingBounds)
-            _aoe = new(square, A13MarxEngels.TransitionSpot, color: Colors.SafeFromAOE);
+        if (spell.Action.ID == (uint)AID.DemolishStructure2 && Arena.Bounds == A13MarxEngels.StartingBounds)
+        {
+            _aoe = [new(square, A13MarxEngels.TransitionSpot, color: Colors.SafeFromAOE)];
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (state == 0x00020001 && index == 0x0B)
+        if (index == 0x0B && state == 0x00020001u)
         {
             Arena.Center = A13MarxEngels.SecondArenaCenter;
             Arena.Bounds = A13MarxEngels.StartingBounds;
-            _aoe = null; //
+            _aoe = [];
         }
     }
 }

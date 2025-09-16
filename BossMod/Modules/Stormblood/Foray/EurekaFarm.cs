@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using System.Reflection;
 
 namespace BossMod.Stormblood.Foray;
@@ -52,7 +52,7 @@ public abstract class EurekaZone<NM> : ZoneModule where NM : struct, Enum
 
     private void OnFateSpawn(ClientState.OpFateInfo fate)
     {
-        if (GetFateID(FarmTarget) == fate.FateId)
+        if (GetFateID(FarmTarget) == fate.FateID)
             FarmTarget = default;
     }
 

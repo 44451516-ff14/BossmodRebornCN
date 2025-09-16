@@ -26,22 +26,11 @@ sealed class D90ForestWoolbackStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<Thunderball>()
             .ActivateOnEnter<SweepingGouge>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D90ForestWoolback.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D90ForestWoolback.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13573, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13573, SortOrder = 2)]
 public sealed class D90ForestWoolback(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(54.16f, 358.33f), new(54.83f, 358.64f), new(61.41f, 363.35f), new(61.86f, 363.88f), new(60.68f, 366.6f),
@@ -83,33 +72,22 @@ public sealed class D90ForestWoolback(WorldState ws, Actor primary) : BossModule
     new(42.98f, 361.41f), new(43.55f, 361.2f), new(44.23f, 361.17f), new(44.88f, 361.2f), new(46.74f, 360.92f),
     new(51.35f, 360.61f), new(51.7f, 360.07f), new(51.99f, 359.46f), new(52.32f, 359.07f), new(52.99f, 358.92f),
     new(53.49f, 358.63f), new(53.9f, 358.33f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.ForestAxeBeak, (uint)OID.ForestWoolback, (uint)OID.Electrogolem];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat && enemy.Position.AlmostEqual(center, radius))
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

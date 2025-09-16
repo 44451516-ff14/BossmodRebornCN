@@ -48,6 +48,6 @@ public class Ex1Ultima(WorldState ws, Actor primary) : BossModule(ws, primary, n
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.MagitekBit));
+        Arena.Actors(Enemies((uint)OID.MagitekBit));
     }
 }

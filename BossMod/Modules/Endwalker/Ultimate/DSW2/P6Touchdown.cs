@@ -3,14 +3,20 @@
 sealed class P6Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.TouchdownAOE)
 {
     private static readonly AOEShapeCircle _shape = new(20f); // TODO: verify falloff
+    private AOEInstance[] _aoes = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         // TODO: activation
-        var aoes = new AOEInstance[2];
-        aoes[0] = new(_shape, Arena.Center);
-        aoes[1] = new(_shape, Arena.Center + new WDir(default, 25f));
-        return aoes;
+        if (_aoes.Length == 0)
+        {
+            _aoes = new AOEInstance[2];
+            var center = Arena.Center;
+            var act = WorldState.FutureTime(7d);
+            _aoes[0] = new(_shape, center.Quantized(), activation: act);
+            _aoes[1] = new(_shape, (center + new WDir(default, 25f)).Quantized(), activation: act);
+        }
+        return _aoes;
     }
 }
 
@@ -91,6 +97,39 @@ sealed class P6TouchdownPyretic(BossModule module) : Components.StayMove(module)
         if (status.ID == (uint)SID.Pyretic)
         {
             ClearState(Raid.FindSlot(actor.InstanceID));
+        }
+    }
+}
+
+sealed class P7PhaseChange(BossModule module) : BossComponent(module)
+{
+    public bool PhaseChanged;
+
+    public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
+    {
+        if (updateID == 0x80000016 && param1 == 0x01u && param2 == 0x46u)
+        {
+            PhaseChanged = true;
+        }
+    }
+}
+sealed class P6Enrage(BossModule module) : BossComponent(module)
+{
+    public bool Enrage;
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.RevengeOfTheHordeP6)
+        {
+            Enrage = true;
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.RevengeOfTheHordeP6)
+        {
+            Enrage = false;
         }
     }
 }

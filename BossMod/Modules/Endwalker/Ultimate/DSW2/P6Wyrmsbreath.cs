@@ -36,20 +36,34 @@ abstract class P6Wyrmsbreath(BossModule module, bool allowIntersect) : Component
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (Glows.Any())
-            hints.Add(Glows.Raw == 3 ? "Tankbuster: shared" : "Tankbuster: solo");
+            hints.Add(Glows.Raw == 3ul ? "Tankbuster: shared" : "Tankbuster: solo");
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         var partner = IgnoredPartner(pcSlot, pc);
-        foreach (var bait in ActiveBaitsNotOn(pc).Where(b => b.Target != partner))
-            bait.Shape.Draw(Arena, BaitOrigin(bait), bait.Rotation);
+        var baits = CollectionsMarshal.AsSpan(ActiveBaitsNotOn(pc));
+        var len = baits.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var bait = ref baits[i];
+            if (bait.Target == partner)
+            {
+                continue;
+            }
+            bait.Shape.Draw(Arena, BaitOrigin(ref bait), bait.Rotation);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var bait in ActiveBaitsOn(pc))
-            bait.Shape.Outline(Arena, BaitOrigin(bait), bait.Rotation);
+        var baits = CollectionsMarshal.AsSpan(ActiveBaitsOn(pc));
+        var len = baits.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var bait = ref baits[i];
+            bait.Shape.Outline(Arena, BaitOrigin(ref bait), bait.Rotation);
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -140,7 +154,7 @@ sealed class P6WyrmsbreathCone(BossModule module) : Components.GenericAOEs(modul
     {
         if (_main?.Glows.Raw is 1 or 2)
         {
-            var source = _main.Dragons[_main.Glows.Raw == 1 ? 0 : 1];
+            var source = _main.Dragons[_main.Glows.Raw == 1ul ? 0 : 1];
             if (source != null)
                 return new AOEInstance[1] { new(_shape, source.Position, source.Rotation) }; // TODO: activation
         }

@@ -44,7 +44,7 @@ sealed class ShockSpread(BossModule module) : Components.GenericBaitAway(module,
         };
         if (shape != null)
         {
-            CurrentBaits.Add(new(actor, actor, shape, WorldState.FutureTime(8d)));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, shape, WorldState.FutureTime(8d)));
         }
     }
 

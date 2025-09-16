@@ -50,6 +50,6 @@ class D051ForgivenCrueltyStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 659, NameID = 8260)]
 public class D051ForgivenCruelty(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(188, -170), 19.5f, 36)], [new Rectangle(new(168, -170), 1.25f, 20f, 0.02f.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(188, -170), 19.5f, 36)], [new Rectangle(new(168, -170), 1.25f, 20f, 0.02f.Degrees()),
     new Rectangle(new(208f, -170f), 1.25f, 20f, 0.02f.Degrees())]);
 }

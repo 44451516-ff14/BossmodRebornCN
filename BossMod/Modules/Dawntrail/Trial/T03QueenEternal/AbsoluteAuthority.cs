@@ -59,8 +59,7 @@ sealed class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStac
                 ;
             }
 
-            var stacks = CollectionsMarshal.AsSpan(Stacks);
-            stacks[0].Target = closest ?? player;
+            Stacks.Ref(0).Target = closest ?? player;
         }
     }
 

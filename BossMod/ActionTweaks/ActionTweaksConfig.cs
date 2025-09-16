@@ -14,7 +14,8 @@ public sealed class ActionTweaksConfig : ConfigNode
     [PropertyDisplay("移除额外的帧率诱导冷却延迟", tooltip: "动态调整冷却和动画锁定，确保排队动作立即解决，无论帧率限制如何")]
     public bool RemoveCooldownDelay = false;
 
-    [PropertyDisplay("施法时禁止移动")]
+
+    [PropertyDisplay("施法时禁止移动", tags: ["slidecast"])]
     public bool PreventMovingWhileCasting = false;
 
     public enum ModifierKey
@@ -31,7 +32,7 @@ public sealed class ActionTweaksConfig : ConfigNode
         M12
     }
 
-    [PropertyDisplay("按住此键以允许施法时移动（需要启用上述设置）", tooltip: "需要同时勾选上述设置")]
+    [PropertyDisplay("按住此键以允许施法时移动（需要启用上述设置）", tooltip: "需要同时勾选上述设置", tags: ["slidecast"])]
     public ModifierKey MoveEscapeHatch = ModifierKey.None;
 
     [PropertyDisplay("目标死亡时自动取消施法")]

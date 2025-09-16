@@ -5,9 +5,9 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
     private readonly List<Actor> targets = new(6);
     private bool? isClose;
     private DateTime activation;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void Update()
     {
@@ -103,7 +103,7 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    private void SetAOE() => _aoe = new(FTB4Magitaur.CircleMinusSquares, Arena.Center, default, activation);
+    private void SetAOE() => _aoe = [new(FTB4Magitaur.CircleMinusSquares, Arena.Center, default, activation)];
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -246,12 +246,12 @@ sealed class Unseal(BossModule module) : Components.GenericAOEs(module)
         {
             base.AddAIHints(slot, actor, assignment, hints);
             var count = targets.Count;
-            var mask = new BitMask();
+            BitMask mask = default;
             for (var i = 0; i < count; ++i)
             {
                 if (Raid.FindSlot(targets[i].InstanceID) is var slot2 && slot2 >= 0)
                 {
-                    mask[slot2] = true;
+                    mask.Set(slot2);
                 }
             }
             hints.AddPredictedDamage(mask, activation, AIHints.PredictedDamageType.Tankbuster);

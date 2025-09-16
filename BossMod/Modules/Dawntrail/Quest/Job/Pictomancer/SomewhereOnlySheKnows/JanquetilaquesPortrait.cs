@@ -47,21 +47,25 @@ sealed class BlazeInRed(BossModule module) : Components.RaidwideCast(module, (ui
 
 sealed class BloodyCaress(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCone cone = new(60f, 90f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.AFlowerInTheSun)
-            _aoe = new(cone, actor.Position, actor.Rotation, WorldState.FutureTime(9.8f));
+        {
+            _aoe = [new(cone, actor.Position, actor.Rotation, WorldState.FutureTime(9.8d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.BloodyCaress)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -150,5 +154,5 @@ sealed class JanquetilaquesPortraitStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70395, NameID = 13037)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70395u, NameID = 13037u)]
 public sealed class JanquetilaquesPortrait(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -340f), new ArenaBoundsSquare(24.5f));

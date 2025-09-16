@@ -5,21 +5,26 @@ sealed class Quicksand(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeCircle circle = new(23f);
     private static readonly AOEShapeCircle circleInvert = new(23f, true);
 
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private readonly QuicksandDoubleStyleHeavenBomb _baits1 = module.FindComponent<QuicksandDoubleStyleHeavenBomb>()!;
     private readonly QuicksandDoubleStylePaintBomb _baits2 = module.FindComponent<QuicksandDoubleStylePaintBomb>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        if (AOE is not AOEInstance aoe)
+        if (AOE.Length == 0)
+        {
             return [];
-        var countBaits1 = _baits1.Targets.Any();
-        var countBaits2 = _baits2.Targets.Any();
+        }
+        var countBaits1 = _baits1.Targets != default;
+        var countBaits2 = _baits2.Targets != default;
         if (!countBaits1 && !countBaits2 || _baits1.Targets[slot])
-            return Utils.ZeroOrOne(ref AOE);
+        {
+            return AOE;
+        }
         else if (_baits2.Targets[slot])
         {
-            return CollectionsMarshal.AsSpan([aoe with { Shape = circleInvert, Color = Colors.SafeFromAOE, Risky = false }]);
+            ref var aoe = ref AOE[0];
+            return new AOEInstance[1] { aoe with { Shape = circleInvert, Color = Colors.SafeFromAOE, Risky = false } };
         }
         return [];
     }
@@ -40,11 +45,11 @@ sealed class Quicksand(BossModule module) : Components.GenericAOEs(module)
                     _ => default
                 };
                 if (pos != default)
-                    AOE = new(circle, pos, default, WorldState.FutureTime(6d));
+                    AOE = [new(circle, pos, default, WorldState.FutureTime(6d))];
             }
             else if (state == 0x00080004u)
             {
-                AOE = null;
+                AOE = [];
             }
         }
     }
@@ -58,7 +63,7 @@ sealed class QuicksandDoubleStylePaintBomb(BossModule module) : BossComponent(mo
     {
         if (tether.ID == (uint)TetherID.ActivateMechanicDoubleStyle2)
         {
-            Targets[Raid.FindSlot(source.InstanceID)] = true;
+            Targets.Set(Raid.FindSlot(source.InstanceID));
         }
     }
 
@@ -73,7 +78,9 @@ sealed class QuicksandDoubleStylePaintBomb(BossModule module) : BossComponent(mo
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (Targets[slot])
+        {
             hints.Add("Place bomb inside quicksand");
+        }
     }
 }
 
@@ -93,7 +100,7 @@ sealed class QuicksandDoubleStyleHeavenBomb(BossModule module) : Components.Gene
     {
         if (tether.ID == (uint)TetherID.ActivateMechanicDoubleStyle1)
         {
-            Targets[Raid.FindSlot(source.InstanceID)] = true;
+            Targets.Set(Raid.FindSlot(source.InstanceID));
         }
     }
 
@@ -107,14 +114,17 @@ sealed class QuicksandDoubleStyleHeavenBomb(BossModule module) : Components.Gene
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var movements = CalculateMovements(slot, actor);
-        if (movements.Count != 0)
-            hints.Add("Aim bomb into quicksand!", DestinationUnsafe(slot, actor, movements[0].to));
+        var movements = CollectionsMarshal.AsSpan(CalculateMovements(slot, actor));
+        if (movements.Length != 0)
+        {
+            ref var m = ref movements[0];
+            hints.Add("Aim bomb into quicksand!", DestinationUnsafe(slot, actor, m.to));
+        }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (!Module.InBounds(pos))
+        if (!Arena.InBounds(pos))
             return true;
         _qs ??= Module.FindComponent<Quicksand>();
         if (_qs != null)

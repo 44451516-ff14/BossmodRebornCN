@@ -4,14 +4,14 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square1 = new([new Square(V21Yozakura.ArenaCenter1, 23f)], [new Square(V21Yozakura.ArenaCenter1, 20f)]);
     private static readonly AOEShapeCustom square2 = new([new Square(V21Yozakura.ArenaCenter3, 23f)], [new Square(V21Yozakura.ArenaCenter3, 20f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.GloryNeverlasting && Arena.Bounds == V21Yozakura.StartingBounds)
+        if (spell.Action.ID == (uint)AID.GloryNeverlasting && Arena.Bounds.Radius > 20f)
         {
-            void AddAOE(AOEShape shape) => _aoe = new(shape, Arena.Center, default, Module.CastFinishAt(spell, 3.7d));
+            void AddAOE(AOEShape shape) => _aoe = [new(shape, Arena.Center, default, Module.CastFinishAt(spell, 3.7d))];
             var center = Arena.Center;
             if (center == V21Yozakura.ArenaCenter1)
             {
@@ -28,8 +28,8 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (index is 0x35 or 0x36 && state == 0x00020001u)
         {
-            Arena.Bounds = V21Yozakura.DefaultBounds1;
-            _aoe = null;
+            Arena.Bounds = new ArenaBoundsSquare(20f);
+            _aoe = [];
         }
     }
 }

@@ -80,10 +80,10 @@ sealed class ManaExplosion(BossModule module) : Components.GenericAOEs(module)
         if (_target != default) // Helper can teleport after tether started, this fixes the rare problem
         {
             void AddAOE(WPos pos) => _aoes.Add(new(circle, pos.Quantized(), default, _activation));
-            if (_target.Position.Z == -45.5f) // green cloth tethered
+            if (_target.PosRot.Z == -45.5f) // green cloth tethered
                 foreach (var c in currentPattern == Pattern.Pattern1 ? aoePositionsSet1 : aoePositionsSet2)
                     AddAOE(c);
-            else if (_target.Position.Z == -90.5f) // yellow cloth tethered
+            else if (_target.PosRot.Z == -90.5f) // yellow cloth tethered
                 foreach (var c in currentPattern == Pattern.Pattern1 ? aoePositionsSet2 : aoePositionsSet1)
                     AddAOE(c);
             if (_aoes.Count != 0)

@@ -70,7 +70,7 @@ sealed class TransitionAttacks(BossModule module) : Components.GenericAOEs(modul
                     TransfigurationCounter();
                 }
                 else
-                    switch ((int)caster.Position.X)
+                    switch ((int)caster.PosRot.X)
                     {
                         case -58:
                             AddAOE(rect, 59.995f.Degrees());

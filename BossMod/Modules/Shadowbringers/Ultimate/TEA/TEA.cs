@@ -7,7 +7,6 @@ sealed class P1Splash(BossModule module) : Components.CastCounter(module, (uint)
 sealed class P1Drainage(BossModule module) : Components.TankbusterTether(module, (uint)AID.DrainageP1, (uint)TetherID.Drainage, 6f);
 
 sealed class P2JKick(BossModule module) : Components.CastCounter(module, (uint)AID.JKick);
-sealed class P2EyeOfTheChakram(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheChakram, new AOEShapeRect(76f, 3f));
 sealed class P2HawkBlasterOpticalSight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HawkBlasterP2, 10f);
 sealed class P2Photon(BossModule module) : Components.CastCounter(module, (uint)AID.PhotonAOE);
 sealed class P2SpinCrusher(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinCrusher, new AOEShapeCone(10f, 45f.Degrees()));
@@ -26,7 +25,7 @@ sealed class P3ChasteningHeat(BossModule module) : Components.BaitAwayCast(modul
 sealed class P3DivineSpear(BossModule module) : Components.Cleave(module, (uint)AID.DivineSpear, new AOEShapeCone(24.2f, 45f.Degrees()), [(uint)OID.AlexanderPrime]); // TODO: verify angle
 sealed class P3DivineJudgmentRaidwide(BossModule module) : Components.CastCounter(module, (uint)AID.DivineJudgmentRaidwide);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 694u, NameID = 9042u, PlanLevel = 80, Category = BossModuleInfo.Category.Ultimate, Expansion = BossModuleInfo.Expansion.Shadowbringers)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 694u, NameID = 9042u, PlanLevel = 80, Category = BossModuleInfo.Category.Ultimate, Expansion = BossModuleInfo.Expansion.Shadowbringers, SortOrder = 1)]
 public sealed class TEA : BossModule
 {
     public Actor? LiquidHand2;
@@ -46,7 +45,7 @@ public sealed class TEA : BossModule
     private Actor? _perfectAlex;
     public Actor? PerfectAlex() => _perfectAlex;
 
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(100f, 100f), 20f, 48)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(100f, 100f), 20f, 48)]);
 
     public TEA(WorldState ws, Actor primary) : base(ws, primary, arena.Center, arena)
     {
@@ -57,33 +56,11 @@ public sealed class TEA : BossModule
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (LiquidHand2 == null)
-        {
-            var b = Enemies((uint)OID.LiquidHand);
-            LiquidHand2 = b.Count != 0 ? b[0] : null;
-        }
-        if (_bruteJustice == null)
-        {
-            var b = Enemies((uint)OID.BruteJustice);
-            _bruteJustice = b.Count != 0 ? b[0] : null;
-        }
-        if (_cruiseChaser == null)
-        {
-            var b = Enemies((uint)OID.CruiseChaser);
-            _cruiseChaser = b.Count != 0 ? b[0] : null;
-        }
-        if (_alexPrime == null)
-        {
-            var b = Enemies((uint)OID.AlexanderPrime);
-            _alexPrime = b.Count != 0 ? b[0] : null;
-        }
-        if (_perfectAlex == null)
-        {
-            var b = Enemies((uint)OID.PerfectAlexander);
-            _perfectAlex = b.Count != 0 ? b[0] : null;
-        }
+        LiquidHand2 ??= GetActor((uint)OID.LiquidHand);
+        _bruteJustice ??= GetActor((uint)OID.BruteJustice);
+        _cruiseChaser ??= GetActor((uint)OID.CruiseChaser);
+        _alexPrime ??= GetActor((uint)OID.AlexanderPrime);
+        _perfectAlex ??= GetActor((uint)OID.PerfectAlexander);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

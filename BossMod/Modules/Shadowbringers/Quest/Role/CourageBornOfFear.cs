@@ -85,7 +85,7 @@ class ImmaculateWarriorStates : StateMachineBuilder
             .ActivateOnEnter<RainOfLight>()
             .ActivateOnEnter<ArrowOfFortitude>()
             .ActivateOnEnter<BodkinVolley>()
-            .Raw.Update = () => Module.Enemies(OID.Andreia).All(x => x.IsDeadOrDestroyed);
+            .Raw.Update = () => Module.Enemies((uint)OID.Andreia).All(x => x.IsDeadOrDestroyed);
     }
 }
 

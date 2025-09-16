@@ -73,17 +73,17 @@ sealed class FogPlumeCircle(BossModule module) : Components.SimpleAOEs(module, (
 
 sealed class ColdFog(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private DateTime activation;
     private bool reset;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.AreaOfInfluenceUp)
         {
-            _aoe = new(new AOEShapeCircle(4f + status.Extra), Arena.Center.Quantized(), default, activation);
+            _aoe = [new(new AOEShapeCircle(4f + status.Extra), Arena.Center.Quantized(), default, activation)];
         }
     }
 
@@ -99,16 +99,26 @@ sealed class ColdFog(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.ColdFog)
         {
-            _aoe = null;
+            _aoe = [];
             reset = false;
         }
     }
 
     public override void Update()
     {
-        if (_aoe != null && !reset && !Module.Enemies(OID.DraconicRegard).Any(x => !x.IsDead))
+        if (_aoe.Length != 0 && !reset)
         {
-            _aoe = _aoe.Value with { Activation = WorldState.FutureTime(5.6d) };
+            var enemies = Module.Enemies((uint)OID.DraconicRegard);
+            var count = enemies.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                if (!enemies[i].IsDead)
+                {
+                    return;
+                }
+            }
+            ref var aoe = ref _aoe[0];
+            aoe.Activation = WorldState.FutureTime(5.6d);
             reset = true;
         }
     }
@@ -292,21 +302,25 @@ sealed class IceVoidzone(BossModule module) : Components.Voidzone(module, 6f, Ge
 
 sealed class Cauterize(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect rect = new(40f, 8f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Helper2)
-            _aoe = new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(7.3d));
+        {
+            _aoe = [new(rect, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(7.3d))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Cauterize)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 

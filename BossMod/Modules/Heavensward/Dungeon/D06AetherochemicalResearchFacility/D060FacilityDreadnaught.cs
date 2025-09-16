@@ -27,35 +27,27 @@ class D060FacilityDreadnaughtStates : StateMachineBuilder
             .ActivateOnEnter<Rotoswipe>()
             .ActivateOnEnter<AutoCannons>()
             .ActivateOnEnter<WreckingBall>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D060FacilityDreadnaught.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D060FacilityDreadnaught.Trash);
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 3836, SortOrder = 7)]
 public class D060FacilityDreadnaught(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-360f, -250f), 9f, 6)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-360f, -250f), 9f, 6)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.MonitoringDrone];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

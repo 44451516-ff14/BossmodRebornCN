@@ -15,13 +15,13 @@ public class A32FiveheadedDragon(WorldState ws, Actor primary) : BossModule(ws, 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.HeadOfFire));
-        Arena.Actors(Enemies(OID.HeadOfPoison));
-        Arena.Actors(Enemies(OID.HeadOfThunder));
-        Arena.Actors(Enemies(OID.HeadOfIce));
-        Arena.Actors(Enemies(OID.Prominence));
-        Arena.Actors(Enemies(OID.PoisonSlime));
-        Arena.Actors(Enemies(OID.ToxicSlime));
-        Arena.Actors(Enemies(OID.DragonfireFly));
+        Arena.Actors(Enemies((uint)OID.HeadOfFire));
+        Arena.Actors(Enemies((uint)OID.HeadOfPoison));
+        Arena.Actors(Enemies((uint)OID.HeadOfThunder));
+        Arena.Actors(Enemies((uint)OID.HeadOfIce));
+        Arena.Actors(Enemies((uint)OID.Prominence));
+        Arena.Actors(Enemies((uint)OID.PoisonSlime));
+        Arena.Actors(Enemies((uint)OID.ToxicSlime));
+        Arena.Actors(Enemies((uint)OID.DragonfireFly));
     }
 }

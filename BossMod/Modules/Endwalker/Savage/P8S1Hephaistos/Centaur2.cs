@@ -123,13 +123,13 @@ class BlazingFootfalls(BossModule module) : BossComponent(module)
         if (NumMechanicsDone == 0)
         {
             // draw knockback from first trailblaze
-            var adjPos = pc.Position + _trailblazeKnockbackDistance * new WDir(pc.Position.X < Arena.Center.X ? -1 : 1, 0);
+            var adjPos = pc.Position + _trailblazeKnockbackDistance * new WDir(pc.PosRot.X < Arena.Center.X ? -1 : 1, 0);
             Components.GenericKnockback.DrawKnockback(pc, adjPos, Arena);
         }
         if (NumMechanicsDone == 2)
         {
             // draw knockback from second trailblaze
-            var adjPos = pc.Position + _trailblazeKnockbackDistance * new WDir(0, pc.Position.Z < Arena.Center.Z ? -1 : 1);
+            var adjPos = pc.Position + _trailblazeKnockbackDistance * new WDir(0, pc.PosRot.Z < Arena.Center.Z ? -1 : 1);
             Components.GenericKnockback.DrawKnockback(pc, adjPos, Arena);
         }
 

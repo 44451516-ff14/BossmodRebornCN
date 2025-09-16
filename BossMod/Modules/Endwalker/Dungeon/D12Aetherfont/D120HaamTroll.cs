@@ -24,7 +24,7 @@ class D120HaamTrollStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Uppercut>()
-            .Raw.Update = () => module.Enemies(D120HaamTroll.Trash).Where(x => x.Position.AlmostEqual(module.Arena.Center, module.Bounds.Radius)).All(e => e.IsDeadOrDestroyed);
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D120HaamTroll.Trash);
     }
 }
 
@@ -71,13 +71,13 @@ public class D120HaamTroll(WorldState ws, Actor primary) : BossModule(ws, primar
     new(222.11f, -17.34f), new(222.38f, -17.78f), new(223.33f, -21.28f), new(223.72f, -21.62f), new(224.19f, -21.91f),
     new(224.52f, -22.31f), new(226.67f, -25.82f), new(227.09f, -26.13f), new(229.46f, -27.45f), new(229.94f, -27.64f),
     new(233.1f, -28.18f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.HaamYakow, (uint)OID.HaamAuk];
 
-    protected override bool CheckPull() => Enemies(Trash).Any(x => x.InCombat && x.Position.AlmostEqual(Arena.Center, Bounds.Radius));
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

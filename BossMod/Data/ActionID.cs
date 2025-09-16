@@ -32,14 +32,17 @@ public enum ActionType : byte
 public enum Positional { Any, Flank, Rear, Front }
 
 // high byte is type, low 3 bytes is ID
-public readonly record struct ActionID(uint Raw)
+public readonly struct ActionID(uint raw)
 {
+    public readonly uint Raw = raw;
     public readonly ActionType Type => (ActionType)(Raw >> 24);
-    public readonly uint ID => Raw & 0x00FFFFFFu;
+    public readonly uint ID = raw & 0x00FFFFFFu;
 
     public ActionID(ActionType type, uint id) : this(((uint)type << 24) | id) { }
 
     public static implicit operator bool(ActionID x) => x.Raw != default;
+    public static bool operator ==(ActionID left, ActionID right) => left.Raw == right.Raw;
+    public static bool operator !=(ActionID left, ActionID right) => left.Raw != right.Raw;
     public override readonly string ToString() => $"{Type} {ID} '{Name()}'";
     private static readonly Dictionary<uint, (float, string)> _spellCache = [];
 
@@ -100,4 +103,8 @@ public readonly record struct ActionID(uint Raw)
         data = (row!.Value.ExtraCastTime100ms * 0.1f, row.Value.Name.ToString());
         return _spellCache[actionID] = data!.Value;
     }
+
+    public readonly bool Equals(ActionID other) => this == other;
+    public override readonly bool Equals(object? obj) => obj is ActionID other && Equals(other);
+    public override readonly int GetHashCode() => Raw.GetHashCode();
 }

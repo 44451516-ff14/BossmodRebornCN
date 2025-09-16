@@ -2,15 +2,15 @@ namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRS6TrinityAvowed;
 
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GloryOfBozja && Arena.Bounds == TrinityAvowed.StartingArena)
         {
-            _aoe = new(TrinityAvowed.ArenaChange1, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+            _aoe = [new(TrinityAvowed.ArenaChange1, Arena.Center, default, Module.CastFinishAt(spell, 0.7d))];
         }
     }
 
@@ -21,7 +21,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             if (index == 0x11)
             {
                 Arena.Bounds = TrinityAvowed.DefaultArena;
-                _aoe = null;
+                _aoe = [];
             }
             else if (index == 0x12)
             {

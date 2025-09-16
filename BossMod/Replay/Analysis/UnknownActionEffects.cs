@@ -20,7 +20,7 @@ sealed class UnknownActionEffects
             {
                 foreach (var target in action.Targets)
                 {
-                    foreach (var effect in target.Effects)
+                    foreach (var effect in target.Effects.ValidEffects())
                     {
                         var cat = ActionEffectParser.DescribeUnknown(effect);
                         if (cat.Length > 0)
@@ -44,7 +44,7 @@ sealed class UnknownActionEffects
                 {
                     foreach (var target in tree.Nodes(entry.Action.Targets, target => new(ReplayUtils.ActionTargetString(target, entry.Action.Timestamp))))
                     {
-                        tree.LeafNodes(target.Effects, ReplayUtils.ActionEffectString);
+                        tree.LeafNodes(target.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
                     }
                 }
             }

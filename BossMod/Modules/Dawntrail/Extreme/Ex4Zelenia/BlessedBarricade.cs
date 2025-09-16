@@ -23,7 +23,9 @@ sealed class Towers2(BossModule module) : Components.GenericTowers(module)
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.SpearpointPush)
-            forbidden[Raid.FindSlot(targetID)] = true;
+        {
+            forbidden.Set(Raid.FindSlot(targetID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -85,7 +87,9 @@ sealed class SpearpointPushBait(BossModule module) : Components.GenericBaitAway(
         {
             var target = WorldState.Actors.Find(tether.Target);
             if (target is Actor t)
+            {
                 CurrentBaits.Add(new(source, t, rect, WorldState.FutureTime(6.7d)));
+            }
         }
     }
 
@@ -101,9 +105,10 @@ sealed class SpearpointPushBait(BossModule module) : Components.GenericBaitAway(
     {
         base.DrawArenaForeground(pcSlot, pc);
         var count = CurrentBaits.Count;
+        var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         for (var i = 0; i < count; ++i)
         {
-            var b = CurrentBaits[i];
+            ref var b = ref baits[i];
             if (b.Target == pc)
             {
                 var pos = b.Source.Position;
@@ -122,10 +127,10 @@ sealed class SpearpointPushBait(BossModule module) : Components.GenericBaitAway(
             base.AddAIHints(slot, actor, assignment, hints);
         else
         {
-            var b = baits[0];
+            ref var b = ref baits.Ref(0);
             var pos = b.Source.Position;
             var offsetDir = pos.X < 100f ? offset == -a90 ? 1f : -1f : offset == a90 ? 1f : -1f;
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(pos + offsetDir * dir, 1f));
+            hints.AddForbiddenZone(new SDInvertedCircle(pos + offsetDir * dir, 1f));
         }
     }
 

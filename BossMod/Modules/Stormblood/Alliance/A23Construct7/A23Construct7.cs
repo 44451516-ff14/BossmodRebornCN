@@ -16,8 +16,8 @@ public class A23Construct7(WorldState ws, Actor primary) : BossModule(ws, primar
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Construct711));
-        Arena.Actors(Enemies(OID.Construct712));
-        Arena.Actors(Enemies(OID.Construct713));
+        Arena.Actors(Enemies((uint)OID.Construct711));
+        Arena.Actors(Enemies((uint)OID.Construct712));
+        Arena.Actors(Enemies((uint)OID.Construct713));
     }
 }

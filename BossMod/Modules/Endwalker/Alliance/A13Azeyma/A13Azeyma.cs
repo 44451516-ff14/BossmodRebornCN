@@ -10,6 +10,6 @@ class SublimeSunset(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 public class A13Azeyma(WorldState ws, Actor primary) : BossModule(ws, primary, NormalBounds.Center, NormalBounds)
 {
     public static readonly WPos NormalCenter = new(-750f, -750f);
-    public static readonly ArenaBoundsComplex NormalBounds = new([new Polygon(NormalCenter, 29.5f, 180)], [new Rectangle(new(-750f, -719.981f), 20f, 1.25f),
+    public static readonly ArenaBoundsCustom NormalBounds = new([new Polygon(NormalCenter, 29.5f, 180)], [new Rectangle(new(-750f, -719.981f), 20f, 1.25f),
     new Rectangle(new(-750f, -779.985f), 20f, 1.25f)]);
 }

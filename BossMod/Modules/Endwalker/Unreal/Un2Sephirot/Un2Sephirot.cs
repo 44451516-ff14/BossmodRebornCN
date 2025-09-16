@@ -13,7 +13,7 @@ class P3Ascension(BossModule module) : Components.CastCounter(module, (uint)AID.
 class P3PillarOfSeverity(BossModule module) : Components.CastCounter(module, (uint)AID.PillarOfSeverityAOE);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.RemovedUnreal, GroupID = 875, NameID = 4776)]
-public class Un2Sephirot(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20))
+public class Un2Sephirot(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsCircle(20f))
 {
     public Actor? BossP1() => PrimaryActor.IsDestroyed ? null : PrimaryActor;
 
@@ -22,9 +22,7 @@ public class Un2Sephirot(WorldState ws, Actor primary) : BossModule(ws, primary,
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        _bossP3 ??= StateMachine.ActivePhaseIndex >= 0 ? Enemies(OID.BossP3).FirstOrDefault() : null;
+        _bossP3 ??= GetActor((uint)OID.BossP3);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

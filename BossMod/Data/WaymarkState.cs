@@ -31,6 +31,7 @@ public enum Sign : byte
 public sealed class WaymarkState
 {
     private BitMask _setMarkers;
+    public bool AnyWaymarks => _setMarkers != default;
     private readonly Vector3[] _positions = new Vector3[(int)Waymark.Count];
 
     private BitMask _setSigns;
@@ -71,13 +72,17 @@ public sealed class WaymarkState
 
     // implementation of operations
     public Event<OpWaymarkChange> Changed = new();
-    public sealed record class OpWaymarkChange(Waymark ID, Vector3? Pos) : WorldState.Operation
+    public sealed class OpWaymarkChange(Waymark id, Vector3? pos) : WorldState.Operation
     {
+        public readonly Waymark ID = id;
+        public readonly Vector3? Pos = pos;
+
         protected override void Exec(WorldState ws)
         {
             ws.Waymarks[ID] = Pos;
             ws.Waymarks.Changed.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             if (Pos != null)
@@ -88,8 +93,11 @@ public sealed class WaymarkState
     }
 
     public Event<OpSignChange> SignChanged = new();
-    public sealed record class OpSignChange(Sign ID, ulong Target) : WorldState.Operation
+    public sealed class OpSignChange(Sign id, ulong target) : WorldState.Operation
     {
+        public readonly Sign ID = id;
+        public readonly ulong Target = target;
+
         protected override void Exec(WorldState ws)
         {
             ws.Waymarks[ID] = Target;
@@ -97,7 +105,7 @@ public sealed class WaymarkState
         }
         public override void Write(ReplayRecorder.Output output)
         {
-            if (Target is not (0 or 0xE0000000))
+            if (Target is not (0ul or 0xE0000000))
                 output.EmitFourCC("SGN+"u8).Emit((byte)ID).EmitActor(Target);
             else
                 output.EmitFourCC("SGN-"u8).Emit((byte)ID);

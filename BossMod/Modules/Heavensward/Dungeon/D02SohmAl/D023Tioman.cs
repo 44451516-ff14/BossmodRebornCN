@@ -38,7 +38,7 @@ class HeavensfallBait(BossModule module) : Components.BaitAwayIcon(module, 5f, (
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Circle(D023Tioman.ArenaCenter, 27f));
+            hints.AddForbiddenZone(new SDCircle(D023Tioman.ArenaCenter, 27f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -55,7 +55,7 @@ class Meteor(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)Ico
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Circle(D023Tioman.ArenaCenter, 27f));
+            hints.AddForbiddenZone(new SDCircle(D023Tioman.ArenaCenter, 27f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -122,7 +122,7 @@ class D023TiomanStates : StateMachineBuilder
 public class D023Tioman(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(-104f, -395f);
-    private static readonly ArenaBoundsComplex arena = new([new Circle(ArenaCenter, 27.5f)], [new Rectangle(new(-112.465f, -368.177f), 20, 1.25f, -19.24f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(ArenaCenter, 27.5f)], [new Rectangle(new(-112.465f, -368.177f), 20, 1.25f, -19.24f.Degrees())]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

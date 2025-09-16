@@ -26,22 +26,11 @@ sealed class D040VanguardLeptocyonStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<SpreadShot>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D040VanguardLeptocyon.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D040VanguardLeptocyon.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12778, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12778, SortOrder = 1)]
 public sealed class D040VanguardLeptocyon(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(0.34f, 358), new(2.53f, 358.04f), new(2.56f, 358.59f), new(2.29f, 359.02f), new(1.51f, 359.94f),
@@ -93,18 +82,20 @@ public sealed class D040VanguardLeptocyon(WorldState ws, Actor primary) : BossMo
     new(-14.49f, 371.12f), new(-14.18f, 370.58f), new(-13.96f, 369.89f), new(-13.05f, 368.19f), new(-12.92f, 367.58f),
     new(-12.47f, 367.33f), new(-11.43f, 366.51f), new(-11.03f, 366.02f), new(-9.76f, 363.78f), new(-9.67f, 363.18f),
     new(-9.76f, 361.18f), new(-9.84f, 360.58f), new(-10.64f, 358.79f), new(-10.75f, 358), new(0.34f, 358)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.VanguardSentryS7, (uint)OID.VanguardSentryG7, (uint)OID.VanguardLeptocyon];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

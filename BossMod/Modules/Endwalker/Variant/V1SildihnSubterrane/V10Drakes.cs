@@ -34,10 +34,10 @@ sealed class V10DrakesStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.ForgottenDrakefather, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 868, NameID = 11463, SortOrder = 1, Category = BossModuleInfo.Category.VariantCriterion, Expansion = BossModuleInfo.Expansion.Endwalker)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.ForgottenDrakefather, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 868u, NameID = 11463u, SortOrder = 1, Category = BossModuleInfo.Category.VariantCriterion, Expansion = BossModuleInfo.Expansion.Endwalker)]
 public sealed class V10Drakes(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(
     [new(275.49f, 38.15f), new(276.14f, 38.32f), new(281.62f, 41.08f), new(282.62f, 42.12f), new(283.76f, 42.89f),
     new(286.03f, 46.16f), new(286.27f, 46.77f), new(286.76f, 48.75f), new(286.68f, 49.39f), new(286.8f, 50.05f),
     new(287.04f, 50.73f), new(287.72f, 51.78f), new(288.21f, 51.69f), new(288.46f, 52.24f), new(288.92f, 52.68f),
@@ -65,28 +65,10 @@ public sealed class V10Drakes(WorldState ws, Actor primary) : BossModule(ws, pri
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (DrakeMother == null)
-        {
-            var b = Enemies((uint)OID.ForgottenDrakemother);
-            DrakeMother = b.Count != 0 ? b[0] : null;
-        }
-        if (DrakeBrother == null)
-        {
-            var b = Enemies((uint)OID.ForgottenDrakebrother);
-            DrakeBrother = b.Count != 0 ? b[0] : null;
-        }
-        if (DrakeSister == null)
-        {
-            var b = Enemies((uint)OID.ForgottenDrakesister);
-            DrakeSister = b.Count != 0 ? b[0] : null;
-        }
-        if (Drakeling == null)
-        {
-            var b = Enemies((uint)OID.ForgottenDrakeling);
-            Drakeling = b.Count != 0 ? b[0] : null;
-        }
+        DrakeMother ??= GetActor((uint)OID.ForgottenDrakemother);
+        DrakeBrother ??= GetActor((uint)OID.ForgottenDrakebrother);
+        DrakeSister ??= GetActor((uint)OID.ForgottenDrakesister);
+        Drakeling ??= GetActor((uint)OID.ForgottenDrakeling);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

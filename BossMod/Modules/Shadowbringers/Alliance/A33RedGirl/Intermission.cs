@@ -13,13 +13,13 @@ sealed class IntermissionArena(BossModule module) : BossComponent(module)
             walls.Add(new Rectangle(actor.Position, 2.125f, 1.5f));
             if (walls.Count == 8)
             {
-                baseArena = bossmod.RedSphere!.Position.Z switch
+                baseArena = bossmod.RedSphere!.PosRot.Z switch
                 {
                     900f => A33RedGirl.VirusArena1,
                     400f => A33RedGirl.VirusArena2,
                     _ => A33RedGirl.VirusArena3
                 };
-                ArenaBoundsComplex arena = new(baseArena, [.. walls]);
+                ArenaBoundsCustom arena = new(baseArena, [.. walls]);
                 Arena.Bounds = arena;
                 Arena.Center = arena.Center;
             }
@@ -40,7 +40,7 @@ sealed class IntermissionArena(BossModule module) : BossComponent(module)
                     break;
                 }
             }
-            Arena.Bounds = new ArenaBoundsComplex(baseArena, [.. walls]);
+            Arena.Bounds = new ArenaBoundsCustom(baseArena, [.. walls]);
         }
     }
 }

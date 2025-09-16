@@ -56,16 +56,18 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     public readonly List<Rectangle> PendingSafeWalls = new(4);
     private static readonly AOEShapeDonut donut = new(20f, 25f);
     private static readonly Polygon[] defaultCircle = [new Polygon(D103Scarmiglione.ArenaCenter, 20f, 64)];
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private bool outOfBounds;
     private bool defaultArena;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.RottenRampageSpread && _aoe == null && Arena.Bounds == D103Scarmiglione.StartingArena)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, -1f));
+        if (spell.Action.ID == (uint)AID.RottenRampageSpread && _aoe == null && Arena.Bounds.Radius > 20f)
+        {
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, -1d))];
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -77,7 +79,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 PendingSafeWalls.Remove(D103Scarmiglione.SafeWalls[index]);
                 SafeWalls.Remove(D103Scarmiglione.SafeWalls[index]);
 
-                ArenaBoundsComplex arena = new(defaultCircle, [.. SafeWalls]);
+                ArenaBoundsCustom arena = new(defaultCircle, [.. SafeWalls]);
                 Arena.Bounds = arena;
                 Arena.Center = arena.Center;
             }
@@ -139,7 +141,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             switch (index)
             {
                 case 0x04:
-                    _aoe = null;
+                    _aoe = [];
                     defaultArena = true;
                     break;
                 case 0x05:
@@ -186,17 +188,17 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     {
         // safety precaution so AI can properly pathfind back into arena if it somehow got knocked out of it...
         var player = Raid.Player()!.Position;
-        if (_aoe == null && defaultArena && !Module.InBounds(player))
+        if (_aoe.Length == 0 && defaultArena && !Arena.InBounds(player))
         {
-            _aoe = new(donut, Arena.Center);
-            ArenaBoundsComplex arena = new(D103Scarmiglione.StartingCircle, [.. SafeWalls]);
+            _aoe = [new(donut, Arena.Center)];
+            ArenaBoundsCustom arena = new(D103Scarmiglione.StartingCircle, [.. SafeWalls]);
             Arena.Bounds = arena;
             outOfBounds = true;
         }
         else if (outOfBounds && (player - Arena.Center).LengthSq() < 399f)
         {
-            _aoe = null;
-            ArenaBoundsComplex arena = new(defaultCircle, [.. SafeWalls]);
+            _aoe = [];
+            ArenaBoundsCustom arena = new(defaultCircle, [.. SafeWalls]);
             Arena.Bounds = arena;
             outOfBounds = false;
         }
@@ -205,7 +207,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
 sealed class VacuumWave(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _source;
+    private Knockback[] _kb = [];
     public readonly List<SafeWall> safeWalls =
     [
         new(new(-36.947f, -278.523f), new(-45.457f, -281.453f)), // ENVC 0B
@@ -222,27 +224,31 @@ sealed class VacuumWave(BossModule module) : Components.GenericKnockback(module)
         new(new(-24.543f, -281.453f), new(-33.053f, -278.523f)), // ENVC 0A
     ];
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _source);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.VacuumWave)
-            _source = new(spell.LocXZ, 30f, Module.CastFinishAt(spell), safeWalls: safeWalls, ignoreImmunes: true);
+        {
+            _kb = [new(spell.LocXZ, 30f, Module.CastFinishAt(spell), safeWalls: safeWalls, ignoreImmunes: true)];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.VacuumWave)
-            _source = null;
+        {
+            _kb = [];
+        }
     }
 }
 
 sealed class VacuumWaveHint(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -259,26 +265,26 @@ sealed class VacuumWaveHint(BossModule module) : Components.GenericAOEs(module)
             {
                 var wall = _arena.SafeWalls[i];
                 if (!_arena.PendingSafeWalls.Contains(wall))
+                {
                     cones[index++] = new(D103Scarmiglione.ArenaCenter, 20f, Angle.FromDirection(wall.Center - D103Scarmiglione.ArenaCenter), angle);
+                }
             }
-            _aoe = new(new AOEShapeCustom(cones, InvertForbiddenZone: true), Arena.Center, default, Module.CastFinishAt(spell), Colors.SafeFromAOE);
+            _aoe = [new(new AOEShapeCustom(cones, invertForbiddenZone: true), Arena.Center, default, Module.CastFinishAt(spell), Colors.SafeFromAOE)];
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.VacuumWave)
-            _aoe = null;
+            _aoe = [];
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is AOEInstance aoe)
+        if (_aoe.Length != 0)
         {
-            var check = true;
-            if (aoe.Check(actor.Position))
-                check = false;
-            hints.Add("Use safewalls for knockback!", check);
+            ref var aoe = ref _aoe[0];
+            hints.Add("Use safewalls for knockback!", !aoe.Check(actor.Position));
         }
     }
 }
@@ -300,11 +306,11 @@ sealed class RottenRampageSpread(BossModule module) : Components.SpreadFromCastT
             var count = walls.Count;
             if (count == 0)
                 return;
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
             for (var i = 0; i < count; ++i)
-                forbidden[i] = ShapeDistance.Circle(walls[i].Position, 7f);
+                forbidden[i] = new SDCircle(walls[i].Position, 7f);
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Spreads[0].Activation);
+                hints.AddForbiddenZone(new SDUnion(forbidden), Spreads[0].Activation);
         }
     }
 
@@ -340,7 +346,9 @@ sealed class CorruptorsPitch(BossModule module) : Components.RaidwideCastDelay(m
     {
         base.OnEventCast(caster, spell);
         if (spell.Action.ID == ActionVisual)
+        {
             Activation = WorldState.FutureTime(Delay);
+        }
     }
 }
 
@@ -389,7 +397,7 @@ public sealed class D103Scarmiglione(WorldState ws, Actor primary) : BossModule(
         new(new(-28.489f, -279.09f), HalfWidth, HalfHeight, 19f.Degrees()), // ENVC 0A
     ];
     public static readonly Polygon[] StartingCircle = [new Polygon(ArenaCenter, 24.5f * CosPI.Pi64th, 64)];
-    public static readonly ArenaBoundsComplex StartingArena = new(StartingCircle, SafeWalls);
+    public static readonly ArenaBoundsCustom StartingArena = new(StartingCircle, SafeWalls);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

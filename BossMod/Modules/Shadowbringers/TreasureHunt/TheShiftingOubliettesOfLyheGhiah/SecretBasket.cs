@@ -109,17 +109,7 @@ class SecretBasketStates : StateMachineBuilder
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Mash>()
             .ActivateOnEnter<Scoop>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(SecretBasket.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(SecretBasket.All);
     }
 }
 
@@ -134,7 +124,7 @@ public class SecretBasket(WorldState ws, Actor primary) : THTemplate(ws, primary
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.SecretEchivore));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

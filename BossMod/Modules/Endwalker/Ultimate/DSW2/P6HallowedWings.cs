@@ -2,11 +2,11 @@
 
 sealed class P6HallowedWings(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE; // origin is always (122, 100 +- 11), direction -90
+    public AOEInstance[] AOE = []; // origin is always (122, 100 +- 11), direction -90
 
     private static readonly AOEShapeRect _shape = new(50f, 11f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -17,22 +17,26 @@ sealed class P6HallowedWings(BossModule module) : Components.GenericAOEs(module)
             _ => 0
         };
         if (offset == 0)
+        {
             return;
+        }
         var origin = caster.Position + offset * spell.Rotation.ToDirection().OrthoL();
-        AOE = new(_shape, origin.Quantized(), spell.Rotation, Module.CastFinishAt(spell, 0.8d));
+        AOE = [new(_shape, origin.Quantized(), spell.Rotation, Module.CastFinishAt(spell, 0.8d))];
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.HallowedWingsAOELeft or (uint)AID.HallowedWingsAOERight or (uint)AID.CauterizeN)
+        {
             ++NumCasts;
+        }
     }
 }
 
 // note: we want to show hint much earlier than cast start - we assume component is created right as hallowed wings starts, meaning nidhogg is already in place
 sealed class P6CauterizeN : Components.GenericAOEs
 {
-    public AOEInstance? AOE; // origin is always (100 +- 11, 100 +- 34), direction 0/180
+    public AOEInstance[] AOE = []; // origin is always (100 +- 11, 100 +- 34), direction 0/180
 
     private static readonly AOEShapeRect _shape = new(80f, 11f);
 
@@ -40,10 +44,12 @@ sealed class P6CauterizeN : Components.GenericAOEs
     {
         var caster = module.Enemies((uint)OID.NidhoggP6).FirstOrDefault();
         if (caster != null)
-            AOE = new(_shape, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(8.6d));
+        {
+            AOE = [new(_shape, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(8.6d))];
+        }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 }
 
 abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(module, (uint)AID.HallowedPlume, centerAtTarget: true)
@@ -104,7 +110,7 @@ abstract class P6HallowedPlume(BossModule module) : Components.GenericBaitAway(m
     {
         base.DrawArenaForeground(pcSlot, pc);
         foreach (var p in SafeSpots(pc))
-            Arena.AddCircle(p, 1, Colors.Safe);
+            Arena.AddCircle(p, 1f, Colors.Safe);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -131,19 +137,23 @@ sealed class P6HallowedPlume1(BossModule module) : P6HallowedPlume(module)
 
     protected override WPos[] SafeSpots(Actor actor)
     {
-        if (_wings?.AOE == null || _cauterize?.AOE == null)
+        if (_wings?.AOE.Length == 0 || _cauterize?.AOE.Length == 0)
+        {
             return [];
+        }
 
         var safeSpotCenter = Arena.Center;
         var safeSpotCenterX = safeSpotCenter.X;
         var safeSpotCenterZ = safeSpotCenter.Z;
-        safeSpotCenterZ -= _wings.AOE.Value.Origin.Z - safeSpotCenterZ;
-        safeSpotCenterX -= _cauterize.AOE.Value.Origin.X - safeSpotCenterX;
+        ref var aoe1 = ref _wings!.AOE[0];
+        ref var aoe2 = ref _cauterize!.AOE[0];
+        safeSpotCenterZ -= aoe1.Origin.Z - safeSpotCenterZ;
+        safeSpotCenterX -= aoe2.Origin.X - safeSpotCenterX;
         safeSpotCenter = new(safeSpotCenterX, safeSpotCenterZ);
 
         var shouldBait = actor.Role == Role.Tank;
         var stayFar = shouldBait == _far;
-        float xOffset = stayFar ? -9 : +9; // assume hraesvelgr is always at +22
+        var xOffset = stayFar ? -9f : 9f; // assume hraesvelgr is always at +22
         if (shouldBait)
         {
             // TODO: configurable tank assignments (e.g. MT always center/out/N/S)
@@ -162,7 +172,7 @@ sealed class P6HallowedPlume2(BossModule module) : P6HallowedPlume(module)
 
     protected override WPos[] SafeSpots(Actor actor)
     {
-        if (_wings?.AOE == null || _wingTail == null)
+        if (_wings?.AOE.Length == 0 || _wingTail == null)
             return [];
 
         var zCoeff = _wingTail.NumAOEs switch
@@ -173,7 +183,8 @@ sealed class P6HallowedPlume2(BossModule module) : P6HallowedPlume(module)
         };
         var safeSpotCenter = Arena.Center;
         var safeSpotCenterZ = safeSpotCenter.Z;
-        safeSpotCenterZ -= zCoeff * (_wings.AOE.Value.Origin.Z - safeSpotCenterZ);
+        ref var aoe = ref _wings!.AOE[0];
+        safeSpotCenterZ -= zCoeff * (aoe.Origin.Z - safeSpotCenterZ);
         safeSpotCenter = new(safeSpotCenter.X, safeSpotCenterZ);
 
         var shouldBait = actor.Role == Role.Tank;

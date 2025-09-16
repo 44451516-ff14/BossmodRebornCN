@@ -32,9 +32,9 @@ class Rehydration(BossModule module) : Components.CastInterruptHint(module, (uin
 
 class RightRound(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -43,14 +43,16 @@ class RightRound(BossModule module) : Components.GenericAOEs(module)
             // approximation of the mechanic with a capsule since the jump seems to behave quite unpredictable for long distances to the morning star
             var len = (spell.LocXZ - caster.Position).Length();
             var maxLen = len > 10f ? 10f : len;
-            _aoe = new(new AOEShapeCapsule(9f, maxLen), spell.LocXZ, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 0.9f));
+            _aoe = [new(new AOEShapeCapsule(9f, maxLen), spell.LocXZ, spell.Rotation + 180f.Degrees(), Module.CastFinishAt(spell, 0.9d))];
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.RightRound)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -72,7 +74,7 @@ class D041GreaterArmadilloStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 656, NameID = 8252)]
 public class D041GreaterArmadillo(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(278f, 204f), 19.5f, 40)], [new Rectangle(new(278f, 223.594f), 20f, 1f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(278f, 204f), 19.5f, 40)], [new Rectangle(new(278f, 223.594f), 20f, 1f)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

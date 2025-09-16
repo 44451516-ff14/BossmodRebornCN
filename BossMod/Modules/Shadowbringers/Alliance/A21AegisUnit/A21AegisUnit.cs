@@ -12,7 +12,7 @@ public sealed class A21AegisUnit(WorldState ws, Actor primary) : BossModule(ws, 
 {
     private static readonly WPos arenaCenter = new(-230f, 192f);
     private static readonly Polygon circle = new(new(-230f, 209.5f), 12.144f, 64);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(arenaCenter, 25f, 90), circle, circle with { Center = new(-214.845f, 183.25f) },
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(arenaCenter, 25f, 90), circle, circle with { Center = new(-214.845f, 183.25f) },
     circle with { Center = new(-245.155f, 183.25f) }], [new Polygon(arenaCenter, 10.5f, 90)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

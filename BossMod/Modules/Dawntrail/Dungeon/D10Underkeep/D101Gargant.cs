@@ -43,7 +43,8 @@ sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
             return [];
         }
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        var deadline = aoes[0].Activation.AddSeconds(1d);
+        ref var aoe0 = ref aoes[0];
+        var deadline = aoe0.Activation.AddSeconds(1d);
 
         var index = 0;
         while (index < count)
@@ -91,8 +92,8 @@ sealed class D101GargantStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1027, NameID = 13753)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1027, NameID = 13753)]
 public sealed class D101Gargant(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-248f, 122f), 14.5f, 72)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-248f, 122f), 14.5f, 72)]);
 }

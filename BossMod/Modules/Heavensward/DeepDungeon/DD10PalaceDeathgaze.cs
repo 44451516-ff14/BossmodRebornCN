@@ -36,5 +36,5 @@ class DD10PalaceDeathgazeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "LegendofIceman", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 174, NameID = 4986)]
 public class DD10PalaceDeathgaze(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-300f, -220f), 24.65f, 48)], [new Rectangle(new(-300f, -245f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-300f, -220f), 24.65f, 48)], [new Rectangle(new(-300f, -245f), 20f, 1.25f)]);
 }

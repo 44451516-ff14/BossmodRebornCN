@@ -164,11 +164,11 @@ sealed class CE111SharkAttackStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 41)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 1018, NameID = 41)]
 public sealed class CE111SharkAttack(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(-117f, -850f);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.5f, 64)], [new Rectangle(new(-117f, -827.25f), 5f, 4f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 19.5f, 64)], [new Rectangle(new(-117f, -827.25f), 5f, 4f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

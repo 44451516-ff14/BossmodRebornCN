@@ -2,11 +2,11 @@
 
 sealed class ViciousSwipe(BossModule module) : Components.GenericKnockback(module, (uint)AID.ViciousSwipe)
 {
-    private Knockback? _source = new(module.PrimaryActor.Position, 15, module.WorldState.FutureTime(module.StateMachine.ActiveState?.Duration ?? 0), _shape);
+    private readonly Knockback[] _kb = [new(module.PrimaryActor.Position, 15f, module.WorldState.FutureTime(module.StateMachine.ActiveState?.Duration ?? default), _shape)];
 
     private static readonly AOEShapeCircle _shape = new(8f);
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _source);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {

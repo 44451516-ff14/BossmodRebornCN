@@ -1,13 +1,13 @@
 namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
-class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
+sealed class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeDonut donut = new(5f, 40f);
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeCross cross = new(40f, 5f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -20,19 +20,25 @@ class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
                 _ => null
             };
             if (shape != null)
-                _aoe = new(shape, Arena.Center.Quantized(), default, WorldState.FutureTime(6d));
+            {
+                _aoe = [new(shape, Arena.Center.Quantized(), default, WorldState.FutureTime(6d))];
+            }
         }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.HydaelynsWeapon)
-            _aoe = new(cross, Module.PrimaryActor.Position, Module.PrimaryActor.Rotation, WorldState.FutureTime(6.9d));
+        {
+            _aoe = [new(cross, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(6.9d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.Equinox2 or (uint)AID.HighestHoly or (uint)AID.Anthelion)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }

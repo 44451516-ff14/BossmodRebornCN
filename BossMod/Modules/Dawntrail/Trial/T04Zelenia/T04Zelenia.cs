@@ -11,7 +11,7 @@ sealed class RosebloodBloom(BossModule module) : Components.SimpleKnockbacks(mod
         if (Casters.Count != 0)
         {
             ref readonly var c = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 6f), c.Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(c.Origin, 6f), c.Activation);
         }
     }
 }
@@ -32,6 +32,6 @@ sealed class SpecterOfTheLost(BossModule module) : Components.BaitAwayCast(modul
 public sealed class T04Zelenia(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, DefaultArena)
 {
     private static readonly WPos arenaCenter = new(100f, 100f);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(arenaCenter, 16f, 64)]);
-    public static readonly ArenaBoundsComplex DonutArena = new([new DonutV(arenaCenter, 4f, 16f, 64)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(arenaCenter, 16f, 64)]);
+    public static readonly ArenaBoundsCustom DonutArena = new([new DonutV(arenaCenter, 4f, 16f, 64)]);
 }

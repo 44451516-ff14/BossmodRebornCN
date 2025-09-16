@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-sealed class P1Cascade(BossModule module) : Components.Voidzone(module, 5f, GetVoidzones)
+sealed class P1Cascade(BossModule module) : Components.Voidzone(module, 7f, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {

@@ -192,7 +192,7 @@ sealed class Ex1ValigarmandaStates : StateMachineBuilder
 
     private void FireVolcanicDrop(uint id, float delay)
     {
-        ComponentCondition<VolcanicDrop>(id, 0.9f, comp => comp.AOE != null)
+        ComponentCondition<VolcanicDrop>(id, 0.9f, comp => comp.AOE.Length != 0)
             .ActivateOnEnter<VolcanicDrop>();
         FireVolcanicDropMid(id + 0x100, 7.2f);
         ComponentCondition<VolcanicDropPuddle>(id + 0x200, 1.6f, comp => comp.Casters.Count == 0, "Puddles resolve")

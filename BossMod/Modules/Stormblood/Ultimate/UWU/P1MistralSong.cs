@@ -21,7 +21,7 @@ class P1MistralSongBoss(BossModule module) : Components.GenericWildCharge(module
 // TODO: verify width
 class P1MistralSongAdds(BossModule module) : Components.CastCounter(module, (uint)AID.MistralSongAdds)
 {
-    private readonly List<Actor> _sisters = module.Enemies(OID.GarudaSister);
+    private readonly List<Actor> _sisters = module.Enemies((uint)OID.GarudaSister);
     private readonly List<Actor> _targets = [];
 
     private static readonly AOEShapeRect _shape = new(40, 5);

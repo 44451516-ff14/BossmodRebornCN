@@ -35,20 +35,7 @@ class D150XelphatolSkycallerStates : StateMachineBuilder
             .ActivateOnEnter<IxaliAeroIIIHint>()
             .ActivateOnEnter<IxaliAeroII>()
             .ActivateOnEnter<Gust>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D150XelphatolSkycaller.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D150XelphatolSkycaller.Trash);
     }
 }
 
@@ -69,21 +56,12 @@ public class D150XelphatolSkycaller(WorldState ws, Actor primary) : BossModule(w
     new(352.53f, -406.46f), new(353.12f, -406.38f), new(353.53f, -406.74f), new(353.48f, -407.25f), new(353.19f, -407.79f),
     new(352.69f, -408.28f), new(352.36f, -408.67f), new(351.78f, -408.87f), new(351.05f, -409.21f), new(351.78f, -410.13f),
     new(353.19f, -411.45f), new(356.06f, -413.34f), new(357.81f, -414.06f), new(359.74f, -414.53f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.AbalathianHornbill];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

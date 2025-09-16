@@ -38,8 +38,16 @@ public static class ReplayUtils
     public static int ActionDamage(Replay.ActionTarget a)
     {
         var res = 0;
-        foreach (var eff in a.Effects.Where(eff => eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage && !eff.AtSource))
-            res += eff.DamageHealValue;
+        var effects = a.Effects.ValidEffects();
+        var len = effects.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var eff = ref effects[i];
+            if (eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage && !eff.AtSource)
+            {
+                res += eff.DamageHealValue;
+            }
+        }
         return res;
     }
 }

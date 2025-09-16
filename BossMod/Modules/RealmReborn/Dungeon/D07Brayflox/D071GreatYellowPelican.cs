@@ -48,7 +48,7 @@ public class D071GreatYellowPelican(WorldState ws, Actor primary) : BossModule(w
     new(118.77f, -30.84f), new(116.98f, -32.21f), new(117.49f, -32.48f), new(118.81f, -32.75f), new(119.50f, -32.71f)];
     // Centroid of the polygon is at: (113.403f, -14.391f)
 
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(shape)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(shape)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -69,6 +69,6 @@ public class D071GreatYellowPelican(WorldState ws, Actor primary) : BossModule(w
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.VioletBack));
+        Arena.Actors(Enemies((uint)OID.VioletBack));
     }
 }

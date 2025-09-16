@@ -179,7 +179,7 @@ sealed class M04SWickedThunderStates : StateMachineBuilder
     private void IonCluster(uint id, float delay)
     {
         Cast(id, (uint)AID.IonCluster, delay, 3);
-        ComponentCondition<StampedingThunder>(id + 0x10, 11.7f, comp => comp.AOE != null)
+        ComponentCondition<StampedingThunder>(id + 0x10, 11.7f, comp => comp.AOE.Length != 0)
             .ActivateOnEnter<StampedingThunder>();
         ComponentCondition<StampedingThunder>(id + 0x11, 2.4f, comp => comp.NumCasts >= 1, "Cannon start");
         ComponentCondition<StampedingThunder>(id + 0x12, 1.1f, comp => comp.NumCasts >= 2);

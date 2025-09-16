@@ -41,18 +41,7 @@ sealed class Stage02Act1States : StateMachineBuilder
             .ActivateOnEnter<GoldenTongue>()
             .ActivateOnEnter<Hints2>()
             .DeactivateOnEnter<Hints>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(Stage02Act1.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(Stage02Act1.Trash);
     }
 }
 
@@ -65,18 +54,7 @@ public sealed class Stage02Act1 : BossModule
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Marshmallow, (uint)OID.Bavarois];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

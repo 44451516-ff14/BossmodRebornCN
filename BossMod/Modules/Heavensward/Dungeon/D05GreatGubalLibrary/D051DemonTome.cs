@@ -30,17 +30,17 @@ class Disclosure(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Di
 
 class DisclosureSpin(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle circle = new(12.5f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Disclosure)
         {
             Arena.Bounds = D051DemonTome.SpinArena;
-            _aoe = new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell, 2.4f));
+            _aoe = [new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell, 2.4d))];
         }
     }
 
@@ -48,7 +48,7 @@ class DisclosureSpin(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.DisclosureSpin)
         {
-            _aoe = null;
+            _aoe = [];
             Arena.Bounds = D051DemonTome.DefaultArena;
         }
     }
@@ -77,7 +77,7 @@ public class D051DemonTome(WorldState ws, Actor primary) : BossModule(ws, primar
     private static readonly Rectangle entranceRect = new(new(-20.486f, 0.109f), 1.25f, 8f);
     private static readonly Rectangle exitRect = new(new(20.388f, -0.18f), 1.25f, 8f);
     private static readonly Rectangle[] baseArena = [new Rectangle(default, 19.5f, 9.5f)];
-    public static readonly ArenaBoundsComplex DefaultArena = new(baseArena, [entranceRect, exitRect, midRect, new Rectangle(new(-0.166f, 8.588f), 3.487f, 5f),
+    public static readonly ArenaBoundsCustom DefaultArena = new(baseArena, [entranceRect, exitRect, midRect, new Rectangle(new(-0.166f, 8.588f), 3.487f, 5f),
      new Rectangle(new(-0.185f, -8.554f), 3.475f, 5f)]);
-    public static readonly ArenaBoundsComplex SpinArena = new(baseArena, [entranceRect, exitRect, midRect]);
+    public static readonly ArenaBoundsCustom SpinArena = new(baseArena, [entranceRect, exitRect, midRect]);
 }

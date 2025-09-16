@@ -56,7 +56,7 @@ class TentacleWhip : Components.SimpleAOEGroups
             return;
         // make ai stay close to boss to ensure successfully dodging the combo
         var aoe = Casters[0];
-        hints.AddForbiddenZone(ShapeDistance.InvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 20f), aoe.Activation);
+        hints.AddForbiddenZone(new SDInvertedRect(Module.PrimaryActor.Position, aoe.Rotation, 2f, 2f, 20f), aoe.Activation);
     }
 }
 
@@ -103,5 +103,5 @@ class TerminusIdolizerStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 804, NameID = 10932)]
 public class TerminusIdolizer(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-300.75f, 151.46f), 19.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-300.75f, 151.46f), 19.5f, 20)]);
 }

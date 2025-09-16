@@ -123,31 +123,21 @@ class D113CalcabrinaStates : StateMachineBuilder
             .ActivateOnEnter<HeatGazeCalca>()
             .ActivateOnEnter<Slapstick>()
             .ActivateOnEnter<Knockout>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D113Calcabrina.NpcDolls);
-                for (var i = 0; i < enemies.Count; ++i)
-                {
-                    var e = enemies[i];
-                    if (!e.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D113Calcabrina.NpcDolls);
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 141, NameID = 4813)]
 public class D113Calcabrina(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(232f, -182f), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(252f, -182f), 1.15f, 20f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(232f, -182f), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(252f, -182f), 1.15f, 20f)]);
     private static readonly uint[] playerDolls = [(uint)OID.CalcaPlayer1, (uint)OID.CalcaPlayer2, (uint)OID.BrinaPlayer1, (uint)OID.BrinaPlayer2];
     public static readonly uint[] NpcDolls = [(uint)OID.Boss, (uint)OID.Brina, (uint)OID.Calcabrina];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(NpcDolls));
-        Arena.Actors(Enemies(playerDolls), Colors.Vulnerable);
+        Arena.Actors(this, NpcDolls);
+        Arena.Actors(this, playerDolls, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -13,38 +13,40 @@ sealed class UpwellFirst : Components.SimpleAOEs
 
 sealed class UpwellRest(BossModule module) : Components.Exaflare(module, new AOEShapeRect(30f, 2.5f, 30f))
 {
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override void Update()
     {
         var linesCount = Lines.Count;
-        if (linesCount == 0)
+        if (lastCount != linesCount || currentVersion != lastVersion)
         {
-            return [];
-        }
-        var futureAOEs = FutureAOEs(linesCount);
-        var imminentAOEs = ImminentAOEs(linesCount);
-        var futureCount = futureAOEs.Count;
-        var imminentCount = imminentAOEs.Length;
-        var imminentDeadline = WorldState.FutureTime(5d);
-        var index = 0;
-        var aoes = new AOEInstance[futureCount + imminentCount];
-        for (var i = 0; i < futureCount; ++i)
-        {
-            var aoe = futureAOEs[i];
-            if (aoe.Item2 <= imminentDeadline)
-            {
-                aoes[index++] = new(Shape, aoe.Item1.Quantized(), aoe.Item3, aoe.Item2, FutureColor);
-            }
-        }
+            var futureAOEs = CollectionsMarshal.AsSpan(FutureAOEs(linesCount));
+            var imminentAOEs = ImminentAOEs(linesCount);
+            var futureLen = futureAOEs.Length;
+            var imminentLen = imminentAOEs.Length;
+            var imminentDeadline = WorldState.FutureTime(5d);
+            var index = 0;
 
-        for (var i = 0; i < imminentCount; ++i)
-        {
-            var aoe = imminentAOEs[i];
-            if (aoe.Item2 <= imminentDeadline)
+            _aoes = new AOEInstance[futureLen + imminentLen];
+            for (var i = 0; i < futureLen; ++i)
             {
-                aoes[index++] = new(Shape, aoe.Item1.Quantized(), aoe.Item3, aoe.Item2, ImminentColor);
+                ref var aoe = ref futureAOEs[i];
+                if (aoe.Item2 <= imminentDeadline)
+                {
+                    _aoes[index++] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, FutureColor);
+                }
             }
+
+            for (var i = 0; i < imminentLen; ++i)
+            {
+                ref var aoe = ref imminentAOEs[i];
+                if (aoe.Item2 <= imminentDeadline)
+                {
+                    _aoes[index++] = new(Shape, aoe.Item1, aoe.Item3, aoe.Item2, ImminentColor);
+                }
+            }
+            lastCount = linesCount;
+            lastVersion = currentVersion;
+            _aoes = _aoes[..index];
         }
-        return aoes.AsSpan()[..index];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

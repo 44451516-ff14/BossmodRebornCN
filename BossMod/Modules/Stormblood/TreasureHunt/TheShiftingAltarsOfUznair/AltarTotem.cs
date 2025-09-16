@@ -58,14 +58,14 @@ class FlamesOfFury(BossModule module) : Components.VoidzoneAtCastTarget(module, 
     }
 }
 
-class FlamesOfFuryBait(BossModule module) : Components.GenericBaitAway(module)
+class FlamesOfFuryBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(10f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Baitaway)
-            CurrentBaits.Add(new(actor, actor, circle));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -83,7 +83,7 @@ class FlamesOfFuryBait(BossModule module) : Components.GenericBaitAway(module)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (CurrentBaits.Count != 0 && CurrentBaits[0].Target == actor)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 17.5f));
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -115,17 +115,7 @@ class AltarTotemStates : StateMachineBuilder
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(AltarTotem.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(AltarTotem.All);
     }
 }
 

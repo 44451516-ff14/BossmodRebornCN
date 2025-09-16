@@ -2,10 +2,10 @@ namespace BossMod.Dawntrail.Trial.T01Valigarmanda;
 
 sealed class NorthernCross(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect _shape = new(25f, 30f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -21,7 +21,7 @@ sealed class NorthernCross(BossModule module) : Components.GenericAOEs(module)
         };
         if (offset != default)
         {
-            _aoe = new(_shape, Arena.Center, -126.875f.Degrees() + offset, WorldState.FutureTime(9.2d));
+            _aoe = [new(_shape, Arena.Center, -126.875f.Degrees() + offset, WorldState.FutureTime(9.2d))];
         }
     }
 
@@ -29,7 +29,7 @@ sealed class NorthernCross(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.NorthernCross1 or (uint)AID.NorthernCross2)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }

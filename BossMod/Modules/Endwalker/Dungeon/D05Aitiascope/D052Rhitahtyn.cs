@@ -81,7 +81,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 
     private void UpdateArena()
     {
-        Arena.Bounds = new ArenaBoundsComplex([.. rect, .. union]);
+        Arena.Bounds = new ArenaBoundsCustom([.. rect, .. union]);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -89,10 +89,10 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 
         if (Safespots) // force AI to move to a safespot before it becomes available
         {
-            var forbidden = new Func<WPos, float>[2];
+            var forbidden = new ShapeDistance[2];
             for (var i = 0; i < 2; ++i)
-                forbidden[i] = ShapeDistance.InvertedCircle(union[i].Center, 5f);
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), activation);
+                forbidden[i] = new SDInvertedCircle(union[i].Center, 5f);
+            hints.AddForbiddenZone(new SDIntersection(forbidden), activation);
         }
     }
 }
@@ -153,7 +153,7 @@ class Shrapnel(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count1; ++i)
             {
                 var marker = marker1[i];
-                if (marker.Position.Z < 144f)
+                if (marker.PosRot.Z < 144f)
                 {
                     if (marker.Rotation >= 0.1f.Degrees())
                         AddAOEs(shrapnelPositionsSWNE);
@@ -167,12 +167,12 @@ class Shrapnel(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count2; ++i)
             {
                 var marker = marker2[i];
-                if (marker.Position.X < 11f)
+                if (marker.PosRot.X < 11f)
                 {
                     AddAOEs(shrapnelPositionsW);
                     return;
                 }
-                else if (marker.Position.X > 11f)
+                else if (marker.PosRot.X > 11f)
                 {
                     AddAOEs(shrapnelPositionsE);
                     return;

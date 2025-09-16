@@ -6,23 +6,25 @@ sealed class WolvesReignRect2(BossModule module) : Components.SimpleAOEs(module,
 sealed class WolvesReignCone(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.WolvesReignTeleport2 or (uint)AID.WolvesReignTeleport4)
         {
             var pos = spell.LocXZ;
-            _aoe = new(cone, pos, Angle.FromDirection(Arena.Center - pos), Module.CastFinishAt(spell, 5.1f));
+            _aoe = [new(cone, pos, Angle.FromDirection(Arena.Center - pos), Module.CastFinishAt(spell, 5.1d))];
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.WolvesReignCone1 or (uint)AID.WolvesReignCone2)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 

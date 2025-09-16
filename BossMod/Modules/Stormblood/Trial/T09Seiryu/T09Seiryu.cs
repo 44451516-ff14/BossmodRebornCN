@@ -10,7 +10,7 @@ sealed class CoursingRiver(BossModule module) : Components.SimpleKnockbacks(modu
         if (_aoe.Casters.Count == 0 && Casters.Count != 0)
         {
             ref readonly var c = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.Rect(c.Direction.AlmostEqual(90f.Degrees(), Angle.DegToRad) ? c.Origin - new WDir(12.5f, default) : c.Origin - new WDir(-12.5f, default), c.Direction, 50f, default, 20f), c.Activation);
+            hints.AddForbiddenZone(new SDKnockbackInCircleFixedDirection(Arena.Center, 25f * c.Direction.ToDirection(), 19f), c.Activation);
         }
     }
 }
@@ -30,7 +30,7 @@ sealed class ForceOfNature1(BossModule module) : Components.SimpleKnockbacks(mod
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 10f), Casters.Ref(0).Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 10f), Casters.Ref(0).Activation);
     }
 }
 sealed class ForceOfNature2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ForceOfNature2, 5f);
@@ -41,7 +41,7 @@ sealed class KanaboBait(BossModule module) : Components.BaitAwayTethers(module, 
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 19f), WorldState.FutureTime(ActivationDelay));
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 19f), WorldState.FutureTime(ActivationDelay));
         }
     }
 }
@@ -96,7 +96,7 @@ sealed class RedRush(BossModule module) : Components.BaitAwayTethers(module, new
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
         {
-            hints.AddForbiddenZone(Arena.Bounds.Radius >= 20f ? ShapeDistance.InvertedCircle(Arena.Center, 5f) : ShapeDistance.Circle(Arena.Center, 18.5f), WorldState.FutureTime(ActivationDelay));
+            hints.AddForbiddenZone(Arena.Bounds.Radius >= 20f ? new SDInvertedCircle(Arena.Center, 5f) : new SDCircle(Arena.Center, 18.5f), WorldState.FutureTime(ActivationDelay));
         }
     }
 }
@@ -116,12 +116,12 @@ sealed class ArenaChange(BossModule module) : BossComponent(module)
 public abstract class Seiryu(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, phase1Bounds)
 {
     private static readonly WPos arenaCenter = new(100f, 100f);
-    private static readonly ArenaBoundsComplex phase1Bounds = new([new Polygon(arenaCenter, 19.5f, 48)]);
-    public static readonly ArenaBoundsComplex Phase2Bounds = new([new Polygon(arenaCenter, 20f, 48)]);
-    public static readonly ArenaBoundsComplex Phase2WaterBounds = new([new Polygon(arenaCenter, 44.5f, 48)]);
+    private static readonly ArenaBoundsCustom phase1Bounds = new([new Polygon(arenaCenter, 19.5f, 48)]);
+    public static readonly ArenaBoundsCustom Phase2Bounds = new([new Polygon(arenaCenter, 20f, 48)]);
+    public static readonly ArenaBoundsCustom Phase2WaterBounds = new([new Polygon(arenaCenter, 44.5f, 48)]);
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Seiryu, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 637, NameID = 7922, Category = BossModuleInfo.Category.Extreme, Expansion = BossModuleInfo.Expansion.Stormblood)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Seiryu, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 637u, NameID = 7922u, Category = BossModuleInfo.Category.Trial, Expansion = BossModuleInfo.Expansion.Stormblood)]
 public sealed class T09Seiryu(WorldState ws, Actor primary) : Seiryu(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)

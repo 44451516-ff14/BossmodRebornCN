@@ -91,5 +91,5 @@ class D052SubjectNumberXXIVStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 242, NameID = 12392)]
 public class D052SubjectNumberXXIV(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(10.5f, 186.5f), 19.55f)], [new Rectangle(new(11, 207), 20, 1.5f), new Rectangle(new(30, 187), 1.1f, 20f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(10.5f, 186.5f), 19.55f)], [new Rectangle(new(11, 207), 20, 1.5f), new Rectangle(new(30, 187), 1.1f, 20f)]);
 }

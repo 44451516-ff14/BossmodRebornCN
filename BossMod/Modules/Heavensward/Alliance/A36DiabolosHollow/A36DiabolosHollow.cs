@@ -22,9 +22,9 @@ public class A36DiabolosHollow(WorldState ws, Actor primary) : BossModule(ws, pr
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Deathgate));
-        Arena.Actors(Enemies(OID.DiabolicGate));
-        Arena.Actors(Enemies(OID.Shadowsphere));
-        Arena.Actors(Enemies(OID.NightHound));
+        Arena.Actors(Enemies((uint)OID.Deathgate));
+        Arena.Actors(Enemies((uint)OID.DiabolicGate));
+        Arena.Actors(Enemies((uint)OID.Shadowsphere));
+        Arena.Actors(Enemies((uint)OID.NightHound));
     }
 }

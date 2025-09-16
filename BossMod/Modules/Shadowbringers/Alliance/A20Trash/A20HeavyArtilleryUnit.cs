@@ -84,16 +84,16 @@ sealed class Energy(BossModule module) : Components.GenericAOEs(module)
         {
             return;
         }
-        var forbiddenImminent = new Func<WPos, float>[count];
-        var forbiddenFuture = new Func<WPos, float>[count];
+        var forbiddenImminent = new ShapeDistance[count];
+        var forbiddenFuture = new ShapeDistance[count];
         for (var i = 0; i < count; ++i)
         {
             var h = _energy[i];
-            forbiddenFuture[i] = ShapeDistance.Capsule(h.Position, h.Rotation, Length, 1.5f);
-            forbiddenImminent[i] = ShapeDistance.Circle(h.Position, Radius);
+            forbiddenFuture[i] = new SDCapsule(h.Position, h.Rotation, Length, 1.5f);
+            forbiddenImminent[i] = new SDCircle(h.Position, Radius);
         }
-        hints.AddForbiddenZone(ShapeDistance.Union(forbiddenFuture), WorldState.FutureTime(1.1d));
-        hints.AddForbiddenZone(ShapeDistance.Union(forbiddenImminent));
+        hints.AddForbiddenZone(new SDUnion(forbiddenFuture), WorldState.FutureTime(1.1d));
+        hints.AddForbiddenZone(new SDUnion(forbiddenImminent));
     }
 }
 
@@ -115,7 +115,7 @@ sealed class A20HeavyArtilleryUnitStates : StateMachineBuilder
                     for (var i = 0; i < count; ++i)
                     {
                         var e = enemies[i];
-                        if (!e.IsDeadOrDestroyed && e.Position.Z > -262f)
+                        if (!e.IsDeadOrDestroyed && e.PosRot.Z > -262f)
                         {
                             return false;
                         }
@@ -126,7 +126,7 @@ sealed class A20HeavyArtilleryUnitStates : StateMachineBuilder
                     for (var i = 0; i < count; ++i)
                     {
                         var e = enemies[i];
-                        if (!e.IsDeadOrDestroyed && e.Position.Z > -362f)
+                        if (!e.IsDeadOrDestroyed && e.PosRot.Z > -362f)
                         {
                             return false;
                         }
@@ -152,8 +152,8 @@ sealed class A20HeavyArtilleryUnitStates : StateMachineBuilder
 public sealed class A20HeavyArtilleryUnit(WorldState ws, Actor primary) : BossModule(ws, primary, IsArena1(primary) ? new(200f, -216.25f) : IsArena2(primary) ? new(200f, -316.532f) : arena3a.Center,
 IsArena1(primary) ? Arena1 : IsArena2(primary) ? Arena2 : arena3a)
 {
-    public static bool IsArena1(Actor primary) => primary.Position.Z > -262f;
-    public static bool IsArena2(Actor primary) => primary.Position.Z > -362f;
+    public static bool IsArena1(Actor primary) => primary.PosRot.Z > -262f;
+    public static bool IsArena2(Actor primary) => primary.PosRot.Z > -362f;
 
     public static readonly ArenaBoundsRect Arena1 = new(11.5f, 44.25f);
     public static readonly ArenaBoundsRect Arena2 = new(11.5f, 44.468f);
@@ -161,8 +161,8 @@ IsArena1(primary) ? Arena1 : IsArena2(primary) ? Arena2 : arena3a)
     private static readonly Rectangle[] rectarena3 = [new(arena3center, 11.5f, 44.5f)];
     private static readonly Rectangle barrier1 = new(new(200f, -405f), 11.5f, 1f);
     private static readonly Rectangle barrier2 = new(new(200f, -435f), 11.5f, 1f);
-    private static readonly ArenaBoundsComplex arena3a = new(rectarena3, [barrier1, barrier2]);
-    public static readonly ArenaBoundsComplex Arena3b = new(rectarena3, [barrier2]);
+    private static readonly ArenaBoundsCustom arena3a = new(rectarena3, [barrier1, barrier2]);
+    public static readonly ArenaBoundsCustom Arena3b = new(rectarena3, [barrier2]);
     public static readonly ArenaBoundsRect Arena3c = new(11.5f, 44.468f);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

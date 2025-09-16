@@ -99,7 +99,7 @@ class ControlTowerAppear(BossModule module) : Components.GenericAOEs(module)
             }
 
             activeTowers.Add(new Polygon(caster.Position, 5.5f, 20)); // tower + player hitbox radius is slightly smaller than AOE
-            Arena.Bounds = new ArenaBoundsComplex(CE44FamiliarFace.ArenaPolygon, [.. activeTowers]);
+            Arena.Bounds = new ArenaBoundsCustom(CE44FamiliarFace.ArenaPolygon, [.. activeTowers]);
         }
         else if (id == (uint)AID.Towerfall)
         {
@@ -113,7 +113,7 @@ class ControlTowerAppear(BossModule module) : Components.GenericAOEs(module)
                     activeTowers.RemoveAt(i); // depending on timings new towers can appear before old ones disappear, so we cant just clear them
                     if (--count != 0)
                     {
-                        Arena.Bounds = new ArenaBoundsComplex(CE44FamiliarFace.ArenaPolygon, [.. activeTowers]);
+                        Arena.Bounds = new ArenaBoundsCustom(CE44FamiliarFace.ArenaPolygon, [.. activeTowers]);
                     }
                     else
                     {
@@ -222,7 +222,7 @@ class CE44FamiliarFaceStates : StateMachineBuilder
 public class CE44FamiliarFace(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultArena.Center, DefaultArena)
 {
     public static readonly Polygon[] ArenaPolygon = [new Polygon(new(330f, 390f), 29.5f, 32)];
-    public static readonly ArenaBoundsComplex DefaultArena = new(ArenaPolygon);
+    public static readonly ArenaBoundsCustom DefaultArena = new(ArenaPolygon);
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

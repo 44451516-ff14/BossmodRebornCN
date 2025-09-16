@@ -49,7 +49,9 @@ sealed class UniteMare3(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.UniteMare3)
+        {
             _aoes.Add(new(circle, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -58,9 +60,11 @@ sealed class UniteMare3(BossModule module) : Components.GenericAOEs(module)
         {
             var count = _aoes.Count;
             var id = caster.InstanceID;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].ActorID == id)
+                ref var aoe = ref aoes[i];
+                if (aoe.ActorID == id)
                 {
                     _aoes.RemoveAt(i);
                     return;
@@ -92,7 +96,7 @@ sealed class D101EvilDreamersStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 869, NameID = 11382, SortOrder = 2)]
 public sealed class D101EvilDreamers(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(168, 89.999f), 19.5f * CosPI.Pi32th, 32)], [new Rectangle(new(168f, 110.25f), 20f, 1.25f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(168, 89.999f), 19.5f * CosPI.Pi32th, 32)], [new Rectangle(new(168f, 110.25f), 20f, 1.25f),
     new Rectangle(new(188.34f, 90.007f), 1.25f, 20f)]);
     private static readonly uint[] dreamers = [(uint)OID.Boss, (uint)OID.EvilDreamer1, (uint)OID.EvilDreamer2, (uint)OID.EvilDreamer3];
 
@@ -111,6 +115,6 @@ public sealed class D101EvilDreamers(WorldState ws, Actor primary) : BossModule(
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(dreamers));
+        Arena.Actors(this, dreamers);
     }
 }

@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -374,12 +374,14 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     public void ZoneCapsule(WPos start, WDir direction, float radius, float length, uint color)
         => Zone(_triCache[TriangulationCache.GetKeyHash(12, start, direction, radius, length)] ??= _bounds.ClipAndTriangulateCapsule(start - Center, direction, radius, length), color);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TextScreen(Vector2 center, string text, uint color, float fontSize = 17f)
     {
         var size = ImGui.CalcTextSize(text) * Config.ArenaScale;
         ImGui.GetWindowDrawList().AddText(ImGui.GetFont(), fontSize * Config.ArenaScale, center - size * 0.5f, color, text);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TextWorld(WPos center, string text, uint color, float fontSize = 17f)
     {
         TextScreen(WorldPositionToScreenPosition(center), text, color, fontSize);
@@ -516,6 +518,48 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         for (var i = 0; i < count; ++i)
         {
             Actor(actors[i], color == default ? Colors.Enemy : color, allowDeadAndUntargetable);
+        }
+    }
+
+    public void Actors(BossModule module, uint[] actors, uint color = default, bool allowDeadAndUntargetable = false)
+    {
+        var actors_ = actors;
+        var len = actors_.Length;
+        var color_ = color == default ? Colors.Enemy : color;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemies = module.Enemies(actors[i]);
+            var count = enemies.Count;
+            for (var j = 0; j < count; ++j)
+            {
+                var enemy = enemies[j];
+                if (!enemy.IsDestroyed && (allowDeadAndUntargetable || enemy.IsTargetable && !enemy.IsDead))
+                {
+                    Actor(enemy.Position, enemy.Rotation, color_);
+                }
+            }
+        }
+    }
+
+    public void ActorsInBounds(BossModule module, uint[] actors, uint color = default, bool allowDeadAndUntargetable = false)
+    {
+        var actors_ = actors;
+        var len = actors_.Length;
+        var center = Center;
+        var radius = Bounds.Radius;
+        var color_ = color == default ? Colors.Enemy : color;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemies = module.Enemies(actors[i]);
+            var count = enemies.Count;
+            for (var j = 0; j < count; ++j)
+            {
+                var enemy = enemies[j];
+                if (!enemy.IsDestroyed && enemy.Position.AlmostEqual(center, radius) && (allowDeadAndUntargetable || enemy.IsTargetable && !enemy.IsDead))
+                {
+                    Actor(enemy.Position, enemy.Rotation, color_);
+                }
+            }
         }
     }
 

@@ -75,6 +75,6 @@ sealed class D102BeatriceStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 869, NameID = 11384, SortOrder = 5)]
 public sealed class D102Beatrice(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(default, -148f), 19.5f * CosPI.Pi32th, 32)], [new Rectangle(new(default, -127.63f), 20f, 1.25f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(default, -148f), 19.5f * CosPI.Pi32th, 32)], [new Rectangle(new(default, -127.63f), 20f, 1.25f),
     new Rectangle(new(default, -168.32f), 20f, 1.25f)]);
 }

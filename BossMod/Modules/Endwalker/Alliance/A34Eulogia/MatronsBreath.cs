@@ -11,9 +11,10 @@ class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_flowers.Count != 0)
-            return new AOEInstance[1] { _flowers[0] };
-        else
-            return [];
+        {
+            return CollectionsMarshal.AsSpan(_flowers)[..1];
+        }
+        return [];
     }
 
     public override void OnActorCreated(Actor actor)
@@ -34,7 +35,9 @@ class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
         {
             ++NumCasts;
             if (_flowers.Count != 0)
+            {
                 _flowers.RemoveAt(0);
+            }
         }
     }
 }

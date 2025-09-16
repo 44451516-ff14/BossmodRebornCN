@@ -47,7 +47,7 @@ public sealed class BA4ProtoOzma(WorldState ws, Actor primary) : BossModule(ws, 
     new(-33.85f, 10.507f), new(-35.698f, 12.464f), new(-46.154f, 6.429f), new(-51.154f, 15.089f), new(-40.595f, 21.181f)];
     // ozma's arena consists of 3 identical segments, so we rotate the vertices, the segments are slighly off from polygonal donut segments (check arenaslices.jpg for visualisation),
     // so we can't generate them directly if we want pixel perfectness. max error of this should be about 1/1000th of a yalm
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices), new PolygonCustom(WPos.GenerateRotatedVertices(arenaCenter, vertices, 120f)),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices), new PolygonCustom(WPos.GenerateRotatedVertices(arenaCenter, vertices, 120f)),
     new PolygonCustom(WPos.GenerateRotatedVertices(arenaCenter, vertices, 240f))]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

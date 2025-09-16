@@ -31,15 +31,15 @@ class Cauterize(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Cau
 class Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.Touchdown)
 {
     private readonly AOEShapeCircle _shape = new(5f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (id == 0x008E && actor.OID == (uint)OID.Boss)
         {
-            _aoe = new(_shape, D103Isgebind.ArenaCenter.Quantized(), default, WorldState.FutureTime(7.8d));
+            _aoe = [new(_shape, D103Isgebind.ArenaCenter.Quantized(), default, WorldState.FutureTime(7.8d))];
         }
     }
 
@@ -47,7 +47,7 @@ class Touchdown(BossModule module) : Components.GenericAOEs(module, (uint)AID.To
     {
         if (spell.Action.ID == (uint)AID.Touchdown)
         {
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -84,5 +84,5 @@ public class D103Isgebind(WorldState ws, Actor primary) : BossModule(ws, primary
     new Circle(new(19.5f, -267.6f), 3), new Circle(new(-21.3f, -243.6f), 1.5f), new Circle(new(-21.3f, -252.4f), 1.5f), new Square(new(-23, -243.4f), 0.7f),
     new Square(new(-23, -252.6f), 0.7f), new Circle(new(21.3f, -243.6f), 1.5f), new Circle(new(21.3f, -252.4f), 1.5f), new Square(new(23, -243.4f), 0.7f),
     new Square(new(23, -252.6f), 0.7f)];
-    public static readonly ArenaBoundsComplex arena = new(union, difference, union2);
+    public static readonly ArenaBoundsCustom arena = new(union, difference, union2);
 }

@@ -23,15 +23,15 @@ class AccelerationBomb(BossModule module) : Components.StayMove(module)
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168, NameID = 4896)]
 public class A24Ozma(WorldState ws, Actor primary) : BossModule(ws, primary, new(280, -410), arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Donut(new(280, -410), 18, 25), new Rectangle(new(280, -386), 5, 12), new Rectangle(new(260, -422), 5, 12, -120.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new Donut(new(280, -410), 18, 25), new Rectangle(new(280, -386), 5, 12), new Rectangle(new(260, -422), 5, 12, -120.Degrees()),
     new Rectangle(new(300, -422), 5, 12, 120.Degrees())]);
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.SingularityFragment));
-        Arena.Actors(Enemies(OID.SingularityEcho));
-        Arena.Actors(Enemies(OID.SingularityRipple));
-        Arena.Actors(Enemies(OID.Ozmasphere));
-        Arena.Actors(Enemies(OID.Ozmashade));
+        Arena.Actors(Enemies((uint)OID.SingularityFragment));
+        Arena.Actors(Enemies((uint)OID.SingularityEcho));
+        Arena.Actors(Enemies((uint)OID.SingularityRipple));
+        Arena.Actors(Enemies((uint)OID.Ozmasphere));
+        Arena.Actors(Enemies((uint)OID.Ozmashade));
     }
 }

@@ -83,14 +83,14 @@ public sealed class CLL2AlbeleoTheMaleficent(WorldState ws, Actor primary) : Bos
     new(68.54f, -408.08f), new(69.94f, -407.95f), new(72.46f, -408.10f),
     new(72.56f, -409.72f), new(75.47f, -409.98f), new(75.83f, -409.39f), new(76.06f, -408.87f), new(83.03f, -408.65f),
     new(83.72f, -408.76f), new(84.09f, -409.14f), new(84.31f, -409.75f), new(87.45f, -409.99f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     private static readonly uint[] adds = [(uint)OID.AlbeleosCanisDirus, (uint)OID.AlbeleosHrodvitnir, (uint)OID.AlbeleosMonstrosity, (uint)OID.FourthLegionColossus,
     (uint)OID.FourthLegionDuplicarius, (uint)OID.FourthLegionReaper, (uint)OID.FourthLegionArmoredWeapon];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

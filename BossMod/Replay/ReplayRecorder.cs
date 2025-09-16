@@ -233,7 +233,7 @@ public sealed class ReplayRecorder : IDisposable
         }
         public override Output Emit(in ActionEffects v)
         {
-            for (int i = 0; i < ActionEffects.MaxCount; ++i)
+            for (var i = 0; i < ActionEffects.MaxCount; ++i)
                 _dest.Write(v[i]);
             return this;
         }
@@ -275,7 +275,6 @@ public sealed class ReplayRecorder : IDisposable
     {
         _ws = ws;
         CFCID = _ws.CurrentCFCID;
-        targetDirectory.Create();
         LogPath = Path.Combine($"{targetDirectory.FullName}", $"{logPrefix}_{_ws.CurrentTime:yyyy_MM_dd_HH_mm_ss}.log");
         Stream stream = new FileStream(LogPath, FileMode.Create, FileAccess.Write, FileShare.Read);
         switch (format)

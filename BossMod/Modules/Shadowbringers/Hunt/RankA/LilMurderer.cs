@@ -18,21 +18,25 @@ public enum AID : uint
 
 class GoblinSlash(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle circle = new(8);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.GobthunderII && spell.LocXZ == caster.Position)
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 2.6f));
+        {
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 2.6d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.GoblinSlash)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 

@@ -22,20 +22,24 @@ class Levinfang(BossModule module) : Components.SingleTargetCast(module, (uint)A
 class Electrify(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electrify, 6f);
 class HydroelectricShock(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HydroelectricShock)
-            _aoe = new(D042ThunderclapGuivre.Shock, Arena.Center, default, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(D042ThunderclapGuivre.Shock, Arena.Center, default, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HydroelectricShock)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -86,6 +90,6 @@ public class D042ThunderclapGuivre(WorldState ws, Actor primary) : BossModule(ws
     new(-184.045f, -113.744f), new(-178.523f, -112.543f), new(-173.155f, -107.977f), new(-175.178f, -97.181f)];
     private static readonly WPos[] verticesAOE2 = [new(-177.532f, -166.762f), new(-177.432f, -162.877f), new(-175.846f, -159.154f),
     new(-174.737f, -155.21f), new(-173.449f, -154.881f), new(-167.214f, -153.974f), new(-167.644f, -172.626f)];
-    public static readonly ArenaBoundsComplex arena = new(vertices);
+    public static readonly ArenaBoundsCustom arena = new(vertices);
     public static readonly AOEShapeCustom Shock = new(vertices, [new PolygonCustom(verticesAOE1), new PolygonCustom(verticesAOE2)]);
 }

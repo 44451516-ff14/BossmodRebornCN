@@ -44,7 +44,7 @@ sealed class ScraplineStorm(BossModule module) : Components.SimpleKnockbacks(mod
         if (Casters.Count != 0)
         {
             ref readonly var source = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.Circle(source.Origin, 20f), source.Activation);
+            hints.AddForbiddenZone(new SDCircle(source.Origin, 20f), source.Activation);
         }
     }
 }
@@ -61,16 +61,18 @@ sealed class ScraplineTyphoon(BossModule module) : Components.GenericAOEs(module
     {
         if (spell.Action.ID == (uint)AID.ScraplineStorm)
         {
-            AddAOE(circle, 2.1f);
-            AddAOE(donut, 5.6f);
-            void AddAOE(AOEShape shape, float delay) => AOEs.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay)));
+            AddAOE(circle, 2.1d);
+            AddAOE(donut, 5.6d);
+            void AddAOE(AOEShape shape, double delay) => AOEs.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay)));
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (AOEs.Count != 0 && spell.Action.ID is (uint)AID.Scrapline or (uint)AID.Typhoon)
+        {
             AOEs.RemoveAt(0);
+        }
     }
 }
 
@@ -85,21 +87,11 @@ public sealed class A10DespotStates : StateMachineBuilder
             .ActivateOnEnter<ScraplineStorm>()
             .ActivateOnEnter<Panzerfaust>()
             .ActivateOnEnter<PanzerfaustHint>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(A10Despot.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(A10Despot.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13608, SortOrder = 6)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13608, SortOrder = 6)]
 public sealed class A10Despot(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-585.1f, -640.25f), new(-584.42f, -640.14f), new(-556.15f, -628.13f), new(-556.17f, -627.43f), new(-556.81f, -626.37f),
@@ -137,23 +129,13 @@ public sealed class A10Despot(WorldState ws, Actor primary) : BossModule(ws, pri
     new(-583.31f, -633.17f), new(-583.26f, -633.79f), new(-583.79f, -634.2f), new(-585.11f, -634.48f), new(-585.79f, -634.7f),
     new(-586.45f, -635.02f), new(-587.01f, -635.5f), new(-587.48f, -636.06f), new(-587.43f, -636.72f), new(-586.1f, -639.84f),
     new(-585.55f, -640.25f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Flamingo1, (uint)OID.Flamingo2];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            if (enemies[i].InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

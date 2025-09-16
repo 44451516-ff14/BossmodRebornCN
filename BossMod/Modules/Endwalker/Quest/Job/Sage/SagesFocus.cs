@@ -72,12 +72,12 @@ class AncelRockfistStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69604, NameID = 10732)]
 public class AncelRockfist(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(0, -82.146f), 18.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(0, -82.146f), 18.5f, 20)]);
     private static readonly uint[] bosses = [(uint)OID.Boss, (uint)OID.Mahaud, (uint)OID.Loifa];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(bosses));
+        Arena.Actors(this, bosses);
     }
 }
 

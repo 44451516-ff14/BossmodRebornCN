@@ -68,7 +68,7 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
                 var p = party[i];
                 if (p.Role != Role.Tank && p != Target)
                 {
-                    hints.AddForbiddenZone(ShapeDistance.Circle(p.Position, radius), Activation);
+                    hints.AddForbiddenZone(new SDCircle(p.Position, radius), Activation);
                 }
             }
         }

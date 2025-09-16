@@ -53,17 +53,7 @@ class SecretSwallowStates : StateMachineBuilder
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<Mash>()
             .ActivateOnEnter<Scoop>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(SecretSwallow.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(SecretSwallow.All);
     }
 }
 
@@ -77,7 +67,7 @@ public class SecretSwallow(WorldState ws, Actor primary) : THTemplate(ws, primar
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.SwallowHatchling));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

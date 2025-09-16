@@ -43,24 +43,28 @@ sealed class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)A
 sealed class GrimFate(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrimFate, new AOEShapeCone(8f, 60f.Degrees()));
 sealed class Desolation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Desolation, new AOEShapeRect(12f, 4f));
 
-class Petrattraction(BossModule module) : Components.GenericKnockback(module)
+sealed class Petrattraction(BossModule module) : Components.GenericKnockback(module)
 {
-    public Knockback? _source;
+    public Knockback[] _kb = [];
 
     private static readonly AOEShapeCircle circle = new(50f);
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _source);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.PetrattractionVisual)
-            _source = new(caster.Position, 50f, Module.CastFinishAt(spell, 1.4d), circle, kind: Kind.TowardsOrigin);
+        {
+            _kb = [new(caster.Position, 50f, Module.CastFinishAt(spell, 1.4d), circle, kind: Kind.TowardsOrigin)];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Petrattraction)
-            _source = null;
+        {
+            _kb = [];
+        }
     }
 }
 
@@ -92,7 +96,7 @@ public sealed class Ceto(WorldState ws, Actor primary) : SimpleBossModule(ws, pr
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

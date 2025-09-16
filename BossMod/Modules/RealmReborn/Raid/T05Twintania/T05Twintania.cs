@@ -149,8 +149,8 @@ public class T05Twintania : BossModule
 
     public T05Twintania(WorldState ws, Actor primary) : base(ws, primary, new(-3, -6.5f), new ArenaBoundsCircle(31))
     {
-        ScourgeOfMeracydia = Enemies(OID.ScourgeOfMeracydia);
-        Neurolinks = Enemies(OID.Neurolink);
+        ScourgeOfMeracydia = Enemies((uint)OID.ScourgeOfMeracydia);
+        Neurolinks = Enemies((uint)OID.Neurolink);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

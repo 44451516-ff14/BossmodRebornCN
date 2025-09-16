@@ -41,7 +41,6 @@ class Orbs(BossModule module) : Components.GenericAOEs(module, default, "GTFO fr
 {
     private readonly List<Actor> _orbs = new(6);
     private const float Radius = 3f;
-    private static readonly AOEShapeCapsule capsule = new(Radius, default);
     private static readonly AOEShapeCircle circle = new(Radius);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -61,13 +60,15 @@ class Orbs(BossModule module) : Components.GenericAOEs(module, default, "GTFO fr
                 var ring = rings[j];
                 if (ring.Position.InRect(o.Position, 20f * o.Rotation.ToDirection(), Radius))
                 {
-                    aoes[i] = new(capsule with { Length = (ring.Position - o.Position).Length() }, o.Position, o.Rotation);
+                    aoes[i] = new(new AOEShapeCapsule(Radius, (ring.Position - o.Position).Length()), o.Position, o.Rotation);
                     found = true;
                     break;
                 }
             }
             if (!found)
+            {
                 aoes[i] = new(circle, o.Position);
+            }
         }
         return aoes;
     }
@@ -80,7 +81,7 @@ class Orbs(BossModule module) : Components.GenericAOEs(module, default, "GTFO fr
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008)
+        if (state == 0x00040008u)
             _orbs.RemoveAll(t => t.Position.AlmostEqual(actor.Position, 4f));
     }
 }
@@ -100,17 +101,32 @@ class GoldChaser(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 4 ? 4 : count;
-        var act0 = _aoes[0].Activation;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        var act0 = aoes[0].Activation;
+        if (count <= 2)
         {
-            var aoe = _aoes[i];
-            if (aoe.Activation == act0)
-                aoes[i] = count > 2 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe with { Risky = false };
+            for (var i = 0; i < count; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                if (aoe.Activation == act0)
+                {
+                    aoes[i].Risky = true;
+                }
+            }
         }
-        return aoes;
+        else
+        {
+            var color = Colors.Danger;
+            for (var i = 0; i < count; ++i)
+            {
+                ref var aoe = ref aoes[i];
+                if (aoe.Activation == act0)
+                {
+                    aoe.Color = color;
+                }
+            }
+        }
+        return aoes[..max];
     }
 
     public override void OnActorCreated(Actor actor)
@@ -138,7 +154,7 @@ class GoldChaser(BossModule module) : Components.GenericAOEs(module)
                     break;
             }
         }
-        void AddAOE(Actor caster, double delay) => _aoes.Add(new(rect, caster.Position.Quantized(), Angle.AnglesCardinals[2], _activation.AddSeconds(delay)));
+        void AddAOE(Actor caster, double delay) => _aoes.Add(new(rect, caster.Position.Quantized(), Angle.AnglesCardinals[2], _activation.AddSeconds(delay), risky: false));
         bool AreCastersInPositions(WPos[] positions)
         {
             var caster0 = _casters[0].Position;
@@ -164,42 +180,40 @@ class GoldChaser(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class SacramentSforzando(BossModule module) : Components.SingleTargetCastDelay(module, (uint)AID.SacramentSforzando, (uint)AID.SacramentSforzando2, 0.8f);
-class OrisonFortissimo(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.OrisonFortissimo, (uint)AID.OrisonFortissimo2, 0.8f);
+class SacramentSforzando(BossModule module) : Components.SingleTargetCastDelay(module, (uint)AID.SacramentSforzando, (uint)AID.SacramentSforzando2, 0.8d);
+class OrisonFortissimo(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.OrisonFortissimo, (uint)AID.OrisonFortissimo2, 0.8d);
 
-abstract class DivineDiminuendoCircle(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 8f);
-class DivineDiminuendoCircle1(BossModule module) : DivineDiminuendoCircle(module, (uint)AID.DivineDiminuendoCircle1);
-class DivineDiminuendoCircle2(BossModule module) : DivineDiminuendoCircle(module, (uint)AID.DivineDiminuendoCircle2);
-class DivineDiminuendoCircle3(BossModule module) : DivineDiminuendoCircle(module, (uint)AID.DivineDiminuendoCircle3);
+sealed class DivineDiminuendoCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.DivineDiminuendoCircle1, (uint)AID.DivineDiminuendoCircle2,
+(uint)AID.DivineDiminuendoCircle3], 8f);
 
 class DivineDiminuendoDonut1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DivineDiminuendoDonut1, new AOEShapeDonut(10f, 16f));
 class DivineDiminuendoDonut2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DivineDiminuendoDonut2, new AOEShapeDonut(18f, 32f));
 
-abstract class ConvictionMarcato(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 2.5f));
-class ConvictionMarcato1(BossModule module) : ConvictionMarcato(module, (uint)AID.ConvictionMarcato1);
-class ConvictionMarcato2(BossModule module) : ConvictionMarcato(module, (uint)AID.ConvictionMarcato2);
-class ConvictionMarcato3(BossModule module) : ConvictionMarcato(module, (uint)AID.ConvictionMarcato3);
+sealed class ConvictionMarcato(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ConvictionMarcato1, (uint)AID.ConvictionMarcato2,
+(uint)AID.ConvictionMarcato3], new AOEShapeRect(40f, 2.5f));
 
 class PenancePianissimo(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeDonut donut = new(14.5f, 30f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.PenancePianissimo)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        {
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7d))];
+        }
     }
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (state == 0x00040008)
+        if (state == 0x00040008u)
             Arena.Bounds = D055ForgivenObscenity.ArenaRect;
-        else if (state == 0x00010002)
+        else if (state == 0x00010002u)
         {
-            _aoe = null;
+            _aoe = [];
             Arena.Bounds = D055ForgivenObscenity.ArenaCircle;
         }
     }
@@ -218,14 +232,10 @@ class D055ForgivenObscenityStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<SacramentSforzando>()
-            .ActivateOnEnter<DivineDiminuendoCircle1>()
-            .ActivateOnEnter<DivineDiminuendoCircle2>()
-            .ActivateOnEnter<DivineDiminuendoCircle3>()
+            .ActivateOnEnter<DivineDiminuendoCircle>()
             .ActivateOnEnter<DivineDiminuendoDonut1>()
             .ActivateOnEnter<DivineDiminuendoDonut2>()
-            .ActivateOnEnter<ConvictionMarcato1>()
-            .ActivateOnEnter<ConvictionMarcato2>()
-            .ActivateOnEnter<ConvictionMarcato3>()
+            .ActivateOnEnter<ConvictionMarcato>()
             .ActivateOnEnter<OrisonFortissimo>()
             .ActivateOnEnter<GoldChaser>()
             .ActivateOnEnter<Orbs>()
@@ -238,7 +248,7 @@ public class D055ForgivenObscenity(WorldState ws, Actor primary) : BossModule(ws
 {
     private static readonly WPos arenaCenter = new(-240f, 237f);
     public static readonly ArenaBoundsRect ArenaRect = new(14.5f, 19.5f);
-    public static readonly ArenaBoundsComplex ArenaCircle = new([new Polygon(arenaCenter, 15f, 64)])
+    public static readonly ArenaBoundsCustom ArenaCircle = new([new Polygon(arenaCenter, 15f, 64)])
 ;
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

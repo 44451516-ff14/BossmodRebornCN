@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace BossMod;
+﻿namespace BossMod;
 
 public enum ActionEffectType : byte
 {
@@ -108,35 +106,64 @@ public unsafe struct ActionEffect
     public readonly int DamageHealValue => Value + ((Param4 & 0x40) != default ? Param3 * 0x10000 : default); // for damage/heal effects
 }
 
-// TODO: convert to inline array
-public unsafe struct ActionEffects : IEnumerable<ActionEffect>
+public unsafe struct ActionEffects
 {
     public const int MaxCount = 8;
 
-    private fixed ulong _effects[MaxCount];
+    [InlineArray(MaxCount)]
+    private struct ActionEffectsStorage
+    {
+        private ulong _element0;
+    }
+
+    private ActionEffectsStorage _effects;
 
     public ulong this[int index]
     {
-        get => _effects[index];
+        readonly get => _effects[index];
         set => _effects[index] = value;
     }
 
-    public IEnumerator<ActionEffect> GetEnumerator()
+    public readonly Span<ActionEffect> AsSpan()
     {
-        for (var i = 0; i < 8; ++i)
-        {
-            var eff = Build(i);
-            if (eff.Type != ActionEffectType.Nothing)
-                yield return eff;
-        }
+        ref var first = ref Unsafe.AsRef(in _effects[0]);
+        var raw = MemoryMarshal.CreateSpan(ref first, MaxCount);
+        return MemoryMarshal.Cast<ulong, ActionEffect>(raw);
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    private unsafe ActionEffect Build(int index)
+    public readonly ReadOnlySpan<ActionEffect> ValidEffects()
     {
-        fixed (ulong* p = _effects)
-            return *(ActionEffect*)(p + index);
+        var span = AsSpan();
+        var count = 0;
+
+        for (var i = 0; i < MaxCount; ++i)
+        {
+            ref var s = ref span[i];
+            if (s.Type != ActionEffectType.Nothing)
+            {
+                span[count++] = s;
+            }
+        }
+
+        return span[..count];
+    }
+
+    public override readonly string ToString()
+    {
+        var effects = ValidEffects();
+        var len = effects.Length;
+        if (effects.Length == 0)
+            return string.Empty;
+
+        var sb = new StringBuilder();
+        sb.Append(effects[0].Type);
+
+        for (var i = 1; i < len; ++i)
+        {
+            sb.Append(", ");
+            sb.Append(effects[i].Type);
+        }
+        return sb.ToString();
     }
 }
 

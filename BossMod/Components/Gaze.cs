@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace BossMod.Components;
 
@@ -98,7 +98,7 @@ public abstract class GenericGaze(BossModule module, uint aid = default) : CastC
 
     private Vector2 IndicatorScreenPos(WPos eye)
     {
-        if (Arena.InBounds(eye) || Arena.Bounds is not ArenaBoundsCircle && Arena.Bounds is ArenaBoundsComplex circle && !circle.IsCircle)
+        if (Arena.InBounds(eye) || Arena.Bounds is not ArenaBoundsCircle && Arena.Bounds is ArenaBoundsCustom circle && !circle.IsCircle)
         {
             return Arena.WorldPositionToScreenPosition(eye);
         }

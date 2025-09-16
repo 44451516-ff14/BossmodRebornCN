@@ -88,7 +88,7 @@ class Un2SephirotStates : StateMachineBuilder
         // TODO: adds spawn either when all from previous set are dead or by timeout...
         Timeout(id, 0)
             .SetHint(StateMachine.StateHint.DowntimeStart);
-        Condition(id + 1, 2.6f, () => _module.Enemies(OID.Cochma).Any(c => c.IsTargetable), "Initial adds")
+        Condition(id + 1, 2.6f, () => _module.Enemies((uint)OID.Cochma).Any(c => c.IsTargetable), "Initial adds")
             .SetHint(StateMachine.StateHint.DowntimeEnd);
         SimpleState(id + 0xFF0000, 10000, "Adds enrage");
     }

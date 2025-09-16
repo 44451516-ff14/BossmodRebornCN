@@ -25,7 +25,7 @@ class Mechanics(BossModule module) : BossComponent(module)
     public override void Update()
     {
         // TODO: this is bad, we need to find a way to associate orb to kiter...
-        if (_orbKiters.Count > 0 && Module.Enemies(OID.Aetheroplasm).Count == 0)
+        if (_orbKiters.Count > 0 && Module.Enemies((uint)OID.Aetheroplasm).Count == 0)
             _orbKiters.Clear();
     }
 
@@ -73,7 +73,7 @@ class Mechanics(BossModule module) : BossComponent(module)
             hints.Add("Kite the orb!");
         }
 
-        if (Module.Enemies(OID.MagitekBit).Any(bit => bit.CastInfo != null && _aoeAssaultCannon.Check(actor.Position, bit)))
+        if (Module.Enemies((uint)OID.MagitekBit).Any(bit => bit.CastInfo != null && _aoeAssaultCannon.Check(actor.Position, bit)))
         {
             hints.Add("GTFO from bit aoe!");
         }
@@ -86,7 +86,7 @@ class Mechanics(BossModule module) : BossComponent(module)
         if (_magitekOffset != null)
             _aoeMagitekRay.Draw(Arena, Module.PrimaryActor.Position, Module.PrimaryActor.Rotation + _magitekOffset.Value);
 
-        foreach (var bit in Module.Enemies(OID.MagitekBit).Where(bit => bit.CastInfo != null))
+        foreach (var bit in Module.Enemies((uint)OID.MagitekBit).Where(bit => bit.CastInfo != null))
             _aoeAssaultCannon.Draw(Arena, bit);
     }
 
@@ -101,21 +101,21 @@ class Mechanics(BossModule module) : BossComponent(module)
         //if (pc.Role is Role.Healer or Role.Ranged)
         //    Arena.AddCircle(Module.PrimaryActor.Position, _ceruleumVentRange, Colors.Danger);
 
-        foreach (var orb in Module.Enemies(OID.Ultimaplasm).Where(orb => !_orbsSharedExploded.Contains(orb.InstanceID)))
+        foreach (var orb in Module.Enemies((uint)OID.Ultimaplasm).Where(orb => !_orbsSharedExploded.Contains(orb.InstanceID)))
         {
             // TODO: line between paired orbs
             Arena.Actor(orb, Colors.Danger, true);
             Arena.AddCircle(orb.Position, _orbSharedRange, Colors.Safe);
         }
 
-        foreach (var orb in Module.Enemies(OID.Aetheroplasm).Where(orb => !_orbsKitedExploded.Contains(orb.InstanceID)))
+        foreach (var orb in Module.Enemies((uint)OID.Aetheroplasm).Where(orb => !_orbsKitedExploded.Contains(orb.InstanceID)))
         {
             // TODO: line from corresponding target
             Arena.Actor(orb, Colors.Danger, true);
             Arena.AddCircle(orb.Position, _orbFixateRange, Colors.Danger);
         }
 
-        foreach (var bit in Module.Enemies(OID.MagitekBit))
+        foreach (var bit in Module.Enemies((uint)OID.MagitekBit))
         {
             Arena.Actor(bit, Colors.Danger);
         }

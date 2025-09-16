@@ -76,6 +76,6 @@ public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossC
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        Arena.Actors(Module.Enemies(OIDs));
+        Arena.Actors(Module, OIDs);
     }
 }

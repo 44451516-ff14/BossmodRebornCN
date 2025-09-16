@@ -167,13 +167,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (BossHellDiver == null)
-        {
-            var b = Enemies((uint)OID.FourthLegionHelldiver1);
-            BossHellDiver = b.Count != 0 ? b[0] : null;
-        }
+        BossHellDiver ??= GetActor((uint)OID.FourthLegionHelldiver1);
     }
 
     protected override bool CheckPull() => base.CheckPull() || (BossHellDiver?.InCombat ?? false);
@@ -194,7 +188,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
         for (var i = 0; i < count; ++i)
         {
             var skyarmor = skyarmors[i];
-            if (InBounds(skyarmor.Position))
+            if (Arena.InBounds(skyarmor.Position))
             {
                 Arena.Actor(skyarmor);
             }
@@ -223,7 +217,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
                     enemyPrio = 1;
                 else if (e == PrimaryActor && e.HPRatio - BossHellDiver?.HPRatio < -0.1f)
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
-                else if (oid == (uint)OID.FourthLegionSkyArmor && InBounds(e.Position))
+                else if (oid == (uint)OID.FourthLegionSkyArmor && Arena.InBounds(e.Position))
                     enemyPrio = 0;
                 else if (oid != (uint)OID.Boss)
                     enemyPrio = AIHints.Enemy.PriorityInvincible;
@@ -234,7 +228,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
                     enemyPrio = 1;
                 else if (e == BossHellDiver && e.HPRatio - PrimaryActor.HPRatio < -0.1f)
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
-                else if (oid == (uint)OID.FourthLegionSkyArmor && InBounds(e.Position))
+                else if (oid == (uint)OID.FourthLegionSkyArmor && Arena.InBounds(e.Position))
                     enemyPrio = 0;
                 else if (oid != (uint)OID.FourthLegionHelldiver1)
                     enemyPrio = AIHints.Enemy.PriorityInvincible;

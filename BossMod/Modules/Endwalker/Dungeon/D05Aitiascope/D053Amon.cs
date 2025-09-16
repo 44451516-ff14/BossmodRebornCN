@@ -40,7 +40,7 @@ public enum AID : uint
 class CurtainCallArenaChange(BossModule module) : BossComponent(module)
 {
     private static readonly Polygon[] circle = [new Polygon(new(11f, -490f), 6.5f, 20, 8.5f.Degrees())];
-    public static readonly ArenaBoundsComplex CurtaincallArena = new(D053Amon.union, [.. D053Amon.difference, .. circle]);
+    public static readonly ArenaBoundsCustom CurtaincallArena = new(D053Amon.union, [.. D053Amon.difference, .. circle]);
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -98,5 +98,5 @@ public class D053Amon(WorldState ws, Actor primary) : BossModule(ws, primary, ar
 {
     public static readonly Polygon[] union = [new Polygon(new(11f, -490f), 19.5f, 48)];
     public static readonly Rectangle[] difference = [new(new(11f, -469.521f), 20, 1.25f)];
-    public static readonly ArenaBoundsComplex arena = new(union, difference);
+    public static readonly ArenaBoundsCustom arena = new(union, difference);
 }

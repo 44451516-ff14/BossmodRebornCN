@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System.Globalization;
 
@@ -220,7 +220,7 @@ sealed class ParticipantInfo : CommonEnumInfo
         }
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.{name}, GroupType = BossModuleInfo.GroupType.CFC, GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u, NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u, Category = BossModuleInfo.Category.Placeholder, Expansion = BossModuleInfo.Expansion.Placeholder)]");
+        sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.{name}, GroupType = BossModuleInfo.GroupType.CFC, GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u, NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u, Category = BossModuleInfo.Category.Placeholder, Expansion = BossModuleInfo.Expansion.Placeholder, SortOrder = 1)]");
         sb.AppendLine($"public sealed class {name}(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));");
         return sb;
     }

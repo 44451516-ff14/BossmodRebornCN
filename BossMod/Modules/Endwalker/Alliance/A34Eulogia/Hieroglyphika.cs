@@ -27,19 +27,31 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
             _ => default
         };
         if (dir == default)
+        {
             return;
+        }
 
-        WDir[] safespots = [.. _canonicalSafespots.Select(d => d.Rotate(dir))];
+        var safespots = new WDir[2];
+        for (var i = 0; i < 2; ++i)
+        {
+            safespots[i] = _canonicalSafespots[i].Rotate(dir);
+        }
         var activation = WorldState.FutureTime(17.1d);
         for (var z = -3; z <= 3; z += 2)
         {
             for (var x = -3; x <= 3; x += 2)
             {
                 var cellOffset = new WDir(x * 6f, z * 6f);
-                if (!safespots.Any(s => s.AlmostEqual(cellOffset, 1f)))
+                for (var i = 0; i < 2; ++i)
                 {
-                    AOEs.Add(new(_shape, (Arena.Center + cellOffset + new WDir(default, 6f)).Quantized(), 180f.Degrees(), activation));
+                    if (safespots[i] == cellOffset)
+                    {
+                        goto next;
+                    }
                 }
+                AOEs.Add(new(_shape, (Arena.Center + cellOffset + new WDir(default, 6f)).Quantized(), 180f.Degrees(), activation));
+            next:
+                ;
             }
         }
     }
@@ -49,9 +61,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
         if (spell.Action.ID == WatchedAction)
         {
             ++NumCasts;
-            var cnt = AOEs.RemoveAll(aoe => aoe.Origin.AlmostEqual(caster.Position, 1f));
-            if (cnt != 1)
-                ReportError($"Incorrect AOE prediction: {caster.Position} matched {cnt} aoes");
+            AOEs.Clear();
         }
     }
 }

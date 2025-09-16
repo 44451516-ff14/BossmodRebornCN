@@ -41,20 +41,22 @@ class WaterBomb3(BossModule module) : WaterBomb(module, (uint)AID.WaterBomb3);
 
 class OdiousCroak(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCone cone = new(14f, 60f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.OdiousCroak)
         {
-            if (_aoe == null)
-                _aoe = new(cone, caster.Position, caster.Rotation);
+            if (_aoe.Length == 0)
+            {
+                _aoe = [new(cone, caster.Position.Quantized(), caster.Rotation)];
+            }
             if (++NumCasts == 12)
             {
-                _aoe = null;
+                _aoe = [];
                 NumCasts = 0;
             }
         }
@@ -71,13 +73,17 @@ class DiscordantHarmony(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Chirp)
+        {
             _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.7d)));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.DiscordantHarmony)
+        {
             _aoes.Clear();
+        }
     }
 }
 
@@ -121,8 +127,8 @@ class D111ZuroRoggoStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 141, NameID = 4805)]
 public class D111ZuroRoggo(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-365, -250), 19.5f * CosPI.Pi32th, 32)], [new Rectangle(new(-365, -230), 20, 2.01f),
-    new Rectangle(new(-365, -270), 20, 1.75f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-365f, -250f), 19.5f * CosPI.Pi32th, 32)], [new Rectangle(new(-365f, -230f), 20f, 2.01f),
+    new Rectangle(new(-365f, -270f), 20f, 1.75f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

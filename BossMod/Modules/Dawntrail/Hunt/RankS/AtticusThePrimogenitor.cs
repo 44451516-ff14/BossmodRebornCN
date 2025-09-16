@@ -77,7 +77,10 @@ sealed class BreathSequence(BossModule module) : Components.GenericAOEs(module)
         var max = count > 2 ? 2 : count;
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         if (count > 1)
-            aoes[0].Color = Colors.Danger;
+        {
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
+        }
         return aoes[..max];
     }
 
@@ -131,6 +134,7 @@ sealed class BreathSequence(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.BreathSequenceFirstFront:
@@ -143,11 +147,13 @@ sealed class BreathSequence(BossModule module) : Components.GenericAOEs(module)
                     }
                     break;
             }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.BreathSequenceFirstFront:
@@ -159,6 +165,7 @@ sealed class BreathSequence(BossModule module) : Components.GenericAOEs(module)
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 }
 

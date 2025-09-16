@@ -40,14 +40,14 @@ sealed class TheFallingSkyCosmicKissEarthquake(BossModule module) : Components.S
 sealed class Towerfall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Towerfall, new AOEShapeRect(35f, 20f));
 sealed class TheBurningSkySpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TheBurningSkySpread, 6f);
 
-sealed class Meteors(BossModule module) : Components.GenericBaitAway(module)
+sealed class Meteors(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(10f);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Meteor)
-            CurrentBaits.Add(new(actor, actor, circle, WorldState.FutureTime(8.1d)));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, WorldState.FutureTime(8.1d)));
     }
 
     public override void OnActorCreated(Actor actor)
@@ -72,8 +72,8 @@ sealed class Meteors(BossModule module) : Components.GenericBaitAway(module)
             var act = baits[0].Activation;
             var center = Arena.Center;
             var dir = new WDir(default, 1f);
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(center, dir, 16f, 16f, 16f), act);
-            hints.AddForbiddenZone(ShapeDistance.Rect(center, dir, 14f, 14f, 134f), act);
+            hints.AddForbiddenZone(new SDInvertedRect(center, dir, 16f, 16f, 16f), act);
+            hints.AddForbiddenZone(new SDRect(center, dir, 14f, 14f, 134f), act);
         }
     }
 }

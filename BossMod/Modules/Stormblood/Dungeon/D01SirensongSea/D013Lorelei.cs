@@ -22,9 +22,9 @@ class VirginTearsArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly ArenaBoundsCircle smallerBounds = new(15.75f);
     private static readonly AOEShapeDonut donut = new(15.75f, 22);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEState(Actor actor, ushort state)
     {
@@ -35,7 +35,7 @@ class VirginTearsArenaChange(BossModule module) : Components.GenericAOEs(module)
         }
         else if (state == 0x002)
         {
-            _aoe = null;
+            _aoe = [];
             Arena.Bounds = smallerBounds;
             Arena.Center = D013Lorelei.ArenaCenter;
         }
@@ -46,7 +46,9 @@ class VirginTearsArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.VirginTears && Arena.Bounds == D013Lorelei.DefaultArena)
         {
             if (++NumCasts > 3)
-                _aoe = new(donut, D013Lorelei.ArenaCenter, default, Module.CastFinishAt(spell, 0.7f));
+            {
+                _aoe = [new(donut, D013Lorelei.ArenaCenter, default, Module.CastFinishAt(spell, 0.7d))];
+            }
         }
     }
 }
@@ -67,7 +69,7 @@ class MorbidAdvance(BossModule module) : Components.ActionDrivenForcedMarch(modu
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 
@@ -87,7 +89,7 @@ class MorbidRetreat(BossModule module) : Components.ActionDrivenForcedMarch(modu
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 
@@ -132,5 +134,5 @@ class D013LoreleiStates : StateMachineBuilder
 public class D013Lorelei(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultArena.Center, DefaultArena)
 {
     public static readonly WPos ArenaCenter = new(-44.5f, 465);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Circle(ArenaCenter, 21.6f)], [new Rectangle(new(-44.5f, 443), 20, 1)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Circle(ArenaCenter, 21.6f)], [new Rectangle(new(-44.5f, 443), 20, 1)]);
 }

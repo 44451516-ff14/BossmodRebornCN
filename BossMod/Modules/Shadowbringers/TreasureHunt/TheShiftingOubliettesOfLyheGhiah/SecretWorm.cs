@@ -68,7 +68,7 @@ class Bubble(BossModule module) : Components.GenericBaitAway(module)
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Baitaway)
-            CurrentBaits.Add(new(actor, actor, circle));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, WorldState.FutureTime(5d)));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -80,18 +80,30 @@ class Bubble(BossModule module) : Components.GenericBaitAway(module)
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (CurrentBaits.Count != 0 && CurrentBaits[0].Target == actor)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 17.5f));
+        if (CurrentBaits.Count != 0)
+        {
+            ref var b = ref CurrentBaits.Ref(0);
+            if (b.Target == actor)
+            {
+                hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f), b.Activation);
+            }
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (CurrentBaits.Count == 0)
+        {
             return;
-        if (CurrentBaits[0].Target != actor)
+        }
+        if (CurrentBaits.Ref(0).Target != actor)
+        {
             base.AddHints(slot, actor, hints);
+        }
         else
+        {
             hints.Add("Bait bubble away!");
+        }
     }
 }
 
@@ -110,17 +122,7 @@ class SecretWormStates : StateMachineBuilder
             .ActivateOnEnter<Bubble>()
             .ActivateOnEnter<Hydroburst>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(SecretWorm.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(SecretWorm.All);
     }
 }
 
@@ -134,7 +136,7 @@ public class SecretWorm(WorldState ws, Actor primary) : THTemplate(ws, primary)
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

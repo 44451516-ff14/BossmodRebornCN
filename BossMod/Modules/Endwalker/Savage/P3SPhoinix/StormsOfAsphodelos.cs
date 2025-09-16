@@ -42,7 +42,7 @@ class StormsOfAsphodelos(BossModule module) : BossComponent(module)
             }
         }
 
-        foreach (var twister in Module.Enemies(OID.DarkblazeTwister))
+        foreach (var twister in Module.Enemies((uint)OID.DarkblazeTwister))
         {
             var target = Raid.WithoutSlot(false, true, true).Closest(twister.Position);
             if (target == null)
@@ -104,7 +104,7 @@ class StormsOfAsphodelos(BossModule module) : BossComponent(module)
             }
         }
 
-        foreach (var (twister, target) in Module.Enemies(OID.DarkblazeTwister).Zip(_twisterTargets))
+        foreach (var (twister, target) in Module.Enemies((uint)OID.DarkblazeTwister).Zip(_twisterTargets))
         {
             _windsAOE.Draw(Arena, twister.Position, Angle.FromDirection(target.Position - twister.Position));
         }
@@ -112,7 +112,7 @@ class StormsOfAsphodelos(BossModule module) : BossComponent(module)
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var twister in Module.Enemies(OID.DarkblazeTwister))
+        foreach (var twister in Module.Enemies((uint)OID.DarkblazeTwister))
         {
             Arena.Actor(twister, Colors.Enemy, true);
         }

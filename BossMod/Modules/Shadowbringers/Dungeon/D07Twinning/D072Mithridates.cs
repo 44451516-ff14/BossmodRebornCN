@@ -61,6 +61,6 @@ sealed class D072MithridatesStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 655, NameID = 8165)]
 public sealed class D072Mithridates(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(200f, 68f), 19.5f * CosPI.Pi36th, 36)],
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(200f, 68f), 19.5f * CosPI.Pi36th, 36)],
     [new Rectangle(new(200f, 88f), 20f, 1.25f), new Rectangle(new(200, 48), 20f, 1.25f)]);
 }

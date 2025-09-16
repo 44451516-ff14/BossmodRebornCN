@@ -4,15 +4,17 @@
 // TODO: not all the wall is safe...
 abstract class FeralHowlHystericAssault(BossModule module, uint aidCast, uint aidAOE, double delay) : Components.GenericKnockback(module, aidAOE, stopAtWall: true)
 {
-    private Knockback? _source;
+    private Knockback[] _kb = [];
     private HuntersClaw? _aoe = module.FindComponent<HuntersClaw>();
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _source);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == aidCast)
-            _source = new(caster.Position, 30f, Module.CastFinishAt(spell, delay), ignoreImmunes: true);
+        {
+            _kb = [new(caster.Position, 30f, Module.CastFinishAt(spell, delay), ignoreImmunes: true)];
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -23,17 +25,19 @@ abstract class FeralHowlHystericAssault(BossModule module, uint aidCast, uint ai
         var count = _aoe.Casters.Count;
         if (count == 0)
             return;
-        if (_source is Knockback source)
+        if (_kb.Length != 0)
         {
             var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
             var pos = Module.PrimaryActor.Position;
+            ref var kb = ref _kb[0];
             for (var i = 0; i < count; ++i)
             {
-                var a = aoes[i].Origin;
-                forbidden[i] = ShapeDistance.Cone(pos, 100f, Module.PrimaryActor.AngleTo(a), Angle.Asin(8f / (a - pos).Length()));
+                ref var a = ref aoes[i];
+                var origin = a.Origin;
+                forbidden[i] = new SDCone(pos, 100f, Module.PrimaryActor.AngleTo(origin), Angle.Asin(8f / (origin - pos).Length()));
             }
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), source.Activation);
+            hints.AddForbiddenZone(new SDUnion(forbidden), kb.Activation);
         }
     }
 }

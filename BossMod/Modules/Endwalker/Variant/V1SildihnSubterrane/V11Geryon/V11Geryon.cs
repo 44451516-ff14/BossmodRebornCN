@@ -38,7 +38,7 @@ sealed class RunawaySludge(BossModule module) : Components.VoidzoneAtCastTarget(
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Geryon, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 868, NameID = 11442, SortOrder = 2, Category = BossModuleInfo.Category.VariantCriterion, Expansion = BossModuleInfo.Expansion.Endwalker)]
-public sealed class V11Geryon(WorldState ws, Actor primary) : BossModule(ws, primary, primary.Position.X is var X && X < -150f ? arenaCenter1 : X > 100f ? ArenaCenter3 : default,
+public sealed class V11Geryon(WorldState ws, Actor primary) : BossModule(ws, primary, primary.PosRot.X is var X && X < -150f ? arenaCenter1 : X > 100f ? ArenaCenter3 : default,
 X < -150f ? new ArenaBoundsSquare(24.5f) : new ArenaBoundsSquare(19.5f))
 {
     private static readonly WPos arenaCenter1 = new(-213f, 101f);

@@ -82,5 +82,5 @@ public class D031Garula(WorldState ws, Actor primary) : BossModule(ws, primary, 
     new(-12.45f, 230.66f), new(-12.03f, 230.31f), new(-9.34f, 228.28f), new(-8.9f, 228), new(-6.05f, 226.45f),
     new(-5.58f, 226.21f), new(-3.53f, 225.55f), new(-2.96f, 225.33f), new(-1.87f, 224.98f), new(-1.31f, 224.82f),
     new(-0.79f, 224.75f), new(-0.24f, 224.57f), new(0.13f, 224.07f), new(5.77f, 224.07f), new(7.73f, 224.02f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

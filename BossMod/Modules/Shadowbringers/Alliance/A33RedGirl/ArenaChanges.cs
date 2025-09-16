@@ -3,7 +3,7 @@ namespace BossMod.Shadowbringers.Alliance.A33RedGirl;
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private WipeBlackWhite? _wipe;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private DateTime activation;
     private static readonly Angle am90 = -89.9802f.Degrees();
     public readonly (WPos position, Angle rotation, bool? isWhite)[] Walls =
@@ -40,7 +40,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     private bool isDefaultArena;
     public int NumWalls;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -52,7 +52,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                     if (state == 0x00020001u)
                     {
                         activation = WorldState.FutureTime(3d);
-                        _aoe = new(A33RedGirl.ArenaTransition, Arena.Center, default, activation);
+                        _aoe = [new(A33RedGirl.ArenaTransition, Arena.Center, default, activation)];
                     }
                     else if (state == 0x00080004u)
                     {
@@ -81,7 +81,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
                     _wipe ??= Module.FindComponent<WipeBlackWhite>();
                     _wipe?.UpdateAOE();
-                    Arena.Bounds = new ArenaBoundsComplex(isDefaultArena ? A33RedGirl.DefaultSquare : A33RedGirl.BigSquare, [.. differenceShapes]);
+                    Arena.Bounds = new ArenaBoundsCustom(isDefaultArena ? A33RedGirl.DefaultSquare : A33RedGirl.BigSquare, [.. differenceShapes]);
                     break;
             }
         }
@@ -89,9 +89,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     public override void Update()
     {
-        if (_aoe != null && activation < WorldState.CurrentTime)
+        if (_aoe.Length != 0 && activation < WorldState.CurrentTime)
         {
-            _aoe = null;
+            _aoe = [];
             Arena.Bounds = A33RedGirl.DefaultArena;
             isDefaultArena = true;
         }

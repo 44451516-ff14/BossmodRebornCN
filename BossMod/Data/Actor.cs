@@ -25,7 +25,7 @@ public enum ActorType : ushort
     CardStand = 0xE00,
 }
 
-public sealed record class ActorCastInfo
+public sealed class ActorCastInfo
 {
     public const float NPCFinishDelay = 0.3f; // for whatever reason, npc spells have reported remaining cast time consistently 0.3s smaller than reality
 
@@ -46,11 +46,22 @@ public sealed record class ActorCastInfo
 
     public bool IsSpell() => Action.Type == ActionType.Spell;
     public bool IsSpell<AID>(AID aid) where AID : Enum => Action == ActionID.MakeSpell(aid);
+
+    public ActorCastInfo Clone() => (ActorCastInfo)MemberwiseClone();
 }
 
 // note: 'main' target could be completely different and unrelated to actual affected targets
-public sealed record class ActorCastEvent(ActionID Action, ulong MainTargetID, float AnimationLockTime, uint MaxTargets, Vector3 TargetPos, uint GlobalSequence, uint SourceSequence, Angle Rotation)
+public sealed class ActorCastEvent(ActionID action, ulong mainTargetID, float animationLockTime, uint maxTargets, Vector3 targetPos, uint globalSequence, uint sourceSequence, Angle rotation)
 {
+    public readonly ActionID Action = action;
+    public readonly ulong MainTargetID = mainTargetID;
+    public readonly float AnimationLockTime = animationLockTime;
+    public readonly uint MaxTargets = maxTargets;
+    public readonly Vector3 TargetPos = targetPos;
+    public readonly uint GlobalSequence = globalSequence;
+    public readonly uint SourceSequence = sourceSequence;
+    public readonly Angle Rotation = rotation;
+
     public readonly struct Target(ulong id, ActionEffects effects)
     {
         public readonly ulong ID = id;
@@ -65,23 +76,102 @@ public sealed record class ActorCastEvent(ActionID Action, ulong MainTargetID, f
     public bool IsSpell<AID>(AID aid) where AID : Enum => Action == ActionID.MakeSpell(aid);
 }
 
-public record struct ActorHPMP(uint CurHP, uint MaxHP, uint Shield, uint CurMP, uint MaxMP);
+public struct ActorHPMP(uint curHP, uint maxHP, uint shield, uint curMP, uint maxMP)
+{
+    public uint CurHP = curHP;
+    public uint MaxHP = maxHP;
+    public uint Shield = shield;
+    public uint CurMP = curMP;
+    public uint MaxMP = maxMP;
+
+    public static bool operator ==(ActorHPMP left, ActorHPMP right) => left.CurHP == right.CurHP && left.MaxHP == right.MaxHP && left.Shield == right.Shield && left.CurMP == right.CurMP && left.MaxMP == right.MaxMP;
+    public static bool operator !=(ActorHPMP left, ActorHPMP right) => left.CurHP != right.CurHP || left.MaxHP != right.MaxHP || left.Shield != right.Shield || left.CurMP != right.CurMP || left.MaxMP != right.MaxMP;
+
+    public readonly bool Equals(ActorHPMP other) => this == other;
+    public override readonly bool Equals(object? obj) => obj is ActorHPMP other && Equals(other);
+    public override readonly int GetHashCode() => (CurHP, MaxHP, Shield, CurMP, MaxMP).GetHashCode();
+}
 
 // note on tethers - it is N:1 type of relation, actor can be tethered to 0 or 1 actors, but can itself have multiple actors tethering themselves to itself
 // target is an instance id
-public record struct ActorTetherInfo(uint ID, ulong Target);
+public readonly struct ActorTetherInfo(uint id, ulong target)
+{
+    public readonly uint ID = id;
+    public readonly ulong Target = target;
+}
 
-public record struct ActorStatus(uint ID, ushort Extra, DateTime ExpireAt, ulong SourceID);
+public struct ActorStatus(uint id, ushort extra, DateTime expireAt, ulong sourceID)
+{
+    public readonly uint ID = id;
+    public readonly ushort Extra = extra;
+    public DateTime ExpireAt = expireAt;
+    public readonly ulong SourceID = sourceID;
+}
 
-public record struct ActorModelState(byte ModelState, byte AnimState1, byte AnimState2);
+public readonly struct ActorModelState(byte modelState, byte animState1, byte animState2)
+{
+    public readonly byte ModelState = modelState;
+    public readonly byte AnimState1 = animState1;
+    public readonly byte AnimState2 = animState2;
 
-public record struct ActorForayInfo(byte Level, byte Element);
+    public static bool operator ==(ActorModelState left, ActorModelState right) => left.ModelState == right.ModelState && left.AnimState1 == right.AnimState1 && left.AnimState2 == right.AnimState2;
+    public static bool operator !=(ActorModelState left, ActorModelState right) => left.ModelState != right.ModelState || left.AnimState1 != right.AnimState1 || left.AnimState2 != right.AnimState2;
 
-public readonly record struct ActorIncomingEffect(uint GlobalSequence, int TargetIndex, ulong SourceInstanceId, ActionID Action, ActionEffects Effects);
-public record struct PendingEffect(uint GlobalSequence, int TargetIndex, ulong SourceInstanceId, DateTime Expiration);
-public record struct PendingEffectDelta(PendingEffect Effect, int Value);
-public record struct PendingEffectStatus(PendingEffect Effect, uint StatusId);
-public record struct PendingEffectStatusExtra(PendingEffect Effect, uint StatusId, byte ExtraLo);
+    public readonly bool Equals(ActorModelState other) => this == other;
+    public override readonly bool Equals(object? obj) => obj is ActorModelState other && Equals(other);
+    public override readonly int GetHashCode() => (ModelState, AnimState1, AnimState2).GetHashCode();
+
+    public override string ToString() => $"ModelState: {ModelState}, AnimState1: {AnimState1}, AnimState2: {AnimState2}";
+}
+
+public readonly struct ActorForayInfo(byte level, byte element)
+{
+    public readonly byte Level = level;
+    public readonly byte Element = element;
+
+    public static bool operator ==(ActorForayInfo left, ActorForayInfo right) => left.Level == right.Level && left.Element == right.Element;
+    public static bool operator !=(ActorForayInfo left, ActorForayInfo right) => left.Level != right.Level || left.Element != right.Element;
+
+    public readonly bool Equals(ActorForayInfo other) => this == other;
+    public override readonly bool Equals(object? obj) => obj is ActorForayInfo other && Equals(other);
+    public override readonly int GetHashCode() => (Level, Element).GetHashCode();
+}
+
+public readonly struct ActorIncomingEffect(uint globalSequence, int targetIndex, ulong sourceInstanceID, ActionID action, ActionEffects effects)
+{
+    public readonly uint GlobalSequence = globalSequence;
+    public readonly int TargetIndex = targetIndex;
+    public readonly ulong SourceInstanceID = sourceInstanceID;
+    public readonly ActionID Action = action;
+    public readonly ActionEffects Effects = effects;
+}
+
+public readonly struct PendingEffect(uint globalSequence, int targetIndex, ulong sourceInstanceID, DateTime expiration)
+{
+    public readonly uint GlobalSequence = globalSequence;
+    public readonly int TargetIndex = targetIndex;
+    public readonly ulong SourceInstanceID = sourceInstanceID;
+    public readonly DateTime Expiration = expiration;
+}
+
+public readonly struct PendingEffectDelta(PendingEffect effect, int value)
+{
+    public readonly PendingEffect Effect = effect;
+    public readonly int Value = value;
+}
+
+public readonly struct PendingEffectStatus(PendingEffect effect, uint statusId)
+{
+    public readonly PendingEffect Effect = effect;
+    public readonly uint StatusId = statusId;
+}
+
+public readonly struct PendingEffectStatusExtra(PendingEffect effect, uint statusId, byte extraLo)
+{
+    public readonly PendingEffect Effect = effect;
+    public readonly uint StatusId = statusId;
+    public readonly byte ExtraLo = extraLo;
+}
 
 public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layoutID, string name, uint nameID, ActorType type, Class classID, int level, Vector4 posRot, float hitboxRadius = 1f, ActorHPMP hpmp = default, bool targetable = true, bool ally = false, ulong ownerID = default, uint fateID = default, int renderflags = 0)
 {
@@ -114,8 +204,10 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layou
     public int Renderflags = renderflags; // renderflags = 0 means visible, higher values seem to be invisible actors
     public ActorCastInfo? CastInfo;
     public ActorTetherInfo Tether;
-    public ActorStatus[] Statuses = new ActorStatus[60]; // empty slots have ID=0
-    public ActorIncomingEffect[] IncomingEffects = new ActorIncomingEffect[32];
+    public const int NumStatuses = 60;
+    public ActorStatus[] Statuses = new ActorStatus[NumStatuses]; // empty slots have ID=0
+    public const int NumIncomingEffects = 32;
+    public ActorIncomingEffect[] IncomingEffects = new ActorIncomingEffect[NumIncomingEffects];
 
     // all pending lists are sorted by expiration time
     public List<PendingEffectDelta> PendingHPDifferences = []; // damage and heal effects applied to the target that were not confirmed yet
@@ -182,25 +274,57 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layou
     // if expirationForPredicted is not null, search pending first, and return one if found; in that case only low byte of extra will be set
     public ActorStatus? FindStatus(uint sid, DateTime? expirationForPending = null)
     {
+        var sid_ = sid;
         if (expirationForPending != null)
-            foreach (ref var s in PendingStatuses.AsSpan())
-                if (s.StatusId == sid)
-                    return new(sid, s.ExtraLo, expirationForPending.Value, s.Effect.SourceInstanceId);
-        foreach (ref var s in Statuses.AsSpan())
-            if (s.ID == sid)
+        {
+            var statusesP = CollectionsMarshal.AsSpan(PendingStatuses);
+            var lenP = statusesP.Length;
+            for (var i = 0; i < lenP; ++i)
+            {
+                ref var s = ref statusesP[i];
+                if (s.StatusId == sid_)
+                {
+                    return new(sid, s.ExtraLo, expirationForPending.Value, s.Effect.SourceInstanceID);
+                }
+            }
+        }
+        var len = Statuses.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var s = ref Statuses[i];
+            if (s.ID == sid_)
+            {
                 return s;
+            }
+        }
         return null;
     }
 
     public ActorStatus? FindStatus(uint sid, ulong source, DateTime? expirationForPending = null)
     {
+        var sid_ = sid;
         if (expirationForPending != null)
-            foreach (ref var s in PendingStatuses.AsSpan())
-                if (s.StatusId == sid && s.Effect.SourceInstanceId == source)
-                    return new(sid, s.ExtraLo, expirationForPending.Value, s.Effect.SourceInstanceId);
-        foreach (ref var s in Statuses.AsSpan())
-            if (s.ID == sid && s.SourceID == source)
+        {
+            var statusesP = CollectionsMarshal.AsSpan(PendingStatuses);
+            var lenP = statusesP.Length;
+            for (var i = 0; i < lenP; ++i)
+            {
+                ref var s = ref statusesP[i];
+                if (s.StatusId == sid_ && s.Effect.SourceInstanceID == source)
+                {
+                    return new(sid_, s.ExtraLo, expirationForPending.Value, s.Effect.SourceInstanceID);
+                }
+            }
+        }
+        var len = Statuses.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var s = ref Statuses[i];
+            if (s.ID == sid_ && s.SourceID == source)
+            {
                 return s;
+            }
+        }
         return null;
     }
 

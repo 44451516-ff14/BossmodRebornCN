@@ -161,9 +161,9 @@ sealed class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
                 AssignTether(source, Raid.FindSlot(tether.Target), false);
                 break;
             case (uint)TetherID.UnnaturalEnchainment:
-                if (source.Position.Z < 90f)
+                if (source.PosRot.Z < 90f)
                 {
-                    _topLeftSafe = source.Position.X > Arena.Center.X;
+                    _topLeftSafe = source.PosRot.X > Arena.Center.X;
                     AdvanceMechanic(Mechanic.FixedTowers);
                 }
                 break;
@@ -223,8 +223,8 @@ sealed class EngravementOfSouls3Hints(BossModule module) : BossComponent(module)
 
     private void AssignTether(Actor source, int slot, bool light)
     {
-        var stayLeft = source.Position.X > Arena.Center.X;
-        var stayTop = source.Position.Z > Arena.Center.Z;
+        var stayLeft = source.PosRot.X > Arena.Center.X;
+        var stayTop = source.PosRot.Z > Arena.Center.Z;
         SetState(slot, stayLeft ? (stayTop ? PlayerState.TetherTL : PlayerState.TetherBL) : (stayTop ? PlayerState.TetherTR : PlayerState.TetherBR));
 
         var lightStayLeft = stayLeft == light;

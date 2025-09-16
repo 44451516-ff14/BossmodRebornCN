@@ -49,7 +49,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeCustom square = new([new Square(ArenaCenter, 25f)], defaultSquare);
     private const float XWest2 = -187.5f, XEast2 = -156.5f;
     private const float XWest1 = -192f, XEast1 = -152f, ZRow1 = -127f, ZRow2 = -137f, ZRow3 = -147f, ZRow4 = -157f;
-    public static readonly Dictionary<byte, ArenaBoundsComplex> ArenaBoundsMap = InitializeArenaBounds();
+    public static readonly Dictionary<byte, ArenaBoundsCustom> ArenaBoundsMap = InitializeArenaBounds();
     private static RectangleSE[] CreateRows(float x1, float x2)
     => [
         new(new(x1, ZRow4), new(x2, ZRow4), HalfWidth),
@@ -57,12 +57,12 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         new(new(x1, ZRow2), new(x2, ZRow2), HalfWidth),
         new(new(x1, ZRow1), new(x2, ZRow1), HalfWidth),
     ];
-    private static Dictionary<byte, ArenaBoundsComplex> InitializeArenaBounds()
+    private static Dictionary<byte, ArenaBoundsCustom> InitializeArenaBounds()
     {
         var westRows = CreateRows(XWest1, XWest2);
         var eastRows = CreateRows(XEast1, XEast2);
 
-        return new Dictionary<byte, ArenaBoundsComplex>
+        return new Dictionary<byte, ArenaBoundsCustom>
         {
             { 0x2A, new(defaultSquare, [westRows[1], westRows[3]]) },
             { 0x1B, new(defaultSquare, [westRows[1], westRows[3], eastRows[0], eastRows[2]]) },
@@ -75,15 +75,15 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         };
     }
 
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds == StartingBounds)
         {
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7d));
+            _aoe = [new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7d))];
         }
     }
 
@@ -92,11 +92,13 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         if (state == 0x00020001u)
         {
             if (ArenaBoundsMap.TryGetValue(index, out var value))
+            {
                 Arena.Bounds = value;
+            }
             else if (index == 0x12)
             {
                 Arena.Bounds = defaultBounds;
-                _aoe = null;
+                _aoe = [];
             }
         }
         else if (state == 0x00080004u)
@@ -113,7 +115,7 @@ sealed class Electray(BossModule module) : Components.SpreadFromCastTargets(modu
 
 sealed class Surge(BossModule module) : Components.GenericKnockback(module)
 {
-    public readonly List<Knockback> SourcesList = new(2);
+    private readonly List<Knockback> _kbs = new(2);
     private const float XWest = -187.5f, XEast = -156.5f;
     private const float ZRow1 = -122f, ZRow2 = -132f, ZRow3 = -142f, ZRow4 = -152f, ZRow5 = -162f;
     private static readonly WDir offset = new(4f, default);
@@ -127,17 +129,17 @@ sealed class Surge(BossModule module) : Components.GenericKnockback(module)
     new(new(XEast, ZRow3), new(XEast, ZRow4)), new(new(XEast, ZRow1), new(XEast, ZRow2))];
     private static readonly AOEShapeCone _shape = new(60f, 90f.Degrees());
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(SourcesList);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_kbs);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         void AddSource(Angle offset, SafeWall[] safeWalls)
-            => SourcesList.Add(new(caster.Position, 30f, Module.CastFinishAt(spell), _shape, spell.Rotation + offset, Kind.DirForward, default, safeWalls));
+            => _kbs.Add(new(caster.Position, 30f, Module.CastFinishAt(spell), _shape, spell.Rotation + offset, Kind.DirForward, default, safeWalls));
         if (spell.Action.ID == (uint)AID.Surge)
         {
             var safewalls = GetActiveSafeWalls();
-            AddSource(90.Degrees(), safewalls);
-            AddSource(-90.Degrees(), safewalls);
+            AddSource(90f.Degrees(), safewalls);
+            AddSource(-90f.Degrees(), safewalls);
         }
     }
 
@@ -163,23 +165,25 @@ sealed class Surge(BossModule module) : Components.GenericKnockback(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Surge)
-            SourcesList.Clear();
+        {
+            _kbs.Clear();
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (SourcesList.Count != 0)
+        if (_kbs.Count != 0)
         {
             var safewalls = GetActiveSafeWalls();
-            var forbidden = new List<Func<WPos, float>>(4);
+            var forbidden = new ShapeDistance[4];
 
             var centerX = Arena.Center.X;
             for (var i = 0; i < 4; ++i)
             {
                 var safeWall = safewalls[i];
-                forbidden.Add(ShapeDistance.InvertedRect(new(centerX, safeWall.Vertex1.Z - 5f), safeWall.Vertex1.X == XWest ? -offset : offset, 10f, default, 20f));
+                forbidden[i] = new SDInvertedRect(new(centerX, safeWall.Vertex1.Z - 5f), safeWall.Vertex1.X == XWest ? -offset : offset, 10f, default, 20f);
             }
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), SourcesList[0].Activation);
+            hints.AddForbiddenZone(new SDIntersection(forbidden), _kbs.Ref(0).Activation);
         }
     }
 }
@@ -218,9 +222,11 @@ sealed class SurgeHint(BossModule module) : Components.GenericAOEs(module)
         if (count != 0)
         {
             var isPositionSafe = false;
+            var hintz = CollectionsMarshal.AsSpan(_hints);
             for (var i = 0; i < count; ++i)
             {
-                if (_hints[i].Check(actor.Position))
+                ref var hint = ref hintz[i];
+                if (hint.Check(actor.Position))
                 {
                     isPositionSafe = true;
                     break;
@@ -248,7 +254,7 @@ sealed class D052DeceiverStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12693, SortOrder = 3)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 825, NameID = 12693, SortOrder = 3)]
 public sealed class D052Deceiver(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChanges.ArenaCenter, ArenaChanges.StartingBounds)
 {
     private static readonly uint[] adds = [(uint)OID.OrigenicsSentryG92, (uint)OID.OrigenicsSentryG91];
@@ -256,6 +262,6 @@ public sealed class D052Deceiver(WorldState ws, Actor primary) : BossModule(ws, 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 }

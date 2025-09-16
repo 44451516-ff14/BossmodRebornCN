@@ -22,23 +22,23 @@ class Pangenesis(BossModule module) : Components.GenericTowers(module)
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        switch ((SID)status.ID)
+        switch (status.ID)
         {
-            case SID.UnstableFactor:
+            case (uint)SID.UnstableFactor:
                 if (Raid.FindSlot(actor.InstanceID) is var slotUnstable && slotUnstable >= 0)
                 {
                     _states[slotUnstable].UnstableCount = status.Extra;
                 }
                 break;
-            case SID.UmbralTilt:
-            case SID.AstralTilt:
+            case (uint)SID.UmbralTilt:
+            case (uint)SID.AstralTilt:
                 if (Raid.FindSlot(actor.InstanceID) is var slotColor && slotColor >= 0)
                 {
-                    _states[slotColor].Color = (SID)status.ID == SID.UmbralTilt ? Color.Light : Color.Dark;
+                    _states[slotColor].Color = status.ID == (uint)SID.UmbralTilt ? Color.Light : Color.Dark;
                     _states[slotColor].ColorExpire = status.ExpireAt;
 
                     // update forbidden towers
-                    var isLeft = actor.Position.X < Arena.Center.X;
+                    var isLeft = actor.PosRot.X < Arena.Center.X;
                     for (var i = 0; i < Towers.Count; ++i)
                     {
                         ref var tower = ref Towers.Ref(i);
@@ -54,11 +54,11 @@ class Pangenesis(BossModule module) : Components.GenericTowers(module)
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID is AID.UmbralAdvent or AID.AstralAdvent)
+        if (spell.Action.ID is (uint)AID.UmbralAdvent or (uint)AID.AstralAdvent)
         {
-            var isLight = (AID)spell.Action.ID == AID.UmbralAdvent;
-            var isLeft = caster.Position.X < Arena.Center.X;
-            var isPrimary = caster.Position.Z > 90; // first tower at 91, second/third same color is 94, opposite is 88
+            var isLight = spell.Action.ID == (uint)AID.UmbralAdvent;
+            var isLeft = caster.PosRot.X < Arena.Center.X;
+            var isPrimary = caster.PosRot.Z > 90f; // first tower at 91, second/third same color is 94, opposite is 88
             var towerColor = isLight ? Color.Light : Color.Dark;
 
             if (_firstLeftTower == Color.None)
@@ -98,10 +98,10 @@ class Pangenesis(BossModule module) : Components.GenericTowers(module)
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.UmbralAdvent or AID.AstralAdvent)
+        if (spell.Action.ID is (uint)AID.UmbralAdvent or (uint)AID.AstralAdvent)
         {
             ++NumCasts;
-            var index = Towers.FindIndex(t => t.Position.AlmostEqual(caster.Position, 1));
+            var index = Towers.FindIndex(t => t.Position.AlmostEqual(caster.Position, 1f));
             if (index >= 0)
             {
                 Towers.RemoveAt(index);
@@ -114,8 +114,8 @@ class Pangenesis(BossModule module) : Components.GenericTowers(module)
                 if (slot >= 0)
                 {
                     _states[slot].Color = Color.None;
-                    _states[slot].AssignedSide = caster.Position.X < Arena.Center.X ? -1 : 1; // ensure correct side is assigned
-                    _states[slot].SoakedPrimary = caster.Position.Z > 90;
+                    _states[slot].AssignedSide = caster.PosRot.X < Arena.Center.X ? -1 : 1; // ensure correct side is assigned
+                    _states[slot].SoakedPrimary = caster.PosRot.Z > 90f;
                 }
             }
         }
@@ -134,13 +134,13 @@ class FactorIn(BossModule module) : Components.GenericBaitAway(module, (uint)AID
         foreach (var s in _slimes)
         {
             Arena.Actor(s.source, Colors.Object, true);
-            Arena.AddLine(s.source.Position, s.target.Position, Colors.Danger);
+            Arena.AddLine(s.source.Position, s.target.Position);
         }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
-        if ((SID)status.ID == SID.CriticalFactor)
+        if (status.ID == (uint)SID.CriticalFactor)
             ForbiddenPlayers.Set(Raid.FindSlot(actor.InstanceID));
     }
 

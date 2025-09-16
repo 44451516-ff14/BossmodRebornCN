@@ -35,8 +35,8 @@ public enum AID : uint
 }
 
 class DemifireII(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DemifireII);
-class ElectrogeneticForce(BossModule module) : Components.CastTowers(module, (uint)AID.ElectrogeneticForce, 6);
-class RawRockbreaker(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10), new AOEShapeDonut(10, 20)])
+class ElectrogeneticForce(BossModule module) : Components.CastTowers(module, (uint)AID.ElectrogeneticForce, 6f);
+class RawRockbreaker(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -46,24 +46,24 @@ class RawRockbreaker(BossModule module) : Components.ConcentricAOEs(module, [new
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        var order = (AID)spell.Action.ID switch
+        var order = spell.Action.ID switch
         {
-            AID.RawRockbreaker1 => 0,
-            AID.RawRockbreaker2 => 1,
+            (uint)AID.RawRockbreaker1 => 0,
+            (uint)AID.RawRockbreaker2 => 1,
             _ => -1
         };
-        AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2));
+        AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2d));
     }
 }
 
 class ChiBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.ChiBlast);
-class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6);
-class ArmOfTheScholar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArmOfTheScholar, 5);
+class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6f);
+class ArmOfTheScholar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ArmOfTheScholar, 5f);
 
-class ClassicalFire(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ClassicalFire, 6);
-class ClassicalThunder(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ClassicalThunder, 6);
-class ClassicalBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ClassicalBlizzard, 6);
-class ClassicalStone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ClassicalStone, 15);
+class ClassicalFire(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ClassicalFire, 6f);
+class ClassicalThunder(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ClassicalThunder, 6f);
+class ClassicalBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ClassicalBlizzard, 6f);
+class ClassicalStone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ClassicalStone, 15f);
 
 class AncelAndMahaudStates : StateMachineBuilder
 {
@@ -86,10 +86,10 @@ class AncelAndMahaudStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69608, NameID = 10732)]
 public class AncelAndMahaud(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
 {
-    public static readonly ArenaBoundsComplex ArenaBounds = new([new Polygon(new(224.8f, -855.8f), 19.5f, 20)]);
+    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(new(224.8f, -855.8f), 19.5f, 20)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies([(uint)OID.Boss, (uint)OID.MahaudFlamehand]));
+        Arena.Actors(this, [(uint)OID.Boss, (uint)OID.MahaudFlamehand]);
     }
 }

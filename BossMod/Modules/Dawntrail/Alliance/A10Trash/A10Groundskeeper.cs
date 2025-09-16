@@ -26,21 +26,11 @@ public sealed class A10GroundskeeperStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<IsleDrop>()
             .ActivateOnEnter<MysteriousLight>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(A10Groundskeeper.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(A10Groundskeeper.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13607, SortOrder = 5)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1015, NameID = 13607, SortOrder = 5)]
 public sealed class A10Groundskeeper(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-544.28f, -642.15f), new(-532, -635.01f), new(-531.47f, -634.52f), new(-531.58f, -634), new(-547.79f, -595.87f),
@@ -61,11 +51,11 @@ public sealed class A10Groundskeeper(WorldState ws, Actor primary) : BossModule(
     new(-558.2f, -612.25f), new(-562.33f, -614f), new(-562.88f, -614.49f), new(-561.34f, -618.12f), new(-561.07f, -618.57f),
     new(-557.2f, -616.93f), new(-556.69f, -616.59f), new(-556.17f, -616.37f), new(-555.61f, -616.44f), new(-555.32f, -616.94f),
     new(-544.54f, -642.34f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Groundskeeper, (uint)OID.Sprinkler];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

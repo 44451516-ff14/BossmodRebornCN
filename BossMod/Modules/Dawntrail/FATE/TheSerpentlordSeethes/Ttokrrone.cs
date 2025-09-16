@@ -98,7 +98,7 @@ sealed class TtokrroneStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Fate, GroupID = 1871, NameID = 12733)]
 public sealed class Ttokrrone(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(53f, -820f), 29.5f, 48)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(53f, -820f), 29.5f, 48)]);
 
     protected override bool CheckPull() => base.CheckPull() && (arena.Center - Raid.Player()!.Position).LengthSq() < 900f;
 }

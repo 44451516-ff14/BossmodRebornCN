@@ -142,18 +142,7 @@ sealed class Stage06Act2States : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<ColdStare>()
             .ActivateOnEnter<DreadGaze>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(Stage06Act2.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(Stage06Act2.Trash);
     }
 }
 
@@ -168,18 +157,7 @@ public sealed class Stage06Act2 : BossModule
     }
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Mandragora, (uint)OID.Eye];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

@@ -86,14 +86,17 @@ class Breakthrough(BossModule module) : Components.GenericAOEs(module)
         var count = _aoes.Count;
         if (count != 0)
         {
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                var aoe = _aoes[i];
+                ref var aoe = ref aoes[i];
                 if (aoe.Shape is AOEShapeRect shape)
-                    forbidden[i] = (shape with { InvertForbiddenZone = true }).Distance(aoe.Origin, aoe.Rotation);
+                {
+                    forbidden[i] = shape.InvertedDistance(aoe.Origin, aoe.Rotation);
+                }
             }
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), _aoes[0].Activation);
+            hints.AddForbiddenZone(new SDUnion(forbidden), aoes[0].Activation);
         }
     }
 
@@ -174,7 +177,7 @@ class Uplift(BossModule module) : Components.ConcentricAOEs(module, [new AOEShap
                 (uint)AID.Uplift3 => 2,
                 _ => -1
             };
-            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2));
+            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(2d));
         }
     }
 }
@@ -187,11 +190,11 @@ class BombTether(BossModule module) : Components.InterceptTetherAOE(module, (uin
         {
             base.AddAIHints(slot, actor, assignment, hints);
             var tether = Tethers[0];
-            if (tether.Player != Module.Raid.Player())
+            if (tether.Player != Raid.Player())
             {
                 var source = tether.Enemy;
                 var target = Module.Enemies((uint)OID.Alphinaud)[0];
-                hints.AddForbiddenZone(ShapeDistance.InvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f), Activation);
+                hints.AddForbiddenZone(new SDInvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f), Activation);
             }
         }
     }
@@ -231,12 +234,12 @@ public class SecondOrderRocksplitterStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69551)]
 public class SecondOrderRocksplitter(WorldState ws, Actor primary) : BossModule(ws, primary, default, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(default, 26.5f, 24)]);
-    private static readonly uint[] opponents = [(uint)OID.Grenade1, (uint)OID.Grenade2, (uint)OID.SecondOrderRoundsman, (uint)OID.SecondOrderRocksplitter, (uint)OID.SecondOrderPickman,
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(default, 26.5f, 24)]);
+    private static readonly uint[] all = [(uint)OID.Grenade1, (uint)OID.Grenade2, (uint)OID.SecondOrderRoundsman, (uint)OID.SecondOrderRocksplitter, (uint)OID.SecondOrderPickman,
     (uint)OID.SecondOrderAlchemist, (uint)OID.Bomb, (uint)OID.Construct2, (uint)OID.OghomoroGolem];
 
     protected override bool CheckPull() => Raid.Player()!.InCombat;
-    protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(Enemies(opponents));
+    protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(this, all);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

@@ -73,7 +73,7 @@ class RestraintCollar(BossModule module) : BossComponent(module)
         var collar = Module.Enemies((uint)OID.RestraintCollar);
         var ironchain = collar.Count != 0 ? collar[0] : null;
         if (ironchain != null && ironchain.IsTargetable && !ironchain.IsDead)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(ironchain.Position, ironchain.HitboxRadius + 2.6f));
+            hints.AddForbiddenZone(new SDInvertedCircle(ironchain.Position, ironchain.HitboxRadius + 2.6f));
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -191,7 +191,7 @@ public class D173TheGriffin(WorldState ws, Actor primary) : BossModule(ws, prima
     new(351.78f, 411.41f), new(345.79f, 410.4f), new(340.31f, 407.53f), new(336.34f, 403.55f), new(336.04f, 403.15f),
     new(333.33f, 397.71f), new(332.43f, 391.68f), new(333.47f, 385.6f), new(336.27f, 380.21f), new(340.49f, 376),
     new(346.04f, 373.23f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

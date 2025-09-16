@@ -28,24 +28,11 @@ sealed class D90SprightlyPhoebadStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<Landslip>()
             .ActivateOnEnter<Plummet>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D90SprightlyPhoebad.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D90SprightlyPhoebad.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13580, SortOrder = 7)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13580, SortOrder = 7)]
 public sealed class D90SprightlyPhoebad(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(123.42f, -297.25f), new(123.17f, -290.97f), new(123.59f, -290.57f), new(125.1f, -289.46f), new(123.03f, -284.58f),
@@ -68,40 +55,21 @@ public sealed class D90SprightlyPhoebad(WorldState ws, Actor primary) : BossModu
     new(105.71f, -284.13f), new(106, -284.66f), new(106.49f, -285.86f), new(107.56f, -287.51f), new(108.05f, -288.7f),
     new(108.36f, -289.32f), new(108.72f, -289.86f), new(108.89f, -290.36f), new(110.23f, -292.79f), new(110.57f, -293.24f),
     new(110.83f, -293.82f), new(111.77f, -295.5f), new(112.26f, -296.71f), new(113.35f, -298.45f), new(113.98f, -298.78f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.SprightlyMole, (uint)OID.SprightlyStone, (uint)OID.SprightlyLoamkeep];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
-
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

@@ -3,9 +3,9 @@ namespace BossMod.Dawntrail.Savage.M07SBruteAbombinator;
 sealed class GlowerPower(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(65f, 7f);
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -13,7 +13,7 @@ sealed class GlowerPower(BossModule module) : Components.GenericAOEs(module)
         {
             case (uint)AID.BrutishSwingCone1:
             case (uint)AID.BrutishSwingDonutSegment2:
-                AddAOE(spell, 4.8f);
+                AddAOE(spell, 4.8d);
                 break;
             case (uint)AID.GlowerPower1:
             case (uint)AID.GlowerPower2:
@@ -28,16 +28,16 @@ sealed class GlowerPower(BossModule module) : Components.GenericAOEs(module)
         {
             case (uint)AID.GlowerPower1:
             case (uint)AID.GlowerPower2:
-                AOE = null;
+                AOE = [];
                 break;
             case (uint)AID.BrutishSwingCone2:
             case (uint)AID.BrutishSwingDonutSegment1:
-                AddAOE(spell, 3f);
+                AddAOE(spell, 3d);
                 break;
         }
     }
 
-    private void AddAOE(ActorCastInfo spell, float delay = default) => AOE = new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, delay));
+    private void AddAOE(ActorCastInfo spell, double delay = default) => AOE = [new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, delay))];
 }
 
 sealed class ElectrogeneticForce(BossModule module) : Components.GenericStackSpread(module, true, raidwideOnResolve: false)

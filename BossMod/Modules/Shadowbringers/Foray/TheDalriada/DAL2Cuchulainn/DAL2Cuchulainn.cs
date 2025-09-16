@@ -20,5 +20,5 @@ sealed class FellFlowBait(BossModule module) : Components.BaitAwayIcon(module, n
 public sealed class DAL2Cuchulainn(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(650f, -187.4f);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 25.199f, 48)], [new Rectangle(new(650f, -162f), 20f, 1.25f), new Rectangle(new(650f, -213f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 25.199f, 48)], [new Rectangle(new(650f, -162f), 20f, 1.25f), new Rectangle(new(650f, -213f), 20f, 1.25f)]);
 }

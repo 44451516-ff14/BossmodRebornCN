@@ -62,16 +62,16 @@ class Ex2GarudaAI(BossModule module) : BossComponent(module)
 
         // don't stand near monoliths to avoid clipping them with friction
         var haveMonoliths = false;
-        foreach (var monolith in Module.Enemies(OID.Monolith).Where(a => !a.IsDead))
+        foreach (var monolith in Module.Enemies((uint)OID.Monolith).Where(a => !a.IsDead))
         {
-            hints.AddForbiddenZone(ShapeDistance.Circle(monolith.Position, 5));
+            hints.AddForbiddenZone(new SDCircle(monolith.Position, 5));
             haveMonoliths = true;
         }
 
         if (haveMonoliths && actor.Role is Role.Healer or Role.Ranged)
         {
             // have ranged stay in center to avoid los issues
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 7), DateTime.MaxValue);
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 7), DateTime.MaxValue);
         }
     }
 }

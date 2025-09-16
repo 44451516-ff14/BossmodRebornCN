@@ -7,7 +7,7 @@ sealed class MercifulBlooms(BossModule module) : Components.SimpleAOEs(module, (
 sealed class MercifulArc(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(12f, 45f.Degrees()), (uint)IconID.MercifulArc, (uint)AID.MercifulArc, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
 sealed class BurningChains(BossModule module) : Components.Chains(module, (uint)TetherID.BurningChains, (uint)AID.ScorchingShackle);
-sealed class IronImpact(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IronImpactMarker, (uint)AID.IronImpact, 5.9f);
+sealed class IronImpact(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.IronImpactMarker, (uint)AID.IronImpact, 5.9d);
 
 sealed class DeadIron(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(50f, 15f.Degrees()), (uint)IconID.DeadIron, (uint)AID.DeadIronAOE, 4.6d);
 

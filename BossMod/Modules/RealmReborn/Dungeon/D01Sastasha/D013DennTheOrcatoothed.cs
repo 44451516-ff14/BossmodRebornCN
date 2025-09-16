@@ -37,7 +37,7 @@ class TrashSpawning(BossModule module) : BossComponent(module)
     private readonly Actor?[] _ripples = new Actor?[4];  // Stores ripple actors
     private readonly uint[] _rippleStates = new uint[4]; // Stores states for each ripple
 
-    private static readonly Vector2 _rippleOffset = new(0f, -3f);
+    private static readonly WDir _rippleOffset = new(0f, -3f);
     private static readonly Angle _rippleDirectionOffset = new(0); // No rotation, just offset
     private static readonly AOEShapeRect _rippleShape = new(6, 2, 0, _rippleDirectionOffset);
 
@@ -83,14 +83,11 @@ class TrashSpawning(BossModule module) : BossComponent(module)
         {
             if (ripple != null)
             {
-                // Convert the ripple's position (WPos) to Vector2
-                Vector2 ripplePosition = new(ripple.Position.X, ripple.Position.Z);
-
                 // Apply the offset
-                Vector2 offsetPosition = ripplePosition + _rippleOffset;
+                var offsetPosition = ripple.Position + _rippleOffset;
 
                 // Convert the offset position back to WPos
-                WPos finalPosition = new(offsetPosition.X, offsetPosition.Y);
+                WPos finalPosition = new(offsetPosition.X, offsetPosition.Z);
 
                 // Draw the ripple shape at the adjusted position
                 _rippleShape.Outline(Arena, finalPosition, _rippleDirectionOffset, Colors.PlayerInteresting);
@@ -148,7 +145,7 @@ public class D013DennTheOrcatoothed(WorldState ws, Actor primary) : BossModule(w
     new(-355.80f, 279.33f), new(-334.90f, 279.37f), new(-334.30f, 279.26f), new(-317.25f, 279.22f)];
     // Centroid of the polygon is at: (-319.210f, 323.281f)
 
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

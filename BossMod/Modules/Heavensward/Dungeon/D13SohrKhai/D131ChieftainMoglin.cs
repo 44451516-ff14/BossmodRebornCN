@@ -45,20 +45,24 @@ public enum SID : uint
 class PomBom(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCross cross = new(40.5f, 2f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.DemoniacalMogcane)
-            _aoe = new(cross, actor.Position.Quantized(), default, WorldState.FutureTime(6.3d));
+        {
+            _aoe = [new(cross, actor.Position.Quantized(), default, WorldState.FutureTime(6.3d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.PomBom)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -200,7 +204,7 @@ class D131ChieftainMoglinStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 171, NameID = 4943, SortOrder = 2)]
 public class D131ChieftainMoglin(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-400f, -158.04f), 19.5f * CosPI.Pi60th, 64)], [new Rectangle(new(-400f, -138f), 20f, 1.05f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-400f, -158.04f), 19.5f * CosPI.Pi60th, 64)], [new Rectangle(new(-400f, -138f), 20f, 1.05f),
     new Rectangle(new(-400f, -178f), 20f, 0.8f)]);
 
     public static readonly uint[] SmallMoogles = [(uint)OID.CaptainMogsun, (uint)OID.PomguardPomfluffer, (uint)OID.PomguardPomfryer, (uint)OID.PomguardPompincher,

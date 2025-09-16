@@ -78,29 +78,18 @@ public class D080CrimsonControlUnit(WorldState ws, Actor primary) : BossModule(w
     new(-145.44f, -456.8f), new(-145.58f, -457.39f), new(-145.66f, -458.07f), new(-135.59f, -465.54f), new(-131.55f, -464.89f),
     new(-130.99f, -464.95f), new(-129.35f, -465.95f), new(-126.72f, -470.09f), new(-126.23f, -470.57f), new(-99.48f, -479.05f),
     new(-92.71f, -480.29f), new(-92.05f, -480.33f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)], [new Rectangle(new(-126.383f, -423.171f), 1.39f, 0.9f, 60f.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)], [new Rectangle(new(-126.383f, -423.171f), 1.39f, 0.9f, 60f.Degrees()),
     new Circle(new(-89.835f, -468.233f), 1.5f), new Circle(new(-147.133f, -369.01f), 1.5f)]);
     private static readonly uint[] trash = [(uint)OID.ImmortalizedDeathClaw, (uint)OID.RetooledEnforcementDroid, (uint)OID.ClockworkPredator, (uint)OID.ClockworkReservoir,
     (uint)OID.ImmortalizedInterceptorDrone];
 
     public override bool CheckReset() => !Raid.Player()!.Position.InSquare(Arena.Center, 70f);
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
         Arena.Actor(PrimaryActor, Colors.Object);
     }
 

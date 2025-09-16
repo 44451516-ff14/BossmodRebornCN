@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Alliance.A33Oschon;
 
-class P2WanderingVolleyDownhill(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WanderingVolleyDownhillAOE, 8f);
+sealed class P2WanderingVolleyDownhill(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WanderingVolleyDownhillAOE, 8f);
 
-class P2WanderingVolleyKnockback(BossModule module) : Components.GenericKnockback(module)
+sealed class P2WanderingVolleyKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly P2WanderingVolleyDownhill? _downhill = module.FindComponent<P2WanderingVolleyDownhill>();
     private readonly List<Knockback> _sources = new(2);
@@ -24,7 +24,7 @@ class P2WanderingVolleyKnockback(BossModule module) : Components.GenericKnockbac
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -39,24 +39,26 @@ class P2WanderingVolleyKnockback(BossModule module) : Components.GenericKnockbac
     }
 }
 
-class P2WanderingVolleyAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class P2WanderingVolleyAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect _shape = new(40f, 5f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.WanderingVolleyN or (uint)AID.WanderingVolleyS)
-            _aoe = new(_shape, caster.Position, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.WanderingVolleyN or (uint)AID.WanderingVolleyS)
         {
-            _aoe = null;
+            _aoe = [];
             ++NumCasts;
         }
     }

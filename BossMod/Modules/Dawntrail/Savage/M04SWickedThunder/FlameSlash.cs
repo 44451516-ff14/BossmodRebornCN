@@ -2,18 +2,18 @@ namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
 sealed class FlameSlash(BossModule module) : Components.GenericAOEs(module, (uint)AID.FlameSlashAOE)
 {
-    public AOEInstance? AOE;
+    private AOEInstance[] _aoe = [];
     public bool SmallArena;
 
     private static readonly AOEShapeRect _shape = new(40f, 10f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
         {
-            AOE = new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+            _aoe = [new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
         }
     }
 
@@ -21,7 +21,7 @@ sealed class FlameSlash(BossModule module) : Components.GenericAOEs(module, (uin
     {
         if (spell.Action.ID == WatchedAction)
         {
-            AOE = null;
+            _aoe = [];
             SmallArena = true;
         }
     }
@@ -29,7 +29,9 @@ sealed class FlameSlash(BossModule module) : Components.GenericAOEs(module, (uin
     public override void OnEventEnvControl(byte index, uint state)
     {
         if (index == 17 && state == 0x00400001u)
+        {
             SmallArena = false;
+        }
     }
 }
 
@@ -53,7 +55,9 @@ sealed class ChainLightning(BossModule module) : Components.GenericAOEs(module)
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.ChainLightning1 or (uint)TetherID.ChainLightning2)
+        {
             _aoes.Add(new(_shape, source.Position.Quantized())); // TODO: activation
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)

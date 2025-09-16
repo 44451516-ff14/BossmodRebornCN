@@ -14,18 +14,18 @@ class Lightwave1(BossModule module) : LightwaveCommon(module)
         // try to find two helpers with Z=70 before first cast
         if (Waves.Count == 0)
         {
-            foreach (var wave in Module.Enemies(OID.Helper).Where(a => a.Position.Z < 71))
+            foreach (var wave in Module.Enemies((uint)OID.Helper).Where(a => a.PosRot.Z < 71f))
             {
                 Waves.Add(wave);
             }
 
             if (Waves.Count > 0)
             {
-                var leftWave = Waves.Any(w => w.Position.X < 90);
-                _safeCrystal = new(leftWave ? 110 : 90, 92);
-                _firstHitCrystal = new(100, 86);
-                _secondHitCrystal = new(leftWave ? 90 : 110, 92);
-                _thirdHitCrystal = new(100, 116);
+                var leftWave = Waves.Any(w => w.PosRot.X < 90f);
+                _safeCrystal = new(leftWave ? 110f : 90f, 92f);
+                _firstHitCrystal = new(100f, 86f);
+                _secondHitCrystal = new(leftWave ? 90f : 110f, 92f);
+                _thirdHitCrystal = new(100f, 116f);
             }
         }
     }

@@ -29,7 +29,7 @@ class DoubleSever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.D
         base.AddAIHints(slot, actor, assignment, hints);
         ref var aoe = ref Casters.Ref(0);
         // stay close to the origin
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
+        hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 3f), aoe.Activation);
     }
 }
 class AtmosphericCompression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AtmosphericCompression, 5f);
@@ -49,6 +49,6 @@ class D081PhantomRayStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35, NameID = 3428, SortOrder = 3)]
 public class D081PhantomRay(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(121.858f, 45.368f), 19.5f, 24)],
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(121.858f, 45.368f), 19.5f, 24)],
     [new Rectangle(new(139.011f, 35.299f), 20f, 1.25f, -60.946f.Degrees()), new Rectangle(new(104.832f, 55.061f), 20f, 1.25f, -58.455f.Degrees())]);
 }

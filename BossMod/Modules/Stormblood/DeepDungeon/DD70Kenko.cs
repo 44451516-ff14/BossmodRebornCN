@@ -29,18 +29,18 @@ sealed class Slabber(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 sealed class InnerspaceSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Innerspace, 3f);
 sealed class InnerspaceVoidzone(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
-    private AOEInstance? _aoeTarget;
-    private static readonly AOEShapeCircle circle = new(3f);
+    private AOEInstance[] _aoe = [];
+    private AOEInstance[] _aoeTarget = [];
+    private static readonly AOEShapeCircle circleInv = new(3f, true), circle = new(3f);
     private int target = -1;
     private bool ululation;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (slot != target || ululation)
-            return Utils.ZeroOrOne(ref _aoe);
+            return _aoe;
         else
-            return Utils.ZeroOrOne(ref _aoeTarget);
+            return _aoeTarget;
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -48,19 +48,21 @@ sealed class InnerspaceVoidzone(BossModule module) : Components.GenericAOEs(modu
         var id = spell.Action.ID;
         if (id == (uint)AID.Innerspace && WorldState.Actors.Find(spell.MainTargetID) is Actor t)
         {
-            _aoe = new(circle, t.Position.Quantized(), default, WorldState.FutureTime(7.2d));
+            _aoe = [new(circle, t.Position.Quantized(), default, WorldState.FutureTime(7.2d))];
         }
         else if (id == (uint)AID.Devour)
         {
             target = -1;
-            _aoeTarget = null;
+            _aoeTarget = [];
         }
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.InnerspaceVoidzone)
-            _aoe = new(circle, actor.Position);
+        {
+            _aoe = [new(circle, actor.Position)];
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -68,8 +70,11 @@ sealed class InnerspaceVoidzone(BossModule module) : Components.GenericAOEs(modu
         if (iconID == (uint)IconID.HoundOutOfHell)
         {
             target = Raid.FindSlot(targetID);
-            if (_aoe is AOEInstance aoe)
-                _aoeTarget = aoe with { Shape = circle with { InvertForbiddenZone = true }, Color = Colors.SafeFromAOE };
+            if (_aoe.Length != 0)
+            {
+                ref var aoe = ref _aoe[0];
+                _aoeTarget = [new(circleInv, aoe.Origin, color: Colors.SafeFromAOE)];
+            }
         }
     }
 
@@ -91,25 +96,32 @@ sealed class InnerspaceVoidzone(BossModule module) : Components.GenericAOEs(modu
 
     public override void Update()
     {
-        if (_aoe != null)
+        if (_aoe.Length != 0)
         {
             var p = Module.Enemies((uint)OID.InnerspaceVoidzone);
             if (p.Count != 0 && p[0].EventState == 7)
             {
-                _aoe = null;
+                _aoe = [];
             }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe is not AOEInstance aoe)
+        if (_aoe.Length == 0)
+        {
             return;
+        }
+        ref var aoe = ref _aoe[0];
         var isInside = aoe.Check(actor.Position);
         if (slot == target && !ululation)
+        {
             hints.Add("Go inside puddle!", !isInside);
+        }
         else if (isInside)
+        {
             hints.Add("GTFO from AOE!");
+        }
     }
 }
 

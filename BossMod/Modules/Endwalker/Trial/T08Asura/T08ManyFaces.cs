@@ -1,11 +1,11 @@
 namespace BossMod.Endwalker.Trial.T08Asura;
 
-class ManyFaces(BossModule module) : Components.GenericAOEs(module)
+sealed class ManyFaces(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(20f, 90f.Degrees());
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -18,12 +18,16 @@ class ManyFaces(BossModule module) : Components.GenericAOEs(module)
         };
 
         if (rotation != null)
-            _aoe = new(cone, spell.LocXZ, rotation.Value, Module.CastFinishAt(spell, 0.1f));
+        {
+            _aoe = [new(cone, spell.LocXZ, rotation.Value, Module.CastFinishAt(spell, 0.1d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID is (uint)AID.TheFaceOfDelightAOE or (uint)AID.TheFaceOfWrathAOE)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }

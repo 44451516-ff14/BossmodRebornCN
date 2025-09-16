@@ -2,8 +2,8 @@
 
 class MatronsBreath(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> _blueSafe = module.Enemies(OID.BlueSafeZone);
-    private readonly List<Actor> _goldSafe = module.Enemies(OID.GoldSafeZone);
+    private readonly List<Actor> _blueSafe = module.Enemies((uint)OID.BlueSafeZone);
+    private readonly List<Actor> _goldSafe = module.Enemies((uint)OID.GoldSafeZone);
     private readonly List<AOEInstance> _flowers = [];
 
     private static readonly AOEShapeDonut _shape = new(8f, 50f);

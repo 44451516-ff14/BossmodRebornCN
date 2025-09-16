@@ -64,7 +64,7 @@ class Exoterikos(BossModule module) : BossComponent(module)
         DateTime lastRay = default; // we only show first rays, otherwise triple rays would cover whole arena and be useless
         foreach (var (actor, shape) in _sources)
         {
-            if (shape == _aoeSquare && Math.Abs(actor.Position.X - Arena.Center.X) > 10f)
+            if (shape == _aoeSquare && Math.Abs(actor.PosRot.X - Arena.Center.X) > 10f)
             {
                 if (hadSideSquare)
                     continue;

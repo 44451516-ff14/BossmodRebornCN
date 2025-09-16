@@ -208,10 +208,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
                             hints.AddForbiddenZone(Shape, pos, default, activation);
                             break;
                         case AOEShapeCone cone:
-                            hints.AddForbiddenZone(ShapeDistance.Cone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), cone.HalfAngle), activation);
+                            hints.AddForbiddenZone(new SDCone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), cone.HalfAngle), activation);
                             break;
                         case AOEShapeRect rect:
-                            hints.AddForbiddenZone(ShapeDistance.Cone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), Angle.Asin(rect.HalfWidth / (pos - enemyPos).Length())), activation);
+                            hints.AddForbiddenZone(new SDCone(enemyPos, 100f, Angle.FromDirection(pos - enemyPos), Angle.Asin(rect.HalfWidth / (pos - enemyPos).Length())), activation);
                             break;
                     }
                 }
@@ -288,13 +288,13 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         {
             var tether = Tethers[i];
             if (tether.Player != actor)
-                hints.AddForbiddenZone(ShapeDistance.Circle(tether.Player.Position, Radius), Activation);
+                hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation);
             else
                 for (var j = 0; j < raid.Length; ++j)
                 {
                     ref var member = ref raid[i];
                     if (member != actor)
-                        hints.AddForbiddenZone(ShapeDistance.Circle(member.Position, Radius), Activation);
+                        hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation);
                 }
         }
     }
@@ -562,8 +562,8 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
         var (player, enemy) = DetermineTetherSides(source, tether);
         if (player != null && enemy != null)
         {
-            CurrentBaits.RemoveAll(b => b.Source == enemy && b.Target == player);
-            TetherOnActor.Remove((WorldState.Actors.Find(tether.Target)!, tether.ID));
+            var removing = CurrentBaits.RemoveAll(b => b.Source == enemy && b.Target == player);
+            var removed = TetherOnActor.Remove((WorldState.Actors.Find(tether.Target)!, tether.ID));
         }
     }
 
@@ -617,14 +617,14 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
         var couldBeImmune = !immunity && KnockbackImmunity;
         if (couldBeImmune && ActivationDelayOnActor.Any(x => x.Item1 == actor && x.Item2.AddSeconds(-6d) <= WorldState.CurrentTime))
         {
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.ArmsLength), actor, ActionQueue.Priority.High);
-            hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Surecast), actor, ActionQueue.Priority.High);
+            hints.ActionsToExecute.Push(ActionDefinitions.Armslength, actor, ActionQueue.Priority.High);
+            hints.ActionsToExecute.Push(ActionDefinitions.Surecast, actor, ActionQueue.Priority.High);
         }
         if (Shape != null)
             base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaits.Any(x => x.Target == actor) && !isImmune)
             foreach (var b in ActiveBaits.Where(x => x.Target == actor))
-                hints.AddForbiddenZone(ShapeDistance.Circle(b.Source.Position, MinimumDistance), b.Activation);
+                hints.AddForbiddenZone(new SDCircle(b.Source.Position, MinimumDistance), b.Activation);
     }
 }
 
@@ -634,10 +634,11 @@ StretchTetherDuo(module, minimumDistance, activationDelay, tetherID, tetherID, s
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaits.Count == 0)
+        if (CurrentBaits.Count == 0)
         {
             return;
         }
+
         if (needToKite && TetherOnActor.Contains((actor, TIDBad)))
         {
             hints.Add("Kite the add!");
@@ -651,9 +652,14 @@ StretchTetherDuo(module, minimumDistance, activationDelay, tetherID, tetherID, s
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
-        if (needToKite && IsTether(pc, TIDBad))
+
+        if (needToKite)
         {
-            Arena.Actor(ActiveBaitsOn(pc).Ref(0).Source, Colors.Object, true);
+            var baits = ActiveBaitsOn(pc);
+            if (baits.Count != 0 && IsTether(pc, TIDBad))
+            {
+                Arena.Actor(baits.Ref(0).Source, Colors.Object, true);
+            }
         }
     }
 }

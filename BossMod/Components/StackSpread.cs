@@ -171,37 +171,37 @@ public abstract class GenericStackSpread(BossModule module, bool alwaysShowSprea
         // TODO: think how to improve this, current implementation works, but isn't particularly good - e.g. nearby players tend to move to same spot, turn around, etc.
         // ideally we should provide per-mechanic spread spots, but for simple cases we should try to let melee spread close and healers/rdd spread far from main target...
         foreach (var spreadFrom in ActiveSpreads.Where(s => s.Target != actor))
-            hints.AddForbiddenZone(ShapeDistance.Circle(spreadFrom.Target.Position.Quantized(), spreadFrom.Radius + ExtraAISpreadThreshold), spreadFrom.Activation);
+            hints.AddForbiddenZone(new SDCircle(spreadFrom.Target.Position.Quantized(), spreadFrom.Radius + ExtraAISpreadThreshold), spreadFrom.Activation);
         foreach (var spreadFrom in ActiveSpreads.Where(s => s.Target == actor))
             foreach (var x in Raid.WithoutSlot())
                 if (!ActiveSpreads.Any(s => s.Target == x))
-                    hints.AddForbiddenZone(ShapeDistance.Circle(x.Position.Quantized(), spreadFrom.Radius + ExtraAISpreadThreshold), spreadFrom.Activation);
+                    hints.AddForbiddenZone(new SDCircle(x.Position.Quantized(), spreadFrom.Radius + ExtraAISpreadThreshold), spreadFrom.Activation);
         foreach (var avoid in ActiveStacks.Where(s => s.Target != actor && (s.ForbiddenPlayers[slot] || !s.IsInside(actor) && (s.CorrectAmountInside(Module) || s.TooManyInside(Module)) || s.IsInside(actor) && s.TooManyInside(Module))))
-            hints.AddForbiddenZone(ShapeDistance.Circle(avoid.Target.Position.Quantized(), avoid.Radius), avoid.Activation);
+            hints.AddForbiddenZone(new SDCircle(avoid.Target.Position.Quantized(), avoid.Radius), avoid.Activation);
 
         if (Stacks.FirstOrDefault(s => s.Target == actor) is var actorStack && actorStack.Target != null)
         {
             // forbid standing next to other stack markers or overlapping them
             foreach (var stackWith in ActiveStacks.Where(s => s.Target != actor))
-                hints.AddForbiddenZone(ShapeDistance.Circle(stackWith.Target.Position.Quantized(), stackWith.Radius * 2), stackWith.Activation);
+                hints.AddForbiddenZone(new SDCircle(stackWith.Target.Position.Quantized(), stackWith.Radius * 2), stackWith.Activation);
             // if player got stackmarker and is playing with NPCs, go to a NPC to stack with them since they will likely not come to you
             if (Raid.WithoutSlot().Any(x => x.Type == ActorType.Buddy))
             {
-                var forbidden = new List<Func<WPos, float>>();
+                var forbidden = new List<ShapeDistance>();
                 foreach (var stackWith in ActiveStacks.Where(s => s.Target == actor))
-                    forbidden.Add(ShapeDistance.InvertedCircle(Raid.WithoutSlot().FirstOrDefault(x => !x.IsDead && !IsSpreadTarget(x) && !IsStackTarget(x))!.Position, actorStack.Radius * 0.33f));
+                    forbidden.Add(new SDInvertedCircle(Raid.WithoutSlot().FirstOrDefault(x => !x.IsDead && !IsSpreadTarget(x) && !IsStackTarget(x))!.Position, actorStack.Radius * 0.33f));
                 if (forbidden.Count > 0)
-                    hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), actorStack.Activation);
+                    hints.AddForbiddenZone(new SDIntersection([.. forbidden]), actorStack.Activation);
             }
         }
         else if (!IsSpreadTarget(actor) && !IsStackTarget(actor))
         {
-            var forbidden = new List<Func<WPos, float>>();
+            var forbidden = new List<ShapeDistance>();
             foreach (var s in ActiveStacks.Where(x => !x.ForbiddenPlayers[slot] && (x.IsInside(actor) && !x.TooManyInside(Module)
             || !x.IsInside(actor) && x.InsufficientAmountInside(Module))))
-                forbidden.Add(ShapeDistance.InvertedCircle(s.Target.Position.Quantized(), s.Radius - 0.25f));
+                forbidden.Add(new SDInvertedCircle(s.Target.Position.Quantized(), s.Radius - 0.25f));
             if (forbidden.Count > 0)
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), ActiveStacks.FirstOrDefault().Activation);
+                hints.AddForbiddenZone(new SDIntersection([.. forbidden]), ActiveStacks.FirstOrDefault().Activation);
         }
 
         if (RaidwideOnResolve)
@@ -423,6 +423,7 @@ public class IconStackSpread(BossModule module, uint stackIcon, uint spreadIcon,
                 if (count != 0)
                 {
                     ++NumFinishedStacks;
+                    CastCounter = 0;
                     Stacks.RemoveAt(0);
                 }
             }
@@ -441,6 +442,12 @@ public class IconStackSpread(BossModule module, uint stackIcon, uint spreadIcon,
                     ++NumFinishedSpreads;
                     return;
                 }
+            }
+            // spread not found, probably due to being self targeted
+            if (count != 0)
+            {
+                ++NumFinishedSpreads;
+                Spreads.RemoveAt(0);
             }
         }
     }
@@ -524,7 +531,7 @@ UniformStackSpread(module, innerRadius / 3f, default, minStackSize, maxStackSize
         var count = Stacks.Count;
         if (count == 0)
             return;
-        var forbidden = new List<Func<WPos, float>>(count);
+        var forbidden = new List<ShapeDistance>(count);
         var radius = Donut.InnerRadius * 0.25f;
         for (var i = 0; i < count; ++i)
         {
@@ -533,11 +540,11 @@ UniformStackSpread(module, innerRadius / 3f, default, minStackSize, maxStackSize
             {
                 continue;
             }
-            forbidden.Add(ShapeDistance.InvertedCircle(s.Target.Position, radius));
+            forbidden.Add(new SDInvertedCircle(s.Target.Position, radius));
         }
         if (forbidden.Count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Stacks[0].Activation);
+            hints.AddForbiddenZone(new SDIntersection([.. forbidden]), Stacks.Ref(0).Activation);
         }
     }
 
@@ -553,8 +560,6 @@ UniformStackSpread(module, innerRadius / 3f, default, minStackSize, maxStackSize
     public override void DrawArenaForeground(int pcSlot, Actor pc) { }
 }
 
-// generic single hit "line stack" component, usually do not have an iconID, instead players get marked by cast event
-// usually these have 50 range and 4 halfWidth, but it can be modified
 public abstract class GenericBaitStack(BossModule module, uint aid = default, bool onlyShowOutlines = false) : GenericBaitAway(module, aid)
 {
     // TODO: add logic for min and max stack size
@@ -578,8 +583,8 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
                 break;
             }
         }
-        var forbiddenInverted = new List<Func<WPos, float>>();
-        var forbidden = new List<Func<WPos, float>>();
+        var forbiddenInverted = new List<ShapeDistance>();
+        var forbidden = new List<ShapeDistance>();
 
         var hasBuddies = false;
         var p = Raid.WithoutSlot(false, true);
@@ -595,8 +600,8 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
 
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
-            var origin = BaitOrigin(b);
+            ref var b = ref baits[i];
+            var origin = BaitOrigin(ref b);
             var angle = Angle.FromDirection(b.Target.Position - origin);
             if (b.Target != actor && !isBaitTarget)
             {
@@ -613,15 +618,15 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
             {   // prevent overlapping if there are multiple stacks
                 if (b.Shape is AOEShapeCone cone)
                 {
-                    forbidden.Add(ShapeDistance.Cone(origin, cone.Radius, angle, cone.HalfAngle * 2f));
+                    forbidden.Add(new SDCone(origin, cone.Radius, angle, cone.HalfAngle * 2f));
                 }
                 else if (b.Shape is AOEShapeRect rect)
                 {
-                    forbidden.Add(ShapeDistance.Rect(origin, angle, rect.LengthFront, rect.LengthBack, rect.HalfWidth * 2f));
+                    forbidden.Add(new SDRect(origin, angle, rect.LengthFront, rect.LengthBack, rect.HalfWidth * 2f));
                 }
                 else if (b.Shape is AOEShapeCircle circle)
                 {
-                    forbiddenInverted.Add(ShapeDistance.Circle(origin, circle.Radius * 2f));
+                    forbiddenInverted.Add(new SDCircle(origin, circle.Radius * 2f));
                 }
             }
             else if (hasBuddies && b.Target == actor) // try to go to NPCs since they usually will not actively come to your stack
@@ -631,16 +636,20 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
                     var member = p[j];
                     if (member.OID != default)
                     {
-                        forbiddenInverted.Add(ShapeDistance.InvertedCircle(member.Position, 1f));
+                        forbiddenInverted.Add(new SDInvertedCircle(member.Position, 1f));
                     }
                 }
             }
         }
         ref var bait = ref baits[0];
         if (forbiddenInverted.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbiddenInverted), bait.Activation);
+        {
+            hints.AddForbiddenZone(new SDIntersection([.. forbiddenInverted]), bait.Activation);
+        }
         if (forbidden.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), bait.Activation);
+        {
+            hints.AddForbiddenZone(new SDUnion([.. forbidden]), bait.Activation);
+        }
 
         var firstActivation = DateTime.MaxValue;
         BitMask baitMask = default;
@@ -671,7 +680,7 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
         var id = actor.InstanceID;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
+            ref var b = ref baits[i];
             if (!b.Forbidden[slot])
             {
                 allForbidden = false;
@@ -681,7 +690,7 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
                 isBaitTarget = true;
                 continue;
             }
-            if (b.Shape.Check(actor.Position, BaitOrigin(b), b.Rotation))
+            if (b.Shape.Check(actor.Position, BaitOrigin(ref b), b.Rotation))
             {
                 isInBaitShape = true;
                 if (b.Forbidden[slot])
@@ -693,10 +702,10 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
         {
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var b = ref baits[i];
+                ref var b = ref baits[i];
                 if (b.Target.InstanceID == id)
                     continue;
-                if (b.Shape.Check(actor.Position, BaitOrigin(b), b.Rotation))
+                if (b.Shape.Check(actor.Position, BaitOrigin(ref b), b.Rotation))
                 {
                     isBaitTargetAndInExtraStack = true;
                     break;
@@ -734,7 +743,7 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
         var id = pc.InstanceID;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
+            ref var b = ref baits[i];
             if (b.Target.InstanceID == id)
             {
                 isBaitTarget = true;
@@ -743,9 +752,9 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
         }
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
+            ref var b = ref baits[i];
             var color = !b.Forbidden[pcSlot] && (isBaitTarget && b.Target.InstanceID == id || !isBaitTarget && b.Target.InstanceID != id) ? Colors.SafeFromAOE : default;
-            b.Shape.Draw(Arena, BaitOrigin(b), b.Rotation, color);
+            b.Shape.Draw(Arena, BaitOrigin(ref b), b.Rotation, color);
         }
     }
 
@@ -761,7 +770,7 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
         var id = pc.InstanceID;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
+            ref var b = ref baits[i];
             if (b.Target.InstanceID == id)
             {
                 isBaitTarget = true;
@@ -770,9 +779,9 @@ public abstract class GenericBaitStack(BossModule module, uint aid = default, bo
         }
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var b = ref baits[i];
+            ref var b = ref baits[i];
             var color = !b.Forbidden[pcSlot] && (isBaitTarget && b.Target.InstanceID == id || !isBaitTarget && b.Target.InstanceID != id) ? Colors.Safe : default;
-            b.Shape.Outline(Arena, BaitOrigin(b), b.Rotation, color);
+            b.Shape.Outline(Arena, BaitOrigin(ref b), b.Rotation, color);
         }
     }
 }

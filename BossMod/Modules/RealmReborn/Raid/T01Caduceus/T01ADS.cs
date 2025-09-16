@@ -29,7 +29,7 @@ class HighVoltage(BossModule module) : Components.CastHint(module, (uint)AID.Hig
 class RepellingCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RepellingCannons, 8.3f);
 class PiercingLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PiercingLaser, new AOEShapeRect(32.3f, 3));
 class DirtyCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DirtyCannons, 5.15f);
-class GravityField(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.GravityField, m => m.Enemies(OID.GravityField), 1);
+class GravityField(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.GravityField, m => m.Enemies((uint)OID.GravityField), 1);
 
 // TODO: chain lightning?..
 
@@ -74,8 +74,8 @@ public class T01ADS(WorldState ws, Actor primary) : BossModule(ws, primary, new(
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.PatrolNode));
-        Arena.Actors(Enemies(OID.AttackNode));
-        Arena.Actors(Enemies(OID.DefenseNode));
+        Arena.Actors(Enemies((uint)OID.PatrolNode));
+        Arena.Actors(Enemies((uint)OID.AttackNode));
+        Arena.Actors(Enemies((uint)OID.DefenseNode));
     }
 }

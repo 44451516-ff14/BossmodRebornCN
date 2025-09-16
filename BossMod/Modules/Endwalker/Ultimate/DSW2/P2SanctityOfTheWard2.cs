@@ -2,8 +2,8 @@
 
 sealed class P2SanctityOfTheWard2HeavensStakeCircles(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavensStakeAOE, 7f);
 sealed class P2SanctityOfTheWard2HeavensStakeDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeavensStakeDonut, new AOEShapeDonut(15f, 30f));
-sealed class P2SanctityOfTheWard2VoidzoneFire(BossModule module) : Components.Voidzone(module, 7f, m => m.Enemies(OID.VoidzoneFire).Where(z => z.EventState != 7));
-sealed class P2SanctityOfTheWard2VoidzoneIce(BossModule module) : Components.Voidzone(module, 7f, m => m.Enemies(OID.VoidzoneIce).Where(z => z.EventState != 7));
+sealed class P2SanctityOfTheWard2VoidzoneFire(BossModule module) : Components.Voidzone(module, 7f, m => m.Enemies((uint)OID.VoidzoneFire).Where(z => z.EventState != 7));
+sealed class P2SanctityOfTheWard2VoidzoneIce(BossModule module) : Components.Voidzone(module, 7f, m => m.Enemies((uint)OID.VoidzoneIce).Where(z => z.EventState != 7));
 
 sealed class P2SanctityOfTheWard2Knockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.FaithUnmoving, 16f)
 {
@@ -13,7 +13,7 @@ sealed class P2SanctityOfTheWard2Knockback(BossModule module) : Components.Simpl
     {
         if (_config.P2Sanctity2AutomaticAntiKB && Casters.Count > 0 && !actor.Position.InCircle(Arena.Center, 12f))
         {
-            var action = actor.Class.GetClassCategory() is ClassCategory.Healer or ClassCategory.Caster ? ActionID.MakeSpell(ClassShared.AID.Surecast) : ActionID.MakeSpell(ClassShared.AID.ArmsLength);
+            var action = actor.Class.GetClassCategory() is ClassCategory.Healer or ClassCategory.Caster ? ActionDefinitions.Surecast : ActionDefinitions.Armslength;
             hints.ActionsToExecute.Push(action, actor, ActionQueue.Priority.High, WorldState.Actors.Find(Casters.Ref(0).ActorID)?.CastInfo?.NPCRemainingTime ?? default);
         }
     }

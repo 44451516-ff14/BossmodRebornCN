@@ -18,7 +18,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     {
         if (Arena.Bounds.Radius > 20f)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 19f), DateTime.MaxValue);
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 19f), DateTime.MaxValue);
         }
     }
 }
@@ -36,11 +36,10 @@ sealed class GreatTyphoonCone(BossModule module) : Components.SimpleAOEs(module,
 
 sealed class GreatTyphoonDonut(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance[] _aoe = new AOEInstance[1];
-    private bool aoeInit;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeDonut donut1 = new(20f, 28f), donut2 = new(26f, 34f), donut3 = new(32f, 40f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => aoeInit && Arena.Bounds.Radius > 20f ? _aoe : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Arena.Bounds.Radius > 20f ? _aoe : [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -54,7 +53,6 @@ sealed class GreatTyphoonDonut(BossModule module) : Components.GenericAOEs(modul
         if (shape != null)
         {
             _aoe = [new(shape, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID)];
-            aoeInit = true;
         }
     }
 
@@ -65,7 +63,7 @@ sealed class GreatTyphoonDonut(BossModule module) : Components.GenericAOEs(modul
             ref var aoe = ref _aoe[0];
             if (caster.InstanceID == aoe.ActorID) // depending on latency a new cast can start in the same frame as previous ended
             {
-                aoeInit = false;
+                _aoe = [];
             }
         }
     }

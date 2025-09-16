@@ -2,7 +2,7 @@
 
 class Silkspit(BossModule module) : Components.UniformStackSpread(module, 0, 7)
 {
-    private readonly List<Actor> _pillars = module.Enemies(OID.Pillar);
+    private readonly List<Actor> _pillars = module.Enemies((uint)OID.Pillar);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

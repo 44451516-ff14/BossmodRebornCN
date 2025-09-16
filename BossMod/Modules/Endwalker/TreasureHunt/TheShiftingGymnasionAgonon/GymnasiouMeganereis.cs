@@ -70,14 +70,14 @@ class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(module, (ui
             var count = _aoe.Casters.Count;
             var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
             var center = Arena.Center;
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
             for (var i = 0; i < count; ++i)
             {
                 ref readonly var aoe = ref aoes[i];
-                forbidden[i] = ShapeDistance.Cone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
+                forbidden[i] = new SDCone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
             }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
+                hints.AddForbiddenZone(new SDUnion(forbidden), Casters.Ref(0).Activation);
         }
     }
 }
@@ -109,17 +109,7 @@ class GymnasiouMeganereisStates : StateMachineBuilder
             .ActivateOnEnter<Immersion>()
             .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<HeavySmash>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(GymnasiouMeganereis.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(GymnasiouMeganereis.All);
     }
 }
 
@@ -134,7 +124,7 @@ public class GymnasiouMeganereis(WorldState ws, Actor primary) : THTemplate(ws, 
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.GymnasiouNereis));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

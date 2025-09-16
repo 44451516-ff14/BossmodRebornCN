@@ -41,17 +41,7 @@ class LampasChrysineStates : StateMachineBuilder
             .ActivateOnEnter<AetherialLight>()
             .ActivateOnEnter<Lightburst>()
             .ActivateOnEnter<Summon>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(LampasChrysine.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(LampasChrysine.All);
     }
 }
 

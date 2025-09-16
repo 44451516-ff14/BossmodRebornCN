@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayVisualization;
 
@@ -97,24 +97,36 @@ public sealed class ColumnEnemiesCastEvents : Timeline.ColumnGroup
     {
         var phys = false;
         var magic = false;
-        foreach (var t in action.Targets.Where(t => t.Target.Type is ActorType.Player or ActorType.Buddy))
+        var targets = action.Targets;
+        var count = targets.Count;
+        for (var i = 0; i < count; ++i)
         {
-            foreach (var e in t.Effects.Where(e => e.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage))
+            var t = targets[i];
+            if (t.Target.Type is ActorType.Player or ActorType.Buddy)
             {
-                switch (e.DamageType)
+                var effects = t.Effects.ValidEffects();
+                var len = effects.Length;
+                for (var j = 0; j < len; ++j)
                 {
-                    case DamageType.Slashing:
-                    case DamageType.Piercing:
-                    case DamageType.Blunt:
-                    case DamageType.Shot:
-                        phys = true;
-                        break;
-                    case DamageType.Magic:
-                        magic = true;
-                        break;
-                    default:
-                        phys = magic = true; // TODO: reconsider
-                        break;
+                    ref readonly var e = ref effects[j];
+                    if (e.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage)
+                    {
+                        switch (e.DamageType)
+                        {
+                            case DamageType.Slashing:
+                            case DamageType.Piercing:
+                            case DamageType.Blunt:
+                            case DamageType.Shot:
+                                phys = true;
+                                break;
+                            case DamageType.Magic:
+                                magic = true;
+                                break;
+                            default:
+                                phys = magic = true; // TODO: reconsider
+                                break;
+                        }
+                    }
                 }
             }
         }

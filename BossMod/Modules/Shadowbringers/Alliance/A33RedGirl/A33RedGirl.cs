@@ -21,7 +21,7 @@ public sealed class A33RedGirl(WorldState ws, Actor primary) : BossModule(ws, pr
     public static readonly Square[] BigSquare = [new(ArenaCenter, 24.5f)];
     public static readonly Square[] DefaultSquare = [new(ArenaCenter, 20f)];
     public static readonly AOEShapeCustom ArenaTransition = new(BigSquare, DefaultSquare, [InnerSquare]);
-    public static readonly ArenaBoundsComplex DefaultArena = new(DefaultSquare, [InnerSquare]);
+    public static readonly ArenaBoundsCustom DefaultArena = new(DefaultSquare, [InnerSquare]);
     public static readonly PolygonCustomO[] VirusArena1 = [new([new(6f, 856f), new(-6f, 856f), new(-6f, 868f), new(-1.5f, 868f), new(-1.5f, 880f),
     new(-8f, 880f), new(-8f, 882f), new(-12f, 882f), new(-12f, 884f), new(-14f, 884f),
     new(-14f, 886f), new(-16f, 886f), new(-16f, 888f), new(-18f, 888f), new(-18f, 892f),
@@ -53,17 +53,10 @@ public sealed class A33RedGirl(WorldState ws, Actor primary) : BossModule(ws, pr
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (RedSphere == null)
+        RedSphere ??= GetActor((uint)OID.RedSphere);
+        if (StateMachine.ActivePhaseIndex >= 1)
         {
-            var b = Enemies((uint)OID.RedSphere);
-            RedSphere = b.Count != 0 ? b[0] : null;
-        }
-        if (StateMachine.ActivePhaseIndex >= 1 && BossP2 == null)
-        {
-            var b = Enemies((uint)OID.BossP2);
-            BossP2 = b.Count != 0 ? b[0] : null;
+            BossP2 ??= GetActor((uint)OID.BossP2);
         }
     }
 

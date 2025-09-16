@@ -32,9 +32,9 @@ sealed class UltimateZantetsuken(BossModule module) : Components.CastHint(module
 public sealed class BA2Raiden(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
     private static readonly WPos ArenaCenter = new(default, 458f);
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(ArenaCenter, 34.6f, 80)], [new Rectangle(new(35.3f, 458f), 0.99f, 20f), new Rectangle(new(-35.4f, 458f), 1.65f, 20f),
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(ArenaCenter, 34.6f, 80)], [new Rectangle(new(35.3f, 458f), 0.99f, 20f), new Rectangle(new(-35.4f, 458f), 1.65f, 20f),
     new Rectangle(new(default, 493f), 20f, 0.75f)]);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(ArenaCenter, 29.93f, 64)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(ArenaCenter, 29.93f, 64)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

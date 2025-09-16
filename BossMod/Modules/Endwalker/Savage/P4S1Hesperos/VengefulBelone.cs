@@ -23,7 +23,7 @@ class VengefulBelone(BossModule module) : BossComponent(module)
             hints.Add("Failed orbs...");
         }
 
-        if (Module.Enemies(OID.Orb).Where(orb => IsOrbLethal(slot, actor, OrbTarget(orb.InstanceID))).InRadius(actor.Position, _burstRadius).Any())
+        if (Module.Enemies((uint)OID.Orb).Where(orb => IsOrbLethal(slot, actor, OrbTarget(orb.InstanceID))).InRadius(actor.Position, _burstRadius).Any())
         {
             hints.Add("GTFO from wrong orb!");
         }
@@ -44,7 +44,7 @@ class VengefulBelone(BossModule module) : BossComponent(module)
         if (_orbTargets.Count == 0 || _orbsExploded == _orbTargets.Count)
             return;
 
-        var orbs = Module.Enemies(OID.Orb);
+        var orbs = Module.Enemies((uint)OID.Orb);
         foreach (var orb in orbs)
         {
             var orbRole = OrbTarget(orb.InstanceID);

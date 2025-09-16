@@ -45,7 +45,7 @@ class WallRemoval(BossModule module) : BossComponent(module)
         }
     }
 
-    private void SetArena(ArenaBoundsComplex bounds)
+    private void SetArena(ArenaBoundsCustom bounds)
     {
         Arena.Bounds = bounds;
         Arena.Center = bounds.Center;
@@ -67,18 +67,7 @@ class D090TangledNarbrooiStates : StateMachineBuilder
             .ActivateOnEnter<Canopy>()
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<WallRemoval>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D090TangledNarbrooi.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D090TangledNarbrooi.Trash);
     }
 }
 
@@ -204,29 +193,18 @@ public class D090TangledNarbrooi(WorldState ws, Actor primary) : BossModule(ws, 
     new(-69.32f, -71.51f), new(-68.81f, -71.81f), new(-67.66f, -72.35f), new(-67.04f, -72.61f), new(-62.03f, -73.32f),
     new(-61.37f, -73.30f)];
     private static readonly Polygon[] hole = [new Polygon(new(-112.773f, 8.201f), 1.25f, 6)];
-    public static readonly ArenaBoundsComplex Arena1 = new([new PolygonCustom(vertices1)], hole);
-    public static readonly ArenaBoundsComplex Arena1B = new([new PolygonCustom(vertices1), new PolygonCustom(vertices2)], hole);
-    public static readonly ArenaBoundsComplex Arena2 = new([new PolygonCustom(vertices2)]);
+    public static readonly ArenaBoundsCustom Arena1 = new([new PolygonCustom(vertices1)], hole);
+    public static readonly ArenaBoundsCustom Arena1B = new([new PolygonCustom(vertices1), new PolygonCustom(vertices2)], hole);
+    public static readonly ArenaBoundsCustom Arena2 = new([new PolygonCustom(vertices2)]);
 
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Biloko, (uint)OID.GrizzlyHost, (uint)OID.WitheredMelia,
     (uint)OID.RoyalOak];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -4,7 +4,7 @@ public enum OID : uint
 {
     Boss = 0x3600, // second phase boss (exists from start, but recreated on checkpoint)
     Akantha = 0x3601, // ?? 'akantha', 12 exist at start
-    Helper = 0x233C, // 38 exist at start
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -53,25 +53,24 @@ public enum AID : uint
     AkanthaiAct3 = 28341, // Boss->Boss
     AkanthaiAct4 = 28342, // Boss->Boss
     AkanthaiFinale = 28343, // Boss->Boss
-    FleetingImpulse = 28344, // Boss->Boss
+    FleetingImpulse = 28344 // Boss->Boss
 }
 
 public enum SID : uint
 {
-    Thornpricked = 2804,
+    Thornpricked = 2804
 }
 
 public enum TetherID : uint
 {
     WreathOfThornsPairsClose = 172,
-    WreathOfThorns = 173, // also used when pairs are about to break
+    WreathOfThorns = 173 // also used when pairs are about to break
 }
 
 public enum IconID : uint
 {
-    None = 0,
     AkanthaiWater = 300, // act 4
     AkanthaiDark = 301, // acts 2 & 4 & 6
     AkanthaiWind = 302, // acts 2 & 5
-    AkanthaiFire = 303, // act 2
+    AkanthaiFire = 303 // act 2
 }

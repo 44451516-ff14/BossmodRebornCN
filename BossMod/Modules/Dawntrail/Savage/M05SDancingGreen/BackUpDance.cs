@@ -23,7 +23,7 @@ sealed class BackUpDance(BossModule module) : Components.GenericBaitAway(module,
 
                 for (var j = 0; j < len; ++j)
                 {
-                    ref readonly var player = ref party[j];
+                    var player = party[j];
                     var distSq = (player.Position - source.Position).LengthSq();
                     if (distSq < closestDistSq)
                     {

@@ -27,7 +27,7 @@ sealed class TheWingedSteedStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<BurningBright>()
             .ActivateOnEnter<Nicker>()
-            .Raw.Update = () => module.Enemies(TheWingedSteed.All).All(e => e.IsDeadOrDestroyed);
+            .Raw.Update = () => AllDeadOrDestroyed(TheWingedSteed.All);
     }
 }
 
@@ -58,11 +58,11 @@ public sealed class TheWingedSteed(WorldState ws, Actor primary) : BossModule(ws
     new(26.31f, -223.23f), new(26.48f, -225.91f), new(26.22f, -226.34f), new(25.68f, -226.43f), new(25.43f, -228.82f),
     new(25.8f, -229.2f), new(26.32f, -229.19f), new(26.58f, -230.24f), new(26.95f, -230.62f), new(27.47f, -230.59f),
     new(27.9f, -230.94f), new(27.9f, -232.19f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] All = [(uint)OID.Boss, (uint)OID.SonOfTheKingdom1, (uint)OID.SonOfTheKingdom2];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(All));
+        Arena.Actors(this, All);
     }
 }

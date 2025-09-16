@@ -1,7 +1,7 @@
 namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
 sealed class BewitchingFlight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BewitchingFlightAOE, new AOEShapeRect(40, 2.5f));
-sealed class WickedJolt(BossModule module) : Components.TankSwap(module, (uint)AID.WickedJolt, (uint)AID.WickedJolt, (uint)AID.WickedJoltSecond, 3.2f, new AOEShapeRect(60f, 2.5f), false);
+sealed class WickedJolt(BossModule module) : Components.TankSwap(module, (uint)AID.WickedJolt, (uint)AID.WickedJolt, (uint)AID.WickedJoltSecond, default, 3.2d, new AOEShapeRect(60f, 2.5f));
 sealed class Soulshock(BossModule module) : Components.CastCounter(module, (uint)AID.Soulshock);
 sealed class Impact(BossModule module) : Components.CastCounter(module, (uint)AID.Impact);
 sealed class Cannonbolt(BossModule module) : Components.CastCounter(module, (uint)AID.Cannonbolt);
@@ -27,9 +27,9 @@ public sealed class M04SWickedThunder(WorldState ws, Actor primary) : BossModule
     public static readonly ArenaBoundsSquare P1DefaultBounds = new(20f);
     public static readonly ArenaBoundsRect IonClusterBounds = new(5f, 20f);
     public static readonly ArenaBoundsRect P2DefaultBounds = new(20f, 15f);
-    public static readonly ArenaBoundsComplex TransitionBounds = new([new Square(P1DefaultCenter, 20f), new Rectangle(P2Center, 20f, 15f)]);
-    public static readonly ArenaBoundsComplex P2CircleBounds = new([new Polygon(P2Center, 15f, 50, 3.6f.Degrees())]);
-    public static readonly ArenaBoundsComplex P2TowersBounds = new([new Rectangle(new(115f, 100f), 5f, 15f), new Rectangle(new(85f, 100f), 5f, 15f)]);
+    public static readonly ArenaBoundsCustom TransitionBounds = new([new Square(P1DefaultCenter, 20f), new Rectangle(P2Center, 20f, 15f)]);
+    public static readonly ArenaBoundsCustom P2CircleBounds = new([new Polygon(P2Center, 15f, 50, 3.6f.Degrees())]);
+    public static readonly ArenaBoundsCustom P2TowersBounds = new([new Rectangle(new(115f, 100f), 5f, 15f), new Rectangle(new(85f, 100f), 5f, 15f)]);
 
     public Actor? BossP1() => PrimaryActor.IsDestroyed ? null : PrimaryActor;
     public Actor? BossP2() => _bossP2;
@@ -38,13 +38,7 @@ public sealed class M04SWickedThunder(WorldState ws, Actor primary) : BossModule
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_bossP2 == null)
-        {
-            var b = Enemies((uint)OID.BossP2);
-            _bossP2 = b.Count != 0 ? b[0] : null;
-        }
+        _bossP2 ??= GetActor((uint)OID.BossP2);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

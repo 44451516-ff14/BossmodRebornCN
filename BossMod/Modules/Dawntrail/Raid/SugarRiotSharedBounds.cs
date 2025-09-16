@@ -85,7 +85,7 @@ public static class SugarRiotSharedBounds
     public static readonly PolygonCustom[] CombinedRiver = [polygonNorth, polygonWest, polygonEast, polygonMiddle];
     public static readonly AOEShapeCustom RiverAOE = new(CombinedRiver);
     public static readonly Square[] DefaultSquare = [new(ArenaCenter, 20f)];
-    public static readonly ArenaBoundsComplex RiverArena = new(DefaultSquare, CombinedRiver);
+    public static readonly ArenaBoundsCustom RiverArena = new(DefaultSquare, CombinedRiver);
     public static readonly (WPos, WPos)[] JumpEdges = [(new(97.639f, 93.016f), new(103.923f, 93.843f)), (new(104.243f, 88.842f), new(98.459f, 88.081f)),
     (new(94.940f, 105.074f), new(92.739f, 99.759f)), (new(88.216f, 101.905f), new(90.321f, 106.986f)), (new(106.924f, 101.845f), new(103.371f, 106.475f)),
     (new(107.389f, 109.451f), new(111.042f, 104.691f))];

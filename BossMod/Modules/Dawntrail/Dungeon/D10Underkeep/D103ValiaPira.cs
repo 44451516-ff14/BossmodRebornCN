@@ -44,10 +44,10 @@ public enum TetherID : uint
 sealed class EntropicSphere(BossModule module) : Components.RaidwideCast(module, (uint)AID.EntropicSphere);
 sealed class Electray(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Electray, new AOEShapeRect(40f, 4.5f));
 sealed class ConcurrentField(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ConcurrentField, new AOEShapeCone(26f, 25f.Degrees()));
-sealed class ElectricField(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(26f, 25f.Degrees()), (uint)IconID.ElectricField, (uint)AID.ElectricField, 7.4f);
+sealed class ElectricField(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(26f, 25f.Degrees()), (uint)IconID.ElectricField, (uint)AID.ElectricField, 7.4d);
 sealed class NeutralizeFrontLines(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NeutralizeFrontLines, new AOEShapeCone(30f, 90f.Degrees()));
 sealed class HyperchargedLight(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HyperchargedLight, 5f);
-sealed class DeterrentPulse(BossModule module) : Components.LineStack(module, (uint)IconID.DeterrentPulse, (uint)AID.DeterrentPulse, 5.3f, 40f, 4f, 4, 4, 1, false);
+sealed class DeterrentPulse(BossModule module) : Components.LineStack(module, (uint)IconID.DeterrentPulse, (uint)AID.DeterrentPulse, 5.3d, 40f, 4f, 4, 4, 1, false);
 
 sealed class EnforcementRay(BossModule module) : Components.GenericAOEs(module)
 {
@@ -192,5 +192,5 @@ sealed class D103ValiaPiraStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1027, NameID = 13749)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1027, NameID = 13749)]
 public sealed class D103ValiaPira(WorldState ws, Actor primary) : BossModule(ws, primary, new(default, -331f), new ArenaBoundsSquare(17.5f));

@@ -41,7 +41,7 @@ public static class ColumnUtils
         foreach (var t in action.Targets)
         {
             tooltip.Add($"- {ReplayUtils.ActionTargetString(t, action.Timestamp)}");
-            foreach (var e in t.Effects)
+            foreach (var e in t.Effects.ValidEffects())
             {
                 tooltip.Add($"-- {ReplayUtils.ActionEffectString(e)}");
             }
@@ -58,7 +58,28 @@ public static class ColumnUtils
 
     public static bool ActionHasDamageToPlayerEffects(Replay.Action action)
     {
-        return action.Targets.Any(t => t.Target.Type is ActorType.Player or ActorType.Buddy && t.Effects.Any(e => e.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage));
+        var targets = action.Targets;
+        var countT = targets.Count;
+        for (var i = 0; i < countT; ++i)
+        {
+            var target = targets[i];
+            if (target.Target.Type is ActorType.Player or ActorType.Buddy)
+            {
+                var effects = target.Effects.ValidEffects();
+                var len = effects.Length;
+                for (var j = 0; j < len; ++j)
+                {
+                    ref readonly var eff = ref effects[j];
+                    {
+                        if (eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
 

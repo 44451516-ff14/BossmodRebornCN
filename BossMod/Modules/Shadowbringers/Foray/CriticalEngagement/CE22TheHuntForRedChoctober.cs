@@ -219,7 +219,7 @@ sealed class CE22TheHuntForRedChoctoberStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 7)]
 public sealed class CE22TheHuntForRedChoctober(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(393f, 268f), 19.5f, 32)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(393f, 268f), 19.5f, 32)]);
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 20f);
 }

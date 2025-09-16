@@ -1,6 +1,6 @@
 ﻿using BossMod.Autorotation;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
 using System.IO;
 
 namespace BossMod.ReplayVisualization;
@@ -80,7 +80,7 @@ sealed class ReplayDetailsWindow : UIWindow
 
         DrawControlRow();
         DrawTimelineRow();
-        ImGui.TextUnformatted($"Num loaded modules: {_mgr.LoadedModules.Count}, num active modules: {_mgr.LoadedModules.Count(m => m.StateMachine.ActiveState != null)}, active module: {_mgr.ActiveModule?.GetType()}, zone module: {_zmm.ActiveModule?.GetType()}");
+        ImGui.TextUnformatted($"Num loaded modules: {_mgr.LoadedModules.Count}, num active modules: {_mgr.LoadedModules.Count(m => m.StateMachine.ActiveState != null)}, num pending modules: {_mgr.PendingModules.Count}, active module: {_mgr.ActiveModule?.GetType()}, zone module: {_zmm.ActiveModule?.GetType()}");
         if (_zmm.ActiveModule != null)
         {
             // TODO: reconsider where this is all drawn...
@@ -95,7 +95,7 @@ sealed class ReplayDetailsWindow : UIWindow
         ImGui.SameLine();
         ImGui.Checkbox("Override", ref _azimuthOverride);
         _hintsBuilder.Update(_hints, _povSlot, false);
-        _rmm.Update(0, false);
+        _rmm.Update(0, false, false);
         if (_mgr.ActiveModule != null)
         {
             var drawTimerPre = DateTime.Now;
@@ -288,28 +288,30 @@ sealed class ReplayDetailsWindow : UIWindow
     private void DrawCommonColumns(Actor actor)
     {
         (WPos center, float radius) bounds = _mgr.ActiveModule == null ? (new(100, 100), 20) : (_mgr.ActiveModule.Center, _mgr.ActiveModule.Bounds.Radius);
-        var minx = bounds.center.X - bounds.radius;
-        var maxx = bounds.center.X + bounds.radius;
-        var minz = bounds.center.Z - bounds.radius;
-        var maxz = bounds.center.Z + bounds.radius;
-
-        var posX = actor.Position.X;
-        var posZ = actor.Position.Z;
+        var radius = bounds.radius;
+        var center = bounds.center;
+        var minx = center.X - radius;
+        var maxx = center.X + radius;
+        var minz = center.Z - radius;
+        var maxz = center.Z + radius;
+        var pos = actor.Position;
+        var posX = pos.X;
+        var posZ = pos.Z;
         var rot = actor.Rotation.Deg;
-        bool modified = false;
+        var modified = false;
         ImGui.TableNextColumn();
         modified |= ImGui.DragFloat("###X", ref posX, 0.25f, minx, maxx);
         ImGui.TableNextColumn();
         modified |= ImGui.DragFloat("###Z", ref posZ, 0.25f, minz, maxz);
         ImGui.TableNextColumn();
-        modified |= ImGui.DragFloat("###Rot", ref rot, 1, -180, 180);
+        modified |= ImGui.DragFloat("###Rot", ref rot, 1, -180f, 180f);
         if (modified)
             actor.PosRot = new(posX, actor.PosRot.Y, posZ, rot.Degrees().Rad);
 
         ImGui.TableNextColumn();
-        if (actor.HPMP.MaxHP > 0)
+        if (actor.HPMP.MaxHP > 0u)
         {
-            float frac = Math.Min((float)(actor.HPMP.CurHP + actor.HPMP.Shield) / actor.HPMP.MaxHP, 1);
+            var frac = Math.Min((float)(actor.HPMP.CurHP + actor.HPMP.Shield) / actor.HPMP.MaxHP, 1f);
             ImGui.ProgressBar(frac, new(ImGui.GetColumnWidth(), 0), $"{frac:#0.#%} ({actor.HPMP.CurHP} + {actor.HPMP.Shield} / {actor.HPMP.MaxHP}) [{actor.PendingHPDifference} pending]");
         }
 
@@ -335,7 +337,8 @@ sealed class ReplayDetailsWindow : UIWindow
             if (tooltip)
             {
                 string fromString(string prefix, ulong instanceId) => instanceId == 0 ? "" : $", {prefix} {_player.WorldState.Actors.Find(instanceId)?.ToString() ?? instanceId.ToString("X")}";
-                for (var i = 0; i < actor.Statuses.Length; ++i)
+                var lenS = actor.Statuses.Length;
+                for (var i = 0; i < lenS; ++i)
                 {
                     ref var s = ref actor.Statuses[i];
                     if (s.ID != 0)
@@ -345,18 +348,19 @@ sealed class ReplayDetailsWindow : UIWindow
                 }
                 foreach (ref var s in actor.PendingStatuses.AsSpan())
                 {
-                    ImGui.TextUnformatted($"[pending] {Utils.StatusString(s.StatusId)} ({s.ExtraLo}){fromString("from", s.Effect.SourceInstanceId)}");
+                    ImGui.TextUnformatted($"[pending] {Utils.StatusString(s.StatusId)} ({s.ExtraLo}){fromString("from", s.Effect.SourceInstanceID)}");
                 }
                 foreach (ref var s in actor.PendingDispels.AsSpan())
                 {
-                    ImGui.TextUnformatted($"[dispel] {Utils.StatusString(s.StatusId)}{fromString("by", s.Effect.SourceInstanceId)}");
+                    ImGui.TextUnformatted($"[dispel] {Utils.StatusString(s.StatusId)}{fromString("by", s.Effect.SourceInstanceID)}");
                 }
-                for (var i = 0; i < actor.IncomingEffects.Length; ++i)
+                var lenE = actor.IncomingEffects.Length;
+                for (var i = 0; i < lenE; ++i)
                 {
                     ref var inc = ref actor.IncomingEffects[i];
                     if (inc.GlobalSequence != 0)
                     {
-                        ImGui.TextUnformatted($"[incoming {i}] {inc.GlobalSequence}/{inc.TargetIndex} {inc.Action}{fromString("from", inc.SourceInstanceId)}");
+                        ImGui.TextUnformatted($"[incoming {i}] {inc.GlobalSequence}/{inc.TargetIndex} {inc.Action}{fromString("from", inc.SourceInstanceID)}");
                     }
                 }
             }

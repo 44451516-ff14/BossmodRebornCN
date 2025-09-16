@@ -2,8 +2,8 @@ namespace BossMod.Shadowbringers.Dungeon.D10AnamnesisAnyder.D101Unknown;
 
 public enum OID : uint
 {
-    Boss = 0x2CD9, // R4.9
-    Unknown = 0x2CDA, // R4.9
+    Unknown1 = 0x2CD9, // R4.9
+    Unknown2 = 0x2CDA, // R4.9
     SinisterBubble = 0x2CDB, // R1.5
     Clock = 0x1EAF6C, // R0.5
     Helper = 0x233C
@@ -41,29 +41,22 @@ public enum AID : uint
     Setback2 = 19317 // Unknown->self, 3.0s cast, range 9 120-degree cone
 }
 
-class Inscrutability1(BossModule module) : Components.RaidwideCast(module, (uint)AID.Inscrutability1);
-class Inscrutability2(BossModule module) : Components.RaidwideCast(module, (uint)AID.Inscrutability2);
-class FetidFang1(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.FetidFang1);
-class FetidFang2(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.FetidFang2);
+sealed class Inscrutability(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.Inscrutability1, (uint)AID.Inscrutability2]);
+sealed class FetidFang(BossModule module) : Components.SingleTargetDelayableCasts(module, [(uint)AID.FetidFang1, (uint)AID.FetidFang2]);
 
-abstract class Deg120Cone(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(9f, 60f.Degrees()));
-class Setback1(BossModule module) : Deg120Cone(module, (uint)AID.Setback1);
-class Setback2(BossModule module) : Deg120Cone(module, (uint)AID.Setback2);
-class Clearout1(BossModule module) : Deg120Cone(module, (uint)AID.Clearout1);
-class Clearout2(BossModule module) : Deg120Cone(module, (uint)AID.Clearout2);
+sealed class SetbackClearout(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Setback1, (uint)AID.Setback2, (uint)AID.Clearout1, (uint)AID.Clearout2],
+new AOEShapeCone(9f, 60f.Degrees()));
 
-class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 8f);
+sealed class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 8f);
 
-abstract class LuminousRay(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(50f, 4f));
-class LuminousRay1(BossModule module) : LuminousRay(module, (uint)AID.LuminousRay1);
-class LuminousRay2(BossModule module) : LuminousRay(module, (uint)AID.LuminousRay2);
+sealed class LuminousRay(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LuminousRay1, (uint)AID.LuminousRay2], new AOEShapeRect(50f, 4f));
 
-class Reflection(BossModule module) : Components.GenericAOEs(module)
+sealed class Reflection(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 22.5f.Degrees());
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
@@ -75,57 +68,56 @@ class Reflection(BossModule module) : Components.GenericAOEs(module)
             _ => default
         };
         if (angle != default)
-            _aoe = new(cone, actor.Position.Quantized(), angle, WorldState.FutureTime(14.4f));
+        {
+            _aoe = [new(cone, actor.Position.Quantized(), angle, WorldState.FutureTime(14.4d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Reflection)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
-abstract class EctoplasmicRay(BossModule module, uint aid1, uint aid2) : Components.LineStack(module, aidMarker: aid1, aid2, 5.2f);
-class EctoplasmicRay1(BossModule module) : EctoplasmicRay(module, (uint)AID.EctoplasmicRayMarker1, (uint)AID.EctoplasmicRay1);
-class EctoplasmicRay2(BossModule module) : EctoplasmicRay(module, (uint)AID.EctoplasmicRayMarker2, (uint)AID.EctoplasmicRay2);
+abstract class EctoplasmicRay(BossModule module, uint aid1, uint aid2) : Components.LineStack(module, aidMarker: aid1, aid2, 5.2d, markerIsFinalTarget: false);
+sealed class EctoplasmicRay1(BossModule module) : EctoplasmicRay(module, (uint)AID.EctoplasmicRayMarker1, (uint)AID.EctoplasmicRay1);
+sealed class EctoplasmicRay2(BossModule module) : EctoplasmicRay(module, (uint)AID.EctoplasmicRayMarker2, (uint)AID.EctoplasmicRay2);
 
-class D101UnknownStates : StateMachineBuilder
+sealed class D101UnknownStates : StateMachineBuilder
 {
-    public D101UnknownStates(BossModule module) : base(module)
+    public D101UnknownStates(D101Unknown module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<Inscrutability1>()
-            .ActivateOnEnter<Inscrutability2>()
-            .ActivateOnEnter<FetidFang1>()
-            .ActivateOnEnter<FetidFang2>()
-            .ActivateOnEnter<Setback1>()
-            .ActivateOnEnter<Setback2>()
-            .ActivateOnEnter<Clearout1>()
-            .ActivateOnEnter<Clearout2>()
+            .ActivateOnEnter<Inscrutability>()
+            .ActivateOnEnter<FetidFang>()
+            .ActivateOnEnter<SetbackClearout>()
             .ActivateOnEnter<Explosion>()
-            .ActivateOnEnter<LuminousRay1>()
-            .ActivateOnEnter<LuminousRay2>()
+            .ActivateOnEnter<LuminousRay>()
             .ActivateOnEnter<Reflection>()
             .ActivateOnEnter<EctoplasmicRay1>()
             .ActivateOnEnter<EctoplasmicRay2>()
-            .Raw.Update = () =>
-            {
-                var unknown = module.Enemies((uint)OID.Unknown);
-                var count = unknown.Count;
-                var isDeadOrDestroyed = count != 0 && unknown[0].IsDeadOrDestroyed || count == 0;
-                return isDeadOrDestroyed && module.PrimaryActor.IsDeadOrDestroyed;
-            };
+            .Raw.Update = () => module.PrimaryActor.IsDeadOrDestroyed && (module.Unknown2?.IsDeadOrDestroyed ?? true);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 714, NameID = 9260)]
-public class D101Unknown(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.Unknown1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 714u, NameID = 9260u, Category = BossModuleInfo.Category.Dungeon, Expansion = BossModuleInfo.Expansion.Shadowbringers, SortOrder = 1)]
+public sealed class D101Unknown(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-40, 290), 19.5f, 40)], [new Rectangle(new(-40, 310.534f), 20, 1.2f), new Rectangle(new(-40, 269.5f), 20, 2)]);
+    public Actor? Unknown2;
+
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-40f, 290f), 19.5f, 40)], [new Rectangle(new(-40f, 310.534f), 20f, 1.2f), new Rectangle(new(-40f, 269.5f), 20f, 2f)]);
+
+    protected override void UpdateModule()
+    {
+        Unknown2 ??= GetActor((uint)OID.Unknown2);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies((uint)OID.Unknown));
+        Arena.Actor(Unknown2);
     }
 }

@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB1DemonTablet;
 
 sealed class PortentousCometeor(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PortentousCometeor, 43f);
 
-sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitAway(module, onlyShowOutlines: true)
+sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitAway(module, onlyShowOutlines: true, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(43f);
     private Actor? meteor;
@@ -19,7 +19,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
     {
         if (status.ID == (uint)SID.CraterLater)
         {
-            CurrentBaits.Add(new(actor, actor, circle, WorldState.FutureTime(12d)));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, WorldState.FutureTime(12d)));
         }
     }
 
@@ -35,7 +35,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
     {
         if (ActiveBaitsOn(actor).Count != 0 && meteor != null)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(meteor.Position, 1f), CurrentBaits.Ref(0).Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(meteor.Position, 1f), CurrentBaits.Ref(0).Activation);
         }
     }
 

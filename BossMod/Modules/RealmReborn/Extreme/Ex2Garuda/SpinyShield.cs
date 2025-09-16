@@ -2,7 +2,7 @@
 
 class SpinyShield(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> _shield = module.Enemies(OID.SpinyShield);
+    private readonly List<Actor> _shield = module.Enemies((uint)OID.SpinyShield);
     public Actor? ActiveShield => _shield.FirstOrDefault(a => a.EventState != 7);
 
     private const float _radius = 6; // TODO: verify
@@ -18,7 +18,7 @@ class SpinyShield(BossModule module) : BossComponent(module)
     {
         var shield = ActiveShield;
         if (shield != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(shield.Position, _radius));
+            hints.AddForbiddenZone(new SDInvertedCircle(shield.Position, _radius));
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)

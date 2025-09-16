@@ -6,7 +6,7 @@ class Ex2HydaelynStates : StateMachineBuilder
     {
         SimplePhase(0, Phase1, "P1")
             .ActivateOnEnter<WeaponTracker>()
-            .Raw.Update = () => Module.Enemies(OID.CrystalOfLight).Count != 0;
+            .Raw.Update = () => Module.Enemies((uint)OID.CrystalOfLight).Count != 0;
         DeathPhase(1, Phase2)
             .ActivateOnEnter<WeaponTracker>();
     }
@@ -100,7 +100,7 @@ class Ex2HydaelynStates : StateMachineBuilder
 
     private void Intermission(uint id, float delay)
     {
-        var echoes = Module.Enemies(OID.Echo);
+        var echoes = Module.Enemies((uint)OID.Echo);
 
         Targetable(id, false, delay, "Intermission start");
         ComponentCondition<PureCrystal>(id + 0x10000, 12.5f, comp => comp.NumCasts > 0, "Raidwide + adds appear")

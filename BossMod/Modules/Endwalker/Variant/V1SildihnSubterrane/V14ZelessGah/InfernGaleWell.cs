@@ -2,10 +2,10 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V14ZelessGah;
 
 sealed class InfernGale(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback[] _kb = new Knockback[1];
+    private Knockback[] _kb = [];
     private bool kbInit;
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => kbInit ? _kb : [];
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -20,6 +20,7 @@ sealed class InfernGale(BossModule module) : Components.GenericKnockback(module)
         if (spell.Action.ID == (uint)AID.InfernGale)
         {
             kbInit = false;
+            _kb = [];
         }
     }
 
@@ -27,21 +28,12 @@ sealed class InfernGale(BossModule module) : Components.GenericKnockback(module)
     {
         if (kbInit)
         {
-            var center = Arena.Center;
             ref var kb = ref _kb[0];
             var act = kb.Activation;
             if (!IsImmune(slot, act))
             {
-                var origin = kb.Origin;
                 // rect intentionally slightly smaller to prevent sus knockbacks
-                hints.AddForbiddenZone(p =>
-                {
-                    if ((p + 20f * (p - origin).Normalized()).InRect(center, 14f, 19f))
-                    {
-                        return 1f;
-                    }
-                    return default;
-                }, act);
+                hints.AddForbiddenZone(new SDKnockbackInAABBRectAwayFromOrigin(Arena.Center, kb.Origin, 20f, 14f, 19f), act);
             }
         }
     }
@@ -49,7 +41,7 @@ sealed class InfernGale(BossModule module) : Components.GenericKnockback(module)
 
 sealed class InfernWellPull(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback[] _kb = new Knockback[1];
+    private Knockback[] _kb = [];
     private bool kbInit;
 
     private readonly InfernWellAOE _aoe = module.FindComponent<InfernWellAOE>()!;
@@ -81,7 +73,7 @@ sealed class InfernWellPull(BossModule module) : Components.GenericKnockback(mod
             var act = kb.Activation;
             if (!IsImmune(slot, act))
             {
-                hints.AddForbiddenZone(ShapeDistance.Circle(kb.Origin, 23f), act); // radius: 15 pull distance + 8 aoe radius
+                hints.AddForbiddenZone(new SDCircle(kb.Origin, 23f), act); // radius: 15 pull distance + 8 aoe radius
             }
         }
     }
@@ -102,7 +94,7 @@ sealed class InfernWellPull(BossModule module) : Components.GenericKnockback(mod
 
 sealed class InfernWellAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance[] AOE = new AOEInstance[1];
+    public AOEInstance[] AOE = [];
     public bool AOEInit;
     private static readonly AOEShapeCircle circle = new(8f);
 

@@ -1,11 +1,11 @@
 namespace BossMod.Endwalker.Alliance.A33Oschon;
 
-class P2WanderingShot(BossModule module) : Components.GenericAOEs(module, (uint)AID.GreatWhirlwind)
+sealed class P2WanderingShot(BossModule module) : Components.GenericAOEs(module, (uint)AID.GreatWhirlwind)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle _shape = new(23f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -17,7 +17,7 @@ class P2WanderingShot(BossModule module) : Components.GenericAOEs(module, (uint)
         };
         if (coords != default)
         {
-            _aoe = new(_shape, coords, default, Module.CastFinishAt(spell, 3.6d));
+            _aoe = [new(_shape, coords, default, Module.CastFinishAt(spell, 3.6d))];
         }
     }
 }

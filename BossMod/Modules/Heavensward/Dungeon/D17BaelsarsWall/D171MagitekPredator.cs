@@ -33,7 +33,7 @@ class MagitekMissile(BossModule module) : Components.SingleTargetInstant(module,
         if (status.ID == (uint)SID.Prey)
         {
             var id = actor.InstanceID;
-            Targets.Add((Raid.FindSlot(id), WorldState.FutureTime(5d), id));
+            Targets.Add((Raid.FindSlot(id), WorldState.FutureTime(5d), id, Module.PrimaryActor, actor));
         }
     }
 }

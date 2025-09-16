@@ -16,7 +16,7 @@ public sealed class AIHints
         public float AttackStrength = 0.05f; // target's predicted HP percent is decreased by this amount (0.05 by default)
         public WPos DesiredPosition = actor.Position; // tank AI will try to move enemy to this position
         public Angle DesiredRotation = actor.Rotation; // tank AI will try to rotate enemy to this angle
-        public float TankDistance = 2; // enemy will start moving if distance between hitboxes is bigger than this
+        public float TankDistance = 2f; // enemy will start moving if distance between hitboxes is bigger than this
         public bool ShouldBeTanked = shouldBeTanked; // tank AI will try to tank this enemy
         public bool PreferProvoking; // tank AI will provoke enemy if not targeted
         public bool ForbidDOTs; // if true, dots on target are forbidden
@@ -51,7 +51,7 @@ public sealed class AIHints
         public readonly PredictedDamageType Type = type;
     }
 
-    public static readonly ArenaBounds DefaultBounds = new ArenaBoundsSquare(30f, AllowObstacleMap: true);
+    public static readonly ArenaBounds DefaultBounds = new ArenaBoundsSquare(30f, allowObstacleMap: true);
 
     // information needed to build base pathfinding map (onto which forbidden/goal zones are later rasterized), if needed (lazy, since it's somewhat expensive and not always needed)
     public WPos PathfindMapCenter;
@@ -60,7 +60,8 @@ public sealed class AIHints
     private static readonly AI.AIConfig _config = Service.Config.Get<AI.AIConfig>();
 
     // list of potential targets
-    public readonly Enemy?[] Enemies = new Enemy?[100];
+    public const int NumEnemies = 100;
+    public readonly Enemy?[] Enemies = new Enemy?[NumEnemies];
     public Enemy? FindEnemy(Actor? actor) => Enemies.BoundSafeAt(actor?.CharacterSpawnIndex ?? -1);
 
     // enemies in priority order
@@ -75,18 +76,24 @@ public sealed class AIHints
     // low-level forced movement - if set, character will move in specified direction (ignoring casts, uptime, forbidden zones, etc), or stay in place if set to default
     public Vector3? ForcedMovement;
 
+    // which direction should we point during the Spinning status in Alzadaal's Legacy? (yes, this is a bespoke movement gimmick for one dungeon boss)
+    public Angle? SpinDirection;
+
     // indicates to AI mode that it should try to interact with some object
     public Actor? InteractWithTarget;
 
     // positioning: list of shapes that are either forbidden to stand in now or will be in near future
     // AI will try to move in such a way to avoid standing in any forbidden zone after its activation or outside of some restricted zone after its activation, even at the cost of uptime
-    public readonly List<(Func<WPos, float> shapeDistance, DateTime activation, ulong Source)> ForbiddenZones = [];
+    public readonly List<(ShapeDistance shapeDistance, DateTime activation, ulong Source)> ForbiddenZones = [];
 
     // positioning: list of goal functions
     // AI will try to move to reach non-forbidden point with highest goal value (sum of values returned by all functions)
     // guideline: rotation modules should return 1 if it would use single-target action from that spot, 2 if it is also a positional, 3 if it would use aoe that would hit minimal viable number of targets, +1 for each extra target
     // other parts of the code can return small (e.g. 0.01) values to slightly (de)prioritize some positions, or large (e.g. 1000) values to effectively soft-override target position (but still utilize pathfinding)
     public readonly List<Func<WPos, float>> GoalZones = [];
+
+    // AI will treat the pixels inside these shapes as unreachable and not try to pathfind through them (unlike imminent forbidden zones)
+    public List<ShapeDistance> TemporaryObstacles = [];
 
     // positioning: next positional hint (TODO: reconsider, maybe it should be a list prioritized by in-gcds, and imminent should be in-gcds instead? or maybe it should be property of an enemy? do we need correct?)
     public (Actor? Target, Positional Pos, bool Imminent, bool Correct) RecommendedPositional;
@@ -129,13 +136,14 @@ public sealed class AIHints
         PathfindMapCenter = default;
         PathfindMapBounds = DefaultBounds;
         PathfindMapObstacles = default;
-        Array.Fill(Enemies, null);
+        Array.Clear(Enemies);
         PotentialTargets.Clear();
         ForcedTarget = null;
         ForcedMovement = null;
         InteractWithTarget = null;
         ForbiddenZones.Clear();
         GoalZones.Clear();
+        TemporaryObstacles.Clear();
         RecommendedPositional = default;
         ForbiddenDirections.Clear();
         ImminentSpecialMode = default;
@@ -210,7 +218,7 @@ public sealed class AIHints
     public void InteractWithOID(WorldState ws, uint oid) => InteractWithTarget = ws.Actors.FirstOrDefault(a => a.OID == oid && a.IsTargetable);
     public void InteractWithOID<OID>(WorldState ws, OID oid) where OID : Enum => InteractWithOID(ws, (uint)(object)oid);
 
-    public void AddForbiddenZone(Func<WPos, float> shapeDistance, DateTime activation = default, ulong source = default) => ForbiddenZones.Add((shapeDistance, activation, source));
+    public void AddForbiddenZone(ShapeDistance shapeDistance, DateTime activation = default, ulong source = default) => ForbiddenZones.Add((shapeDistance, activation, source));
     public void AddForbiddenZone(AOEShape shape, WPos origin, Angle rot = default, DateTime activation = default, ulong source = default) => ForbiddenZones.Add((shape.Distance(origin, rot), activation, source));
 
     public void AddPredictedDamage(BitMask players, DateTime activation, PredictedDamageType type = PredictedDamageType.Raidwide) => PredictedDamage.Add(new(players, activation, type));
@@ -502,5 +510,22 @@ public sealed class AIHints
             return GoalSingleTarget(dest, PathfindMapBounds.MapResolution, 10f);
         }
         return _ => default;
+    }
+
+    public Func<WPos, float> GoalRectangle(WPos center, WDir direction, float halfWidth, float halfHeight, float weight = 1f)
+    {
+        var fwd = direction.Normalized();
+        var right = fwd.OrthoR();
+        return p =>
+        {
+            var offset = p - center;
+            var localX = fwd.Dot(offset);
+            var localY = right.Dot(offset);
+            if (Math.Abs(localX) <= halfHeight && Math.Abs(localY) <= halfWidth)
+            {
+                return weight;
+            }
+            return default;
+        };
     }
 }

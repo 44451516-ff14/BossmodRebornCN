@@ -209,7 +209,7 @@ class D091RoseGardenStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 41, NameID = 4653, SortOrder = 2)]
 public class D091RoseGarden(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(default, -82.146f), 19.5f, 48)], [new Rectangle(new(18.221f, -90.993f), 20f, 1.25f, -65f.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(default, -82.146f), 19.5f, 48)], [new Rectangle(new(18.221f, -90.993f), 20f, 1.25f, -65f.Degrees()),
     new Rectangle(new(-20.214f, -82.492f), 20f, 1.25f, -88.9f.Degrees())]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

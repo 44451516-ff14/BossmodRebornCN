@@ -4,14 +4,14 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
 {
     private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
     private static readonly AOEShapeCircle circle = new(14f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private WPos jumpLoc;
     private bool isCone;
 
     private static readonly M08SHowlingBladeConfig _config = Service.Config.Get<M08SHowlingBladeConfig>();
     private static readonly PartyRolesConfig _party = Service.Config.Get<PartyRolesConfig>();
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -25,7 +25,7 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
         if (shape != null)
         {
             var pos = spell.LocXZ;
-            _aoe = new(shape, pos, Angle.FromDirection(Arena.Center - pos), Module.CastFinishAt(spell, 3.6d), Colors.Danger);
+            _aoe = [new(shape, pos, Angle.FromDirection(Arena.Center - pos), Module.CastFinishAt(spell, 3.6d), Colors.Danger)];
         }
         else if (id is (uint)AID.EminentReign or (uint)AID.RevolutionaryReign)
         {
@@ -52,7 +52,9 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
         var safespots = SafeSpots(pcSlot, pc);
         var count = safespots.Count;
         for (var i = 0; i < count; ++i)
+        {
             Arena.AddCircle(safespots[i], 0.7f, Colors.Safe, 2f);
+        }
     }
 
     public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
@@ -60,7 +62,9 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
         var safespots = SafeSpots(slot, actor);
         var count = safespots.Count;
         for (var i = 0; i < count; ++i)
+        {
             movementHints.Add(actor.Position, safespots[i], Colors.Safe);
+        }
     }
 
     private List<WPos> SafeSpots(int slot, Actor actor)
@@ -117,16 +121,16 @@ sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(m
 sealed class WolvesReignRect(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(28f, 5f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.RevolutionaryReign or (uint)AID.EminentReign)
         {
             var rot = spell.Rotation;
-            _aoe = new(rect, (caster.Position - 4f * rot.ToDirection()).Quantized(), rot, Module.CastFinishAt(spell, 2.4d));
+            _aoe = [new(rect, (caster.Position - 4f * rot.ToDirection()).Quantized(), rot, Module.CastFinishAt(spell, 2.4d))];
         }
     }
 

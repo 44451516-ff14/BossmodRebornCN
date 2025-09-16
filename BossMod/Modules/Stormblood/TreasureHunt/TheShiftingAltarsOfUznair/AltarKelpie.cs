@@ -89,16 +89,16 @@ class RisingSeasKB(BossModule module) : Components.SimpleKnockbacks(module, (uin
         if (Casters.Count != 0)
         {
             var count = _aoe.AOEs.Count;
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
             var center = Arena.Center;
             var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
             for (var i = 0; i < count; ++i)
             {
                 ref readonly var aoe = ref aoes[i];
-                forbidden[i] = ShapeDistance.Cone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
+                forbidden[i] = new SDCone(center, 20f, Angle.FromDirection(aoe.Origin - center), cone);
             }
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Casters.Ref(0).Activation);
+                hints.AddForbiddenZone(new SDUnion(forbidden), Casters.Ref(0).Activation);
         }
     }
 }
@@ -125,17 +125,7 @@ class AltarKelpieStates : StateMachineBuilder
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(AltarKelpie.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(AltarKelpie.All);
     }
 }
 
@@ -149,7 +139,7 @@ public class AltarKelpie(WorldState ws, Actor primary) : THTemplate(ws, primary)
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

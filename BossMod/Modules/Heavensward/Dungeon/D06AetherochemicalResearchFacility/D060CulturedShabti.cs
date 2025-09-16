@@ -40,7 +40,7 @@ class D060CulturedShabtiStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 3838, SortOrder = 9)]
 public class D060CulturedShabti(WorldState ws, Actor primary) : BossModule(ws, primary, IsArena1(primary) ? arena1.Center : ShabtiConjurer2Bounds.Arena.Center, IsArena1(primary) ? arena1 : ShabtiConjurer2Bounds.Arena)
 {
-    private static bool IsArena1(Actor primary) => primary.Position.Z > 200;
+    private static bool IsArena1(Actor primary) => primary.PosRot.Z > 200f;
     private static readonly WPos[] vertices1 = [new(226.49f, 196.43f), new(238.31f, 203.26f), new(238.76f, 203.54f), new(239.63f, 204.05f), new(239.86f, 218.33f),
     new(239.83f, 219.46f), new(239.52f, 219.88f), new(235.07f, 222.4f), new(234.6f, 222.66f), new(234.1f, 222.82f),
     new(233.63f, 223.09f), new(233.23f, 223.41f), new(232.96f, 223.83f), new(233.29f, 224.28f), new(238.73f, 227.52f),
@@ -77,7 +77,7 @@ public class D060CulturedShabti(WorldState ws, Actor primary) : BossModule(ws, p
     new(221.57f, 210.53f), new(221.6f, 210.01f), new(221.83f, 209.54f), new(222.16f, 209.14f), new(222.55f, 208.2f),
     new(223.03f, 207.97f), new(223.55f, 207.95f), new(224.44f, 207.4f), new(224.89f, 207.17f), new(225.39f, 207.07f),
     new(225.91f, 206.95f), new(226.4f, 206.86f), new(226.71f, 206.46f)];
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices1)], [new PolygonCustom(vertices1h1), new PolygonCustom(vertices1h2)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices1)], [new PolygonCustom(vertices1h1), new PolygonCustom(vertices1h2)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

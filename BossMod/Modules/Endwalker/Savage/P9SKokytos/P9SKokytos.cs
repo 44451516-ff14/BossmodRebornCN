@@ -17,9 +17,9 @@ public class P9SKokytos(WorldState ws, Actor primary) : BossModule(ws, primary, 
     private static readonly Rectangle[] difference45 = [RotatedRectangle(new WPos(100, 119.5f), -45.Degrees()),
     RotatedRectangle(new WPos(80.5f, 100), -135.Degrees()), RotatedRectangle(new WPos(119.5f, 100), 45.Degrees()),
     RotatedRectangle(new WPos(100, 80.5f), 135.Degrees())];
-    public static readonly ArenaBounds arena = new ArenaBoundsComplex(union);
-    public static readonly ArenaBounds arenaUplift0 = new ArenaBoundsComplex(union, difference0);
-    public static readonly ArenaBounds arenaUplift45 = new ArenaBoundsComplex(union, difference45);
+    public static readonly ArenaBounds arena = new ArenaBoundsCustom(union);
+    public static readonly ArenaBounds arenaUplift0 = new ArenaBoundsCustom(union, difference0);
+    public static readonly ArenaBounds arenaUplift45 = new ArenaBoundsCustom(union, difference45);
     private static Rectangle RotatedRectangle(WPos position, Angle rotation)
     {
         var rotatedPosition = WPos.RotateAroundOrigin(45, center, position);

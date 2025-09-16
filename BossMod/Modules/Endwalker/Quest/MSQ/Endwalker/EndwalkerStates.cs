@@ -4,7 +4,7 @@ sealed class EndwalkerStates : StateMachineBuilder
 {
     public EndwalkerStates(Endwalker module) : base(module)
     {
-        DeathPhase(default, id => { SimpleState(id, 10000, "Enrage"); })
+        DeathPhase(default, id => { SimpleState(id, 10000f, "Enrage"); })
             .ActivateOnEnter<Megaflare>()
             .ActivateOnEnter<TidalWave>()
             .ActivateOnEnter<Puddles>()
@@ -23,7 +23,7 @@ sealed class EndwalkerStates : StateMachineBuilder
             .ActivateOnEnter<MortalCoil>()
             .ActivateOnEnter<TidalWave2>();
 
-        SimplePhase(1u, id => { SimpleState(id, 10000, "Enrage"); }, "P2")
+        SimplePhase(1u, id => { SimpleState(id, 10000f, "Enrage"); }, "P2")
             .ActivateOnEnter<AetherialRay>()
             .ActivateOnEnter<SilveredEdge>()
             .ActivateOnEnter<VeilAsunder>()
@@ -34,6 +34,6 @@ sealed class EndwalkerStates : StateMachineBuilder
             .ActivateOnEnter<WyrmsTongue>()
             .ActivateOnEnter<UnmovingDvenadkatik>()
             .ActivateOnEnter<TheEdgeUnbound2>()
-            .Raw.Update = () => module.ZenosP2() is var ZenosP2 && ZenosP2 != null && !ZenosP2.IsTargetable && ZenosP2.HPMP.CurHP <= 1u;
+            .Raw.Update = () => module.ZenosP2 is Actor ZenosP2 && !ZenosP2.IsTargetable && ZenosP2.HPMP.CurHP <= 1u;
     }
 }

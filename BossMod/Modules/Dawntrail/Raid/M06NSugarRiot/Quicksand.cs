@@ -3,9 +3,9 @@ namespace BossMod.Dawntrail.Raid.M06NSugarRiot;
 sealed class Quicksand(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(23f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -23,11 +23,13 @@ sealed class Quicksand(BossModule module) : Components.GenericAOEs(module)
                     _ => default
                 };
                 if (pos != default)
-                    _aoe = new(circle, pos, default, WorldState.FutureTime(6d));
+                {
+                    _aoe = [new(circle, pos, default, WorldState.FutureTime(6d))];
+                }
             }
             else if (state == 0x00080004u)
             {
-                _aoe = null;
+                _aoe = [];
             }
         }
     }

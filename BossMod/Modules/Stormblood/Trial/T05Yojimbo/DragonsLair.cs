@@ -20,5 +20,6 @@ class DragonsLair(BossModule module) : Components.Exaflare(module, _rect)
             if (line.ExplosionsLeft > 0 && now >= line.NextExplosion)
                 AdvanceLine(line, line.Next);
         }
+        base.Update();
     }
 }

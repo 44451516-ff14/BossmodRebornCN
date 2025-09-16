@@ -63,7 +63,7 @@ sealed class FRUAI(RotationModuleManager manager, Actor player) : AIRotationModu
         var dir = _config.P1CyclonicBreakSpots[assignment];
         if (dir < 0)
             dir = 0;
-        var desiredPos = module.Center + desiredRange * (180 - 45 * dir).Degrees().ToDirection();
+        var desiredPos = module.Center + desiredRange * (180f - 45f * dir).Degrees().ToDirection();
         var off = desiredPos - module.PrimaryActor.Position;
         var distSq = off.LengthSq();
         if (distSq >= safeRange * safeRange)
@@ -76,7 +76,7 @@ sealed class FRUAI(RotationModuleManager manager, Actor player) : AIRotationModu
     // empyrically, if i stand still, i can start moving when boss is ~11m away and it will still be dragged to intended spot
     private WPos DragToCenterPosition(FRU module)
     {
-        if (module.PrimaryActor.Position.Z >= module.Center.Z - 1)
+        if (module.PrimaryActor.PosRot.Z >= module.Center.Z - 1)
             return module.Center - new WDir(0, 6); // boss is positioned, go to N clockspot
         var dragDistance = module.PrimaryActor.HitboxRadius + Player.HitboxRadius + 2.25f; // we need to stay approx here, it's fine to overshoot a little bit - then when boss teleports, it won't turn
         var meleeDistance = module.PrimaryActor.HitboxRadius + Player.HitboxRadius + 2.75f; // -0.25 is a small extra leeway

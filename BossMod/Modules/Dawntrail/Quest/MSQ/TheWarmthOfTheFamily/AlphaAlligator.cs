@@ -52,7 +52,7 @@ sealed class FeedingTime(BossModule module) : Components.InterceptTether(module,
                 return;
             var target = WorldState.Actors.Find(source.Tether.Target);
             if (target != null)
-                hints.AddForbiddenZone(ShapeDistance.InvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f), _activation);
+                hints.AddForbiddenZone(new SDInvertedRect(target.Position + (target.HitboxRadius + 0.1f) * target.DirectionTo(source), source.Position, 0.5f), _activation);
         }
     }
 }
@@ -61,25 +61,22 @@ sealed class CriticalBite(BossModule module) : Components.SimpleAOEs(module, (ui
 
 sealed class AlphaAlligatorStates : StateMachineBuilder
 {
-    public AlphaAlligatorStates(BossModule module) : base(module)
+    public AlphaAlligatorStates(AlphaAlligator module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<FeedingTime>()
             .ActivateOnEnter<CriticalBite>()
             .Raw.Update = () =>
             {
-                var enemies = module.Enemies(AlphaAlligator.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
+                if (module.BossAlphaAlligator?.IsDead ?? false)
                 {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDestroyed)
-                        return false;
-                }
-                var alpha = module.Enemies((uint)OID.AlphaAlligator);
-                if (alpha.Count != 0 && alpha[0].IsDead)
                     return true;
-                return true;
+                }
+                if (AllDestroyed(AlphaAlligator.All))
+                {
+                    return true;
+                }
+                return false;
             };
     }
 }
@@ -99,11 +96,17 @@ public sealed class AlphaAlligator(WorldState ws, Actor primary) : BossModule(ws
     new(405.71f, -121.94f), new(405.65f, -122.46f), new(405.73f, -123.2f), new(406.51f, -124.25f), new(406.71f, -124.75f),
     new(406.61f, -125.40f), new(407.32f, -126.66f), new(407.47f, -127.25f), new(407.42f, -127.82f), new(406.67f, -128.79f),
     new(406.44f, -129.39f), new(407.78f, -134.79f), new(408.15f, -135.35f), new(420.82f, -140.11f), new(423.33f, -140.59f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] All = [(uint)OID.Yeheheceyaa, (uint)OID.AlphaAlligator, (uint)OID.HornedLizard, (uint)OID.Ceratoraptor, (uint)OID.Alligator];
+    public Actor? BossAlphaAlligator;
+
+    protected override void UpdateModule()
+    {
+        BossAlphaAlligator ??= GetActor((uint)OID.AlphaAlligator);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(All));
+        Arena.Actors(this, All);
     }
 }

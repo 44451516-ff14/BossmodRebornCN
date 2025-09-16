@@ -57,10 +57,10 @@ sealed class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeCustom ENVC21 = CreateShape(positions[1], positions[2], positions[3], angles[1], angles[0], angles[2], 7);
     private static readonly AOEShapeCustom ENVC20Inverted = CreateShape(positions[0], positions[2], positions[3], angles[1], angles[3], angles[0], 1, true);
     private static readonly AOEShapeCustom ENVC20 = CreateShape(positions[0], positions[2], positions[3], angles[1], angles[3], angles[0], 7);
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private static readonly WDir am40 = -40f.Degrees().ToDirection(), a0 = new(0f, 1f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -70,7 +70,7 @@ sealed class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
         }
         else if (state is 0x02000001u or 0x04000004u or 0x08000004u or 0x01000001u)
         {
-            AOE = null;
+            AOE = [];
         }
     }
 
@@ -80,50 +80,58 @@ sealed class WindEarthShot(BossModule module) : Components.GenericAOEs(module)
         var color = state == 0x00800040u ? Colors.SafeFromAOE : default;
         AOE = index switch
         {
-            0x1E => new(shape, positions[0], default, activation),
-            0x1F => new(shape, positions[1], default, activation),
-            0x20 => new(state == 0x00800040u ? ENVC20Inverted : ENVC20, Arena.Center, default, activation, color),
-            0x21 => new(state == 0x00800040u ? ENVC21Inverted : ENVC21, Arena.Center, default, activation, color),
+            0x1E => [new(shape, positions[0], default, activation)],
+            0x1F => [new(shape, positions[1], default, activation)],
+            0x20 => [new(state == 0x00800040u ? ENVC20Inverted : ENVC20, Arena.Center, default, activation, color)],
+            0x21 => [new(state == 0x00800040u ? ENVC21Inverted : ENVC21, Arena.Center, default, activation, color)],
             _ => AOE
         };
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (AOE == null)
+        if (AOE.Length == 0)
+        {
             return;
-        var aoeShape = AOE.Value.Shape;
+        }
+        ref var aoe = ref AOE[0];
+        var aoeShape = aoe.Shape;
         if (aoeShape != ENVC20Inverted && aoeShape != ENVC21Inverted)
+        {
             base.AddHints(slot, actor, hints);
-        else if (!AOE.Value.Check(actor.Position))
-            hints.Add(Hint);
+        }
         else
-            hints.Add(Hint, false);
+        {
+            hints.Add(Hint, !aoe.Check(actor.Position));
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (AOE == null)
+        if (AOE.Length == 0)
+        {
             return;
+        }
+        ref var aoe = ref AOE[0];
         base.AddAIHints(slot, actor, assignment, hints);
 
-        var aoeShape = AOE.Value.Shape;
+        var aoeShape = aoe.Shape;
         var containsENVC20 = aoeShape == ENVC20;
         var containsENVC21 = aoeShape == ENVC21;
 
         if (containsENVC20 || containsENVC21)
         {
-            var forbiddenZone = actor.Role != Role.Tank
-                ? ShapeDistance.Rect(Arena.Center, containsENVC20 ? am40 : a0, 20f, containsENVC20 ? 1f : 10f, 20f)
-                : ShapeDistance.InvertedCircle(Arena.Center, 12f);
+            ShapeDistance forbiddenZone = actor.Role != Role.Tank
+                ? new SDRect(Arena.Center, containsENVC20 ? am40 : a0, 20f, containsENVC20 ? 1f : 10f, 20f)
+                : new SDInvertedCircle(Arena.Center, 12f);
 
-            hints.AddForbiddenZone(forbiddenZone, AOE.Value.Activation);
+            hints.AddForbiddenZone(forbiddenZone, aoe.Activation);
         }
     }
 
     private static AOEShapeCustom CreateShape(WPos pos1, WPos pos2, WPos pos3, Angle angle1, Angle angle2, Angle angle3, int halfWidth, bool inverted = false)
         => new([new Rectangle(pos1, halfWidth, Length, angle1), new Rectangle(pos2, halfWidth, Length, angle2), new Rectangle(pos3, halfWidth, Length, angle3)],
-        InvertForbiddenZone: inverted);
+        invertForbiddenZone: inverted);
 }
 
 sealed class WindShotStack(BossModule module) : Components.DonutStack(module, (uint)AID.WindShot, (uint)IconID.WindShot, 5f, 10f, 6f, 4, 4)
@@ -135,25 +143,33 @@ sealed class WindShotStack(BossModule module) : Components.DonutStack(module, (u
         if (Stacks.Count == 0)
             return;
 
-        var aoe = _aoe.AOE!.Value;
-        var forbidden = new List<Func<WPos, float>>(3);
+        ref var aoe = ref _aoe.AOE[0];
+        var forbidden = new List<ShapeDistance>(3);
         var party = Raid.WithoutSlot(false, true, true);
         var len = party.Length;
         for (var i = 0; i < len; ++i)
         {
             var p = party[i];
             if (p == actor)
+            {
                 continue;
+            }
 
             var addForbidden = false;
             if (aoe.Shape is AOEShapeDonut && !aoe.Check(p.Position) || aoe.Shape is AOEShapeCustom && aoe.Check(p.Position))
+            {
                 addForbidden = true;
+            }
             if (addForbidden)
-                forbidden.Add(ShapeDistance.InvertedCircle(p.Position, 1.66f));
+            {
+                forbidden.Add(new SDInvertedCircle(p.Position, 1.66f));
+            }
         }
 
         if (forbidden.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), Stacks[0].Activation);
+        {
+            hints.AddForbiddenZone(new SDIntersection([.. forbidden]), Stacks.Ref(0).Activation);
+        }
     }
 }
 
@@ -184,10 +200,10 @@ sealed class D022KahderyorStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12703)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12703)]
 public sealed class D022Kahderyor(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultBounds.Center, DefaultBounds)
 {
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(new(-53f, -57f), 19.5f, 40)], [new Rectangle(new(-72.5f, -57f), 0.75f, 20), new Rectangle(new(-53f, -37f), 20f, 1.5f)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(new(-53f, -57f), 19.5f, 40)], [new Rectangle(new(-72.5f, -57f), 0.75f, 20), new Rectangle(new(-53f, -37f), 20f, 1.5f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

@@ -73,12 +73,12 @@ public class D131BlackEft(WorldState ws, Actor primary) : BossModule(ws, primary
     new(-5.22f, -72.55f), new(-4.3f, -72.65f), new(-3.72f, -72.47f), new(-3.82f, -71.92f), new(-3.07f, -70.9f),
     new(-1.82f, -70.34f), new(-1.22f, -70.34f), new(0.02f, -70.85f), new(0.34f, -71.37f), new(0.61f, -71.94f),
     new(0.61f, -73.48f), new(12.14f, -73.48f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     private static readonly uint[] trash = [(uint)OID.EigthCohortLaquearius, (uint)OID.EigthCohortSignifer, (uint)OID.MagitekColossus];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }

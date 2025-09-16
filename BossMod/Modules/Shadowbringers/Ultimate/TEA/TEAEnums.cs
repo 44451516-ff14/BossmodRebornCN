@@ -111,7 +111,7 @@ public enum AID : uint
     ApocalypticRayAOE = 18508, // Helper->self, no cast, range 25+R ?-degree cone aoe
     FinalSentence = 18518, // BruteJustice->self, 8.0s cast, single-target, visual (enrage)
     EternalDarknessP2 = 18490, // CruiseChaser->location, 8.0s cast, range 100 circle, ??? (enrage)
-    //SevereContamination = 18891, // LiquidRage->self, no cast, range 80 circle
+    SevereContamination = 18891, // LiquidRage->self, no cast, range 80 circle
 
     AutoAttackP3 = 18812, // AlexanderPrime->player, no cast, single-target
     TemporalStasis = 18522, // AlexanderPrime->self, 8.0s cast, single-target, visual (debuffs & baits)
@@ -131,10 +131,11 @@ public enum AID : uint
     Aetheroplasm = 18546, // Plasmasphere->self, no cast, range 6 circle (orb explosion)
     ElectromagneticBurst = 18548, // Helper->self, no cast, range 50 circle, raidwide if aetheroplasm explosions intersect
     Tetrashatter = 19080, // JudgmentCrystal->self, no cast, range 80+R circle (light raidwide, if mechanic succeeded)
+    TetrashatterVisual = 19023, // Helper->self, no cast, single-target
     TetrashatterFail = 18525, // JudgmentCrystal->self, 5.5s cast, range 80+R circle
     Inception = 18526, // AlexanderPrime->self, 5.0s cast, range 100 width 16 cross, ???
     SacramentInception = 18527, // AlexanderPrime->self, no cast, range 100 width 16 cross aoe
-    //_Weaponskill_ = 19023, // Helper->self, no cast, single-target, ??? visual?
+    Burst = 18547, // Plasmasphere->self, no cast, range 40 circle
     TrueHeartSuccess = 19024, // TrueHeart->self, no cast, range 80 circle, applies Enigma Codex to whole raid (on success?)
     WormholeFormation = 18542, // AlexanderPrime->self, 4.0s cast, single-target, visual (mechanic start)
     LimitCutP3 = 19215, // CruiseChaser->self, 2.0s cast, single-target, visual

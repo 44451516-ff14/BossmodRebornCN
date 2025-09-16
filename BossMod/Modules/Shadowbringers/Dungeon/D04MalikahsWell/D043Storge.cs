@@ -29,12 +29,12 @@ public enum AID : uint
     HereticsFork3 = 15886 // Boss->self, 23.0s cast, range 60 width 10 cross
 }
 
-class IntestinalCrank(BossModule module) : Components.RaidwideCast(module, (uint)AID.IntestinalCrank);
-class BreakingWheel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreakingWheel1, new AOEShapeDonut(5f, 60f));
-class HereticsFork(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HereticsFork1, new AOEShapeCross(60f, 5f));
-class CrystalNail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrystalNail, 5f);
+sealed class IntestinalCrank(BossModule module) : Components.RaidwideCast(module, (uint)AID.IntestinalCrank);
+sealed class BreakingWheel(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BreakingWheel1, new AOEShapeDonut(5f, 60f));
+sealed class HereticsFork(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HereticsFork1, new AOEShapeCross(60f, 5f));
+sealed class CrystalNail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CrystalNail, 5f);
 
-class HereticsForkBreakingWheelStreak(BossModule module) : Components.GenericAOEs(module)
+sealed class HereticsForkBreakingWheelStreak(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(5f, 60f);
     private static readonly AOEShapeCross cross = new(60f, 5f);
@@ -77,7 +77,7 @@ class HereticsForkBreakingWheelStreak(BossModule module) : Components.GenericAOE
     }
 }
 
-class D043StorgeStates : StateMachineBuilder
+sealed class D043StorgeStates : StateMachineBuilder
 {
     public D043StorgeStates(BossModule module) : base(module)
     {
@@ -91,9 +91,7 @@ class D043StorgeStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 656, NameID = 8249)]
-public class D043Storge(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D043Storge(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly Angle a45 = 45f.Degrees();
-    private static readonly ArenaBoundsComplex arena = new([new Cross(new(196f, -95f), 19.5f, 14f), new Square(new(182f, -81f), 0.3f, a45),
-    new Square(new(210, -81), 0.3f, a45), new Square(new(182f, -109f), 0.3f, a45), new Square(new(210f, -109f), 0.3f, a45)]);
+    private static readonly ArenaBoundsCustom arena = new([new Cross(new(196f, -95f), 20f, 14.5f)], AdjustForHitbox: true);
 }

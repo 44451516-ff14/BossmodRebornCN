@@ -70,7 +70,7 @@ public class D113Batraal(WorldState ws, Actor primary) : BossModule(ws, primary,
     new(82.2f, -185.4f), new(81.7f, -202.9f), new(76.8f, -202.5f), new(72.2f, -203.4f), new(58.4f, -198.1f),
     new(57.6f, -193.1f), new(65.2f, -188.8f), new(73.1f, -183.7f), new(75.1f, -178.7f), new(70.9f, -173.1f),
     new(59.4f, -164.6f), new(60.8f, -159f), new(58.4f, -158.1f), new(56f, -154.1f)])];
-    public static readonly ArenaBoundsComplex arena = new(shape);
+    public static readonly ArenaBoundsCustom arena = new(shape);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

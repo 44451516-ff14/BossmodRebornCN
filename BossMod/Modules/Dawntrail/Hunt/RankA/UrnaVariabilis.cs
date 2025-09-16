@@ -41,6 +41,7 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
     private DateTime activation;
     private bool bossCharge; // false if negative, true if positive
     private bool shape; // false if circle, true if donut
+    private MagnetismCircleDonut? _aoe;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -76,14 +77,17 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.Magnetoplasma1 or (uint)AID.Magnetoplasma2 or (uint)AID.Magnetoring1 or (uint)AID.Magnetoring2)
+        {
             activation = default;
+        }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var comp = Module.FindComponent<MagnetismCircleDonut>();
-        if (comp != null && comp.AOE is Components.GenericAOEs.AOEInstance aoe)
+        _aoe ??= Module.FindComponent<MagnetismCircleDonut>();
+        if (_aoe!.AOE.Length != 0)
         {
+            ref var aoe = ref _aoe.AOE[0];
             if (aoe.Check(pos))
                 return true;
         }
@@ -131,16 +135,18 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         var isKnockback = bossCharge && isPositive || !bossCharge && isNegative;
         var pos = Module.PrimaryActor.Position;
 
-        var forbidden = shape
-            ? isPull ? ShapeDistance.InvertedCircle(pos, 18f)
-            : isKnockback ? ShapeDistance.InvertedCircle(pos, 1f)
+        ShapeDistance? forbidden = shape
+            ? isPull ? new SDInvertedCircle(pos, 18f)
+            : isKnockback ? new SDInvertedCircle(pos, 1f)
             : null
-            : isPull ? ShapeDistance.Circle(pos, 30f)
-            : isKnockback ? ShapeDistance.Circle(pos, 10f)
+            : isPull ? new SDCircle(pos, 30f)
+            : isKnockback ? new SDCircle(pos, 10f)
             : null;
 
         if (forbidden != null)
+        {
             hints.AddForbiddenZone(forbidden, activation);
+        }
     }
 }
 
@@ -149,25 +155,25 @@ sealed class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(mo
     private readonly Magnetism _kb = module.FindComponent<Magnetism>()!;
     private static readonly AOEShapeDonut donut = new(8f, 60f);
     private static readonly AOEShapeCircle circle = new(20f);
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(AOEShape shape, float delay = default) => AOE = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay));
+        void AddAOE(AOEShape shape, double delay = default) => AOE = [new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, delay))];
         switch (spell.Action.ID)
         {
             case (uint)AID.Magnetoplasma1:
             case (uint)AID.Magnetoplasma2:
-                AddAOE(circle, 2.5f);
+                AddAOE(circle, 2.5d);
                 break;
             case (uint)AID.ProximityPlasma1:
                 AddAOE(circle);
                 break;
             case (uint)AID.Magnetoring1:
             case (uint)AID.Magnetoring2:
-                AddAOE(donut, 2.5f);
+                AddAOE(donut, 2.5d);
                 break;
             case (uint)AID.RingLightning1:
                 AddAOE(donut);
@@ -178,14 +184,19 @@ sealed class MagnetismCircleDonut(BossModule module) : Components.GenericAOEs(mo
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.ProximityPlasma1 or (uint)AID.ProximityPlasma2 or (uint)AID.RingLightning1 or (uint)AID.RingLightning2)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var kb = _kb.ActiveKnockbacks(slot, actor);
-        if (kb.Length == 0 || kb.Length != 0 && _kb.IsImmune(slot, kb[0].Activation))
+        var len = kb.Length;
+        if (len == 0 || len != 0 && _kb.IsImmune(slot, kb[0].Activation))
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 }
 

@@ -29,7 +29,7 @@ class D120HaamOtodusStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<AquaticLance>()
             .ActivateOnEnter<Icestorm>()
-            .Raw.Update = () => module.Enemies(D120HaamOtodus.Trash).Where(x => x.Position.AlmostEqual(module.Arena.Center, module.Bounds.Radius)).All(e => e.IsDeadOrDestroyed);
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D120HaamOtodus.Trash);
     }
 }
 
@@ -100,13 +100,13 @@ public class D120HaamOtodus(WorldState ws, Actor primary) : BossModule(ws, prima
     new(-435.15f, 367.12f), new(-434.83f, 367.58f), new(-434.24f, 367.49f), new(-433.7f, 367.2f), new(-433.24f, 366.74f),
     new(-432.04f, 365.21f), new(-432.44f, 364.06f), new(-432.4f, 363.45f), new(-432.22f, 362.8f), new(-431.59f, 361.72f),
     new(-431.36f, 361.08f), new(-431.21f, 360.46f), new(-430.86f, 359.87f), new(-422.75f, 355.19f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.HaamFrostbeast, (uint)OID.HaamOtodus2, (uint)OID.HaamOtodus3, (uint)OID.HaamAurelia];
 
-    protected override bool CheckPull() => Enemies(Trash).Any(x => x.InCombat && x.Position.AlmostEqual(Arena.Center, Bounds.Radius));
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }

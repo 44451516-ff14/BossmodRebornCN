@@ -40,17 +40,7 @@ class D060SixthLegionMagitekVanguardH1States : StateMachineBuilder
             .ActivateOnEnter<CermetDrill>()
             .ActivateOnEnter<Heartstopper>()
             .ActivateOnEnter<Stoneskin>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D060SixthLegionMagitekVanguardH1.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D060SixthLegionMagitekVanguardH1.Trash);
     }
 }
 
@@ -67,31 +57,22 @@ public class D060SixthLegionMagitekVanguardH1(WorldState ws, Actor primary) : Bo
     new(-196.96f, -295.01f), new(-197.43f, -295.57f), new(-183.31f, -309.76f), new(-183.05f, -322.95f), new(-183.05f, -329.17f),
     new(-182.5f, -329.47f), new(-174.49f, -329.12f), new(-173.76f, -329.12f), new(-170.86f, -329.22f), new(-170.15f, -329.34f),
     new(-169.46f, -329.55f), new(-168.92f, -329.66f), new(-168.92f, -310.29f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.SixthLegionTesserarius, (uint)OID.SixthLegionOptio, (uint)OID.SixthLegionMedicus];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

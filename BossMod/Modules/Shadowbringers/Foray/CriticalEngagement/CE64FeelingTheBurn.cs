@@ -180,7 +180,7 @@ sealed class ChainCannonEscort(BossModule module) : Components.GenericAOEs(modul
                     var a = participants[j];
                     if (a == actor)
                         continue;
-                    hints.AddForbiddenZone(ShapeDistance.Cone(caster.Position, 60f, caster.AngleTo(a), Angle.Asin(Rect.HalfWidth / (a.Position - caster.Position).Length())), activation);
+                    hints.AddForbiddenZone(new SDCone(caster.Position, 60f, caster.AngleTo(a), Angle.Asin(Rect.HalfWidth / (a.Position - caster.Position).Length())), activation);
                 }
             }
         }
@@ -189,14 +189,16 @@ sealed class ChainCannonEscort(BossModule module) : Components.GenericAOEs(modul
 
 sealed class ChainCannonBoss(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ChainCannonBoss)
-            _aoe = new(ChainCannonEscort.Rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 1f));
+        {
+            _aoe = [new(ChainCannonEscort.Rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 1d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -205,12 +207,12 @@ sealed class ChainCannonBoss(BossModule module) : Components.GenericAOEs(module)
         {
             if (++NumCasts >= 4)
             {
-                _aoe = null;
+                _aoe = [];
                 NumCasts = 0;
             }
             else
             {
-                _aoe = new(ChainCannonEscort.Rect, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(1d));
+                _aoe = [new(ChainCannonEscort.Rect, caster.Position.Quantized(), caster.Rotation, WorldState.FutureTime(1d))];
             }
         }
     }

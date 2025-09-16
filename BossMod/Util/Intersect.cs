@@ -10,12 +10,21 @@ public static class Intersect
         // (rayOriginOffset + t * rayDir) ^ 2 = R^2 => t^2 + 2 * t * rayOriginOffset dot rayDir + rayOriginOffset^2 - R^2 = 0
         var halfB = rayOriginOffset.Dot(rayDir);
         var halfDSq = halfB * halfB - rayOriginOffset.LengthSq() + circleRadius * circleRadius;
-        if (halfDSq < 0)
+        if (halfDSq < 0f)
             return float.MaxValue; // never intersects
         var t = -halfB + MathF.Sqrt(halfDSq);
-        return t >= 0 ? t : float.MaxValue;
+        return t >= 0f ? t : float.MaxValue;
     }
     public static float RayCircle(WPos rayOrigin, WDir rayDir, WPos circleCenter, float circleRadius) => RayCircle(rayOrigin - circleCenter, rayDir, circleRadius);
+
+    public static bool RayCircle(WDir rayOriginOffset, WDir rayDir, float circleRadius, float maxDist)
+    {
+        var t = (-rayOriginOffset).Dot(rayDir);
+        var tClamped = MathF.Max(0f, MathF.Min(maxDist, t));
+
+        var closest = rayOriginOffset + rayDir * tClamped;
+        return closest.LengthSq() <= circleRadius * circleRadius;
+    }
 
     // halfWidth is along X, halfHeight is along Z
     public static float RayAABB(WDir rayOriginOffset, WDir rayDir, float halfWidth, float halfHeight)
@@ -49,7 +58,7 @@ public static class Intersect
         // tx1 = NaN => tx2 = +-inf => tmin = min(tmin, tmin -or- +inf) = tmin, tmax = max(tmax, tmax -or- -inf) = tmax
         // tx2 = NaN => tx1 = +-inf => tmin = min(tmin -or- +inf, tmin) = tmin, tmax = min(tmax -or- +inf, tmax) = tmax
         // so NaN's don't change 'clipped' ray segment
-        return tmin > tmax ? float.MaxValue : tmin >= 0 ? tmin : tmax >= 0 ? tmax : float.MaxValue;
+        return tmin > tmax ? float.MaxValue : tmin >= 0f ? tmin : tmax >= 0f ? tmax : float.MaxValue;
     }
     public static float RayAABB(WPos rayOrigin, WDir rayDir, WPos boxCenter, float halfWidth, float halfHeight) => RayAABB(rayOrigin - boxCenter, rayDir, halfWidth, halfHeight);
 

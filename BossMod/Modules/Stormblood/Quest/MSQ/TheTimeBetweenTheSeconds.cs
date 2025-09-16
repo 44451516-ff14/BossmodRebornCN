@@ -105,6 +105,6 @@ class ZenosYaeGalvusStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68034, NameID = 5954)]
 public class ZenosYaeGalvus(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(-226.91f, 523.65f), new(-254.46f, 524.46f), new(-254.66f, 541.06f), new(-269.99f, 544.12f),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(-226.91f, 523.65f), new(-254.46f, 524.46f), new(-254.66f, 541.06f), new(-269.99f, 544.12f),
     new(-269.58f, 565.97f), new(-254.58f, 565.89f), new(-249.05f, 554.06f), new(-229.18f, 562.35f)])]);
 }

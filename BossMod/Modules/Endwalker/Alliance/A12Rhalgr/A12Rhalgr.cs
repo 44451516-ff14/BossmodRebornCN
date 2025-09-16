@@ -36,5 +36,5 @@ public class A12Rhalgr(WorldState ws, Actor primary) : BossModule(ws, primary, a
     new(7.238f, 274.778f), new(7.331f, 271.638f), new(7.405f, 268.327f), new(7.395f, 264.881f), new(7.238f, 261.338f),
     new(6.999f, 257.713f), new(6.745f, 254.024f), new(6.497f, 250.338f), new(5.606f, 246.607f), new(4.541f, 242.959f),
     new(3.557f, 239.602f), new(2.737f, 236.809f), new(2.375f, 235.5f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

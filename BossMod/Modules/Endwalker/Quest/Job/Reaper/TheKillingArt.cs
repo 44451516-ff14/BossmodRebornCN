@@ -36,7 +36,7 @@ public enum AID : uint
 }
 
 class VoidMortar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidMortar1, 13);
-class FocusInferi(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.FocusInferi, m => m.Enemies(OID.Voidzone).Where(x => x.EventState != 7), 0);
+class FocusInferi(BossModule module) : Components.VoidzoneAtCastTarget(module, 6, (uint)AID.FocusInferi, m => m.Enemies((uint)OID.Voidzone).Where(x => x.EventState != 7), 0);
 class CarnemLevareCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CarnemLevare1, new AOEShapeCross(40, 4));
 
 class CarnemLevareDonut(BossModule module) : Components.GenericAOEs(module)
@@ -105,5 +105,5 @@ class OrcusStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69614, NameID = 10581)]
 public class Orcus(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-69.569f, -388), 19.5f, 64)], [new Rectangle(new(-69, -368), 20, 0.94f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-69.569f, -388), 19.5f, 64)], [new Rectangle(new(-69, -368), 20, 0.94f)]);
 }

@@ -105,11 +105,11 @@ class GuildivainStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69608, NameID = 10733)]
 public class Guildivain(WorldState ws, Actor primary) : BossModule(ws, primary, SmallBounds.Center, AncelAndMahaud.AncelAndMahaud.ArenaBounds)
 {
-    public static readonly ArenaBoundsComplex SmallBounds = new([new Polygon(new(224.8f, -855.8f), 10, 20)]);
+    public static readonly ArenaBoundsCustom SmallBounds = new([new Polygon(new(224.8f, -855.8f), 10, 20)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(OID.EnhancedNoulith));
+        Arena.Actors(Enemies((uint)OID.EnhancedNoulith));
         Arena.Actor(PrimaryActor);
     }
 }

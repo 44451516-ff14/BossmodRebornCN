@@ -8,10 +8,10 @@ public static class HoHArenas
 
 public abstract class HoHArena1(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(HoHArenas.ArenaCenter, 24.5f * CosPI.Pi48th, 48, 3.75f.Degrees())], [new Rectangle(new(-300f, -325f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(HoHArenas.ArenaCenter, 24.5f * CosPI.Pi48th, 48, 3.75f.Degrees())], [new Rectangle(new(-300f, -325f), 20f, 1.25f)]);
 }
 
 public abstract class HoHArena2(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(HoHArenas.ArenaCenter, 24.5f, 48)], HoHArenas.Entrance);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(HoHArenas.ArenaCenter, 24.5f, 48)], HoHArenas.Entrance);
 }

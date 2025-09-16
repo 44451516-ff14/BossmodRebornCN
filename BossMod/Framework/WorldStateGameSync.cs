@@ -73,7 +73,7 @@ sealed class WorldStateGameSync : IDisposable
 
     private readonly unsafe delegate* unmanaged<ContainerInterface*, float> _calculateMoveSpeedMulti;
 
-    private unsafe delegate void ProcessMapEffectDelegate(byte* data);
+    private unsafe delegate void ProcessMapEffectDelegate(ContentDirector* director, byte* packet);
 
     private readonly Hook<ProcessMapEffectDelegate> _processMapEffect1Hook;
     private readonly Hook<ProcessMapEffectDelegate> _processMapEffect2Hook;
@@ -99,7 +99,7 @@ sealed class WorldStateGameSync : IDisposable
             amex.ActionEffectReceived.Subscribe(OnActionEffect)
         );
 
-        _processPacketActorCastHook = Service.Hook.HookFromSignature<ProcessPacketActorCastDelegate>("40 56 41 56 48 81 EC ?? ?? ?? ?? 48 8B F2", ProcessPacketActorCastDetour);
+        _processPacketActorCastHook = Service.Hook.HookFromSignature<ProcessPacketActorCastDelegate>("40 53 57 48 81 EC ?? ?? ?? ?? 48 8B FA 8B D1", ProcessPacketActorCastDetour);
         _processPacketActorCastHook.Enable();
         Service.Log($"[WSG] ProcessPacketActorCast address = 0x{_processPacketActorCastHook.Address:X}");
 
@@ -116,7 +116,7 @@ sealed class WorldStateGameSync : IDisposable
         Service.Log($"[WSG] ProcessPacketActorControl address = 0x{_processPacketActorControlHook.Address:X}");
 
         // alt sig - impl: "45 33 D2 48 8D 41 48"
-        _processPacketNpcYellHook = Service.Hook.HookFromSignature<ProcessPacketNpcYellDelegate>("48 83 EC 58 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 ?? 0F 10 41 10", ProcessPacketNpcYellDetour);
+        _processPacketNpcYellHook = Service.Hook.HookFromSignature<ProcessPacketNpcYellDelegate>("48 83 EC 68 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 44 24 ?? 0F 10 41 10", ProcessPacketNpcYellDetour);
         _processPacketNpcYellHook.Enable();
         Service.Log($"[WSG] ProcessPacketNpcYell address = 0x{_processPacketNpcYellHook.Address:X}");
 
@@ -128,7 +128,7 @@ sealed class WorldStateGameSync : IDisposable
         _processPacketRSVDataHook.Enable();
         Service.Log($"[WSG] ProcessPacketRSVData address = 0x{_processPacketRSVDataHook.Address:X}");
 
-        _processSystemLogMessageHook = Service.Hook.HookFromSignature<ProcessSystemLogMessageDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 0F B6 46 28", ProcessSystemLogMessageDetour);
+        _processSystemLogMessageHook = Service.Hook.HookFromSignature<ProcessSystemLogMessageDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 0F B6 47 28", ProcessSystemLogMessageDetour);
         _processSystemLogMessageHook.Enable();
         Service.Log($"[WSG] ProcessSystemLogMessage address = 0x{_processSystemLogMessageHook.Address:X}");
 
@@ -136,19 +136,22 @@ sealed class WorldStateGameSync : IDisposable
         _processPacketOpenTreasureHook.Enable();
         Service.Log($"[WSG] ProcessPacketOpenTreasure address = 0x{_processPacketOpenTreasureHook.Address:X}");
 
-        _processPacketFateInfoHook = Service.Hook.HookFromSignature<ProcessPacketFateInfoDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 0F B7 4E 10 48 8D 56 12 41 B8 ?? ?? ?? ??", ProcessPacketFateInfoDetour);
+        _processPacketFateInfoHook = Service.Hook.HookFromSignature<ProcessPacketFateInfoDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 0F B7 4F 10 48 8D 57 12 41 B8", ProcessPacketFateInfoDetour);
         _processPacketFateInfoHook.Enable();
         Service.Log($"[WSG] ProcessPacketFateInfo address = 0x{_processPacketFateInfoHook.Address:X}");
 
         _calculateMoveSpeedMulti = (delegate* unmanaged<ContainerInterface*, float>)Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 44 0F 28 D8 45 0F 57 D2");
         Service.Log($"[WSG] CalculateMovementSpeedMultiplier address = 0x{(nint)_calculateMoveSpeedMulti:X}");
 
-        var processMapEffectAddr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 46 10 8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 4E 10 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 46 10 8B D7 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 4E 10 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8D 4E 10 BA ?? ?? ?? ??");
-        _processMapEffect1Hook = Service.Hook.HookFromAddress<ProcessMapEffectDelegate>(processMapEffectAddr, ProcessMapEffect1Detour);
+        var mapEffectAddrs = Service.SigScanner.ScanAllText("40 55 41 57 48 83 EC ?? 48 83 B9");
+        if (mapEffectAddrs.Length != 3)
+            throw new InvalidOperationException($"expected 3 matches for multi-MapEffect handlers, but got {mapEffectAddrs.Length}");
+
+        _processMapEffect1Hook = Service.Hook.HookFromAddress<ProcessMapEffectDelegate>(mapEffectAddrs[0], ProcessMapEffect1Detour);
         _processMapEffect1Hook.Enable();
-        _processMapEffect2Hook = Service.Hook.HookFromAddress<ProcessMapEffectDelegate>(processMapEffectAddr + 0x40, ProcessMapEffect2Detour);
+        _processMapEffect2Hook = Service.Hook.HookFromAddress<ProcessMapEffectDelegate>(mapEffectAddrs[1], ProcessMapEffect2Detour);
         _processMapEffect2Hook.Enable();
-        _processMapEffect3Hook = Service.Hook.HookFromAddress<ProcessMapEffectDelegate>(processMapEffectAddr + 0x80, ProcessMapEffect3Detour);
+        _processMapEffect3Hook = Service.Hook.HookFromAddress<ProcessMapEffectDelegate>(mapEffectAddrs[2], ProcessMapEffect3Detour);
         _processMapEffect3Hook.Enable();
         Service.Log($"[WSG] MapEffect addresses = 0x{_processMapEffect1Hook.Address:X}, 0x{_processMapEffect2Hook.Address:X}, 0x{_processMapEffect3Hook.Address:X}");
     }
@@ -258,7 +261,9 @@ sealed class WorldStateGameSync : IDisposable
                 Service.LogVerbose($"[WorldState] Skipping bad object #{i} with id {obj->EntityId:X}");
                 obj = null;
             }
-            if (actor != null && (obj == null || actor.InstanceID != obj->EntityId))
+            var existing = obj != null ? _ws.Actors.Find(obj->EntityId) : null;
+
+            if (actor != null && (obj == null || existing == null || actor.InstanceID != obj->EntityId))
             {
                 _actorsByIndex[i] = null;
                 RemoveActor(actor);
@@ -266,10 +271,9 @@ sealed class WorldStateGameSync : IDisposable
             }
             if (obj != null)
             {
-                if (actor != _ws.Actors.Find(obj->EntityId))
-                {
+                if (actor != existing)
                     Service.Log($"[WorldState] Actor position mismatch for #{i} {actor}");
-                }
+
                 UpdateActor(obj, i, actor);
             }
         }
@@ -389,21 +393,23 @@ sealed class WorldStateGameSync : IDisposable
         var sm = chr != null ? chr->GetStatusManager() : null;
         if (sm != null)
         {
-            for (var i = 0; i < sm->NumValidStatuses; ++i)
+            var count = sm->NumValidStatuses;
+            for (var i = 0; i < count; ++i)
             {
                 // note: sometimes (Ocean Fishing) remaining-time is weird (I assume too large?) and causes exception in AddSeconds - so we just clamp it to some reasonable range
                 // note: self-cast buffs with duration X will have duration -X until EffectResult (~0.6s later); see autorotation for more details
-                ActorStatus curStatus = new();
                 ref var s = ref sm->Status[i];
-                if (s.StatusId != 0)
+                if (s.StatusId != default)
                 {
                     var dur = Math.Min(Math.Abs(s.RemainingTime), 100000);
-                    curStatus.ID = s.StatusId;
-                    curStatus.SourceID = SanitizedObjectID(s.SourceObject);
-                    curStatus.Extra = s.Param;
-                    curStatus.ExpireAt = _ws.CurrentTime.AddSeconds(dur);
+                    ActorStatus curStatus = new(s.StatusId, s.Param, _ws.CurrentTime.AddSeconds(dur), SanitizedObjectID(s.SourceObject));
+                    UpdateActorStatus(act, i, ref curStatus);
                 }
-                UpdateActorStatus(act, i, ref curStatus);
+                else
+                {
+                    ActorStatus curStatus = default;
+                    UpdateActorStatus(act, i, ref curStatus);
+                }
             }
         }
 
@@ -448,8 +454,8 @@ sealed class WorldStateGameSync : IDisposable
     {
         // note: some statuses have non-zero remaining time but never tick down (e.g. FC buffs); currently we ignore that fact, to avoid log spam...
         // note: RemainingTime is not monotonously decreasing (I assume because it is really calculated by game and frametime fluctuates...), we ignore 'slight' duration increases (<1 sec)
-        var prev = act.Statuses[index];
-        if (prev.ID == value.ID && prev.SourceID == value.SourceID && prev.Extra == value.Extra && (value.ExpireAt - prev.ExpireAt).TotalSeconds <= 1)
+        ref readonly var prev = ref act.Statuses[index];
+        if (prev.ID == value.ID && prev.SourceID == value.SourceID && prev.Extra == value.Extra && (value.ExpireAt - prev.ExpireAt).TotalSeconds <= 1d)
         {
             act.Statuses[index].ExpireAt = value.ExpireAt;
             return;
@@ -569,7 +575,7 @@ sealed class WorldStateGameSync : IDisposable
             if (instanceID != InvalidEntityId && _ws.Party.FindSlot(instanceID) < 0)
             {
                 var obj = GameObjectManager.Instance()->Objects.GetObjectByEntityId(instanceID);
-                AddPartyMember(new(0, instanceID, false, obj != null ? obj->NameString : ""));
+                AddPartyMember(new(default, instanceID, false, obj != null ? obj->NameString : ""));
             }
             // else: buddy is non-existent or already updated, skip
         }
@@ -681,7 +687,7 @@ sealed class WorldStateGameSync : IDisposable
         var pc = (Character*)GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
         if (pc != null)
         {
-            var baseSpeed = *(float*)((nint)Control.Instance() + 0x7108);
+            var baseSpeed = ControlEx.Instance()->BaseMoveSpeed;
             var c8 = new CharacterContainer() { Character = pc };
             var factor = _calculateMoveSpeedMulti((ContainerInterface*)&c8);
             var speed = baseSpeed * factor;
@@ -707,31 +713,46 @@ sealed class WorldStateGameSync : IDisposable
         bozjaHolster.Clear();
         var bozjaState = PublicContentBozja.GetState();
         if (bozjaState != null)
-            foreach (var action in bozjaState->HolsterActions)
-                if (action != 0)
-                    ++bozjaHolster[action];
+        {
+            var actions = bozjaState->HolsterActions;
+            var len = actions.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                var action = actions[i];
+                {
+                    if (action != 0)
+                    {
+                        ++bozjaHolster[action];
+                    }
+                }
+            }
+        }
         if (!MemoryExtensions.SequenceEqual(_ws.Client.BozjaHolster.AsSpan(), bozjaHolster))
+        {
             _ws.Execute(new ClientState.OpBozjaHolsterChange(CalcBozjaHolster(bozjaHolster)));
-
+        }
         if (!MemoryExtensions.SequenceEqual(_ws.Client.BlueMageSpells.AsSpan(), actionManager->BlueMageActions))
+        {
             _ws.Execute(new ClientState.OpBlueMageSpellsChange([.. actionManager->BlueMageActions]));
-
+        }
         var levels = uiState->PlayerState.ClassJobLevels;
         if (!MemoryExtensions.SequenceEqual(_ws.Client.ClassJobLevels.AsSpan(), levels))
+        {
             _ws.Execute(new ClientState.OpClassJobLevelsChange([.. levels]));
+        }
 
         var curFate = FateManager.Instance()->CurrentFate;
         ClientState.Fate activeFate = curFate != null ? new(curFate->FateId, curFate->Location, curFate->Radius) : default;
         if (_ws.Client.ActiveFate != activeFate)
             _ws.Execute(new ClientState.OpActiveFateChange(activeFate));
 
-        var petinfo = uiState->Buddy.PetInfo;
+        ref var petinfo = ref uiState->Buddy.PetInfo;
         var pet = new ClientState.Pet(petinfo.Pet->EntityId, petinfo.Order, petinfo.Stance);
         if (_ws.Client.ActivePet != pet)
             _ws.Execute(new ClientState.OpActivePetChange(pet));
 
-        var focusTarget = TargetSystem.Instance()->FocusTarget;
-        var focusTargetId = focusTarget != null ? SanitizedObjectID(focusTarget->GetGameObjectId()) : 0;
+        ref var focusTarget = ref TargetSystem.Instance()->FocusTarget;
+        var focusTargetId = focusTarget != null ? SanitizedObjectID(focusTarget->GetGameObjectId()) : default;
         if (_ws.Client.FocusTargetId != focusTargetId)
             _ws.Execute(new ClientState.OpFocusTargetChange(focusTargetId));
 
@@ -1010,27 +1031,28 @@ sealed class WorldStateGameSync : IDisposable
         return res;
     }
 
-    private unsafe void ProcessMapEffect1Detour(byte* data)
+    private unsafe void ProcessMapEffect1Detour(ContentDirector* director, byte* packet)
     {
-        _processMapEffect1Hook.Original(data);
-        ProcessMapEffect(data, 10, 18);
+        _processMapEffect1Hook.Original(director, packet);
+        ProcessMapEffect(packet, 10, 18);
     }
 
-    private unsafe void ProcessMapEffect2Detour(byte* data)
+    private unsafe void ProcessMapEffect2Detour(ContentDirector* director, byte* packet)
     {
-        _processMapEffect2Hook.Original(data);
-        ProcessMapEffect(data, 18, 34);
+        _processMapEffect2Hook.Original(director, packet);
+        ProcessMapEffect(packet, 18, 34);
     }
 
-    private unsafe void ProcessMapEffect3Detour(byte* data)
+    private unsafe void ProcessMapEffect3Detour(ContentDirector* director, byte* packet)
     {
-        _processMapEffect3Hook.Original(data);
-        ProcessMapEffect(data, 26, 50);
+        _processMapEffect3Hook.Original(director, packet);
+        ProcessMapEffect(packet, 26, 50);
     }
 
     private unsafe void ProcessMapEffect(byte* data, byte offLow, byte offIndex)
     {
-        for (var i = 0; i < *data; ++i)
+        var count = *data;
+        for (var i = 0; i < count; ++i)
         {
             var low = *(ushort*)(data + 2 * i + offLow);
             var high = *(ushort*)(data + 2 * i + 2);

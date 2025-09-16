@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using System.Reflection;
 
 namespace BossMod.Shadowbringers.Foray;
@@ -52,7 +52,7 @@ public abstract class DuelFarm<Duel> : ZoneModule where Duel : struct, Enum
 
     private void OnFateSpawn(ClientState.OpFateInfo fate)
     {
-        if (GetFateID(FarmTarget) == fate.FateId)
+        if (GetFateID(FarmTarget) == fate.FateID)
             FarmTarget = default;
     }
 

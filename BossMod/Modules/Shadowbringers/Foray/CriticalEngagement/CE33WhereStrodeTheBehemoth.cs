@@ -123,7 +123,7 @@ sealed class CE33WhereStrodeTheBehemothStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 15)]
 public sealed class CE33WhereStrodeTheBehemoth(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(231f, 95f), 29.5f, 32)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(231f, 95f), 29.5f, 32)]);
 
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 30f);
 }

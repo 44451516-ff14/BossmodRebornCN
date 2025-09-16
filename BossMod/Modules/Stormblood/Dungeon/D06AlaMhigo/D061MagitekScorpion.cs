@@ -19,10 +19,10 @@ public enum AID : uint
     TailLaserFrontFirst = 8265, // Helper->self, 3.0s cast, range 20+R width 10 rect
     TailLaserBackFirst = 8266, // Helper->self, 3.0s cast, range 20+R width 10 rect
     TailLaserFrontRest = 8267, // Helper->self, no cast, range 20+R width 10 rect
-    TailLaserBackRest = 8268, // Helper->self, no cast, range 20+R width 10 rect
+    TailLaserBackRest = 8268 // Helper->self, no cast, range 20+R width 10 rect
 }
 
-class TailLaser(BossModule module) : Components.GenericAOEs(module)
+sealed class TailLaser(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(20.5f, 5f);
     private readonly List<AOEInstance> _aoes = new(2);
@@ -48,7 +48,7 @@ class TailLaser(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class TargetSearch(BossModule module) : Components.GenericAOEs(module)
+sealed class TargetSearch(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(5f);
 
@@ -72,7 +72,7 @@ class TargetSearch(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class LockOn(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.LockOn, GetVoidzones, 0.7f)
+sealed class LockOn(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.LockOn, GetVoidzones, 0.7f)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -93,9 +93,9 @@ class LockOn(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (u
     }
 }
 
-class ElectromagneticField(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectromagneticField);
+sealed class ElectromagneticField(BossModule module) : Components.RaidwideCast(module, (uint)AID.ElectromagneticField);
 
-class D061MagitekScorpionStates : StateMachineBuilder
+sealed class D061MagitekScorpionStates : StateMachineBuilder
 {
     public D061MagitekScorpionStates(BossModule module) : base(module)
     {
@@ -108,7 +108,7 @@ class D061MagitekScorpionStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 247, NameID = 6037)]
-public class D061MagitekScorpion(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D061MagitekScorpion(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(-191, 72), 19.75f)], [new Rectangle(new(-210, 72), 1f, 20f), new Rectangle(new(-172.2f, 72), 1f, 20f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-191f, 72f), 19.75f, 64)], [new Rectangle(new(-210.21941f, 72f), 20f, 1.25f, 89.98f.Degrees()), new Rectangle(new(-172f, 72f), 20f, 1.25f, 89.98f.Degrees())]);
 }

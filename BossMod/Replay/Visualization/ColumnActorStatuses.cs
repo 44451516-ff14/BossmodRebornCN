@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayVisualization;
 
@@ -66,7 +66,7 @@ public sealed class ColumnActorStatuses : Timeline.ColumnGroup
         {
             foreach (var t in a.Targets)
             {
-                foreach (var e in t.Effects)
+                foreach (var e in t.Effects.ValidEffects())
                 {
                     if (e.Type is ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource && e.Value == statusID)
                     {

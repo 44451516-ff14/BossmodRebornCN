@@ -56,14 +56,15 @@ public enum IconID : uint
 sealed class DubiousTulidisasterArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D074GreatestSerpentOfTural.ArenaCenter, 15f)], [new Square(D074GreatestSerpentOfTural.ArenaCenter, 12f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
+
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.DubiousTulidisaster && Arena.Bounds == D074GreatestSerpentOfTural.StartingBounds)
+        if (spell.Action.ID == (uint)AID.DubiousTulidisaster && Arena.Bounds.Radius > 12f)
         {
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 4.8d));
+            _aoe = [new(square, Arena.Center, default, Module.CastFinishAt(spell, 4.8d))];
         }
     }
 
@@ -72,7 +73,7 @@ sealed class DubiousTulidisasterArenaChange(BossModule module) : Components.Gene
         if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = D074GreatestSerpentOfTural.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -91,7 +92,7 @@ sealed class GreatestFlood(BossModule module) : Components.SimpleKnockbacks(modu
             var act = c.Activation;
             if (!IsImmune(slot, act))
             {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCone(c.Origin, 4f, c.Direction, a45), act);
+                hints.AddForbiddenZone(new SDInvertedCone(c.Origin, 4f, c.Direction, a45), act);
             }
         }
     }
@@ -120,7 +121,7 @@ sealed class GreatestLabyrinth(BossModule module) : Components.GenericAOEs(modul
         for (var i = 0; i < 4; ++i)
         {
             var tp = tilePairs[i];
-            shapes[i] = !invert ? new AOEShapeCustom(wholeArena, [middle, tp.correctTile, tp.goalTile]) : new AOEShapeCustom([tp.correctTile, tp.goalTile], InvertForbiddenZone: true);
+            shapes[i] = !invert ? new AOEShapeCustom(wholeArena, [middle, tp.correctTile, tp.goalTile]) : new AOEShapeCustom([tp.correctTile, tp.goalTile], invertForbiddenZone: true);
         }
         return shapes;
     }
@@ -216,7 +217,7 @@ sealed class D074GreatestSerpentOfTuralStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12709)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12709)]
 public sealed class D074GreatestSerpentOfTural(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-130f, -554f);

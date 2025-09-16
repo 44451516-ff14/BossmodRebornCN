@@ -11,16 +11,13 @@ class TorrentialTrident(BossModule module) : Components.GenericAOEs(module)
         if (count == 0)
             return [];
         var max = count > 5 ? 5 : count;
-        var aoes = new AOEInstance[max];
-        for (var i = 0; i < max; ++i)
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        if (count > 1)
         {
-            var aoe = AOEs[i];
-            if (i == 0)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
         }
-        return aoes;
+        return aoes[..max];
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -33,7 +30,9 @@ class TorrentialTrident(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.LightningBolt:
                 ++NumCasts;
                 if (AOEs.Count != 0)
+                {
                     AOEs.RemoveAt(0);
+                }
                 break;
         }
     }

@@ -46,6 +46,4 @@ public sealed class Service
 #pragma warning restore CA2211
 
     public static readonly ConfigRoot Config = new();
-
-    //public static SharpDX.Direct3D11.Device? Device = null;
 }

@@ -63,14 +63,14 @@ class Fireball(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, 
     }
 }
 
-class FireballBait(BossModule module) : Components.GenericBaitAway(module)
+class FireballBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private static readonly AOEShapeCircle circle = new(6);
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Baitaway)
-            CurrentBaits.Add(new(actor, actor, circle));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -88,7 +88,7 @@ class FireballBait(BossModule module) : Components.GenericBaitAway(module)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (CurrentBaits.Count != 0 && CurrentBaits[0].Target == actor)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 17.5f));
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -122,17 +122,7 @@ class AltarDiresaurStates : StateMachineBuilder
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(AltarDiresaur.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(AltarDiresaur.All);
     }
 }
 
@@ -146,7 +136,7 @@ public class AltarDiresaur(WorldState ws, Actor primary) : THTemplate(ws, primar
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.AltarDragon));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Endwalker.Extreme.Ex7Zeromus;
 
-class MeteorImpactProximity(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeteorImpactProximity, 10f); // TODO: verify falloff
+sealed class MeteorImpactProximity(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeteorImpactProximity, 10f); // TODO: verify falloff
 
-class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
+sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
 {
     struct PlayerState
     {
@@ -15,7 +15,7 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
     private int _numTethers;
     private readonly List<WPos> _meteors = new(18);
     private readonly PlayerState[] _playerStates = new PlayerState[PartyState.MaxPartySize];
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly List<PolygonCustom> polygons = new(18);
 
     private const float _radius = 2f;
@@ -26,17 +26,24 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
     {
         if (SourceIfActive(slot) != null)
         {
-            if (!_playerStates[slot].NonClipping)
+            ref var state = ref _playerStates[slot];
+            if (!state.NonClipping)
+            {
                 hints.Add("Avoid other meteors!");
-            if (!_playerStates[slot].Stretched)
+            }
+            if (!state.Stretched)
+            {
                 hints.Add("Stretch the tether!");
+            }
         }
 
         if (IsClippedByOthers(actor))
+        {
             hints.Add("GTFO from charges!");
+        }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) => SourceIfActive(playerSlot) != null ? PlayerPriority.Interesting : PlayerPriority.Normal;
 
@@ -44,15 +51,14 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
     {
         if (SourceIfActive(pcSlot) is var source && source != null)
         {
-            ref var state = ref _playerStates.AsSpan()[pcSlot];
-            if (_aoe == null)
+            if (_aoe.Length == 0)
             {
                 var count = _meteors.Count;
                 for (var i = 0; i < count; ++i)
                 {
                     polygons.Add(new PolygonCustom(BuildShadowPolygon(source.Position - Arena.Center, _meteors[i] - Arena.Center, Arena.Bounds.MaxApproxError)));
                 }
-                _aoe = new(new AOEShapeCustom([.. polygons]), Arena.Center);
+                _aoe = [new(new AOEShapeCustom([.. polygons]), Arena.Center)];
             }
         }
         base.DrawArenaBackground(pcSlot, pc);
@@ -62,7 +68,9 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _meteors.Count;
         for (var i = 0; i < count; ++i)
+        {
             Arena.AddCircle(_meteors[i], _radius, Colors.Object);
+        }
 
         foreach (var (slot, target) in Raid.WithSlot(true, true, true))
         {
@@ -76,8 +84,8 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
                     Arena.PathArcTo(target.Position, 2f, (rot + 90f.Degrees()).Rad, (rot - 90f.Degrees()).Rad);
                     Arena.PathLineTo(source.Position - norm);
                     Arena.PathLineTo(source.Position + norm);
-                    MiniArena.PathStroke(true, _playerStates[slot].NonClipping ? Colors.Safe : Colors.Danger, thickness);
-                    Arena.AddLine(source.Position, target.Position, _playerStates[slot].Stretched ? Colors.Safe : Colors.Danger, thickness);
+                    MiniArena.PathStroke(true, _playerStates[slot].NonClipping ? Colors.Safe : default, thickness);
+                    Arena.AddLine(source.Position, target.Position, _playerStates[slot].Stretched ? Colors.Safe : default, thickness);
                 }
             }
         }
@@ -109,20 +117,28 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
     {
         if (tether.ID is (uint)TetherID.VoidMeteorCloseClipping or (uint)TetherID.VoidMeteorCloseGood or (uint)TetherID.VoidMeteorStretchedClipping or (uint)TetherID.VoidMeteorStretchedGood && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
         {
-            if (_playerStates[slot].TetherSource == null)
-                _playerStates[slot].Order = _numTethers++;
-            _playerStates[slot].TetherSource = source;
-            _playerStates[slot].Stretched = source.Tether.ID is (uint)TetherID.VoidMeteorStretchedClipping or (uint)TetherID.VoidMeteorStretchedGood;
-            _playerStates[slot].NonClipping = source.Tether.ID is (uint)TetherID.VoidMeteorCloseGood or (uint)TetherID.VoidMeteorStretchedGood;
+            ref var state = ref _playerStates[slot];
+            if (state.TetherSource == null)
+            {
+                state.Order = ++_numTethers;
+            }
+            state.TetherSource = source;
+            var id = source.Tether.ID;
+            state.Stretched = id is (uint)TetherID.VoidMeteorStretchedClipping or (uint)TetherID.VoidMeteorStretchedGood;
+            state.NonClipping = id is (uint)TetherID.VoidMeteorCloseGood or (uint)TetherID.VoidMeteorStretchedGood;
         }
     }
 
-    private Actor? SourceIfActive(int slot) => NumCasts switch
+    private Actor? SourceIfActive(int slot)
     {
-        < 4 => _playerStates[slot].Order < 4 ? _playerStates[slot].TetherSource : null,
-        < 8 => _playerStates[slot].Order < 8 ? _playerStates[slot].TetherSource : null,
-        _ => null
-    };
+        ref var state = ref _playerStates[slot];
+        return NumCasts switch
+        {
+            < 4 => state.Order < 4 ? state.TetherSource : null,
+            < 8 => state.Order < 8 ? state.TetherSource : null,
+            _ => null
+        };
+    }
 
     private static List<WPos> BuildShadowPolygon(WDir sourceOffset, WDir meteorOffset, float maxerror)
     {
@@ -137,7 +153,9 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
         var count = circlearc.Length;
         List<WPos> vertices = new(count + 2);
         for (var i = 0; i < count; ++i)
+        {
             vertices.Add(meteorOffset + circlearc[i] + center);
+        }
         vertices.Add(sourceOffset + 100f * (dirToMeteor + halfAngle).ToDirection() + center);
         vertices.Add(sourceOffset + 100f * (dirToMeteor - halfAngle).ToDirection() + center);
         return vertices;
@@ -154,4 +172,4 @@ class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class MeteorImpactExplosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeteorImpactExplosion, 10);
+sealed class MeteorImpactExplosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MeteorImpactExplosion, 10f);

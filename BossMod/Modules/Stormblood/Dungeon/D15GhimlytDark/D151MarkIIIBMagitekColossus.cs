@@ -136,5 +136,5 @@ class D151MarkIIIBMagitekColossusStates : StateMachineBuilder
 public class D151MarkIIIBMagitekColossus(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(-180.569f, 68.523f);
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.55f, 24)], [new Rectangle(new(-180f, 88.3f), 20, 1), new Rectangle(new(-160f, 68f), 20, 1, 102.5f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 19.55f, 24)], [new Rectangle(new(-180f, 88.3f), 20, 1), new Rectangle(new(-160f, 68f), 20, 1, 102.5f.Degrees())]);
 }

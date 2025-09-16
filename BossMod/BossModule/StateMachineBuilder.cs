@@ -380,7 +380,89 @@ public class StateMachineBuilder(BossModule module)
     }
 
     // create a state triggered by a primary actor becoming (un)targetable; automatically sets downtime begin/end flag
-    public State Targetable(uint id, bool targetable, float delay, string name = "", float checkDelay = 0)
+    public State Targetable(uint id, bool targetable, float delay, string name = "", float checkDelay = default)
         => ActorTargetable(id, () => Module.PrimaryActor, targetable, delay, name, checkDelay)
             .SetHint(targetable ? StateMachine.StateHint.DowntimeEnd : StateMachine.StateHint.DowntimeStart);
+
+    protected bool AllDeadOrDestroyed(uint[] enemies)
+    {
+        var allenemies = enemies;
+        var len = allenemies.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemies_ = Module.Enemies(allenemies[i]);
+            var count = enemies_.Count;
+            for (var j = 0; j < count; ++j)
+            {
+                var enemy = enemies_[j];
+                if (!enemy.IsDeadOrDestroyed)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected bool AllDeadOrDestroyedInBounds(uint[] enemies)
+    {
+        var allenemies = enemies;
+        var len = allenemies.Length;
+        var center = Module.Center;
+        var radius = Module.Bounds.Radius;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemies_ = Module.Enemies(allenemies[i]);
+            var count = enemies_.Count;
+            for (var j = 0; j < count; ++j)
+            {
+                var enemy = enemies_[j];
+                if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected bool AllDestroyed(uint[] enemies)
+    {
+        var allenemies = enemies;
+        var len = allenemies.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemies_ = Module.Enemies(allenemies[i]);
+            var count = enemies_.Count;
+            for (var j = 0; j < count; ++j)
+            {
+                var enemy = enemies_[j];
+                if (!enemy.IsDestroyed)
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    protected bool AnyTargetable(uint[] enemies)
+    {
+        var allenemies = enemies;
+        var len = allenemies.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemies_ = Module.Enemies(allenemies[i]);
+            var count = enemies_.Count;
+            for (var j = 0; j < count; ++j)
+            {
+                var enemy = enemies_[j];
+                if (enemy.IsTargetable)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

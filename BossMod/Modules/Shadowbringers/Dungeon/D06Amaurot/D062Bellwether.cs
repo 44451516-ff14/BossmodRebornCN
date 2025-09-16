@@ -53,13 +53,13 @@ sealed class D062BellwetherStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 652, NameID = 8202)]
 public sealed class D062Bellwether(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(60f, -361f), 19.5f, 40)], [new Rectangle(new(60.024f, -340.815f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(60f, -361f), 19.5f, 40)], [new Rectangle(new(60.024f, -340.815f), 20f, 1.25f)]);
     private static readonly uint[] trash = [(uint)OID.TerminusRoiler, (uint)OID.TerminusShriver, (uint)OID.TerminusFlesher, (uint)OID.TerminusDetonator,
     (uint)OID.TerminusBeholder, (uint)OID.TerminusCrier, (uint)OID.TerminusSprinter];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }

@@ -36,27 +36,14 @@ sealed class D100TroianButlerStates : StateMachineBuilder
             .ActivateOnEnter<ArachneWeb>()
             .ActivateOnEnter<Swoop>()
             .ActivateOnEnter<UnholyDarkness>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D100TroianButler.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D100TroianButler.Trash);
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 869, NameID = 11367, SortOrder = 6)]
 public sealed class D100TroianButler(WorldState ws, Actor primary) : BossModule(ws, primary, IsArena1(primary) ? arena1.Center : arena2.Center, IsArena1(primary) ? arena1 : arena2)
 {
-    private static bool IsArena1(Actor primary) => primary.Position.Z > -138f;
+    private static bool IsArena1(Actor primary) => primary.PosRot.Z > -138f;
     private static readonly WPos[] vertices1 = [new(2.32f, -133.04f), new(2.68f, -132.67f), new(3.2f, -132.4f), new(3.84f, -132.15f), new(10.5f, -128.57f),
     new(11.08f, -128.13f), new(11.63f, -127.91f), new(12.22f, -127.75f), new(12.87f, -127.46f), new(14.47f, -125.46f),
     new(15.98f, -122.63f), new(16.17f, -122.01f), new(16.13f, -121.35f), new(16.2f, -120.76f), new(16.6f, -120.31f),
@@ -125,41 +112,23 @@ public sealed class D100TroianButler(WorldState ws, Actor primary) : BossModule(
     new(-88.21f, -175.25f), new(-87.9f, -178.52f), new(-87.53f, -179.71f), new(-87.06f, -180.21f), new(-86.7f, -180.68f),
     new(-86.59f, -181.95f), new(-85.96f, -183.13f), new(-85.6f, -183.67f), new(-83.93f, -185.66f), new(-81.95f, -187.28f),
     new(-80.28f, -188.19f), new(-79.06f, -188.43f), new(-78.61f, -188.88f), new(-76.67f, -189.47f), new(-74.11f, -189.73f)];
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices1)], [new Polygon(new(default, -116f), 6.778f, 32)]);
-    private static readonly ArenaBoundsComplex arena2 = new([new PolygonCustom(vertices2)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices1)], [new Polygon(new(default, -116f), 6.778f, 32)]);
+    private static readonly ArenaBoundsCustom arena2 = new([new PolygonCustom(vertices2)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.TroianEquerry, (uint)OID.TroianTrapper, (uint)OID.TroianSteward];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

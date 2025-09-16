@@ -49,21 +49,23 @@ public enum AID : uint
     ShoreShakerVisual = 36514, // Boss->self, 4.0+1.0s cast, single-target
     ShoreShaker1 = 36515, // Helper->self, 5.0s cast, range 10 circle
     ShoreShaker2 = 36516, // Helper->self, 7.0s cast, range 10-20 donut
-    ShoreShaker3 = 36517, // Helper->self, 9.0s cast, range 20-30 donut
+    ShoreShaker3 = 36517 // Helper->self, 9.0s cast, range 20-30 donut
 }
 
 public enum TetherID : uint
 {
-    BaitAway = 17, // ProdigiousPunutiy/Punutiy/PetitPunutiy->player
+    BaitAway = 17 // ProdigiousPunutiy/Punutiy/PetitPunutiy->player
 }
 
-sealed class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(60f, 15f.Degrees()), (uint)TetherID.BaitAway, (uint)AID.HydrowaveBait, (uint)OID.Punutiy, 8.6f)
+sealed class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(60f, 15f.Degrees()), (uint)TetherID.BaitAway, (uint)AID.HydrowaveBait, (uint)OID.Punutiy, 8.6d)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center - new WDir(default, -18f), Arena.Center - new WDir(default, 18f), 18f), WorldState.FutureTime(ActivationDelay));
+        {
+            hints.AddForbiddenZone(new SDRect(Arena.Center - new WDir(default, -18f), Arena.Center - new WDir(default, 18f), 18f), WorldState.FutureTime(ActivationDelay));
+        }
     }
 
     public override void OnUntethered(Actor source, ActorTetherInfo tether) { } // snapshot is ~0.6s after tether disappears
@@ -71,32 +73,38 @@ sealed class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(modul
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.HydrowaveBait)
+        {
             CurrentBaits.Clear();
+        }
     }
 }
 
 sealed class Resurface(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Resurface, Inhale.Cone);
 sealed class Inhale(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     public static readonly AOEShapeCone Cone = new(100f, 30f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Resurface)
-            _aoe = new(Cone, new(15f, -95f), spell.Rotation, Module.CastFinishAt(spell)); // Resurface and Inhale origin are not identical, but almost 0.4y off
+        {
+            _aoe = [new(Cone, new WPos(15f, -95f).Quantized(), spell.Rotation, Module.CastFinishAt(spell))]; // Resurface and Inhale origin are not identical, but almost 0.4y off
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Inhale)
+        {
             if (++NumCasts == 6)
             {
-                _aoe = null;
+                _aoe = [];
                 NumCasts = 0;
             }
+        }
     }
 }
 
@@ -113,15 +121,17 @@ sealed class BuryDecay(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
-            return [];
-        var aoes = new AOEInstance[count];
-        for (var i = 0; i < count; ++i)
         {
-            var aoe = _aoes[i];
-            if (i < 2)
-                aoes[i] = count > 1 ? aoe with { Color = Colors.Danger } : aoe;
-            else
-                aoes[i] = aoe;
+            return [];
+        }
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        if (count > 2)
+        {
+            var color = Colors.Danger;
+            for (var i = 0; i < 2; ++i)
+            {
+                aoes[i].Color = color;
+            }
         }
         return aoes;
     }
@@ -142,25 +152,30 @@ sealed class BuryDecay(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
+        {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        switch (spell.Action.ID)
+        if (_aoes.Count != 0)
         {
-            case (uint)AID.Bury1:
-            case (uint)AID.Bury2:
-            case (uint)AID.Bury3:
-            case (uint)AID.Bury4:
-            case (uint)AID.Bury5:
-            case (uint)AID.Bury6:
-            case (uint)AID.Bury7:
-            case (uint)AID.Bury8:
-            case (uint)AID.Decay:
-                if (_aoes.Count != 0)
+            switch (spell.Action.ID)
+            {
+                case (uint)AID.Bury1:
+                case (uint)AID.Bury2:
+                case (uint)AID.Bury3:
+                case (uint)AID.Bury4:
+                case (uint)AID.Bury5:
+                case (uint)AID.Bury6:
+                case (uint)AID.Bury7:
+                case (uint)AID.Bury8:
+                case (uint)AID.Decay:
+
                     _aoes.RemoveAt(0);
-                break;
+                    break;
+            }
         }
     }
 }
@@ -175,7 +190,9 @@ sealed class ShoreShaker(BossModule module) : Components.ConcentricAOEs(module, 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ShoreShaker1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -211,13 +228,13 @@ sealed class D011PrimePunutiyStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 826, NameID = 12723)]
-public sealed class D011PrimePunutiy(WorldState ws, Actor primary) : BossModule(ws, primary, new(35, -95), new ArenaBoundsSquare(19.5f))
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 826u, NameID = 12723u)]
+public sealed class D011PrimePunutiy(WorldState ws, Actor primary) : BossModule(ws, primary, new(35f, -95f), new ArenaBoundsSquare(19.5f))
 {
     private static readonly uint[] adds = [(uint)OID.Punutiy, (uint)OID.PetitPunutiy, (uint)OID.ProdigiousPunutiy];
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
     }
 }

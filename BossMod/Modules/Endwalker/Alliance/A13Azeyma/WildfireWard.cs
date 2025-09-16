@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Alliance.A13Azeyma;
 
-class WildfireWard(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.IlluminatingGlimpse, 15f, false, 1, kind: Kind.DirLeft)
+sealed class WildfireWard(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.IlluminatingGlimpse, 15f, false, 1, kind: Kind.DirLeft)
 {
     private static readonly WPos south = new(-750f, -744.5f), east = new(-745f, -753f), west = new(-755f, -753f);
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -13,21 +13,21 @@ class WildfireWard(BossModule module) : Components.SimpleKnockbacks(module, (uin
             {
                 var x = (int)c.Origin.X;
                 var pos = x == -777 ? south : x == -726 ? east : west;
-                hints.AddForbiddenZone(ShapeDistance.InvertedRect(pos, c.Direction + 90f.Degrees(), 2f, 1f, 1f), act);
+                hints.AddForbiddenZone(new SDInvertedRect(pos, c.Direction + 90f.Degrees(), 2f, 1f, 1f), act);
             }
         }
     }
 }
 
-class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Polygon[] triangle = [new(A13Azeyma.NormalCenter, 13.279f, 3, 180f.Degrees())];
     private static readonly AOEShapeCustom triangleCutOut = new([new Square(A13Azeyma.NormalCenter, 29.5f)], triangle);
-    private static readonly ArenaBoundsComplex triangleBounds = new(triangle);
+    private static readonly ArenaBoundsCustom triangleBounds = new(triangle);
 
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -36,10 +36,10 @@ class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             switch (state)
             {
                 case 0x00020001u:
-                    _aoe = new(triangleCutOut, A13Azeyma.NormalCenter, default, WorldState.FutureTime(5.7d));
+                    _aoe = [new(triangleCutOut, A13Azeyma.NormalCenter, default, WorldState.FutureTime(5.7d))];
                     break;
                 case 0x00200010u:
-                    _aoe = null;
+                    _aoe = [];
                     Arena.Bounds = triangleBounds;
                     Arena.Center = triangleBounds.Center;
                     break;

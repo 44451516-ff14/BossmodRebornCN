@@ -167,7 +167,7 @@ class WaveOfNausea(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         void AddAOE(Angle start, Angle end)
-                => AOEs.Add(new(new AOEShapeCustom([new ConeHA(spell.LocXZ, 6f, start, end)], differenceShapes, InvertForbiddenZone: true), Arena.Center, default, Module.CastFinishAt(spell), Colors.SafeFromAOE));
+                => AOEs.Add(new(new AOEShapeCustom([new ConeHA(spell.LocXZ, 6f, start, end)], differenceShapes, invertForbiddenZone: true), Arena.Center, default, Module.CastFinishAt(spell), Colors.SafeFromAOE));
         if (spell.Action.ID == (uint)AID.WaveOfNausea)
         {
             AOEs.Add(new(donut, spell.LocXZ, default, Module.CastFinishAt(spell)));
@@ -214,6 +214,6 @@ class D061CausticGrebuloffStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 792, NameID = 10313)]
 public class D061CausticGrebuloff(WorldState ws, Actor primary) : BossModule(ws, primary, defaultBounds.Center, defaultBounds)
 {
-    private static readonly ArenaBoundsComplex defaultBounds = new([new Polygon(new(266.5f, -178f), 19.5f * CosPI.Pi32th, 32)],
+    private static readonly ArenaBoundsCustom defaultBounds = new([new Polygon(new(266.5f, -178f), 19.5f * CosPI.Pi32th, 32)],
     [new Rectangle(new(266.5f, -198.75f), 20f, 2f), new Rectangle(new(266.5f, -157f), 20f, 2f)]);
 }

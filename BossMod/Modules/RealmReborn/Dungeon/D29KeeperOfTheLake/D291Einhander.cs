@@ -42,5 +42,5 @@ class D291EinhanderStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 32, NameID = 3369)]
 public class D291Einhander(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(18.75f, -16.95f), 19.5f)], [new Rectangle(new(36.824f, -25.291f), 20, 1.25f, -67.333f.Degrees()), new Rectangle(new(1, -8.1f), 20, 1.4f, -65f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(18.75f, -16.95f), 19.5f)], [new Rectangle(new(36.824f, -25.291f), 20, 1.25f, -67.333f.Degrees()), new Rectangle(new(1, -8.1f), 20, 1.4f, -65f.Degrees())]);
 }

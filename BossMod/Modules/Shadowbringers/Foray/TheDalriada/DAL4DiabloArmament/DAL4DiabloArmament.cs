@@ -6,7 +6,7 @@ sealed class AethericBoomExplosionDiabolicGateVoidSystemsOverload(BossModule mod
 
 sealed class AdvancedNox(BossModule module) : Components.SimpleExaflare(module, 10f, (uint)AID.AdvancedNoxFirst, (uint)AID.AdvancedNoxRest, 10f, 1.1d, 5, 5, true);
 
-sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 2.5f)
+sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 2.5d)
 {
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
@@ -54,7 +54,7 @@ sealed class DeadlyDealingKB(BossModule module) : Components.SimpleKnockbacks(mo
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 
@@ -101,6 +101,6 @@ sealed class UltimatePseudoterror(BossModule module) : Components.SimpleAOEs(mod
 public sealed class DAL4DiabloArmament(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultArena)
 {
     public static readonly WPos ArenaCenter = new(-720f, -760f);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(ArenaCenter, 29.5f, 48)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(ArenaCenter, 29.5f, 48)]);
     public static readonly ArenaBoundsCircle SmallArena = new(17f); // this is a pulsing donut aoe
 }

@@ -1,30 +1,45 @@
 ﻿namespace BossMod;
 
-public record struct ClientActionRequest
-(
-    ActionID Action,
-    ulong TargetID,
-    Vector3 TargetPos,
-    uint SourceSequence,
-    float InitialAnimationLock,
-    float InitialCastTimeElapsed,
-    float InitialCastTimeTotal,
-    float InitialRecastElapsed,
-    float InitialRecastTotal
-)
+public readonly struct ClientActionRequest(ActionID action, ulong targetID, Vector3 targetPos, uint sourceSequence,
+    float initialAnimationLock, float initialCastTimeElapsed, float initialCastTimeTotal, float initialRecastElapsed, float initialRecastTotal)
 {
+    public readonly ActionID Action = action;
+    public readonly ulong TargetID = targetID;
+    public readonly Vector3 TargetPos = targetPos;
+    public readonly uint SourceSequence = sourceSequence;
+    public readonly float InitialAnimationLock = initialAnimationLock;
+    public readonly float InitialCastTimeElapsed = initialCastTimeElapsed;
+    public readonly float InitialCastTimeTotal = initialCastTimeTotal;
+    public readonly float InitialRecastElapsed = initialRecastElapsed;
+    public readonly float InitialRecastTotal = initialRecastTotal;
+
     public override readonly string ToString() => $"#{SourceSequence} {Action} @ {TargetID:X8} {TargetPos:f3}";
 }
 
-public record struct ClientActionReject(ActionID Action, uint SourceSequence, float RecastElapsed, float RecastTotal, uint LogMessageID)
+public readonly struct ClientActionReject(ActionID action, uint sourceSequence, float recastElapsed, float recastTotal, uint logMessageID)
 {
+    public readonly ActionID Action = action;
+    public readonly uint SourceSequence = sourceSequence;
+    public readonly float RecastElapsed = recastElapsed;
+    public readonly float RecastTotal = recastTotal;
+    public readonly uint LogMessageID = logMessageID;
+
     public override readonly string ToString() => $"#{SourceSequence} {Action} ({LogMessageID})";
 }
 
-public record struct Cooldown(float Elapsed, float Total)
+public struct Cooldown(float elapsed, float total) : IEquatable<Cooldown>
 {
+    public float Elapsed = elapsed;
+    public float Total = total;
+
     public readonly float Remaining => Total - Elapsed;
 
+    public static bool operator ==(Cooldown left, Cooldown right) => left.Elapsed == right.Elapsed && left.Total == right.Total;
+    public static bool operator !=(Cooldown left, Cooldown right) => left.Elapsed != right.Elapsed || left.Total != right.Total;
+
+    public readonly bool Equals(Cooldown other) => this == other;
+    public override readonly bool Equals(object? obj) => obj is Cooldown other && Equals(other);
+    public override readonly int GetHashCode() => (Elapsed, Total).GetHashCode();
     public override readonly string ToString() => $"{Elapsed:f3}/{Total:f3}";
 }
 
@@ -32,24 +47,107 @@ public record struct Cooldown(float Elapsed, float Total)
 // this is generally not available for non-player party members, but we can try to guess
 public sealed class ClientState
 {
-    public readonly record struct Fate(uint ID, Vector3 Center, float Radius);
-    public record struct Combo(uint Action, float Remaining);
-    public record struct Gauge(ulong Low, ulong High);
-    public record struct Stats(int SkillSpeed, int SpellSpeed, int Haste);
-    public record struct Pet(ulong InstanceID, byte Order, byte Stance);
-    public record struct DutyAction(ActionID Action, byte CurCharges, byte MaxCharges);
-    public record struct HateInfo(ulong InstanceID, Hate[] Targets)
+    public readonly struct Fate(uint id, Vector3 center, float radius)
     {
+        public readonly uint ID = id;
+        public readonly Vector3 Center = center;
+        public readonly float Radius = radius;
+
+        public static bool operator ==(Fate left, Fate right) => left.ID == right.ID;
+        public static bool operator !=(Fate left, Fate right) => left.ID != right.ID;
+
+        public readonly bool Equals(Fate other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is Fate other && Equals(other);
+        public override readonly int GetHashCode() => ID.GetHashCode();
+    }
+
+    public struct Combo(uint action, float remaining)
+    {
+        public readonly uint Action = action;
+        public float Remaining = remaining;
+
+        public static bool operator ==(Combo left, Combo right) => left.Action == right.Action && left.Remaining == right.Remaining;
+        public static bool operator !=(Combo left, Combo right) => left.Action != right.Action || left.Remaining != right.Remaining;
+
+        public readonly bool Equals(Combo other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is Combo other && Equals(other);
+        public override readonly int GetHashCode() => (Action, Remaining).GetHashCode();
+    }
+
+    public readonly struct Gauge(ulong low, ulong high)
+    {
+        public readonly ulong Low = low;
+        public readonly ulong High = high;
+    }
+
+    public readonly struct Stats(int skillSpeed, int spellSpeed, int haste)
+    {
+        public readonly int SkillSpeed = skillSpeed;
+        public readonly int SpellSpeed = spellSpeed;
+        public readonly int Haste = haste;
+
+        public static bool operator ==(Stats left, Stats right) => left.SkillSpeed == right.SkillSpeed && left.SpellSpeed == right.SpellSpeed && left.Haste == right.Haste;
+        public static bool operator !=(Stats left, Stats right) => left.SkillSpeed != right.SkillSpeed || left.SpellSpeed != right.SpellSpeed || left.Haste != right.Haste;
+
+        public readonly bool Equals(Stats other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is Combo other && Equals(other);
+        public override readonly int GetHashCode() => (SkillSpeed, SpellSpeed, Haste).GetHashCode();
+    }
+
+    public readonly struct Pet(ulong instanceID, byte order, byte stance)
+    {
+        public readonly ulong InstanceID = instanceID;
+        public readonly byte Order = order;
+        public readonly byte Stance = stance;
+
+        public static bool operator ==(Pet left, Pet right) => left.InstanceID == right.InstanceID && left.Order == right.Order && left.Stance == right.Stance;
+        public static bool operator !=(Pet left, Pet right) => left.InstanceID != right.InstanceID || left.Order != right.Order || left.Stance != right.Stance;
+
+        public readonly bool Equals(Pet other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is Pet other && Equals(other);
+        public override readonly int GetHashCode() => InstanceID.GetHashCode();
+    }
+
+    public readonly struct DutyAction(ActionID action, byte curCharges, byte maxCharges)
+    {
+        public readonly ActionID Action = action;
+        public readonly byte CurCharges = curCharges;
+        public readonly byte MaxCharges = maxCharges;
+
+        public static bool operator ==(DutyAction left, DutyAction right) => left.Action == right.Action && left.CurCharges == right.CurCharges && left.MaxCharges == right.MaxCharges;
+        public static bool operator !=(DutyAction left, DutyAction right) => left.Action != right.Action || left.CurCharges != right.CurCharges || left.MaxCharges != right.MaxCharges;
+
+        public readonly bool Equals(DutyAction other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is DutyAction other && Equals(other);
+        public override readonly int GetHashCode() => (Action, CurCharges, MaxCharges).GetHashCode();
+    }
+
+    public readonly struct HateInfo(ulong instanceID, Hate[] targets)
+    {
+        public readonly ulong InstanceID = instanceID;
         // targets are sorted by enmity order, except that player is always first
         // nonzero entries are always at the front of the array - there is space for 32 entries, but a maximum of 8 are currently used
-        public readonly Hate[] Targets = Targets;
+        public readonly Hate[] Targets = targets;
     }
-    public record struct Hate(ulong InstanceID, int Enmity);
+
+    public readonly struct Hate(ulong instanceID, int enmity)
+    {
+        public readonly ulong InstanceID = instanceID;
+        public readonly int Enmity = enmity;
+
+        public static bool operator ==(Hate left, Hate right) => left.InstanceID == right.InstanceID && left.Enmity == right.Enmity;
+        public static bool operator !=(Hate left, Hate right) => left.InstanceID != right.InstanceID || left.Enmity != right.Enmity;
+
+        public readonly bool Equals(Hate other) => this == other;
+        public override readonly bool Equals(object? obj) => obj is Hate other && Equals(other);
+        public override readonly int GetHashCode() => (InstanceID, Enmity).GetHashCode();
+    }
 
     public const int NumCooldownGroups = 87;
-    public const int NumClassLevels = 32; // see ClassJob.ExpArrayIndex
+    public const int NumClassLevels = 35; // see ClassJob.ExpArrayIndex
     public const int NumBlueMageSpells = 24;
-
+    public const int NumDutyActions = 5;
+    public const int NumHateTargets = 32;
     public float? CountdownRemaining;
     public Angle CameraAzimuth; // updated every frame by the frame-start event
     public Gauge GaugePayload; // updated every frame by the frame-start event
@@ -58,7 +156,7 @@ public sealed class ClientState
     public Stats PlayerStats;
     public float MoveSpeed = 6f;
     public readonly Cooldown[] Cooldowns = new Cooldown[NumCooldownGroups];
-    public readonly DutyAction[] DutyActions = new DutyAction[5];
+    public readonly DutyAction[] DutyActions = new DutyAction[NumDutyActions];
     public readonly byte[] BozjaHolster = new byte[(int)BozjaHolsterID.Count]; // number of copies in holster per item
     public readonly uint[] BlueMageSpells = new uint[NumBlueMageSpells];
     public readonly short[] ClassJobLevels = new short[NumClassLevels];
@@ -67,7 +165,7 @@ public sealed class ClientState
     public ulong FocusTargetId;
     public Angle ForcedMovementDirection; // used for temporary misdirection and spinning states
     public uint[] ContentKeyValueData = new uint[6]; // used for content-specific persistent player attributes, like bozja resistance rank
-    public HateInfo CurrentTargetHate = new(0, new Hate[32]);
+    public HateInfo CurrentTargetHate = new(default, new Hate[NumHateTargets]);
 
     // if an action has SecondaryCostType between 1 and 4, it's considered usable as long as the corresponding timer in this array is >0; the timer is set to 5 when certain ActionEffects are received and ticks down each frame
     // 1: unknown - referenced in ActionManager code but not present in sheets, included for completeness
@@ -82,7 +180,7 @@ public sealed class ClientState
             ? ContentKeyValueData[3]
             : ContentKeyValueData[4] == key
                 ? ContentKeyValueData[5]
-                : 0;
+                : default;
 
     public uint ElementalLevel => GetContentValue(4);
     public uint ElementalLevelSynced => GetContentValue(2);
@@ -109,109 +207,127 @@ public sealed class ClientState
     {
         List<WorldState.Operation> ops = new(15);
         if (CountdownRemaining != null)
+        {
             ops.Add(new OpCountdownChange(CountdownRemaining));
+        }
 
         if (AnimationLock != default)
+        {
             ops.Add(new OpAnimationLockChange(AnimationLock));
+        }
 
         if (ComboState.Remaining != default)
+        {
             ops.Add(new OpComboChange(ComboState));
+        }
 
         if (PlayerStats != default)
+        {
             ops.Add(new OpPlayerStatsChange(PlayerStats));
+        }
 
         if (MoveSpeed != 6f)
+        {
             ops.Add(new OpMoveSpeedChange(MoveSpeed));
-
-        var cdlen = Cooldowns.Length;
-        if (cdlen != 0)
-        {
-            var cooldowns = new List<(int, Cooldown)>(cdlen);
-
-            for (var i = 0; i < cdlen; ++i)
-            {
-                var cds = Cooldowns[i];
-                if (cds.Total != 0)
-                    cooldowns.Add((i, cds));
-            }
-            if (cooldowns.Count != 0)
-                ops.Add(new OpCooldown(false, cooldowns));
         }
-        if (DutyActions.Any(a => a != default))
-            ops.Add(new OpDutyActionsChange(DutyActions));
 
-        var holsterlen = BozjaHolster.Length;
-        if (holsterlen != 0)
+        var cooldowns = new List<(int, Cooldown)>(NumCooldownGroups);
+
+        for (var i = 0; i < NumCooldownGroups; ++i)
         {
-            var bozjaHolster = new List<(BozjaHolsterID, byte)>(holsterlen);
-            for (var i = 0; i < holsterlen; ++i)
+            var cds = Cooldowns[i];
+            if (cds.Total != default)
             {
-                var holster = BozjaHolster[i];
-                if (holster != 0)
-                    bozjaHolster.Add(((BozjaHolsterID)i, holster));
+                cooldowns.Add((i, cds));
             }
-            var hasNonZeroHolster = false;
-            for (var i = 0; i < holsterlen; ++i)
+        }
+        if (cooldowns.Count != 0)
+        {
+            ops.Add(new OpCooldown(false, cooldowns));
+        }
+
+        for (var i = 0; i < NumDutyActions; ++i)
+        {
+            if (DutyActions[i] != default)
             {
-                if (BozjaHolster[i] != 0)
+                ops.Add(new OpDutyActionsChange(DutyActions));
+                break;
+            }
+        }
+
+        for (var i = 0; i < (int)BozjaHolsterID.Count; ++i)
+        {
+            if (BozjaHolster[i] != default)
+            {
+                var bozjaHolster = new List<(BozjaHolsterID, byte)>((int)BozjaHolsterID.Count);
+                for (var j = 0; j < (int)BozjaHolsterID.Count; ++j)
                 {
-                    hasNonZeroHolster = true;
-                    break;
+                    var holster = BozjaHolster[j];
+                    if (holster != default)
+                    {
+                        bozjaHolster.Add(((BozjaHolsterID)i, holster));
+                    }
                 }
-            }
-            if (hasNonZeroHolster)
                 ops.Add(new OpBozjaHolsterChange(bozjaHolster));
+                break;
+            }
         }
 
-        var hasNonZeroBMSpell = false;
-        var lenSpells = BlueMageSpells.Length;
-        for (var i = 0; i < lenSpells; ++i)
+        for (var i = 0; i < NumBlueMageSpells; ++i)
         {
             if (BlueMageSpells[i] != default)
             {
-                hasNonZeroBMSpell = true;
+                ops.Add(new OpBlueMageSpellsChange(BlueMageSpells));
                 break;
             }
         }
-        if (hasNonZeroBMSpell)
-            ops.Add(new OpBlueMageSpellsChange(BlueMageSpells));
 
-        var hasNonZeroLevels = false;
-        var lenLevels = ClassJobLevels.Length;
-        for (var i = 0; i < lenLevels; ++i)
+        for (var i = 0; i < NumClassLevels; ++i)
         {
             if (ClassJobLevels[i] != default)
             {
-                hasNonZeroLevels = true;
+                ops.Add(new OpClassJobLevelsChange(ClassJobLevels));
                 break;
             }
         }
-        if (hasNonZeroLevels)
-            ops.Add(new OpClassJobLevelsChange(ClassJobLevels));
 
         if (ActiveFate.ID != default)
+        {
             ops.Add(new OpActiveFateChange(ActiveFate));
+        }
 
         if (ActivePet.InstanceID != default)
+        {
             ops.Add(new OpActivePetChange(ActivePet));
+        }
 
         if (FocusTargetId != default)
+        {
             ops.Add(new OpFocusTargetChange(FocusTargetId));
+        }
 
         if (ForcedMovementDirection != default)
-            ops.Add(new OpForcedMovementDirectionChange(ForcedMovementDirection));
-        var hasNonDefaultTarget = false;
-        for (var i = 0; i < 32; ++i)
         {
-            ref readonly var target = ref CurrentTargetHate.Targets[i];
-            if (target != default)
+            ops.Add(new OpForcedMovementDirectionChange(ForcedMovementDirection));
+        }
+
+        if (CurrentTargetHate.InstanceID != default)
+        {
+            AddHateOp();
+        }
+        else
+        {
+            for (var i = 0; i < NumHateTargets; ++i)
             {
-                hasNonDefaultTarget = true;
-                break;
+                ref readonly var target = ref CurrentTargetHate.Targets[i];
+                if (target != default)
+                {
+                    AddHateOp();
+                    break;
+                }
             }
         }
-        if (CurrentTargetHate.InstanceID != default || hasNonDefaultTarget)
-            ops.Add(new OpHateChange(CurrentTargetHate.InstanceID, CurrentTargetHate.Targets));
+        void AddHateOp() => ops.Add(new OpHateChange(CurrentTargetHate.InstanceID, CurrentTargetHate.Targets));
         return ops;
     }
 
@@ -241,9 +357,12 @@ public sealed class ClientState
 
     // implementation of operations
     public Event<OpActionRequest> ActionRequested = new();
-    public sealed record class OpActionRequest(ClientActionRequest Request) : WorldState.Operation
+    public sealed class OpActionRequest(ClientActionRequest request) : WorldState.Operation
     {
+        public readonly ClientActionRequest Request = request;
+
         protected override void Exec(WorldState ws) => ws.Client.ActionRequested.Fire(this);
+
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLAR"u8)
             .Emit(Request.Action)
             .EmitActor(Request.TargetID)
@@ -255,9 +374,12 @@ public sealed class ClientState
     }
 
     public Event<OpActionReject> ActionRejected = new();
-    public sealed record class OpActionReject(ClientActionReject Value) : WorldState.Operation
+    public sealed class OpActionReject(ClientActionReject value) : WorldState.Operation
     {
+        public readonly ClientActionReject Value = value;
+
         protected override void Exec(WorldState ws) => ws.Client.ActionRejected.Fire(this);
+
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLRJ"u8)
             .Emit(Value.Action)
             .Emit(Value.SourceSequence)
@@ -266,13 +388,16 @@ public sealed class ClientState
     }
 
     public Event<OpCountdownChange> CountdownChanged = new();
-    public sealed record class OpCountdownChange(float? Value) : WorldState.Operation
+    public sealed class OpCountdownChange(float? value) : WorldState.Operation
     {
+        public readonly float? Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.CountdownRemaining = Value;
             ws.Client.CountdownChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             if (Value != null)
@@ -283,52 +408,67 @@ public sealed class ClientState
     }
 
     public Event<OpAnimationLockChange> AnimationLockChanged = new();
-    public sealed record class OpAnimationLockChange(float Value) : WorldState.Operation
+    public sealed class OpAnimationLockChange(float value) : WorldState.Operation
     {
+        public readonly float Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.AnimationLock = Value;
             ws.Client.AnimationLockChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLAL"u8).Emit(Value);
     }
 
     public Event<OpComboChange> ComboChanged = new();
-    public sealed record class OpComboChange(Combo Value) : WorldState.Operation
+    public sealed class OpComboChange(Combo value) : WorldState.Operation
     {
+        public readonly Combo Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.ComboState = Value;
             ws.Client.ComboChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLCB"u8).Emit(Value.Action).Emit(Value.Remaining);
     }
 
     public Event<OpPlayerStatsChange> PlayerStatsChanged = new();
-    public sealed record class OpPlayerStatsChange(Stats Value) : WorldState.Operation
+    public sealed class OpPlayerStatsChange(Stats value) : WorldState.Operation
     {
+        public readonly Stats Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.PlayerStats = Value;
             ws.Client.PlayerStatsChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLST"u8).Emit(Value.SkillSpeed).Emit(Value.SpellSpeed).Emit(Value.Haste);
     }
 
     public Event<OpMoveSpeedChange> MoveSpeedChanged = new();
-    public sealed record class OpMoveSpeedChange(float Speed) : WorldState.Operation
+    public sealed class OpMoveSpeedChange(float speed) : WorldState.Operation
     {
+        public readonly float Speed = speed;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.MoveSpeed = Speed;
             ws.Client.MoveSpeedChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLMV"u8).Emit(Speed);
     }
 
     public Event<OpCooldown> CooldownsChanged = new();
-    public sealed record class OpCooldown(bool Reset, List<(int group, Cooldown value)> Cooldowns) : WorldState.Operation
+    public sealed class OpCooldown(bool reset, List<(int, Cooldown)> cooldowns) : WorldState.Operation
     {
+        public readonly bool Reset = reset;
+        public readonly List<(int group, Cooldown value)> Cooldowns = cooldowns;
+
         protected override void Exec(WorldState ws)
         {
             if (Reset)
@@ -341,6 +481,7 @@ public sealed class ClientState
             }
             ws.Client.CooldownsChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             var count = Cooldowns.Count;
@@ -356,9 +497,9 @@ public sealed class ClientState
     }
 
     public Event<OpDutyActionsChange> DutyActionsChanged = new();
-    public sealed record class OpDutyActionsChange(DutyAction[] Slots) : WorldState.Operation
+    public sealed class OpDutyActionsChange(DutyAction[] slots) : WorldState.Operation
     {
-        public readonly DutyAction[] Slots = Slots;
+        public readonly DutyAction[] Slots = slots;
 
         protected override void Exec(WorldState ws)
         {
@@ -368,6 +509,7 @@ public sealed class ClientState
                 ws.Client.DutyActions[i] = Slots[i];
             ws.Client.DutyActionsChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             output.EmitFourCC("CLDA"u8);
@@ -378,8 +520,10 @@ public sealed class ClientState
     }
 
     public Event<OpBozjaHolsterChange> BozjaHolsterChanged = new();
-    public sealed record class OpBozjaHolsterChange(List<(BozjaHolsterID entry, byte count)> Contents) : WorldState.Operation
+    public sealed class OpBozjaHolsterChange(List<(BozjaHolsterID, byte)> contents) : WorldState.Operation
     {
+        public readonly List<(BozjaHolsterID entry, byte count)> Contents = contents;
+
         protected override void Exec(WorldState ws)
         {
             Array.Fill(ws.Client.BozjaHolster, (byte)0);
@@ -390,6 +534,7 @@ public sealed class ClientState
             }
             ws.Client.BozjaHolsterChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             var count = Contents.Count;
@@ -404,15 +549,16 @@ public sealed class ClientState
     }
 
     public Event<OpBlueMageSpellsChange> BlueMageSpellsChanged = new();
-    public sealed record class OpBlueMageSpellsChange(uint[] Values) : WorldState.Operation
+    public sealed class OpBlueMageSpellsChange(uint[] values) : WorldState.Operation
     {
-        public readonly uint[] Values = Values;
+        public readonly uint[] Values = values;
 
         protected override void Exec(WorldState ws)
         {
             Array.Copy(Values, ws.Client.BlueMageSpells, NumBlueMageSpells);
             ws.Client.BlueMageSpellsChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             var len = Values.Length;
@@ -426,17 +572,19 @@ public sealed class ClientState
     }
 
     public Event<OpClassJobLevelsChange> ClassJobLevelsChanged = new();
-    public sealed record class OpClassJobLevelsChange(short[] Values) : WorldState.Operation
+    public sealed class OpClassJobLevelsChange(short[] values) : WorldState.Operation
     {
-        public readonly short[] Values = Values;
+        public readonly short[] Values = values;
 
         protected override void Exec(WorldState ws)
         {
-            Array.Fill(ws.Client.ClassJobLevels, (short)0);
-            for (var i = 0; i < Values.Length; ++i)
+            Array.Fill(ws.Client.ClassJobLevels, default);
+            var len = Values.Length;
+            for (var i = 0; i < len; ++i)
                 ws.Client.ClassJobLevels[i] = Values[i];
             ws.Client.ClassJobLevelsChanged.Fire(this);
         }
+
         public override void Write(ReplayRecorder.Output output)
         {
             var len = Values.Length;
@@ -450,8 +598,10 @@ public sealed class ClientState
     }
 
     public Event<OpActiveFateChange> ActiveFateChanged = new();
-    public sealed record class OpActiveFateChange(Fate Value) : WorldState.Operation
+    public sealed class OpActiveFateChange(Fate value) : WorldState.Operation
     {
+        public readonly Fate Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.ActiveFate = Value;
@@ -461,8 +611,10 @@ public sealed class ClientState
     }
 
     public Event<OpActivePetChange> ActivePetChanged = new();
-    public sealed record class OpActivePetChange(Pet Value) : WorldState.Operation
+    public sealed class OpActivePetChange(Pet value) : WorldState.Operation
     {
+        public readonly Pet Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.ActivePet = Value;
@@ -472,8 +624,10 @@ public sealed class ClientState
     }
 
     public Event<OpFocusTargetChange> FocusTargetChanged = new();
-    public sealed record class OpFocusTargetChange(ulong Value) : WorldState.Operation
+    public sealed class OpFocusTargetChange(ulong value) : WorldState.Operation
     {
+        public readonly ulong Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.FocusTargetId = Value;
@@ -483,8 +637,10 @@ public sealed class ClientState
     }
 
     public Event<OpForcedMovementDirectionChange> ForcedMovementDirectionChanged = new();
-    public sealed record class OpForcedMovementDirectionChange(Angle Value) : WorldState.Operation
+    public sealed class OpForcedMovementDirectionChange(Angle value) : WorldState.Operation
     {
+        public readonly Angle Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.ForcedMovementDirection = Value;
@@ -494,9 +650,10 @@ public sealed class ClientState
     }
 
     public Event<OpContentKVDataChange> ContentKVDataChanged = new();
-    public sealed record class OpContentKVDataChange(uint[] Value) : WorldState.Operation
+    public sealed class OpContentKVDataChange(uint[] value) : WorldState.Operation
     {
-        public readonly uint[] Value = Value;
+        public readonly uint[] Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.ContentKeyValueData = Value;
@@ -512,16 +669,21 @@ public sealed class ClientState
     }
 
     public Event<OpFateInfo> FateInfo = new();
-    public sealed record class OpFateInfo(uint FateId, DateTime StartTime) : WorldState.Operation
+    public sealed class OpFateInfo(uint fateID, DateTime startTime) : WorldState.Operation
     {
+        public readonly uint FateID = fateID;
+        public readonly DateTime StartTime = startTime;
+
         protected override void Exec(WorldState ws) => ws.Client.FateInfo.Fire(this);
-        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("FATE"u8).Emit(FateId).Emit(StartTime.Ticks);
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("FATE"u8).Emit(FateID).Emit(StartTime.Ticks);
     }
 
     public Event<OpHateChange> HateChanged = new();
-    public sealed record class OpHateChange(ulong InstanceID, Hate[] Targets) : WorldState.Operation
+    public sealed class OpHateChange(ulong instanceID, Hate[] targets) : WorldState.Operation
     {
-        public readonly Hate[] Targets = Targets;
+        public readonly ulong InstanceID = instanceID;
+        public readonly Hate[] Targets = targets;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.CurrentTargetHate = new(InstanceID, Targets);
@@ -538,9 +700,10 @@ public sealed class ClientState
     }
 
     public Event<OpProcTimersChange> ProcTimersChanged = new();
-    public sealed record class OpProcTimersChange(float[] Value) : WorldState.Operation
+    public sealed class OpProcTimersChange(float[] value) : WorldState.Operation
     {
-        public readonly float[] Value = Value;
+        public readonly float[] Value = value;
+
         protected override void Exec(WorldState ws)
         {
             ws.Client.ProcTimers = Value;

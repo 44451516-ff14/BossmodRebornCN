@@ -31,7 +31,7 @@ class D050ForgivenPrejudiceStates : StateMachineBuilder
             .ActivateOnEnter<Sanctification>()
             .ActivateOnEnter<PunitiveLight>()
             .ActivateOnEnter<SanctifiedAero>()
-            .Raw.Update = () => module.Enemies(OID.Boss).All(e => e.IsDead) && module.Enemies(OID.ForgivenVenery).All(e => e.IsDead) && module.Enemies(OID.ForgivenExtortion).All(e => e.IsDead) && module.Enemies(OID.ForgivenConformity).All(e => e.IsDead) || module.Enemies(OID.ForgivenApathy).Any(e => e.InCombat) || module.Enemies(OID.ForgivenApathy).Any(e => e.IsTargetable);
+            .Raw.Update = () => module.Enemies((uint)OID.Boss).All(e => e.IsDead) && module.Enemies((uint)OID.ForgivenVenery).All(e => e.IsDead) && module.Enemies((uint)OID.ForgivenExtortion).All(e => e.IsDead) && module.Enemies((uint)OID.ForgivenConformity).All(e => e.IsDead) || module.Enemies((uint)OID.ForgivenApathy).Any(e => e.InCombat) || module.Enemies((uint)OID.ForgivenApathy).Any(e => e.IsTargetable);
     }
 }
 
@@ -41,13 +41,13 @@ public class D050ForgivenPrejudice(WorldState ws, Actor primary) : SimpleBossMod
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(OID.Boss));
-        Arena.Actors(Enemies(OID.ForgivenExtortion));
-        Arena.Actors(Enemies(OID.ForgivenConformity));
-        Arena.Actors(Enemies(OID.ForgivenVenery));
-        Arena.Actors(Enemies(OID.ForgivenApathy));
+        Arena.Actors(Enemies((uint)OID.Boss));
+        Arena.Actors(Enemies((uint)OID.ForgivenExtortion));
+        Arena.Actors(Enemies((uint)OID.ForgivenConformity));
+        Arena.Actors(Enemies((uint)OID.ForgivenVenery));
+        Arena.Actors(Enemies((uint)OID.ForgivenApathy));
     }
 
     public override bool CheckReset() => false;
-    protected override bool CheckPull() => (!Enemies(OID.ForgivenApathy).Any(e => e.InCombat) || !Enemies(OID.ForgivenApathy).Any(e => e.IsTargetable)) && PrimaryActor.IsTargetable && PrimaryActor.InCombat || Enemies(OID.ForgivenExtortion).Any(e => e.InCombat) || Enemies(OID.ForgivenConformity).Any(e => e.InCombat) || Enemies(OID.ForgivenVenery).Any(e => e.InCombat);
+    protected override bool CheckPull() => (!Enemies((uint)OID.ForgivenApathy).Any(e => e.InCombat) || !Enemies((uint)OID.ForgivenApathy).Any(e => e.IsTargetable)) && PrimaryActor.IsTargetable && PrimaryActor.InCombat || Enemies((uint)OID.ForgivenExtortion).Any(e => e.InCombat) || Enemies((uint)OID.ForgivenConformity).Any(e => e.InCombat) || Enemies((uint)OID.ForgivenVenery).Any(e => e.InCombat);
 }

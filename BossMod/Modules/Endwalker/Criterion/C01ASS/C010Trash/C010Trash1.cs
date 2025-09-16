@@ -142,22 +142,7 @@ abstract class C010Trash1States : StateMachineBuilder
             .ActivateOnEnter<SHoneyedRight>(savage)
             .ActivateOnEnter<SHoneyedFront>(savage)
             .ActivateOnEnter<SBloodyCaress>(savage)
-            .Raw.Update = () =>
-            {
-                var allDeadOrDestroyed = true;
-                var enemies = module.Enemies(savage ? Trash1Arena.TrashSavage : Trash1Arena.TrashNormal);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                    {
-                        allDeadOrDestroyed = false;
-                        break;
-                    }
-                }
-                return allDeadOrDestroyed;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(savage ? Trash1Arena.TrashSavage : Trash1Arena.TrashNormal);
     }
 }
 sealed class C010NTrash1States(BossModule module) : C010Trash1States(module, false);
@@ -255,26 +240,15 @@ public abstract class Trash1Arena(WorldState ws, Actor primary, bool savage) : B
     new(-376.05f, -86.08f), new(-376.96f, -86.51f), new(-377.54f, -86.72f), new(-378.09f, -87.00f), new(-378.60f, -87.36f),
     new(-379.05f, -87.78f), new(-379.25f, -88.88f), new(-379.08f, -91.38f), new(-378.83f, -91.83f), new(-377.98f, -92.76f),
     new(-377.52f, -93.02f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(verticesExterior)], [new PolygonCustom(verticesHole1), new PolygonCustom(verticesHole2)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(verticesExterior)], [new PolygonCustom(verticesHole1), new PolygonCustom(verticesHole2)]);
 
     public static readonly uint[] TrashNormal = [(uint)OID.NKaluk, (uint)OID.NOdqan, (uint)OID.NUdumbara, (uint)OID.NDryad, (uint)OID.NBelladonna, (uint)OID.NSapria];
     public static readonly uint[] TrashSavage = [(uint)OID.SKaluk, (uint)OID.SOdqan, (uint)OID.SUdumbara, (uint)OID.SDryad, (uint)OID.SBelladonna, (uint)OID.SSapria];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(savage ? TrashSavage : TrashNormal);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(savage ? TrashSavage : TrashNormal);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(savage ? TrashSavage : TrashNormal));
+        Arena.Actors(this, savage ? TrashSavage : TrashNormal);
     }
 }

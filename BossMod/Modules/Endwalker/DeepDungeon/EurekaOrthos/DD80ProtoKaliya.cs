@@ -43,24 +43,23 @@ public enum TetherID : uint
     Magnetism = 38
 }
 
-class Magnetism(BossModule module) : Components.GenericKnockback(module)
+sealed class Magnetism(BossModule module) : Components.GenericKnockback(module, stopAfterWall: true)
 {
-    private readonly Knockback?[] _sources = new Knockback?[4];
-    private readonly NerveGasRingAndAutoCannons _aoe1 = module.FindComponent<NerveGasRingAndAutoCannons>()!;
-    private readonly Barofield _aoe2 = module.FindComponent<Barofield>()!;
+    private readonly Knockback[][] _kbs = new Knockback[4][];
+    private readonly NerveGasRingAndAutoCannons _aoe = module.FindComponent<NerveGasRingAndAutoCannons>()!;
+    private readonly List<Actor> drones = module.Enemies((uint)OID.WeaponsDrone);
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        if (_sources[slot] is Knockback source)
+        if (_kbs[slot] != null)
         {
-            var count = _aoe1.AOEs.Count;
-            var aoes = CollectionsMarshal.AsSpan(_aoe1.AOEs);
+            var count = _aoe.AOEs.Count;
+            var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
             for (var i = 0; i < count; ++i)
             {
-                ref var aoe = ref aoes[i];
-                if (aoe.Shape == NerveGasRingAndAutoCannons.donut)
+                if (aoes[i].Shape == NerveGasRingAndAutoCannons.donut)
                 {
-                    return new Span<Knockback>([source]);
+                    return _kbs[slot];
                 }
             }
         }
@@ -69,39 +68,41 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module)
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var count = _aoe1.AOEs.Count;
-        var aoes = CollectionsMarshal.AsSpan(_aoe1.AOEs);
-        for (var i = 0; i < count; ++i)
+        var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
             {
                 return true;
             }
         }
-
-        return _aoe2.AOE != null && _aoe2.AOE.Value.Check(pos) || !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnTethered(Actor source, ActorTetherInfo tether)
     {
-        bool IsPull(ref Actor target)
+        bool IsPull(Actor target)
         => source.FindStatus((uint)SID.NegativeChargeDrone) != null && target.FindStatus((uint)SID.PositiveChargePlayer) != null ||
         source.FindStatus((uint)SID.PositiveChargeDrone) != null && target.FindStatus((uint)SID.NegativeChargePlayer) != null;
 
-        bool IsKnockback(ref Actor target)
+        bool IsKnockback(Actor target)
         => source.FindStatus((uint)SID.NegativeChargeDrone) != null && target.FindStatus((uint)SID.NegativeChargePlayer) != null ||
         source.FindStatus((uint)SID.PositiveChargeDrone) != null && target.FindStatus((uint)SID.PositiveChargePlayer) != null;
 
         if (tether.ID == (uint)TetherID.Magnetism)
         {
             var target = WorldState.Actors.Find(tether.Target)!;
-            if (IsPull(ref target))
+            if (IsPull(target))
+            {
                 AddSource(false);
-            else if (IsKnockback(ref target))
+            }
+            else if (IsKnockback(target))
+            {
                 AddSource(true);
+            }
 
-            void AddSource(bool isKnockback) => _sources[Raid.FindSlot(target.InstanceID)] = new(source.Position, 10f, WorldState.FutureTime(10d), kind: isKnockback ? Kind.AwayFromOrigin : Kind.TowardsOrigin, ignoreImmunes: true);
+            void AddSource(bool isKnockback) => _kbs[Raid.FindSlot(target.InstanceID)] = [new(source.Position, 10f, WorldState.FutureTime(10d), kind: isKnockback ? Kind.AwayFromOrigin : Kind.TowardsOrigin, ignoreImmunes: true)];
         }
     }
 
@@ -109,65 +110,70 @@ class Magnetism(BossModule module) : Components.GenericKnockback(module)
     {
         if (tether.ID == (uint)TetherID.Magnetism)
         {
-            var target = WorldState.Actors.Find(tether.Target)!;
-            _sources[Raid.FindSlot(target.InstanceID)] = null;
+            _kbs[Raid.FindSlot(tether.Target)] = [];
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_sources[slot] is Knockback source)
+        if (_kbs[slot] is var kbs && kbs != null && kbs.Length != 0)
         {
-            var attract = source.Kind == Kind.TowardsOrigin;
-            var pos = Module.PrimaryActor.Position;
-            var barofield = ShapeDistance.Circle(pos, 5f);
-            var arena = ShapeDistance.InvertedCircle(pos, 8f);
-            var cannons = Module.Enemies((uint)OID.WeaponsDrone);
-            var count = cannons.Count;
-            var forbiddenRects = new Func<WPos, float>[count];
+            ref var kb = ref _kbs[slot][0];
+            var attract = kb.Kind == Kind.TowardsOrigin;
+            var center = Arena.Center;
+            var count = drones.Count;
+
+            var forbidden = new ShapeDistance[count + 1];
+            forbidden[count] = new SDDonut(center, 8f, 50f);
             for (var i = 0; i < count; ++i)
             {
-                var c = cannons[i];
-                forbiddenRects[i] = ShapeDistance.Rect(c.Position, c.Rotation, 43f, default, 2.5f);
+                var c = drones[i];
+                forbidden[i] = new SDRect(c.Position, c.Rotation.ToDirection(), 43f, default, 2.5f);
             }
-            var all = ShapeDistance.Union((Func<WPos, float>[])[barofield, arena, .. forbiddenRects]);
 
-            hints.AddForbiddenZone(p =>
-            {
-                var dir = (p - source.Origin).Normalized();
-                var kb = attract ? -dir : dir;
-
-                // prevent KB through death zone in center
-                if (Intersect.RayCircle(p, kb, pos, 5f) < 99f)
-                    return 0f;
-
-                return all(p + kb * 10f);
-            }, source.Activation);
+            var origin = kb.Origin;
+            hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOriginPlusMixedAOEsPlusSingleCircleIntersection(center, origin, 19f, 10f, new SDUnion(forbidden), center, 5.5f, attract), kb.Activation);
         }
     }
 }
 
-class Barofield(BossModule module) : Components.GenericAOEs(module)
+sealed class Barofield(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(5f);
-    public AOEInstance? AOE;
+    private AOEInstance[] _aoe = [];
+    public bool Active;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (AOE == null && spell.Action.ID is (uint)AID.Barofield or (uint)AID.NanosporeJet)
-            AOE = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 0.7f));
+        if (!Active && spell.Action.ID is (uint)AID.Barofield or (uint)AID.NanosporeJet)
+        {
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 0.7d))];
+            Active = true;
+        }
+    }
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Barofield)
+        {
+            _aoe = [];
+            Arena.Bounds = DD80ProtoKaliya.DonutArena;
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Barofield)
-            AOE = null;
+        {
+            Arena.Bounds = new ArenaBoundsCircle(20f);
+            Active = false;
+        }
     }
 }
 
-class NerveGasRingAndAutoCannons(BossModule module) : Components.GenericAOEs(module)
+sealed class NerveGasRingAndAutoCannons(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(2);
     private static readonly AOEShapeCross cross = new(20f, 2.5f);
@@ -179,68 +185,76 @@ class NerveGasRingAndAutoCannons(BossModule module) : Components.GenericAOEs(mod
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         void AddAOE(AOEShape shape) => AOEs.Add(new(shape, spell.LocXZ, shape == rect ? spell.Rotation : default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
-        if (spell.Action.ID == (uint)AID.NerveGasRing)
+        switch (spell.Action.ID)
         {
-            AddAOE(donut);
-            AddAOE(cross);
-        }
-        else if (spell.Action.ID == (uint)AID.AutoCannons)
-        {
-            AddAOE(rect);
-            var count = AOEs.Count;
-            for (var i = 0; i < count; ++i)
-            {
-                if (AOEs[i].Shape == cross)
+            case (uint)AID.NerveGasRing:
+                AddAOE(donut);
+                AddAOE(cross);
+                break;
+            case (uint)AID.AutoCannons:
+                AddAOE(rect);
+                var count = AOEs.Count;
+                var aoes = CollectionsMarshal.AsSpan(AOEs);
+                for (var i = 0; i < count; ++i)
                 {
-                    AOEs.RemoveAt(i);
-                    break;
+                    ref var aoe = ref aoes[i];
+                    if (aoe.Shape == cross)
+                    {
+                        AOEs.RemoveAt(i);
+                        return;
+                    }
                 }
-            }
+                break;
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (AOEs.Count != 0 && spell.Action.ID is (uint)AID.NerveGasRing or (uint)AID.AutoCannons)
+        if (spell.Action.ID is (uint)AID.NerveGasRing or (uint)AID.AutoCannons)
         {
             var count = AOEs.Count;
             var id = caster.InstanceID;
+            var aoes = CollectionsMarshal.AsSpan(AOEs);
             for (var i = 0; i < count; ++i)
             {
-                if (AOEs[i].ActorID == id)
+                if (aoes[i].ActorID == id)
                 {
                     AOEs.RemoveAt(i);
-                    break;
+                    return;
                 }
             }
         }
     }
 }
 
-class NerveGas(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftwardNerveGas, (uint)AID.RightwardNerveGas], new AOEShapeCone(25.5f, 90f.Degrees()));
+sealed class NerveGas(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LeftwardNerveGas, (uint)AID.RightwardNerveGas], new AOEShapeCone(25.5f, 90f.Degrees()));
 
-class CentralizedNerveGas(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CentralizedNerveGas, new AOEShapeCone(25.5f, 60f.Degrees()));
+sealed class CentralizedNerveGas(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CentralizedNerveGas, new AOEShapeCone(25.5f, 60f.Degrees()));
 
-class AutoAttack(BossModule module) : Components.Cleave(module, (uint)AID.AutoAttack, new AOEShapeCone(11f, 45f.Degrees()))
+sealed class AutoAttack(BossModule module) : Components.Cleave(module, (uint)AID.AutoAttack, new AOEShapeCone(11f, 45f.Degrees()))
 {
     private readonly Barofield _aoe = module.FindComponent<Barofield>()!;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe.AOE == null)
+        if (!_aoe.Active)
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (_aoe.AOE == null)
+        if (!_aoe.Active)
+        {
             base.DrawArenaForeground(pcSlot, pc);
+        }
     }
 }
 
-class Resonance(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Resonance, new AOEShapeCone(12f, 45f.Degrees()), endsOnCastEvent: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
+sealed class Resonance(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Resonance, new AOEShapeCone(12f, 45f.Degrees()), endsOnCastEvent: true, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
-class DD80ProtoKaliyaStates : StateMachineBuilder
+sealed class DD80ProtoKaliyaStates : StateMachineBuilder
 {
     public DD80ProtoKaliyaStates(BossModule module) : base(module)
     {
@@ -256,4 +270,8 @@ class DD80ProtoKaliyaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus, legendoficeman", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 904, NameID = 12247)]
-public class DD80ProtoKaliya(WorldState ws, Actor primary) : BossModule(ws, primary, new(-600f, -300f), new ArenaBoundsCircle(20f));
+public sealed class DD80ProtoKaliya(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, new ArenaBoundsCircle(20f))
+{
+    private static readonly WPos arenaCenter = new(-600f, -300f);
+    public static readonly ArenaBoundsCustom DonutArena = new([new Polygon(arenaCenter, 20f, 64)], [new Polygon(arenaCenter.Quantized(), 5f, 64)]);
+}

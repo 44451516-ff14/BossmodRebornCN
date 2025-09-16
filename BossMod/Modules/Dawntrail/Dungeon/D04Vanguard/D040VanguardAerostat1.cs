@@ -21,22 +21,11 @@ sealed class D040VanguardAerostat1States : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<IncendiaryRing>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D040VanguardAerostat1.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D040VanguardAerostat1.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12780, SortOrder = 4)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12780, SortOrder = 4)]
 public sealed class D040VanguardAerostat1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-50f, -15f), new ArenaBoundsRect(7.7f, 25f))
 {
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Aerostat2];
@@ -51,6 +40,8 @@ public sealed class D040VanguardAerostat1(WorldState ws, Actor primary) : BossMo
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

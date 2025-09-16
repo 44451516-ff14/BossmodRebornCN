@@ -49,11 +49,11 @@ class RegulaVanHydrusStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 173, NameID = 3818)]
 public class RegulaVanHydrus(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(230f, 79f), 20.256f, 24)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(230f, 79f), 20.256f, 24)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies([(uint)OID.MagitekTurretI, (uint)OID.MagitekTurretII]));
+        Arena.Actors(this, [(uint)OID.MagitekTurretI, (uint)OID.MagitekTurretII]);
         Arena.Actor(PrimaryActor);
     }
 }

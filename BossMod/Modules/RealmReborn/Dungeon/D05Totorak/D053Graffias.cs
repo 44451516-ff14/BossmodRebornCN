@@ -24,7 +24,7 @@ class Silkscreen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Si
 class StickyWeb(BossModule module) : Components.CastHint(module, (uint)AID.StickyWeb, "Delayed AOE at target");
 class PodBurst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PodBurst, 7.05f);
 class DeadlyThrust(BossModule module) : Components.CastHint(module, (uint)AID.DeadlyThrust, "Persistent voidzone at target");
-class PollenZone(BossModule module) : Components.Voidzone(module, 10, m => m.Enemies(OID.PollenZone));
+class PollenZone(BossModule module) : Components.Voidzone(module, 10, m => m.Enemies((uint)OID.PollenZone));
 
 class D053GraffiasStates : StateMachineBuilder
 {
@@ -44,7 +44,7 @@ public class D053Graffias(WorldState ws, Actor primary) : BossModule(ws, primary
 {
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var haveTail = Enemies(OID.GraffiasTail).Count > 0;
+        var haveTail = Enemies((uint)OID.GraffiasTail).Count > 0;
         foreach (var e in hints.PotentialTargets)
         {
             e.Priority = (OID)e.Actor.OID switch

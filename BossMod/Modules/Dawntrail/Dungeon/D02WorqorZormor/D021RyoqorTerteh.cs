@@ -39,15 +39,15 @@ public enum TetherID : uint
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 23f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.FrostingFracas && Arena.Bounds == D021RyoqorTerteh.StartingBounds)
+        if (spell.Action.ID == (uint)AID.FrostingFracas && Arena.Bounds.Radius != 20f)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.6d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.6d))];
         }
     }
 
@@ -56,7 +56,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (index == 0x17 && state == 0x00020001u)
         {
             Arena.Bounds = D021RyoqorTerteh.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -109,7 +109,9 @@ sealed class IceScreamFrozenSwirl(BossModule module) : Components.GenericAOEs(mo
                     ++tetherCount;
                     var isTutorial = tutorial < 2u;
                     if (isTutorial && tetherCount == 2 || !isTutorial && tetherCount == 4)
+                    {
                         aoes.Sort((x, y) => x.Activation.CompareTo(y.Activation));
+                    }
                     return;
                 }
             }
@@ -158,11 +160,11 @@ sealed class D021RyoqorTertehStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824, NameID = 12699)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 824u, NameID = 12699u)]
 public sealed class D021RyoqorTerteh(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     private static readonly WPos arenaCenter = new(-108f, 119f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(arenaCenter, 22.5f, 52)], [new Rectangle(new(-108f, 141.95f), 20f, 1.25f),
+    public static readonly ArenaBoundsCustom StartingBounds = new([new Polygon(arenaCenter, 22.5f, 52)], [new Rectangle(new(-108f, 141.95f), 20f, 1.25f),
     new Rectangle(new(-108f, 96.25f), 20f, 1.25f)]);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(arenaCenter, 20f, 52)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(arenaCenter, 20f, 52)]);
 }

@@ -38,9 +38,9 @@ public enum AID : uint
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donutSmall = new(5f, 15f), donutBig = new(15f, 20f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -53,7 +53,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         {
             AddAOE(donutSmall);
         }
-        void AddAOE(AOEShape shape) => _aoe = new(shape, Arena.Center.Quantized(), default, Module.CastFinishAt(spell));
+        void AddAOE(AOEShape shape) => _aoe = [new(shape, Arena.Center.Quantized(), default, Module.CastFinishAt(spell))];
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -81,11 +81,11 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 break;
         }
 
-        void SetArena(ArenaBoundsComplex bounds)
+        void SetArena(ArenaBoundsCustom bounds)
         {
             Arena.Bounds = bounds;
             Arena.Center = bounds.Center;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -197,7 +197,7 @@ sealed class D092OverseerKanilokkaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13634, SortOrder = 6)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13634, SortOrder = 6)]
 public sealed class D092OverseerKanilokka(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     private const int Edges = 64;
@@ -232,12 +232,12 @@ public sealed class D092OverseerKanilokka(WorldState ws, Actor primary) : BossMo
     private static readonly WPos[] vertices00800040West = [new(112.885f, -69.813f), new(110.681f, -70.201f), new(108.074f, -73.1f), new(103.282f, -73.098f), new(100.933f, -70.326f),
     new(98.686f, -70.669f), new(98.201f, -71.399f), new(97.212f, -72.791f), new(96.861f, -71.806f), new(96.384f, -69.902f), new(98.13f, -67.76f), new(98.394f, -67.416f),
     new(101.8f, -66.852f), new(104.669f, -69.078f), new(106.579f, -69.753f), new(108.694f, -66.477f), new(111.106f, -65.727f)];
-    public static readonly ArenaBoundsComplex StartingBounds = new(StartingPolygon, [new Rectangle(new(116f, -46f), 20f, 1.25f), new Rectangle(new(116f, -86f), 20f, 1.25f)]);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(ArenaCenter, 15f, Edges)]);
-    public static readonly ArenaBoundsComplex TinyArena = new(TinyPolygon, MapResolution: 0.1f);
+    public static readonly ArenaBoundsCustom StartingBounds = new(StartingPolygon, [new Rectangle(new(116f, -46f), 20f, 1.25f), new Rectangle(new(116f, -86f), 20f, 1.25f)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(ArenaCenter, 15f, Edges)]);
+    public static readonly ArenaBoundsCustom TinyArena = new(TinyPolygon, MapResolution: 0.1f);
     private static readonly DonutV[] difference = [new DonutV(ArenaCenter, 19.5f, 22f, Edges)];
-    public static readonly ArenaBoundsComplex ArenaENVC00800040 = new([new PolygonCustom(vertices00800040North), new PolygonCustom(vertices00800040East),
+    public static readonly ArenaBoundsCustom ArenaENVC00800040 = new([new PolygonCustom(vertices00800040North), new PolygonCustom(vertices00800040East),
     new PolygonCustom(vertices00800040South), new PolygonCustom(vertices00800040West), ..TinyPolygon], difference);
-    public static readonly ArenaBoundsComplex ArenaENVC02000100 = new([new PolygonCustom(vertices02000100East), new PolygonCustom(vertices02000100North),
+    public static readonly ArenaBoundsCustom ArenaENVC02000100 = new([new PolygonCustom(vertices02000100East), new PolygonCustom(vertices02000100North),
     new PolygonCustom(vertices02000100West), ..TinyPolygon], difference);
 }

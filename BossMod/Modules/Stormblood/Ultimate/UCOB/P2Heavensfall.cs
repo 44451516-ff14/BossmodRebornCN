@@ -10,11 +10,11 @@ class P2Heavensfall(BossModule module) : Components.GenericKnockback(module, (ui
 
 class P2HeavensfallPillar(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
     private static readonly AOEShapeRect _shape = new(5f, 5f, 5f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
@@ -22,16 +22,16 @@ class P2HeavensfallPillar(BossModule module) : Components.GenericAOEs(module)
             return;
         switch (state)
         {
-            case 0x00040008: // appear
-                _aoe = new(_shape, actor.Position, actor.Rotation);
+            case 0x00040008u: // appear
+                _aoe = [new(_shape, actor.Position, actor.Rotation)];
                 break;
             // 0x00100020: ? 0.5s after appear
             // 0x00400080: ? 4.0s after appear
             // 0x01000200: ? 5.8s after appear
             // 0x04000800: ? 7.5s after appear
             // 0x10002000: ? 9.4s after appear
-            case 0x40008000: // disappear (11.1s after appear)
-                _aoe = null;
+            case 0x40008000u: // disappear (11.1s after appear)
+                _aoe = [];
                 break;
         }
     }

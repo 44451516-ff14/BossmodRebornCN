@@ -2,12 +2,12 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 
 sealed class UnsealedAura(BossModule module) : Components.RaidwideCast(module, (uint)AID.UnsealedAura);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.Magitaur, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018, NameID = 13947, PlanLevel = 100, SortOrder = 5, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
-public sealed class FTB4Magitaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.Magitaur, GroupType = BossModuleInfo.GroupType.TheForkedTowerBlood, GroupID = 1018u, NameID = 13947u, PlanLevel = 100, SortOrder = 5, Category = BossModuleInfo.Category.Foray, Expansion = BossModuleInfo.Expansion.Dawntrail)]
+public sealed class FTB4Magitaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena, true)
 {
     private static readonly WPos arenaCenter = new(700f, -674f);
     private static readonly Square[] baseArena = [new Square(arenaCenter, 31.5f)];
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(arenaCenter, 31.5f, 90)], [new Rectangle(new(700f, -705.916f), 7.5f, 1.25f), new Rectangle(new(700f, -641.5f), 7.5f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(arenaCenter, 31.5f, 90)], [new Rectangle(new(700f, -705.916f), 7.5f, 1.25f), new Rectangle(new(700f, -641.5f), 7.5f, 1.25f)]);
     public static readonly WPos[] SquarePositions = [new(700f, -659.504f), new(712.554f, -681.248f), new(687.443f, -681.25f)]; // starting in south, ccw order
     public static readonly Angle[] SquareAngles = [-45f.Degrees(), -15f.Degrees(), 105f.Degrees()];
     public static readonly WDir[] SquareDirs = [SquareAngles[0].ToDirection(), SquareAngles[1].ToDirection(), SquareAngles[2].ToDirection()];

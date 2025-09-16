@@ -17,7 +17,7 @@ sealed class EffectResultReorder
                     var damageTarget = false;
                     var healSource = false;
                     var healTarget = false;
-                    foreach (var eff in t.Effects)
+                    foreach (var eff in t.Effects.ValidEffects())
                     {
                         if (eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage)
                         {
@@ -67,14 +67,14 @@ sealed class EffectResultReorder
             {
                 foreach (var t in tree.Nodes(e.prev.Targets, t => new(ReplayUtils.ActionTargetString(t, e.prev.Timestamp))))
                 {
-                    tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                    tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
                 }
             }
             foreach (var n in tree.Node($"Next: {e.next.Timestamp:O} {e.next.ID} {ReplayUtils.ParticipantString(e.next.Source, e.next.Timestamp)} -> {ReplayUtils.ParticipantString(e.next.MainTarget, e.next.Timestamp)}"))
             {
                 foreach (var t in tree.Nodes(e.next.Targets, t => new(ReplayUtils.ActionTargetString(t, e.next.Timestamp))))
                 {
-                    tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                    tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
                 }
             }
         }

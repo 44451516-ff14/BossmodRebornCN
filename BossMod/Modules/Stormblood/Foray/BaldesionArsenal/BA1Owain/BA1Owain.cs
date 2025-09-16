@@ -8,7 +8,7 @@ sealed class Pitfall(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7970, PlanLevel = 70, SortOrder = 2)]
 public sealed class BA1Owain(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(128.98f, 748f), 29.5f, 64)], [new Rectangle(new(129f, 718f), 20f, 0.8f), new Rectangle(new(129f, 778f), 20f, 0.825f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(128.98f, 748f), 29.5f, 64)], [new Rectangle(new(129f, 718f), 20f, 0.8f), new Rectangle(new(129f, 778f), 20f, 0.825f),
     new Polygon(new(123.5f, 778f), 1.5f, 8), new Polygon(new(134.5f, 778f), 1.5f, 8), new Polygon(new(123.5f, 718f), 1.5f, 8), new Polygon(new(134.5f, 718f), 1.5f, 8)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -30,4 +30,6 @@ public sealed class BA1Owain(WorldState ws, Actor primary) : BossModule(ws, prim
             };
         }
     }
+
+    protected override bool CheckPull() => base.CheckPull() && (Center - Raid.Player()!.Position).LengthSq() < 1e4f;
 }

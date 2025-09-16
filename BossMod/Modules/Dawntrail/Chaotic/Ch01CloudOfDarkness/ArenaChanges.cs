@@ -2,13 +2,13 @@ namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly Square[] DefaultPolygon = [new(Ch01CloudOfDarkness.DefaultCenter, 40f)];
     private static readonly AOEShapeCustom P1Transition = new(DefaultPolygon, Ch01CloudOfDarkness.Diamond);
     private static readonly AOEShapeCustom P2Transition = new(DefaultPolygon, Ch01CloudOfDarkness.Phase2ShapesWD);
     private static readonly AOEShapeDonut donut = new(34f, 40f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -67,15 +67,15 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    private void SetArena(ArenaBoundsComplex bounds)
+    private void SetArena(ArenaBoundsCustom bounds)
     {
         Arena.Bounds = bounds;
         Arena.Center = bounds.Center;
-        _aoe = null;
+        _aoe = [];
     }
 
     private void SetAOE(AOEShape shape)
     {
-        _aoe = new(shape, Arena.Center, default, WorldState.FutureTime(9d));
+        _aoe = [new(shape, Arena.Center, default, WorldState.FutureTime(9d))];
     }
 }

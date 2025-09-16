@@ -7,5 +7,5 @@ public sealed class M03SBruteBomber(WorldState ws, Actor primary) : BossModule(w
 {
     private static readonly WPos arenaCenter = new(100f, 100f);
     public static readonly ArenaBoundsSquare DefaultBounds = new(15f);
-    public static readonly ArenaBoundsComplex FuseFieldBounds = new([new Square(arenaCenter, 15f)], [new Polygon(arenaCenter, 5f, 80)]);
+    public static readonly ArenaBoundsCustom FuseFieldBounds = new([new Square(arenaCenter, 15f)], [new Polygon(arenaCenter, 5f, 80)]);
 }

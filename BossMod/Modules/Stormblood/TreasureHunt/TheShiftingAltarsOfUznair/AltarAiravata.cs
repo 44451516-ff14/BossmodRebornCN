@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.TreasureHunt.ShiftingAltarsOfUznair.AltarAiravata;
 
 public enum OID : uint
 {
-    Boss = 0x2543, //R=4.75
+    Boss = 0x2543, //R4.75
     AltarMatanga = 0x2545, // R3.42
     GoldWhisker = 0x2544, // R0.54
     Helper = 0x233C
@@ -70,7 +70,7 @@ sealed class Buffet(BossModule module) : Components.SimpleKnockbacks(module, (ui
     {
         base.AddAIHints(slot, actor, assignment, hints);
         if (target == actor && targeted)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 17.5f));
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f));
     }
 }
 
@@ -125,17 +125,7 @@ sealed class AltarAiravataStates : StateMachineBuilder
             .ActivateOnEnter<Hurl>()
             .ActivateOnEnter<RaucousScritch>()
             .ActivateOnEnter<Spin>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(AltarAiravata.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(AltarAiravata.All);
     }
 }
 
@@ -148,7 +138,7 @@ public sealed class AltarAiravata(WorldState ws, Actor primary) : THTemplate(ws,
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

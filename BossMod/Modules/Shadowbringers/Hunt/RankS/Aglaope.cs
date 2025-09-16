@@ -27,17 +27,17 @@ sealed class SongOfTorment(BossModule module) : Components.CastInterruptHint(mod
 
 sealed class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     bool done;
     private static readonly AOEShapeCircle circle = new(16.2f); // circle + minimum distance to survive seducing status
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.SeductiveSonata)
         {
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell));
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell))];
         }
     }
 
@@ -55,14 +55,17 @@ sealed class SeductiveSonata(BossModule module) : Components.GenericAOEs(module)
         if (done)
         {
             var player = Module.Raid.Player()!;
-            var statuses = player.PendingStatuses;
-            var count = statuses.Count;
-            for (var i = 0; i < count; ++i)
+            var statuses = CollectionsMarshal.AsSpan(player.PendingStatuses);
+            var len = statuses.Length;
+            for (var i = 0; i < len; ++i)
             {
-                if (statuses[i].StatusId == (uint)SID.Seduced)
+                ref var s = ref statuses[i];
+                if (s.StatusId == (uint)SID.Seduced)
+                {
                     return;
+                }
             }
-            _aoe = null;
+            _aoe = [];
             done = false;
         }
     }

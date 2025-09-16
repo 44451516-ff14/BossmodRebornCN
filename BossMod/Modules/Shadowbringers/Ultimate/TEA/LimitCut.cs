@@ -35,7 +35,7 @@ abstract class LimitCut(BossModule module, double alphaDelay) : Components.Gener
     {
         if (PlayerOrder[slot] > NumCasts)
         {
-            var hitIn = Math.Max(0, (float)(_nextHit - WorldState.CurrentTime).TotalSeconds);
+            var hitIn = Math.Max(default, (float)(_nextHit - WorldState.CurrentTime).TotalSeconds);
             var hitIndex = NumCasts + 1;
             while (PlayerOrder[slot] > hitIndex)
             {
@@ -44,7 +44,7 @@ abstract class LimitCut(BossModule module, double alphaDelay) : Components.Gener
             }
             if (hitIn < 5)
             {
-                var action = actor.Class.GetClassCategory() is ClassCategory.Healer or ClassCategory.Caster ? ActionID.MakeSpell(ClassShared.AID.Surecast) : ActionID.MakeSpell(ClassShared.AID.ArmsLength);
+                var action = actor.Class.GetClassCategory() is ClassCategory.Healer or ClassCategory.Caster ? ActionDefinitions.Surecast : ActionDefinitions.Armslength;
                 hints.ActionsToExecute.Push(action, actor, ActionQueue.Priority.High, hitIn);
             }
         }

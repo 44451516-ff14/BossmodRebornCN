@@ -53,14 +53,16 @@ class ThermobaricCharge(BossModule module) : Components.SimpleAOEs(module, (uint
 class Chainsaw(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(4.6f, 1f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ChainsawFirst)
-            _aoe = new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -71,7 +73,7 @@ class Chainsaw(BossModule module) : Components.GenericAOEs(module)
             case (uint)AID.ChainsawRest:
                 if (++NumCasts == 5)
                 {
-                    _aoe = null;
+                    _aoe = [];
                     NumCasts = 0;
                 }
                 break;
@@ -97,9 +99,11 @@ class ChainMine(BossModule module) : Components.GenericAOEs(module)
         {
             var count = _aoes.Count;
             var pos = source.Position;
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].Origin.AlmostEqual(pos, 1f))
+                ref var aoe = ref aoes[i];
+                if (aoe.Origin.AlmostEqual(pos, 1f))
                 {
                     _aoes.RemoveAt(i);
                     return;
@@ -133,7 +137,7 @@ class ThermobaricChargeBait(BossModule module) : Components.GenericBaitAway(modu
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (CurrentBaits.Count != 0 && CurrentBaits[0].Target == actor)
+        if (CurrentBaits.Count != 0 && CurrentBaits.Ref(0).Target == actor)
             hints.Add("Bait away!");
         else
             base.AddHints(slot, actor, hints);
@@ -141,8 +145,8 @@ class ThermobaricChargeBait(BossModule module) : Components.GenericBaitAway(modu
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (CurrentBaits.Count != 0 && CurrentBaits[0].Target == actor)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 23f));
+        if (CurrentBaits.Count != 0 && CurrentBaits.Ref(0).Target == actor)
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 23f));
     }
 }
 

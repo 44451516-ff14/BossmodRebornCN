@@ -23,7 +23,7 @@ public enum AID : uint
     Waterspout = 33342 // Helper->player, 5.0s cast, range 5 circle, spread
 }
 
-class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(module)
+sealed class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(15f);
     private readonly List<AOEInstance> _aoes = new(11);
@@ -86,14 +86,13 @@ class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(mod
     }
 }
 
-class SonicBloop(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SonicBloop);
-class Waterspout(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Waterspout, 5f);
-class TidalBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TidalBreath, new AOEShapeCone(40f, 90f.Degrees()));
-class Tidalspout(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Tidalspout, 6f, 4, 4);
-class Upsweep(BossModule module) : Components.RaidwideCast(module, (uint)AID.Upsweep);
-class BodySlam(BossModule module) : Components.RaidwideCast(module, (uint)AID.BodySlam);
+sealed class SonicBloop(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SonicBloop);
+sealed class Waterspout(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Waterspout, 5f);
+sealed class TidalBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TidalBreath, new AOEShapeCone(40f, 90f.Degrees()));
+sealed class Tidalspout(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Tidalspout, 6f, 4, 4);
+sealed class UpsweepBodySlam(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.Upsweep, (uint)AID.BodySlam]);
 
-class D121LyngbakrStates : StateMachineBuilder
+sealed class D121LyngbakrStates : StateMachineBuilder
 {
     public D121LyngbakrStates(BossModule module) : base(module)
     {
@@ -102,15 +101,14 @@ class D121LyngbakrStates : StateMachineBuilder
             .ActivateOnEnter<TidalBreath>()
             .ActivateOnEnter<Tidalspout>()
             .ActivateOnEnter<Waterspout>()
-            .ActivateOnEnter<Upsweep>()
-            .ActivateOnEnter<BodySlam>()
+            .ActivateOnEnter<UpsweepBodySlam>()
             .ActivateOnEnter<ExplosiveResonantFrequency>();
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "dhoggpt, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 822, NameID = 12336, SortOrder = 3)]
-public class D121Lyngbakr(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D121Lyngbakr(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-322f, 120f), 19.5f * CosPI.Pi40th, 48)], [new Rectangle(new(-322f, 99f), 20f, 2.25f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-322f, 120f), 19.5f * CosPI.Pi40th, 48)], [new Rectangle(new(-322f, 99f), 20f, 2.25f),
     new Rectangle(new(-322f, 140f), 20f, 1.25f)]);
 }

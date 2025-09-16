@@ -148,5 +148,5 @@ class D133HraesvelgrStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 171, NameID = 4954, SortOrder = 6)]
 public class D133Hraesvelgr(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(400f, -400f), 19.5f, 36)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(400f, -400f), 19.5f, 36)]);
 }

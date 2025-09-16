@@ -127,11 +127,11 @@ class Shardstrike(BossModule module) : Components.SpreadFromCastTargets(module, 
             var count = crystals.Count;
             if (count == 0)
                 return;
-            var forbidden = new Func<WPos, float>[count];
+            var forbidden = new ShapeDistance[count];
             for (var i = 0; i < count; ++i)
-                forbidden[i] = ShapeDistance.Circle(crystals[i].Position, 6.6f);
+                forbidden[i] = new SDCircle(crystals[i].Position, 6.6f);
             if (forbidden.Length != 0)
-                hints.AddForbiddenZone(ShapeDistance.Union(forbidden), Spreads[0].Activation);
+                hints.AddForbiddenZone(new SDUnion(forbidden), Spreads[0].Activation);
         }
     }
 
@@ -198,7 +198,7 @@ class CE41WithDiremiteAndMainStates : StateMachineBuilder
 public class CE41WithDiremiteAndMain(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly uint[] Crystals = [(uint)OID.DimCrystal, (uint)OID.CorruptedCrystal];
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-220f, 530f), 29.5f, 32)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-220f, 530f), 29.5f, 32)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

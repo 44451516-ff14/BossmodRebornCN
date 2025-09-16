@@ -86,25 +86,14 @@ class D060BiocultureNodeStates : StateMachineBuilder
             .ActivateOnEnter<TheRamsVoice>()
             .ActivateOnEnter<Sideswipe>()
             .ActivateOnEnter<Gust>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(module.Bounds == D060BiocultureNode.Arena1 || module.Bounds == D060BiocultureNode.Arena1b ? D060BiocultureNode.Trash1 : D060BiocultureNode.Trash2);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(module.Bounds == D060BiocultureNode.Arena1 || module.Bounds == D060BiocultureNode.Arena1b ? D060BiocultureNode.Trash1 : D060BiocultureNode.Trash2);
     }
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 3830, SortOrder = 5)]
 public class D060BiocultureNode(WorldState ws, Actor primary) : BossModule(ws, primary, IsArena1(primary) ? Arena1.Center : arena2.Center, IsArena1(primary) ? Arena1 : arena2)
 {
-    public static bool IsArena1(Actor primary) => primary.Position.Z < 250f;
+    public static bool IsArena1(Actor primary) => primary.PosRot.Z < 250f;
 
     private static readonly WPos[] vertices1 = [new(26.19f, 163.9f), new(29.99f, 164.07f), new(30.59f, 164.12f), new(31.3f, 164.26f), new(31.59f, 164.85f),
     new(31.81f, 165.42f), new(32, 166.01f), new(32.24f, 166.6f), new(34.76f, 168.55f), new(34.99f, 169.17f),
@@ -170,24 +159,28 @@ public class D060BiocultureNode(WorldState ws, Actor primary) : BossModule(ws, p
     new(99.38f, 257.43f), new(99.83f, 256.97f), new(100.31f, 256.55f), new(100.76f, 256.12f), new(101.19f, 255.7f),
     new(101.16f, 255.18f), new(100.78f, 254.71f), new(98.07f, 252), new(98.2f, 251.49f), new(98.72f, 250.97f),
     new(99.2f, 250.46f), new(103.7f, 245.95f), new(103.85f, 228.55f), new(119.47f, 228.45f)];
-    public static readonly ArenaBoundsComplex Arena1 = new([new PolygonCustom(vertices1)], [new Polygon(new(28.122f, 220.05f), 2.5f, 16)]);
-    public static readonly ArenaBoundsComplex Arena1b = new([new PolygonCustom(vertices1)]);
-    private static readonly ArenaBoundsComplex arena2 = new([new PolygonCustom(vertices2)], [new Polygon(new(111.925f, 271.931f), 2.5f, 16)]);
-    public static readonly ArenaBoundsComplex Arena2b = new([new PolygonCustom(vertices2)]);
+    public static readonly ArenaBoundsCustom Arena1 = new([new PolygonCustom(vertices1)], [new Polygon(new(28.122f, 220.05f), 2.5f, 16)]);
+    public static readonly ArenaBoundsCustom Arena1b = new([new PolygonCustom(vertices1)]);
+    private static readonly ArenaBoundsCustom arena2 = new([new PolygonCustom(vertices2)], [new Polygon(new(111.925f, 271.931f), 2.5f, 16)]);
+    public static readonly ArenaBoundsCustom Arena2b = new([new PolygonCustom(vertices2)]);
 
     public static readonly uint[] Trash1 = [(uint)OID.Boss, (uint)OID.PreculturedBiomass, (uint)OID.CulturedCobra, (uint)OID.CulturedNaga,
     (uint)OID.CulturedBowyer, (uint)OID.CulturedEmpuse, (uint)OID.CulturedDancer];
     public static readonly uint[] Trash2 = [(uint)OID.Boss, (uint)OID.CulturedChimera, (uint)OID.BiocultureNode, (uint)OID.CulturedReptoid, (uint)OID.CulturedMirrorknight,
     (uint)OID.Biohazard];
 
-    protected override bool CheckPull() => InBounds(Raid.Player()!.Position);
+    protected override bool CheckPull() => Arena.InBounds(Raid.Player()!.Position);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         if (Bounds == Arena1 || Bounds == Arena1b)
-            Arena.Actors(Enemies(Trash1));
+        {
+            Arena.Actors(this, Trash1);
+        }
         else
-            Arena.Actors(Enemies(Trash2));
+        {
+            Arena.Actors(this, Trash2);
+        }
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

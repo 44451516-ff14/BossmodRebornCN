@@ -33,7 +33,7 @@ class BurstFlare(BossModule module) : Components.SimpleKnockbacks(module, (uint)
         if (_aoe.ActiveAOEs(slot, actor).Length != 0)
             return;
         if (Casters.Count != 0)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Arena.Center, 5f), Casters.Ref(0).Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 5f), Casters.Ref(0).Activation);
     }
 }
 
@@ -81,19 +81,21 @@ class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private bool completed;
     private static readonly AOEShapeDonut donut = new(15f, 20f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.AncientFireIII && !completed)
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+        {
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.7d))];
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0 && state == 0x20001)
+        if (index == 0x00 && state == 0x00020001u)
         {
             Arena.Bounds = Lahabrea.SmallerBounds;
             completed = true;

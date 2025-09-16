@@ -27,22 +27,11 @@ sealed class D040VanguardSentryR7States : StateMachineBuilder
             .ActivateOnEnter<Swoop>()
             .ActivateOnEnter<FloaterTurn>()
             .ActivateOnEnter<SpinningAxle>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D040VanguardSentryR7.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D040VanguardSentryR7.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12778, SortOrder = 2)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12778, SortOrder = 2)]
 public sealed class D040VanguardSentryR7(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(-93.53f, 262.87f), new(-91.94f, 262.9f), new(-90.82f, 263.02f), new(-90.31f, 263.21f), new(-90.22f, 263.86f),
@@ -70,18 +59,20 @@ public sealed class D040VanguardSentryR7(WorldState ws, Actor primary) : BossMod
     new(-110.81f, 294.6f), new(-110.9f, 287.95f), new(-111.2f, 287.52f), new(-118.89f, 287.52f), new(-118.86f, 272.73f),
     new(-118.67f, 273.19f), new(-118.12f, 273.45f), new(-111.03f, 273.48f), new(-110.41f, 273.75f), new(-109.86f, 273.6f),
     new(-109.54f, 273.09f), new(-109.52f, 263.18f), new(-109.01f, 263.02f), new(-107.66f, 262.88f), new(-93.53f, 262.87f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.SentryR7];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

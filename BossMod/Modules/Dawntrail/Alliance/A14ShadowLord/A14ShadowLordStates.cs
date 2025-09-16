@@ -4,7 +4,7 @@ sealed class A14ShadowLordStates : StateMachineBuilder
 {
     public A14ShadowLordStates(BossModule module) : base(module)
     {
-        DeathPhase(0, SinglePhase)
+        DeathPhase(default, SinglePhase)
             .ActivateOnEnter<UmbraSmash>()
             .ActivateOnEnter<Implosion>()
             .ActivateOnEnter<GigaSlash>()
@@ -24,8 +24,8 @@ sealed class A14ShadowLordStates : StateMachineBuilder
         // note: this is a very weird fight, if you wipe, it uses a slightly different script (no initial giga slash and slightly different cthonic fury 1)
         Dictionary<bool, (uint seqID, Action<uint> buildState)> dispatch = new()
         {
-            [true] = (1, SinglePhaseInitial),
-            [false] = (2, SinglePhaseAfterWipe),
+            [true] = (1u, SinglePhaseInitial),
+            [false] = (2u, SinglePhaseAfterWipe),
         };
         ConditionFork(id, 10.2f, () => Module.PrimaryActor.CastInfo != null || Module.FindComponent<Teleport>()?.NumCasts > 0, () => (Module.PrimaryActor.CastInfo?.Action.ID ?? 0) is (uint)AID.GigaSlashL or (uint)AID.GigaSlashR, dispatch, "First mechanic...")
             .ActivateOnEnter<Teleport>()
@@ -34,7 +34,7 @@ sealed class A14ShadowLordStates : StateMachineBuilder
 
     private void SinglePhaseInitial(uint id)
     {
-        GigaSlash(id, 0);
+        GigaSlash(id, default);
         PhaseInitial(id + 0x100000, 6.5f, true);
         PhaseRepeats(id + 0x200000, 12.2f);
         PhaseRepeats(id + 0x300000, 10.2f);

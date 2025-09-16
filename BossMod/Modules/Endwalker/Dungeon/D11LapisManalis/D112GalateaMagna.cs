@@ -2,30 +2,30 @@ namespace BossMod.Endwalker.Dungeon.D11LapisManalis.D112GalateaMagna;
 
 public enum OID : uint
 {
-    Boss = 0x3971, //R=5.0
+    GalateaMagna = 0x3971, //R=5.0
     Helper2 = 0x3D06, // R3.5
     Helper = 0x233C
 }
 
 public enum AID : uint
 {
-    AutoAttack = 870, // Boss->player, no cast, single-target
-    Teleport = 32625, // Boss->location, no cast, single-target, boss teleports to spot marked by icons 1,2,3,4 or to mid
+    AutoAttack = 870, // GalateaMagna->player, no cast, single-target
+    Teleport = 32625, // GalateaMagna->location, no cast, single-target, GalateaMagna teleports to spot marked by icons 1,2,3,4 or to mid
 
-    WaningCycleVisual = 32623, // Boss->self, no cast, single-target (between in->out)
-    WaxingCycleVisual = 31378, // Boss->self, no cast, single-target (between out->in)
-    WaningCycle1 = 32622, // Boss->self, 4.0s cast, range 10-40 donut
+    WaningCycleVisual = 32623, // GalateaMagna->self, no cast, single-target (between in->out)
+    WaxingCycleVisual = 31378, // GalateaMagna->self, no cast, single-target (between out->in)
+    WaningCycle1 = 32622, // GalateaMagna->self, 4.0s cast, range 10-40 donut
     WaningCycle2 = 32624, // Helper->self, 6.0s cast, range 10 circle
-    WaxingCycle1 = 31377, // Boss->self, 4.0s cast, range 10 circle
+    WaxingCycle1 = 31377, // GalateaMagna->self, 4.0s cast, range 10 circle
     WaxingCycle2 = 31379, // Helper->self, 6.7s cast, range 10-40 donut
 
-    SoulScythe = 31386, // Boss->location, 6.0s cast, range 18 circle
-    SoulNebula = 31390, // Boss->self, 5.0s cast, range 40 circle, raidwide
-    ScarecrowChaseVisual1 = 31387, // Boss->self, 8.0s cast, single-target
-    ScarecrowChaseVisual2 = 31389, // Boss->self, no cast, single-target
+    SoulScythe = 31386, // GalateaMagna->location, 6.0s cast, range 18 circle
+    SoulNebula = 31390, // GalateaMagna->self, 5.0s cast, range 40 circle, raidwide
+    ScarecrowChaseVisual1 = 31387, // GalateaMagna->self, 8.0s cast, single-target
+    ScarecrowChaseVisual2 = 31389, // GalateaMagna->self, no cast, single-target
     ScarecrowChase = 32703, // Helper->self, 1.8s cast, range 40 width 10 cross
 
-    Tenebrism = 31382, // Boss->self, 4.0s cast, range 40 circle, small raidwide, spawns 4 towers, applies glass-eyed on tower resolve
+    Tenebrism = 31382, // GalateaMagna->self, 4.0s cast, range 40 circle, small raidwide, spawns 4 towers, applies glass-eyed on tower resolve
     Burst = 31383, // Helper->self, no cast, range 5 circle, tower success
     BigBurst = 31384, // Helper->self, no cast, range 60 circle, tower fail
     StonyGaze = 31385 // Helper->self, no cast, gaze
@@ -45,9 +45,9 @@ public enum SID : uint
     GlassyEyed = 3511 // Boss->player, extra=0x0, takes possession of the player after status ends and does a petrifying attack in all direction
 }
 
-class ScarecrowChase(BossModule module) : Components.GenericAOEs(module)
+sealed class ScarecrowChase(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCross cross = new(40, 5);
+    private static readonly AOEShapeCross cross = new(40f, 5f);
     private readonly List<AOEInstance> _aoes = new(4);
     private bool first = true;
 
@@ -55,16 +55,26 @@ class ScarecrowChase(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
-            return [];
-        var max = count > 2 ? 2 : count;
-        var aoes = CollectionsMarshal.AsSpan(_aoes)[..max];
-        ref var aoe0 = ref aoes[0];
-        aoe0.Risky = true;
-        if (count > 1)
         {
-            aoe0.Color = Colors.Danger;
+            return [];
         }
-        return aoes;
+        var max = count > 2 ? 2 : count;
+        return CollectionsMarshal.AsSpan(_aoes)[..max];
+    }
+
+    public override void Update()
+    {
+        var count = _aoes.Count;
+        if (count != 0)
+        {
+            var aoes = CollectionsMarshal.AsSpan(_aoes);
+            ref var aoe0 = ref aoes[0];
+            aoe0.Risky = true;
+            if (count > 1)
+            {
+                aoe0.Color = Colors.Danger;
+            }
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -83,16 +93,20 @@ class ScarecrowChase(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.ScarecrowChase)
+        {
             _aoes.RemoveAt(0);
+        }
     }
 }
 
-class WaxingCycle(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 40f)])
+sealed class WaxingCycle(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 40f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WaxingCycle1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -110,12 +124,14 @@ class WaxingCycle(BossModule module) : Components.ConcentricAOEs(module, [new AO
     }
 }
 
-class WaningCycle(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f)])
+sealed class WaningCycle(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f)])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.WaningCycle1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -133,7 +149,7 @@ class WaningCycle(BossModule module) : Components.ConcentricAOEs(module, [new AO
     }
 }
 
-class GlassyEyed(BossModule module) : Components.GenericGaze(module)
+sealed class GlassyEyed(BossModule module) : Components.GenericGaze(module)
 {
     private DateTime _activation;
     private readonly List<Actor> _affected = new(4);
@@ -142,10 +158,15 @@ class GlassyEyed(BossModule module) : Components.GenericGaze(module)
     {
         var count = _affected.Count;
         if (count == 0 || WorldState.CurrentTime < _activation.AddSeconds(-10d))
+        {
             return [];
+        }
         var eyes = new Eye[count];
+
         for (var i = 0; i < count; ++i)
+        {
             eyes[i] = new(_affected[i].Position, _activation);
+        }
         return eyes;
     }
 
@@ -161,11 +182,13 @@ class GlassyEyed(BossModule module) : Components.GenericGaze(module)
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.GlassyEyed)
+        {
             _affected.Remove(actor);
+        }
     }
 }
 
-public class TenebrismTowers(BossModule module) : Components.GenericTowers(module)
+sealed class TenebrismTowers(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -180,30 +203,37 @@ public class TenebrismTowers(BossModule module) : Components.GenericTowers(modul
                 _ => default
             };
             if (position != default)
-                Towers.Add(new(position, 5f, activation: WorldState.FutureTime(6d)));
+            {
+                Towers.Add(new(position.Quantized(), 5f, activation: WorldState.FutureTime(6d)));
+            }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Burst)
-            for (var i = 0; i < Towers.Count; ++i)
+        {
+            var towers = CollectionsMarshal.AsSpan(Towers);
+            var len = towers.Length;
+            var pos = caster.Position.Quantized();
+            for (var i = 0; i < len; ++i)
             {
-                var tower = Towers[i];
-                if (tower.Position == caster.Position)
+                ref var tower = ref towers[i];
+                if (tower.Position == pos)
                 {
                     Towers.RemoveAt(i);
-                    break;
+                    return;
                 }
             }
+        }
     }
 }
 
-class Doom(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Doom);
+sealed class Doom(BossModule module) : Components.CleansableDebuff(module, (uint)SID.Doom);
 
-class SoulScythe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SoulScythe, 18f);
+sealed class SoulScythe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SoulScythe, 18f);
 
-class D112GalateaMagnaStates : StateMachineBuilder
+sealed class D112GalateaMagnaStates : StateMachineBuilder
 {
     public D112GalateaMagnaStates(BossModule module) : base(module)
     {
@@ -218,8 +248,8 @@ class D112GalateaMagnaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 896, NameID = 10308)]
-public class D112GalateaMagna(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.GalateaMagna, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 896u, NameID = 10308u, Category = BossModuleInfo.Category.Dungeon, Expansion = BossModuleInfo.Expansion.Endwalker, SortOrder = 3)]
+public sealed class D112GalateaMagna(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(350f, -394f), 19.5f)], [new Rectangle(new(350f, -373f), 20f, 2.25f), new Rectangle(new(350f, -414f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(350f, -394f), 19.5f)], [new Rectangle(new(350f, -373f), 20f, 2.25f), new Rectangle(new(350f, -414f), 20f, 1.25f)]);
 }

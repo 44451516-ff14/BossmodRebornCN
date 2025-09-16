@@ -45,7 +45,7 @@ class ExtremeCaution(BossModule module) : Components.StayMove(module)
     }
 }
 class IronTempest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IronTempest, 5.5f);
-class FireII(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.FireII, m => m.Enemies(OID.FireII).Where(x => x.EventState != 7), 0);
+class FireII(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.FireII, m => m.Enemies((uint)OID.FireII).Where(x => x.EventState != 7), 0);
 class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(6.5f, 45.Degrees()));
 class Rive(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rive, new AOEShapeRect(30.5f, 1));
 class DiffractiveLaser(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DiffractiveLaser, 5);
@@ -67,7 +67,7 @@ class IoStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 67966, NameID = 5667)]
 public class Io(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(101.93f, -666.63f), new(94.49f, -639.63f), new(50.64f, -652.38f), new(57.58f, -679.32f)])]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(101.93f, -666.63f), new(94.49f, -639.63f), new(50.64f, -652.38f), new(57.58f, -679.32f)])]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(WorldState.Actors.Where(x => !x.IsAlly));
 }

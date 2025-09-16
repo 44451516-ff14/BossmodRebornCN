@@ -18,7 +18,7 @@ sealed class P5WrathOfTheHeavensSkywardLeap(BossModule module) : Components.Unif
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.SkywardLeapP5)
-            AddSpread(actor, WorldState.FutureTime(6.4f));
+            AddSpread(actor, WorldState.FutureTime(6.4d));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -102,39 +102,47 @@ sealed class P5WrathOfTheHeavensChainLightning(BossModule module) : Components.U
 
 sealed class P5WrathOfTheHeavensTwister(BossModule module) : Components.GenericAOEs(module, default, "GTFO from twister!")
 {
-    private readonly List<WPos> _predicted = GetPositions(module);
+    private readonly WPos[] _predicted = GetPositions(module);
     private readonly List<Actor> _voidzones = module.Enemies((uint)OID.VoidzoneTwister);
 
     private static readonly AOEShapeCircle _shape = new(2f); // TODO: verify radius
 
     public bool Active => _voidzones.Count > 0;
 
-    private static List<WPos> GetPositions(BossModule module)
+    private static WPos[] GetPositions(BossModule module)
     {
         var party = module.Raid.WithoutSlot(false, true, true);
         var len = party.Length;
-        var pos = new List<WPos>(len);
+        var pos = new WPos[len];
         for (var i = 0; i < len; ++i)
-            pos.Add(party[i].Position);
+        {
+            pos[i] = party[i].Position;
+        }
         return pos;
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var countP = _predicted.Count;
+        var lenP = _predicted.Length;
         var countV = _voidzones.Count;
-        var aoes = new AOEInstance[countP + countV];
-        for (var i = 0; i < countP; ++i)
+        var aoes = new AOEInstance[lenP + countV];
+        for (var i = 0; i < lenP; ++i)
+        {
             aoes[i] = new(_shape, _predicted[i]); // TODO: activation
+        }
         for (var i = 0; i < countV; ++i)
-            aoes[i] = new(_shape, _voidzones[i].Position);
+        {
+            aoes[lenP + i] = new(_shape, _voidzones[i].Position);
+        }
         return aoes;
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.VoidzoneTwister)
-            _predicted.Clear();
+        {
+            Array.Clear(_predicted);
+        }
     }
 }
 
@@ -142,6 +150,7 @@ sealed class P5WrathOfTheHeavensTwister(BossModule module) : Components.GenericA
 sealed class P5WrathOfTheHeavensCauterizeBait(BossModule module) : BossComponent(module)
 {
     private Actor? _target;
+    private readonly DSW2 bossmodule = (DSW2)module;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -171,9 +180,10 @@ sealed class P5WrathOfTheHeavensCauterizeBait(BossModule module) : BossComponent
 
     private WPos SafeSpot()
     {
-        var charibert = Module.Enemies((uint)OID.SerCharibert).FirstOrDefault();
-        if (charibert == null)
+        if (bossmodule._SerCharibert is not Actor charibert)
+        {
             return default;
+        }
         return Arena.Center + 20f * (charibert.Position - Arena.Center).Normalized();
     }
 }

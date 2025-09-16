@@ -2,7 +2,7 @@
 
 // wrapper around float, stores angle in radians, provides type-safety and convenience
 // when describing rotation in world, common convention is 0 for 'south'/'down'/(0, -1) and increasing counterclockwise - so +90 is 'east'/'right'/(1, 0)
-public readonly struct Angle(float rad) : IEquatable<Angle>
+public readonly struct Angle(float rad)
 {
     public readonly float Rad = rad;
     public const float RadToDeg = 180f / MathF.PI;
@@ -39,6 +39,7 @@ public readonly struct Angle(float rad) : IEquatable<Angle>
     public readonly float Sin() => (float)Math.Sin(Rad);
     public readonly float Cos() => (float)Math.Cos(Rad);
     public readonly float Tan() => (float)Math.Tan(Rad);
+    public static Angle Atan2(float y, float x) => new(MathF.Atan2(y, x));
     public static Angle Asin(float x) => new((float)Math.Asin(x));
     public static Angle Acos(float x) => new((float)Math.Acos(x));
     public readonly Angle Round(float roundToNearestDeg) => (MathF.Round(Deg / roundToNearestDeg) * roundToNearestDeg).Degrees();

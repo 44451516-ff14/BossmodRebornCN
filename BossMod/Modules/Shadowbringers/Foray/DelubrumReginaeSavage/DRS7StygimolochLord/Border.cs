@@ -5,10 +5,10 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module)
     private bool Active;
     private static readonly WPos ArenaCenter = new(-416f, -184f);
     private static readonly Polygon[] DefaultPolygon = [new(ArenaCenter, 34.5f, 48)];
-    public static readonly ArenaBoundsComplex DefaultBounds = new(DefaultPolygon, [new Rectangle(new(-416f, -219f), 20f, 1.4f), new Rectangle(new(-416f, -149.014f), 20f, 1.25f)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new(DefaultPolygon, [new Rectangle(new(-416f, -219f), 20f, 1.4f), new Rectangle(new(-416f, -149.014f), 20f, 1.25f)]);
     private static readonly Shape[] labyrinthDifference = [new DonutV(ArenaCenter, 30f, 34.5f, 48), new DonutV(ArenaCenter, 17f, 25f, 48), new Polygon(ArenaCenter, 12f, 48)];
     private static readonly Rectangle[] labyrinthUnion = [.. GenerateAlcoves(new(-416f, -211.5f)), .. GenerateAlcoves(WPos.RotateAroundOrigin(22.5f, ArenaCenter, new(-416f, -198.5f)), -22.5f.Degrees())];
-    private static readonly ArenaBoundsComplex labPhase = new(DefaultPolygon, labyrinthDifference, labyrinthUnion);
+    private static readonly ArenaBoundsCustom labPhase = new(DefaultPolygon, labyrinthDifference, labyrinthUnion);
     private static readonly AOEShapeCustom customShape = new(labyrinthDifference, labyrinthUnion);
     private DateTime activation;
 

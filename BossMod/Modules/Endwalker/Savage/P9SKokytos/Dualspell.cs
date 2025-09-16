@@ -68,17 +68,19 @@ class DualspellLightning(BossModule module) : Components.GenericBaitAway(module)
 
 class DualspellIce(BossModule module) : Components.GenericAOEs(module)
 {
-    public enum Mechanic { None, In, Out }
+    public enum Mechanic { None, In, Out };
 
     private Mechanic _curMechanic;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (_curMechanic != Mechanic.None)
+        {
             hints.Add(_curMechanic.ToString());
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -102,6 +104,6 @@ class DualspellIce(BossModule module) : Components.GenericAOEs(module)
     private void SetMechanic(Mechanic mechanic)
     {
         _curMechanic = mechanic;
-        _aoe = new(new AOEShapeDonut(mechanic == Mechanic.In ? 8f : 14, 40f), Module.PrimaryActor.Position, default, WorldState.FutureTime(4.5d));
+        _aoe = [new(new AOEShapeDonut(mechanic == Mechanic.In ? 8f : 14, 40f), Module.PrimaryActor.Position, default, WorldState.FutureTime(4.5d))];
     }
 }

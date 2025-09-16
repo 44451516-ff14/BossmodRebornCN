@@ -16,7 +16,7 @@ public enum AID : uint
     AetherialSpark = 33996, // Boss->self, 3.0s cast, range 12 width 4 rect
 }
 
-class AetherialSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialSpark, new AOEShapeRect(12, 2));
+class AetherialSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AetherialSpark, new AOEShapeRect(12f, 2f));
 
 class D120HaamForlornStates : StateMachineBuilder
 {
@@ -24,7 +24,7 @@ class D120HaamForlornStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<AetherialSpark>()
-            .Raw.Update = () => module.Enemies(D120HaamForlorn.Trash).Where(x => x.Position.AlmostEqual(module.Arena.Center, module.Bounds.Radius)).All(e => e.IsDeadOrDestroyed);
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D120HaamForlorn.Trash);
     }
 }
 
@@ -84,13 +84,13 @@ public class D120HaamForlorn(WorldState ws, Actor primary) : BossModule(ws, prim
     new(-367.23f, -133.41f), new(-367.49f, -133.89f), new(-367.83f, -134.29f), new(-368.24f, -134.64f), new(-369.64f, -135.52f),
     new(-370.64f, -135.79f), new(-371.05f, -136.11f), new(-374.54f, -140.07f), new(-374.85f, -140.49f), new(-374.78f, -141.02f),
     new(-371.75f, -142.94f), new(-371.33f, -143.24f), new(-369.52f, -144.17f), new(-369.01f, -144.33f), new(-368.49f, -144.42f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.HaamMyrrlith, (uint)OID.HaamDhruva, (uint)OID.HaamPolycrystal];
 
-    protected override bool CheckPull() => Enemies(Trash).Any(x => x.InCombat && x.Position.AlmostEqual(Arena.Center, Bounds.Radius));
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash).Where(x => x.Position.AlmostEqual(Arena.Center, Bounds.Radius)));
+        Arena.ActorsInBounds(this, Trash);
     }
 }

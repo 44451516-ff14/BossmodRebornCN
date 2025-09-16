@@ -14,8 +14,8 @@ public class A22Forgall(WorldState ws, Actor primary) : BossModule(ws, primary, 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.SummonedDahak));
-        Arena.Actors(Enemies(OID.SummonedSuccubus));
-        Arena.Actors(Enemies(OID.SummonedHaagenti));
+        Arena.Actors(Enemies((uint)OID.SummonedDahak));
+        Arena.Actors(Enemies((uint)OID.SummonedSuccubus));
+        Arena.Actors(Enemies((uint)OID.SummonedHaagenti));
     }
 }

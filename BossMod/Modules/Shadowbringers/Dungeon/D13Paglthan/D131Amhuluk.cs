@@ -57,7 +57,7 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
                 activation = WorldState.FutureTime(10.8d);
             }
 
-            CurrentBaits.Add(new(actor, actor, circle, activation));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, activation));
             if (actor.OID == (uint)OID.LightningRod)
             {
                 freeRods.Remove(actor);
@@ -75,9 +75,11 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
             }
 
             var count = CurrentBaits.Count;
+            var baits = CollectionsMarshal.AsSpan(CurrentBaits);
             for (var i = 0; i < count; ++i)
             {
-                if (CurrentBaits[i].Target == actor)
+                ref var b = ref baits[i];
+                if (b.Target == actor)
                 {
                     CurrentBaits.RemoveAt(i);
                     return;
@@ -103,14 +105,14 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
             return;
         }
         var count = freeRods.Count;
-        var forbidden = new Func<WPos, float>[count];
+        var forbidden = new ShapeDistance[count];
         for (var i = 0; i < count; ++i)
         {
-            forbidden[i] = ShapeDistance.InvertedCircle(freeRods[i].Position, 4f);
+            forbidden[i] = new SDInvertedCircle(freeRods[i].Position, 4f);
         }
         if (count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), activation);
+            hints.AddForbiddenZone(new SDIntersection(forbidden), activation);
         }
     }
 
@@ -238,6 +240,6 @@ public sealed class D131Amhuluk(WorldState ws, Actor primary) : BossModule(ws, p
         }
         return polygons;
     }
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(ArenaCenter, 19.5f, 48)], [.. GenerateLightningRods(), new Rectangle(new(-540f, 145.0004f), 8.75f, 1.25f, 89.98f.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 19.5f, 48)], [.. GenerateLightningRods(), new Rectangle(new(-540f, 145.0004f), 8.75f, 1.25f, 89.98f.Degrees()),
     new Rectangle(new(-500f, 145f), 1.25f, 20)]);
 }

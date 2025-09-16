@@ -14,9 +14,9 @@ public class A11Cetus(WorldState ws, Actor primary) : BossModule(ws, primary, ne
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.HybodusPup));
-        Arena.Actors(Enemies(OID.Hybodus));
-        Arena.Actors(Enemies(OID.Hydrosphere));
-        Arena.Actors(Enemies(OID.Hydrocore));
+        Arena.Actors(Enemies((uint)OID.HybodusPup));
+        Arena.Actors(Enemies((uint)OID.Hybodus));
+        Arena.Actors(Enemies((uint)OID.Hydrosphere));
+        Arena.Actors(Enemies((uint)OID.Hydrocore));
     }
 }

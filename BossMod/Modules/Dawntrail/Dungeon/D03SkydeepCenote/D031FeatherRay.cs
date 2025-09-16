@@ -33,15 +33,15 @@ public enum AID : uint
 sealed class HydroRing(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(12f, 24f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HydroRing)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell))];
         }
     }
 
@@ -52,10 +52,12 @@ sealed class HydroRing(BossModule module) : Components.GenericAOEs(module)
             if (state == 0x00020001u)
             {
                 Arena.Bounds = D031FeatherRay.CircleBounds;
-                _aoe = null;
+                _aoe = [];
             }
             else if (state == 0x00080004u)
+            {
                 Arena.Bounds = D031FeatherRay.NormalBounds;
+            }
         }
     }
 }
@@ -72,7 +74,9 @@ sealed class AiryBubble(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {
@@ -117,21 +121,21 @@ sealed class AiryBubble(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (active)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, Module.PrimaryActor.HitboxRadius));
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, Module.PrimaryActor.HitboxRadius));
         if (count == 0)
             return;
-        var forbiddenImminent = new Func<WPos, float>[count + 1];
-        var forbiddenFuture = new Func<WPos, float>[count];
+        var forbiddenImminent = new ShapeDistance[count + 1];
+        var forbiddenFuture = new ShapeDistance[count];
         for (var i = 0; i < count; ++i)
         {
             var o = _aoes[i];
-            forbiddenFuture[i] = ShapeDistance.Capsule(o.Position, o.Rotation, Length, Radius);
-            forbiddenImminent[i] = ShapeDistance.Circle(o.Position, Radius);
+            forbiddenFuture[i] = new SDCapsule(o.Position, o.Rotation, Length, Radius);
+            forbiddenImminent[i] = new SDCircle(o.Position, Radius);
         }
-        forbiddenImminent[count] = ShapeDistance.Circle(Arena.Center, Module.PrimaryActor.HitboxRadius);
+        forbiddenImminent[count] = new SDCircle(Arena.Center, Module.PrimaryActor.HitboxRadius);
 
-        hints.AddForbiddenZone(ShapeDistance.Union(forbiddenFuture), WorldState.FutureTime(1.5d));
-        hints.AddForbiddenZone(ShapeDistance.Union(forbiddenImminent));
+        hints.AddForbiddenZone(new SDUnion(forbiddenFuture), WorldState.FutureTime(1.5d));
+        hints.AddForbiddenZone(new SDUnion(forbiddenImminent));
     }
 }
 
@@ -169,7 +173,9 @@ sealed class Burst(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Burst)
+        {
             _aoes.Clear();
+        }
     }
 }
 
@@ -197,31 +203,36 @@ sealed class WorrisomeWavePlayer(BossModule module) : Components.GenericBaitAway
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.WorrisomeWave2)
+        {
             CurrentBaits.Clear();
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
         if (ActiveBaitsOn(actor).Count != 0)
+        {
             hints.Add("Bait away!");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (CurrentBaits.Count == 0)
-            return;
-        base.AddAIHints(slot, actor, assignment, hints);
-        var activeBaits = ActiveBaitsOn(actor);
-        foreach (var b in activeBaits)
         {
+            return;
+        }
+        base.AddAIHints(slot, actor, assignment, hints);
+        var activeBaits = CollectionsMarshal.AsSpan(ActiveBaitsOn(actor));
+        if (activeBaits.Length != 0)
+        {
+            ref var b = ref activeBaits[0];
             var party = Raid.WithoutSlot(false, true, true);
-            var len = party.Length;
-            for (var i = 0; i < len; ++i)
+            var lenP = party.Length;
+            for (var j = 0; j < lenP; ++j)
             {
-                var p = party[i];
-                var direction = Angle.FromDirection(p.Position - actor.Position);
-                hints.ForbiddenDirections.Add((direction, 15f.Degrees(), b.Activation));
+                hints.ForbiddenDirections.Add((Angle.FromDirection(party[j].Position - actor.Position), 15f.Degrees(), b.Activation));
             }
         }
     }
@@ -241,10 +252,10 @@ sealed class D031FeatherRayStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12755)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 829, NameID = 12755)]
 public sealed class D031FeatherRay(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, NormalBounds)
 {
     private static readonly WPos arenaCenter = new(-105f, -160f);
     public static readonly ArenaBoundsSquare NormalBounds = new(15.5f);
-    public static readonly ArenaBoundsComplex CircleBounds = new([new Polygon(arenaCenter, 12f, 48)]);
+    public static readonly ArenaBoundsCustom CircleBounds = new([new Polygon(arenaCenter, 12f, 48)]);
 }

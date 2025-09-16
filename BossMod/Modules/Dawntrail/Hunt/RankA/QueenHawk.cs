@@ -33,23 +33,30 @@ sealed class ResonantBuzzMarch(BossModule module) : Components.StatusDrivenForce
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        if (_aoe.AOE is Components.GenericAOEs.AOEInstance aoe)
+        if (_aoe.AOE.Length != 0)
         {
+            ref var aoe = ref _aoe.AOE[0];
             if (aoe.Check(pos))
+            {
                 return true;
+            }
         }
         return false;
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var movements = ForcedMovements(actor);
-        var count = movements.Count;
-        if (count == 0)
+        var movements = CollectionsMarshal.AsSpan(ForcedMovements(actor));
+        var len = movements.Length;
+        if (len == 0)
+        {
             return;
-        var last = movements[count - 1];
+        }
+        ref var last = ref movements[len - 1];
         if (last.from != last.to && DestinationUnsafe(slot, actor, last.to))
+        {
             hints.Add("Aim outside of the AOE!");
+        }
     }
 }
 
@@ -58,11 +65,11 @@ sealed class FrenziedSting(BossModule module) : Components.SingleTargetCast(modu
 
 sealed class BeeBeAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     private static readonly AOEShapeCircle _shapeCircle = new(12f);
     private static readonly AOEShapeDonut _shapeDonut = new(10f, 40f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -73,13 +80,17 @@ sealed class BeeBeAOE(BossModule module) : Components.GenericAOEs(module)
             _ => null
         };
         if (shape != null)
-            AOE = new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, 0.8f));
+        {
+            AOE = [new(shape, spell.LocXZ, default, Module.CastFinishAt(spell, 0.8d))];
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID is (uint)SID.BeeBeGone or (uint)SID.BeeBeHere)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 }
 
@@ -96,5 +107,5 @@ sealed class QueenHawkStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13361)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Shinryin, Malediktus", GroupType = BossModuleInfo.GroupType.Hunt, GroupID = (uint)BossModuleInfo.HuntRank.A, NameID = 13361u)]
 public sealed class QueenHawk(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);

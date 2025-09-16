@@ -61,7 +61,7 @@ class Megaflare(BossModule module) : Components.UniformStackSpread(module, 6, 0)
         // fallback if stack target dies before mechanic is resolved
         // sequence is boss starts casting > icons appear > helpers appear > boss finishes casting > helpers cast their aoe and die
         if (Module.PrimaryActor.CastInfo == null)
-            Stacks.RemoveAll(s => !Module.Enemies(OID.MegaflareHelper).Any(h => !h.IsDead && h.TargetID == s.Target.InstanceID));
+            Stacks.RemoveAll(s => !Module.Enemies((uint)OID.MegaflareHelper).Any(h => !h.IsDead && h.TargetID == s.Target.InstanceID));
         base.Update();
     }
 
@@ -80,7 +80,7 @@ class Megaflare(BossModule module) : Components.UniformStackSpread(module, 6, 0)
 
 class TidalWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TidalWaveVisual, 48, kind: Kind.DirForward);
 class WindSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindSlashAOE, 8);
-class Windwinder(BossModule module) : Components.Voidzone(module, 5, m => m.Enemies(OID.Twister).Where(a => !a.IsDead));
+class Windwinder(BossModule module) : Components.Voidzone(module, 5, m => m.Enemies((uint)OID.Twister).Where(a => !a.IsDead));
 
 abstract class CivilizationBuster(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(62, 7.5f));
 class CivilizationBuster1(BossModule module) : CivilizationBuster(module, (uint)AID.CivilizationBuster1);

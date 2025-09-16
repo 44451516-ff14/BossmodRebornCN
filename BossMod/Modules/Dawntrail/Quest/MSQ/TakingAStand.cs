@@ -69,15 +69,15 @@ public enum AID : uint
 sealed class RoarArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 25f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Deathwall)
         {
-            _aoe = null;
+            _aoe = [];
             Arena.Bounds = TakingAStand.DefaultArena;
         }
     }
@@ -86,28 +86,30 @@ sealed class RoarArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.Roar1)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.9d))];
         }
     }
 }
 
 sealed class MagickedStandard(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = [];
+    public readonly List<AOEInstance> AOEs = new(9);
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(3f, 10f);
+
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
     public override void OnActorCreated(Actor actor)
     {
-        void AddAOE(AOEShape shape) => AOEs.Add(new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(12.6d)));
-        if (actor.OID == (uint)OID.MagickedStandardGreen)
+        AOEShape? shape = actor.OID switch
         {
-            AddAOE(donut);
-        }
-        else if (actor.OID == (uint)OID.MagickedStandardOrange)
+            (uint)OID.MagickedStandardGreen => donut,
+            (uint)OID.MagickedStandardOrange => circle,
+            _ => null
+        };
+        if (shape != null)
         {
-            AddAOE(circle);
+            AOEs.Add(new(shape, actor.Position.Quantized(), default, WorldState.FutureTime(12.6d)));
         }
     }
 
@@ -123,15 +125,31 @@ sealed class MagickedStandard(BossModule module) : Components.GenericAOEs(module
 sealed class GreatLeap(BossModule module) : Components.GenericAOEs(module)
 {
     private DateTime activation;
+    private AOEInstance[] _aoe = [];
+    private Actor? source;
+    private bool aoeInit;
     private static readonly AOEShapeCircle circle = new(18);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (activation != default)
         {
-            var aoes = Module.Enemies((uint)OID.GrowingAOE);
-            var pos = aoes.Count != 0 ? aoes[0].Position : default;
-            return new AOEInstance[1] { new(circle, pos, default, activation) };
+            source ??= Module.Enemies((uint)OID.GrowingAOE) is var aoes && aoes.Count != 0 ? aoes[0] : null;
+            if (source != null)
+            {
+                var pos = source.Position;
+                if (!aoeInit)
+                {
+                    aoeInit = true;
+                    return _aoe = [new(circle, pos, default, activation)];
+                }
+                else
+                {
+                    ref var aoe = ref _aoe[0];
+                    aoe.Origin = pos;
+                    return _aoe;
+                }
+            }
         }
         return [];
     }
@@ -148,13 +166,15 @@ sealed class GreatLeap(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.GreatLeap)
         {
             activation = default;
+            source = null;
+            aoeInit = false;
         }
     }
 }
 
 sealed class SelfSacrifice(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly List<AOEInstance> _aoes = new(3);
     private static readonly AOEShapeCircle circle = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -179,7 +199,6 @@ sealed class Kickdown(BossModule module) : Components.GenericKnockback(module)
 {
     private DateTime activation;
     private readonly MagickedStandard _aoe = module.FindComponent<MagickedStandard>()!;
-    private RelSimplifiedComplexPolygon poly = new();
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -192,17 +211,16 @@ sealed class Kickdown(BossModule module) : Components.GenericKnockback(module)
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoes = _aoe.ActiveAOEs(slot, actor);
+        var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
             {
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -210,22 +228,6 @@ sealed class Kickdown(BossModule module) : Components.GenericKnockback(module)
         if (spell.Action.ID == (uint)AID.Kickdown)
         {
             activation = Module.CastFinishAt(spell);
-
-            var shapes = new List<Shape>(9);
-            var standardsGreen = Module.Enemies((uint)OID.MagickedStandardGreen);
-            var standardsOrange = Module.Enemies((uint)OID.MagickedStandardOrange);
-            var countG = standardsGreen.Count;
-            var countO = standardsOrange.Count;
-            for (var i = 0; i < countG; ++i)
-            {
-                shapes.Add(new DonutV(standardsGreen[i].Position.Quantized(), 3f, 10f, 20));
-            }
-            for (var i = 0; i < countO; ++i)
-            {
-                shapes.Add(new Square(standardsOrange[i].Position.Quantized(), 10f));
-            }
-            AOEShapeCustom combine = new(shapes);
-            poly = combine.GetCombinedPolygon(Arena.Center);
         }
     }
 
@@ -246,16 +248,7 @@ sealed class Kickdown(BossModule module) : Components.GenericKnockback(module)
 
         if (!IsImmune(slot, activation))
         {
-            var pos = Module.PrimaryActor.Position;
-            var center = Arena.Center;
-            var polygon = poly;
-            hints.AddForbiddenZone(p =>
-            {
-                var projected = p + 18f * (p - pos).Normalized();
-                if (projected.InCircle(center, 20f) && !polygon.Contains(projected - center))
-                    return 1f;
-                return default;
-            }, activation);
+            hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOriginMixedAOEs(Arena.Center, Module.PrimaryActor.Position, 18f, 20f, [.. _aoe.AOEs], _aoe.AOEs.Count), activation);
         }
     }
 }
@@ -362,12 +355,12 @@ sealed class TakingAStandStates : StateMachineBuilder
 public sealed class TakingAStand(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, startingArena)
 {
     private static readonly WPos arenaCenter = new(500f, -175f);
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(arenaCenter, 24.5f, 20)]);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(arenaCenter, 20f, 20)]);
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(arenaCenter, 24.5f, 20)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(arenaCenter, 20f, 20)]);
     private static readonly uint[] all = [(uint)OID.Boss, (uint)OID.HiredThug1, (uint)OID.HiredThug2, (uint)OID.HiredThug3, (uint)OID.HiredThug3, (uint)OID.HoobigoGuardian,
     (uint)OID.HoobigoLancer, (uint)OID.DopproIllusionist];
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
     }
 }

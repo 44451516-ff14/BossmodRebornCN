@@ -32,15 +32,15 @@ public enum SID : uint
 }
 
 class StraightPunch(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StraightPunch);
-class Firewater(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firewater, 3);
+class Firewater(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Firewater, 3f);
 
 class PlainPound(BossModule module) : Components.ConcentricAOEs(module, _shapes)
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10), new AOEShapeDonut(10, 20), new AOEShapeDonut(20, 30)];
+    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.PlainPound)
+        if (spell.Action.ID == (uint)AID.PlainPound)
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
     }
 
@@ -48,14 +48,14 @@ class PlainPound(BossModule module) : Components.ConcentricAOEs(module, _shapes)
     {
         if (Sequences.Count != 0)
         {
-            var order = (AID)spell.Action.ID switch
+            var order = spell.Action.ID switch
             {
-                AID.PlainPound => 0,
-                AID.Tremblor => 1,
-                AID.Earthquake => 2,
+                (uint)AID.PlainPound => 0,
+                (uint)AID.Tremblor => 1,
+                (uint)AID.Earthquake => 2,
                 _ => -1
             };
-            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(3));
+            AdvanceSequence(order, spell.LocXZ, WorldState.FutureTime(3d));
         }
     }
 }
@@ -105,7 +105,7 @@ public class D043Tangata(WorldState ws, Actor primary) : BossModule(ws, primary,
     new(-267.79f, -9.9f), new(-267.2f, -10.25f), new(-265.97f, -10.74f), new(-265.42f, -10.91f), new(-263.31f, -10.91f),
     new(-262.64f, -10.97f), new(-261.51f, -10.56f), new(-260.84f, -10.62f), new(-260.51f, -11.12f), new(-259.92f, -11.35f),
     new(-259.34f, -11.48f), new(-258.44f, -12.46f), new(-257.83f, -12.85f)];
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

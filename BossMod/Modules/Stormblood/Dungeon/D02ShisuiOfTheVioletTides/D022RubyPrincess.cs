@@ -52,7 +52,7 @@ class SeduceOld(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < countH; ++i)
             {
                 var c = helpers[i];
-                if (c.NameID == 6274)
+                if (c.NameID == 6274u)
                 {
                     chests.Add(c);
                 }
@@ -73,7 +73,10 @@ class SeduceOld(BossModule module) : Components.GenericAOEs(module)
             aoes[i] = new(circle, openChests[i].Center);
         }
         if (closedAOE is AOEShapeCustom aoe)
-            aoes[count] = new(aoe with { InvertForbiddenZone = !IsOld(actor) && active }, Arena.Center, color: IsOld(actor) || !active ? default : Colors.SafeFromAOE);
+        {
+            aoe.InvertForbiddenZone = !IsOld(actor) && active;
+            aoes[count] = new(aoe, Arena.Center, color: IsOld(actor) || !active ? default : Colors.SafeFromAOE);
+        }
         return aoes;
     }
 
@@ -98,7 +101,7 @@ class SeduceOld(BossModule module) : Components.GenericAOEs(module)
                         }
                     }
                 }
-                else if (state == 0x00100020)
+                else if (state == 0x00100020u)
                 {
                     var countO = openChests.Count;
                     for (var j = 0; j < countO; ++j)
@@ -147,22 +150,29 @@ class SeduceOld(BossModule module) : Components.GenericAOEs(module)
 class SeduceCoriolisKick(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(13f);
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.Seduce)
-            AOE = new(circle, D022RubyPrincess.ArenaCenter.Quantized(), default, Module.CastFinishAt(spell, 8f));
-        else if (spell.Action.ID == (uint)AID.CoriolisKick)
-            AOE = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell));
+        var id = spell.Action.ID;
+        if (id == (uint)AID.Seduce)
+        {
+            AOE = [new(circle, D022RubyPrincess.ArenaCenter.Quantized(), default, Module.CastFinishAt(spell, 8d))];
+        }
+        else if (id == (uint)AID.CoriolisKick)
+        {
+            AOE = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.CoriolisKick)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 }
 
@@ -175,7 +185,7 @@ class GeothermalFlatulence(BossModule module) : Components.StandardChasingAOEs(m
         base.AddAIHints(slot, actor, assignment, hints);
         if (Targets[slot])
         {
-            hints.AddForbiddenZone(ShapeDistance.Circle(Arena.Center, 18f), Activation);
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 18f), Activation);
         }
     }
 }
@@ -221,5 +231,5 @@ class D022RubyPrincessStates : StateMachineBuilder
 public class D022RubyPrincess(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(-0.046f, -208.362f);
-    private static readonly ArenaBoundsComplex arena = new([new Circle(ArenaCenter, 20)], [new Rectangle(new(-0.4f, -187.4f), 20, 2.5f), new Rectangle(new(-20, -208), 1.5f, 20f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(ArenaCenter, 20)], [new Rectangle(new(-0.4f, -187.4f), 20, 2.5f), new Rectangle(new(-20, -208), 1.5f, 20f)]);
 }

@@ -86,17 +86,7 @@ class GymnasiouStyphnolobionStates : StateMachineBuilder
             .ActivateOnEnter<EarthQuaker>()
             .ActivateOnEnter<MandragoraAOEs>()
             .ActivateOnEnter<HeavySmash>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(GymnasiouStyphnolobion.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(GymnasiouStyphnolobion.All);
     }
 }
 
@@ -111,7 +101,7 @@ public class GymnasiouStyphnolobion(WorldState ws, Actor primary) : THTemplate(w
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.GymnasiouHippogryph));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

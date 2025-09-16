@@ -36,15 +36,15 @@ public enum AID : uint
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 25f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BullHorn)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 6d))];
         }
     }
 
@@ -52,9 +52,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.Deathwall)
         {
-            Arena.Bounds = CE34TrampledUnderHoof.DefaultArena;
+            Arena.Bounds = new ArenaBoundsCircle(20f); // default arena got no extra collision, just a donut aoe
             Arena.Center = Arena.Center.Quantized();
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -94,7 +94,7 @@ sealed class GlimmerInTheDark(BossModule module) : Components.GenericAOEs(module
                     {
                         _aoes.RemoveAt(i);
                     }
-                    break;
+                    return;
                 }
             }
         }
@@ -123,7 +123,7 @@ sealed class DemonEye(BossModule module) : Components.GenericGaze(module)
             for (var i = 0; i < count; ++i)
             {
                 ref var eye = ref eyes[i];
-                eyes[i] = new(eye.Position, eye.Activation, inverted: true);
+                eye = new(eye.Position, eye.Activation, inverted: true);
             }
         }
     }
@@ -158,8 +158,7 @@ sealed class CE34TrampledUnderHoofStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 735, NameID = 11)]
 public sealed class CE34TrampledUnderHoof(WorldState ws, Actor primary) : BossModule(ws, primary, startingArena.Center, startingArena)
 {
-    private static readonly ArenaBoundsComplex startingArena = new([new Polygon(new(-450f, 262f), 24.5f, 32)]);
-    public static readonly ArenaBoundsCircle DefaultArena = new(20f); // default arena got no extra collision, just a donut aoe
+    private static readonly ArenaBoundsCustom startingArena = new([new Polygon(new(-450f, 262f), 24.5f, 32)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

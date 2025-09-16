@@ -6,7 +6,7 @@ abstract class P1ProteanWaveTornado : Components.GenericBaitAway
 
     public P1ProteanWaveTornado(BossModule module, bool enableHints) : base(module, (uint)AID.ProteanWaveTornadoInvis)
     {
-        _liquidRage = module.Enemies(OID.LiquidRage);
+        _liquidRage = module.Enemies((uint)OID.LiquidRage);
         EnableHints = enableHints;
     }
 

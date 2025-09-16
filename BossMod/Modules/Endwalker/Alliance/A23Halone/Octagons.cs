@@ -9,7 +9,7 @@ class Octagons(BossModule module) : Components.GenericAOEs(module)
     private const float InnerRadius = 11.125f; // radii adjusted for hitbox radius
     private const float OuterRadius = 13.45f;
     private const int Vertices = 8;
-    private static readonly WPos[] spears = [new(-686f, 592), new(-700f, 616.2f), new(-714f, 592)];
+    private static readonly WPos[] spears = [new(-686f, 592f), new(-700f, 616.2f), new(-714f, 592f)];
     private static readonly Angle[] angle = [-37.5f.Degrees(), 22.5f.Degrees(), 37.5f.Degrees()];
     private static readonly Polygon[] shapes = [new(spears[0], InnerRadius, Vertices, angle[0]),
     new(spears[0], OuterRadius, Vertices, angle[0]), new(spears[1], InnerRadius, Vertices, angle[1]),
@@ -18,10 +18,10 @@ class Octagons(BossModule module) : Components.GenericAOEs(module)
     private static readonly Shape[] baseArena = [new Circle(A23Halone.ArenaCenter, 29.5f)];
     private readonly List<Polygon> octagonsInner = [shapes[0], shapes[2], shapes[4]], octagonsOuter = [shapes[1], shapes[3], shapes[5]];
 
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCustom customShape = new([new Square(A23Halone.ArenaCenter, 29.5f)], [shapes[0], shapes[2], shapes[4]]); // using a square should be less cpu intensive, gets clipped with arena border anyway
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -30,20 +30,22 @@ class Octagons(BossModule module) : Components.GenericAOEs(module)
         var update = false;
         switch (state)
         {
-            case 0x00100008 when index == 0x07:
-                _aoe = new(customShape, Arena.Center, default, WorldState.FutureTime(9));
+            case 0x00100008u when index == 0x07:
+                _aoe = [new(customShape, Arena.Center, default, WorldState.FutureTime(9d))];
                 break;
-            case 0x00020001 when index == 0x07:
+            case 0x00020001u when index == 0x07:
                 update = true;
-                _aoe = null;
+                _aoe = [];
                 break;
-            case 0x00200004:
+            case 0x00200004u:
                 RemoveOctagons(index);
                 update = true;
                 break;
         }
         if (update)
-            Arena.Bounds = new ArenaBoundsComplex(baseArena, [.. octagonsOuter], [.. octagonsInner]);
+        {
+            Arena.Bounds = new ArenaBoundsCustom(baseArena, [.. octagonsOuter], [.. octagonsInner]);
+        }
     }
 
     private void RemoveOctagons(byte index)

@@ -25,11 +25,11 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
     private static readonly WPos[] numberPositions = CalculateNumberPositions();
     private readonly bool[] activePlatforms = new bool[5];
     private bool active;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     public bool Repaired => polygons.Count == 5;
     private static readonly AOEShapeCircle circle = new(8f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -38,10 +38,10 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             switch (state)
             {
                 case 0x00200010u:
-                    _aoe = new(circle, Arena.Center, default, WorldState.FutureTime(5.6d));
+                    _aoe = [new(circle, Arena.Center, default, WorldState.FutureTime(5.6d))];
                     break;
                 case 0x00020001u:
-                    _aoe = null;
+                    _aoe = [];
                     Arena.Bounds = M08SHowlingBlade.DonutArena;
                     break;
                 case 0x00080004u:
@@ -56,7 +56,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 polygons.Add(pillarPolygons[index - 0x10]);
                 if (polygons.Count == 2)
                 {
-                    var arena = new ArenaBoundsComplex(M08SHowlingBlade.StartingArenaPolygon, [.. polygons]);
+                    var arena = new ArenaBoundsCustom(M08SHowlingBlade.StartingArenaPolygon, [.. polygons]);
                     Arena.Bounds = arena;
                     Arena.Center = arena.Center;
                 }
@@ -77,7 +77,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 activePlatforms[i] = true;
                 if (polygons.Count == 5)
                 {
-                    var arena = new ArenaBoundsComplex([.. polygons]);
+                    var arena = new ArenaBoundsCustom([.. polygons]);
                     Arena.Bounds = arena;
                     Arena.Center = arena.Center;
                     active = true;
@@ -93,7 +93,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                     Arena.Bounds = M08SHowlingBlade.StartingArena;
                     return;
                 }
-                var arena = new ArenaBoundsComplex([.. polygons]);
+                var arena = new ArenaBoundsCustom([.. polygons]);
                 Arena.Bounds = arena;
                 Arena.Center = arena.Center;
             }
@@ -117,7 +117,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         Span<Angle> platformAngles = stackalloc Angle[5];
         var angle = -72f.Degrees();
         for (var i = 0; i < 5; ++i)
+        {
             platformAngles[i] = angle * i;
+        }
         return [.. platformAngles];
     }
 

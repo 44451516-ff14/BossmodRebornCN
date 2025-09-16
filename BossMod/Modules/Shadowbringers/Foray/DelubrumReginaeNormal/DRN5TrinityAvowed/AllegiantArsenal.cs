@@ -2,12 +2,11 @@
 
 sealed class AllegiantArsenal(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
-
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCone cone = new(70f, 135f.Degrees());
     private static readonly AOEShapeCircle circle = new(10f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -18,12 +17,16 @@ sealed class AllegiantArsenal(BossModule module) : Components.GenericAOEs(module
             _ => null
         };
         if (shape != null)
-            _aoe = new(shape, spell.LocXZ, spell.Rotation + (spell.Action.ID == (uint)AID.AllegiantArsenalSword ? 180f.Degrees() : default), Module.CastFinishAt(spell, 8.1f));
+        {
+            _aoe = [new(shape, spell.LocXZ, spell.Rotation + (spell.Action.ID == (uint)AID.AllegiantArsenalSword ? 180f.Degrees() : default), Module.CastFinishAt(spell, 8.1d))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.InfernalSlash or (uint)AID.Flashvane or (uint)AID.FuryOfBozja)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }

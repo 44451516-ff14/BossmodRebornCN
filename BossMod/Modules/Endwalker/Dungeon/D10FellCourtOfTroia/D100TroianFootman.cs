@@ -33,20 +33,7 @@ sealed class D100TroianFootmanStates : StateMachineBuilder
             .ActivateOnEnter<GrimFate>()
             .ActivateOnEnter<GrimHalo>()
             .ActivateOnEnter<VoidTrap>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D100TroianFootman.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D100TroianFootman.Trash);
     }
 }
 
@@ -134,40 +121,22 @@ public sealed class D100TroianFootman(WorldState ws, Actor primary) : BossModule
     new(-173.54f, 5.59f), new(-173.86f, 5.19f), new(-174.46f, 5.34f), new(-174.19f, 4.8f), new(-170.15f, 3.16f),
     new(-169.92f, 3.66f), new(-169.37f, 3.78f), new(-168.46f, 3.64f), new(-168.12f, 4.23f), new(-164.76f, 4.35f),
     new(-164.17f, 4.29f), new(-163.92f, 3.65f), new(-163.92f, 2.77f), new(-163.01f, 2.62f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.TroianGuard, (uint)OID.TroianRider, (uint)OID.TroianHound];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

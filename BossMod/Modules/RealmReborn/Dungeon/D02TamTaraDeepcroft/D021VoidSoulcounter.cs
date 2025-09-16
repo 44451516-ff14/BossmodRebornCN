@@ -28,8 +28,8 @@ class D021VoidSoulcounterStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Chuggalo", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 2, NameID = 455)]
 public class D021VoidSoulcounter(WorldState ws, Actor primary) : BossModule(ws, primary, IsFirstArena(primary) ? FirstArena.Center : (IsSecondArena(primary) ? SecondArena.Center : ThirdArena.Center), IsFirstArena(primary) ? FirstArena : (IsSecondArena(primary) ? SecondArena : ThirdArena))
 {
-    private static bool IsFirstArena(Actor primary) => primary.Position.X > -10f;
-    private static bool IsSecondArena(Actor primary) => primary.Position.X is > (-25) and < (-15f);
+    private static bool IsFirstArena(Actor primary) => primary.PosRot.X > -10f;
+    private static bool IsSecondArena(Actor primary) => primary.PosRot.X is > -25f and < -15f;
 
     // First encounter
     private static readonly WPos[] first = [new(7.92f, -25.67f), new(9.92f, -25.80f), new(11.36f, -24.41f), new(11.95f, -24.43f), new(14.57f, -24.76f),
@@ -97,7 +97,7 @@ public class D021VoidSoulcounter(WorldState ws, Actor primary) : BossModule(ws, 
     new(-122.13f, -9.96f), new(-122.55f, -10.35f), new(-123.56f, -11.09f), new(-124.11f, -11.69f), new(-122.27f, -12.03f),
     new(-120.90f, -11.97f), new(-117.18f, -13.23f), new(-116.51f, -13.11f)];
 
-    public static readonly ArenaBoundsComplex FirstArena = new([new PolygonCustom(first)]);
-    public static readonly ArenaBoundsComplex SecondArena = new([new PolygonCustom(second)]);
-    public static readonly ArenaBoundsComplex ThirdArena = new([new PolygonCustom(third)]);
+    public static readonly ArenaBoundsCustom FirstArena = new([new PolygonCustom(first)]);
+    public static readonly ArenaBoundsCustom SecondArena = new([new PolygonCustom(second)]);
+    public static readonly ArenaBoundsCustom ThirdArena = new([new PolygonCustom(third)]);
 }

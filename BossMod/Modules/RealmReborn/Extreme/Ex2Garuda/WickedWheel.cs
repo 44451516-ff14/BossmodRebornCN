@@ -15,7 +15,7 @@ class WickedWheel(BossModule module) : Components.CastCounter(module, (uint)AID.
     {
         // note: suparna also casts this, but we generally ignore it...
         if (_expectedNext != default && Module.PrimaryActor.TargetID != actor.InstanceID && (_expectedNext - WorldState.CurrentTime).TotalSeconds < 3d)
-            hints.AddForbiddenZone(ShapeDistance.Circle(Module.PrimaryActor.Position, _radius), _expectedNext);
+            hints.AddForbiddenZone(new SDCircle(Module.PrimaryActor.Position, _radius), _expectedNext);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -30,7 +30,7 @@ class WickedWheel(BossModule module) : Components.CastCounter(module, (uint)AID.
         if (spell.Action.ID == WatchedAction)
         {
             // not sure about this ...
-            _expectedNext = Module.Enemies(OID.Suparna).Any(a => a.IsTargetable && !a.IsDead) ? WorldState.FutureTime(25d) : default;
+            _expectedNext = Module.Enemies((uint)OID.Suparna).Any(a => a.IsTargetable && !a.IsDead) ? WorldState.FutureTime(25d) : default;
         }
     }
 }

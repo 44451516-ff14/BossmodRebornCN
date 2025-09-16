@@ -20,15 +20,15 @@ sealed class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(mod
             var origin = c.Origin;
             var a20 = 20f.Degrees();
             var len = aoes.Length;
-            var forbidden = new Func<WPos, float>[len + 1];
-            forbidden[len] = ShapeDistance.InvertedCircle(origin, 5f);
+            var forbidden = new ShapeDistance[len + 1];
+            forbidden[len] = new SDInvertedCircle(origin, 5f);
 
             for (var i = 0; i < len; ++i)
             {
                 ref readonly var aoe = ref aoes[i];
-                forbidden[i] = ShapeDistance.Cone(origin, 20f, Angle.FromDirection(aoe.Origin - origin), a20);
+                forbidden[i] = new SDCone(origin, 20f, Angle.FromDirection(aoe.Origin - origin), a20);
             }
-            hints.AddForbiddenZone(ShapeDistance.Union(forbidden), c.Activation);
+            hints.AddForbiddenZone(new SDUnion(forbidden), c.Activation);
         }
     }
 
@@ -38,8 +38,7 @@ sealed class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(mod
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
-            if (aoe.Check(pos))
+            if (aoes[i].Check(pos))
             {
                 return true;
             }
@@ -48,8 +47,7 @@ sealed class DriftingPetals(BossModule module) : Components.SimpleKnockbacks(mod
         var len2 = aoes2.Length;
         for (var i = 0; i < len2; ++i)
         {
-            ref readonly var aoe = ref aoes2[i];
-            if (aoe.Check(pos))
+            if (aoes2[i].Check(pos))
             {
                 return true;
             }
@@ -96,7 +94,7 @@ sealed class RootArrangement(BossModule module) : Components.StandardChasingAOEs
         base.AddAIHints(slot, actor, assignment, hints);
         if (Targets[slot])
         {
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center + new WDir(19f, default), Arena.Center + new WDir(-19f, default), 20f), Activation);
+            hints.AddForbiddenZone(new SDRect(Arena.Center + new WDir(19f, default), Arena.Center + new WDir(-19f, default), 20f), Activation);
         }
     }
 }
@@ -106,15 +104,12 @@ sealed class Witherwind(BossModule module) : Components.Voidzone(module, 3f, Get
     private static List<Actor> GetWhirlwind(BossModule module) => module.Enemies((uint)OID.AutumnalTempest);
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Yozakura, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 945, NameID = 12325, SortOrder = 2, Category = BossModuleInfo.Category.VariantCriterion, Expansion = BossModuleInfo.Expansion.Endwalker)]
-public sealed class V21Yozakura(WorldState ws, Actor primary) : BossModule(ws, primary, primary.Position.X < -700f ? ArenaCenter1 : primary.Position.X > 700f ? ArenaCenter2 : ArenaCenter3, primary.Position.X < -700f ? StartingBounds : primary.Position.X > 700f ? DefaultBounds2 : StartingBounds)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.Yozakura, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 945u, NameID = 12325u, SortOrder = 2, Category = BossModuleInfo.Category.VariantCriterion, Expansion = BossModuleInfo.Expansion.Endwalker)]
+public sealed class V21Yozakura(WorldState ws, Actor primary) : BossModule(ws, primary, primary.PosRot.X is var X && X < -700f ? ArenaCenter1 : X > 700f ? ArenaCenter2 : ArenaCenter3, X < -700f ? new ArenaBoundsSquare(22.5f) : X > 700f ? new ArenaBoundsSquare(19.5f) : new ArenaBoundsSquare(22.5f))
 {
     public static readonly WPos ArenaCenter1 = new(-775f, 16f);
     public static readonly WPos ArenaCenter2 = new(737f, 220f);
     public static readonly WPos ArenaCenter3 = new(47f, 93f);
-    public static readonly ArenaBoundsSquare StartingBounds = new(22.5f);
-    public static readonly ArenaBoundsSquare DefaultBounds1 = new(20f);
-    public static readonly ArenaBoundsSquare DefaultBounds2 = new(19.5f);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

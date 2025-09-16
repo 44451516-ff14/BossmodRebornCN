@@ -39,13 +39,14 @@ abstract class GigaTempest(BossModule module, AOEShapeRect shape, uint aidFirst,
     private static WDir? GetExaDirection(Actor caster)
     {
         Angle? forwardAngle = null;
-        if (caster.Position.Z == 536f)
+        var pos = caster.Position;
+        if (pos.Z == 536f)
             forwardAngle = 180f.Degrees();
-        else if (caster.Position.Z == 504f)
+        else if (pos.Z == 504f)
             forwardAngle = default;
-        else if (caster.Position.X == -82f)
+        else if (pos.X == -82f)
             forwardAngle = 90f.Degrees();
-        else if (caster.Position.X == -794f)
+        else if (pos.X == -794f)
             forwardAngle = 270f.Degrees();
 
         if (forwardAngle == null)

@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayVisualization;
 
@@ -82,22 +82,45 @@ public sealed class ColumnPlayerActions : Timeline.ColumnGroup
                 var col = GetCooldownColumn(actionDef.MainCooldownGroup, a.ID);
                 float effectDuration = 0;
                 List<string> effectTooltip = [];
-                foreach (var t in a.Targets)
+                var targets = a.Targets;
+                var count = targets.Count;
+                for (var i = 0; i < count; ++i)
                 {
-                    foreach (var eff in t.Effects.Where(eff => eff.Type is ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource))
+                    var t = targets[i];
+                    if (t.Target.Type is ActorType.Player or ActorType.Buddy)
                     {
-                        var source = eff.FromTarget ? t.Target : a.Source;
-                        var target = eff.Type == ActionEffectType.ApplyStatusEffectTarget && !eff.AtSource ? t.Target : a.Source;
-                        var status = replay.Statuses.FirstOrDefault(s => s.ID == eff.Value && s.Target == target && s.Source == source);
-                        var duration = (float)((status?.Time.End ?? a.Timestamp) - a.Timestamp).TotalSeconds;
-                        var delay = ((status?.Time.Start ?? a.Timestamp) - a.Timestamp).TotalSeconds;
-                        effectDuration = Math.Max(effectDuration, duration);
-                        effectTooltip.Add($"- effect: {Utils.StatusString(eff.Value)}, duration={(status != null ? status.Time : "???")}s, start-delay={delay:f3}s");
+                        var effects = t.Effects.ValidEffects();
+                        var len = effects.Length;
+                        for (var j = 0; j < len; ++j)
+                        {
+                            ref readonly var eff = ref effects[j];
+                            if (eff.Type is ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource)
+                            {
+                                var source = eff.FromTarget ? t.Target : a.Source;
+                                var target = eff.Type == ActionEffectType.ApplyStatusEffectTarget && !eff.AtSource ? t.Target : a.Source;
+                                var statuses = replay.Statuses;
+                                Replay.Status? status = null;
+                                var countS = statuses.Count;
+                                for (var k = 0; k < count; ++k)
+                                {
+                                    var s = statuses[k];
+                                    if (s.ID == eff.Value && s.Target == target && s.Source == source)
+                                    {
+                                        status = s;
+                                        break;
+                                    }
+                                }
+                                var duration = (float)((status?.Time.End ?? a.Timestamp) - a.Timestamp).TotalSeconds;
+                                var delay = ((status?.Time.Start ?? a.Timestamp) - a.Timestamp).TotalSeconds;
+                                effectDuration = Math.Max(effectDuration, duration);
+                                effectTooltip.Add($"- effect: {Utils.StatusString(eff.Value)}, duration={(status != null ? status.Time : "???")}s, start-delay={delay:f3}s");
+                            }
+                        }
                     }
                 }
                 if (actionDef.MainCooldownGroup == ActionDefinitions.GCDGroup)
                     effectDuration = Math.Min(effectDuration, 0.6f); // TODO: this is a hack, reconsider... the problem is that sometimes actions apply statuses that are then refreshed, that usually happens for gcds...
-                if (effectDuration > 0)
+                if (effectDuration > 0f)
                 {
                     var e = col.AddHistoryEntryRange(enc.Time.Start, effectStart, effectDuration, actionName, Colors.TextColor10);
                     e.TooltipExtra = (res, _) => res.AddRange(effectTooltip);

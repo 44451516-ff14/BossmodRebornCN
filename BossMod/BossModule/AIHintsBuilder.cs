@@ -80,10 +80,10 @@ public sealed class AIHintsBuilder : IDisposable
         hints.Normalize();
         if (_rsr != null)
         {
-            var soon = _ws.CurrentTime.AddSeconds(0.5);
+            var soon = _ws.CurrentTime.AddSeconds(0.5d);
             var hasForbiddenDirection = hints.ForbiddenDirections.Count > 0;
 
-            if (!isRSRpaused && (hasForbiddenDirection && hints.ForbiddenDirections[0].activation < soon || hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < soon) && _rsr.IsInstalled)
+            if (!isRSRpaused && (hasForbiddenDirection && hints.ForbiddenDirections.Ref(0).activation < soon || hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < soon) && _rsr.IsInstalled)
             {
                 _rsr.PauseRSR();
                 isRSRpaused = true;
@@ -92,7 +92,7 @@ public sealed class AIHintsBuilder : IDisposable
                     hints.ForceCancelCast = true;
                 }
             }
-            else if (isRSRpaused && (!hasForbiddenDirection || hints.ForbiddenDirections[0].activation > soon) && (hints.ImminentSpecialMode.mode != AIHints.SpecialMode.Pyretic || hints.ImminentSpecialMode.activation > soon) && _rsr.IsInstalled)
+            else if (isRSRpaused && (!hasForbiddenDirection || hints.ForbiddenDirections.Ref(0).activation > soon) && (hints.ImminentSpecialMode.mode != AIHints.SpecialMode.Pyretic || hints.ImminentSpecialMode.activation > soon) && _rsr.IsInstalled)
             {
                 _rsr.UnPauseRSR();
                 isRSRpaused = false;
@@ -110,11 +110,11 @@ public sealed class AIHintsBuilder : IDisposable
             if (!actor.IsTargetable || actor.IsAlly || actor.IsDead)
                 continue;
             var index = actor.CharacterSpawnIndex;
-            if (index < 0 || index >= hints.Enemies.Length)
+            if (index is < 0 or >= AIHints.NumEnemies)
                 continue;
 
             int priority;
-            if (actor.FateID != 0)
+            if (actor.FateID != default)
             {
                 if (actor.FateID != allowedFateID)
                     priority = AIHints.Enemy.PriorityInvincible;  // fate mob in fate we are NOT a part of can't be damaged at all
@@ -166,7 +166,7 @@ public sealed class AIHintsBuilder : IDisposable
             originZ = Math.Max(originZ, e.ViewHeight);
             // TODO: consider quantizing even more, to reduce jittering when player moves?..
             hints.PathfindMapCenter = e.Origin + resolution * new WDir(originX, originZ);
-            hints.PathfindMapBounds = new ArenaBoundsRect(e.ViewWidth * resolution, e.ViewHeight * resolution, MapResolution: resolution); // note: we don't bother caching these bounds, they are very lightweight
+            hints.PathfindMapBounds = new ArenaBoundsRect(e.ViewWidth * resolution, e.ViewHeight * resolution, mapResolution: resolution); // note: we don't bother caching these bounds, they are very lightweight
             hints.PathfindMapObstacles = new(bitmap, new(originX - e.ViewWidth, originZ - e.ViewHeight, originX + e.ViewWidth, originZ + e.ViewHeight));
         }
         else
@@ -197,7 +197,7 @@ public sealed class AIHintsBuilder : IDisposable
             var rot = caster.Rotation;
             var finishAt = _ws.FutureTime(caster.NPCRemainingTime);
             if (aoe.IsCharge)
-                hints.AddForbiddenZone(ShapeDistance.Rect(aoe.Caster.Position.Quantized(), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
+                hints.AddForbiddenZone(new SDRect(aoe.Caster.Position.Quantized(), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
             else
                 hints.AddForbiddenZone(aoe.Shape, target, rot, finishAt);
         }
@@ -208,7 +208,7 @@ public sealed class AIHintsBuilder : IDisposable
             var rot = gaze.Caster.CastInfo!.Rotation;
             var finishAt = _ws.FutureTime(gaze.Caster.CastInfo.NPCRemainingTime);
             if (gaze.Shape.Check(player.Position, target, rot))
-                hints.ForbiddenDirections.Add((Angle.FromDirection(target - player.Position), 45.Degrees(), finishAt));
+                hints.ForbiddenDirections.Add((Angle.FromDirection(target - player.Position), 45f.Degrees(), finishAt));
         }
 
         var count = _invincible.Count;

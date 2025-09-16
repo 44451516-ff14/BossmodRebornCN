@@ -42,13 +42,13 @@ public enum AID : uint
     Decay = 32857, // VisitantVoidskipper1->self, 13.0s cast, range 60 circle
     Voidblood = 33172, // VisitantTaurus->location, 9.0s cast, range 6 circle
     VoidSlash = 33173, // VisitantBlackguard2->self, 11.0s cast, range 8+R 90-degree cone
-    VoidcluserVisual = 32932, // Voidcluster->self, no cast, single-target
+    VoidcluserVisual = 32932 // Voidcluster->self, no cast, single-target
 }
 
-class Voidblood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Voidblood, 6f);
-class VoidSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidSlash, new AOEShapeCone(9.7f, 45f.Degrees()));
-class EvilMist(BossModule module) : Components.RaidwideCast(module, (uint)AID.EvilMist);
-class VoidEvocation(BossModule module) : Components.RaidwideInstant(module, (uint)AID.VoidEvocation, 5.1f)
+sealed class Voidblood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Voidblood, 6f);
+sealed class VoidSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidSlash, new AOEShapeCone(9.7f, 45f.Degrees()));
+sealed class EvilMist(BossModule module) : Components.RaidwideCast(module, (uint)AID.EvilMist);
+sealed class VoidEvocation(BossModule module) : Components.RaidwideInstant(module, (uint)AID.VoidEvocation, 5.1d)
 {
     public override void OnActorCreated(Actor actor)
     {
@@ -57,11 +57,11 @@ class VoidEvocation(BossModule module) : Components.RaidwideInstant(module, (uin
     }
 }
 
-class Explosion(BossModule module) : Components.CastTowers(module, (uint)AID.Explosion, 5f);
-class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 10f);
-class Hellsnap(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Hellsnap, 6f);
+sealed class Explosion(BossModule module) : Components.CastTowers(module, (uint)AID.Explosion, 5f);
+sealed class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 10f);
+sealed class Hellsnap(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Hellsnap, 6f);
 
-class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
+sealed class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(6);
     public static readonly AOEShapeRect rect = new(51.08f, 2.5f);
@@ -103,7 +103,7 @@ class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class Decay(BossModule module) : Components.CastHint(module, (uint)AID.Decay, "Kill the Voidskipper!", true)
+sealed class Decay(BossModule module) : Components.CastHint(module, (uint)AID.Decay, "Kill the Voidskipper!", true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -117,38 +117,41 @@ class Decay(BossModule module) : Components.CastHint(module, (uint)AID.Decay, "K
     }
 }
 
-class Shield(BossModule module) : Components.GenericAOEs(module)
+sealed class Shield(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(5f, true);
-    private AOEInstance? _aoe;
-    private const string Hint = "Go under shield!";
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.AlphinaudShield)
-            _aoe = new(circle, actor.Position, color: Colors.SafeFromAOE);
+        {
+            _aoe = [new(circle, actor.Position, color: Colors.SafeFromAOE)];
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe == null)
+        if (_aoe.Length == 0)
+        {
             return;
-        var check = true;
-        if (_aoe.Value.Check(actor.Position))
-            check = false;
-        hints.Add(Hint, check);
+        }
+        ref var aoe = ref _aoe[0];
+        hints.Add("Go under shield!", !aoe.Check(actor.Position));
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.VoidEvocation)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
-class ProtectZero(BossModule module) : BossComponent(module)
+sealed class ProtectZero(BossModule module) : BossComponent(module)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -176,7 +179,7 @@ class ProtectZero(BossModule module) : BossComponent(module)
     }
 }
 
-class AndromaliusStates : StateMachineBuilder
+sealed class AndromaliusStates : StateMachineBuilder
 {
     public AndromaliusStates(BossModule module) : base(module)
     {
@@ -195,8 +198,8 @@ class AndromaliusStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70209, NameID = 12071)]
-public class Andromalius(WorldState ws, Actor primary) : BossModule(ws, primary, P1Furcas.Furcas.ArenaBounds.Center, P1Furcas.Furcas.ArenaBounds)
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70209u, NameID = 12071u)]
+public sealed class Andromalius(WorldState ws, Actor primary) : BossModule(ws, primary, P1Furcas.Furcas.ArenaBounds.Center, P1Furcas.Furcas.ArenaBounds)
 {
     private static readonly uint[] trash = [(uint)OID.VisitantTaurus, (uint)OID.VisitantVoidskipper1, (uint)OID.VisitantVoidskipper2,
     (uint)OID.VisitantOgre1, (uint)OID.VisitantOgre2, (uint)OID.VisitantBlackguard1, (uint)OID.VisitantVoidskipper2, (uint)OID.Voidcluster, (uint)OID.Voidcluster];
@@ -204,6 +207,6 @@ public class Andromalius(WorldState ws, Actor primary) : BossModule(ws, primary,
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(trash));
+        Arena.Actors(this, trash);
     }
 }

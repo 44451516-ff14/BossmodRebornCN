@@ -87,7 +87,7 @@ sealed class DRS3DahuStates : StateMachineBuilder
 
     private void CrownedMarchosias(uint id, float delay)
     {
-        Condition(id, delay, () => Module.Enemies(OID.CrownedMarchosias).Any(add => add.IsTargetable), "Adds appear");
+        Condition(id, delay, () => Module.Enemies((uint)OID.CrownedMarchosias).Any(add => add.IsTargetable), "Adds appear");
         // +5.2s: second set
         // +10.0s: third set, first set gets damage up
         // +14.1s: first set gets second stack of damage up

@@ -104,21 +104,21 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
     private static readonly Shape[] union01000080Shapes = GetShapesForUnion([0, 1, 2, 3, 4, 5], [0, 1, 7, 9, 5, 6, 13, 20, 17, 18, 11, 14]);
     private static readonly AOEShapeCustom electricFences01000080AOE = new(union01000080Shapes);
-    private static readonly ArenaBoundsComplex electricFences01000080Arena = new(defaultRect, union01000080Shapes);
+    private static readonly ArenaBoundsCustom electricFences01000080Arena = new(defaultRect, union01000080Shapes);
 
     private static readonly Shape[] union08000400Shapes = GetShapesForUnion([6, 7, 8, 9, 10, 11], [21, 20, 14, 15, 12, 17, 1, 10, 3, 7, 6, 8]);
     private static readonly AOEShapeCustom electricFences08000400AOE = new(union08000400Shapes);
-    private static readonly ArenaBoundsComplex electricFences08000400Arena = new(defaultRect, union08000400Shapes);
+    private static readonly ArenaBoundsCustom electricFences08000400Arena = new(defaultRect, union08000400Shapes);
 
     private static readonly Shape[] union00020001Shapes = GetShapesForUnion([12, 13, 14, 15, 16, 17, 18, 19], [2, 8, 11, 10, 13, 16]);
     private static readonly AOEShapeCustom electricFences00020001AOE = new(union00020001Shapes);
-    private static readonly ArenaBoundsComplex electricFences00020001Arena = new(defaultRect, union00020001Shapes);
+    private static readonly ArenaBoundsCustom electricFences00020001Arena = new(defaultRect, union00020001Shapes);
 
     private static readonly Shape[] union00200010Shapes = GetShapesForUnion([20, 21, 22, 23, 24, 25, 26, 27], [4, 8, 11, 19, 13, 10]);
     private static readonly AOEShapeCustom electricFences00200010AOE = new(union00200010Shapes);
-    private static readonly ArenaBoundsComplex electricFences00200010Arena = new(defaultRect, union00200010Shapes);
+    private static readonly ArenaBoundsCustom electricFences00200010Arena = new(defaultRect, union00200010Shapes);
 
-    private static readonly (AOEShapeCustom AOE, ArenaBoundsComplex Bounds)[] arenaMap =
+    private static readonly (AOEShapeCustom AOE, ArenaBoundsCustom Bounds)[] arenaMap =
     [
         (electricFences01000080AOE, electricFences01000080Arena),
         (electricFences08000400AOE, electricFences08000400Arena),
@@ -126,9 +126,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         (electricFences00200010AOE, electricFences00200010Arena)
     ];
 
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     private static Shape[] GetShapesForUnion(int[] rectIndices, int[] circleIndices)
     {
@@ -138,21 +138,32 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         var position = 0;
 
         for (var i = 0; i < rectLen; ++i)
+        {
             shapes[position++] = rectangles[rectIndices[i]];
+        }
         for (var i = 0; i < circleLen; ++i)
+        {
             shapes[position++] = circles[circleIndices[i]];
+        }
         return shapes;
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Electrowave && Arena.Bounds == StartingBounds)
-            _aoe = new(rectArenaChange, Arena.Center, default, Module.CastFinishAt(spell, 0.4f));
+        {
+            _aoe = [new(rectArenaChange, Arena.Center, default, Module.CastFinishAt(spell, 0.4d))];
+        }
     }
 
     public override void Update()
     {
-        if (_aoe is AOEInstance aoe && aoe.Activation <= WorldState.CurrentTime)
+        if (_aoe.Length == 0)
+        {
+            return;
+        }
+        ref var aoe = ref _aoe[0];
+        if (aoe.Activation <= WorldState.CurrentTime)
         {
             for (var i = 0; i < 4; ++i)
             {
@@ -160,7 +171,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 if (aoe.Shape == aoeCheck.AOE)
                 {
                     Arena.Bounds = aoeCheck.Bounds;
-                    _aoe = null;
+                    _aoe = [];
                     return;
                 }
             }
@@ -172,11 +183,11 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         if (index == 0x0C && state == 0x00020001u)
         {
             Arena.Bounds = defaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
         else if (index == 0x0D)
         {
-            void AddAOE(AOEShapeCustom shape) => _aoe = new(shape, Arena.Center, default, WorldState.FutureTime(3d));
+            void AddAOE(AOEShapeCustom shape) => _aoe = [new(shape, Arena.Center, default, WorldState.FutureTime(3d))];
             switch (state)
             {
                 case 0x08000400u:
@@ -220,7 +231,7 @@ sealed class BatteryCircuit(BossModule module) : Components.GenericRotatingAOE(m
     }
 }
 
-sealed class HeavyBlastCannon(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.HeavyBlastCannonMarker, (uint)AID.HeavyBlastCannon, 8f, 36f);
+sealed class HeavyBlastCannon(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.HeavyBlastCannonMarker, (uint)AID.HeavyBlastCannon, 8d, 36f);
 sealed class RapidThunder(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RapidThunder);
 sealed class Electrowave(BossModule module) : Components.RaidwideCast(module, (uint)AID.Electrowave);
 
@@ -286,5 +297,5 @@ sealed class D042ProtectorStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12757, SortOrder = 5)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831u, NameID = 12757u, SortOrder = 5)]
 public sealed class D042Protector(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaChanges.ArenaCenter, ArenaChanges.StartingBounds);

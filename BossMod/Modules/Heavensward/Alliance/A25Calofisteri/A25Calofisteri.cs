@@ -21,13 +21,13 @@ public class A25Calofisteri(WorldState ws, Actor primary) : BossModule(ws, prima
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Bijou1));
-        Arena.Actors(Enemies(OID.Bijou2));
-        Arena.Actors(Enemies(OID.GrandBijou));
-        Arena.Actors(Enemies(OID.LivingLock1));
-        Arena.Actors(Enemies(OID.LivingLock2));
-        Arena.Actors(Enemies(OID.LivingLock3));
-        Arena.Actors(Enemies(OID.LurkingLock));
-        Arena.Actors(Enemies(OID.Entanglement));
+        Arena.Actors(Enemies((uint)OID.Bijou1));
+        Arena.Actors(Enemies((uint)OID.Bijou2));
+        Arena.Actors(Enemies((uint)OID.GrandBijou));
+        Arena.Actors(Enemies((uint)OID.LivingLock1));
+        Arena.Actors(Enemies((uint)OID.LivingLock2));
+        Arena.Actors(Enemies((uint)OID.LivingLock3));
+        Arena.Actors(Enemies((uint)OID.LurkingLock));
+        Arena.Actors(Enemies((uint)OID.Entanglement));
     }
 }

@@ -557,21 +557,25 @@ sealed class P5DeltaOversampledWaveCannon(BossModule module) : Components.Unifor
 
 sealed class P5DeltaSwivelCannon(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
 
     private static readonly AOEShapeCone _shape = new(60f, 105f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.SwivelCannonR or (uint)AID.SwivelCannonL)
-            AOE = new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell));
+        {
+            AOE = [new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.SwivelCannonR or (uint)AID.SwivelCannonL)
-            AOE = null;
+        {
+            AOE = [];
+        }
     }
 }

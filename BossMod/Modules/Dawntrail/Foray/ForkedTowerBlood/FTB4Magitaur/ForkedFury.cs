@@ -5,14 +5,16 @@ sealed class ForkedFury(BossModule module) : Components.GenericAOEs(module)
     private readonly List<Actor> targets = new(6);
     private bool active;
     private DateTime activation;
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void Update()
     {
         if (!active)
+        {
             return;
+        }
         targets.Clear();
         List<Actor>[] squareActors = [new(16), new(16), new(16)];
         var players = new List<Actor>(48);
@@ -79,7 +81,7 @@ sealed class ForkedFury(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.ForkedFuryVisual)
         {
             activation = Module.CastFinishAt(spell, 0.6d);
-            _aoe = new(FTB4Magitaur.CircleMinusSquares, Arena.Center, default, activation);
+            _aoe = [new(FTB4Magitaur.CircleMinusSquares, Arena.Center, default, activation)];
             active = true;
         }
     }
@@ -201,12 +203,12 @@ sealed class ForkedFury(BossModule module) : Components.GenericAOEs(module)
         {
             base.AddAIHints(slot, actor, assignment, hints);
             var count = targets.Count;
-            var mask = new BitMask();
+            BitMask mask = default;
             for (var i = 0; i < count; ++i)
             {
                 if (Raid.FindSlot(targets[i].InstanceID) is var slot2 && slot2 >= 0)
                 {
-                    mask[slot2] = true;
+                    mask.Set(slot2);
                 }
             }
             hints.AddPredictedDamage(mask, activation, AIHints.PredictedDamageType.Tankbuster);

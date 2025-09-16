@@ -78,7 +78,7 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
                 continue;
 
             void forbidDirection(Angle offset)
-                => hints.AddForbiddenZone(ShapeDistance.Cone(target.Position, 100f, target.Rotation + offset, 45f.Degrees()), DateTime.MaxValue);
+                => hints.AddForbiddenZone(new SDCone(target.Position, 100f, target.Rotation + offset, 45f.Degrees()), DateTime.MaxValue);
 
             var active = (Side)(targetState & 0xF);
             var imminent = (Side)((targetState >> 4) & 0xF);

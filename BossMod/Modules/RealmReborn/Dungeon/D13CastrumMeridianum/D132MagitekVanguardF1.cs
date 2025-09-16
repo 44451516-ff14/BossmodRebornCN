@@ -45,6 +45,6 @@ class D132MagitekVanguardF1States : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 15, NameID = 2116)]
 public class D132MagitekVanguardF1(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Square(new(-13, 31), 19.5f, 11.Degrees()), new Rectangle(new(-9.107f, 51.025f), 8, 1.25f, 11.Degrees())],
+    private static readonly ArenaBoundsCustom arena = new([new Square(new(-13, 31), 19.5f, 11.Degrees()), new Rectangle(new(-9.107f, 51.025f), 8, 1.25f, 11.Degrees())],
     [new Rectangle(new(-9.107f, 51.025f), 8, 1.25f, 11.Degrees())]);
 }

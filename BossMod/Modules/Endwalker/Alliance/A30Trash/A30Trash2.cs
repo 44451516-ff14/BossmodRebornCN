@@ -56,7 +56,7 @@ public class A30Trash2Pack1(WorldState ws, Actor primary) : BossModule(ws, prima
     private static readonly Shape[] union = [new Rectangle(new(800f, 786f), 21f, 13.5f), new Rectangle(new(800f, 767f), 7.5f, 10f), new Rectangle(new(800f, 758f), 10f, 4f)];
     private static readonly Shape[] difference = [new Square(new(811.25f, 787f), 1.5f), new Square(new(811.25f, 777.4f), 1.5f), new Square(new(788.75f, 787f), 1.5f), new Square(new(788.75f, 777.4f), 1.5f),
     new Circle(new(793.4f, 762.75f), 1.25f), new Circle(new(806.6f, 762.75f), 1.25f)];
-    private static readonly ArenaBoundsComplex arena = new(union, difference);
+    private static readonly ArenaBoundsCustom arena = new(union, difference);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

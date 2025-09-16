@@ -122,19 +122,19 @@ public sealed record class ActionDefinition(ActionID ID)
         if (MainCooldownGroup < 0)
             return 0;
         var cdg = cooldowns[ActualMainCooldownGroup(dutyActions)];
-        return cdg.Total > 0 ? Math.Max(0, cdg.Total / MaxChargesAtCap() - cdg.Elapsed) : 0;
+        return cdg.Total > 0f ? Math.Max(0f, cdg.Total / MaxChargesAtCap() - cdg.Elapsed) : default;
     }
 
-    public float ExtraReadyIn(ReadOnlySpan<Cooldown> cooldowns) => ExtraCooldownGroup >= 0 ? cooldowns[ExtraCooldownGroup].Remaining : 0;
+    public float ExtraReadyIn(ReadOnlySpan<Cooldown> cooldowns) => ExtraCooldownGroup >= 0 ? cooldowns[ExtraCooldownGroup].Remaining : default;
     public float ReadyIn(ReadOnlySpan<Cooldown> cooldowns, ReadOnlySpan<ClientState.DutyAction> dutyActions) => Math.Max(MainReadyIn(cooldowns, dutyActions), ExtraReadyIn(cooldowns));
 
     // return time until charges are capped (for multi-charge abilities; for single-charge this is equivalent to remaining cooldown)
     public float ChargeCapIn(ReadOnlySpan<Cooldown> cooldowns, ReadOnlySpan<ClientState.DutyAction> dutyActions, int level)
     {
         if (MainCooldownGroup < 0)
-            return 0;
+            return default;
         var cdg = cooldowns[ActualMainCooldownGroup(dutyActions)];
-        return cdg.Total > 0 ? Math.Max(0, MaxChargesAtLevel(level) * cdg.Total / MaxChargesAtCap() - cdg.Elapsed) : 0;
+        return cdg.Total > 0f ? Math.Max(0f, MaxChargesAtLevel(level) * cdg.Total / MaxChargesAtCap() - cdg.Elapsed) : default;
     }
 
     public bool IsUnlocked(WorldState ws, Actor player)
@@ -168,29 +168,33 @@ public sealed class ActionDefinitions : IDisposable
     public const int DutyAction0CDGroup = 80;
     public const int DutyAction1CDGroup = 81;
 
-    public static readonly ActionID IDSprint = new(ActionType.Spell, 3);
-    public static readonly ActionID IDAutoAttack = new(ActionType.Spell, 7);
-    public static readonly ActionID IDAutoShot = new(ActionType.Spell, 8);
-    public static readonly ActionID IDPotionStr = new(ActionType.Item, 1045995); // hq grade 3 gemdraught of strength
-    public static readonly ActionID IDPotionDex = new(ActionType.Item, 1045996); // hq grade 3 gemdraught of dexterity
-    public static readonly ActionID IDPotionVit = new(ActionType.Item, 1045997); // hq grade 3 gemdraught of vitality
-    public static readonly ActionID IDPotionInt = new(ActionType.Item, 1045998); // hq grade 3 gemdraught of intelligence
-    public static readonly ActionID IDPotionMnd = new(ActionType.Item, 1045999); // hq grade 3 gemdraught of mind
+    public static readonly ActionID IDSprint = new(ActionType.Spell, 3u);
+    public static readonly ActionID IDAutoAttack = new(ActionType.Spell, 7u);
+    public static readonly ActionID IDAutoShot = new(ActionType.Spell, 8u);
+    public static readonly ActionID Armslength = new(ActionType.Spell, 7548u);
+    public static readonly ActionID Surecast = new(ActionType.Spell, 7559u);
+    public static readonly ActionID Esuna = new(ActionType.Spell, 7568u);
+    public static readonly ActionID WardensPaean = new(ActionType.Spell, 3561u);
+    public static readonly ActionID IDPotionStr = new(ActionType.Item, 1045995u); // hq grade 3 gemdraught of strength
+    public static readonly ActionID IDPotionDex = new(ActionType.Item, 1045996u); // hq grade 3 gemdraught of dexterity
+    public static readonly ActionID IDPotionVit = new(ActionType.Item, 1045997u); // hq grade 3 gemdraught of vitality
+    public static readonly ActionID IDPotionInt = new(ActionType.Item, 1045998u); // hq grade 3 gemdraught of intelligence
+    public static readonly ActionID IDPotionMnd = new(ActionType.Item, 1045999u); // hq grade 3 gemdraught of mind
 
     // content specific consumables
-    public static readonly ActionID IDPotionSustaining = new(ActionType.Item, 20309);
-    public static readonly ActionID IDPotionMax = new(ActionType.Item, 1013637);
-    public static readonly ActionID IDPotionEmpyrean = new(ActionType.Item, 23163);
-    public static readonly ActionID IDPotionSuper = new(ActionType.Item, 1023167);
-    public static readonly ActionID IDPotionOrthos = new(ActionType.Item, 38944);
-    public static readonly ActionID IDPotionHyper = new(ActionType.Item, 1038956);
-    public static readonly ActionID IDPotionEureka = new(ActionType.Item, 22306);
+    public static readonly ActionID IDPotionSustaining = new(ActionType.Item, 20309u);
+    public static readonly ActionID IDPotionMax = new(ActionType.Item, 1013637u);
+    public static readonly ActionID IDPotionEmpyrean = new(ActionType.Item, 23163u);
+    public static readonly ActionID IDPotionSuper = new(ActionType.Item, 1023167u);
+    public static readonly ActionID IDPotionOrthos = new(ActionType.Item, 38944u);
+    public static readonly ActionID IDPotionHyper = new(ActionType.Item, 1038956u);
+    public static readonly ActionID IDPotionEureka = new(ActionType.Item, 22306u);
 
     // special general actions that we support
-    public static readonly ActionID IDGeneralLimitBreak = new(ActionType.General, 3);
-    public static readonly ActionID IDGeneralSprint = new(ActionType.General, 4);
-    public static readonly ActionID IDGeneralDuty1 = new(ActionType.General, 26);
-    public static readonly ActionID IDGeneralDuty2 = new(ActionType.General, 27);
+    public static readonly ActionID IDGeneralLimitBreak = new(ActionType.General, 3u);
+    public static readonly ActionID IDGeneralSprint = new(ActionType.General, 4u);
+    public static readonly ActionID IDGeneralDuty1 = new(ActionType.General, 26u);
+    public static readonly ActionID IDGeneralDuty2 = new(ActionType.General, 27u);
 
     public static readonly ActionDefinitions Instance = new();
 
@@ -350,13 +354,41 @@ public sealed class ActionDefinitions : IDisposable
     {
         var center = hints.PathfindMapCenter;
         if (!hints.PathfindMapBounds.Contains(to - center))
+        {
             return true;
+        }
 
         // if arena is a weird shape, try to ensure player won't dash out of it
-        if (from != to && hints.PathfindMapBounds is ArenaBoundsCustom && hints.PathfindMapBounds.IntersectRay(from - center, to - from) is >= 0 and < float.MaxValue)
-            return true;
+        if (from != to && hints.PathfindMapBounds is ArenaBoundsCustom)
+        {
+            var len = (to - from).Length();
+            var distToNearestWall = hints.PathfindMapBounds.IntersectRay(from - center, to - from);
+            if (distToNearestWall >= 0f && distToNearestWall < len)
+            {
+                return true;
+            }
+        }
 
-        return hints.ForbiddenZones.Any(d => d.shapeDistance(to) < 0f);
+        var forbiddenZones = CollectionsMarshal.AsSpan(hints.ForbiddenZones);
+        var countFZ = forbiddenZones.Length;
+        for (var i = 0; i < countFZ; ++i)
+        {
+            ref var fz = ref forbiddenZones[i];
+            if (fz.shapeDistance.Distance(to) <= 0f)
+            {
+                return true;
+            }
+        }
+        var voidZones = CollectionsMarshal.AsSpan(hints.TemporaryObstacles);
+        var countVZ = voidZones.Length;
+        for (var i = 0; i < countVZ; ++i)
+        {
+            if (voidZones[i].Distance(to) <= 0f)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public BitMask SpellAllowedClasses(Lumina.Excel.Sheets.Action data)

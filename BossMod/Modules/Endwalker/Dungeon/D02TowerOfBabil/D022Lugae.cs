@@ -26,19 +26,16 @@ public enum AID : uint
 public enum SID : uint
 {
     Minimum = 2504, // none->player, extra=0x14
-    Breathless = 2672, // none->player, extra=0x1/0x2/0x3/0x4/0x5/0x6
-    Toad = 2671 // none->player, extra=0x1B1
+    Breathless = 2672 // none->player, extra=0x1/0x2/0x3/0x4/0x5/0x6
 }
 
-class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
+sealed class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
 {
     private enum Mechanic { None, Downpour, Chakram }
     private Mechanic CurrentMechanic;
-    private static readonly AOEShapeRect square = new(4f, 4f, 4f);
+    private static readonly AOEShapeRect square = new(4f, 4f, 4f), squareInv = new(4f, 4f, 4f, invertForbiddenZone: true);
     private static readonly WPos toad = new(213f, 306f);
     private static readonly WPos mini = new(229f, 306f);
-    private const string toadHint = "Walk onto green square!";
-    private const string miniHint = "Walk onto purple square!";
     private BitMask _status;
     private bool avoidSquares;
 
@@ -51,13 +48,13 @@ class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
         if (CurrentMechanic == Mechanic.Downpour)
         {
             var breathless = _status[slot];
-            aoes[0] = new(breathless ? square with { InvertForbiddenZone = true } : square, toad, color: breathless ? Colors.SafeFromAOE : default);
+            aoes[0] = new(breathless ? squareInv : square, toad, color: breathless ? Colors.SafeFromAOE : default);
             aoes[1] = new(square, mini);
         }
         else if (CurrentMechanic == Mechanic.Chakram)
         {
             var minimum = !avoidSquares && !_status[slot];
-            aoes[0] = new(minimum ? square with { InvertForbiddenZone = true } : square, mini, color: minimum ? Colors.SafeFromAOE : default);
+            aoes[0] = new(minimum ? squareInv : square, mini, color: minimum ? Colors.SafeFromAOE : default);
             aoes[1] = new(square, toad);
         }
         return aoes;
@@ -67,14 +64,16 @@ class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
     {
         if (status.ID is (uint)SID.Breathless or (uint)SID.Minimum)
         {
-            _status[Raid.FindSlot(actor.InstanceID)] = true;
+            _status.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID is (uint)SID.Breathless or (uint)SID.Minimum)
-            _status[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            _status.Clear(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -89,32 +88,42 @@ class DownpourMagitekChakram(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Downpour)
+        {
             CurrentMechanic = Mechanic.Downpour;
+        }
         else if (spell.Action.ID == (uint)AID.MagitekChakram)
+        {
             CurrentMechanic = Mechanic.Chakram;
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ThermalSuppression && CurrentMechanic != Mechanic.None)
+        {
             avoidSquares = true;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (CurrentMechanic == Mechanic.Chakram && !_status[slot] && !avoidSquares)
-            hints.Add(miniHint);
+        {
+            hints.Add("Walk onto purple square!");
+        }
         else if (CurrentMechanic == Mechanic.Downpour && _status[slot])
-            hints.Add(toadHint);
+        {
+            hints.Add("Walk onto green square!");
+        }
     }
 }
 
-class ThermalSuppression(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThermalSuppression);
-class MightyRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(50f, 3f));
-class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeCross(40f, 4f));
-class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile, 6f);
+sealed class ThermalSuppression(BossModule module) : Components.RaidwideCast(module, (uint)AID.ThermalSuppression);
+sealed class MightyRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MagitekRay, new AOEShapeRect(50f, 3f));
+sealed class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, new AOEShapeCross(40f, 4f));
+sealed class SurfaceMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile, 6f);
 
-class D022LugaeStates : StateMachineBuilder
+sealed class D022LugaeStates : StateMachineBuilder
 {
     public D022LugaeStates(BossModule module) : base(module)
     {
@@ -128,4 +137,4 @@ class D022LugaeStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 785, NameID = 10281)]
-public class D022Lugae(WorldState ws, Actor primary) : BossModule(ws, primary, new(221f, 306f), new ArenaBoundsSquare(19.5f));
+public sealed class D022Lugae(WorldState ws, Actor primary) : BossModule(ws, primary, new(221f, 306f), new ArenaBoundsSquare(19.5f));

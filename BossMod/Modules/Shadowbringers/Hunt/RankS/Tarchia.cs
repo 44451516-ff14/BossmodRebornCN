@@ -16,7 +16,7 @@ public enum AID : uint
     MightySpin2 = 18093, // Boss->self, no cast, range 14 circle, after 1s after boss wakes up and 4s after every Groundstorm
     Trounce = 18027, // Boss->self, 4.0s cast, range 40 60-degree cone
     MetamorphicBlast = 18031, // Boss->self, 4.0s cast, range 40 circle
-    Groundstorm = 18023, // Boss->self, 5.0s cast, range 5-40 donut
+    Groundstorm = 18023 // Boss->self, 5.0s cast, range 5-40 donut
 }
 
 class WildHorn(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WildHorn, new AOEShapeCone(17f, 60f.Degrees()));
@@ -30,20 +30,24 @@ class MetamorphicBlast(BossModule module) : Components.RaidwideCast(module, (uin
 class MightySpin2(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(14f);
-    private AOEInstance? _aoe = new(circle, module.PrimaryActor.Position.Quantized());
+    private AOEInstance[] _aoe = [new(circle, module.PrimaryActor.Position.Quantized())];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Groundstorm)
-            _aoe = new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell, 4f));
+        {
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell, 4d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (caster == Module.PrimaryActor && spell.Action.ID != (uint)AID.Groundstorm)
-            _aoe = null;
+        if (spell.Action.ID != (uint)AID.Groundstorm)
+        {
+            _aoe = [];
+        }
     }
 }
 

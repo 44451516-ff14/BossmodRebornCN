@@ -98,5 +98,5 @@ class DD90OnraStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 548, NameID = 7493)]
 public class DD90Onra(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(HoHArenas.ArenaCenter, 25f, 48)], HoHArenas.Entrance);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(HoHArenas.ArenaCenter, 25f, 48)], HoHArenas.Entrance);
 }

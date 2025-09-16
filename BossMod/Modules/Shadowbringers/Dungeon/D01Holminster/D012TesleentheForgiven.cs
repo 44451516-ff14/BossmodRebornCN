@@ -23,6 +23,7 @@ public enum AID : uint
 
 public enum IconID : uint
 {
+    Exorcise = 62, // player->self
     Icon1 = 79, // player
     Icon2 = 80, // player
     Icon3 = 81, // player
@@ -79,8 +80,8 @@ sealed class FeveredFlagellation(BossModule module) : Components.GenericBaitAway
     }
 }
 
-sealed class Exorcise(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Exorcise, 6f, 4, 4);
-sealed class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.HolyWater, GetVoidzones, 0.8f)
+sealed class Exorcise(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Exorcise, (uint)AID.Exorcise, 6f, 5.1d, 4, 4);
+sealed class HolyWater(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.HolyWater, GetVoidzones, 0.8d)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -117,6 +118,6 @@ sealed class D012TesleentheForgivenStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "legendoficeman, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 676, NameID = 8300)]
 public sealed class D012TesleentheForgiven(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(78f, -82f), 19.5f * CosPI.Pi64th, 64)], [new Rectangle(new(78f, -62.081f), 20f, 1.0562f),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(78f, -82f), 19.5f * CosPI.Pi64th, 64)], [new Rectangle(new(78f, -62.081f), 20f, 1.0562f),
     new Rectangle(new(78f, -102.023f), 20f, 1.0562f)]);
 }

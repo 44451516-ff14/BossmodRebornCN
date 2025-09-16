@@ -31,8 +31,8 @@ public enum AID : uint
     Breakbeak = 6626 // AbalathianHornbill->player, no cast, single-target
 }
 
-class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(7.08f, 45.Degrees()));
-class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 5);
+class Overpower(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Overpower, new AOEShapeCone(7.08f, 45f.Degrees()));
+class Gust(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Gust, 5f);
 
 class D150XelphatolSwiftbeakStates : StateMachineBuilder
 {
@@ -41,28 +41,7 @@ class D150XelphatolSwiftbeakStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<Overpower>()
             .ActivateOnEnter<Gust>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D150XelphatolSwiftbeak.Trash);
-                var center = module.Arena.Center;
-                var radius = module.Bounds.Radius;
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed && enemy.Position.AlmostEqual(center, radius))
-                        return false;
-                }
-                var keys = module.Enemies(D150XelphatolSwiftbeak.Keys);
-                var countK = keys.Count;
-                for (var i = 0; i < countK; ++i)
-                {
-                    var key = keys[i];
-                    if (key.IsTargetable)
-                        return true;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D150XelphatolSwiftbeak.Trash) || AnyTargetable(D150XelphatolSwiftbeak.Keys);
     }
 }
 
@@ -70,8 +49,8 @@ class D150XelphatolSwiftbeakStates : StateMachineBuilder
 public class D150XelphatolSwiftbeak(WorldState ws, Actor primary) : BossModule(ws, primary, IsArena1(primary) ? arena1.Center : IsArena2(primary) ? arena3.Center : arena2.Center,
 IsArena1(primary) ? arena1 : IsArena2(primary) ? arena3 : arena2)
 {
-    private static bool IsArena1(Actor primary) => primary.Position.X < 200f && primary.Position.Z > -200f;
-    private static bool IsArena2(Actor primary) => primary.Position.Z < -200f;
+    private static bool IsArena1(Actor primary) => primary.Position is var pos && pos.X < 200f && pos.Z > -200f;
+    private static bool IsArena2(Actor primary) => primary.PosRot.Z < -200f;
     private static readonly WPos[] vertices1 = [new(152.49f, -71.52f), new(150.27f, -69.29f), new(149.68f, -68.8f), new(147.76f, -70.72f), new(147.27f, -71.05f),
     new(146.79f, -70.79f), new(146.28f, -70.33f), new(145.76f, -70.31f), new(145.3f, -69.98f), new(143.97f, -68.28f),
     new(143.63f, -67.66f), new(144.19f, -67.53f), new(145.39f, -68.3f), new(145.89f, -68.72f), new(146.5f, -69.06f),
@@ -208,46 +187,26 @@ IsArena1(primary) ? arena1 : IsArena2(primary) ? arena3 : arena2)
     new(410.21f, -276.01f), new(411.4f, -276.57f), new(411.93f, -276.89f), new(412.75f, -278.54f), new(413.24f, -278.36f),
     new(414.29f, -277.67f), new(418.52f, -278.64f), new(418.68f, -279.2f), new(418.61f, -279.82f), new(418.67f, -280.5f),
     new(419.3f, -280.72f), new(419.95f, -280.81f), new(421.2f, -280.81f), new(423.68f, -281.65f)];
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices1)]);
-    private static readonly ArenaBoundsComplex arena2 = new([new PolygonCustom(vertices2)]);
-    private static readonly ArenaBoundsComplex arena3 = new([new PolygonCustom(vertices3)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices1)]);
+    private static readonly ArenaBoundsCustom arena2 = new([new PolygonCustom(vertices2)]);
+    private static readonly ArenaBoundsCustom arena3 = new([new PolygonCustom(vertices3)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.XelphatolWindtalon, (uint)OID.XelphatolWhirltalon, (uint)OID.XelphatolWatchwolf, (uint)OID.XelphatolFogcaller,
     (uint)OID.XelphatolBravewing, (uint)OID.XelphatolFatecaller, (uint)OID.XelphatolStrongbeak, (uint)OID.AbalathianHornbill];
     public static readonly uint[] Keys = [(uint)OID.BoneKey, (uint)OID.Airstone1, (uint)OID.Airstone2];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat && enemy.Position.AlmostEqual(center, radius))
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

@@ -27,22 +27,11 @@ class D90SprightlyClayGolemStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<WildHorn>()
             .ActivateOnEnter<Plummet>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D90SprightlyClayGolem.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D90SprightlyClayGolem.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13582, SortOrder = 8)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1008, NameID = 13582, SortOrder = 8)]
 public sealed class D90SprightlyClayGolem(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(107.5f, -419.32f), new(108.05f, -418.91f), new(108.99f, -417.9f), new(109.55f, -416.49f), new(109.98f, -416.05f),
@@ -88,33 +77,22 @@ public sealed class D90SprightlyClayGolem(WorldState ws, Actor primary) : BossMo
     new(95.69f, -410.22f), new(95.63f, -410.92f), new(95.41f, -411.42f), new(94.93f, -411.9f), new(94.39f, -412.23f),
     new(93.72f, -413.32f), new(93.46f, -413.92f), new(93, -414.4f), new(93.22f, -414.95f), new(106.99f, -419.44f),
     new(107.5f, -419.32f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.SprightlyStone1, (uint)OID.SprightlyStone2, (uint)OID.SprightlyDhara];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat && enemy.Position.AlmostEqual(center, radius))
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

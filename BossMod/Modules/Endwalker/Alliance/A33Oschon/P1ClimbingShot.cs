@@ -1,11 +1,11 @@
 namespace BossMod.Endwalker.Alliance.A33Oschon;
 
-class P1ClimbingShot(BossModule module) : Components.GenericKnockback(module)
+sealed class P1ClimbingShot(BossModule module) : Components.GenericKnockback(module)
 {
     private P1Downhill? _downhill = module.FindComponent<P1Downhill>();
-    private Knockback? _knockback;
+    private Knockback[] _kb = [];
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _knockback);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
@@ -23,14 +23,14 @@ class P1ClimbingShot(BossModule module) : Components.GenericKnockback(module)
                 }
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.ClimbingShot1 or (uint)AID.ClimbingShot2 or (uint)AID.ClimbingShot3 or (uint)AID.ClimbingShot4)
         {
-            _knockback = new(spell.LocXZ, 20f, Module.CastFinishAt(spell));
+            _kb = [new(spell.LocXZ, 20f, Module.CastFinishAt(spell))];
         }
     }
 
@@ -38,7 +38,7 @@ class P1ClimbingShot(BossModule module) : Components.GenericKnockback(module)
     {
         if (spell.Action.ID is (uint)AID.ClimbingShot1 or (uint)AID.ClimbingShot2 or (uint)AID.ClimbingShot3 or (uint)AID.ClimbingShot4)
         {
-            _knockback = null;
+            _kb = [];
         }
     }
 }

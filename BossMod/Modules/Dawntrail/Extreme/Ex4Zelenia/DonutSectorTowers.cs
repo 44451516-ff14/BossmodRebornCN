@@ -85,7 +85,9 @@ sealed class DonutSectorTowers(BossModule module) : Components.GenericTowers(mod
                 {
                     var id = ring == 0 ? tileIndex : tileIndex + 8;
                     if (!activeTiles[id])
+                    {
                         continue;
+                    }
 
                     stackPtr = 0;
                     stack[stackPtr++] = (ring, tileIndex);
@@ -113,20 +115,27 @@ sealed class DonutSectorTowers(BossModule module) : Components.GenericTowers(mod
                             var n = leftright[k];
                             var nid = r == 0 ? n : n + 8;
                             if (!visited[nid] && activeTiles[nid])
+                            {
                                 stack[stackPtr++] = (r, n);
+                            }
                         }
 
                         var otherRing = 1 - r;
                         var oid = otherRing == 0 ? j : j + 8;
                         if (!visited[oid] && activeTiles[oid])
+                        {
                             stack[stackPtr++] = (otherRing, j);
+                        }
                     }
 
                     break; // only flood from one valid ring
                 }
 
                 if (shapes.Count > 0)
-                    towers[t].Shape = new AOEShapeCustom([.. shapes]);
+                {
+                    ref var tow = ref towers[t];
+                    tow.Shape = new AOEShapeCustom([.. shapes]);
+                }
             }
         }
     }

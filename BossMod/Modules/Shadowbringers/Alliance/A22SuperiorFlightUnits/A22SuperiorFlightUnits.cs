@@ -11,7 +11,7 @@ sealed class StandardSurfaceMissile : Components.SimpleAOEGroups
 sealed class LethalRevolution(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LethalRevolution, 15f);
 sealed class GuidedMissile(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GuidedMissile, 4f);
 sealed class SurfaceMissileHighOrderExplosiveBlastCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.SurfaceMissile, (uint)AID.HighOrderExplosiveBlastCircle], 6f);
-sealed class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AntiPersonnelMissile, 6);
+sealed class AntiPersonnelMissile(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AntiPersonnelMissile, 6f);
 sealed class PrecisionGuidedMissile(BossModule module) : Components.BaitAwayCast(module, (uint)AID.PrecisionGuidedMissile, 6f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 sealed class ManeuverHighPoweredLaser(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.ManeuverHighPoweredLaserMarker, (uint)AID.ManeuverHighPoweredLaser, 5.3d, 80f, 7f, 8, 8);
 sealed class ManeuverMissileCommand(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.ManeuverMissileCommand, (uint)AID.BarrageImpact, 2.1d, "Raidwide x3");
@@ -19,7 +19,7 @@ sealed class ManeuverMissileCommand(BossModule module) : Components.RaidwideCast
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", PrimaryActorOID = (uint)OID.FlightUnitALpha, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 736, NameID = 9364, SortOrder = 3)]
 public sealed class A22SuperiorFlightUnits(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaShape.Center, ArenaShape)
 {
-    public static readonly ArenaBoundsComplex ArenaShape = new([new PolygonCustomO([new(-210.188f, -141.012f), new(-209.278f, -141.081f), new(-207.235f, -141.234f),
+    public static readonly ArenaBoundsCustom ArenaShape = new([new PolygonCustomO([new(-210.188f, -141.012f), new(-209.278f, -141.081f), new(-207.235f, -141.234f),
     new(-204.348f, -141.893f), new(-201.592f, -142.975f), new(-199.028f, -144.455f), new(-196.712f, -146.302f), new(-194.698f, -148.472f),
     new(-193.438f, -150.321f), new(-192.889f, -151.212f), new(-191.745f, -153.586f), new(-190.873f, -156.416f), new(-190.431f, -159.344f),
     new(-190.431f, -162.305f), new(-190.873f, -165.233f), new(-191.745f, -168.063f), new(-192.48f, -169.609f), new(-193.03f, -170.731f),
@@ -37,18 +37,8 @@ public sealed class A22SuperiorFlightUnits(WorldState ws, Actor primary) : BossM
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (BossBeta == null)
-        {
-            var b = Enemies((uint)OID.FlightUnitBEta);
-            BossBeta = b.Count != 0 ? b[0] : null;
-        }
-        if (BossChi == null)
-        {
-            var b = Enemies((uint)OID.FlightUnitCHi);
-            BossChi = b.Count != 0 ? b[0] : null;
-        }
+        BossBeta ??= GetActor((uint)OID.FlightUnitBEta);
+        BossChi ??= GetActor((uint)OID.FlightUnitCHi);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

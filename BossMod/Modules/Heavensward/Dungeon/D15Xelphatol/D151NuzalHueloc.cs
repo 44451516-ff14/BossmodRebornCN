@@ -32,7 +32,7 @@ class Airstone(BossModule module) : BossComponent(module)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (Module.Enemies(OID.Airstone).Any(x => !x.IsDead))
+        if (Module.Enemies((uint)OID.Airstone).Any(x => !x.IsDead))
             hints.Add("Destroy the airstones to remove invincibility!");
     }
 }
@@ -42,31 +42,38 @@ class WindBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Win
 class HotBlast(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(4, true);
-    private AOEInstance? _aoe;
-    private const string Hint = "Go under boss!";
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HotBlast)
-            _aoe = new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell), Colors.SafeFromAOE);
+        {
+            _aoe = [new(circle, Module.PrimaryActor.Position.Quantized(), default, Module.CastFinishAt(spell), Colors.SafeFromAOE)];
+        }
     }
 
     public override void Update()
     {
-        if (_aoe != null && (WorldState.CurrentTime - _aoe.Value.Activation).TotalSeconds >= 1d)
-            _aoe = null;
+        if (_aoe.Length != 0)
+        {
+            ref var aoe = ref _aoe[0];
+            if ((WorldState.CurrentTime - aoe.Activation).TotalSeconds >= 1d)
+            {
+                _aoe = [];
+            }
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_aoe == null)
+        if (_aoe.Length == 0)
+        {
             return;
-        if (!_aoe.Value.Check(actor.Position))
-            hints.Add(Hint);
-        else
-            hints.Add(Hint, false);
+        }
+        ref var aoe = ref _aoe[0];
+        hints.Add("Go under boss!", !aoe.Check(actor.Position));
     }
 }
 
@@ -90,7 +97,7 @@ public class D151NuzalHueloc(WorldState ws, Actor primary) : BossModule(ws, prim
     new(-79.79f, -49.43f), new(-90.22f, -55.45f), new(-92.52f, -57.81f), new(-95.38f, -64.42f), new(-96.08f, -70.82f),
     new(-96.01f, -71.49f), new(-94.72f, -77.66f), new(-91.42f, -83.42f), new(-86.42f, -88.01f), new(-80.32f, -90.77f),
     new(-73.80f, -91.52f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     private static readonly uint[] opponents = [(uint)OID.Boss, (uint)OID.IxaliStitcher, (uint)OID.FloatingTurret, (uint)OID.Airstone];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

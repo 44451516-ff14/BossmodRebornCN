@@ -2,31 +2,31 @@ namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
 sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(module)
 {
-    public AOEInstance? AOE;
+    public AOEInstance[] AOE = [];
     public bool SmallArena;
 
     private static readonly AOEShapeRect _shape = new(40f, 15f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref AOE);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         switch (spell.Action.ID)
         {
             case (uint)AID.IonClusterVisualR:
-                AOE = new(_shape, caster.Position - new WDir(5f, default), caster.Rotation, WorldState.FutureTime(2.4d));
+                AOE = [new(_shape, caster.Position - new WDir(5f, default), caster.Rotation, WorldState.FutureTime(2.4d))];
                 break;
             case (uint)AID.IonClusterVisualL:
-                AOE = new(_shape, caster.Position + new WDir(5f, default), caster.Rotation, WorldState.FutureTime(2.4d));
+                AOE = [new(_shape, caster.Position + new WDir(5f, default), caster.Rotation, WorldState.FutureTime(2.4d))];
                 break;
             case (uint)AID.StampedingThunderAOE:
                 ++NumCasts;
                 break;
             case (uint)AID.StampedingThunderFinish:
                 ++NumCasts;
-                AOE = null;
+                AOE = [];
                 Arena.Bounds = M04SWickedThunder.IonClusterBounds;
-                Arena.Center = new(M04SWickedThunder.P1DefaultCenter.X + 3 * (M04SWickedThunder.P1DefaultCenter.X - caster.Position.X), M04SWickedThunder.P1DefaultCenter.Z);
+                Arena.Center = new(M04SWickedThunder.P1DefaultCenter.X + 3f * (M04SWickedThunder.P1DefaultCenter.X - caster.PosRot.X), M04SWickedThunder.P1DefaultCenter.Z);
                 SmallArena = true;
                 break;
         }
@@ -67,8 +67,8 @@ sealed class ElectronStream(BossModule module) : Components.GenericAOEs(module)
         base.AddHints(slot, actor, hints);
 
         // wild charge
-        var offZ = actor.Position.Z - Module.PrimaryActor.Position.Z;
-        var sameSideCloser = Raid.WithoutSlot(false, true, true).Where(p => p != actor && p.Position.Z - Module.PrimaryActor.Position.Z is var off && off * offZ > 0 && Math.Abs(off) < Math.Abs(offZ));
+        var offZ = actor.PosRot.Z - Module.PrimaryActor.PosRot.Z;
+        var sameSideCloser = Raid.WithoutSlot(false, true, true).Where(p => p != actor && p.PosRot.Z - Module.PrimaryActor.PosRot.Z is var off && off * offZ > 0f && Math.Abs(off) < Math.Abs(offZ));
         if (actor.Role == Role.Tank)
         {
             if (sameSideCloser.Any())
@@ -132,7 +132,7 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var actorOffset = actor.Position.Z - Module.PrimaryActor.Position.Z;
+        var actorOffset = actor.PosRot.Z - Module.PrimaryActor.PosRot.Z;
         var aoes = new List<AOEInstance>();
         var party = Raid.WithoutSlot(false, true, true);
         var len = party.Length;
@@ -142,13 +142,13 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
             switch (_status[i])
             {
                 case (uint)SID.RemoteCurrent:
-                    if (_status[slot] == (uint)SID.ColliderConductor && (p.Position.Z - Module.PrimaryActor.Position.Z) * actorOffset < 0)
+                    if (_status[slot] == (uint)SID.ColliderConductor && (p.PosRot.Z - Module.PrimaryActor.PosRot.Z) * actorOffset < 0f)
                         break; // we're gonna bait this
                     if (FindBaitTarget(i, p) is var tf && tf != null)
                         aoes.Add(new(_shapeBait, p.Position, Angle.FromDirection(tf.Position - p.Position), _activation, risky: _status[slot] != (uint)SID.RemoteCurrent)); // common strat has two remotes hitting each other, which is fine
                     break;
                 case (uint)SID.ProximateCurrent:
-                    if (_status[slot] == (uint)SID.ColliderConductor && (p.Position.Z - Module.PrimaryActor.Position.Z) * actorOffset > 0)
+                    if (_status[slot] == (uint)SID.ColliderConductor && (p.PosRot.Z - Module.PrimaryActor.PosRot.Z) * actorOffset > 0f)
                         break; // we're gonna bait this
                     if (FindBaitTarget(i, p) is var tc && tc != null)
                         aoes.Add(new(_shapeBait, p.Position, Angle.FromDirection(tc.Position - p.Position), _activation));
@@ -228,11 +228,11 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
 
     private (int slot, Actor? actor) FindDesignatedBaitSource(Actor target)
     {
-        var targetOffset = target.Position.Z - Module.PrimaryActor.Position.Z;
+        var targetOffset = target.PosRot.Z - Module.PrimaryActor.PosRot.Z;
         bool isBaiter(int slot, Actor actor) => _status[slot] switch
         {
-            (uint)SID.RemoteCurrent => (actor.Position.Z - Module.PrimaryActor.Position.Z) * targetOffset < 0,
-            (uint)SID.ProximateCurrent => (actor.Position.Z - Module.PrimaryActor.Position.Z) * targetOffset > 0,
+            (uint)SID.RemoteCurrent => (actor.PosRot.Z - Module.PrimaryActor.PosRot.Z) * targetOffset < 0,
+            (uint)SID.ProximateCurrent => (actor.PosRot.Z - Module.PrimaryActor.PosRot.Z) * targetOffset > 0,
             _ => false
         };
         return Raid.WithSlot(false, true, true).FirstOrDefault(ip => isBaiter(ip.Item1, ip.Item2));
@@ -247,7 +247,7 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
 
     private List<WPos> SafeSpots(int slot, Actor actor)
     {
-        var dirZ = actor.Position.Z - Module.PrimaryActor.Position.Z > 0f ? 1f : -1f;
+        var dirZ = actor.PosRot.Z - Module.PrimaryActor.PosRot.Z > 0f ? 1f : -1f;
         var positions = new List<WPos>(2);
         switch (_status[slot])
         {

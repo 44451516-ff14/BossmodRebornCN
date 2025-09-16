@@ -84,7 +84,7 @@ class Fetters(BossModule module) : BossComponent(module)
         var fetters = Module.Enemies((uint)OID.TheSablePrice);
         var fetter = fetters.Count != 0 ? fetters[0] : null;
         if (fetter != null && !fetter.IsDead)
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(fetter.Position, fetter.HitboxRadius + 3));
+            hints.AddForbiddenZone(new SDInvertedCircle(fetter.Position, fetter.HitboxRadius + 3));
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -137,7 +137,7 @@ class D033NidhoggStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 39, NameID = 3458)]
 public class D033Nidhogg(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Circle(new(35, -267), 32.5f)], [new Rectangle(new(35, -299.5f), 20, 0.75f), new Rectangle(new(35, -233.5f), 20, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Circle(new(35, -267), 32.5f)], [new Rectangle(new(35, -299.5f), 20, 0.75f), new Rectangle(new(35, -233.5f), 20, 1.25f)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

@@ -115,7 +115,7 @@ sealed class DRS7StygimolochLordStates : StateMachineBuilder
     private void MemoryOfTheLabyrinth(uint id, float delay)
     {
         Cast(id, (uint)AID.MemoryOfTheLabyrinth, delay, 3);
-        Condition(id + 0x10, 0.9f, () => Module.Enemies(OID.StygimolochMonk).Any(a => a.IsTargetable), "Adds appear");
+        Condition(id + 0x10, 0.9f, () => Module.Enemies((uint)OID.StygimolochMonk).Any(a => a.IsTargetable), "Adds appear");
     }
 
     private State FatefulWords(uint id, float delay)

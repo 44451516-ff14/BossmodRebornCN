@@ -49,8 +49,8 @@ class HoodSwing(BossModule module) : Components.Cleave(module, (uint)AID.HoodSwi
 }
 
 class WhipBack(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WhipBack, new AOEShapeCone(9, 60.Degrees()));
-class Regorge(BossModule module) : Components.VoidzoneAtCastTarget(module, 4, (uint)AID.Regorge, m => m.Enemies(OID.Regorge).Where(z => z.EventState != 7), 2.1f);
-class Syrup(BossModule module) : Components.VoidzoneAtCastTarget(module, 4, (uint)AID.Syrup, m => m.Enemies(OID.Syrup).Where(z => z.EventState != 7), 0.3f);
+class Regorge(BossModule module) : Components.VoidzoneAtCastTarget(module, 4, (uint)AID.Regorge, m => m.Enemies((uint)OID.Regorge).Where(z => z.EventState != 7), 2.1f);
+class Syrup(BossModule module) : Components.VoidzoneAtCastTarget(module, 4, (uint)AID.Syrup, m => m.Enemies((uint)OID.Syrup).Where(z => z.EventState != 7), 0.3f);
 
 // TODO: merge happens if bosses are 'close enough' (threshold is >20.82 at least) or have high enough hp difference (>5% at least) and more than 20s passed since split
 class CloneMerge(BossModule module) : BossComponent(module)
@@ -63,7 +63,7 @@ class CloneMerge(BossModule module) : BossComponent(module)
     {
         if (Clone != null || Module.PrimaryActor.HPMP.CurHP > Module.PrimaryActor.HPMP.MaxHP / 2)
             return;
-        Clone = Module.Enemies(OID.Boss).FirstOrDefault(a => a != Module.PrimaryActor);
+        Clone = Module.Enemies((uint)OID.Boss).FirstOrDefault(a => a != Module.PrimaryActor);
         if (Clone != null)
             CloneSpawnTime = WorldState.CurrentTime;
     }

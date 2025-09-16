@@ -48,6 +48,6 @@ class D031SnatcherStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (LTS, Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 789, NameID = 10717)]
 public class D031Snatcher(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-375f, 85f), 19.5f * CosPI.Pi36th, 36)],
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-375f, 85f), 19.5f * CosPI.Pi36th, 36)],
     [new Rectangle(new(-375f, 105f), 20f, 1.2f), new Rectangle(new(-375f, 61f), 20f, 2f, -30f.Degrees())]);
 }

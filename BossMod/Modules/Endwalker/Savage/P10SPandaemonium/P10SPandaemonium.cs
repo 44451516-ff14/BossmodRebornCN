@@ -18,8 +18,8 @@ public class P10SPandaemonium(WorldState ws, Actor primary) : BossModule(ws, pri
     private static readonly Rectangle[] union = [new(new(100f, 100f), 13f, 15f), new(new(125f, 85f), 4f, 15f), new(new(75f, 85f), 4f, 15f)];
     private static readonly Rectangle[] bridgeL = [new(new(83f, 92.5f), 4f, 1f)];
     private static readonly Rectangle[] bridgeR = [new(new(117f, 92.5f), 4f, 1f)];
-    public static readonly ArenaBoundsComplex DefaultArena = new(union);
-    public static readonly ArenaBoundsComplex ArenaL = new([.. union, .. bridgeL]);
-    public static readonly ArenaBoundsComplex ArenaR = new([.. union, .. bridgeR]);
-    public static readonly ArenaBoundsComplex ArenaLR = new([.. union, .. bridgeL, .. bridgeR]);
+    public static readonly ArenaBoundsCustom DefaultArena = new(union);
+    public static readonly ArenaBoundsCustom ArenaL = new([.. union, .. bridgeL]);
+    public static readonly ArenaBoundsCustom ArenaR = new([.. union, .. bridgeR]);
+    public static readonly ArenaBoundsCustom ArenaLR = new([.. union, .. bridgeL, .. bridgeR]);
 }

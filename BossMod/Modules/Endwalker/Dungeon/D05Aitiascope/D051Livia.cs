@@ -107,5 +107,5 @@ class D051LiviaStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 786, NameID = 10290)]
 public class D051Livia(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-6f, 471), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(-6f, 491.025f), 20f, 1.25f)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-6f, 471), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(-6f, 491.025f), 20f, 1.25f)]);
 }

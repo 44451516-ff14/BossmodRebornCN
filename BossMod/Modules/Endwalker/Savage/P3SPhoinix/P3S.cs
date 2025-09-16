@@ -11,20 +11,24 @@ class RightCinderwing(BossModule module) : Cinderwing(module, (uint)AID.RightCin
 class DevouringBrand(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCross cross = new(40, 5);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.DevouringBrandAOE)
-            _aoe = new(cross, spell.LocXZ, default, Module.CastFinishAt(spell, 2.2f));
+        if (spell.Action.ID == (uint)AID.DevouringBrandAOE)
+        {
+            _aoe = [new(cross, spell.LocXZ, default, Module.CastFinishAt(spell, 2.2d))];
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        if (index == 0x00 && state == 0x00080004)
-            _aoe = null;
+        if (index == 0x00 && state == 0x00080004u)
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -42,5 +46,5 @@ class SunBirdLarge(BossModule module) : Components.Adds(module, (uint)OID.Sunbir
 class SunBirdSmall(BossModule module) : Components.Adds(module, (uint)OID.SunbirdSmall);
 class DarkenedFireAdd(BossModule module) : Components.Adds(module, (uint)OID.DarkenedFire);
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 807, NameID = 10720, PlanLevel = 90)]
-public class P3S(WorldState ws, Actor primary) : BossModule(ws, primary, new(100, 100), new ArenaBoundsCircle(20));
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 807u, NameID = 10720u, PlanLevel = 90)]
+public class P3S(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));

@@ -45,7 +45,7 @@ sealed class HomingMissileImpact(BossModule module) : Components.BaitAwayCast(mo
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveBaitsOn(actor).Count != 0)
         {
-            hints.AddForbiddenZone(ShapeDistance.Rect(Arena.Center, new WDir(default, 1f), 23f, 23f, 23f));
+            hints.AddForbiddenZone(new SDRect(Arena.Center, new WDir(default, 1f), 23f, 23f, 23f));
         }
     }
 }
@@ -119,7 +119,6 @@ public sealed class A20LightArtilleryUnit(WorldState ws, Actor primary) : BossMo
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(all));
+        Arena.Actors(this, all);
     }
 }

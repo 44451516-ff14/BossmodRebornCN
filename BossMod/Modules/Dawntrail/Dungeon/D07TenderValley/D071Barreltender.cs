@@ -33,15 +33,15 @@ public enum AID : uint
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom square = new([new Square(D071Barreltender.ArenaCenter, 25f)], [new Square(D071Barreltender.ArenaCenter, 20f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.HeavyweightNeedlesVisual && Arena.Bounds == D071Barreltender.StartingBounds)
         {
-            _aoe = new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7f));
+            _aoe = [new(square, Arena.Center, default, Module.CastFinishAt(spell, 0.7d))];
         }
     }
 
@@ -50,7 +50,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         if (index == 0x03 && state == 0x00020001u)
         {
             Arena.Bounds = D071Barreltender.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -65,9 +65,9 @@ sealed class HeavyweightNeedles(BossModule module) : Components.SimpleAOEs(modul
         base.AddAIHints(slot, actor, assignment, hints);
         if (NumCasts < 16)
             return;
-        var aoe = Casters[0];
+        ref var aoe = ref Casters.Ref(0);
         // stay close to the middle to switch safespots
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(aoe.Origin, 3f), aoe.Activation);
+        hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 3f), aoe.Activation);
     }
 }
 
@@ -111,7 +111,9 @@ sealed class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(m
             _ => null
         };
         if (shape != null)
+        {
             _aoes.Add(new(shape, actor.Position.Quantized()));
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -148,16 +150,22 @@ sealed class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(modu
     private static readonly Angle a10 = 10f.Degrees(), a135 = 135f.Degrees(), a45 = 45f.Degrees();
     private enum Pattern { None, NESW, NWSE }
     private Pattern CurrentPattern;
+    private NeedleStormSuperstorm? _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
         if (state == 0x00010002u && actor.OID == (uint)OID.CactusSmall)
         {
-            var add = actor.Position.X + actor.Position.Z;
+            var pos = actor.Position;
+            var add = pos.X + pos.Z;
             if (add == 400f) // new WPos(-55f, 455f)
+            {
                 CurrentPattern = Pattern.NESW;
+            }
             else if (add == 430f) // new WPos(-55f, 485f)
+            {
                 CurrentPattern = Pattern.NWSE;
+            }
         }
     }
 
@@ -169,35 +177,36 @@ sealed class BarrelBreaker(BossModule module) : Components.SimpleKnockbacks(modu
             var act = c.Activation;
             if (!IsImmune(slot, act))
             {
-                var forbidden = new Func<WPos, float>[2];
+                var forbidden = new ShapeDistance[2];
                 var pattern = CurrentPattern == Pattern.NESW;
-                forbidden[0] = ShapeDistance.InvertedCone(c.Origin, 4f, pattern ? a135 : -a135, a10);
-                forbidden[1] = ShapeDistance.InvertedCone(c.Origin, 4f, pattern ? -a45 : a45, a10);
-                hints.AddForbiddenZone(ShapeDistance.Intersection(forbidden), act);
+                forbidden[0] = new SDInvertedCone(c.Origin, 4f, pattern ? a135 : -a135, a10);
+                forbidden[1] = new SDInvertedCone(c.Origin, 4f, pattern ? -a45 : a45, a10);
+                hints.AddForbiddenZone(new SDIntersection(forbidden), act);
             }
         }
     }
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
     {
-        var aoe = Module.FindComponent<NeedleStormSuperstorm>();
-        if (aoe != null)
+        _aoe ??= Module.FindComponent<NeedleStormSuperstorm>();
+        var aoes = _aoe!.ActiveAOEs(slot, actor);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            var aoes = aoe.ActiveAOEs(slot, actor);
-            var len = aoes.Length;
-            for (var i = 0; i < len; ++i)
+            if (aoes[i].Check(pos))
             {
-                if (aoes[i].Check(pos))
-                    return true;
+                return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
     public override void OnActorDestroyed(Actor actor)
     {
         if (actor.OID == (uint)OID.CactusSmall)
+        {
             CurrentPattern = Pattern.None;
+        }
     }
 }
 
@@ -220,7 +229,7 @@ sealed class D071BarreltenderStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12889)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 834, NameID = 12889)]
 public sealed class D071Barreltender(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(-65f, 470f);

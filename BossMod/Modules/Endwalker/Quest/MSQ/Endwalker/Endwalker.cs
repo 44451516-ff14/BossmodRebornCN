@@ -54,23 +54,16 @@ sealed class UnmovingDvenadkatik : Components.SimpleAOEs
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "croizat, Malediktus", PrimaryActorOID = (uint)OID.ZenosP1, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70000, NameID = 10393)]
 public sealed class Endwalker(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(19.5f))
 {
-    private Actor? _zenosP2;
-    public Actor? ZenosP2() => _zenosP2;
+    public Actor? ZenosP2;
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_zenosP2 == null)
-        {
-            var b = Enemies((uint)OID.ZenosP2);
-            _zenosP2 = b.Count != 0 ? b[0] : null;
-        }
+        ZenosP2 ??= GetActor((uint)OID.ZenosP2);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actor(_zenosP2);
+        Arena.Actor(ZenosP2);
     }
 }

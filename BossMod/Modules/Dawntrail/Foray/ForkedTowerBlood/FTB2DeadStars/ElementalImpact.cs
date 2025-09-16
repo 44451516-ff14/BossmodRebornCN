@@ -119,7 +119,7 @@ sealed class PhaseChange(BossModule module) : BossComponent(module)
 
     public override void OnActorNpcYell(Actor actor, ushort id)
     {
-        if (id == 18519u)
+        if (id == 18519)
         {
             PhaseChanged = true;
         }

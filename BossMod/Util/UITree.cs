@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -8,7 +8,7 @@ public sealed class UITree
 
     public record struct NodeProperties(string Text, bool Leaf = false, uint Color = default)
     {
-        public uint Colors = Color == 0 ? BossMod.Colors.TextColor1 : Color;
+        public uint Colors = Color == default ? BossMod.Colors.TextColor1 : Color;
     }
 
     public struct NodeRaii(bool selected, bool opened, bool hovered, bool realOpened) : IDisposable
@@ -34,9 +34,9 @@ public sealed class UITree
 
     // contains 0 elements (if node is closed) or single null (if node is opened)
     // expected usage is 'foreach (_ in Node(...)) { draw subnodes... }'
-    public IEnumerable<object?> Node(string text, bool leaf = false, uint color = 0, Action? contextMenu = null, Action? doubleClick = null, Action? select = null)
+    public IEnumerable<object?> Node(string text, bool leaf = false, uint color = default, Action? contextMenu = null, Action? doubleClick = null, Action? select = null)
     {
-        if (RawNode(text, leaf, color == 0 ? Colors.TextColor1 : color, contextMenu, doubleClick, select))
+        if (RawNode(text, leaf, color == default ? Colors.TextColor1 : color, contextMenu, doubleClick, select))
         {
             yield return null;
             ImGui.TreePop();
@@ -59,9 +59,9 @@ public sealed class UITree
         }
     }
 
-    public void LeafNode(string text, uint color = 0, Action? contextMenu = null, Action? doubleClick = null, Action? select = null)
+    public void LeafNode(string text, uint color = default, Action? contextMenu = null, Action? doubleClick = null, Action? select = null)
     {
-        if (RawNode(text, true, color == 0 ? Colors.TextColor1 : color, contextMenu, doubleClick, select))
+        if (RawNode(text, true, color == default ? Colors.TextColor1 : color, contextMenu, doubleClick, select))
             ImGui.TreePop();
         ImGui.PopID();
     }
@@ -71,6 +71,19 @@ public sealed class UITree
     {
         foreach (var t in collection)
         {
+            if (RawNode(map(t), true, Colors.TextColor1, contextMenu != null ? () => contextMenu(t) : null, doubleClick != null ? () => doubleClick(t) : null, select != null ? () => select(t) : null))
+                ImGui.TreePop();
+            ImGui.PopID();
+        }
+    }
+
+    public void LeafNodes<T>(ReadOnlySpan<T> collection, Func<T, string> map, Action<T>? contextMenu = null, Action<T>? doubleClick = null, Action<T>? select = null)
+    {
+        var col = collection;
+        var len = collection.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var t = col[i];
             if (RawNode(map(t), true, Colors.TextColor1, contextMenu != null ? () => contextMenu(t) : null, doubleClick != null ? () => doubleClick(t) : null, select != null ? () => select(t) : null))
                 ImGui.TreePop();
             ImGui.PopID();
@@ -98,7 +111,7 @@ public sealed class UITree
         }
         if (doubleClick != null && ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             doubleClick();
-        if (contextMenu != null && ImGui.BeginPopupContextItem())
+        if (contextMenu != null && ImGui.BeginPopupContextItem($"###{text}popup"))
         {
             contextMenu();
             ImGui.EndPopup();
@@ -106,7 +119,7 @@ public sealed class UITree
         return open;
     }
 
-    public NodeRaii Node2(string text, bool leaf = false, uint color = 0)
+    public NodeRaii Node2(string text, bool leaf = false, uint color = default)
     {
         var id = ImGui.GetID(text);
         var flags = ImGuiTreeNodeFlags.None;
@@ -116,7 +129,7 @@ public sealed class UITree
             flags |= ImGuiTreeNodeFlags.Leaf;
 
         ImGui.PushID((int)id);
-        ImGui.PushStyleColor(ImGuiCol.Text, color == 0 ? Colors.TextColor1 : color);
+        ImGui.PushStyleColor(ImGuiCol.Text, color == default ? Colors.TextColor1 : color);
         bool open = ImGui.TreeNodeEx(text, flags);
         ImGui.PopStyleColor();
         if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
@@ -127,9 +140,9 @@ public sealed class UITree
     }
 
     // returned node is auto disposed
-    public NodeRaii LeafNode2(string text, uint color = 0)
+    public NodeRaii LeafNode2(string text, uint color = default)
     {
-        var n = Node2(text, true, color == 0 ? Colors.TextColor1 : color);
+        var n = Node2(text, true, color == default ? Colors.TextColor1 : color);
         n.Dispose();
         return n;
     }

@@ -22,7 +22,7 @@ sealed class FireScourgeOfFire(BossModule module) : Components.UniformStackSprea
     {
         if (iconID == (uint)IconID.CalamitysInferno)
         {
-            AddStack(actor, WorldState.FutureTime(7.1f));
+            AddStack(actor, WorldState.FutureTime(7.1d));
             _remainingCasts.Add(3);
         }
     }
@@ -38,7 +38,7 @@ sealed class FireScourgeOfFire(BossModule module) : Components.UniformStackSprea
     }
 }
 
-sealed class FireScourgeOfFireVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.FireScourgeOfFire, module => module.Enemies(OID.ScourgeOfFireVoidzone).Where(z => z.EventState != 7), 0.9f);
+sealed class FireScourgeOfFireVoidzone(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.FireScourgeOfFire, module => module.Enemies((uint)OID.ScourgeOfFireVoidzone).Where(z => z.EventState != 7), 0.9f);
 
 sealed class FireScourgeOfIce(BossModule module) : Components.StayMove(module)
 {
@@ -68,10 +68,10 @@ sealed class FireScourgeOfIce(BossModule module) : Components.StayMove(module)
 }
 
 sealed class IceScourgeOfFireIce(BossModule module) : Components.IconStackSpread(module, (uint)IconID.CalamitysInferno, (uint)IconID.CalamitysChill, (uint)AID.IceScourgeOfFire, (uint)AID.IceScourgeOfIce, 5f, 16f, 7.1f, 3, 3, true);
-sealed class FireIceScourgeOfThunder(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.CalamitysBolt, (uint)AID.FireIceScourgeOfThunder, 5f, 7.1f);
+sealed class FireIceScourgeOfThunder(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.CalamitysBolt, (uint)AID.FireIceScourgeOfThunder, 5f, 7.1d);
 
 // TODO: add hint if player and stack target has different levitate states
-sealed class ThunderScourgeOfFire(BossModule module) : Components.StackWithIcon(module, (uint)IconID.CalamitysInferno, (uint)AID.ThunderScourgeOfFire, 5f, 7.1f, 4, 4);
+sealed class ThunderScourgeOfFire(BossModule module) : Components.StackWithIcon(module, (uint)IconID.CalamitysInferno, (uint)AID.ThunderScourgeOfFire, 5f, 7.1d, 4, 4);
 
 // TODO: verify spread radius for ice boulders...
 sealed class ThunderScourgeOfIceThunder(BossModule module) : Components.UniformStackSpread(module, default, 8f, alwaysShowSpreads: true)

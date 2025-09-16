@@ -22,7 +22,7 @@ class SanctifiedBlizzardIV(BossModule module) : Components.SimpleAOEs(module, (u
 class SanctifiedBlizzardII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedBlizzardII, 5);
 class SanctifiedFireIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedFireIII, 6);
 class SanctifiedBlizzardIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SanctifiedBlizzardIII, new AOEShapeCone(40.5f, 22.5f.Degrees()));
-class Hollow(BossModule module) : Components.Voidzone(module, 4, m => m.Enemies(OID.Hollow));
+class Hollow(BossModule module) : Components.Voidzone(module, 4, m => m.Enemies((uint)OID.Hollow));
 class HollowTether(BossModule module) : Components.Chains(module, 1, chainLength: 5);
 class SanctifiedFireIV(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SanctifiedFireIV1, 10);
 class SanctifiedFlare(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.SanctifiedFlare, 6, 1)
@@ -32,7 +32,7 @@ class SanctifiedFlare(BossModule module) : Components.StackWithCastTargets(modul
         base.AddAIHints(slot, actor, assignment, hints);
         if (ActiveStacks.Count != 0 && WorldState.Actors.First(x => x.OID == 0x29C3) is Actor cerigg)
         {
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(cerigg.Position, 6), ActiveStacks.First().Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(cerigg.Position, 6), ActiveStacks.First().Activation);
         }
     }
 }

@@ -42,6 +42,14 @@ sealed class Cursekeeper(BossModule module) : Components.GenericBaitAway(module,
         }
         base.AddAIHints(slot, actor, assignment, hints);
     }
+
+    public override void Update()
+    {
+        if (CurrentBaits.Count != 0 && WorldState.Actors.Find(Module.PrimaryActor.TargetID) is Actor t)
+        {
+            CurrentBaits.Ref(0).Target = t;
+        }
+    }
 }
 
 sealed class KarmicCurse(BossModule module) : Components.RaidwideInstant(module, (uint)AID.KarmicCurse, 4d)

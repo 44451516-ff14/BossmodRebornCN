@@ -10,7 +10,7 @@ public enum OID : uint
 
 public enum AID : uint
 {
-    AutoAttack = 872, // Boss->player, no cast, single-target
+    AutoAttack = 44484, // Boss->player, no cast, single-target
     Teleport = 42693, // Boss->location, no cast, single-target
 
     DoTheHustle1 = 42697, // Boss->self, 5.0s cast, range 50 180-degree cone

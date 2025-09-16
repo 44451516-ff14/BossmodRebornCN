@@ -31,12 +31,12 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             if (Towers[0] == default)
             {
                 Towers[0] = new Polygon(caster.Position, 7.5f, 20);
-                Arena.Bounds = new ArenaBoundsComplex(A35FalseIdol.BaseSquare, [Towers[0]]);
+                Arena.Bounds = new ArenaBoundsCustom(A35FalseIdol.BaseSquare, [Towers[0]]);
             }
             else
             {
                 Towers[1] = Towers[0] with { Center = caster.Position };
-                Arena.Bounds = new ArenaBoundsComplex(A35FalseIdol.BaseSquare, Towers);
+                Arena.Bounds = new ArenaBoundsCustom(A35FalseIdol.BaseSquare, Towers);
                 Array.Clear(Towers);
             }
             if (AOEs.Count != 0)

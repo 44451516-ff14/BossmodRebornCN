@@ -27,5 +27,5 @@ class WellOfFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.W
 public class T08Suzaku(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsCircle(20))
 {
     private static readonly WPos ArenaCenter = new(100, 100);
-    public static readonly ArenaBoundsComplex Phase2Arena = new([new Donut(ArenaCenter, 4, 20)]);
+    public static readonly ArenaBoundsCustom Phase2Arena = new([new Donut(ArenaCenter, 4, 20)]);
 }

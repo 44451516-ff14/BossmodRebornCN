@@ -50,15 +50,15 @@ public enum AID : uint
 sealed class ElectrothermiaArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(17f, 20f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.Electrothermia && Arena.Bounds == D043Zander.StartingBounds)
+        if (spell.Action.ID == (uint)AID.Electrothermia && Arena.Bounds.Radius > 17f)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.5d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.5d))];
         }
     }
 
@@ -68,7 +68,7 @@ sealed class ElectrothermiaArenaChange(BossModule module) : Components.GenericAO
         {
             Arena.Bounds = D043Zander.DefaultBounds;
             Arena.Center = D043Zander.DefaultBounds.Center;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -145,7 +145,9 @@ sealed class SaberRush(BossModule module) : Components.SingleTargetDelayableCast
     {
         base.OnEventCast(caster, spell);
         if (spell.Action.ID == (uint)AID.PhaseChangeVisual1) // tankbuster will be cancelled on phase change
+        {
             Targets.Clear();
+        }
     }
 }
 
@@ -174,12 +176,12 @@ sealed class D043ZanderStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12752, SortOrder = 7)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12752, SortOrder = 7)]
 public sealed class D043Zander(WorldState ws, Actor primary) : BossModule(ws, primary, StartingBounds.Center, StartingBounds)
 {
     private static readonly WPos ArenaCenter = new(90f, -430f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(ArenaCenter, 19.5f, 40)], [new Rectangle(new(90f, -410f), 20f, 0.85f)]);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(ArenaCenter, 17f, 40)]);
+    public static readonly ArenaBoundsCustom StartingBounds = new([new Polygon(ArenaCenter, 19.5f, 40)], [new Rectangle(new(90f, -410f), 20f, 0.85f)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(ArenaCenter, 17f, 40)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

@@ -71,7 +71,7 @@ public class D021Raskovnik(WorldState ws, Actor primary) : BossModule(ws, primar
     new(-146.64f, 152.21f), new(-146.28f, 151.85f), new(-144.84f, 150.92f), new(-144.44f, 150.46f), new(-143.48f, 149.01f),
     new(-143.08f, 148.65f), new(-139.69f, 146.45f), new(-137.96f, 146.03f), new(-137.46f, 145.84f), new(-136.61f, 145.13f)];
 
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

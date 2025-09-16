@@ -50,5 +50,5 @@ public class D041Firemane(WorldState ws, Actor primary) : BossModule(ws, primary
     new(5.29f, 139.55f), new(4.6f, 122.6f), new(4.46f, 121.96f), new(4.46f, 121.32f), new(4.51f, 120.69f),
     new(4.38f, 118.63f), new(4.24f, 117.97f), new(8.04f, 108.8f), new(8.48f, 108.32f), new(8.99f, 107.92f),
     new(11.32f, 106.77f), new(11.95f, 106.56f), new(18.09f, 105.52f), new(18.77f, 105.52f)];
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 }

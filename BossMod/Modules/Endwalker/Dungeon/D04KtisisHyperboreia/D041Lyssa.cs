@@ -20,10 +20,10 @@ public enum AID : uint
     PillarPierceAOE = 25375, // IcePillar->self, 5.0s cast, range 80 width 4 rect
     PunishingSliceVisual = 25176, // Boss->self, no cast, single-target
     PunishingSliceAOE = 25177, // Helper->self, 2.0s cast, range 50 width 50 rect
-    SkullDasher = 25182, // Boss->player, 5.0s cast, single-target, tankbuster
+    SkullDasher = 25182 // Boss->player, 5.0s cast, single-target, tankbuster
 }
 
-class PillarPierceAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarPierceAOE, new AOEShapeRect(40, 2))
+sealed class PillarPierceAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PillarPierceAOE, new AOEShapeRect(40f, 2f))
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -31,18 +31,22 @@ class PillarPierceAOE(BossModule module) : Components.SimpleAOEs(module, (uint)A
         if (spell.Action.ID == (uint)AID.HeavySmash)
         {
             var count = Casters.Count;
+            var casters = CollectionsMarshal.AsSpan(Casters);
             for (var i = 0; i < count; ++i)
-                Casters[i] = Casters[i] with { Activation = Module.CastFinishAt(spell) };
+            {
+                ref var c = ref casters[i];
+                c.Activation = Module.CastFinishAt(spell);
+            }
         }
     }
 }
 
-class PunishingSlice(BossModule module) : Components.GenericAOEs(module)
+sealed class PunishingSlice(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeRect rect = new(50f, 25f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnEventEnvControl(byte index, uint state)
     {
@@ -59,7 +63,7 @@ class PunishingSlice(BossModule module) : Components.GenericAOEs(module)
         if (pair != default)
         {
             var activation = NumCasts == 0 ? WorldState.FutureTime(13d) : WorldState.FutureTime(16d);
-            _aoe = new(rect, pair.Item1.Quantized(), pair.Item2, activation);
+            _aoe = [new(rect, pair.Item1.Quantized(), pair.Item2, activation)];
         }
     }
 
@@ -68,13 +72,13 @@ class PunishingSlice(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.PunishingSliceAOE)
         {
             ++NumCasts;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
 
-class IcePillar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcePillar, 4f);
-class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeavySmash, 6f, 4, 4)
+sealed class IcePillar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcePillar, 4f);
+sealed class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.HeavySmash, 6f, 4, 4)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -88,17 +92,17 @@ class HeavySmash(BossModule module) : Components.StackWithCastTargets(module, (u
         {
             if (party[i].Type == ActorType.Buddy)
             {
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(new(-139f, 47f), 5f), Stacks[0].Activation);
+                hints.AddForbiddenZone(new SDInvertedCircle(new(-139f, 47f), 5f), Stacks.Ref(0).Activation);
                 return;
             }
         }
         base.AddAIHints(slot, actor, assignment, hints);
     }
 }
-class SkullDasher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SkullDasher);
-class FrigidStomp(BossModule module) : Components.RaidwideCast(module, (uint)AID.FrigidStomp);
+sealed class SkullDasher(BossModule module) : Components.SingleTargetCast(module, (uint)AID.SkullDasher);
+sealed class FrigidStomp(BossModule module) : Components.RaidwideCast(module, (uint)AID.FrigidStomp);
 
-class D041LyssaStates : StateMachineBuilder
+sealed class D041LyssaStates : StateMachineBuilder
 {
     public D041LyssaStates(BossModule module) : base(module)
     {
@@ -113,7 +117,7 @@ class D041LyssaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 787, NameID = 10396)]
-public class D041Lyssa(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D041Lyssa(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    public static readonly ArenaBoundsComplex arena = new([new Polygon(new(-144f, 49f), 19.5f, 32)], [new Rectangle(new(-144f, 28.852f), 20f, 1.25f), new Rectangle(new(-144f, 69.197f), 20f, 1.25f)]);
+    public static readonly ArenaBoundsCustom arena = new([new Polygon(new(-144f, 49f), 19.5f, 32)], [new Rectangle(new(-144f, 28.852f), 20f, 1.25f), new Rectangle(new(-144f, 69.197f), 20f, 1.25f)]);
 }

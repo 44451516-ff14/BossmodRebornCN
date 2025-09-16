@@ -8,8 +8,6 @@ public abstract class SimpleBossModule(WorldState ws, Actor primary) : BossModul
 
     public override bool CheckReset() => !PrimaryActor.InCombat;
 
-    protected override bool CheckPull() => base.CheckPull() && (PrimaryActor.Position - Raid.Player()!.Position).LengthSq() < 900f;
-
     protected override void UpdateModule()
     {
         Arena.Center = WorldState.Party.Player()?.Position ?? default;

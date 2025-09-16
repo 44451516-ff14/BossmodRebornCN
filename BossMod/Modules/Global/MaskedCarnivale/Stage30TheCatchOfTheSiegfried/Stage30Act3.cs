@@ -76,7 +76,7 @@ sealed class SwiftsteelKB(BossModule module) : Components.SimpleKnockbacks(modul
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 }
 
@@ -141,7 +141,7 @@ sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 
 sealed class RubberBullet(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _knockback;
+    private Knockback[] _kb = [];
     private readonly Explosion _aoe = module.FindComponent<Explosion>()!;
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
@@ -156,16 +156,16 @@ sealed class RubberBullet(BossModule module) : Components.GenericKnockback(modul
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _knockback);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Bomb)
         {
-            _knockback = new(Module.PrimaryActor.Position, 20f, WorldState.FutureTime(6.3d));
+            _kb = [new(Module.PrimaryActor.Position, 20f, WorldState.FutureTime(6.3d))];
         }
     }
 
@@ -173,7 +173,7 @@ sealed class RubberBullet(BossModule module) : Components.GenericKnockback(modul
     {
         if (spell.Action.ID == (uint)AID.RubberBullet)
         {
-            _knockback = null;
+            _kb = [];
         }
     }
 }
@@ -250,6 +250,6 @@ public sealed class Stage30Act3(WorldState ws, Actor primary) : BossModule(ws, p
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(clones), Colors.Object);
+        Arena.Actors(this, clones, Colors.Object);
     }
 }

@@ -37,40 +37,52 @@ public enum SID : uint
     Transporting = 404 // none->player, extra=0x15
 }
 
-class OdeToLostLove(BossModule module) : Components.RaidwideCast(module, (uint)AID.OdeToLostLove);
-class StormOfColor(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StormOfColor);
-class FarWindSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FarWindSpread, 5f);
-class FarWind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FarWind, 8f);
-class OdeToFallenPetals(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OdeToFallenPetals, new AOEShapeDonut(5f, 60f));
-class IrefulWind(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.IrefulWind, 10f, kind: Kind.DirForward, stopAtWall: true);
+sealed class OdeToLostLove(BossModule module) : Components.RaidwideCast(module, (uint)AID.OdeToLostLove);
+sealed class StormOfColor(BossModule module) : Components.SingleTargetCast(module, (uint)AID.StormOfColor);
+sealed class FarWindSpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.FarWindSpread, 5f);
+sealed class FarWind(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FarWind, 8f);
+sealed class OdeToFallenPetals(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OdeToFallenPetals, new AOEShapeDonut(5f, 60f));
+sealed class IrefulWind(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.IrefulWind, 10f, kind: Kind.DirForward, stopAtWall: true);
 
-class GreenTiles(BossModule module) : Components.GenericAOEs(module)
+sealed class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Dictionary<Actor, DateTime> transportingCheckStartTimes = [];
-    private const float HalfSize = 5;
+    private const float HalfSize = 5f;
     private static readonly WPos[] defaultGreenTiles =
     [
         new(-5f, -75f), new(5f, -75f), new(-15f, -65f), new(15f, -65f),
         new(-15f, -55f), new(5f, -55f), new(-5f, -45f), new(15f, -45f)
     ];
     private Square[] tiles = [];
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     public BitMask transporting;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe != null ? new AOEInstance[1] { _aoe.Value with { Risky = transporting[slot] } } : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        if (_aoe.Length != 0)
+        {
+            ref var aoe = ref _aoe[0];
+            aoe.Risky = transporting[slot];
+        }
+        return _aoe;
+    }
 
     private bool ShouldActivateAOEs => NumCasts == 1 ? tiles.Length > 0 : tiles.Length > 8;
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Transporting)
-            transporting[Raid.FindSlot(actor.InstanceID)] = true;
+        {
+            transporting.Set(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Transporting)
-            transporting[Raid.FindSlot(actor.InstanceID)] = false;
+        {
+            transporting.Clear(Raid.FindSlot(actor.InstanceID));
+        }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
@@ -91,12 +103,16 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 
     public override void Update()
     {
-        var isNull = _aoe == null;
+        var isNull = _aoe.Length == 0;
         var activate = ShouldActivateAOEs;
         if (activate && isNull)
-            _aoe = new(new AOEShapeCustom(tiles), Arena.Center, color: Colors.FutureVulnerable);
+        {
+            _aoe = [new(new AOEShapeCustom(tiles), Arena.Center, color: Colors.FutureVulnerable)];
+        }
         else if (!activate && !isNull)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 
     private static Square[] GenerateTiles(WPos[] positions)
@@ -122,7 +138,9 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DirectSeeding)
+        {
             ++NumCasts;
+        }
         else if (spell.Action.ID == (uint)AID.IrefulWind)
         {
             var knockbackDirection = spell.Rotation.Round(90f);
@@ -145,11 +163,13 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe == null)
+        if (_aoe.Length == 0)
+        {
             return;
+        }
         base.AddAIHints(slot, actor, assignment, hints);
 
-        var shape = _aoe.Value;
+        ref var shape = ref _aoe[0];
         var clippedSeeds = GetClippedSeeds(ref shape);
 
         if (!transporting[slot])
@@ -175,9 +195,13 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
             hints.InteractWithTarget = closest;
         }
         else if (!shape.Check(actor.Position))
-            HandleTransportingActor(ref actor, ref hints);
+        {
+            HandleTransportingActor(actor, hints);
+        }
         else
+        {
             transportingCheckStartTimes.Remove(actor);
+        }
     }
 
     private List<Actor> GetClippedSeeds(ref AOEInstance shape)
@@ -189,15 +213,19 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
         {
             var s = seeds[i];
             if (s.IsTargetable && shape.Check(s.Position))
+            {
                 clippedSeeds.Add(s);
+            }
         }
         return clippedSeeds;
     }
 
-    private void HandleTransportingActor(ref Actor actor, ref AIHints hints)
+    private void HandleTransportingActor(Actor actor, AIHints hints)
     {
         if (!transportingCheckStartTimes.TryGetValue(actor, out var checkStartTime))
+        {
             transportingCheckStartTimes[actor] = WorldState.CurrentTime;
+        }
         else if (WorldState.CurrentTime >= checkStartTime.AddSeconds(0.25d))  // we need to delay the drop or server lag will cause the seed to drop at an old position
         {
             hints.StatusesToCancel.Add(((uint)SID.Transporting, default));
@@ -207,26 +235,34 @@ class GreenTiles(BossModule module) : Components.GenericAOEs(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var trans = transporting[slot] != default;
-        if (_aoe == null)
+        if (_aoe.Length == 0)
+        {
             return;
-        var aoe = _aoe.Value;
-        if (trans)
+        }
+
+        ref var aoe = ref _aoe[0];
+        if (transporting[slot])
         {
             if (aoe.Check(actor.Position))
+            {
                 hints.Add("Drop seed outside of vulnerable area!");
+            }
             else
+            {
                 hints.Add("Drop your seed!");
+            }
         }
-        else if (!trans)
+        else
         {
             if (GetClippedSeeds(ref aoe).Count != 0)
+            {
                 hints.Add("Pick up seeds in vulnerable area!");
+            }
         }
     }
 }
 
-class D092LeananSithStates : StateMachineBuilder
+sealed class D092LeananSithStates : StateMachineBuilder
 {
     public D092LeananSithStates(BossModule module) : base(module)
     {
@@ -241,8 +277,8 @@ class D092LeananSithStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 692, NameID = 9044)]
-public class D092LeananSith(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(19.5f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 692u, NameID = 9044u)]
+public sealed class D092LeananSith(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(19.5f))
 {
     public static readonly WPos ArenaCenter = new(default, -60f);
     public static readonly uint[] Seeds = [(uint)OID.LeannanSeed1, (uint)OID.LeannanSeed2, (uint)OID.LeannanSeed3, (uint)OID.LeannanSeed4];
@@ -250,7 +286,7 @@ public class D092LeananSith(WorldState ws, Actor primary) : BossModule(ws, prima
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(Seeds), Colors.Object);
+        Arena.Actors(this, Seeds, Colors.Object);
         Arena.Actors(Enemies((uint)OID.LoversRing));
     }
 

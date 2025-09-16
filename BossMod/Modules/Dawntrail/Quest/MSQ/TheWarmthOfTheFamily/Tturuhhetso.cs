@@ -76,9 +76,9 @@ sealed class CandescentRayTB(BossModule module) : Components.CastSharedTankbuste
         var wuk = wuks.Count != 0 ? wuks[0] : null;
         var primary = Module.PrimaryActor;
         if (koana != null)
-            hints.AddForbiddenZone(ShapeDistance.Cone(primary.Position, 100f, primary.AngleTo(koana), Angle.Asin(4f / (koana.Position - primary.Position).Length())), Activation);
+            hints.AddForbiddenZone(new SDCone(primary.Position, 100f, primary.AngleTo(koana), Angle.Asin(4f / (koana.Position - primary.Position).Length())), Activation);
         if (wuk != null)
-            hints.AddForbiddenZone(ShapeDistance.InvertedRect(primary.Position, primary.AngleTo(wuk), 50f, default, 4f), Activation);
+            hints.AddForbiddenZone(new SDInvertedRect(primary.Position, primary.AngleTo(wuk), 50f, default, 4f), Activation);
     }
 }
 
@@ -127,14 +127,14 @@ sealed class OrbCollecting(BossModule module) : BossComponent(module)
         var count = orbs.Count;
         if (count != 0)
         {
-            var orbz = new Func<WPos, float>[count];
+            var orbz = new ShapeDistance[count];
             hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Sprint), actor, ActionQueue.Priority.High);
             for (var i = 0; i < count; ++i)
             {
                 var o = orbs[i];
-                orbz[i] = ShapeDistance.InvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(0f, 1f), 0.5f, 0.5f, 0.5f);
+                orbz[i] = new SDInvertedRect(o.Position + 0.5f * o.Rotation.ToDirection(), new WDir(0f, 1f), 0.5f, 0.5f, 0.5f);
             }
-            hints.AddForbiddenZone(ShapeDistance.Intersection(orbz), DateTime.MaxValue);
+            hints.AddForbiddenZone(new SDIntersection(orbz), DateTime.MaxValue);
         }
     }
 
@@ -214,7 +214,7 @@ sealed class TturuhhetsoStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.Quest, GroupID = 70785, NameID = 13593)]
 public sealed class Tturuhhetso(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(395.735f, -45.365f), 19.5f, 20)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(395.735f, -45.365f), 19.5f, 20)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

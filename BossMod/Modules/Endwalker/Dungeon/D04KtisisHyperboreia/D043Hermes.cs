@@ -50,18 +50,18 @@ public enum IconID : uint
     Tankbuster = 218 // player
 }
 
-class TrismegistosArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class TrismegistosArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 22f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.Trismegistos && Arena.Bounds == D043Hermes.StartingBounds)
+        if (spell.Action.ID == (uint)AID.Trismegistos && Arena.Bounds.Radius > 20f)
         {
-            _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.5d));
+            _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, 0.5d))];
         }
     }
 
@@ -70,19 +70,19 @@ class TrismegistosArenaChange(BossModule module) : Components.GenericAOEs(module
         if (index == 0x08 && state == 0x00020001u)
         {
             Arena.Bounds = D043Hermes.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
 
-class TrueBraveryInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TrueBravery);
-class Trismegistos(BossModule module) : Components.RaidwideCast(module, (uint)AID.Trismegistos);
+sealed class TrueBraveryInterruptHint(BossModule module) : Components.CastInterruptHint(module, (uint)AID.TrueBravery);
+sealed class Trismegistos(BossModule module) : Components.RaidwideCast(module, (uint)AID.Trismegistos);
 
-class TrueTornadoTankbuster(BossModule module) : Components.BaitAwayIcon(module, 4f, (uint)IconID.Tankbuster, (uint)AID.TrueTornado4, 5.1f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
+sealed class TrueTornadoTankbuster(BossModule module) : Components.BaitAwayIcon(module, 4f, (uint)IconID.Tankbuster, (uint)AID.TrueTornado4, 5.1d, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 
-class TrueTornadoAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueTornadoAOE, 4f);
+sealed class TrueTornadoAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueTornadoAOE, 4f);
 
-class TrueAeroFirst(BossModule module) : Components.GenericBaitAway(module)
+sealed class TrueAeroFirst(BossModule module) : Components.GenericBaitAway(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 3f);
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -94,17 +94,17 @@ class TrueAeroFirst(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-class TrueAeroRepeat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroRepeat, new AOEShapeRect(40f, 3f));
+sealed class TrueAeroRepeat(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroRepeat, new AOEShapeRect(40f, 3f));
 
-class TrueAeroII2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TrueAeroII2, 6f);
-class TrueAeroII3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroII3, 6f);
+sealed class TrueAeroII2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.TrueAeroII2, 6f);
+sealed class TrueAeroII3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroII3, 6f);
 
-class TrueAeroIV1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroIV1, new AOEShapeRect(50f, 5f));
-class TrueAeroIV3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroIV3, new AOEShapeRect(50f, 5f), 4);
+sealed class TrueAeroIV1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroIV1, new AOEShapeRect(50f, 5f));
+sealed class TrueAeroIV3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TrueAeroIV3, new AOEShapeRect(50f, 5f), 4);
 
-class CosmicKiss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CosmicKiss, 10f);
+sealed class CosmicKiss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CosmicKiss, 10f);
 
-class TrueAeroIVLOS(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.TrueAeroIVLOS, 50f, false, true)
+sealed class TrueAeroIVLOS(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.TrueAeroIVLOS, 50f, false, true)
 {
     private readonly CosmicKiss _aoe = module.FindComponent<CosmicKiss>()!;
 
@@ -147,11 +147,13 @@ class TrueAeroIVLOS(BossModule module) : Components.CastLineOfSightAOE(module, (
         }
 
         if (countBroken == 3 && meteor is Actor met && _aoe.Casters.Count == 0) // force AI to move closer to the meteor as soon as they become visible
+        {
             hints.GoalZones.Add(hints.GoalSingleTarget(met, 5f, 5f));
+        }
     }
 }
 
-class D043HermesStates : StateMachineBuilder
+sealed class D043HermesStates : StateMachineBuilder
 {
     public D043HermesStates(BossModule module) : base(module)
     {
@@ -172,10 +174,10 @@ class D043HermesStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 787, NameID = 10363)]
-public class D043Hermes(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 787u, NameID = 10363u)]
+public sealed class D043Hermes(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     private static readonly WPos ArenaCenter = new(default, -50f);
-    public static readonly ArenaBoundsComplex StartingBounds = new([new Polygon(ArenaCenter, 21.5f, 64)]);
-    public static readonly ArenaBoundsComplex DefaultBounds = new([new Polygon(ArenaCenter, 20f, 64)]);
+    public static readonly ArenaBoundsCustom StartingBounds = new([new Polygon(ArenaCenter, 21.5f, 64)]);
+    public static readonly ArenaBoundsCustom DefaultBounds = new([new Polygon(ArenaCenter, 20f, 64)]);
 }

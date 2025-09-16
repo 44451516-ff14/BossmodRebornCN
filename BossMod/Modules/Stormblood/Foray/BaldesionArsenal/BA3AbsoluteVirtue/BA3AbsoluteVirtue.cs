@@ -11,7 +11,7 @@ sealed class MeteorEnrageCounter(BossModule module) : Components.CastCounter(mod
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7976, PlanLevel = 70, SortOrder = 4)]
 public sealed class BA3AbsoluteVirtue(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-175, 314), 29.95f, 96), new Rectangle(new(-146f, 314f), 0.8f, 5.8f), new Rectangle(new(-175f, 285f), 6f, 1.05f)],
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-175, 314), 29.95f, 96), new Rectangle(new(-146f, 314f), 0.8f, 5.8f), new Rectangle(new(-175f, 285f), 6f, 1.05f)],
     [new Rectangle(new(-144.4f, 314f), 0.8f, 5.8f), new Polygon(new(-144.85f, 306.75f), 1.5f, 8, 22.5f.Degrees()), new Polygon(new(-144.85f, 321.25f), 1.5f, 8, 22.5f.Degrees()),
     new Rectangle(new(-206, 314), 1.525f, 20f)]);
 

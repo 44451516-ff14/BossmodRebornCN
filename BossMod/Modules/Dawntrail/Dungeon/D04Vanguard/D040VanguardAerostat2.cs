@@ -32,22 +32,11 @@ sealed class D040VanguardAerostat2States : StateMachineBuilder
             .ActivateOnEnter<IncendiaryRing>()
             .ActivateOnEnter<Electrobeam>()
             .ActivateOnEnter<SpreadShot>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D040VanguardAerostat2.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(D040VanguardAerostat2.Trash);
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12780, SortOrder = 6)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 831, NameID = 12780, SortOrder = 6)]
 public sealed class D040VanguardAerostat2(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos[] vertices = [new(92.36f, -331.66f), new(97.65f, -331.36f), new(98.25f, -331.02f), new(100.54f, -328.46f), new(100.83f, -312.14f),
@@ -81,18 +70,20 @@ public sealed class D040VanguardAerostat2(WorldState ws, Actor primary) : BossMo
     new(61.52f, -328.58f), new(61.6f, -329.2f), new(77.89f, -329.41f), new(78.4f, -329.07f), new(79.09f, -328.99f),
     new(79.64f, -329.19f), new(81.05f, -329.4f), new(81.55f, -329.7f), new(81.51f, -330.3f), new(81.03f, -331),
     new(92.36f, -331.66f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.SentryR7, (uint)OID.SentryS7, (uint)OID.Turret];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

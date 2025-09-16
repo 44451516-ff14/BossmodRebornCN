@@ -22,7 +22,7 @@ class MistralSong : Components.GenericLineOfSightAOE
             Modify(null, ActiveBlockers());
     }
 
-    private IEnumerable<(WPos, float)> ActiveBlockers() => Module.Enemies(OID.Monolith).Where(a => !a.IsDead).Select(a => (a.Position, a.HitboxRadius - 0.5f));
+    private IEnumerable<(WPos, float)> ActiveBlockers() => Module.Enemies((uint)OID.Monolith).Where(a => !a.IsDead).Select(a => (a.Position, a.HitboxRadius - 0.5f));
 }
 class MistralSong1(BossModule module) : MistralSong(module, new(0, -13));
 class MistralSong2(BossModule module) : MistralSong(module, new(13, 0));

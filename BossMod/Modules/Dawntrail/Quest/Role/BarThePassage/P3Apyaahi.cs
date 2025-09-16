@@ -44,25 +44,29 @@ public enum AID : uint
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(20f, 25f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        void AddAOE(double delay) => _aoe = new(donut, Arena.Center, default, Module.CastFinishAt(spell, delay));
-        if (Arena.Bounds != ApyaahiTheArchitect.StartingArena)
+        void AddAOE(double delay) => _aoe = [new(donut, Arena.Center, default, Module.CastFinishAt(spell, delay))];
+        if (Arena.Bounds.Radius != 20f)
         {
             if (spell.Action.ID == (uint)AID.FlamesOfTheFallingOrder)
+            {
                 AddAOE(0.5d);
+            }
             else if (spell.Action.ID == (uint)AID.FleshBoilingPunishmentLake)
+            {
                 AddAOE(2d);
+            }
         }
     }
 
     public override void OnEventEnvControl(byte index, uint state)
     {
-        void SetArena(ArenaBoundsComplex bounds)
+        void SetArena(ArenaBoundsCustom bounds)
         {
             Arena.Bounds = bounds;
             Arena.Center = bounds.Center;
@@ -72,7 +76,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             if (state == 0x00020001u)
             {
                 SetArena(ApyaahiTheArchitect.DefaultArena);
-                _aoe = null;
+                _aoe = [];
             }
             else if (state == 0x0008004u)
                 SetArena(ApyaahiTheArchitect.StartingArena);
@@ -146,7 +150,7 @@ sealed class PathogenicPowerKB(BossModule module) : Components.SimpleKnockbacks(
         if (Casters.Count != 0)
         {
             ref readonly var c = ref Casters.Ref(0);
-            hints.AddForbiddenZone(ShapeDistance.InvertedCircle(c.Origin, 6f), c.Activation);
+            hints.AddForbiddenZone(new SDInvertedCircle(c.Origin, 6f), c.Activation);
         }
     }
 }
@@ -212,13 +216,13 @@ sealed class ApyaahiTheArchitectStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1016, NameID = 13669)]
 public sealed class ApyaahiTheArchitect(WorldState ws, Actor primary) : BossModule(ws, primary, StartingArena.Center, StartingArena)
 {
-    public static readonly ArenaBoundsComplex StartingArena = new([new Polygon(new(default, 379.27f), 24.5f, 20)]);
-    public static readonly ArenaBoundsComplex DefaultArena = new([new Polygon(new(default, 379.241f), 20f, 64)]);
+    public static readonly ArenaBoundsCustom StartingArena = new([new Polygon(new(default, 379.27f), 24.5f, 20)]);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(new(default, 379.241f), 20f, 64)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies([(uint)OID.Mycotender, (uint)OID.MycotenderArms]));
+        Arena.Actors(this, [(uint)OID.Mycotender, (uint)OID.MycotenderArms]);
     }
 
     protected override bool CheckPull() => Enemies((uint)OID.Mycotender) is var mycotender && mycotender.Count != 0 && mycotender[0].InCombat;

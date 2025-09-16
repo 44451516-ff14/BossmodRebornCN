@@ -37,7 +37,7 @@ public sealed class ColumnActorHP : Timeline.ColumnGroup, IToggleableColumn
             var heal = 0;
             foreach (var t in a.Targets)
             {
-                foreach (var e in t.Effects)
+                foreach (var e in t.Effects.ValidEffects())
                 {
                     var effTarget = e.AtSource ? a.Source : t.Target;
                     if (effTarget == actor)

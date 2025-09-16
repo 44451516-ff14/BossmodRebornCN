@@ -14,7 +14,7 @@ class BirdTether(BossModule module) : BossComponent(module)
     public override void Update()
     {
         _playersInAOE.Reset();
-        var birdsLarge = Module.Enemies(OID.SunbirdLarge);
+        var birdsLarge = Module.Enemies((uint)OID.SunbirdLarge);
         for (var i = 0; i < Math.Min(birdsLarge.Count, _chains.Length); ++i)
         {
             if (_chains[i].Item3 == 2)
@@ -106,7 +106,7 @@ class BirdTether(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         // draw all birds and all players
-        var birdsLarge = Module.Enemies(OID.SunbirdLarge);
+        var birdsLarge = Module.Enemies((uint)OID.SunbirdLarge);
         foreach ((var i, var player) in Raid.WithSlot(false, true, true))
             Arena.Actor(player, _playersInAOE[i] ? Colors.PlayerInteresting : Colors.PlayerGeneric);
 

@@ -27,16 +27,16 @@ public enum AID : uint
     Wallop = 33346 // MammothTentacle->self, 3.0s cast, range 22 width 8 rect
 }
 
-class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, new AOEShapeRect(22f, 4f));
-class VividEyes(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VividEyes, new AOEShapeDonut(20f, 26f));
-class Clearout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Clearout, new AOEShapeCone(16f, 60f.Degrees()));
-class TidalBreathBreathstroke(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TidalBreath, (uint)AID.Breathstroke], new AOEShapeCone(35f, 90f.Degrees()));
-class TidalRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.TidalRoar);
-class WaterDrop(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.WaterDrop, 6f);
-class SalineSpit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SalineSpit2, 8f);
-class Telekinesis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Telekinesis2, 12f);
+sealed class Wallop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wallop, new AOEShapeRect(22f, 4f));
+sealed class VividEyes(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VividEyes, new AOEShapeDonut(20f, 26f));
+sealed class Clearout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Clearout, new AOEShapeCone(16f, 60f.Degrees()));
+sealed class TidalBreathBreathstroke(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TidalBreath, (uint)AID.Breathstroke], new AOEShapeCone(35f, 90f.Degrees()));
+sealed class TidalRoar(BossModule module) : Components.RaidwideCast(module, (uint)AID.TidalRoar);
+sealed class WaterDrop(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.WaterDrop, 6f);
+sealed class SalineSpit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SalineSpit2, 8f);
+sealed class Telekinesis(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Telekinesis2, 12f);
 
-class D123OctomammothStates : StateMachineBuilder
+sealed class D123OctomammothStates : StateMachineBuilder
 {
     public D123OctomammothStates(BossModule module) : base(module)
     {
@@ -52,24 +52,25 @@ class D123OctomammothStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "dhoggpt, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 822, NameID = 12334, SortOrder = 8)]
-public class D123Octomammoth(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "dhoggpt, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 822u, NameID = 12334u, SortOrder = 8)]
+public sealed class D123Octomammoth(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly WPos arenaCenter = new(-370f, -368f);
     private static readonly WPos[] bridge1 = [new(-396.417f, -361.641f), new(-393.813f, -358.136f), new(-393.178f, -353.815f), new(-387.778f, -356.604f),
     new(-390.071f, -359.686f), new(-390.630f, -363.486f)];
     private static readonly WPos[] bridge5 = [new(-346.767f, -353.669f), new(-346.187f, -358.136f), new(-343.583f, -361.638f), new(-349.946f, -363.513f),
     new(-349.929f, -359.686f), new(-352.302f, -356.647f)]; // coordinates seem to be slightly offset from calculated values, so hardcoding a 2nd bridge here
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(-345f, -368f), 7.5f, 20), new Polygon(new(-352.322f, -350.322f), 7.5f, 20, 9f.Degrees()),
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-345f, -368f), 7.5f, 20), new Polygon(new(-352.322f, -350.322f), 7.5f, 20, 9f.Degrees()),
     new Polygon(new(-370f, -343f), 7.5f, 20), new Polygon(new(-387.678f, -350.322f), 7.5f, 20, 9f.Degrees()), new Polygon(new(-395f, -368f), 7.5f, 20),
     new PolygonCustomO(bridge1, -0.5f), new PolygonCustomO(WPos.GenerateRotatedVertices(arenaCenter, bridge1, -45f), -0.5f),
     new PolygonCustomO(WPos.GenerateRotatedVertices(arenaCenter, bridge1, -90f), -0.5f), new PolygonCustomO(bridge5, -0.5f)]);
 
-    protected override bool CheckPull() => InBounds(Raid.Player()!.Position);
+    protected override bool CheckPull() => Arena.InBounds(Raid.Player()!.Position);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        for (var i = 0; i < hints.PotentialTargets.Count; ++i)
+        var count = hints.PotentialTargets.Count;
+        for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
             if (e.Actor.OID == (uint)OID.Boss)

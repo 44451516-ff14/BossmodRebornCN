@@ -19,21 +19,25 @@ class BogBody(BossModule module) : Components.SpreadFromCastTargets(module, (uin
 
 class Spite(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private static readonly AOEShapeCircle circle = new(8f);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Gallop)
-            _aoe = new(circle, spell.LocXZ, default, Module.CastFinishAt(spell));
+        {
+            _aoe = [new(circle, spell.LocXZ, default, Module.CastFinishAt(spell))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Spite)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 

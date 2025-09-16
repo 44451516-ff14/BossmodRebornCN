@@ -26,12 +26,12 @@ public class Ex2Garuda : BossModule
 
     public Ex2Garuda(WorldState ws, Actor primary) : base(ws, primary, new(0, 0), new ArenaBoundsCircle(22))
     {
-        Monoliths = Enemies(OID.Monolith);
-        RazorPlumes = Enemies(OID.RazorPlume);
-        SpinyPlumes = Enemies(OID.SpinyPlume);
-        SatinPlumes = Enemies(OID.SatinPlume);
-        Chirada = Enemies(OID.Chirada);
-        Suparna = Enemies(OID.Suparna);
+        Monoliths = Enemies((uint)OID.Monolith);
+        RazorPlumes = Enemies((uint)OID.RazorPlume);
+        SpinyPlumes = Enemies((uint)OID.SpinyPlume);
+        SatinPlumes = Enemies((uint)OID.SatinPlume);
+        Chirada = Enemies((uint)OID.Chirada);
+        Suparna = Enemies((uint)OID.Suparna);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

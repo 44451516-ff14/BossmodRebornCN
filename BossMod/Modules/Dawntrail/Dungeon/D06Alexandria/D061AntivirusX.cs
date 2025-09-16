@@ -37,14 +37,15 @@ public enum IconID : uint
 sealed class ImmuneResponseArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom rect = new([new Rectangle(D061AntivirusX.ArenaCenter, 23f, 18f)], [new Rectangle(D061AntivirusX.ArenaCenter, 20f, 15f)]);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.ImmuneResponseVisualSmall && Arena.Bounds == D061AntivirusX.StartingBounds)
+        if (spell.Action.ID == (uint)AID.ImmuneResponseVisualSmall && Arena.Bounds.Radius > 20f)
         {
-            _aoe = new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.8d));
+            _aoe = [new(rect, Arena.Center, default, Module.CastFinishAt(spell, 0.8d))];
         }
     }
 
@@ -53,7 +54,7 @@ sealed class ImmuneResponseArenaChange(BossModule module) : Components.GenericAO
         if (index == 0x03 && state == 0x00020001u)
         {
             Arena.Bounds = D061AntivirusX.DefaultBounds;
-            _aoe = null;
+            _aoe = [];
         }
     }
 }
@@ -124,6 +125,7 @@ sealed class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (_aoes.Count != 0)
+        {
             switch (spell.Action.ID)
             {
                 case (uint)AID.PathocrossPurge:
@@ -133,6 +135,7 @@ sealed class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(
                     _aoes.RemoveAt(0);
                     break;
             }
+        }
     }
 }
 
@@ -144,7 +147,7 @@ sealed class Quarantine(BossModule module) : Components.StackWithIcon(module, (u
 
     public override void Update()
     {
-        if (ActiveStacks.Count == 0)
+        if (Stacks.Count == 0)
             return;
         var forbidden = Raid.WithSlot(false, true, true).WhereActor(p => _tb.ActiveBaits.Any(x => x.Target == p)).Mask();
         foreach (ref var t in Stacks.AsSpan())
@@ -153,16 +156,20 @@ sealed class Quarantine(BossModule module) : Components.StackWithIcon(module, (u
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveStacks.Count != 0 && !_tb.CurrentBaits.Any(x => x.Target == actor) && actor == ActiveStacks[0].Target)
+        if (Stacks.Count != 0 && !_tb.CurrentBaits.Any(x => x.Target == actor) && actor == Stacks.Ref(0).Target)
         {
             var party = Raid.WithoutSlot(false, true, true).Where(x => !x.IsDead);
-            List<Actor> exclude = [actor, _tb.CurrentBaits[0].Target];
+            List<Actor> exclude = [actor, _tb.CurrentBaits.Ref(0).Target];
             var closestAlly = party.Exclude(exclude).Closest(actor.Position);
             if (closestAlly != null)
-                hints.AddForbiddenZone(ShapeDistance.InvertedCircle(closestAlly.Position, 3f), ActiveStacks[0].Activation);
+            {
+                hints.AddForbiddenZone(new SDInvertedCircle(closestAlly.Position, 3f), Stacks.Ref(0).Activation);
+            }
         }
         else
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 }
 
@@ -170,7 +177,7 @@ sealed class Disinfection(BossModule module) : Components.BaitAwayIcon(module, 6
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (!CurrentBaits.Any(x => x.Target == actor) && Module.FindComponent<Quarantine>()!.ActiveStacks.Any(x => x.Activation.AddSeconds(-2d) >= WorldState.CurrentTime))
+        if (!CurrentBaits.Any(x => x.Target == actor) && Module.FindComponent<Quarantine>()!.Stacks.Any(x => x.Activation.AddSeconds(-2d) >= WorldState.CurrentTime))
         { }
         else
             base.AddAIHints(slot, actor, assignment, hints);
@@ -190,7 +197,7 @@ sealed class D061AntivirusXStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12844)]
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12844)]
 public sealed class D061AntivirusX(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
 {
     public static readonly WPos ArenaCenter = new(852f, 823f);

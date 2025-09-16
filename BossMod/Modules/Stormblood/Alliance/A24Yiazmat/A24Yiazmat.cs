@@ -21,8 +21,8 @@ public class A24Yiazmat(WorldState ws, Actor primary) : BossModule(ws, primary, 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.HeartOfTheDragon));
-        Arena.Actors(Enemies(OID.Archaeodemon));
-        Arena.Actors(Enemies(OID.WindAzer));
+        Arena.Actors(Enemies((uint)OID.HeartOfTheDragon));
+        Arena.Actors(Enemies((uint)OID.Archaeodemon));
+        Arena.Actors(Enemies((uint)OID.WindAzer));
     }
 }

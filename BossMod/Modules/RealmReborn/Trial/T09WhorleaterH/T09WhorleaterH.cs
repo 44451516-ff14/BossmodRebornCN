@@ -1,7 +1,7 @@
 namespace BossMod.RealmReborn.Trial.T09WhorleaterH;
 
-class GrandFall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandFall, 8f);
-class Hydroshot(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.Hydroshot, GetVoidzones, 0f)
+sealed class GrandFall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GrandFall, 8f);
+sealed class Hydroshot(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Hydroshot, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -21,7 +21,7 @@ class Hydroshot(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, 
         return voidzones[..index];
     }
 }
-class Dreadstorm(BossModule module) : Components.VoidzoneAtCastTarget(module, 5, (uint)AID.Dreadstorm, GetVoidzones, 0f)
+sealed class Dreadstorm(BossModule module) : Components.VoidzoneAtCastTarget(module, 5f, (uint)AID.Dreadstorm, GetVoidzones)
 {
     private static Actor[] GetVoidzones(BossModule module)
     {
@@ -42,7 +42,7 @@ class Dreadstorm(BossModule module) : Components.VoidzoneAtCastTarget(module, 5,
     }
 }
 
-class T09WhorleaterHStates : StateMachineBuilder
+sealed class T09WhorleaterHStates : StateMachineBuilder
 {
     public T09WhorleaterHStates(BossModule module) : base(module)
     {
@@ -59,20 +59,20 @@ class T09WhorleaterHStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "taurenkey, Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 72, NameID = 2505)]
-public class T09WhorleaterH(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsRect(14.5f, 19.5f))
+public sealed class T09WhorleaterH(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsRect(14.5f, 19.5f))
 {
     private static readonly uint[] adds = [(uint)OID.Tail, (uint)OID.WavespineSahagin, (uint)OID.WavespineSahagin, (uint)OID.WavetoothSahagin];
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(adds));
+        Arena.Actors(this, adds);
         Arena.Actors(Enemies((uint)OID.Spume), Colors.Vulnerable);
         Arena.Actors(Enemies((uint)OID.Converter), Colors.Object);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var TankMimikry = actor.FindStatus(2124); //Bluemage Tank Mimikry
+        var TankMimikry = actor.FindStatus(2124u); // Bluemage Tank Mimikry
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
         {
@@ -88,7 +88,7 @@ public class T09WhorleaterH(WorldState ws, Actor primary) : BossModule(ws, prima
                     _ => AIHints.Enemy.PriorityUndesirable
                 };
             }
-            if (actor.Class.GetClassCategory() is ClassCategory.PhysRanged)
+            else if (actor.Class.GetClassCategory() is ClassCategory.PhysRanged)
             {
                 e.Priority = e.Actor.OID switch
                 {
@@ -99,7 +99,7 @@ public class T09WhorleaterH(WorldState ws, Actor primary) : BossModule(ws, prima
                     _ => AIHints.Enemy.PriorityUndesirable
                 };
             }
-            if (actor.Class.GetClassCategory() is ClassCategory.Tank or ClassCategory.Melee || actor.Class is Class.BLU && TankMimikry != null)
+            else if (actor.Class.GetClassCategory() is ClassCategory.Tank or ClassCategory.Melee || actor.Class is Class.BLU && TankMimikry != null)
             {
                 e.Priority = e.Actor.OID switch
                 {

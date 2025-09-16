@@ -48,26 +48,7 @@ class D080FlawlessNagaStates : StateMachineBuilder
             .ActivateOnEnter<TheDragonsVoiceHint>()
             .ActivateOnEnter<Furore>()
             .ActivateOnEnter<BalefulRoar>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(D080FlawlessNaga.Trash);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDeadOrDestroyed)
-                        return false;
-                }
-                var trash2 = module.Enemies(trash); // 3 trash mobs spawn after rest died, so we check for destroyed instead of dead here
-                var countE = trash2.Count;
-                for (var i = 0; i < countE; ++i)
-                {
-                    var enemy = enemies[i];
-                    if (!enemy.IsDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDestroyed(trash) && AllDeadOrDestroyed(D080FlawlessNaga.Trash);
     }
 }
 
@@ -161,40 +142,22 @@ public class D080FlawlessNaga(WorldState ws, Actor primary) : BossModule(ws, pri
     new(-328.99f, 72.06f), new(-328.42f, 71.82f), new(-328.09f, 71.33f), new(-327.84f, 70.72f), new(-327.9f, 70.09f),
     new(-327.47f, 69.51f), new(-325.8f, 68.32f), new(-325.35f, 68.54f), new(-324.76f, 68.56f), new(-324.26f, 68.11f),
     new(-324.42f, 67.56f), new(-324.13f, 66.97f), new(-314.35f, 59.47f), new(-313.74f, 59.12f), new(-299.91f, 53.4f)];
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.Iksalion, (uint)OID.FlawlessEmpuse, (uint)OID.Shabti, (uint)OID.FlawlessChimera];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        var center = Arena.Center;
-        var radius = Bounds.Radius;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.Position.AlmostEqual(center, radius))
-                Arena.Actor(enemy);
-        }
+        Arena.ActorsInBounds(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

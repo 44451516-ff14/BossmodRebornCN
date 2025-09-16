@@ -35,5 +35,5 @@ public class D011Chopper(WorldState ws, Actor primary) : BossModule(ws, primary,
     new(78.9f, -33.5f), new(78.0f, -29.8f), new(84.2f, -28.9f), new(83.5f, -33.0f), new(84.1f, -35.5f), new(86.6f, -37.2f),
     new(87.3f, -41.5f), new(88.5f, -42.0f), new(91.1f, -39.8f), new(88.9f, -37.4f), new(95.7f, -35.9f), new(91.9f, -45.1f),
     new(93.7f, -51.4f), new(101.7f, -54.5f)])];
-    public static readonly ArenaBoundsComplex arena = new(shape);
+    public static readonly ArenaBoundsCustom arena = new(shape);
 }

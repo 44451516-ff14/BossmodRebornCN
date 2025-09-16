@@ -13,8 +13,8 @@ public class A34CloudofDarkness(WorldState ws, Actor primary) : BossModule(ws, p
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.DarkCloud));
-        Arena.Actors(Enemies(OID.DarkStorm));
-        Arena.Actors(Enemies(OID.HyperchargedCloud));
+        Arena.Actors(Enemies((uint)OID.DarkCloud));
+        Arena.Actors(Enemies((uint)OID.DarkStorm));
+        Arena.Actors(Enemies((uint)OID.HyperchargedCloud));
     }
 }

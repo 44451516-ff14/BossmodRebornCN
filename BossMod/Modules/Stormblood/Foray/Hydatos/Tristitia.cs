@@ -166,7 +166,7 @@ public abstract class BASupportFate(WorldState ws, Actor primary) : SimpleBossMo
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(All));
+        Arena.Actors(this, All);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

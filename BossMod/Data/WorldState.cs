@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace BossMod;
+﻿namespace BossMod;
 
 // this class represents parts of a world state that are interesting to boss modules
 // it does not know anything about dalamud, so it can be used for UI test - there is a separate utility that updates it based on game state every frame
@@ -35,7 +33,7 @@ public sealed class WorldState
 
     // state modification
     public Event<Operation> Modified = new();
-    public abstract record class Operation
+    public abstract class Operation
     {
         public DateTime Timestamp; // TODO: reconsider this field; it's very convenient for replays, but not really needed for operations themselves, and is filled late
 
@@ -82,8 +80,13 @@ public sealed class WorldState
     }
     // implementation of operations
     public Event<OpFrameStart> FrameStarted = new();
-    public sealed record class OpFrameStart(in FrameState Frame, TimeSpan PrevUpdateTime, ClientState.Gauge GaugePayload, Angle CameraAzimuth) : Operation
+    public sealed class OpFrameStart(in FrameState frame, TimeSpan prevUpdateTime, ClientState.Gauge gaugePayload, Angle cameraAzimuth) : Operation
     {
+        public readonly FrameState Frame = frame;
+        public readonly TimeSpan PrevUpdateTime = prevUpdateTime;
+        public readonly ClientState.Gauge GaugePayload = gaugePayload;
+        public readonly Angle CameraAzimuth = cameraAzimuth;
+
         protected override void Exec(WorldState ws)
         {
             ws.Frame = Frame;
@@ -107,15 +110,20 @@ public sealed class WorldState
     }
 
     public Event<OpUserMarker> UserMarkerAdded = new();
-    public sealed record class OpUserMarker(string Text) : Operation
+    public sealed class OpUserMarker(string text) : Operation
     {
+        public readonly string Text = text;
+
         protected override void Exec(WorldState ws) => ws.UserMarkerAdded.Fire(this);
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("UMRK"u8).Emit(Text);
     }
 
     public Event<OpRSVData> RSVDataReceived = new();
-    public sealed record class OpRSVData(string Key, string Value) : Operation
+    public sealed class OpRSVData(string key, string value) : Operation
     {
+        public readonly string Key = key;
+        public readonly string Value = value;
+
         protected override void Exec(WorldState ws)
         {
             Service.LuminaRSV[Key] = Encoding.UTF8.GetBytes(Value); // TODO: reconsider...
@@ -126,8 +134,11 @@ public sealed class WorldState
     }
 
     public Event<OpZoneChange> CurrentZoneChanged = new();
-    public sealed record class OpZoneChange(ushort Zone, ushort CFCID) : Operation
+    public sealed class OpZoneChange(ushort zone, ushort cfcid) : Operation
     {
+        public readonly ushort Zone = zone;
+        public readonly ushort CFCID = cfcid;
+
         protected override void Exec(WorldState ws)
         {
             ws.CurrentZone = Zone;
@@ -139,31 +150,45 @@ public sealed class WorldState
 
     // global events
     public Event<OpDirectorUpdate> DirectorUpdate = new();
-    public sealed record class OpDirectorUpdate(uint DirectorID, uint UpdateID, uint Param1, uint Param2, uint Param3, uint Param4) : Operation
+    public sealed class OpDirectorUpdate(uint directorID, uint updateID, uint param1, uint param2, uint param3, uint param4) : Operation
     {
+        public readonly uint DirectorID = directorID;
+        public readonly uint UpdateID = updateID;
+        public readonly uint Param1 = param1;
+        public readonly uint Param2 = param2;
+        public readonly uint Param3 = param3;
+        public readonly uint Param4 = param4;
+
         protected override void Exec(WorldState ws) => ws.DirectorUpdate.Fire(this);
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("DIRU"u8).Emit(DirectorID, "X8").Emit(UpdateID, "X8").Emit(Param1, "X8").Emit(Param2, "X8").Emit(Param3, "X8").Emit(Param4, "X8");
     }
 
     public Event<OpEnvControl> EnvControl = new();
-    public sealed record class OpEnvControl(byte Index, uint State) : Operation
+    public sealed class OpEnvControl(byte index, uint state) : Operation
     {
+        public readonly byte Index = index;
+        public readonly uint State = state;
+
         protected override void Exec(WorldState ws) => ws.EnvControl.Fire(this);
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("ENVC"u8).Emit(Index, "X2").Emit(State, "X8");
     }
 
     public Event<OpSystemLogMessage> SystemLogMessage = new();
-    public sealed record class OpSystemLogMessage(uint MessageId, int[] Args) : Operation
+    public sealed class OpSystemLogMessage(uint messageId, int[] args) : Operation
     {
-        public readonly int[] Args = Args;
+        public readonly uint MessageID = messageId;
+        public readonly int[] Args = args;
 
         protected override void Exec(WorldState ws) => ws.SystemLogMessage.Fire(this);
         public override void Write(ReplayRecorder.Output output)
         {
-            output.EmitFourCC("SLOG"u8).Emit(MessageId);
-            output.Emit(Args.Length);
-            foreach (var arg in Args)
-                output.Emit(arg);
+            output.EmitFourCC("SLOG"u8).Emit(MessageID);
+            var len = Args.Length;
+            output.Emit(len);
+            for (var i = 0; i < len; ++i)
+            {
+                output.Emit(Args[i]);
+            }
         }
     }
 }

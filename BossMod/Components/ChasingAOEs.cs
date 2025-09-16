@@ -93,7 +93,7 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
             var circle = (AOEShapeCircle)c.Shape;
             var radius = isTarget ? MoveDistance + circle.Radius : circle.Radius + 1;
             var position = isTarget ? c.PredictedPosition() - circle.Radius * actor.Rotation.ToDirection() : c.PredictedPosition();
-            hints.AddForbiddenZone(ShapeDistance.Circle(position, radius), c.NextActivation);
+            hints.AddForbiddenZone(new SDCircle(position, radius), c.NextActivation);
         }
     }
 }

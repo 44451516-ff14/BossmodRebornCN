@@ -24,9 +24,9 @@ public enum AID : uint
 sealed class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCustom donut = new([new Circle(D261Wandil.ArenaCenter, 20f)], D261Wandil.Polygon);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
@@ -34,7 +34,7 @@ sealed class TundraArenaChange(BossModule module) : Components.GenericAOEs(modul
         {
             Arena.Bounds = D261Wandil.SmallArena;
             Arena.Center = D261Wandil.ArenaCenter;
-            _aoe = null;
+            _aoe = [];
         }
     }
 
@@ -42,7 +42,7 @@ sealed class TundraArenaChange(BossModule module) : Components.GenericAOEs(modul
     {
         if (spell.Action.ID == (uint)AID.Tundra)
         {
-            _aoe = new(donut, D261Wandil.ArenaCenter, default, Module.CastFinishAt(spell, 2d));
+            _aoe = [new(donut, D261Wandil.ArenaCenter, default, Module.CastFinishAt(spell, 2d))];
         }
     }
 }
@@ -86,7 +86,7 @@ sealed class D261WandilStates : StateMachineBuilder
 public sealed class D261Wandil(WorldState ws, Actor primary) : BossModule(ws, primary, DefaultArena.Center, DefaultArena)
 {
     public static readonly WPos ArenaCenter = new(new(56.41631f, -88.51856f));
-    public static readonly ArenaBoundsComplex DefaultArena = new([new PolygonCustom([new(55.95f, -106.95f), new(65.84f, -103.79f), new(66.36f, -103.43f),
+    public static readonly ArenaBoundsCustom DefaultArena = new([new PolygonCustom([new(55.95f, -106.95f), new(65.84f, -103.79f), new(66.36f, -103.43f),
     new(70.19f, -99.6f), new(71.49f, -97.2f),
     new(71.59f, -96.53f), new(71.53f, -95.91f), new(71.88f, -95.48f), new(72.77f, -94.6f), new(73.28f, -94.2f),
     new(73.49f, -93.58f), new(74.29f, -88.55f), new(74.26f, -87.89f), new(73.45f, -82.74f), new(71.07f, -78.03f),
@@ -95,7 +95,7 @@ public sealed class D261Wandil(WorldState ws, Actor primary) : BossModule(ws, pr
     new(38.09f, -88.44f), new(38.92f, -93.64f), new(39.14f, -94.25f), new(41.39f, -98.67f), new(41.77f, -99.2f),
     new(45.45f, -102.88f), new(50.44f, -105.47f), new(55.27f, -106.93f), new(55.95f, -106.95f)])]);
     public static readonly Polygon[] Polygon = [new Polygon(ArenaCenter, 12f, 20)];
-    public static readonly ArenaBoundsComplex SmallArena = new(Polygon);
+    public static readonly ArenaBoundsCustom SmallArena = new(Polygon);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

@@ -33,7 +33,7 @@ sealed class AnkleGraze(BossModule module) : Components.CastHint(module, (uint)A
 
 sealed class RubberBullet(BossModule module) : Components.GenericKnockback(module)
 {
-    private Knockback? _knockback;
+    private Knockback[] _kb = [];
     private readonly Explosion _aoe = module.FindComponent<Explosion>()!;
 
     public override bool DestinationUnsafe(int slot, Actor actor, WPos pos)
@@ -48,21 +48,25 @@ sealed class RubberBullet(BossModule module) : Components.GenericKnockback(modul
                 return true;
             }
         }
-        return !Module.InBounds(pos);
+        return !Arena.InBounds(pos);
     }
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => Utils.ZeroOrOne(ref _knockback);
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kb;
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Bomb)
-            _knockback = new(Module.PrimaryActor.Position, 20f, WorldState.FutureTime(6.3d));
+        {
+            _kb = [new(Module.PrimaryActor.Position, 20f, WorldState.FutureTime(6.3d))];
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RubberBullet)
-            _knockback = null;
+        {
+            _kb = [];
+        }
     }
 }
 
@@ -76,13 +80,17 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.Bomb)
+        {
             _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(8.4d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Explosion)
+        {
             _aoes.Clear();
+        }
     }
 }
 
@@ -91,13 +99,17 @@ sealed class Hints2(BossModule module) : BossComponent(module)
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (Module.PrimaryActor.FindStatus((uint)SID.MagitekField) != null)
+        {
             hints.Add($"{Module.PrimaryActor.Name} will reflect all magic damage!");
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (actor.FindStatus((uint)SID.Bind) != null)
+        {
             hints.Add("You were bound! Cleanse it with Exuviation.");
+        }
     }
 }
 

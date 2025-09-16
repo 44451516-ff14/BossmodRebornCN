@@ -5,7 +5,7 @@ sealed class SolarRayF(BossModule module) : Components.BaitAwayCast(module, (uin
 sealed class P4BlueScreen(BossModule module) : Components.CastCounter(module, (uint)AID.BlueScreenAOE);
 sealed class P5BlindFaith(BossModule module) : Components.CastHint(module, (uint)AID.BlindFaithSuccess, "Intermission");
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 908, PlanLevel = 90)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 908u, NameID = 12256u, PlanLevel = 90)]
 public sealed class TOP(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
 {
     private Actor? _opticalUnit;
@@ -26,55 +26,24 @@ public sealed class TOP(WorldState ws, Actor primary) : BossModule(ws, primary, 
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_opticalUnit == null)
+        switch (StateMachine.ActivePhaseIndex)
         {
-            if (StateMachine.ActivePhaseIndex == 0)
-            {
-                var b = Enemies((uint)OID.OpticalUnit);
-                _opticalUnit = b.Count != 0 ? b[0] : null;
-            }
-        }
-        if (_omegaM == null)
-        {
-            if (StateMachine.ActivePhaseIndex == 1)
-            {
-                var b = Enemies((uint)OID.OmegaM);
-                _omegaM = b.Count != 0 ? b[0] : null;
-            }
-        }
-        if (_omegaF == null)
-        {
-            if (StateMachine.ActivePhaseIndex == 1)
-            {
-                var b = Enemies((uint)OID.OmegaF);
-                _omegaF = b.Count != 0 ? b[0] : null;
-            }
-        }
-        if (_bossP3 == null)
-        {
-            if (StateMachine.ActivePhaseIndex == 2)
-            {
-                var b = Enemies((uint)OID.BossP3);
-                _bossP3 = b.Count != 0 ? b[0] : null;
-            }
-        }
-        if (_bossP5 == null)
-        {
-            if (StateMachine.ActivePhaseIndex == 4)
-            {
-                var b = Enemies((uint)OID.BossP5);
-                _bossP5 = b.Count != 0 ? b[0] : null;
-            }
-        }
-        if (_bossP6 == null)
-        {
-            if (StateMachine.ActivePhaseIndex >= 4)
-            {
-                var b = Enemies((uint)OID.BossP6);
-                _bossP6 = b.Count != 0 ? b[0] : null;
-            }
+            case 0:
+                _opticalUnit ??= GetActor((uint)OID.OpticalUnit);
+                break;
+            case 1:
+                _omegaF ??= GetActor((uint)OID.OmegaF);
+                _omegaM ??= GetActor((uint)OID.OmegaM);
+                break;
+            case 2:
+                _bossP3 ??= GetActor((uint)OID.BossP3);
+                break;
+            case 4:
+                _bossP5 ??= GetActor((uint)OID.BossP5);
+                break;
+            case >= 4:
+                _bossP6 ??= GetActor((uint)OID.BossP6);
+                break;
         }
     }
 

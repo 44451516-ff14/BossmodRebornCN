@@ -27,24 +27,26 @@ class Typhoon(BossModule module) : Components.Exaflare(module, 3f)
     public override void Update()
     {
         var count = _maelstroms.Count;
-        if (count == 0)
-            return;
-        for (var i = 0; i < count; ++i)
+        if (count != 0)
         {
-            var m = _maelstroms[i];
-            var line = FindLine(m.Position.Z);
-            if (m.IsDead && line != null)
-                Lines.Remove(line);
-            else if (!m.IsDead && line == null)
-                Lines.Add(new(m.Position, new(-1.745f, default), default, 0.6d, 4, 4));
+            for (var i = 0; i < count; ++i)
+            {
+                var m = _maelstroms[i];
+                var line = FindLine(m.PosRot.Z);
+                if (m.IsDead && line != null)
+                    Lines.Remove(line);
+                else if (!m.IsDead && line == null)
+                    Lines.Add(new(m.Position, new(-1.745f, default), default, 0.6d, 4, 4));
+            }
         }
+        base.Update();
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.TyphoonAOE && caster.Position.X < 56f)
+        if (spell.Action.ID == (uint)AID.TyphoonAOE && caster.PosRot.X < 56f)
         {
-            var line = FindLine(caster.Position.Z);
+            var line = FindLine(caster.PosRot.Z);
             if (line == null)
             {
                 ReportError($"Failed to find entry for {caster.InstanceID:X} @ {caster.Position}");
@@ -80,5 +82,5 @@ public class D102Koshchei(WorldState ws, Actor primary) : BossModule(ws, primary
 {
     private static readonly Shape[] union = [new Rectangle(new(44f, -80f), 13.5f, 10.5f), new Rectangle(new(30.1f, -80), 0.4f, 4.5f),
     new Square(new(30.4f, -75.4f), 0.2f), new Square(new(30.4f, -84.6f), 0.2f)];
-    public static readonly ArenaBoundsComplex arena = new(union);
+    public static readonly ArenaBoundsCustom arena = new(union);
 }

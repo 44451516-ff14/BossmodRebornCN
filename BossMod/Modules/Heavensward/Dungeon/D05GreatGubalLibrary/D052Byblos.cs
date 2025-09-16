@@ -117,7 +117,7 @@ class Bibliocide(BossModule module) : Components.BaitAwayTethers(module, 0f, (ui
         if (target == null)
             return;
 
-        hints.AddForbiddenZone(ShapeDistance.InvertedCircle(Module.PrimaryActor.Position, Module.PrimaryActor.HitboxRadius), target.Value.Activation);
+        hints.AddForbiddenZone(new SDInvertedCircle(Module.PrimaryActor.Position, Module.PrimaryActor.HitboxRadius), target.Value.Activation);
     }
 }
 
@@ -168,7 +168,7 @@ public class D052Byblos(WorldState ws, Actor primary) : BossModule(ws, primary, 
     new(168.92f, 4.66f), new(170.08f, 4), new(170.72f, 3.95f), new(171.94f, 3.99f), new(172.48f, 3.84f),
     new(173.01f, 3.48f), new(179.1f, 3.26f), new(182.13f, 3.26f)];
 
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

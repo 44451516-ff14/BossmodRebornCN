@@ -4,7 +4,7 @@ sealed class EmptyDimension(BossModule module) : Components.SimpleAOEs(module, (
 sealed class FullDimension(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FullDimension, 6f);
 sealed class HoliestHallowing(BossModule module) : Components.CastHint(module, (uint)AID.HoliestHallowing, "Interrupt!");
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.SerAdelphel, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 788, PlanLevel = 90)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.SerAdelphel, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 788u, NameID = 11319u, PlanLevel = 90)]
 public sealed class DSW1(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsSquare(22f))
 {
     private Actor? _grinnaux;
@@ -15,18 +15,8 @@ public sealed class DSW1(WorldState ws, Actor primary) : BossModule(ws, primary,
 
     protected override void UpdateModule()
     {
-        // TODO: this is an ugly hack, think how multi-actor fights can be implemented without it...
-        // the problem is that on wipe, any actor can be deleted and recreated in the same frame
-        if (_grinnaux == null)
-        {
-            var b = Enemies((uint)OID.SerGrinnaux);
-            _grinnaux = b.Count != 0 ? b[0] : null;
-        }
-        if (_charibert == null)
-        {
-            var b = Enemies((uint)OID.SerCharibert);
-            _charibert = b.Count != 0 ? b[0] : null;
-        }
+        _grinnaux ??= GetActor((uint)OID.SerGrinnaux);
+        _charibert ??= GetActor((uint)OID.SerCharibert);
     }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)

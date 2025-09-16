@@ -78,7 +78,7 @@ sealed class D262YetiStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3040, SortOrder = 3)]
 public sealed class D262Yeti(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom([new(-98.24f, -135.15f), new(-93.57f, -134.53f), new(-88.72f, -132.58f),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(-98.24f, -135.15f), new(-93.57f, -134.53f), new(-88.72f, -132.58f),
     new(-84.62f, -129.45f), new(-81.51f, -125.42f),
     new(-79.55f, -120.71f), new(-78.84f, -115.47f), new(-78.44f, -115.05f), new(-78.5f, -114.39f), new(-82.38f, -104.18f),
     new(-82.93f, -103.86f), new(-84.44f, -101.95f), new(-84.91f, -101.5f), new(-88.37f, -98.85f), new(-88.92f, -98.51f),

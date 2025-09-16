@@ -35,20 +35,24 @@ class BridgeCreation(BossModule module) : BossComponent(module)
 class Touchdown(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(10f);
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Cauterize)
-            _aoe = new(circle, new(364.523f, -225.727f), default, Module.CastFinishAt(spell, 6.7f));
+        {
+            _aoe = [new(circle, new(364.523f, -225.727f), default, Module.CastFinishAt(spell, 6.7d))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.Touchdown)
-            _aoe = null;
+        {
+            _aoe = [];
+        }
     }
 }
 
@@ -81,7 +85,7 @@ class D130BlizzardDragonStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 171, NameID = 4942, SortOrder = 5)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 171u, NameID = 4942u, SortOrder = 5)]
 public class D130BlizzardDragon(WorldState ws, Actor primary) : BossModule(ws, primary, arena1.Center, arena1)
 {
     private static readonly WPos[] vertices1 = [new(442.92f, -223.66f), new(443.59f, -223.55f), new(444.20f, -223.30f), new(448.14f, -221.02f), new(448.67f, -220.68f),
@@ -137,33 +141,24 @@ public class D130BlizzardDragon(WorldState ws, Actor primary) : BossModule(ws, p
     new(356.95f, -236.86f), new(357.03f, -236.33f), new(357.50f, -236.59f), new(357.92f, -239.24f), new(357.99f, -241.23f),
     new(358.05f, -241.89f), new(358.23f, -242.52f), new(358.58f, -243.12f), new(359.06f, -243.62f), new(359.62f, -243.98f),
     new(360.28f, -244.20f), new(360.96f, -244.29f), new(365.73f, -244.29f)];
-    private static readonly ArenaBoundsComplex arena1 = new([new PolygonCustom(vertices1)]);
-    public static readonly ArenaBoundsComplex Arena2 = new([new PolygonCustom(vertices1), new PolygonCustom(vertices2)]);
+    private static readonly ArenaBoundsCustom arena1 = new([new PolygonCustom(vertices1)]);
+    public static readonly ArenaBoundsCustom Arena2 = new([new PolygonCustom(vertices1), new PolygonCustom(vertices2)]);
 
     public static readonly uint[] Trash = [(uint)OID.HolyWyvern, (uint)OID.BlizzardDragon1];
 
-    protected override bool CheckPull()
-    {
-        var enemies = Enemies(Trash);
-        var count = enemies.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var enemy = enemies[i];
-            if (enemy.InCombat)
-                return true;
-        }
-        return false;
-    }
+    protected override bool CheckPull() => IsAnyActorInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = hints.PotentialTargets.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.PotentialTargets[i].Priority = 0;
+        }
     }
 }

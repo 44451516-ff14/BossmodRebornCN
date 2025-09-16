@@ -119,11 +119,11 @@ sealed class AlexandrianBanishIII(BossModule module) : Components.GenericBaitSta
 
 sealed class AlexandrianBanishIIITargetHint(BossModule module) : Components.GenericAOEs(module)
 {
-    private AOEInstance? _aoe;
+    private AOEInstance[] _aoe = [];
     private readonly FloorTiles _tiles = module.FindComponent<FloorTiles>()!;
     private int slotTarget;
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => slotTarget == slot ? Utils.ZeroOrOne(ref _aoe) : [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => slotTarget == slot ? _aoe : [];
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -143,7 +143,7 @@ sealed class AlexandrianBanishIIITargetHint(BossModule module) : Components.Gene
             {
                 shapes[lenInner + i] = new DonutSegmentV(Arena.Center, 8f, 16f, FloorTiles.TileAngles[longestOuter[i]], angle, 8);
             }
-            _aoe = new(new AOEShapeCustom(shapes, InvertForbiddenZone: true), Arena.Center, default, WorldState.FutureTime(4.1d), Colors.SafeFromAOE);
+            _aoe = [new(new AOEShapeCustom(shapes, invertForbiddenZone: true), Arena.Center, default, WorldState.FutureTime(4.1d), Colors.SafeFromAOE)];
         }
     }
 }

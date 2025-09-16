@@ -1,5 +1,5 @@
 using BossMod.Data;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayAnalysis;
 
@@ -128,70 +128,76 @@ sealed class ClassDefinitions
 
                 foreach (var target in a.Targets)
                 {
-                    foreach (var eff in target.Effects.Where(eff => eff.Type is ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource or ActionEffectType.FullResistStatus && !eff.FromTarget))
+                    var effects = target.Effects.ValidEffects();
+                    var len = effects.Length;
+                    for (var i = 0; i < len; ++i)
                     {
-                        var onTarget = eff.Type == ActionEffectType.ApplyStatusEffectTarget && target.Target != a.Source && !eff.AtSource;
-                        (onTarget ? data.AppliedStatusesToTarget : data.AppliedStatusesToSource).Add(eff.Value);
+                        ref readonly var eff = ref effects[i];
+                        if (eff.Type is ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource or ActionEffectType.FullResistStatus && !eff.FromTarget)
+                        {
+                            var onTarget = eff.Type == ActionEffectType.ApplyStatusEffectTarget && target.Target != a.Source && !eff.AtSource;
+                            (onTarget ? data.AppliedStatusesToTarget : data.AppliedStatusesToSource).Add(eff.Value);
+                        }
                     }
                 }
             }
-        }
 
-        // mark bozja holster actions
-        for (var i = BozjaHolsterID.None + 1; i < BozjaHolsterID.Count; ++i)
-            _actionData[BozjaActionID.GetNormal(i)].IsBozjaHolster = true;
+            // mark bozja holster actions
+            for (var i = BozjaHolsterID.None + 1; i < BozjaHolsterID.Count; ++i)
+                _actionData[BozjaActionID.GetNormal(i)].IsBozjaHolster = true;
 
-        foreach (var id in typeof(PhantomID).GetEnumValues())
-            if ((uint)id > 0)
-                _actionData[ActionID.MakeSpell((PhantomID)id)].IsPhantomAction = true;
+            foreach (var id in typeof(PhantomID).GetEnumValues())
+                if ((uint)id > 0)
+                    _actionData[ActionID.MakeSpell((PhantomID)id)].IsPhantomAction = true;
 
-        // split actions by categories
-        foreach (var (aid, data) in _actionData)
-        {
-            data.OwningClasses.Clear(0); // that's pointless
-            var shared = data.OwningClasses.NumSetBits() > 1 ? Array.IndexOf(_classPerCategory, data.OwningClasses) : -1;
-            if (shared >= 0)
-                data.SharedCategory = (ClassCategory)shared;
-
-            var category = aid.Type switch
+            // split actions by categories
+            foreach (var (aid, data) in _actionData)
             {
-                ActionType.Spell => data.SharedCategory > ClassCategory.Undefined ? $"Category: {data.SharedCategory}"
-                    : data.IsRoleAction ? GroupRoleActions
-                    : data.LimitBreakLevel > 0 && data.OwningClasses.NumSetBits() > 1 ? GroupLimitBreaks
-                    : data.IsBozjaHolster ? "Bozja action"
-                    : data.IsPhantomAction ? "Phantom action"
-                    : data.OwningClasses.Any() ? $"Class: {string.Join(" ", data.OwningClasses.SetBits().Select(i => (Class)i))}"
-                    : "???",
-                ActionType.Item => "Item",
-                ActionType.General => "General actions",
-                ActionType.Mount => "Mount",
-                ActionType.Ornament => "Ornament",
-                ActionType.BozjaHolsterSlot0 or ActionType.BozjaHolsterSlot1 => "Bozja holster",
-                _ => data.Row?.ClassJobCategory.ValueNullable?.Name.ToString() ?? "???"
-            };
-            _byCategory.GetOrAdd(category).Add(data);
-            AddActionsToCDGroups(data, data.MainCDGroup);
-            AddActionsToCDGroups(data, data.ExtraCDGroup);
-        }
-        foreach (var (_, list) in _byCategory)
-            list.Sort((a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
-        foreach (var (_, cd) in _classData)
-        {
-            cd.Actions.Sort((a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
+                data.OwningClasses.Clear(0); // that's pointless
+                var shared = data.OwningClasses.NumSetBits() > 1 ? Array.IndexOf(_classPerCategory, data.OwningClasses) : -1;
+                if (shared >= 0)
+                    data.SharedCategory = (ClassCategory)shared;
 
-            foreach (var a in cd.Actions)
+                var category = aid.Type switch
+                {
+                    ActionType.Spell => data.SharedCategory > ClassCategory.Undefined ? $"Category: {data.SharedCategory}"
+                        : data.IsRoleAction ? GroupRoleActions
+                        : data.LimitBreakLevel > 0 && data.OwningClasses.NumSetBits() > 1 ? GroupLimitBreaks
+                        : data.IsBozjaHolster ? "Bozja action"
+                        : data.IsPhantomAction ? "Phantom action"
+                        : data.OwningClasses.Any() ? $"Class: {string.Join(" ", data.OwningClasses.SetBits().Select(i => (Class)i))}"
+                        : "???",
+                    ActionType.Item => "Item",
+                    ActionType.General => "General actions",
+                    ActionType.Mount => "Mount",
+                    ActionType.Ornament => "Ornament",
+                    ActionType.BozjaHolsterSlot0 or ActionType.BozjaHolsterSlot1 => "Bozja holster",
+                    _ => data.Row?.ClassJobCategory.ValueNullable?.Name.ToString() ?? "???"
+                };
+                _byCategory.GetOrAdd(category).Add(data);
+                AddActionsToCDGroups(data, data.MainCDGroup);
+                AddActionsToCDGroups(data, data.ExtraCDGroup);
+            }
+            foreach (var (_, list) in _byCategory)
+                list.Sort((a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
+            foreach (var (_, cd) in _classData)
             {
-                foreach (var s in a.AppliedStatusesToSource)
+                cd.Actions.Sort((a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
+
+                foreach (var a in cd.Actions)
                 {
-                    var sd = cd.Statuses.GetOrAdd(s);
-                    sd.Actions.Add(a.ID);
-                    sd.OnSource = true;
-                }
-                foreach (var s in a.AppliedStatusesToTarget)
-                {
-                    var sd = cd.Statuses.GetOrAdd(s);
-                    sd.Actions.Add(a.ID);
-                    sd.OnTarget = true;
+                    foreach (var s in a.AppliedStatusesToSource)
+                    {
+                        var sd = cd.Statuses.GetOrAdd(s);
+                        sd.Actions.Add(a.ID);
+                        sd.OnSource = true;
+                    }
+                    foreach (var s in a.AppliedStatusesToTarget)
+                    {
+                        var sd = cd.Statuses.GetOrAdd(s);
+                        sd.Actions.Add(a.ID);
+                        sd.OnTarget = true;
+                    }
                 }
             }
         }
@@ -325,7 +331,7 @@ sealed class ClassDefinitions
         {
             foreach (var t in tree.Nodes(n.Action.Targets, t => new(ReplayUtils.ActionTargetString(t, n.Action.Timestamp))))
             {
-                tree.LeafNodes(t.Effects, ReplayUtils.ActionEffectString);
+                tree.LeafNodes(t.Effects.ValidEffects(), ReplayUtils.ActionEffectString);
             }
         }
     }

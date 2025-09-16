@@ -20,20 +20,20 @@ sealed class ProjectionOfTurmoil(BossModule module) : Components.CastCounter(mod
         for (var i = 0; i < count; ++i)
         {
             var l = _line[i];
-            var off = new WDir(28.28427f - Math.Abs(l.Position.Z - Arena.Center.Z), default);
-            Arena.AddLine(l.Position - off, l.Position + off, Colors.Danger);
+            var off = new WDir(28.28427f - Math.Abs(l.PosRot.Z - Arena.Center.Z), default);
+            Arena.AddLine(l.Position - off, l.Position + off);
         }
     }
 
     public override void OnStatusGain(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Projection)
-            _targets[Raid.FindSlot(actor.InstanceID)] = true;
+            _targets.Set(Raid.FindSlot(actor.InstanceID));
     }
 
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
         if (status.ID == (uint)SID.Projection)
-            _targets[Raid.FindSlot(actor.InstanceID)] = false;
+            _targets.Clear(Raid.FindSlot(actor.InstanceID));
     }
 }

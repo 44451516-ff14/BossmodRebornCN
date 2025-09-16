@@ -6,7 +6,9 @@ sealed class UmbraSmash(BossModule module) : Components.Exaflare(module, new AOE
     {
         var linesCount = Lines.Count;
         if (linesCount == 0)
+        {
             return;
+        }
 
         var imminentAOEs = ImminentAOEs(linesCount);
 
@@ -14,7 +16,7 @@ sealed class UmbraSmash(BossModule module) : Components.Exaflare(module, new AOE
         var len = imminentAOEs.Length;
         for (var i = 0; i < len; ++i)
         {
-            var aoe = imminentAOEs[i];
+            ref var aoe = ref imminentAOEs[i];
             hints.AddForbiddenZone(Shape, aoe.Item1, aoe.Item3, aoe.Item2);
         }
     }

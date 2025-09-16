@@ -72,7 +72,7 @@ sealed class AkhMorn(BossModule module) : Components.UniformStackSpread(module, 
     }
 }
 
-sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module)
+sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     public static readonly AOEShapeCross Cross = new(15f, 3f);
 
@@ -80,7 +80,7 @@ sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module)
     {
         if (iconID == (uint)IconID.KanRhai)
         {
-            CurrentBaits.Add(new(actor, actor, Cross, WorldState.FutureTime(5.6d), default));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, Cross, WorldState.FutureTime(5.6d), default));
         }
     }
 
@@ -150,5 +150,5 @@ sealed class D133LunarBahamutStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 777, NameID = 10077)]
 public sealed class D133LunarBahamut(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(796.65f, -97.55f), 19.5f * CosPI.Pi40th, 40)], [new Rectangle(new(775.84613f, -97.50571f), 9.5f, 1.775f, -89.5f.Degrees())]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(796.65f, -97.55f), 19.5f * CosPI.Pi40th, 40)], [new Rectangle(new(775.84613f, -97.50571f), 9.5f, 1.775f, -89.5f.Degrees())]);
 }

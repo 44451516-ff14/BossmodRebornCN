@@ -43,7 +43,7 @@ sealed class DecisiveBattle(BossModule module) : BossComponent(module)
     // if player joins fight late, statemachine won't reset this component properly
     public override void OnStatusLose(Actor actor, ActorStatus status)
     {
-        if (status.ID is (uint)SID.EpicVillain)
+        if (status.ID == (uint)SID.EpicVillain)
         {
             Array.Clear(AssignedBoss);
         }

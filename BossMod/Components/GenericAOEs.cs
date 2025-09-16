@@ -167,12 +167,13 @@ public class SimpleAOEGroups(BossModule module, uint[] aids, AOEShape shape, int
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         var len = AIDs.Length;
+        var id = spell.Action.ID;
         for (var i = 0; i < len; ++i)
         {
-            if (spell.Action.ID == AIDs[i])
+            if (id == AIDs[i])
             {
                 Casters.Add(new(Shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
-                if (Casters.Count == ExpectedNumCasters)
+                if (Casters.Count >= ExpectedNumCasters)
                 {
                     Casters.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 }
@@ -262,9 +263,10 @@ public class SimpleChargeAOEGroups(BossModule module, uint[] aids, float halfWid
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         var len = AIDs.Length;
+        var id = spell.Action.ID;
         for (var i = 0; i < len; ++i)
         {
-            if (spell.Action.ID == AIDs[i])
+            if (id == AIDs[i])
             {
                 var dir = spell.LocXZ - caster.Position;
                 Casters.Add(new(new AOEShapeRect(dir.Length() + extraLengthFront, HalfWidth), caster.Position.Quantized(), Angle.FromDirection(dir), Module.CastFinishAt(spell), actorID: caster.InstanceID));

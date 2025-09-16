@@ -50,7 +50,7 @@ public class D063LadyAmandine(WorldState ws, Actor primary) : BossModule(ws, pri
     private static readonly PolygonCustom[] shape = [new([new(20.5f, -3.4f), new(17.4f, -11.9f), new(-15.9f, -11.1f), new(-22.3f, -10.5f),
     new(-20.8f, 19.2f), new(-15, 18.2f), new(-13.1f, 23.4f), new(8.1f, 23.4f),
     new(8.5f, 21.4f), new(17.2f, 20.5f), new(16.7f, 8.7f), new(20.6f, 3.2f)])];
-    public static readonly ArenaBoundsComplex arena = new(shape);
+    public static readonly ArenaBoundsCustom arena = new(shape);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -68,6 +68,6 @@ public class D063LadyAmandine(WorldState ws, Actor primary) : BossModule(ws, pri
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Handmaiden));
+        Arena.Actors(Enemies((uint)OID.Handmaiden));
     }
 }

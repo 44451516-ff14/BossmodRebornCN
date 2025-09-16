@@ -1,5 +1,5 @@
 ﻿using Dalamud.Interface.Utility.Raii;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod.Autorotation;
 
@@ -16,8 +16,8 @@ public sealed class UIPresetEditor
     private int _sourcePresetIndex;
     private bool _sourcePresetDefault;
     public readonly Preset Preset; // note: this is an edited copy, and as such it never has transient settings
-    public bool Modified { get; private set; }
-    public bool NameConflict { get; private set; }
+    public bool Modified;
+    public bool NameConflict;
     private int _selectedModuleIndex = -1;
     private int _selectedSettingIndex = -1;
     private readonly List<int> _orderedTrackList = []; // for current module, by UI order

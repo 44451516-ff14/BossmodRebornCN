@@ -42,11 +42,11 @@ class KingThordanStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 69311, NameID = 3632)]
 public class KingThordan(WorldState ws, Actor primary) : BossModule(ws, primary, new(-247f, 321f), new ArenaBoundsCircle(20f))
 {
-    public static readonly uint[] opponents = [(uint)OID.Boss, (uint)OID.SerGrinnaux, (uint)OID.SerZephirin, (uint)OID.SerCharibert];
+    public static readonly uint[] all = [(uint)OID.Boss, (uint)OID.SerGrinnaux, (uint)OID.SerZephirin, (uint)OID.SerCharibert];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(opponents));
+        Arena.Actors(this, all);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

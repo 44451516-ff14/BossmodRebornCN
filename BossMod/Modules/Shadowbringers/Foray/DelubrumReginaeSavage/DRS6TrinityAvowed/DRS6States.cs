@@ -130,7 +130,7 @@ sealed class DRS6TrinityAvowedStates : StateMachineBuilder
         ComponentCondition<ShimmeringShot>(id + 0x20020, 16.2f, comp => comp.NumCasts > 0, "Arrows hit")
             .ActivateOnEnter<ShimmeringShot1>() // env controls happen ~15.2s before resolve, arrows spawn ~12.8s before resolve
             .DeactivateOnExit<ShimmeringShot>();
-        ComponentCondition<FlamesOfBozja>(id + 0x20030, 2.2f, comp => comp.AOE == null, "Bow 1 resolve")
+        ComponentCondition<FlamesOfBozja>(id + 0x20030, 2.2f, comp => comp.AOE.Length == 0, "Bow 1 resolve")
             .DeactivateOnExit<FlamesOfBozja>();
 
         GloryOfBozja(id + 0x30000, 5.3f); // TODO: this seems to have slightly different timings depending on forks...
@@ -200,7 +200,7 @@ sealed class DRS6TrinityAvowedStates : StateMachineBuilder
         ComponentCondition<ShimmeringShot>(id + 0x20050, 4, comp => comp.NumCasts > 0, "Arrows hit")
             .DeactivateOnExit<QuickMarch>()
             .DeactivateOnExit<ShimmeringShot>();
-        ComponentCondition<FlamesOfBozja>(id + 0x20060, 2.2f, comp => comp.AOE == null, "Bow 2 resolve")
+        ComponentCondition<FlamesOfBozja>(id + 0x20060, 2.2f, comp => comp.AOE.Length == 0, "Bow 2 resolve")
             .DeactivateOnExit<FlamesOfBozja>();
 
         GloryOfBozja(id + 0x30000, 5.3f);

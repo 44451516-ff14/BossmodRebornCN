@@ -70,7 +70,7 @@ sealed class Emblazon(BossModule module) : Components.GenericTowers(module, (uin
                 AddTower(FloorTiles.DonutS, FloorTiles.TileAngles[index4]);
             }
         }
-        void AddTower(AOEShapeDonutSector shape, Angle rot) => Towers.Add(new(Arena.Center, shape, forbiddenSoakers: ~Allowed, activation: Module.CastFinishAt(spell, 4.5f), rotation: rot));
+        void AddTower(AOEShapeDonutSector shape, Angle rot) => Towers.Add(new(Arena.Center, shape, forbiddenSoakers: ~Allowed, activation: Module.CastFinishAt(spell, 4.5d), rotation: rot));
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)

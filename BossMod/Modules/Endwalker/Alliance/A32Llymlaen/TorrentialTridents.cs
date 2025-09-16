@@ -1,8 +1,8 @@
 namespace BossMod.Endwalker.Alliance.A32Llymlaen;
 
-class TorrentialTridentLanding(BossModule module) : Components.CastCounter(module, (uint)AID.TorrentialTridentLanding);
+sealed class TorrentialTridentLanding(BossModule module) : Components.CastCounter(module, (uint)AID.TorrentialTridentLanding);
 
-class TorrentialTridentAOE(BossModule module) : Components.GenericAOEs(module)
+sealed class TorrentialTridentAOE(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(6);
     private static readonly AOEShapeCircle _shape = new(18f);
@@ -15,7 +15,10 @@ class TorrentialTridentAOE(BossModule module) : Components.GenericAOEs(module)
         var max = count > 5 ? 5 : count;
         var aoes = CollectionsMarshal.AsSpan(AOEs);
         if (count > 1)
-            aoes[0].Color = Colors.Danger;
+        {
+            ref var aoe0 = ref aoes[0];
+            aoe0.Color = Colors.Danger;
+        }
         return aoes[..max];
     }
 

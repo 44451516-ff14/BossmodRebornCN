@@ -61,9 +61,10 @@ sealed class DesertDustdevil(BossModule module) : Components.GenericRotatingAOE(
 sealed class DustcloakDustdevil(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(13f);
-    private AOEInstance? _aoe;
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Utils.ZeroOrOne(ref _aoe);
+    private AOEInstance[] _aoe = [];
 
-    public void SetAOE(WPos position, DateTime activation) => _aoe = new(circle, position, default, activation);
-    public void ClearAOE() => _aoe = null;
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
+
+    public void SetAOE(WPos position, DateTime activation) => _aoe = [new(circle, position, default, activation)];
+    public void ClearAOE() => _aoe = [];
 }

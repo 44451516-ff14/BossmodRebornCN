@@ -48,17 +48,7 @@ class AltarMandragoraStates : StateMachineBuilder
             .ActivateOnEnter<LeafDagger>()
             .ActivateOnEnter<Hypnotize>()
             .ActivateOnEnter<MandragoraAOEs>()
-            .Raw.Update = () =>
-            {
-                var enemies = module.Enemies(AltarMandragora.All);
-                var count = enemies.Count;
-                for (var i = 0; i < count; ++i)
-                {
-                    if (!enemies[i].IsDeadOrDestroyed)
-                        return false;
-                }
-                return true;
-            };
+            .Raw.Update = () => AllDeadOrDestroyed(AltarMandragora.All);
     }
 }
 
@@ -73,7 +63,7 @@ public class AltarMandragora(WorldState ws, Actor primary) : THTemplate(ws, prim
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.AltarKorrigan));
-        Arena.Actors(Enemies(bonusAdds), Colors.Vulnerable);
+        Arena.Actors(this, bonusAdds, Colors.Vulnerable);
     }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

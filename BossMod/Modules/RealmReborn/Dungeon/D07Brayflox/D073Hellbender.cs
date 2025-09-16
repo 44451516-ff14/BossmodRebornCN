@@ -106,7 +106,7 @@ public class D120Hellbender(WorldState ws, Actor primary) : BossModule(ws, prima
     new(-121.34f, -56.68f), new(-120.78f, -57.12f), new(-118.82f, -57.42f), new(-118.14f, -57.46f)];
     // Centroid of the polygon is at: (-111.924f, -33.284f)
 
-    public static readonly ArenaBoundsComplex arena = new([new PolygonCustom(shape)]);
+    public static readonly ArenaBoundsCustom arena = new([new PolygonCustom(shape)]);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -126,6 +126,6 @@ public class D120Hellbender(WorldState ws, Actor primary) : BossModule(ws, prima
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies(OID.Aiatar));
+        Arena.Actors(Enemies((uint)OID.Aiatar));
     }
 }

@@ -19,7 +19,7 @@ class BrightenedFire(BossModule module) : Components.CastCounter(module, (uint)A
             hints.Add($"Get to correct position {_playerOrder[slot]}!");
         }
 
-        var numHitAdds = Module.Enemies(OID.DarkenedFire).InRadius(actor.Position, _aoeRange).Count();
+        var numHitAdds = Module.Enemies((uint)OID.DarkenedFire).InRadius(actor.Position, _aoeRange).Count();
         if (numHitAdds < 2)
         {
             hints.Add("Get closer to adds!");
@@ -36,7 +36,7 @@ class BrightenedFire(BossModule module) : Components.CastCounter(module, (uint)A
 
         // draw all adds
         var addIndex = 0;
-        foreach (var fire in Module.Enemies(OID.DarkenedFire).SortedByRange(pos))
+        foreach (var fire in Module.Enemies((uint)OID.DarkenedFire).SortedByRange(pos))
         {
             Arena.Actor(fire, addIndex++ < 2 ? Colors.Danger : Colors.PlayerGeneric);
         }

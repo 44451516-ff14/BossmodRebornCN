@@ -260,7 +260,7 @@ class D153SoranusDuoStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 611, NameID = 7861, SortOrder = 5)]
 public class D153SoranusDuo(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsComplex arena = new([new Polygon(new(371f, -265f), 19.5f, 24)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(371f, -265f), 19.5f, 24)]);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

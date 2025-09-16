@@ -16,8 +16,8 @@ public enum AID : uint
     HardHead = 33995, // Boss->self, 3.0s cast, range 12 120-degree cone
 }
 
-class HardHead(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HardHead, new AOEShapeCone(12, 60.Degrees()));
-class EarthenHeart(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthenHeart, 6);
+class HardHead(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HardHead, new AOEShapeCone(12f, 60f.Degrees()));
+class EarthenHeart(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthenHeart, 6f);
 
 class D120HaamCrystalStates : StateMachineBuilder
 {
@@ -26,7 +26,7 @@ class D120HaamCrystalStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<HardHead>()
             .ActivateOnEnter<EarthenHeart>()
-            .Raw.Update = () => module.Enemies(D120HaamCrystal.Trash).Where(x => x.Position.AlmostEqual(module.Arena.Center, module.Bounds.Radius)).All(e => e.IsDeadOrDestroyed);
+            .Raw.Update = () => AllDeadOrDestroyedInBounds(D120HaamCrystal.Trash);
     }
 }
 
@@ -63,13 +63,13 @@ public class D120HaamCrystal(WorldState ws, Actor primary) : BossModule(ws, prim
     new(368.58f, -148.79f), new(370.45f, -150.68f), new(370.88f, -151.01f), new(374.69f, -152.67f), new(375.14f, -152.94f),
     new(378.38f, -156.37f), new(380.83f, -158.27f), new(381.28f, -158.55f), new(381.69f, -158.87f), new(382.20f, -158.91f),
     new(383.75f, -158.84f), new(385.77f, -159.32f)];
-    private static readonly ArenaBoundsComplex arena = new([new PolygonCustom(vertices)]);
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom(vertices)]);
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.HaamGolem, (uint)OID.HaamAuk];
 
-    protected override bool CheckPull() => Enemies(Trash).Any(x => x.InCombat && x.Position.AlmostEqual(Arena.Center, Bounds.Radius));
+    protected override bool CheckPull() => IsAnyActorInBoundsInCombat(Trash);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
-        Arena.Actors(Enemies(Trash));
+        Arena.Actors(this, Trash);
     }
 }
