@@ -78,30 +78,27 @@ sealed class Buffet2(BossModule module) : Components.BaitAwayCast(module, (uint)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var baits = ActiveBaitsNotOn(actor);
-        if (baits.Count != 0)
+        if (!IsBaitTarget(actor))
         {
-            var b = baits[0];
+            ref var b = ref CurrentBaits.Ref(0);
             hints.AddForbiddenZone(b.Shape, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
         }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        var baits = ActiveBaitsOn(pc);
-        if (baits.Count != 0)
+        if (IsBaitTarget(pc))
         {
-            var b = baits[0];
+            ref var b = ref CurrentBaits.Ref(0);
             b.Shape.Outline(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
         }
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
-        var baits = ActiveBaitsNotOn(pc);
-        if (baits.Count != 0)
+        if (!IsBaitTarget(pc))
         {
-            var b = baits[0];
+            ref var b = ref CurrentBaits.Ref(0);
             b.Shape.Draw(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
         }
     }

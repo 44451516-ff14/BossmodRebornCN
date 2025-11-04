@@ -71,7 +71,7 @@ sealed class MorbolFruit(BossModule module) : BossComponent(module)
     private readonly List<Actor> _fruits = module.Enemies([(uint)OID.MorbolFruit1, (uint)OID.MorbolFruit2, (uint)OID.MorbolFruit3, (uint)OID.MorbolFruit4,
     (uint)OID.MorbolFruit5, (uint)OID.MorbolFruit6, (uint)OID.MorbolFruit7, (uint)OID.MorbolFruit8, (uint)OID.MorbolFruit9, (uint)OID.MorbolFruit10]);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Burrs && status.Extra > 0x02)
         {
@@ -79,7 +79,7 @@ sealed class MorbolFruit(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Burrs && status.Extra > 0x02)
         {
@@ -103,7 +103,7 @@ sealed class MorbolFruit(BossModule module) : BossComponent(module)
             var fruit = _fruits[i];
             if (fruit.IsTargetable)
             {
-                hints.GoalZones.Add(hints.GoalSingleTarget(fruit, 2f, 5f));
+                hints.GoalZones.Add(AIHints.GoalSingleTarget(fruit, 2f, 5f));
                 var distSq = (actor.Position - fruit.Position).LengthSq();
                 if (distSq < minDistSq)
                 {

@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A21FaithboundKirin;
 
 sealed class DeadlyHold(BossModule module) : Components.GenericTowers(module, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x52 && state == 0x00020001u)
         {
@@ -29,7 +29,7 @@ sealed class DeadlyHold(BossModule module) : Components.GenericTowers(module, da
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.StandingFirm)
         {
@@ -40,7 +40,7 @@ sealed class DeadlyHold(BossModule module) : Components.GenericTowers(module, da
 
 sealed class Bury(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.Bury, 8.5d)
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.StandingFirm)
         {
@@ -52,7 +52,7 @@ sealed class Bury(BossModule module) : Components.SingleTargetInstant(module, (u
 
 sealed class Shockwave(BossModule module) : Components.RaidwideInstant(module, (uint)AID.Shockwave, 6.6d)
 {
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x46)
         {

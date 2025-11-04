@@ -89,7 +89,7 @@ sealed class ShockingCrossXMarksTheShock(BossModule module) : Components.Generic
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => aoeInit && _rotation.Spins < 3 ? _aoe : [];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

@@ -48,7 +48,7 @@ class Gurgle(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (state == 0x00020001u && index is > 0x12 and < 0x1B)
         {
@@ -70,7 +70,7 @@ class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: 
 {
     private static readonly AOEShapeRect rect = new(80f, 1.5f);
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Crack)
         {
@@ -133,7 +133,7 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
         return [];
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x12)
         {
@@ -165,8 +165,7 @@ sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(mo
             var aoes = CollectionsMarshal.AsSpan(_aoes);
             for (var i = 0; i < count; ++i)
             {
-                ref var aoe = ref aoes[i];
-                if (aoe.Origin.AlmostEqual(pos, 1f))
+                if (aoes[i].Origin.AlmostEqual(pos, 1f))
                 {
                     _aoes.RemoveAt(i);
                     return;

@@ -1,7 +1,8 @@
 ﻿namespace BossMod.Components;
 
 // generic component used for drawing adds
-public class Adds(BossModule module, uint oid, int priority = 0) : BossComponent(module)
+[SkipLocalsInit]
+public class Adds(BossModule module, uint oid, int priority = 0, bool forbidDots = false) : BossComponent(module)
 {
     public readonly List<Actor> Actors = module.Enemies(oid);
     public List<Actor> ActiveActors
@@ -24,8 +25,7 @@ public class Adds(BossModule module, uint oid, int priority = 0) : BossComponent
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (priority != 0)
-            hints.PrioritizeTargetsByOID(oid, priority);
+        hints.PrioritizeTargetsByOIDAndForbidDOTs(oid, priority, forbidDots);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -35,17 +35,21 @@ public class Adds(BossModule module, uint oid, int priority = 0) : BossComponent
 }
 
 // component for adds that shouldn't be targeted at all, but should still be drawn
+[SkipLocalsInit]
 public class AddsPointless(BossModule module, uint oid) : Adds(module, oid)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = Actors.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.SetPriority(Actors[i], AIHints.Enemy.PriorityPointless);
+        }
     }
 }
 
 // generic component used for drawing multiple adds with multiple oids, when it's not useful to distinguish between them
+[SkipLocalsInit]
 public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossComponent(module)
 {
     public readonly uint[] OIDs = oids;
@@ -71,7 +75,9 @@ public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossC
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (priority != 0)
+        {
             hints.PrioritizeTargetsByOID(OIDs, priority);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)

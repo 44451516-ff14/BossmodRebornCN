@@ -20,13 +20,13 @@ sealed class DarkEnergyParticleBeam(BossModule module) : Components.GenericBaitA
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CurseOfDarkness && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             _activation[slot] = status.ExpireAt;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CurseOfDarkness && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             _activation[slot] = default;

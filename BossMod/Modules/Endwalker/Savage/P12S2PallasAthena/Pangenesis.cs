@@ -20,7 +20,7 @@ class Pangenesis(BossModule module) : Components.GenericTowers(module)
     private readonly List<Color> _towerColors = []; // parallel to Towers
     private Color _firstLeftTower;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -138,13 +138,13 @@ class FactorIn(BossModule module) : Components.GenericBaitAway(module, (uint)AID
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CriticalFactor)
             ForbiddenPlayers.Set(Raid.FindSlot(actor.InstanceID));
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.FactorIn && WorldState.Actors.Find(tether.Target) is var target && target != null)
         {
@@ -153,7 +153,7 @@ class FactorIn(BossModule module) : Components.GenericBaitAway(module, (uint)AID
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.FactorIn)
         {

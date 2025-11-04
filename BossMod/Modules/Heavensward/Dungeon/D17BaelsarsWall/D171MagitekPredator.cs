@@ -28,7 +28,7 @@ class MagitekRay(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ma
 class MagitekClaw(BossModule module) : Components.SingleTargetCast(module, (uint)AID.MagitekClaw);
 class MagitekMissile(BossModule module) : Components.SingleTargetInstant(module, (uint)AID.MagitekMissile, 5f, "50% HP damage on prey targets")
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
         {

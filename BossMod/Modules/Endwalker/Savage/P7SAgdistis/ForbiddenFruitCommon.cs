@@ -81,7 +81,7 @@ class ForbiddenFruitCommon(BossModule module, uint watchedAction) : Components.G
             Arena.AddCircle(Arena.Center + PlatformDirection(platform).ToDirection() * Border.SmallPlatformOffset, Border.SmallPlatformRadius, Colors.Safe);
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         TryAssignTether(source, tether);
     }

@@ -27,13 +27,13 @@ sealed class VirtualShiftEarth(BossModule module) : BossComponent(module)
         Arena.AddRect(Midpoint - CenterOffset, new(default, 1f), halfExtentZ, halfExtentZ, halfExtentX, color, 2f);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.GravitationalAnomaly)
             Flying[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.GravitationalAnomaly)
             Flying[Raid.FindSlot(actor.InstanceID)] = false;
@@ -104,7 +104,7 @@ sealed class LawsOfEarthBurst2 : LawsOfEarthBurst
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.GravityRay)
         {
@@ -123,7 +123,7 @@ sealed class GravityPillar(BossModule module) : Components.BaitAwayCast(module, 
 // note: the tethers appear before target is created; the target is at the same location as the boss
 sealed class GravityRay(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeCone(50f, 30f.Degrees()), (uint)TetherID.GravityRay, (uint)AID.GravityRay) // TODO: verify angle
 {
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == TID)
         {
@@ -131,7 +131,7 @@ sealed class GravityRay(BossModule module) : Components.BaitAwayTethers(module, 
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == TID)
         {

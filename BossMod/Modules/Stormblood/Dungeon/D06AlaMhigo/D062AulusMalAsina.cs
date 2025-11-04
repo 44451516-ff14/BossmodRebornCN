@@ -47,13 +47,13 @@ class MindJack(BossModule module) : BossComponent(module)
 {
     private readonly List<(WPos source, ulong target)> _tethers = [];
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.MindJack)
             _tethers.Add(new(source.Position, tether.Target));
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.MindJack)
         {

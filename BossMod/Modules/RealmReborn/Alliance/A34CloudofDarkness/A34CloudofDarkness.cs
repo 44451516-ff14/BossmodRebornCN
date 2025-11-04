@@ -3,7 +3,7 @@
 class ZeroFormParticleBeam(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ZeroFormParticleBeam, new AOEShapeRect(74, 12));
 class ParticleBeam2(BossModule module) : Components.RaidwideCast(module, (uint)AID.ParticleBeam2);
 
-class FeintParticleBeam(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(10), (uint)AID.FeintParticleBeam1, (uint)AID.FeintParticleBeam2, 4, 1.5f, 5, true)
+class FeintParticleBeam(BossModule module) : Components.StandardChasingAOEs(module, 10f, (uint)AID.FeintParticleBeam1, (uint)AID.FeintParticleBeam2, 4, 1.5f, 5, true, (uint)IconID.FeintParticleBeam)
 {
 }
 

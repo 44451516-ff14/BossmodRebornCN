@@ -3,6 +3,7 @@
 namespace BossMod.Components;
 
 // generic knockback/attract component; it's a cast counter for convenience
+[SkipLocalsInit]
 public abstract class GenericKnockback(BossModule module, uint aid = default, int maxCasts = int.MaxValue, bool stopAtWall = false, bool stopAfterWall = false) : CastCounter(module, aid)
 {
     public enum Kind
@@ -111,50 +112,69 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    enum ImmuneKind { None, Role, Job, Duty }
+
+    private static ImmuneKind GetImmuneKind(uint id)
+    => id switch
+    {
+        3054u // Guard (PvP)
+        or (uint)WHM.SID.Surecast
+        or (uint)WAR.SID.ArmsLength => ImmuneKind.Role,
+
+        1722u // BLU Diamondback
+        or (uint)WAR.SID.InnerStrength => ImmuneKind.Job,
+
+        2345u  // Lost Manawall (Bozja)
+            => ImmuneKind.Duty,
+
+        _ => ImmuneKind.None
+    };
+
+    private void ApplyImmuneExpire(Actor actor, ImmuneKind kind, DateTime expireAt)
     {
         var slot = Raid.FindSlot(actor.InstanceID);
-        if (slot >= 0)
+        if (slot < 0)
         {
-            switch (status.ID)
-            {
-                case 3054u: //Guard in PVP
-                case (uint)WHM.SID.Surecast:
-                case (uint)WAR.SID.ArmsLength:
-                    PlayerImmunes[slot].RoleBuffExpire = status.ExpireAt;
-                    break;
-                case 1722u: //Bluemage Diamondback
-                case (uint)WAR.SID.InnerStrength:
-                    PlayerImmunes[slot].JobBuffExpire = status.ExpireAt;
-                    break;
-                case 2345u: //Lost Manawall in Bozja
-                    PlayerImmunes[slot].DutyBuffExpire = status.ExpireAt;
-                    break;
-            }
+            return;
+        }
+
+        ref var p = ref PlayerImmunes[slot];
+        SelectExpireRef(ref p, kind) = expireAt;
+    }
+
+    private static ref DateTime SelectExpireRef(ref PlayerImmuneState s, ImmuneKind kind)
+    {
+        switch (kind)
+        {
+            case ImmuneKind.Role:
+                return ref s.RoleBuffExpire;
+            case ImmuneKind.Job:
+                return ref s.JobBuffExpire;
+            case ImmuneKind.Duty:
+                return ref s.DutyBuffExpire;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind));
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        var slot = Raid.FindSlot(actor.InstanceID);
-        if (slot >= 0)
+        var kind = GetImmuneKind(status.ID);
+        if (kind == ImmuneKind.None)
         {
-            switch (status.ID)
-            {
-                case 3054u: //Guard in PVP
-                case (uint)WHM.SID.Surecast:
-                case (uint)WAR.SID.ArmsLength:
-                    PlayerImmunes[slot].RoleBuffExpire = default;
-                    break;
-                case 1722u: //Bluemage Diamondback
-                case (uint)WAR.SID.InnerStrength:
-                    PlayerImmunes[slot].JobBuffExpire = default;
-                    break;
-                case 2345u: //Lost Manawall in Bozja
-                    PlayerImmunes[slot].DutyBuffExpire = default;
-                    break;
-            }
+            return;
         }
+        ApplyImmuneExpire(actor, kind, status.ExpireAt);
+    }
+
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        var kind = GetImmuneKind(status.ID);
+        if (kind == ImmuneKind.None)
+        {
+            return;
+        }
+        ApplyImmuneExpire(actor, kind, default);
     }
 
     public List<(WPos from, WPos to)> CalculateMovements(int slot, Actor actor)
@@ -246,6 +266,7 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
 
 // generic 'knockback from/attract to cast target' component
 // TODO: knockback is really applied when effectresult arrives rather than when actioneffect arrives, this is important for ai hints (they can reposition too early otherwise)
+[SkipLocalsInit]
 public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false)
     : GenericKnockback(module, aid, maxCasts, stopAtWall, stopAfterWall)
 {
@@ -277,8 +298,7 @@ public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool 
             var kbs = CollectionsMarshal.AsSpan(Casters);
             for (var i = 0; i < count; ++i)
             {
-                ref var kb = ref kbs[i];
-                if (kb.ActorID == id)
+                if (kbs[i].ActorID == id)
                 {
                     Casters.RemoveAt(i);
                     return;
@@ -288,6 +308,7 @@ public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool 
     }
 }
 
+[SkipLocalsInit]
 public class SimpleKnockbackGroups(BossModule module, uint[] aids, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false) : SimpleKnockbacks(module, default, distance, ignoreImmunes, maxCasts, shape, kind, minDistance, minDistanceBetweenHitboxes, stopAtWall, stopAfterWall)
 {
     protected readonly uint[] AIDs = aids;
@@ -314,8 +335,7 @@ public class SimpleKnockbackGroups(BossModule module, uint[] aids, float distanc
         var kbs = CollectionsMarshal.AsSpan(Casters);
         for (var i = 0; i < count; ++i)
         {
-            ref var kb = ref kbs[i];
-            if (kb.ActorID == id)
+            if (kbs[i].ActorID == id)
             {
                 Casters.RemoveAt(i);
                 return;

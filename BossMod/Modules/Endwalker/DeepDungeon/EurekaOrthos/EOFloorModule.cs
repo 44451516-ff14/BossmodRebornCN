@@ -61,7 +61,7 @@ public enum SID : uint
     IceSpikes = 198
 }
 
-public abstract class EOFloorModule(WorldState ws, bool autoRaiseOnEnter = false) : AutoClear(ws, 90)
+public abstract class EOFloorModule(WorldState ws) : AutoClear(ws, 90)
 {
     protected override void OnCastStarted(Actor actor)
     {
@@ -108,15 +108,15 @@ public abstract class EOFloorModule(WorldState ws, bool autoRaiseOnEnter = false
             // donut AOEs
             case (uint)AID.TheDragonsVoice:
             case (uint)AID.TheDragonsVoice2:
-                Donuts.Add((actor, 8f, 30f));
+                AddDonut(actor, 8f, 30f);
                 HintDisabled.Add(actor);
                 break;
             case (uint)AID.ElectricCachexia:
-                Donuts.Add((actor, 8f, 44f));
+                AddDonut(actor, 8f, 44f);
                 HintDisabled.Add(actor);
                 break;
             case (uint)AID.ElectricWhorl:
-                Donuts.Add((actor, 8f, 60f));
+                AddDonut(actor, 8f, 60f);
                 HintDisabled.Add(actor);
                 break;
 
@@ -180,25 +180,25 @@ public abstract class EOFloorModule(WorldState ws, bool autoRaiseOnEnter = false
         switch (ev.Action.ID)
         {
             case (uint)AID.GoobInhale:
-                Voidzones.Add((actor, new AOEShapeCone(7f, 45f.Degrees())));
+                AddVoidzone(actor, new AOEShapeCone(7f, 45f.Degrees()));
                 break;
             case (uint)AID.GourmInhale:
-                Voidzones.Add((actor, new AOEShapeCone(6f, 45f.Degrees())));
+                AddVoidzone(actor, new AOEShapeCone(6f, 45f.Degrees()));
                 break;
             case (uint)AID.KillingPaw:
-                Voidzones.Add((actor, new AOEShapeCone(6f, 60f.Degrees())));
+                AddVoidzone(actor, new AOEShapeCone(6f, 60f.Degrees()));
                 break;
             case (uint)AID.SewerWaterCastFront:
-                Voidzones.Add((actor, new AOEShapeCone(12f, 90f.Degrees(), 180f.Degrees())));
+                AddVoidzone(actor, new AOEShapeCone(12f, 90f.Degrees(), 180f.Degrees()));
                 break;
             case (uint)AID.SewerWaterCastBack:
-                Voidzones.Add((actor, new AOEShapeCone(12f, 90f.Degrees())));
+                AddVoidzone(actor, new AOEShapeCone(12f, 90f.Degrees()));
                 break;
             case (uint)AID.Electromagnetism:
-                Voidzones.Add((actor, new AOEShapeCircle(6f)));
+                AddVoidzone(actor, new AOEShapeCircle(6f));
                 break;
             case (uint)AID.RipeBanana:
-                Voidzones.Add((actor, new AOEShapeCircle(52f)));
+                AddVoidzone(actor, new AOEShapeCircle(52f));
                 break;
 
             case (uint)AID.GoobSneeze:
@@ -241,19 +241,6 @@ public abstract class EOFloorModule(WorldState ws, bool autoRaiseOnEnter = false
                 break;
         }
     }
-
-    public override void CalculateAIHints(int playerSlot, Actor player, AIHints hints)
-    {
-        base.CalculateAIHints(playerSlot, player, hints);
-        if (!Config.Enable || !Config.AllowPomander)
-            return;
-        if (autoRaiseOnEnter && Palace.Floor % 10 == 1)
-        {
-            var raising = Palace.GetPomanderState(PomanderID.ProtoRaising);
-            if (!raising.Active && raising.Count > 0)
-                hints.ActionsToExecute.Push(new ActionID(ActionType.Pomander, (uint)PomanderID.ProtoRaising), player, ActionQueue.Priority.VeryHigh);
-        }
-    }
 }
 
 [ZoneModuleInfo(BossModuleInfo.Maturity.WIP, 897)]
@@ -271,8 +258,8 @@ public class EO60(WorldState ws) : EOFloorModule(ws);
 [ZoneModuleInfo(BossModuleInfo.Maturity.WIP, 903)]
 public class EO70(WorldState ws) : EOFloorModule(ws);
 [ZoneModuleInfo(BossModuleInfo.Maturity.WIP, 904)]
-public class EO80(WorldState ws) : EOFloorModule(ws, true);
+public class EO80(WorldState ws) : EOFloorModule(ws);
 [ZoneModuleInfo(BossModuleInfo.Maturity.WIP, 905)]
-public class EO90(WorldState ws) : EOFloorModule(ws, true);
+public class EO90(WorldState ws) : EOFloorModule(ws);
 [ZoneModuleInfo(BossModuleInfo.Maturity.WIP, 906)]
-public class EO100(WorldState ws) : EOFloorModule(ws, true);
+public class EO100(WorldState ws) : EOFloorModule(ws);

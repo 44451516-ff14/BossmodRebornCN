@@ -115,7 +115,7 @@ class BondsOfDarkness(BossModule module) : BossComponent(module)
             Arena.AddLine(pc.Position, partner.Position, Colors.Danger);
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.BondsOfDarkness)
         {
@@ -130,7 +130,7 @@ class BondsOfDarkness(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.BondsOfDarkness)
         {
@@ -146,9 +146,9 @@ class BondsOfDarkness(BossModule module) : BossComponent(module)
     }
 }
 
-class DarkDivides(BossModule module) : Components.UniformStackSpread(module, 0, 5)
+class DarkDivides(BossModule module) : Components.UniformStackSpread(module, default, 5f)
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.DivisiveDark)
             AddSpread(actor, status.ExpireAt);

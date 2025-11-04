@@ -67,7 +67,7 @@ class NaturalAlignment(BossModule module) : Components.GenericStackSpread(module
             hints.Add($"Next NA: {hint}");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch ((SID)status.ID)
         {

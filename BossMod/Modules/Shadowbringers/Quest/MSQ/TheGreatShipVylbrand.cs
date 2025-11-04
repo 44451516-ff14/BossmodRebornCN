@@ -199,7 +199,7 @@ class BombTether(BossModule module) : Components.InterceptTetherAOE(module, (uin
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         base.OnTethered(source, tether);
         if (Activation != default && tether.ID == TID)

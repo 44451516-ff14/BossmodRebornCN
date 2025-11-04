@@ -69,8 +69,10 @@ class ViperPoisonBait(BossModule module) : Components.BaitAwayCast(module, (uint
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.AddForbiddenZone(new SDRect(new(17f, -518f), new(17f, -558f), 13f));
+        }
     }
 }
 

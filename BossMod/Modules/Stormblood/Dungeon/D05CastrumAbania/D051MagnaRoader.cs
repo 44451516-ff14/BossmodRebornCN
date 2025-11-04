@@ -52,7 +52,7 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
                 var turret = turrets[i];
                 if (turret.IsTargetable)
                 {
-                    hints.GoalZones.Add(hints.GoalSingleTarget(turret, 1.5f, 5f));
+                    hints.GoalZones.Add(AIHints.GoalSingleTarget(turret, 1.5f, 5f));
                     var distSq = (actor.Position - turret.Position).LengthSq();
                     if (distSq < minDistSq)
                     {
@@ -132,7 +132,7 @@ class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
             AOEs.RemoveAt(0);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Fetters && actor == Module.PrimaryActor)
             AOEs.Clear();

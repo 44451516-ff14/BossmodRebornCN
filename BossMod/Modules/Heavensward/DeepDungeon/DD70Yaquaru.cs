@@ -115,7 +115,7 @@ class FangsEnd(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Heavy)
             _heavy.Clear(Raid.FindSlot(actor.InstanceID));

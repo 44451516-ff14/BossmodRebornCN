@@ -50,14 +50,18 @@ class DigestiveFluidBait(BossModule module) : Components.GenericBaitAway(module,
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f));
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.Add("Bait away!");
+        }
     }
 
     public override void Update()

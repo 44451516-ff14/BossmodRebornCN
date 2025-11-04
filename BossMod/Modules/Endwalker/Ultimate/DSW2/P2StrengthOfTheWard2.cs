@@ -149,7 +149,7 @@ sealed class P2StrengthOfTheWard2Charges(BossModule module) : Components.CastCou
             Arena.Actor(source, Colors.Enemy, true);
             var target = WorldState.Actors.Find(source.Tether.Target);
             if (target != null)
-                Arena.AddLine(source.Position, target.Position, Colors.Danger);
+                Arena.AddLine(source.Position, target.Position);
         }
     }
 

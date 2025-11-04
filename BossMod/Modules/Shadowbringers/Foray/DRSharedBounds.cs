@@ -19,8 +19,8 @@ public abstract class TrinitySeeker(WorldState ws, Actor primary) : BossModule(w
         return barricades;
     }
 
-    public static readonly ArenaBoundsCustom StartingArena = new([new Polygon(ArenaCenter, 30f, 48)], [.. barricades, new Rectangle(new(default, 248f), 7.5f, 0.75f), new Rectangle(new(default, 307.85f), 7.5f, 0.75f)], AdjustForHitbox: true);
-    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(ArenaCenter, 25.5f, 48)], barricades, AdjustForHitbox: true);
+    public static readonly ArenaBoundsCustom StartingArena = new([new Polygon(ArenaCenter, 30f, 48)], [.. barricades, new Rectangle(new(default, 248f), 7.5f, 0.75f), new Rectangle(new(default, 307.85f), 7.5f, 0.75f)], AdjustForHitboxInwards: true);
+    public static readonly ArenaBoundsCustom DefaultArena = new([new Polygon(ArenaCenter, 25.5f, 48)], barricades, AdjustForHitboxInwards: true);
 }
 
 public abstract class Dahu(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)

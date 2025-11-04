@@ -24,54 +24,56 @@ public enum AID : uint
     BullishSwing = 31875 // Boss->self, 5.0s cast, range 13 circle
 }
 
-class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
+sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(8);
-    private static readonly AOEShapeCone cone = new(40f, 45f.Degrees());
+    private readonly AOEShapeCone cone = new(40f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         var count = _aoes.Count;
         if (count == 0)
+        {
             return [];
+        }
         var max = count > 2 ? 2 : count;
         var aoes = CollectionsMarshal.AsSpan(_aoes);
-        if (count > 1)
-        {
-            ref var aoe = ref aoes[0];
-            aoe.Color = Colors.Danger;
-        }
         return aoes[..max];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OctupleSwipeTelegraph)
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, _aoes.Count == 0 ? Module.CastFinishAt(spell, 8.7d + 2d * _aoes.Count) : _aoes.Ref(0).Activation.AddSeconds(_aoes.Count * 2d)));
+        {
+            var rot = spell.Rotation;
+            var loc = spell.LocXZ;
+            var count = _aoes.Count;
+            _aoes.Add(new(cone, loc, rot, count == 0 ? Module.CastFinishAt(spell, 8.7d) : _aoes.Ref(0).Activation.AddSeconds(count * 2d), shapeDistance: cone.Distance(loc, rot)));
+            if (count == 1)
+            {
+                _aoes.Ref(0).Color = Colors.Danger;
+            }
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0)
+        var count = _aoes.Count;
+        if (count != 0 && spell.Action.ID is (uint)AID.BullishSwipe1 or (uint)AID.BullishSwipe2 or (uint)AID.BullishSwipe3 or (uint)AID.BullishSwipe4 or (uint)AID.OctupleSwipe)
         {
-            switch (spell.Action.ID)
+            _aoes.RemoveAt(0);
+            if (count > 1)
             {
-                case (uint)AID.BullishSwipe1:
-                case (uint)AID.BullishSwipe2:
-                case (uint)AID.BullishSwipe3:
-                case (uint)AID.BullishSwipe4:
-                case (uint)AID.OctupleSwipe:
-                    _aoes.RemoveAt(0);
-                    break;
+                _aoes.Ref(0).Color = Colors.Danger;
             }
         }
     }
 }
 
-class BullishSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BullishSwing, 13f);
-class BullishSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BullishSwipe, new AOEShapeCone(40f, 45f.Degrees()));
+sealed class BullishSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BullishSwing, 13f);
+sealed class BullishSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BullishSwipe, new AOEShapeCone(40f, 45f.Degrees()));
 
-class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DisorientingGroan, 15f)
+sealed class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DisorientingGroan, 15f)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -83,27 +85,31 @@ class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module,
     }
 }
 
-class Shock(BossModule module) : Components.GenericAOEs(module)
+sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(15);
-    private static readonly AOEShapeCircle circle = new(5f);
+    private readonly AOEShapeCircle circle = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == (uint)OID.BallOfLevin)
+        {
             _aoes.Add(new(circle, actor.Position.Quantized(), default, WorldState.FutureTime(13d)));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Shock)
+        {
             _aoes.Clear();
+        }
     }
 }
 
-class DD60ServomechanicalMinotaur16States : StateMachineBuilder
+sealed class DD60ServomechanicalMinotaur16States : StateMachineBuilder
 {
     public DD60ServomechanicalMinotaur16States(BossModule module) : base(module)
     {
@@ -117,4 +123,4 @@ class DD60ServomechanicalMinotaur16States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 902, NameID = 12267)]
-public class DD60ServomechanicalMinotaur16(WorldState ws, Actor primary) : BossModule(ws, primary, new(-600f, -300f), new ArenaBoundsCircle(20f));
+public sealed class DD60ServomechanicalMinotaur16(WorldState ws, Actor primary) : BossModule(ws, primary, new(-600f, -300f), new ArenaBoundsCircle(20f));

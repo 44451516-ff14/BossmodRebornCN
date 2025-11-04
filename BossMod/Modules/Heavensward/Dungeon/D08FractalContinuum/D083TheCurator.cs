@@ -186,13 +186,13 @@ class AetherochemicalBombStatus(BossModule module) : Components.CleansableDebuff
 
 class AetherochemicalBomb(BossModule module) : Components.GenericStackSpread(module)
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AetherochemicalBomb)
             Spreads.Add(new(actor, 8f, WorldState.FutureTime(6d))); // status effect hits every 6 seconds unless cleansed/times out, radius is either 7 or 8
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AetherochemicalBomb)
             Spreads.Clear();

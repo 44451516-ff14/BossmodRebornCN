@@ -16,9 +16,7 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
         var track = def.Define(Tracks.Positional).As<Positional>("Positional", "Positional");
         for (var i = 0; i < 4; ++i)
         {
-            ref readonly var positional = ref positionals[i];
-            ref readonly var positionalName = ref positionalNames[i];
-            track.AddOption(positional, positionalName);
+            track.AddOption(positionals[i], positionalNames[i]);
         }
         return def;
     }
@@ -41,12 +39,12 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
         //mainly from Basexan.UpdatePositionals
         var correct = positional switch
         {
-            Positional.Flank => MathF.Abs(primaryTarget.Rotation.ToDirection().Dot((Player.Position - primaryTarget.Position).Normalized())) < 0.7071067f,
+            Positional.Flank => Math.Abs(primaryTarget.Rotation.ToDirection().Dot((Player.Position - primaryTarget.Position).Normalized())) < 0.7071067f,
             Positional.Rear => primaryTarget.Rotation.ToDirection().Dot((Player.Position - primaryTarget.Position).Normalized()) < -0.7071068f,
             _ => true
         };
 
         Hints.RecommendedPositional = (primaryTarget, positional, true, correct);
-        Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget, positional));
+        Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, positional));
     }
 }

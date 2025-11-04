@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P4OrdainedCapitalPunishment(BossModule module) : Components.GenericSharedTankbuster(module, (uint)AID.OrdainedCapitalPunishmentAOE, 4f)
 {
     public override void Update()
@@ -18,4 +19,5 @@ sealed class P4OrdainedCapitalPunishment(BossModule module) : Components.Generic
 }
 
 // TODO: dedicated tankbuster component with tankswap hint
-sealed class P4OrdainedPunishment(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.OrdainedPunishment, 5f);
+[SkipLocalsInit]
+sealed class P4OrdainedPunishment(BossModule module) : Components.BaitAwayCast(module, (uint)AID.OrdainedPunishment, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);

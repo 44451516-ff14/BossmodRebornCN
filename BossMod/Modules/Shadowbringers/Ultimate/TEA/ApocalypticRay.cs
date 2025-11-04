@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 abstract class ApocalypticRay(BossModule module, bool faceCenter) : Components.GenericAOEs(module)
 {
     public Actor? Source;
@@ -7,7 +8,7 @@ abstract class ApocalypticRay(BossModule module, bool faceCenter) : Components.G
     private Angle _rotation;
     private DateTime _activation;
 
-    private readonly AOEShapeCone _shape = new(25.5f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(25.5f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -1,6 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // TODO: determine when mechanic is selected; determine threshold
+[SkipLocalsInit]
 sealed class P1HandOfPartingPrayer(BossModule module) : BossComponent(module)
 {
     private readonly TEA bossmod = (TEA)module;

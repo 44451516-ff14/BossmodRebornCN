@@ -15,7 +15,7 @@ sealed class EnergyCompression(BossModule module) : Components.GenericTowers(mod
         return [];
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Transfer1 && WorldState.Actors.Find(tether.Target) is Actor t)
         {

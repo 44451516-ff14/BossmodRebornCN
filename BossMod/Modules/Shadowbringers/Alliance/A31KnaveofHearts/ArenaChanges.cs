@@ -23,7 +23,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
         {
             if (state == 0x00010002u)
             {
-                Arena.Bounds = new ArenaBoundsCustom(A31KnaveofHearts.BaseSquare, [.. Squares], AdjustForHitbox: true);
+                Arena.Bounds = new ArenaBoundsCustom(A31KnaveofHearts.BaseSquare, [.. Squares], AdjustForHitboxInwards: true);
                 lastUpdate = WorldState.CurrentTime;
             }
             else if (state == 0x00040008u && WorldState.CurrentTime > lastUpdate.AddSeconds(1d)) // clearing old squares can happen in the same frame as new squares got added

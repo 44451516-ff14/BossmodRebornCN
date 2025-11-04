@@ -178,7 +178,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x0C && state == 0x00020001u)
         {
@@ -260,7 +260,7 @@ sealed class TrackingBolt(BossModule module) : Components.SpreadFromCastTargets(
 
 sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 3f)
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.AccelerationBomb or (uint)SID.AccelerationBombNPCs && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -268,7 +268,7 @@ sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 3
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.AccelerationBomb or (uint)SID.AccelerationBombNPCs && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {

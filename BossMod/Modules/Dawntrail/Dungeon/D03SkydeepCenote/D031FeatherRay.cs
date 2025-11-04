@@ -45,7 +45,7 @@ sealed class HydroRing(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x13)
         {
@@ -121,21 +121,21 @@ sealed class AiryBubble(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (active)
-            hints.AddForbiddenZone(new SDCircle(Arena.Center, Module.PrimaryActor.HitboxRadius));
+        {
+            hints.AddForbiddenZone(new SDCircle(Arena.Center, 5f));
+        }
         if (count == 0)
+        {
             return;
-        var forbiddenImminent = new ShapeDistance[count + 1];
-        var forbiddenFuture = new ShapeDistance[count];
+        }
+
+        var act = WorldState.FutureTime(1.5d);
         for (var i = 0; i < count; ++i)
         {
             var o = _aoes[i];
-            forbiddenFuture[i] = new SDCapsule(o.Position, o.Rotation, Length, Radius);
-            forbiddenImminent[i] = new SDCircle(o.Position, Radius);
+            hints.AddForbiddenZone(new SDCapsule(o.Position, o.Rotation, Length, Radius), act);
+            hints.TemporaryObstacles.Add(new SDCircle(o.Position, Radius));
         }
-        forbiddenImminent[count] = new SDCircle(Arena.Center, Module.PrimaryActor.HitboxRadius);
-
-        hints.AddForbiddenZone(new SDUnion(forbiddenFuture), WorldState.FutureTime(1.5d));
-        hints.AddForbiddenZone(new SDUnion(forbiddenImminent));
     }
 }
 
@@ -211,7 +211,7 @@ sealed class WorrisomeWavePlayer(BossModule module) : Components.GenericBaitAway
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             hints.Add("Bait away!");
         }

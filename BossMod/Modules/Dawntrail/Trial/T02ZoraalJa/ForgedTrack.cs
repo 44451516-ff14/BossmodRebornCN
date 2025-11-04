@@ -14,7 +14,7 @@ sealed class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
         return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         // there are is only one possible pattern for each direction in normal mode. NE and SW are always XX pattern, NW and SE are always crossed resulting in AOEs in the same lane
         var casterOffset = source.Position - Arena.Center;

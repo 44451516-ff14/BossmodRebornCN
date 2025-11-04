@@ -37,7 +37,7 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var expire = status.ExpireAt;
         var order = (expire - WorldState.CurrentTime).TotalSeconds switch
@@ -64,7 +64,7 @@ sealed class RuneAxeStatus(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -185,7 +185,7 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.PreyGreaterAxebit or (uint)SID.PreyLesserAxebit)
         {

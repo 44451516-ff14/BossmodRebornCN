@@ -8,7 +8,7 @@ class GraniteGaol(BossModule module) : BossComponent(module)
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
         => PendingFetters[playerSlot] ? PlayerPriority.Interesting : PlayerPriority.Irrelevant;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Fetters)
             PendingFetters.Clear(Raid.FindSlot(actor.InstanceID));
@@ -28,7 +28,7 @@ class GraniteGaol(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Gaol)
         {

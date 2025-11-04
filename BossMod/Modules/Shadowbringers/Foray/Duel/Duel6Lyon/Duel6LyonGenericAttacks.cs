@@ -13,7 +13,7 @@ sealed class OnFire(BossModule module) : BossComponent(module)
             hints.Add("Lyon has 'On Fire'. Use Dispell to remove it!");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (actor == Module.PrimaryActor && status.ID == (uint)SID.OnFire)
             _hasBuff = true;
@@ -31,7 +31,7 @@ sealed class OnFire(BossModule module) : BossComponent(module)
             _isCasting = false;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (actor == Module.PrimaryActor && status.ID == (uint)SID.OnFire)
             _hasBuff = false;

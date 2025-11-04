@@ -17,7 +17,7 @@ sealed class ShieldProtocol(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.ShieldProtocol && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0)
         {
@@ -26,7 +26,7 @@ sealed class ShieldProtocol(BossModule module) : BossComponent(module)
     }
 
     // fall back since players outside arena bounds do not get tethered but will still receive status effects
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var boss = status.ID switch
         {
@@ -41,7 +41,7 @@ sealed class ShieldProtocol(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.ShieldProtocolA or (uint)SID.ShieldProtocolB or (uint)SID.ShieldProtocolC && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {

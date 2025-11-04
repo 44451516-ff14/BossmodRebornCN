@@ -2,16 +2,16 @@
 
 // a bunch of utilities for approximating curves with line segments
 // we need them, since clipping and rendering works with polygons
+[SkipLocalsInit]
 public static class CurveApprox
 {
     public const float ScreenError = 0.05f;
-    private static readonly Angle a90 = 90f.Degrees(), a270 = 270f.Degrees(), a360 = 360f.Degrees();
 
     public static int CalculateCircleSegments(float radius, Angle angularLength, float maxError)
     {
         // select max angle such that tesselation error is smaller than desired
         // error = R * (1 - cos(phi/2)) => cos(phi/2) = 1 - error/R
-        var tessAngle = 2 * MathF.Acos(1 - MathF.Min(maxError / radius, 1));
+        var tessAngle = 2 * MathF.Acos(1 - Math.Min(maxError / radius, 1));
         var tessNumSegments = (int)MathF.Ceiling(angularLength.Rad / tessAngle);
         tessNumSegments = (tessNumSegments + 1) & ~1;
         return Math.Clamp(tessNumSegments, 4, 512);
@@ -22,7 +22,7 @@ public static class CurveApprox
     public static WDir[] Circle(float Radius, float maxError)
     {
         var radius = Radius;
-        var numSegments = CalculateCircleSegments(radius, a360, maxError);
+        var numSegments = CalculateCircleSegments(radius, 360f.Degrees(), maxError);
         var angleIncrement = (Angle.DoublePI / numSegments).Radians();
         var points = new WDir[numSegments];
         for (var i = 0; i < numSegments; ++i) // note: do not include last point
@@ -135,9 +135,10 @@ public static class CurveApprox
         var p1 = length * dir;
         var dirPerp = dir.OrthoL();
         var angleDir = Angle.FromDirection(dir);
+        var a90 = 90f.Degrees();
         var angleStartP1 = angleDir - a90;
         var angleEnd = angleDir + a90;
-        var angleEndP0 = angleDir + a270;
+        var angleEndP0 = angleDir + 270f.Degrees();
         var radiusDirPerp = radius * dirPerp;
 
         var arcP1 = CircleArc(radius, angleStartP1, angleEnd, maxError);
@@ -166,5 +167,64 @@ public static class CurveApprox
         }
 
         return points;
+    }
+
+    public static WDir[] ArcCapsule(WDir toOrbitCenter, Angle angularLength, float radius, float maxError)
+    {
+        var C = toOrbitCenter;
+        var R = C.Length();
+
+        var outerR = R + radius;
+        var innerR = R - radius;
+
+        var theta0 = Angle.FromDirection(-C); // orbitCenter -> start
+        var theta1 = theta0 + angularLength;
+        var a90 = 90f.Degrees();
+
+        var s = Math.Sign(angularLength.Rad);
+        if (s == 0)
+        {
+            s = 1;
+        }
+
+        // segment counts
+        var lenAbs = angularLength.Abs();
+        var nOut = CalculateCircleSegments(outerR, lenAbs, maxError);
+        var n = CalculateCircleSegments(innerR, lenAbs, maxError);
+        var nCap = CalculateCircleSegments(radius, 180f.Degrees(), maxError);
+
+        // total vertices (we keep joint duplicates)
+        var total = nOut + nCap + n + nCap + 4;
+        var pts = new WDir[total];
+
+        // outer
+        var idx = 0;
+        idx = WriteArc(pts, idx, C, outerR, theta0, theta1, nOut);
+
+        // end cap
+        var p1 = C + PolarToCartesian(R, theta1);
+        var t1 = theta1 + (s > 0 ? a90 : -a90);
+        idx = WriteArc(pts, idx, p1, radius, t1 - a90, t1 + a90, nCap);
+
+        // inner
+        idx = WriteArc(pts, idx, C, innerR, theta1, theta0, n);
+
+        // start cap
+        var t0 = theta0 + (s < 0 ? a90 : -a90);
+        WriteArc(pts, idx, default, radius, t0 - a90, t0 + a90, nCap);
+
+        return pts;
+
+        static int WriteArc(WDir[] dst, int startIndex, WDir center, float radius, Angle a0, Angle a1, int segments)
+        {
+            var inc = (a1 - a0) / segments;
+            var k = startIndex;
+            for (var i = 0; i <= segments; ++i)
+            {
+                var a = a0 + i * inc;
+                dst[k++] = center + PolarToCartesian(radius, a);
+            }
+            return k;
+        }
     }
 }

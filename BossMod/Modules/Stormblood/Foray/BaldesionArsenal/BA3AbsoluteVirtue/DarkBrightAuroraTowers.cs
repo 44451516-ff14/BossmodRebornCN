@@ -34,12 +34,12 @@ sealed class BrightDarkAuroraExplosion(BossModule module) : Components.GenericAO
         return aoes;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         tetherByActor.Add((source, tether.Target));
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         tetherByActor.Remove((source, tether.Target));
     }
@@ -73,13 +73,13 @@ abstract class Towers(BossModule module, uint oid, uint tid) : Components.Generi
             Towers.Add(new(actor.Position, 2f, 1, 1, [], WorldState.FutureTime(20d)));
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == tid)
             tetherByActor.Add((source, WorldState.Actors.Find(tether.Target)!));
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == tid)
             tetherByActor.Remove((source, WorldState.Actors.Find(tether.Target)!));

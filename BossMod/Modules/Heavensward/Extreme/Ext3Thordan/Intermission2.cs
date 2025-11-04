@@ -50,7 +50,7 @@ sealed class SwordShieldOfTheHeavens(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var buff = ClassifyStatus(status.ID);
         if (buff != Buff.None)
@@ -63,7 +63,7 @@ sealed class SwordShieldOfTheHeavens(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var buff = ClassifyStatus(status.ID);
         if (buff != Buff.None)

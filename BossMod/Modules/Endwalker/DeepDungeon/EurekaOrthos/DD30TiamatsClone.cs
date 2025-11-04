@@ -25,10 +25,10 @@ public enum AID : uint
 
 public enum IconID : uint
 {
-    ChasingAOE = 197 // player
+    WheiMorn = 197 // player
 }
 
-class WheiMorn(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(6f), (uint)AID.WheiMornFirst, (uint)AID.WheiMornRest, 6f, 2f, 5, true, (uint)IconID.ChasingAOE);
+class WheiMorn(BossModule module) : Components.StandardChasingAOEs(module, 6f, (uint)AID.WheiMornFirst, (uint)AID.WheiMornRest, 6f, 2f, 5, true, (uint)IconID.WheiMorn);
 class DarkMegaflare(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DarkMegaflare, 6f);
 
 class DarkWyrm(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40f, 8f));

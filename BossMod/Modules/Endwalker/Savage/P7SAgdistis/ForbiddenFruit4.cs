@@ -13,7 +13,7 @@ class ForbiddenFruit4(BossModule module) : ForbiddenFruitCommon(module, (uint)AI
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         var slot = TryAssignTether(source, tether);
         if (slot < 0)

@@ -89,7 +89,7 @@ sealed class LightningCrossingMammothBoltEpicenterShock(BossModule module) : Com
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             if (_aoes.Count > 4)
             {
-                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                SortHelpers.SortAOEByActivation(_aoes);
             }
         }
     }
@@ -139,7 +139,7 @@ sealed class RushingRumbleRampage(BossModule module) : Components.GenericAOEs(mo
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.LightningCrossing)
         {
@@ -148,7 +148,7 @@ sealed class RushingRumbleRampage(BossModule module) : Components.GenericAOEs(mo
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.LightningCrossing)
         {
@@ -238,7 +238,7 @@ sealed class RushingRumbleRampage(BossModule module) : Components.GenericAOEs(mo
         {
             return;
         }
-        hints.GoalZones.Add(hints.GoalSingleTarget(activebirds[0].Position, 12f, 5f)); // follow the charge
+        hints.GoalZones.Add(AIHints.GoalSingleTarget(activebirds[0].Position, 12f, 5f)); // follow the charge
     }
 
     public override void AddGlobalHints(GlobalHints hints)

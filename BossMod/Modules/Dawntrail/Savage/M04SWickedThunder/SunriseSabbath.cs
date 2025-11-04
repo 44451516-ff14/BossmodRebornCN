@@ -11,7 +11,7 @@ sealed class SunriseSabbath(BossModule module) : BossComponent(module)
             hints.Add($"Bait order: {BaitOrder[slot]}", false);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.Positron or (uint)SID.Negatron && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -91,7 +91,7 @@ sealed class SunriseSabbathElectronStream(BossModule module) : Components.Generi
                     Arena.AddCircle(c.cannon.Position, 1, Colors.Safe);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (actor.OID == (uint)OID.WickedReplica && status.ID == (uint)SID.Marker)
         {

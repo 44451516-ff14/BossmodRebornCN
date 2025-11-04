@@ -37,17 +37,17 @@ class P4ViscousAetheroplasmResolve(BossModule module) : Components.UniformStackS
     }
 }
 
-class P5ViscousAetheroplasmTriple(BossModule module) : Components.UniformStackSpread(module, 4f, default, 8)
+class P5ViscousAetheroplasmTriple(BossModule module) : Components.UniformStackSpread(module, 4f, default, 8, 8)
 {
     public int NumCasts;
     private readonly List<(Actor target, DateTime resolve)> _aetheroplasms = [];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.ViscousAetheroplasm)
         {
             _aetheroplasms.Add((actor, status.ExpireAt));
-            _aetheroplasms.Sort((a, b) => a.resolve.CompareTo(b.resolve));
+            _aetheroplasms.Sort(static (a, b) => a.resolve.CompareTo(b.resolve));
             UpdateStackTargets();
         }
     }

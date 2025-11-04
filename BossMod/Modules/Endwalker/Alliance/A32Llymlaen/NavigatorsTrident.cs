@@ -21,7 +21,7 @@ sealed class DireStraits(BossModule module) : Components.GenericAOEs(module)
                 {
                     (aoe1, aoe2) = (aoe2, aoe1);
                 }
-                aoe2.Origin += 1.5f * aoe2.Rotation.ToDirection();
+                aoe2.Origin += 3f * aoe2.Rotation.ToDirection();
             }
         }
     }

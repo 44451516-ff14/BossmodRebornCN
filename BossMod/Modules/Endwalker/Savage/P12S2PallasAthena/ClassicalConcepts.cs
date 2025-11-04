@@ -81,7 +81,7 @@ class ClassicalConcepts(BossModule module, bool invert) : BossComponent(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var debuff = status.ID switch
         {
@@ -115,7 +115,7 @@ class ClassicalConcepts(BossModule module, bool invert) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         switch (tether.ID)
         {
@@ -130,7 +130,7 @@ class ClassicalConcepts(BossModule module, bool invert) : BossComponent(module)
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         switch (tether.ID)
         {

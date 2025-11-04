@@ -104,7 +104,7 @@ sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(mo
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -166,7 +166,7 @@ sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(mo
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -176,7 +176,7 @@ sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(mo
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (source.OID == (uint)OID.DelightsHourglass && tether.ID == (uint)TetherID.UltimateRelativityQuicken)
         {
@@ -286,11 +286,11 @@ sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(mo
     }
 }
 
-sealed class P3UltimateRelativityDarkFireUnholyDarkness(BossModule module) : Components.UniformStackSpread(module, 6f, 8f, 5, alwaysShowSpreads: true)
+sealed class P3UltimateRelativityDarkFireUnholyDarkness(BossModule module) : Components.UniformStackSpread(module, 6f, 8f, 5)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // handled by main component
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -342,7 +342,7 @@ sealed class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Compo
             hints.Add(shouldBait ? "Bait laser!" : "GTFO from hourglass!");
         }
 
-        if (ActiveBaitsNotOn(actor).Any(b => IsClippedBy(actor, b)))
+        if (ActiveBaitsNotOn(actor).Any(b => IsClippedBy(actor, ref b)))
             hints.Add("GTFO from baited aoe!");
     }
 
@@ -437,7 +437,7 @@ sealed class P3UltimateRelativityDarkBlizzard(BossModule module) : Components.Ge
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // handled by main component
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.SpellInWaitingDarkBlizzard)
         {
@@ -488,7 +488,7 @@ sealed class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(mo
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

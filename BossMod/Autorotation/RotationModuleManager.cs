@@ -25,7 +25,7 @@ public sealed class RotationModuleManager : IDisposable
     public static readonly AutorotationConfig Config = Service.Config.Get<AutorotationConfig>();
     public readonly RotationDatabase Database;
     public readonly BossModuleManager Bossmods;
-    public readonly int PlayerSlot; // TODO: reconsider, we rely on too many things in clientstate...
+    public int PlayerSlot; // TODO: reconsider, we rely on too many things in clientstate...
     public readonly AIHints Hints;
     public PlanExecution? Planner;
     private static readonly PartyRolesConfig _prc = Service.Config.Get<PartyRolesConfig>();
@@ -61,6 +61,8 @@ public sealed class RotationModuleManager : IDisposable
         404u, // "Transporting", not a transformation but prevents actions
         4235u, // "Rage" status from Phantom Berserker, prevents all actions and movement
         4376u, // "Transporting", variant in Occult Crescent
+        4586u, // "Away with the Fae", PT
+        4708u, // "Transfiguration", PT
     ];
 
     public static bool IsTransformStatus(ActorStatus st) => TransformationStatuses.Contains(st.ID);
@@ -123,9 +125,9 @@ public sealed class RotationModuleManager : IDisposable
         // forced target update
         if (Hints.ForcedTarget == null && Preset == null && Planner?.ActiveForcedTarget() is var forced && forced != null)
         {
-            Hints.ForcedTarget = forced.Value.Target != StrategyTarget.Automatic
-                ? ResolveTargetOverride(forced.Value.Target, forced.Value.TargetParam)
-                : (ResolveTargetOverride(StrategyTarget.EnemyWithHighestPriority, 0) ?? (Bossmods.ActiveModule?.PrimaryActor is var primary && primary != null && !primary.IsDeadOrDestroyed && primary.IsTargetable ? primary : null));
+            Hints.ForcedTarget = forced.Target != StrategyTarget.Automatic
+                ? ResolveTargetOverride(forced.Target, forced.TargetParam)
+                : (ResolveTargetOverride(StrategyTarget.EnemyWithHighestPriority, 0) ?? Bossmods.ActiveModule?.GetDefaultTarget(PlayerSlot));
         }
 
         // auto actions
@@ -235,6 +237,7 @@ public sealed class RotationModuleManager : IDisposable
         {
             return;
         }
+
         var count = ActiveModules.Count;
         for (var i = 0; i < count; ++i)
         {
@@ -271,7 +274,7 @@ public sealed class RotationModuleManager : IDisposable
             return; // don't care
 
         // note: if combat ends while player is dead, we'll reset the preset, which is desirable
-        if (actor.IsDead && actor.InCombat)
+        if (actor.IsDead && actor.InCombat && Config.ClearPresetOnDeath)
         {
             // player died in combat => force disable (otherwise there's a risk of dying immediately after rez)
             Service.Log($"[RMM] Player died in combat => force-disabling from '{Preset?.Name ?? "<n/a>"}'");
@@ -312,6 +315,12 @@ public sealed class RotationModuleManager : IDisposable
 #if DEBUG
             Service.Log($"[RMM] Cast #{cast.SourceSequence} {cast.Action} @ {cast.MainTargetID:X} [{string.Join(" --- ", ActiveModules?.Select(m => m.Module.DescribeState()) ?? [])}]");
 #endif
+        }
+
+        if (cast.Action.ID == 6276u && Config.ClearPresetOnLuring)
+        {
+            Service.Log($"[RMM] Luring Trap triggered, force-disabling autorotation'");
+            Preset = ForceDisable;
         }
     }
 }

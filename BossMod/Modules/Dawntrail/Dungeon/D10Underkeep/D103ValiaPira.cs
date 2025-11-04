@@ -120,7 +120,7 @@ sealed class EnforcementRay(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (source.OID == (uint)OID.CoordinateBit2 && tether.ID == (uint)TetherID.OrbTeleport)
         {

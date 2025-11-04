@@ -228,8 +228,8 @@ public sealed class ReplayManagementWindow : UIWindow
         }
 
         // ignored duties
-        uint[] alwaysIgnoredDuties = [0u, 650u, 127u, 130u, 195u, 756u, 180u, 701u, 473u, 721u];
-        for (var i = 0; i < 10; ++i)
+        uint[] alwaysIgnoredDuties = [0u, 650u, 127u, 130u, 195u, 756u, 180u, 701u, 473u, 721u, 1065u];
+        for (var i = 0; i < 11; ++i)
         {
             map[alwaysIgnoredDuties[i]] = false;
         }
@@ -277,11 +277,7 @@ public sealed class ReplayManagementWindow : UIWindow
 
     private bool IsImportantDuty(uint cfcId)
     {
-        if (StaticDutyImportance.TryGetValue(cfcId, out var isImportant))
-        {
-            return isImportant;
-        }
-        return true;
+        return !StaticDutyImportance.TryGetValue(cfcId, out var isImportant) || isImportant;
     }
 
     private void OnModuleActivation(BossModule m)
@@ -317,7 +313,7 @@ public sealed class ReplayManagementWindow : UIWindow
             try
             {
                 var replays = _logDir.GetFiles();
-                replays.Sort((a, b) => a.LastWriteTime.CompareTo(b.LastWriteTime));
+                replays.Sort(static (a, b) => a.LastWriteTime.CompareTo(b.LastWriteTime));
                 foreach (var f in replays.Take(replays.Length - _config.MaxReplays))
                     f.Delete();
             }

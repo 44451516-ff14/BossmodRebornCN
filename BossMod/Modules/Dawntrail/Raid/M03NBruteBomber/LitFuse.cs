@@ -45,13 +45,13 @@ sealed class LitFuse(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         void AddAOE(DateTime activation)
         {
             _aoes.Add(new(circle, actor.Position, default, activation));
             if (_aoes.Count == 8)
-                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                SortHelpers.SortAOEByActivation(_aoes);
         }
         switch (status.ID)
         {

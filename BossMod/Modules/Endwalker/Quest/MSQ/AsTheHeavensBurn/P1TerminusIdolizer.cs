@@ -64,7 +64,7 @@ class SelfDestruct(BossModule module) : Components.GenericStackSpread(module)
 {
     private uint numCasts;
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (Stacks.Count == 0 && tether.ID == (uint)TetherID.BombTether)
             Stacks.Add(new(WorldState.Actors.Find(tether.Target)!, 3f, 2, 2, activation: WorldState.FutureTime(9.1d)));

@@ -73,7 +73,7 @@ sealed class Chess(BossModule module) : Components.GenericAOEs(module)
         return positions;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var id = status.ID;
         if (id == (uint)SID.MovementIndicator && excludeCrosses.Count != 2)
@@ -127,7 +127,7 @@ sealed class Chess(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var id = status.ID;
         if (id is >= (uint)SID.MovementEdict2 and <= (uint)SID.MovementEdict4)

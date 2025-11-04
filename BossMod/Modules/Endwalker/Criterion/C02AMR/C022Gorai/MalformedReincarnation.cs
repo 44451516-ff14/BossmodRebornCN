@@ -36,7 +36,7 @@ sealed class MalformedPrayer2(BossModule module) : Components.GenericTowers(modu
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (state == 0x00020001u)
         {
@@ -73,7 +73,7 @@ sealed class MalformedPrayer2(BossModule module) : Components.GenericTowers(modu
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var blueSlot = status.ID switch
         {
@@ -87,7 +87,7 @@ sealed class MalformedPrayer2(BossModule module) : Components.GenericTowers(modu
             _playerBlue[slot, blueSlot] = true;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.SquirrellyPrayer or (uint)SID.OdderPrayer)
         {

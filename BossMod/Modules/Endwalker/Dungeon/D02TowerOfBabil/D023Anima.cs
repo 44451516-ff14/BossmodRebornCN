@@ -61,12 +61,12 @@ public enum TetherID : uint
 
 public enum IconID : uint
 {
-    ChasingAOE = 197 // player
+    CoffinScratch = 197 // player
 }
 
 sealed class ArenaChange(BossModule module) : BossComponent(module)
 {
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x03)
         {
@@ -139,12 +139,12 @@ sealed class Gravitons(BossModule module) : Components.Voidzone(module, 1f, GetV
 }
 
 sealed class AetherialPull(BossModule module) : Components.StretchTetherDuo(module, 33f, 7.9d, tetherIDGood: (uint)TetherID.AetherialPullGood, knockbackImmunity: true);
-sealed class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1, 5, true, (uint)IconID.ChasingAOE)
+sealed class CoffinScratch(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.CoffinScratchFirst, (uint)AID.CoffinScratchRest, 6f, 1d, 5, true, (uint)IconID.CoffinScratch)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Targets[slot])
+        if (TargetsMask[slot])
         {
             var center = Arena.Center;
             hints.AddForbiddenZone(new SDRect(center + new WDir(18.5f, default), center + new WDir(-18.5f, default), 20f), Activation);

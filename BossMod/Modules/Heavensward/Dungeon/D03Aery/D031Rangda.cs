@@ -68,14 +68,15 @@ class IonosphericCharge(BossModule module) : Components.BaitAwayTethers(module, 
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count == 0)
-            return;
-        hints.Add("Pass the tether to a statue!");
+        if (IsBaitTarget(actor))
+        {
+            hints.Add("Pass the tether to a statue!");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveBaitsOn(actor).Count == 0)
+        if (!IsBaitTarget(actor))
         {
             return;
         }
@@ -91,12 +92,12 @@ class IonosphericCharge(BossModule module) : Components.BaitAwayTethers(module, 
             forbidden[i] = new SDInvertedCircle(statues[i].Position, 4f);
         }
 
-        hints.AddForbiddenZone(new SDIntersection(forbidden), ActiveBaits.FirstOrDefault().Activation);
+        hints.AddForbiddenZone(new SDIntersection(forbidden), CurrentBaits.Ref(0).Activation);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (ActiveBaitsOn(pc).Count == 0)
+        if (!IsBaitTarget(pc))
         {
             return;
         }

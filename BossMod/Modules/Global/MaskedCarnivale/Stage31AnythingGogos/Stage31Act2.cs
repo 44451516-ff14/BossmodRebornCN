@@ -76,7 +76,7 @@ sealed class ThunderIII(BossModule module) : Components.VoidzoneAtCastTarget(mod
 
 sealed class GogoBlizzardIII(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(8f);
+    private readonly AOEShapeCircle circle = new(8f);
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
@@ -110,7 +110,7 @@ sealed class Pyretic(BossModule module) : Components.StayMove(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Pyretic)
         {

@@ -54,12 +54,11 @@ sealed class CollectSacks(BossModule module) : Components.GenericTowers(module)
 
         var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
 
-        bool InAOE(WPos pos, ReadOnlySpan<Components.GenericAOEs.AOEInstance> aoes)
+        static bool InAOE(WPos pos, ReadOnlySpan<Components.GenericAOEs.AOEInstance> aoes)
         {
             var len = aoes.Length;
             for (var i = 0; i < len; ++i)
             {
-                ref readonly var aoe = ref aoes[i];
                 if (aoes[i].Check(pos))
                 {
                     return true;
@@ -93,7 +92,7 @@ sealed class CollectSacks(BossModule module) : Components.GenericTowers(module)
 
         if (closest != null)
         {
-            hints.GoalZones.Add(hints.GoalSingleTarget(closest, 0.5f, 10f));
+            hints.GoalZones.Add(AIHints.GoalSingleTarget(closest, 0.5f, 10f));
         }
     }
 }

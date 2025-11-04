@@ -10,7 +10,7 @@ sealed class P2OptimizedBladedance : Components.BaitAwayTethers
     }
 }
 
-sealed class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 3, alwaysShowSpreads: true)
+sealed class P2BeyondDefense(BossModule module) : Components.UniformStackSpread(module, 6f, 5f, 3)
 {
     public enum Mechanic { None, Spread, Stack }
 
@@ -88,13 +88,13 @@ sealed class P2OptimizedPassageOfArms(BossModule module) : BossComponent(module)
         e?.Priority = AIHints.Enemy.PriorityInvincible;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Invincibility && actor.OID == (uint)OID.OmegaM)
             _invincible = actor;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Invincibility && _invincible == actor)
             _invincible = null;

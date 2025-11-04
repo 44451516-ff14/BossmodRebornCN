@@ -17,7 +17,7 @@ sealed class Spiritcull(BossModule module) : Components.GenericStackSpread(modul
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.BloodSacrifice)
         {

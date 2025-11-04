@@ -30,7 +30,7 @@ class MarkOfDeath(BossModule module) : Components.SingleTargetInstant(module, (u
 {
     private BitMask _marked;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
         {
@@ -38,7 +38,7 @@ class MarkOfDeath(BossModule module) : Components.SingleTargetInstant(module, (u
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
         {

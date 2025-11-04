@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P1HandOfPain(BossModule module) : Components.CastCounter(module, (uint)AID.HandOfPain)
 {
     private readonly TEA bossmod = (TEA)module;

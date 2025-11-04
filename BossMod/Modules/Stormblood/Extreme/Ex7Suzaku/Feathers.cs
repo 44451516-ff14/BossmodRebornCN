@@ -24,7 +24,7 @@ sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs
             AOEs.Clear();
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PrimaryTarget && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -32,7 +32,7 @@ sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PrimaryTarget && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -115,12 +115,12 @@ sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs
                     var b = birds[i];
                     if (!b.IsDead)
                         continue;
-                    hints.GoalZones.Add(hints.GoalProximity(b.Position, 7.12f, 100f));
+                    hints.GoalZones.Add(AIHints.GoalProximity(b.Position, 7.12f, 100f));
                 }
             }
             else // unsync we can just take all 4 birds
             {
-                hints.GoalZones.Add(hints.GoalProximity(Arena.Center, 7.12f, 100f));
+                hints.GoalZones.Add(AIHints.GoalProximity(Arena.Center, 7.12f, 100f));
             }
         }
         else if (_target[slot])
@@ -128,7 +128,7 @@ sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs
             var count = plumeCache.Count;
             for (var i = 0; i < count; ++i)
             {
-                hints.GoalZones.Add(hints.GoalProximity(Ex7Suzaku.ArenaCenter - 20f * (plumeCache[i] - Ex7Suzaku.ArenaCenter).Normalized(), 5f, 100f));
+                hints.GoalZones.Add(AIHints.GoalProximity(Ex7Suzaku.ArenaCenter - 20f * (plumeCache[i] - Ex7Suzaku.ArenaCenter).Normalized(), 5f, 100f));
             }
         }
         else

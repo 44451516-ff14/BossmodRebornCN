@@ -112,7 +112,7 @@ sealed class ElectrochemicalReaction(BossModule module) : Components.GenericAOEs
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.Laser1 or (uint)TetherID.Laser2)
         {

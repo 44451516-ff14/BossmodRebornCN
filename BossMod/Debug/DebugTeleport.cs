@@ -7,150 +7,181 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
 namespace BossMod;
 
-sealed class DebugTeleport
+sealed class DebugTeleport : IDisposable
 {
-    private bool EnableNoClip;
-    private float NoClipSpeed = 0.0001f;
-    private Vector3 inputCoordinates;
+    private bool _enableNoClip;
+    private bool _subscribed;
+    private float _noClipSpeed = 6.0f; // units per second
+    private Vector3 _inputCoordinates;
 
     public unsafe void Draw()
     {
+        if (!_subscribed)
+        {
+            Service.Framework.Update += OnUpdate;
+            _subscribed = true;
+        }
+
         ImGui.BeginGroup();
-        ImGui.Checkbox("No Clip", ref EnableNoClip);
-        if (EnableNoClip)
-        {
-            Enable();
-            ImGui.SameLine();
-            ImGui.SetNextItemWidth(150f);
-            ImGui.InputFloat("No Clip Speed", ref NoClipSpeed, 0.0001f, default, "%.4f");
-        }
-        else
-        {
-            Disable();
-        }
+
+        ImGui.Checkbox("No clip", ref _enableNoClip);
+
+        ImGui.SameLine();
+        ImGui.SetNextItemWidth(180f);
+        ImGui.InputFloat("No clip speed (yalms/s)", ref _noClipSpeed, 0.1f, 1f, "%.3f");
+        _noClipSpeed = Math.Clamp(_noClipSpeed, 0.001f, 1000f);
+
         var localPlayer = Service.ClientState.LocalPlayer;
         var pos = localPlayer != null ? localPlayer.Position : Vector3.Zero;
         ImGui.Separator();
         ImGui.EndGroup();
+
         ImGui.BeginGroup();
-        ImGui.Text("Current Player Coordinates:");
-        ImGui.Text("X: " + pos.X.ToString("F3"));
-        ImGui.Text("Y: " + pos.Y.ToString("F3"));
-        ImGui.Text("Z: " + pos.Z.ToString("F3"));
+        ImGui.Text("Current player coordinates:");
+        ImGui.Text($"X: {pos.X:F3}");
+        ImGui.Text($"Y: {pos.Y:F3}");
+        ImGui.Text($"Z: {pos.Z:F3}");
         ImGui.EndGroup();
+
         ImGui.Separator();
+
         ImGui.BeginGroup();
-        ImGui.Text("Enter Target Coordinates:");
-        if (ImGui.Button("Set Position"))
+        ImGui.Text("Enter target coordinates:");
+        if (ImGui.Button("Set position"))
         {
-            SetPlayerPosition(inputCoordinates);
+            SetPlayerPosition(_inputCoordinates);
         }
         ImGui.SetNextItemWidth(150f);
-        ImGui.InputFloat("X Coordinate", ref inputCoordinates.X, 1f);
+        ImGui.InputFloat("X coordinate", ref _inputCoordinates.X, 1f);
         ImGui.SetNextItemWidth(150f);
-        ImGui.InputFloat("Y Coordinate", ref inputCoordinates.Y, 1f);
+        ImGui.InputFloat("Y coordinate", ref _inputCoordinates.Y, 1f);
         ImGui.SetNextItemWidth(150f);
-        ImGui.InputFloat("Z Coordinate", ref inputCoordinates.Z, 1f);
+        ImGui.InputFloat("Z coordinate", ref _inputCoordinates.Z, 1f);
         ImGui.EndGroup();
+    }
+
+    public void Dispose()
+    {
+        if (_subscribed)
+        {
+            Service.Framework.Update -= OnUpdate;
+            _subscribed = false;
+        }
     }
 
     private unsafe void SetPlayerPosition(Vector3 position)
     {
         var p = Service.ClientState.LocalPlayer;
-        if (p != null)
+        if (p == null)
         {
-            var obj = (CSGameObject*)p.Address;
-            obj->SetPosition(position.X, position.Y, position.Z);
+            return;
         }
-    }
-
-    private void Enable()
-    {
-        Service.Framework.Update += OnUpdate;
-    }
-
-    private void Disable()
-    {
-        Service.Framework.Update -= OnUpdate;
+        var obj = (CSGameObject*)p.Address;
+        obj->SetPosition(position.X, position.Y, position.Z);
     }
 
     private unsafe void OnUpdate(IFramework framework)
     {
-        if (EnableNoClip && !Framework.Instance()->WindowInactive)
+        if (!_enableNoClip || Framework.Instance()->WindowInactive)
         {
-            var p = Service.ClientState.LocalPlayer;
-            if (p == null)
-            {
-                return;
-            }
-            var obj = (CSGameObject*)p.Address;
-            var cameraDirH = CameraManager.Instance()->GetActiveCamera()->DirH;
+            return;
+        }
 
-            if (IsKeyPressed(32)) // space to go up
-            {
-                Service.KeyState.SetRawValue(VirtualKey.SPACE, 0);
-                var pos = p.Position;
-                obj->SetPosition(pos.X, pos.Y + NoClipSpeed, pos.Z);
-            }
-            else if (IsKeyPressed(160)) // left shift to go down
-            {
-                Service.KeyState.SetRawValue(VirtualKey.LSHIFT, 0);
-                var pos = p.Position;
-                obj->SetPosition(pos.X, pos.Y - NoClipSpeed, pos.Z);
-            }
-            if (IsKeyPressed(87)) // W to go forward
-            {
-                Service.KeyState.SetRawValue(VirtualKey.W, 0);
-                var pos = p.Position;
-                var newPos = RotatePoint(pos.X, pos.Z, MathF.PI - cameraDirH, pos + new Vector3(0f, 0f, NoClipSpeed));
-                SetPosition(ref newPos);
-            }
-            else if (IsKeyPressed(83)) // S to go backwards
-            {
-                Service.KeyState.SetRawValue(VirtualKey.S, 0);
-                var pos = p.Position;
-                var newPos = RotatePoint(pos.X, pos.Z, MathF.PI - cameraDirH, pos + new Vector3(0f, 0f, -NoClipSpeed));
-                SetPosition(ref newPos);
-            }
-            if (IsKeyPressed(65)) // A to go left
-            {
-                Service.KeyState.SetRawValue(VirtualKey.A, 0);
-                var pos = p.Position;
-                var newPos = RotatePoint(pos.X, pos.Z, MathF.PI - cameraDirH, pos + new Vector3(NoClipSpeed, 0f, 0f));
-                SetPosition(ref newPos);
-            }
-            else if (IsKeyPressed(68)) // D to go right
-            {
-                Service.KeyState.SetRawValue(VirtualKey.D, 0);
-                var pos = p.Position;
-                var newPos = RotatePoint(pos.X, pos.Z, MathF.PI - cameraDirH, pos + new Vector3(-NoClipSpeed, 0f, 0f));
-                SetPosition(ref newPos);
-            }
+        var p = Service.ClientState.LocalPlayer;
+        if (p == null)
+        {
+            return;
+        }
 
-            void SetPosition(ref Vector3 pos) => obj->SetPosition(pos.X, pos.Y, pos.Z);
-            static Vector3 RotatePoint(float cx, float cy, float angle, Vector3 p)
-            {
-                if (angle == default)
-                {
-                    return p;
-                }
-                var (sin, cos) = MathF.SinCos(angle);
+        var obj = (CSGameObject*)p.Address;
+        var pos = p.Position;
 
-                p.X -= cx;
-                p.Z -= cy;
+        // Δtime from ImGui (same thread), clamped to avoid zeros
+        var dt = Math.Max(1e-4f, ImGui.GetIO().DeltaTime);
+        var step = _noClipSpeed * dt;
 
-                var xnew = p.X * cos - p.Z * sin;
-                var ynew = p.X * sin + p.Z * cos;
+        // camera yaw
+        var camera = CameraManager.Instance()->GetActiveCamera();
+        var yaw = MathF.PI - camera->DirH;
+        var (s, c) = MathF.SinCos(yaw);
 
-                p.X = xnew + cx;
-                p.Z = ynew + cy;
-                return p;
-            }
-            static bool IsKeyPressed(int key)
-            {
-                static bool IsBitSet(short b, int pos) => (b & (1 << pos)) != 0;
-                return key != 0 && IsBitSet(PInvoke.User32.GetAsyncKeyState(key), 15);
-            }
+        // Build camera-space basis
+        // forward = rotate (0,0,1) by yaw -> (-sin, 0, cos)
+        // right   = rotate (1,0,0) by yaw -> ( cos, 0, sin)
+        var forward = new Vector3(-s, 0f, c);
+        var right = new Vector3(c, 0f, s);
+
+        // poll keys once; allow diagonals
+        var up = IsKeyPressed(32);
+        var down = IsKeyPressed(160);
+        var w = IsKeyPressed(87);
+        var sKey = IsKeyPressed(83);
+        var a = IsKeyPressed(65);
+        var d = IsKeyPressed(68);
+
+        // cancel game input only for pressed keys
+        if (up)
+        {
+            Service.KeyState.SetRawValue(VirtualKey.SPACE, 0);
+        }
+        if (down)
+        {
+            Service.KeyState.SetRawValue(VirtualKey.LSHIFT, 0);
+        }
+        if (w)
+        {
+            Service.KeyState.SetRawValue(VirtualKey.W, 0);
+        }
+        if (sKey)
+        {
+            Service.KeyState.SetRawValue(VirtualKey.S, 0);
+        }
+        if (a)
+        {
+            Service.KeyState.SetRawValue(VirtualKey.A, 0);
+        }
+        if (d)
+        {
+            Service.KeyState.SetRawValue(VirtualKey.D, 0);
+        }
+
+        // accumulate movement
+        var move = Vector3.Zero;
+        if (up)
+        {
+            move.Y += step;
+        }
+        if (down)
+        {
+            move.Y -= step;
+        }
+        if (w)
+        {
+            move += forward * step; // forward
+        }
+        if (sKey)
+        {
+            move -= forward * step; // backwards
+        }
+        if (a)
+        {
+            move += right * step; // left
+        }
+        if (d)
+        {
+            move -= right * step; // right
+        }
+
+        if (move != Vector3.Zero)
+        {
+            var newPos = pos + move;
+            obj->SetPosition(newPos.X, newPos.Y, newPos.Z);
+        }
+
+        static bool IsKeyPressed(int vk)
+        {
+            static bool IsBitSet(short b, int bit) => (b & (1 << bit)) != 0;
+            return vk != 0 && IsBitSet(PInvoke.User32.GetAsyncKeyState(vk), 15);
         }
     }
 }

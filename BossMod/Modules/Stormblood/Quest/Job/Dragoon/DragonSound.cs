@@ -28,13 +28,13 @@ class Enervation(BossModule module) : BossComponent(module)
     private bool Active;
     private Actor? OrnKhai;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (actor.OID == 0 && status.ID == (uint)SID.Enervation)
             Active = true;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (actor.OID == 0 && status.ID == (uint)SID.Enervation)
             Active = false;
@@ -51,7 +51,8 @@ class Enervation(BossModule module) : BossComponent(module)
 
         hints.ActionsToExecute.Push(ActionID.MakeSpell(DRG.AID.ElusiveJump), actor, ActionQueue.Priority.Medium, facingAngle: -actor.AngleTo(OrnKhai));
 
-        hints.GoalZones.Add(p => p.InCircle(OrnKhai.Position, 3) ? 100 : 0);
+        var okp = OrnKhai.Position;
+        hints.GoalZones.Add(p => p.InCircle(okp, 3) ? 100 : 0);
     }
 }
 

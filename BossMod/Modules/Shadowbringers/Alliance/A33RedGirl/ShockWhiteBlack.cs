@@ -7,7 +7,7 @@ abstract class ShockWhiteBait(BossModule module, uint iconID, double delay) : Co
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_arena.NumWalls != 0 && ActiveBaitsOn(actor).Count != 0)
+        if (_arena.NumWalls != 0 && IsBaitTarget(actor))
         {
             hints.Add("Intersect black walls!");
         }
@@ -22,7 +22,7 @@ sealed class ShockBlackBait(BossModule module) : Components.BaitAwayIcon(module,
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_arena.NumWalls != 0 && ActiveBaitsOn(actor).Count != 0)
+        if (_arena.NumWalls != 0 && IsBaitTarget(actor))
         {
             hints.Add("Intersect white walls!");
         }

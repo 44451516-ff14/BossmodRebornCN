@@ -12,7 +12,7 @@ sealed class FatefulWords(BossModule module) : Components.GenericKnockback(modul
         return [];
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var kind = status.ID switch
         {
@@ -24,7 +24,7 @@ sealed class FatefulWords(BossModule module) : Components.GenericKnockback(modul
             AssignMechanic(actor, kind);
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.WanderersFate or (uint)SID.SacrificesFate)
             AssignMechanic(actor, Kind.None);

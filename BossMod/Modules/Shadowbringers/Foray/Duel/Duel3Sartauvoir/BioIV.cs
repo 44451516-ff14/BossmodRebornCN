@@ -6,7 +6,7 @@ sealed class BioIV(BossModule module) : BossComponent(module)
     private static readonly ActionID esuna = ActionID.MakeSpell(ClassShared.AID.Esuna);
     private static readonly ActionID wardensPaean = ActionID.MakeSpell(BRD.AID.WardensPaean);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Poison)
         {
@@ -14,7 +14,7 @@ sealed class BioIV(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Poison)
         {

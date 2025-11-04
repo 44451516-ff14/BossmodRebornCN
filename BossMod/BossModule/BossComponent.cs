@@ -3,6 +3,7 @@
 // different encounter mechanics can be split into independent components
 // individual components should be activated and deactivated when needed (typically by state machine transitions)
 // components can also have sub-components; typically these are created immediately by constructor
+[SkipLocalsInit]
 public class BossComponent(BossModule module)
 {
     public readonly BossModule Module = module;
@@ -49,21 +50,24 @@ public class BossComponent(BossModule module)
     public virtual void OnActorDeath(Actor actor) { }
     public virtual void OnActorTargetable(Actor actor) { }
     public virtual void OnActorUntargetable(Actor actor) { }
-    public virtual void OnActorRenderflagsChanged(Actor actor, int renderflags) { }
-    public virtual void OnStatusGain(Actor actor, ActorStatus status) { } // note: also called for status-change events; if component needs to distinguish between lose+gain and change, it can use the fact that 'lose' is not called for change
-    public virtual void OnStatusLose(Actor actor, ActorStatus status) { }
-    public virtual void OnTethered(Actor source, ActorTetherInfo tether) { }
-    public virtual void OnUntethered(Actor source, ActorTetherInfo tether) { }
+    public virtual void OnActorRenderflagsChange(Actor actor, int renderflags) { }
+    public virtual void OnStatusGain(Actor actor, ref ActorStatus status) { } // note: also called for status-change events; if component needs to distinguish between lose+gain and change, it can use the fact that 'lose' is not called for change
+    public virtual void OnStatusLose(Actor actor, ref ActorStatus status) { }
+    public virtual void OnTethered(Actor source, in ActorTetherInfo tether) { }
+    public virtual void OnUntethered(Actor source, in ActorTetherInfo tether) { }
     public virtual void OnCastStarted(Actor caster, ActorCastInfo spell) { } // note: action is always a spell; not called for player spells
     public virtual void OnCastFinished(Actor caster, ActorCastInfo spell) { } // note: action is always a spell; not called for player spells
     public virtual void OnEventCast(Actor caster, ActorCastEvent spell) { } // note: action is always a spell; not called for player spells
     public virtual void OnEventIcon(Actor actor, uint iconID, ulong targetID) { }
+    public virtual void OnEventVFX(Actor actor, uint vfxID, ulong targetID) { }
     public virtual void OnActorEState(Actor actor, ushort state) { }
     public virtual void OnActorEAnim(Actor actor, uint state) { }
     public virtual void OnActorPlayActionTimelineEvent(Actor actor, ushort id) { }
     public virtual void OnActorNpcYell(Actor actor, ushort id) { }
     public virtual void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2) { }
-    public virtual void OnEventEnvControl(byte index, uint state) { }
+    public virtual void OnActorEventStateChange(Actor actor, byte value) { }
+    public virtual void OnMapEffect(byte index, uint state) { }
+    public virtual void OnLegacyMapEffect(byte seq, byte param, byte[] data) { }
     public virtual void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4) { }
 
     // some commonly used shortcuts

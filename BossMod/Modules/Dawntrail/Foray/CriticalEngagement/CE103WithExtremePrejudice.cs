@@ -69,7 +69,7 @@ sealed class RockSlideStoneSwell(BossModule module) : Components.GenericAOEs(mod
         return aoes[..index];
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         var id = tether.ID;
         AOEShape? shape = id switch

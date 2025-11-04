@@ -159,7 +159,7 @@ sealed class WindStoneLightSurge(BossModule module) : Components.GenericAOEs(mod
                 }
                 if (i == 0)
                 {
-                    AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                    SortHelpers.SortAOEByActivation(AOEs);
                 }
             }
         }
@@ -183,7 +183,7 @@ sealed class WindStoneLightSurge(BossModule module) : Components.GenericAOEs(mod
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.SphereStatus)
         {

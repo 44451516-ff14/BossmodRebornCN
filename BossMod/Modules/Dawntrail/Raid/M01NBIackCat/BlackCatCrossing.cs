@@ -37,12 +37,12 @@ sealed class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module
             case (uint)AID.BlackCatCrossingRest:
                 _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: false));
                 if (_aoes.Count == 8)
-                    _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                    SortHelpers.SortAOEByActivation(_aoes);
                 break;
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.Extra != 0x307 && _currentPattern == Pattern.None)
         {

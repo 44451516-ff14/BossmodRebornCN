@@ -9,6 +9,7 @@ public enum OID : uint
 public enum AID : uint
 {
     Attack = 6499, // Boss->player, no cast, single-target
+
     AuthoritativeShriek = 31477, // Boss->self, 3.0s cast, single-target
     Mandrashock1 = 31478, // PachypodiumMine->self, 5.0s cast, range 10 circle
     Mandrashock2 = 32700, // PachypodiumMine->self, 8.0s cast, range 10 circle

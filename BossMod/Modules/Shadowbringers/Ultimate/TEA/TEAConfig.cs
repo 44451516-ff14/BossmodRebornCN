@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 [ConfigDisplay(Order = 0x200, Parent = typeof(ShadowbringersConfig))]
 public sealed class TEAConfig() : ConfigNode()
 {

@@ -1,29 +1,30 @@
 ﻿namespace BossMod.Stormblood.Ultimate.UWU;
 
-class UWUStates : StateMachineBuilder
+sealed class UWUStates : StateMachineBuilder
 {
     private readonly UWU _module;
 
     public UWUStates(UWU module) : base(module)
     {
         _module = module;
-        SimplePhase(0, Phase1Garuda, "P1: Garuda")
+        SimplePhase(default, Phase1Garuda, "P1: Garuda")
             .ActivateOnEnter<P1Plumes>()
             .ActivateOnEnter<P1Gigastorm>()
             .ActivateOnEnter<P1GreatWhirlwind>() // TODO: not sure about this...
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || Module.PrimaryActor.HPMP.CurHP <= 1 && !Module.PrimaryActor.IsTargetable;
-        SimplePhase(1, Phase2Ifrit, "P2: Ifrit")
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || module.PrimaryActor.HPMP.CurHP <= 1 && !module.PrimaryActor.IsTargetable;
+        SimplePhase(1u, Phase2Ifrit, "P2: Ifrit")
             .ActivateOnEnter<P2Nails>()
             .ActivateOnEnter<P2InfernalFetters>()
             .ActivateOnEnter<P2SearingWind>()
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || (_module.Ifrit()?.HPMP.CurHP <= 1 && !(_module.Ifrit()?.IsTargetable ?? true));
-        SimplePhase(2, Phase3Titan, "P3: Titan")
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || _module.Ifrit()?.HPMP.CurHP <= 1 && !(_module.Ifrit()?.IsTargetable ?? true);
+        SimplePhase(2u, Phase3Titan, "P3: Titan")
             .ActivateOnEnter<P3Geocrush2>()
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || (_module.Titan()?.HPMP.CurHP <= 1 && !(_module.Titan()?.IsTargetable ?? true));
-        SimplePhase(3, Phase4LahabreaUltima, "P4: Lahabrea + Ultima")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || (_module.Ultima()?.CastInfo?.IsSpell(AID.UltimateSuppression) ?? false);
-        SimplePhase(4, Phase5Ultima, "P4: Ultima - suppression to enrage")
-            .Raw.Update = () => Module.PrimaryActor.IsDestroyed || (_module.Ultima()?.IsDead ?? false);
+            .OnExit(() => module.Arena.Bounds = new ArenaBoundsCustom([new Polygon(UWU.ArenaCenter, 20f, 64)]))
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || _module.Titan()?.HPMP.CurHP <= 1 && !(_module.Titan()?.IsTargetable ?? true);
+        SimplePhase(3u, Phase4LahabreaUltima, "P4: Lahabrea + Ultima")
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || (_module.Ultima()?.CastInfo?.IsSpell(AID.UltimateSuppression) ?? false);
+        SimplePhase(4u, Phase5Ultima, "P4: Ultima - suppression to enrage")
+            .Raw.Update = () => module.PrimaryActor.IsDestroyed || (_module.Ultima()?.IsDead ?? false);
     }
 
     private void Phase1Garuda(uint id)

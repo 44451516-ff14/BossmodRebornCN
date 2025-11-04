@@ -20,7 +20,7 @@ sealed class ColorClash(BossModule module) : Components.GenericStackSpread(modul
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (Stacks.Count == 0 && status.ID == (uint)SID.Stun && partnerStack is bool kind)
         {

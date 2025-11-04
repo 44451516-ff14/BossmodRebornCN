@@ -51,7 +51,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x17 && state == 0x00020001u)
         {
@@ -93,7 +93,7 @@ sealed class IceScreamFrozenSwirl(BossModule module) : Components.GenericAOEs(mo
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Freeze)
         {

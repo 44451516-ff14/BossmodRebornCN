@@ -8,7 +8,7 @@ sealed class SingleDoubleStyle1(BossModule module) : Components.GenericAOEs(modu
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.ActivateMechanicDoubleStyle1 or (uint)TetherID.ActivateMechanicDoubleStyle2)
         {

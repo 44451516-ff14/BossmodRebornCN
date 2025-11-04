@@ -34,6 +34,9 @@ public sealed class ColorConfig : ConfigNode
     [PropertyDisplay("Arena: trap")]
     public Color ArenaTrap = new(0x80000080);
 
+    [PropertyDisplay("Arena: light")]
+    public Color ArenaLight = new(0xffffffff);
+
     [PropertyDisplay("Arena: vulnerable, needs special attention")]
     public Color ArenaVulnerable = new(0xffff00ff);
 
@@ -147,5 +150,18 @@ public sealed class ColorConfig : ConfigNode
 
     [PropertyDisplay("Pathfinding debug colors")]
     public Color[] PathfindingColors = [new(0xff007fff), new(0xff808080), new(0xff0000ff), new(0xffff0080)];
+
+    [PropertyDisplay("Pathfinding debug colors 5")]
+    public Color PathfindingColors5 = new(0xffff0000);
+
+    [PropertyDisplay("Pathfinding debug colors 6")]
+    public Color PathfindingColors6 = new(0xffffffff);
+
+    [PropertyDisplay("Pathfinding debug colors 7")]
+    public Color PathfindingColors7 = new(0x80164bcb);
+
+    [PropertyDisplay("Pathfinding debug colors 8")]
+    public Color PathfindingColors8 = new(0x808236d3);
+
     public static ColorConfig DefaultConfig => new();
 }

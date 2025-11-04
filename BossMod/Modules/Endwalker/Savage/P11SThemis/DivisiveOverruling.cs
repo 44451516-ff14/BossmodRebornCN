@@ -20,7 +20,7 @@ class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
         var index = 0;
         while (index < count)
         {
-            ref readonly var aoe = ref aoes[index];
+            ref var aoe = ref aoes[index];
             if (aoe.Activation >= deadline)
             {
                 break;
@@ -54,7 +54,7 @@ class DivisiveOverruling(BossModule module) : Components.GenericAOEs(module)
         void AddAOE(AOEShapeRect shape)
         {
             AOEs.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            SortHelpers.SortAOEByActivation(AOEs);
         }
     }
 

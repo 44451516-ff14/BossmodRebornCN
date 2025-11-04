@@ -1,6 +1,7 @@
 ﻿namespace BossMod;
 
 // 2d vector that represents world-space direction on XZ plane
+[SkipLocalsInit]
 public readonly struct WDir(float x, float z)
 {
     public readonly float X = x;
@@ -55,7 +56,7 @@ public readonly struct WDir(float x, float z)
     public readonly Angle ToAngle() => new(MathF.Atan2(X, Z));
 
     public override readonly string ToString() => $"({X:f3}, {Z:f3})";
-    public readonly bool Equals(WDir other) => X == other.X && Z == other.Z;
+    public readonly bool Equals(WDir other) => this == other;
     public override readonly bool Equals(object? obj) => obj is WDir other && Equals(other);
     public override readonly int GetHashCode() => (X, Z).GetHashCode(); // TODO: this is a hack, the default should be good enough, but for whatever reason (X, -Z).GetHashCode() == (-X, Z).GetHashCode()...
 
@@ -78,6 +79,7 @@ public readonly struct WDir(float x, float z)
 }
 
 // 2d vector that represents world-space position on XZ plane
+[SkipLocalsInit]
 public readonly struct WPos(float x, float z)
 {
     public readonly float X = x;
@@ -141,7 +143,7 @@ public readonly struct WPos(float x, float z)
     }
 
     public override readonly string ToString() => $"[{X:f3}, {Z:f3}]";
-    public readonly bool Equals(WPos other) => X == other.X && Z == other.Z;
+    public readonly bool Equals(WPos other) => this == other;
     public override readonly bool Equals(object? obj) => obj is WPos other && Equals(other);
     public override readonly int GetHashCode() => (X, Z).GetHashCode(); // TODO: this is a hack, the default should be good enough, but for whatever reason (X, -Z).GetHashCode() == (-X, Z).GetHashCode()...
 
@@ -196,5 +198,58 @@ public readonly struct WPos(float x, float z)
         var t = Math.Clamp(offset.Dot(direction), 0f, length);
         var proj = origin + t * direction;
         return (this - proj).LengthSq() <= radius * radius;
+    }
+
+    public readonly bool InArcCapsule(WPos start, WDir toOrbitCenter, Angle angularLength, float tubeRadius)
+        => InArcCapsule(start, start + toOrbitCenter, angularLength, tubeRadius);
+    public readonly bool InArcCapsule(WPos start, WPos orbitCenter, Angle angularLength, float tubeRadius)
+    {
+        var tube2 = tubeRadius * tubeRadius;
+
+        // centers and radius
+        var ox = orbitCenter.X;
+        var oz = orbitCenter.Z;
+        var s = start;
+        var r0 = new WDir(s.X - ox, s.Z - oz); // orbit -> start
+        var R = r0.Length();
+
+        // end center
+        var r1 = r0.Rotate(angularLength);
+        var end = new WPos(ox + r1.X, oz + r1.Z);
+
+        // cap disks
+        var ds = (this - start).LengthSq() <= tube2;
+        if (ds)
+        {
+            return true;
+        }
+        var de = (this - end).LengthSq() <= tube2;
+        if (de)
+        {
+            return true;
+        }
+
+        // annulus band
+        var vx = X - ox;
+        var vz = Z - oz;
+        var r2 = vx * vx + vz * vz;
+        var Rin = R - tubeRadius;
+        var Rout = R + tubeRadius;
+        if (r2 < Rin * Rin || r2 > Rout * Rout)
+        {
+            return false;
+        }
+
+        // wedge (reuse donut-sector convention: union for >180°, intersection for ≤180°)
+        var half = angularLength.Abs() * 0.5f;
+        var coneFactor = half.Rad > Angle.HalfPi ? -1f : 1f;
+        var mid = Angle.FromDirection(r0) + angularLength * 0.5f;
+        var a90 = 90f.Degrees();
+        var nl = coneFactor * (mid + half + a90).ToDirection(); // left side normal
+        var nr = coneFactor * (mid - half - a90).ToDirection(); // right side normal
+        var sL = vx * nl.X + vz * nl.Z;
+        var sR = vx * nr.X + vz * nr.Z;
+
+        return coneFactor > 0f ? (sL <= 0f && sR <= 0f) : (sL >= 0f || sR >= 0f);
     }
 }

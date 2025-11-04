@@ -89,7 +89,7 @@ public sealed class V10Drakes(WorldState ws, Actor primary) : BossModule(ws, pri
         {
             var h = potHints[i];
             var e = h.Actor;
-            ref var p = ref h.Priority;
+            var p = h.Priority;
 
             if (e == PrimaryActor)
             {
@@ -111,6 +111,7 @@ public sealed class V10Drakes(WorldState ws, Actor primary) : BossModule(ws, pri
             {
                 p = DrakeSister?.IsDeadOrDestroyed ?? true ? 1 : AIHints.Enemy.PriorityUndesirable;
             }
+            h.Priority = p;
         }
     }
 }

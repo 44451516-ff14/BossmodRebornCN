@@ -6,8 +6,684 @@ using FFXIVClientStructs.FFXIV.Common.Component.BGCollision.Math;
 using Dalamud.Bindings.ImGui;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
+using Clipper2Lib;
 
 namespace BossMod;
+
+public static unsafe class CollisionOutlinesExtractor
+{
+    public sealed class PolygonWithHoles
+    {
+        public List<Vector3> Outer = [];
+        public List<List<Vector3>> Holes = [];
+    }
+
+    public enum ClipboardVectorFormat { Vector2XZ, Vector3XYZ }
+
+    public enum MaterialMatchMode
+    {
+        EffectiveMasked, // current behavior
+        EffectiveExact, // effective == wantedId
+        PrimMasked, // (raw prim) masked compare
+        PrimExact // (raw prim) exact id match
+    }
+
+    public static List<PolygonWithHoles> ExtractPolygonsUnion(ColliderMesh* coll, ulong wantedMaterialId, ulong wantedMask,
+      float snapEpsXZ = 1e-4f, Vector2 centerXZ = default, float radius = 0f, bool strictRadius = true,
+      MaterialMatchMode matchMode = MaterialMatchMode.PrimExact, long scale = 1024 * 1024, float minAreaMeters2 = 1e-6f)
+    {
+        var res = new List<PolygonWithHoles>();
+        if (coll == null || coll->MeshIsSimple || coll->Mesh == null)
+        {
+            return res;
+        }
+
+        // precompute snapping parameters
+        var snapInt = ComputeSnapInt(snapEpsXZ, scale);
+        var subjects = new Paths64();
+        var yLUT = new Dictionary<Point64, float>(1 << 13);
+        var edges = new List<EdgeY>(1 << 15);
+
+        CollectSubjectTriangles(coll, wantedMaterialId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
+
+        if (subjects.Count == 0)
+        {
+            return res;
+        }
+
+        var union = Clipper.Union(subjects, FillRule.NonZero);
+        return Paths64ToPolys(union, yLUT, edges, scale, snapInt, minAreaMeters2);
+    }
+
+    public static List<PolygonWithHoles> ExtractPolygonsUnionStreamed(ColliderStreamed* streamed, ulong wantedMaterialId,
+        ulong wantedMask, float snapEpsXZ = 1e-4f, Vector2 centerXZ = default, float radius = 0f, bool strictRadius = true,
+        MaterialMatchMode matchMode = MaterialMatchMode.PrimExact, long scale = 1024 * 1024, float minAreaMeters2 = 1e-6f)
+    {
+        var res = new List<PolygonWithHoles>();
+        if (streamed == null || streamed->Header == null || streamed->Elements == null)
+        {
+            return res;
+        }
+
+        var snapInt = ComputeSnapInt(snapEpsXZ, scale);
+        var subjects = new Paths64();
+        var yLUT = new Dictionary<Point64, float>(1 << 15);
+        var edges = new List<EdgeY>(1 << 17);
+
+        int n = streamed->Header->NumMeshes;
+        for (var i = 0; i < n; ++i)
+        {
+            var elem = streamed->Elements + i;
+            var cm = elem->Mesh;
+            if (cm == null || cm->MeshIsSimple || cm->Mesh == null)
+            {
+                continue;
+            }
+
+            CollectSubjectTriangles(cm, wantedMaterialId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
+        }
+
+        if (subjects.Count == 0)
+        {
+            return res;
+        }
+
+        var union = Clipper.Union(subjects, FillRule.NonZero);
+        return Paths64ToPolys(union, yLUT, edges, scale, snapInt, minAreaMeters2);
+    }
+
+    private static void CollectSubjectTriangles(ColliderMesh* coll, ulong wantedId, ulong wantedMask, Vector2 centerXZ, float radius, bool strictRadius, MaterialMatchMode matchMode,
+       long scale, long snapInt, Paths64 subjects, Dictionary<Point64, float> yLUT, List<EdgeY> edges)
+    {
+        var mesh = (MeshPCB*)coll->Mesh;
+        var world = coll->World;
+        ulong objMask = coll->Collider.ObjectMaterialMask;
+        ulong objId = coll->Collider.ObjectMaterialValue & objMask;
+
+        CollectNode(mesh->RootNode, ref world, objId, objMask, wantedId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
+    }
+
+    private static void CollectNode(MeshPCB.FileNode* node, ref Matrix4x3 world, ulong objMatId, ulong objMatMask, ulong wantedId, ulong wantedMask,
+        Vector2 centerXZ, float radius, bool strictRadius, MaterialMatchMode matchMode, long scale, long snapInt, Paths64 subjects, Dictionary<Point64, float> yLUT, List<EdgeY> edges)
+    {
+        if (node == null)
+        {
+            return;
+        }
+
+        if (radius > 0f && !OBBXZIntersectsCircle(node->LocalBounds, ref world, centerXZ, radius))
+        {
+            return;
+        }
+
+        int nv = node->NumVertsRaw + node->NumVertsCompressed;
+        int np = node->NumPrims;
+
+        if (nv > 0 && np > 0)
+        {
+            var r2 = radius * radius;
+            for (var i = 0; i < np; ++i)
+            {
+                var prim = node->Primitives[i];
+                if (!MatchesMaterial(prim.Material, objMatId, objMatMask, wantedId, wantedMask, matchMode))
+                {
+                    continue;
+                }
+
+                var a = world.TransformCoordinate(node->Vertex(prim.V1));
+                var b = world.TransformCoordinate(node->Vertex(prim.V2));
+                var c = world.TransformCoordinate(node->Vertex(prim.V3));
+
+                if (radius > 0f)
+                {
+                    if (strictRadius)
+                    {
+                        if (!(WithinR2XZ(a, centerXZ, r2) && WithinR2XZ(b, centerXZ, r2) && WithinR2XZ(c, centerXZ, r2)))
+                        {
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!TriPointDistance2LessEqR2(a, b, c, centerXZ, r2))
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                // quantize & SNAP to grid to fuse seams
+                var pa = Snap(ToP64(a, scale), snapInt);
+                var pb = Snap(ToP64(b, scale), snapInt);
+                var pc = Snap(ToP64(c, scale), snapInt);
+
+                // drop degenerate after snapping (any duplicates)
+                if (pa == pb || pb == pc || pc == pa)
+                {
+                    continue;
+                }
+
+                // enforce CCW in XZ after snap (consistent winding -> no NonZero cancellations)
+                EnsureCCW(ref pa, ref pb, ref pc);
+
+                // add triangle
+                subjects.Add([pa, pb, pc]);
+
+                // Y lifting LUT + edges for interpolation
+                AccumY(yLUT, pa, a.Y);
+                AccumY(yLUT, pb, b.Y);
+                AccumY(yLUT, pc, c.Y);
+
+                edges.Add(new(pa, pb, a.Y, b.Y));
+                edges.Add(new(pb, pc, b.Y, c.Y));
+                edges.Add(new(pc, pa, c.Y, a.Y));
+            }
+        }
+
+        CollectNode(node->Child1, ref world, objMatId, objMatMask, wantedId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
+        CollectNode(node->Child2, ref world, objMatId, objMatMask, wantedId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
+    }
+
+    private static List<PolygonWithHoles> Paths64ToPolys(Paths64 paths, Dictionary<Point64, float> yLUT, List<EdgeY> edges, long scale, long snapInt, float minAreaMeters2)
+    {
+        // filter slivers (post-union) using area threshold
+        var minAreaInt = Math.Max(1.0, minAreaMeters2 * (double)scale * scale);
+
+        var outers = new List<(Path64 path, double area, AABB2 bb)>(paths.Count);
+        var holes = new List<(Path64 path, double area, AABB2 bb)>();
+
+        foreach (var p in paths)
+        {
+            if (p.Count < 3)
+            {
+                continue;
+            }
+
+            // small clean-up: remove consecutive duplicates after union
+            var cleaned = RemoveConsecutiveDuplicates(p);
+            if (cleaned.Count < 3)
+            {
+                continue;
+            }
+
+            var aInt = Math.Abs(AreaSigned(cleaned));
+            if (aInt < minAreaInt)
+            {
+                continue; // drop tiny fragments
+            }
+
+            var aSigned = AreaSigned(cleaned); // signed for orientation
+            var bb = BoundsXZ(cleaned);
+
+            if (aSigned > 0d)
+            {
+                outers.Add((cleaned, aSigned, bb));
+            }
+            else
+            {
+                holes.Add((cleaned, aSigned, bb));
+            }
+        }
+
+        outers.Sort(static (A, B) => B.area.CompareTo(A.area));
+        holes.Sort(static (A, B) => Math.Abs(B.area).CompareTo(Math.Abs(A.area)));
+
+        var countO = outers.Count;
+        var countH = holes.Count;
+        var res = new List<PolygonWithHoles>(countO + countH);
+
+        for (var i = 0; i < countO; ++i)
+        {
+            var poly = new PolygonWithHoles();
+            var outer = outers[i];
+            PolyToVectorsCCW(outer.path, yLUT, edges, scale, poly.Outer);
+
+            for (var h = 0; h < countH; ++h)
+            {
+                var hol = holes[h];
+                if (hol.path == null)
+                {
+                    continue;
+                }
+                if (!outer.bb.Contains(hol.bb))
+                {
+                    continue;
+                }
+
+                var centroid = Centroid(hol.path, scale);
+                if (PointInPolygonXZ(centroid, outer.path))
+                {
+                    var hole = new List<Vector3>();
+                    PolyToVectorsCCW(hol.path, yLUT, edges, scale, hole);
+                    poly.Holes.Add(hole);
+                    holes[h] = (null!, 0, default);
+                }
+            }
+            res.Add(poly);
+        }
+
+        for (var i = 0; i < countH; ++i)
+        {
+            var h = holes[i];
+            if (h.path == null)
+            {
+                continue;
+            }
+            var poly = new PolygonWithHoles();
+            PolyToVectorsCCW(h.path, yLUT, edges, scale, poly.Outer);
+            res.Add(poly);
+        }
+        return res;
+    }
+
+    private static Path64 RemoveConsecutiveDuplicates(Path64 p)
+    {
+        if (p.Count <= 2)
+        {
+            return p;
+        }
+        var count = p.Count;
+        var outp = new Path64(count);
+        Point64 prev = new(long.MinValue, long.MinValue);
+        for (var i = 0; i < count; ++i)
+        {
+            var pi = p[i];
+            if (i == 0 || pi.X != prev.X || pi.Y != prev.Y)
+            {
+                outp.Add(pi);
+            }
+            prev = pi;
+        }
+        // also check last==first
+        var countO = outp.Count;
+        if (countO >= 2 && outp[0] == outp[^1])
+        {
+            outp.RemoveAt(countO - 1);
+        }
+        return outp;
+    }
+
+    private static void PolyToVectorsCCW(Path64 path, Dictionary<Point64, float> yLUT, List<EdgeY> edges, long scale, List<Vector3> dst)
+    {
+        if (AreaSigned(path) < 0d)
+        {
+            path.Reverse();
+        }
+        var count = path.Count;
+        dst.Capacity = Math.Max(dst.Capacity, count);
+        for (var i = 0; i < count; ++i)
+        {
+            var p = path[i];
+            var y = SampleY(p, yLUT, edges);
+            dst.Add(new Vector3(p.X / (float)scale, y, p.Y / (float)scale));
+        }
+    }
+
+    public static string FormatForClipboard(List<PolygonWithHoles> polys, ClipboardVectorFormat fmt, int decimals = 5)
+    {
+        var ci = System.Globalization.CultureInfo.InvariantCulture;
+        var f = "F" + decimals;
+
+        string Vec2(Vector3 v) => $"new({v.X.ToString(f, ci)}f, {v.Z.ToString(f, ci)}f)";
+        string Vec3(Vector3 v) => $"new({v.X.ToString(f, ci)}f, {v.Y.ToString(f, ci)}f, {v.Z.ToString(f, ci)}f)";
+
+        string V(Vector3 v) => fmt == ClipboardVectorFormat.Vector2XZ ? Vec2(v) : Vec3(v);
+
+        var sb = new StringBuilder();
+        sb.AppendLine(fmt == ClipboardVectorFormat.Vector2XZ ? "var outers = new WPos[][] {" : "var outers = new System.Numerics.Vector3[][] {");
+
+        var countP = polys.Count;
+        for (var i = 0; i < countP; ++i)
+        {
+            sb.Append("    new[] { ");
+            var poly = polys[i];
+            var countO = poly.Outer.Count;
+            for (var j = 0; j < countO; ++j)
+            {
+                sb.Append(V(poly.Outer[j]));
+                if (j + 1 < countO)
+                {
+                    sb.Append(", ");
+                }
+            }
+            sb.AppendLine(i + 1 < countP ? " }," : " }");
+        }
+        sb.AppendLine("};");
+
+        sb.AppendLine(fmt == ClipboardVectorFormat.Vector2XZ ? "var holes = new WPos[][][] {" : "var holes = new System.Numerics.Vector3[][][] {");
+
+        for (var i = 0; i < countP; ++i)
+        {
+            sb.Append("    new[] { ");
+            var poly = polys[i];
+            var countH = poly.Holes.Count;
+            for (var h = 0; h < countH; ++h)
+            {
+                var hole = poly.Holes[h];
+                sb.Append("new[] { ");
+                var countH2 = hole.Count;
+                for (var j = 0; j < countH2; j++)
+                {
+                    sb.Append(V(hole[j]));
+                    if (j + 1 < hole.Count)
+                    {
+                        sb.Append(", ");
+                    }
+                }
+                sb.Append(" }");
+                if (h + 1 < countH)
+                {
+                    sb.Append(", ");
+                }
+            }
+            sb.AppendLine(i + 1 < countP ? " }," : " }");
+        }
+        sb.AppendLine("};");
+        return sb.ToString();
+    }
+
+    private static bool MatchesMaterial(ulong primMaterial, ulong objMatId, ulong objMatMask, ulong wantedId, ulong wantedMask, MaterialMatchMode mode)
+    {
+        var prim = primMaterial;
+        var effective = (prim & ~objMatMask) | (objMatId & objMatMask);
+
+        return mode switch
+        {
+            MaterialMatchMode.PrimExact => prim == wantedId,
+            MaterialMatchMode.PrimMasked => ((prim ^ wantedId) & wantedMask) == 0UL,
+            MaterialMatchMode.EffectiveExact => effective == wantedId,
+            MaterialMatchMode.EffectiveMasked => ((effective ^ wantedId) & wantedMask) == 0UL,
+            _ => false
+        };
+    }
+    private static bool WithinR2XZ(in Vector3 v, in Vector2 c, float r2)
+    {
+        float dx = v.X - c.X, dz = v.Z - c.Y;
+        return dx * dx + dz * dz <= r2;
+    }
+
+    private static Point64 ToP64(in Vector3 v, long s) => new((long)Math.Round(v.X * s), (long)Math.Round(v.Z * s));
+
+    private static void AccumY(Dictionary<Point64, float> lut, Point64 p, float y)
+    {
+        lut[p] = lut.TryGetValue(p, out var cur) ? (cur + y) * 0.5f : y;
+    }
+
+    private readonly struct EdgeY
+    {
+        public readonly Point64 A, B; public readonly float YA, YB;
+        public EdgeY(Point64 a, Point64 b, float ya, float yb)
+        {
+            // normalize key order to make on-seg checks stable
+            if (a.X > b.X || a.X == b.X && a.Y > b.Y)
+            {
+                (a, b) = (b, a);
+                (ya, yb) = (yb, ya);
+            }
+            A = a;
+            B = b;
+            YA = ya;
+            YB = yb;
+        }
+    }
+
+    private static float SampleY(Point64 p, Dictionary<Point64, float> lut, List<EdgeY> edges)
+    {
+        if (lut.TryGetValue(p, out var y))
+        {
+            return y;
+        }
+
+        // check if lies on any recorded edge (exact integer colinearity)
+        var count = edges.Count;
+        for (int i = 0, n = count; i < n; i++)
+        {
+            var e = edges[i];
+            if (!OnSegment(p, e.A, e.B))
+            {
+                continue;
+            }
+
+            // param t along the dominant axis
+            long dx = e.B.X - e.A.X, dz = e.B.Y - e.A.Y;
+            var t = Math.Abs(dx) >= Math.Abs(dz) ? dx == 0 ? 0 : (p.X - e.A.X) / (double)dx : dz == 0 ? 0 : (p.Y - e.A.Y) / (double)dz;
+            return (float)(e.YA + t * (e.YB - e.YA));
+        }
+
+        // fallback: nearest known vertex
+        var bestY = 0f;
+        var bestD2 = double.MaxValue;
+        foreach (var kv in lut)
+        {
+            double ddx = kv.Key.X - p.X, ddz = kv.Key.Y - p.Y;
+            var d2 = ddx * ddx + ddz * ddz;
+            if (d2 < bestD2)
+            {
+                bestD2 = d2;
+                bestY = kv.Value;
+            }
+        }
+        return bestY;
+    }
+
+    private static long ComputeSnapInt(float snapEpsXZ, long scale)
+    {
+        if (!(snapEpsXZ > 0f))
+        {
+            return 1L;
+        }
+        var k = (long)Math.Round(snapEpsXZ * scale);
+        return Math.Max(1, k);
+    }
+
+    private static Point64 Snap(Point64 p, long snapInt)
+    {
+        if (snapInt <= 1)
+        {
+            return p;
+        }
+        static long RoundToMultiple(long v, long m)
+        {
+            // nearest multiple of m
+            var half = m >> 1;
+            return v >= 0L ? (v + half) / m * m : (v - half) / m * m;
+        }
+        return new Point64(RoundToMultiple(p.X, snapInt), RoundToMultiple(p.Y, snapInt));
+    }
+
+    private static void EnsureCCW(ref Point64 a, ref Point64 b, ref Point64 c)
+    {
+        var cross = (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+        if (cross < 0L)
+        {
+            (b, c) = (c, b);
+        }
+    }
+
+    private static bool OnSegment(in Point64 p, in Point64 a, in Point64 b)
+    {
+        var cross = (b.X - a.X) * (p.Y - a.Y) - (b.Y - a.Y) * (p.X - a.X);
+        if (cross != 0L)
+        {
+            return false;
+        }
+        long minX = Math.Min(a.X, b.X), maxX = Math.Max(a.X, b.X);
+        long minY = Math.Min(a.Y, b.Y), maxY = Math.Max(a.Y, b.Y);
+        return p.X >= minX && p.X <= maxX && p.Y >= minY && p.Y <= maxY;
+    }
+
+    private static double AreaSigned(Path64 p)
+    {
+        long a = 0;
+        var n = p.Count;
+        for (int i = 0, j = n - 1; i < n; j = ++i)
+        {
+            a += p[j].X * p[i].Y - p[i].X * p[j].Y;
+        }
+        return 0.5 * a;
+    }
+
+    private static AABB2 BoundsXZ(Path64 p)
+    {
+        long minX = long.MaxValue, minZ = long.MaxValue, maxX = long.MinValue, maxZ = long.MinValue;
+        var count = p.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var pt = p[i];
+            if (pt.X < minX)
+            {
+                minX = pt.X;
+            }
+            if (pt.X > maxX)
+            {
+                maxX = pt.X;
+            }
+            if (pt.Y < minZ)
+            {
+                minZ = pt.Y;
+            }
+            if (pt.Y > maxZ)
+            {
+                maxZ = pt.Y;
+            }
+        }
+        return new AABB2(minX, minZ, maxX, maxZ);
+    }
+
+    private static Vector2 Centroid(Path64 p, long scale)
+    {
+        double cx = 0, cz = 0;
+        var n = p.Count;
+        for (var i = 0; i < n; ++i)
+        {
+            cx += p[i].X;
+            cz += p[i].Y;
+        }
+        return new Vector2((float)(cx / n / scale), (float)(cz / n / scale));
+    }
+
+    private static bool PointInPolygonXZ(Vector2 p, Path64 path)
+    {
+        var inside = false;
+        var n = path.Count;
+        double px = p.X, pz = p.Y;
+        for (int i = 0, j = n - 1; i < n; j = ++i)
+        {
+            var vi = path[i];
+            var vj = path[j];
+            double xi = vi.X, zi = vi.Y, xj = vj.X, zj = vj.Y;
+            var inter = (zi > pz) != (zj > pz) && px < (xj - xi) * (pz - zi) / ((zj - zi) == 0 ? double.Epsilon : (zj - zi)) + xi;
+            if (inter)
+            {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+
+    // true if min distance (in XZ) from center to triangle <= R
+    private static bool TriPointDistance2LessEqR2(in Vector3 v1, in Vector3 v2, in Vector3 v3, in Vector2 c, float r2)
+    {
+        var a = new Vector2(v1.X, v1.Z);
+        var b = new Vector2(v2.X, v2.Z);
+        var d = new Vector2(v3.X, v3.Z);
+
+        // inside → distance 0
+        if (PointInTri2(c, a, b, d))
+        {
+            return true;
+        }
+
+        // else min distance to edges
+        var d2 = Math.Min(Dist2PointSeg(c, a, b), Math.Min(Dist2PointSeg(c, b, d), Dist2PointSeg(c, d, a)));
+        return d2 <= r2;
+    }
+
+    private static float Dist2PointSeg(in Vector2 p, in Vector2 a, in Vector2 b)
+    {
+        var ab = b - a;
+        var len2 = ab.X * ab.X + ab.Y * ab.Y;
+        if (len2 <= float.Epsilon)
+        {
+            var dx = p.X - a.X;
+            var dy = p.Y - a.Y;
+            return dx * dx + dy * dy;
+        }
+        var t = ((p.X - a.X) * ab.X + (p.Y - a.Y) * ab.Y) / len2;
+        t = MathF.Max(0, MathF.Min(1, t));
+        var q = new Vector2(a.X + t * ab.X, a.Y + t * ab.Y);
+        float dx2 = p.X - q.X, dy2 = p.Y - q.Y;
+        return dx2 * dx2 + dy2 * dy2;
+    }
+
+    private static bool PointInTri2(in Vector2 p, in Vector2 a, in Vector2 b, in Vector2 c)
+    {
+        // barycentric sign test
+        var s1 = Sign(p, a, b) >= 0;
+        var s2 = Sign(p, b, c) >= 0;
+        var s3 = Sign(p, c, a) >= 0;
+        return s1 == s2 && s2 == s3;
+    }
+
+    private static float Sign(in Vector2 p1, in Vector2 p2, in Vector2 p3) => (p1.X - p3.X) * (p2.Y - p3.Y) - (p2.X - p3.X) * (p1.Y - p3.Y);
+
+    private static bool OBBXZIntersectsCircle(in AABB local, ref Matrix4x3 world, in Vector2 c, float r)
+    {
+        var localMinX = local.Min.X;
+        var localMinY = local.Min.Y;
+        var localMinZ = local.Min.Z;
+        var localMaxX = local.Max.X;
+        var localMaxY = local.Max.Y;
+        var localMaxZ = local.Max.Z;
+
+        // Project the 8 OBB corners to XZ, build an AABB in XZ, then circle-test
+        var aaa = world.TransformCoordinate(new(localMinX, localMinY, localMinZ));
+        var aab = world.TransformCoordinate(new(localMinX, localMinY, localMaxZ));
+        var aba = world.TransformCoordinate(new(localMinX, localMaxY, localMinZ));
+        var abb = world.TransformCoordinate(new(localMinX, localMaxY, localMaxZ));
+        var baa = world.TransformCoordinate(new(localMaxX, localMinY, localMinZ));
+        var bab = world.TransformCoordinate(new(localMaxX, localMinY, localMaxZ));
+        var bba = world.TransformCoordinate(new(localMaxX, localMaxY, localMinZ));
+        var bbb = world.TransformCoordinate(new(localMaxX, localMaxY, localMaxZ));
+
+        var minX = Math.Min(Math.Min(Math.Min(aaa.X, aab.X), Math.Min(aba.X, abb.X)), Math.Min(Math.Min(baa.X, bab.X), Math.Min(bba.X, bbb.X)));
+        var maxX = Math.Max(Math.Max(Math.Max(aaa.X, aab.X), Math.Max(aba.X, abb.X)), Math.Max(Math.Max(baa.X, bab.X), Math.Max(bba.X, bbb.X)));
+        var minZ = Math.Min(Math.Min(Math.Min(aaa.Z, aab.Z), Math.Min(aba.Z, abb.Z)), Math.Min(Math.Min(baa.Z, bab.Z), Math.Min(bba.Z, bbb.Z)));
+        var maxZ = Math.Max(Math.Max(Math.Max(aaa.Z, aab.Z), Math.Max(aba.Z, abb.Z)), Math.Max(Math.Max(baa.Z, bab.Z), Math.Max(bba.Z, bbb.Z)));
+
+        return RectXZIntersectsCircle(minX, minZ, maxX, maxZ, c, r);
+    }
+
+    private static bool RectXZIntersectsCircle(float minX, float minZ, float maxX, float maxZ, in Vector2 c, float r)
+    {
+        var dx = 0f;
+        if (c.X < minX)
+        {
+            dx = minX - c.X;
+        }
+        else if (c.X > maxX)
+        {
+            dx = c.X - maxX;
+        }
+        var dz = 0f;
+        if (c.Y < minZ)
+        {
+            dz = minZ - c.Y;
+        }
+        else if (c.Y > maxZ)
+        {
+            dz = c.Y - maxZ;
+        }
+        return (dx * dx + dz * dz) <= r * r;
+    }
+
+    private readonly struct AABB2(float minX, float minZ, float maxX, float maxZ)
+    {
+        public readonly float MinX = minX, MinZ = minZ, MaxX = maxX, MaxZ = maxZ;
+
+        public bool Contains(AABB2 o) => o.MinX >= MinX && o.MaxX <= MaxX && o.MinZ >= MinZ && o.MaxZ <= MaxZ;
+    }
+}
 
 public sealed unsafe class DebugCollision() : IDisposable
 {
@@ -22,6 +698,12 @@ public sealed unsafe class DebugCollision() : IDisposable
     private readonly HashSet<nint> _streamedMeshes = [];
     private BitMask _availableLayers;
     private BitMask _availableMaterials;
+
+    private CollisionOutlinesExtractor.MaterialMatchMode _exportMatchMode = CollisionOutlinesExtractor.MaterialMatchMode.EffectiveMasked;
+    private float _exportRadiusXZ = 0f; // 0 => whole mesh/streamed
+    private bool _exportStrictRadius = true;
+    private float _exportSnapEpsXZ = 1e-5f;
+    private float _exportMinArea = 1e-6f;
 
     private static readonly (int, int)[] _boxEdges =
     [
@@ -44,9 +726,7 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private float _maxDrawDistance = 10;
 
-    public void Dispose()
-    {
-    }
+    public void Dispose() { }
 
     public void Draw()
     {
@@ -65,11 +745,6 @@ public sealed unsafe class DebugCollision() : IDisposable
             DrawSceneQuadtree(s->Scene->Quadtree, i);
             ++i;
         }
-    }
-
-    public void DrawVisualizers()
-    {
-
     }
 
     private void GatherInfo()
@@ -114,17 +789,44 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private bool FilterCollider(Collider* coll)
     {
+        // mayer & flag filters
         if (coll->LayerMask == 0 ? !_showZeroLayer : (_shownLayers.Raw & coll->LayerMask) == 0)
+        {
             return false;
+        }
         if (_showOnlyFlagRaycast && (coll->VisibilityFlags & 1) == 0)
+        {
             return false;
+        }
         if (_showOnlyFlagVisit && (coll->VisibilityFlags & 2) == 0)
+        {
             return false;
-        var matFilter = _availableMaterials & _materialMask;
-        if (matFilter.Any() && coll->GetColliderType() != ColliderType.Mesh)
-            return /*_materialId.None() ? (matFilter.Raw & coll->ObjectMaterialValue) != 0 :*/ (matFilter.Raw & (coll->ObjectMaterialValue ^ _materialId.Raw)) == 0;
-        return true;
+        }
+
+        // material filter currently selected in the UI
+        var maskActiveBits = (_availableMaterials & _materialMask).Raw;
+        if (maskActiveBits == 0ul)
+        {
+            return true; // no active material filter
+        }
+
+        var type = coll->GetColliderType();
+
+        // mesh & streamed are containers; material filtering happens per-triangle when drawing/exporting
+        // Never drop them here just because their object-level material doesn't match
+        if (type == ColliderType.Mesh || type == ColliderType.Streamed)
+        {
+            return true;
+        }
+
+        // fr simple/primitive colliders, compare the object's material to the UI selection
+        // keep the ones whose (objectMaterial ^ wantedId) has no differences inside the active mask bits
+        var wantedId = _materialId.Raw;
+        ulong objValue = coll->ObjectMaterialValue; // primitives only have object-level material
+        return ((objValue ^ wantedId) & maskActiveBits) == 0UL;
     }
+
+    private readonly CollisionOutlinesExtractor.MaterialMatchMode[] modes = Enum.GetValues<CollisionOutlinesExtractor.MaterialMatchMode>();
 
     private void DrawSettings()
     {
@@ -184,8 +886,41 @@ public sealed unsafe class DebugCollision() : IDisposable
             }
         }
 
-        if (ImGui.SliderFloat("Max Draw Distance", ref _maxDrawDistance, 10, 1000, "%.0f"))
-        { }
+        ImGui.SliderFloat("Max Draw Distance", ref _maxDrawDistance, 10f, 1000f, "%.0f");
+
+        using var ex = _tree.Node2("Export / Union settings");
+        if (ex.Opened)
+        {
+            // Material match
+            var label = _exportMatchMode.ToString();
+            if (ImGui.BeginCombo("Material match", label))
+            {
+                for (var i = 0; i < 4; ++i)
+                {
+                    var mode = modes[i];
+                    var sel = mode == _exportMatchMode;
+                    if (ImGui.Selectable(mode.ToString(), sel))
+                    {
+                        _exportMatchMode = mode;
+                    }
+                    if (sel)
+                    {
+                        ImGui.SetItemDefaultFocus();
+                    }
+                }
+                ImGui.EndCombo();
+            }
+
+            // radius & strict mode
+            ImGui.SliderFloat("Radius XZ (yalm, 0 = whole)", ref _exportRadiusXZ, 0f, 200f, "%.1f");
+            ImGui.Checkbox("Strict radius (all tri verts inside)", ref _exportStrictRadius);
+
+            // snapping epsilon (pre-union)
+            ImGui.SliderFloat("Snap Eps XZ (yalm)", ref _exportSnapEpsXZ, 0f, 0.05f, "%.6f");
+
+            // drop tiny fragments after union
+            ImGui.SliderFloat("Min area (yalm^2)", ref _exportMinArea, 0f, 0.01f, "%.6f");
+        }
     }
 
     private void DrawSceneColliders(Scene* s, int index)
@@ -307,7 +1042,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var cast = (ColliderBox*)coll;
                     _tree.LeafNode2($"Translation: {Vec3Str(cast->Translation)}");
                     var rotation = cast->Rotation;
-                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {(rotation.Y * Angle.RadToDeg).Degrees().Normalized()}°)");
+                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
                     DrawMat4x3("World", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
@@ -318,7 +1053,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var cast = (ColliderCylinder*)coll;
                     _tree.LeafNode2($"Translation: {Vec3Str(cast->Translation)}");
                     var rotation = cast->Rotation;
-                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {(rotation.Y * Angle.RadToDeg).Degrees().Normalized()}°)");
+                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
                     _tree.LeafNode2($"Radius: {cast->Radius:f3}");
                     DrawMat4x3("World", ref cast->World);
@@ -330,7 +1065,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var cast = (ColliderSphere*)coll;
                     _tree.LeafNode2($"Translation: {Vec3Str(cast->Translation)}");
                     var rotation = cast->Rotation;
-                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {(rotation.Y * Angle.RadToDeg).Degrees().Normalized()}°)");
+                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
                     DrawMat4x3("World", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
@@ -343,7 +1078,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     _tree.LeafNode2($"Normal: {cast->World.Row2 / cast->Scale.Z:f3}");
                     _tree.LeafNode2($"Translation: {Vec3Str(cast->Translation)}");
                     var rotation = cast->Rotation;
-                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {(rotation.Y * Angle.RadToDeg).Degrees().Normalized()}°)");
+                    _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
                     DrawMat4x3("World", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
@@ -357,7 +1092,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         DrawResource(coll->Resource);
         _tree.LeafNode2($"Translation: {Vec3Str(coll->Translation)}");
         var rotation = coll->Rotation;
-        _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {(rotation.Y * Angle.RadToDeg).Degrees().Normalized()}°)");
+        _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref coll->World)}°)");
         _tree.LeafNode2($"Scale: {Vec3Str(coll->Scale)}");
         DrawMat4x3("World", ref coll->World);
         DrawMat4x3("InvWorld", ref coll->InvWorld);
@@ -444,7 +1179,7 @@ public sealed unsafe class DebugCollision() : IDisposable
             using var np = _tree.Node2($"Primitives: {node->NumPrims}", node->NumPrims == 0);
             if (np.Opened)
             {
-                int i = 0;
+                var i = 0;
                 foreach (ref var prim in node->Primitives)
                     if (_tree.LeafNode2($"[{++i}]: {prim.V1}x{prim.V2}x{prim.V3}, material={prim.Material:X8}").SelectedOrHovered)
                         VisualizeTriangle(node, ref prim, ref world, Colors.CollisionColor2);
@@ -562,14 +1297,20 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private void VisualizeOBB(ref AABB localBB, ref Matrix4x3 world, uint color)
     {
-        var aaa = world.TransformCoordinate(new(localBB.Min.X, localBB.Min.Y, localBB.Min.Z));
-        var aab = world.TransformCoordinate(new(localBB.Min.X, localBB.Min.Y, localBB.Max.Z));
-        var aba = world.TransformCoordinate(new(localBB.Min.X, localBB.Max.Y, localBB.Min.Z));
-        var abb = world.TransformCoordinate(new(localBB.Min.X, localBB.Max.Y, localBB.Max.Z));
-        var baa = world.TransformCoordinate(new(localBB.Max.X, localBB.Min.Y, localBB.Min.Z));
-        var bab = world.TransformCoordinate(new(localBB.Max.X, localBB.Min.Y, localBB.Max.Z));
-        var bba = world.TransformCoordinate(new(localBB.Max.X, localBB.Max.Y, localBB.Min.Z));
-        var bbb = world.TransformCoordinate(new(localBB.Max.X, localBB.Max.Y, localBB.Max.Z));
+        var localBBMinX = localBB.Min.X;
+        var localBBMinY = localBB.Min.Y;
+        var localBBMinZ = localBB.Min.Z;
+        var localBBMaxX = localBB.Max.X;
+        var localBBMaxY = localBB.Max.Y;
+        var localBBMaxZ = localBB.Max.Z;
+        var aaa = world.TransformCoordinate(new(localBBMinX, localBBMinY, localBBMinZ));
+        var aab = world.TransformCoordinate(new(localBBMinX, localBBMinY, localBBMaxZ));
+        var aba = world.TransformCoordinate(new(localBBMinX, localBBMaxY, localBBMinZ));
+        var abb = world.TransformCoordinate(new(localBBMinX, localBBMaxY, localBBMaxZ));
+        var baa = world.TransformCoordinate(new(localBBMaxX, localBBMinY, localBBMinZ));
+        var bab = world.TransformCoordinate(new(localBBMaxX, localBBMinY, localBBMaxZ));
+        var bba = world.TransformCoordinate(new(localBBMaxX, localBBMaxY, localBBMinZ));
+        var bbb = world.TransformCoordinate(new(localBBMaxX, localBBMaxY, localBBMaxZ));
         Camera.Instance?.DrawWorldLine(aaa, aab, color);
         Camera.Instance?.DrawWorldLine(aab, bab, color);
         Camera.Instance?.DrawWorldLine(bab, baa, color);
@@ -586,10 +1327,10 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private void VisualizeCylinder(ref Matrix4x3 world, uint color)
     {
-        int numSegments = CurveApprox.CalculateCircleSegments(world.Row0.Length(), 360.Degrees(), 0.1f);
+        var numSegments = CurveApprox.CalculateCircleSegments(world.Row0.Length(), 360f.Degrees(), 0.1f);
         var prev1 = world.TransformCoordinate(new(0, +1, 1));
         var prev2 = world.TransformCoordinate(new(0, -1, 1));
-        for (int i = 1; i <= numSegments; ++i)
+        for (var i = 1; i <= numSegments; ++i)
         {
             var dir = (i * 360.0f / numSegments).Degrees().ToDirection().ToVec2();
             var curr1 = world.TransformCoordinate(new(dir.X, +1, dir.Y));
@@ -654,10 +1395,79 @@ public sealed unsafe class DebugCollision() : IDisposable
         var raycast = (coll->VisibilityFlags & 1) != 0;
         if (ImGui.Checkbox("Flag: raycast", ref raycast))
             coll->VisibilityFlags ^= 1;
-
         var globalVisit = (coll->VisibilityFlags & 2) != 0;
         if (ImGui.Checkbox("Flag: global visit", ref globalVisit))
             coll->VisibilityFlags ^= 2;
+
+        // export (Clipper2 union) using settings
+        if (coll->GetColliderType() == ColliderType.Mesh)
+        {
+            var cm = (ColliderMesh*)coll;
+            if (cm->Mesh != null && !cm->MeshIsSimple)
+            {
+                ImGui.Separator();
+                ImGui.TextDisabled("Export outlines (Clipper2 union)");
+
+                var wantedId = _materialId.Raw;
+                var wantedMask = _materialMask.Raw;
+
+                // center: player if radius > 0 else ignored
+                var p = Service.ClientState.LocalPlayer!.Position;
+                var centerXZ = new Vector2(p.X, p.Z);
+                var useRadius = _exportRadiusXZ > 0f;
+
+                if (ImGui.MenuItem("Copy polygons (WPos)"))
+                {
+                    var polys = CollisionOutlinesExtractor.ExtractPolygonsUnion(cm, wantedId, wantedMask,
+                        _exportSnapEpsXZ, useRadius ? centerXZ : default, useRadius ? _exportRadiusXZ : 0f,
+                        _exportStrictRadius, _exportMatchMode, minAreaMeters2: _exportMinArea);
+                    var text = CollisionOutlinesExtractor.FormatForClipboard(polys, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector2XZ, 5);
+                    ImGui.SetClipboardText(text);
+                }
+                if (ImGui.MenuItem("Copy polygons (Vector3)"))
+                {
+                    var polys = CollisionOutlinesExtractor.ExtractPolygonsUnion(cm, wantedId, wantedMask,
+                        _exportSnapEpsXZ, useRadius ? centerXZ : default, useRadius ? _exportRadiusXZ : 0f,
+                        _exportStrictRadius, _exportMatchMode, minAreaMeters2: _exportMinArea);
+                    var text = CollisionOutlinesExtractor.FormatForClipboard(polys, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector3XYZ, 5);
+                    ImGui.SetClipboardText(text);
+                }
+            }
+        }
+        else if (coll->GetColliderType() == ColliderType.Streamed)
+        {
+            var cs = (ColliderStreamed*)coll;
+            if (cs->Header != null && cs->Elements != null)
+            {
+                ImGui.Separator();
+                ImGui.TextDisabled("Export outlines (Clipper2 union, merged)");
+
+                var wantedId = _materialId.Raw;
+                var wantedMask = _materialMask.Raw;
+
+                var p = Service.ClientState.LocalPlayer!.Position;
+                var centerXZ = new Vector2(p.X, p.Z);
+                var useRadius = _exportRadiusXZ > 0f;
+
+                if (ImGui.MenuItem("Copy polygons (WPos, merged)"))
+                {
+                    var polys = CollisionOutlinesExtractor.ExtractPolygonsUnionStreamed(cs, wantedId, wantedMask,
+                        _exportSnapEpsXZ, useRadius ? centerXZ : default,
+                        useRadius ? _exportRadiusXZ : 0f, _exportStrictRadius,
+                        _exportMatchMode, minAreaMeters2: _exportMinArea);
+                    var text = CollisionOutlinesExtractor.FormatForClipboard(polys, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector2XZ, 5);
+                    ImGui.SetClipboardText(text);
+                }
+                if (ImGui.MenuItem("Copy polygons (Vector3, merged)"))
+                {
+                    var polys = CollisionOutlinesExtractor.ExtractPolygonsUnionStreamed(cs, wantedId, wantedMask, _exportSnapEpsXZ,
+                        useRadius ? centerXZ : default, useRadius ? _exportRadiusXZ : 0f,
+                        _exportStrictRadius, _exportMatchMode, minAreaMeters2: _exportMinArea);
+                    var text = CollisionOutlinesExtractor.FormatForClipboard(polys, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector3XYZ, 5);
+                    ImGui.SetClipboardText(text);
+                }
+            }
+        }
     }
 
     private static Vector3 ApplyTransformation(Vector3 vertex, Vector3 translation, Vector3 rotation)
@@ -668,5 +1478,20 @@ public sealed unsafe class DebugCollision() : IDisposable
         var rotMatrix = Matrix4x4.CreateRotationX(rotX) * Matrix4x4.CreateRotationY(rotY) * Matrix4x4.CreateRotationZ(rotZ);
         var rotatedVertex = Vector3.Transform(vertex, rotMatrix);
         return rotatedVertex + translation;
+    }
+
+    private static Angle HeadingDegFromWorld(ref Matrix4x3 world)
+    {
+        var f = world.Row2;
+        var x = f.X;
+        var z = f.Z;
+        if (x == 0f && z == 0f)
+        {
+            return default; // degenerate/zero scale
+        }
+
+        var rad = MathF.Atan2(x, z);
+        var deg = rad * (180f / MathF.PI);
+        return new Angle(rad).Normalized();
     }
 }

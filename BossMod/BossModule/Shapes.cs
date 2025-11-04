@@ -1,7 +1,6 @@
-using Clipper2Lib;
-
 namespace BossMod;
 
+[SkipLocalsInit]
 public abstract record class Shape
 {
     public const float MaxApproxError = CurveApprox.ScreenError;
@@ -12,6 +11,7 @@ public abstract record class Shape
     public RelSimplifiedComplexPolygon ToPolygon(WPos center) => new((List<RelPolygonWithHoles>)[new(Contour(center))]);
 }
 
+[SkipLocalsInit]
 public sealed record class Circle(WPos Center, float Radius) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -31,14 +31,15 @@ public sealed record class Circle(WPos Center, float Radius) : Shape
 }
 
 // for custom polygons defined by an IReadOnlyList of vertices
-public sealed record class PolygonCustom(IReadOnlyList<WPos> Vertices) : Shape
+[SkipLocalsInit]
+public sealed record class PolygonCustom(WPos[] Vertices) : Shape
 {
     public override List<WDir> Contour(WPos center)
     {
         var vertices = Vertices;
-        var count = vertices.Count;
-        var result = new List<WDir>(count);
-        for (var i = 0; i < count; ++i)
+        var len = vertices.Length;
+        var result = new List<WDir>(len);
+        for (var i = 0; i < len; ++i)
         {
             result.Add(vertices[i] - center);
         }
@@ -48,9 +49,9 @@ public sealed record class PolygonCustom(IReadOnlyList<WPos> Vertices) : Shape
     public override string ToString()
     {
         var vertices = Vertices;
-        var count = vertices.Count;
-        var sb = new StringBuilder("PolygonCustom:", 14 + count * 9);
-        for (var i = 0; i < count; ++i)
+        var len = vertices.Length;
+        var sb = new StringBuilder("PolygonCustom:", 14 + len * 9);
+        for (var i = 0; i < len; ++i)
         {
             var vertex = vertices[i];
             sb.Append(vertex).Append(';');
@@ -60,16 +61,17 @@ public sealed record class PolygonCustom(IReadOnlyList<WPos> Vertices) : Shape
     }
 }
 
-public sealed record class PolygonCustomRel(IReadOnlyList<WDir> Vertices) : Shape
+[SkipLocalsInit]
+public sealed record class PolygonCustomRel(WDir[] Vertices) : Shape
 {
     public override List<WDir> Contour(WPos center) => [.. Vertices];
 
     public override string ToString()
     {
         var vertices = Vertices;
-        var count = vertices.Count;
-        var sb = new StringBuilder("PolygonCustomRel:", 17 + count * 9);
-        for (var i = 0; i < count; ++i)
+        var len = vertices.Length;
+        var sb = new StringBuilder("PolygonCustomRel:", 17 + len * 9);
+        for (var i = 0; i < len; ++i)
         {
             var vertex = vertices[i];
             sb.Append(vertex).Append(';');
@@ -79,54 +81,7 @@ public sealed record class PolygonCustomRel(IReadOnlyList<WDir> Vertices) : Shap
     }
 }
 
-// for custom polygons defined by an IReadOnlyList of vertices with an offset, eg to account for hitbox radius
-public sealed record class PolygonCustomO(IReadOnlyList<WPos> Vertices, float Offset) : Shape
-{
-    public override List<WDir> Contour(WPos center)
-    {
-        var originalPath = new Path64();
-        var vertices = Vertices;
-        var countV = vertices.Count;
-        for (var i = 0; i < countV; ++i)
-        {
-            var v = vertices[i];
-            originalPath.Add(new Point64((long)(v.X * PolygonClipper.Scale), (long)(v.Z * PolygonClipper.Scale)));
-        }
-
-        ClipperOffset co = new();
-        co.AddPath(originalPath, JoinType.Miter, EndType.Polygon);
-        var solution = new Paths64();
-        co.Execute(Offset * PolygonClipper.Scale, solution);
-        var path = solution[0];
-
-        var count = path.Count;
-        var offsetContour = new List<WDir>(count);
-        var centerX = center.X;
-        var centerZ = center.Z;
-        for (var i = 0; i < count; ++i)
-        {
-            var p = path[i];
-            offsetContour.Add(new WDir((float)(p.X * PolygonClipper.InvScale - centerX), (float)(p.Y * PolygonClipper.InvScale - centerZ)));
-        }
-
-        return offsetContour;
-    }
-
-    public override string ToString()
-    {
-        var vertices = Vertices;
-        var count = vertices.Count;
-        var sb = new StringBuilder("PolygonCustomO:", 15 + count * 9);
-        for (var i = 0; i < count; ++i)
-        {
-            var vertex = vertices[i];
-            sb.Append(vertex).Append(';');
-        }
-        sb.Append("Offset:").Append(Offset);
-        return sb.ToString();
-    }
-}
-
+[SkipLocalsInit]
 public sealed record class Donut(WPos Center, float InnerRadius, float OuterRadius) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -146,6 +101,7 @@ public sealed record class Donut(WPos Center, float InnerRadius, float OuterRadi
 }
 
 // for rectangles defined by a center, halfwidth, halfheight and optionally rotation
+[SkipLocalsInit]
 public record class Rectangle(WPos Center, float HalfWidth, float HalfHeight, Angle Rotation = default) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -175,6 +131,7 @@ public record class Rectangle(WPos Center, float HalfWidth, float HalfHeight, An
 }
 
 // for rectangles defined by a start point, end point and halfwidth
+[SkipLocalsInit]
 public sealed record class RectangleSE(WPos Start, WPos End, float HalfWidth) : Rectangle(
     Center: new((Start.X + End.X) * Half, (Start.Z + End.Z) * Half),
     HalfWidth: HalfWidth,
@@ -182,8 +139,10 @@ public sealed record class RectangleSE(WPos Start, WPos End, float HalfWidth) : 
     Rotation: new Angle(MathF.Atan2(End.X - Start.X, End.Z - Start.Z))
 );
 
+[SkipLocalsInit]
 public sealed record class Square(WPos Center, float HalfSize, Angle Rotation = default) : Rectangle(Center, HalfSize, HalfSize, Rotation);
 
+[SkipLocalsInit]
 public sealed record class Cross(WPos Center, float Length, float HalfWidth, Angle Rotation = default) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -224,6 +183,7 @@ public sealed record class Cross(WPos Center, float Length, float HalfWidth, Ang
 }
 
 // for polygons with edge count number of lines of symmetry, eg. pentagons, hexagons and octagons
+[SkipLocalsInit]
 public sealed record class Polygon(WPos Center, float Radius, int Edges, Angle Rotation = default) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -248,6 +208,7 @@ public sealed record class Polygon(WPos Center, float Radius, int Edges, Angle R
 }
 
 // for cones defined by radius, start angle and end angle
+[SkipLocalsInit]
 public record class Cone(WPos Center, float Radius, Angle StartAngle, Angle EndAngle) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -267,9 +228,11 @@ public record class Cone(WPos Center, float Radius, Angle StartAngle, Angle EndA
 }
 
 // for cones defined by radius, direction and half angle
+[SkipLocalsInit]
 public sealed record class ConeHA(WPos Center, float Radius, Angle CenterDir, Angle HalfAngle) : Cone(Center, Radius, CenterDir - HalfAngle, CenterDir + HalfAngle);
 
 // for donut segments defined by inner and outer radius, direction, start angle and end angle
+[SkipLocalsInit]
 public record class DonutSegment(WPos Center, float InnerRadius, float OuterRadius, Angle StartAngle, Angle EndAngle) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -289,10 +252,12 @@ public record class DonutSegment(WPos Center, float InnerRadius, float OuterRadi
 }
 
 // for donut segments defined by inner and outer radius, direction and half angle
+[SkipLocalsInit]
 public sealed record class DonutSegmentHA(WPos Center, float InnerRadius, float OuterRadius, Angle CenterDir, Angle HalfAngle) : DonutSegment(Center, InnerRadius, OuterRadius,
 CenterDir - HalfAngle, CenterDir + HalfAngle);
 
 // Approximates a cone with a customizable number of edges for the circle arc - with 1 edge this turns into a triangle, 2 edges result in a parallelogram
+[SkipLocalsInit]
 public sealed record class ConeV(WPos Center, float Radius, Angle CenterDir, Angle HalfAngle, int Edges) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -319,6 +284,7 @@ public sealed record class ConeV(WPos Center, float Radius, Angle CenterDir, Ang
 }
 
 // Approximates a donut segment with a customizable number of edges per circle arc
+[SkipLocalsInit]
 public sealed record class DonutSegmentV(WPos Center, float InnerRadius, float OuterRadius, Angle CenterDir, Angle HalfAngle, int Edges) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -327,7 +293,7 @@ public sealed record class DonutSegmentV(WPos Center, float InnerRadius, float O
         var angleIncrement = 2f * HalfAngle.Rad / edges;
         var startAngle = CenterDir.Rad - HalfAngle.Rad;
         var n = Edges + 1;
-        var vertices = new WDir[2 * edges + 2];
+        Span<WDir> vertices = stackalloc WDir[2 * edges + 2];
         var innerRadius = InnerRadius;
         var outerRadius = OuterRadius;
         var offset = Center - center;
@@ -348,13 +314,14 @@ public sealed record class DonutSegmentV(WPos Center, float InnerRadius, float O
 }
 
 // Approximates a donut with a customizable number of edges per circle arc
+[SkipLocalsInit]
 public sealed record class DonutV(WPos Center, float InnerRadius, float OuterRadius, int Edges, Angle Rotation = default) : Shape
 {
     public override List<WDir> Contour(WPos center)
     {
         var edges = Edges;
         var angleIncrement = Angle.DoublePI / edges;
-        var vertices = new WDir[2 * edges + 2];
+        Span<WDir> vertices = stackalloc WDir[2 * edges + 2];
         var initialRotation = Rotation.Rad;
         var innerRadius = InnerRadius;
         var outerRadius = OuterRadius;
@@ -379,6 +346,7 @@ public sealed record class DonutV(WPos Center, float InnerRadius, float OuterRad
 }
 
 // Approximates an ellipse with a customizable number of edges
+[SkipLocalsInit]
 public sealed record class Ellipse(WPos Center, float HalfWidth, float HalfHeight, int Edges, Angle Rotation = default) : Shape
 {
     public override List<WDir> Contour(WPos center)
@@ -407,11 +375,12 @@ public sealed record class Ellipse(WPos Center, float HalfWidth, float HalfHeigh
 
 // Capsule shape defined by center, halfheight, halfwidth (radius), rotation, and number of edges. in this case the halfheight is the distance from capsule center to semicircle centers,
 // the edges are per semicircle
+[SkipLocalsInit]
 public sealed record class Capsule(WPos Center, float HalfHeight, float HalfWidth, int Edges, Angle Rotation = default) : Shape
 {
     public override List<WDir> Contour(WPos center)
     {
-        var vertices = new WDir[2 * Edges];
+        Span<WDir> vertices = stackalloc WDir[2 * Edges];
         var angleIncrement = MathF.PI / Edges;
         var (sinRot, cosRot) = ((float, float))Math.SinCos(Rotation.Rad);
         var halfWidth = HalfWidth;

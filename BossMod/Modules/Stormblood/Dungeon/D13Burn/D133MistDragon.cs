@@ -44,8 +44,8 @@ public enum IconID : uint
 sealed class FogPlumeCross(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
-    private static readonly AOEShapeCross cross = new(40f, 2.5f);
-    private static readonly Angle[] angles = [Angle.AnglesCardinals[1], Angle.AnglesIntercardinals[1]];
+    private readonly AOEShapeCross cross = new(40f, 2.5f);
+    private readonly Angle[] angles = [Angle.AnglesCardinals[1], Angle.AnglesIntercardinals[1]];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -79,7 +79,7 @@ sealed class ColdFog(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AreaOfInfluenceUp)
         {
@@ -126,9 +126,9 @@ sealed class ColdFog(BossModule module) : Components.GenericAOEs(module)
 
 abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
 {
-    protected static readonly AOEShapeCircle circle = new(6f);
-    protected static readonly AOEShapeCone cone = new(20f, 45f.Degrees());
-    protected static readonly AOEShapeRect rect = new(40f, 3f);
+    protected readonly AOEShapeCircle circle = new(6f);
+    protected readonly AOEShapeCone cone = new(20f, 45f.Degrees());
+    protected readonly AOEShapeRect rect = new(40f, 3f);
 
     protected void DrawPositionsInBounds(WPos[] positions)
     {
@@ -171,7 +171,7 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             hints.Add("Bait away!");
         }
@@ -179,7 +179,7 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
 
     protected void DrawBaitsOnActor(int pcSlot, Actor pc, Action<Actor> drawAction)
     {
-        if (ActiveBaitsOn(pc).Count == 0)
+        if (!IsBaitTarget(pc))
         {
             return;
         }
@@ -190,15 +190,15 @@ abstract class BaitAway(BossModule module) : Components.GenericBaitAway(module)
 
     protected void DrawBaitsOnOther(int pcSlot, Actor pc, Action<Actor> drawAction)
     {
-        if (ActiveBaitsOn(pc).Count == 0)
+        if (!IsBaitTarget(pc))
         {
             return;
         }
 
         base.DrawArenaBackground(pcSlot, pc);
-        var baits = ActiveBaitsNotOn(pc);
-        var count = baits.Count;
-        for (var i = 0; i < count; ++i)
+        var baits = CollectionsMarshal.AsSpan(CurrentBaits);
+        var len = baits.Length;
+        for (var i = 0; i < len; ++i)
         {
             drawAction(baits[i].Target);
         }

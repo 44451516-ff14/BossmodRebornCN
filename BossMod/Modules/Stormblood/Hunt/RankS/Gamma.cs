@@ -28,7 +28,6 @@ class Launcher(BossModule module) : Components.RaidwideCast(module, (uint)AID.La
 class MagitekFlamehookPyretic(BossModule module) : BossComponent(module)
 { //Note: boss is lvl 70, so this pyretic can probably be ignored at lvl 90, but we assume the player is also around lvl 70
     private BitMask _pyretic;
-    public bool Pyretic { get; private set; }
     private bool casting;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -43,13 +42,13 @@ class MagitekFlamehookPyretic(BossModule module) : BossComponent(module)
             casting = false;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if ((SID)status.ID == SID.Pyretic)
             _pyretic.Set(Raid.FindSlot(actor.InstanceID));
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if ((SID)status.ID == SID.Pyretic)
             _pyretic.Clear(Raid.FindSlot(actor.InstanceID));
@@ -57,7 +56,7 @@ class MagitekFlamehookPyretic(BossModule module) : BossComponent(module)
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_pyretic[slot] != Pyretic)
+        if (_pyretic[slot])
             hints.Add("Pyretic on you! STOP everything!");
     }
 

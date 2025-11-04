@@ -16,13 +16,13 @@ sealed class P2LightRampant(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.LightRampantChains or (uint)TetherID.LightRampantCurse && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0)
             _tetherTargets[slot] = WorldState.Actors.Find(tether.Target);
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.LightRampantChains or (uint)TetherID.LightRampantCurse && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0)
             _tetherTargets[slot] = null;
@@ -78,7 +78,7 @@ sealed class P2BrightHunger1(BossModule module) : Components.GenericTowers(modul
         foreach (var (slot, group) in _config.P2LightRampantAssignment.Resolve(Raid))
             if (!_forbidden[slot])
                 conga.Add((slot, group));
-        conga.Sort((a, b) => a.prio.CompareTo(b.prio));
+        conga.Sort(static (a, b) => a.prio.CompareTo(b.prio));
         if (conga.Count == 6)
         {
             var firstSouth = conga.FindIndex(kv => kv.prio >= 4);
@@ -126,7 +126,7 @@ sealed class P2PowerfulLight(BossModule module) : Components.UniformStackSpread(
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // there are dedicated components for hints
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.WeightOfLight)
             AddStack(actor, status.ExpireAt);
@@ -145,7 +145,7 @@ sealed class P2BrightHunger2(BossModule module) : Components.GenericTowers(modul
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // there are dedicated components for hints
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Lightsteeped && status.Extra >= 3)
             _forbidden[Raid.FindSlot(actor.InstanceID)] = true;
@@ -324,7 +324,7 @@ sealed class P2LightRampantAIStackPrepos(BossModule module) : BossComponent(modu
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var isPuddleBaiter = _puddles?.ActiveBaitsOn(actor).Count != 0;
+        var isPuddleBaiter = _puddles?.IsBaitTarget(actor) ?? false;
         var northCamp = isPuddleBaiter ? actor.PosRot.X < Arena.Center.X : actor.PosRot.Z < Arena.Center.Z; // this assumes CW movement for baiter
         var dest = Arena.Center + new WDir(default, northCamp ? -18f : 18f);
         if (isPuddleBaiter)

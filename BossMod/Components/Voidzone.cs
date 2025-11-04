@@ -4,6 +4,8 @@ namespace BossMod.Components;
 // voidzone (circle aoe that stays active for some time) centered at each existing object with specified OID, assumed to be persistent voidzone center
 // for moving 'voidzones', the hints can mark the area in front of each source as dangerous
 // TODO: typically sources are either eventobj's with eventstate != 7 or normal actors that are non dead; other conditions are much rarer
+
+[SkipLocalsInit]
 public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, float moveHintLength = default) : GenericAOEs(module, default, "GTFO from voidzone!")
 {
     public readonly float MovementHintLength = moveHintLength;
@@ -15,7 +17,7 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
         var aoes = new List<AOEInstance>();
         foreach (var source in Sources(Module))
         {
-            aoes.Add(new(Shape, source.Position.Quantized(), source.Rotation));
+            aoes.Add(new(Shape, source.Position, source.Rotation));
         }
         return CollectionsMarshal.AsSpan(aoes);
     }
@@ -26,31 +28,27 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
             return;
         if (MovementHintLength == 0)
         {
-            var forbidden = new List<ShapeDistance>();
             foreach (var s in Sources(Module))
-                forbidden.Add(new SDCircle(s.Position.Quantized(), radius));
-            hints.TemporaryObstacles.Add(new SDUnion([.. forbidden]));
+            {
+                hints.TemporaryObstacles.Add(new SDCircle(s.Position, radius));
+            }
         }
         else
         {
-            var forbiddenImminent = new List<ShapeDistance>();
-            var forbiddenNearFuture = new List<ShapeDistance>();
-            var forbiddenSoon = new List<ShapeDistance>();
-            var forbiddenFarFuture = new List<ShapeDistance>();
-            var forbiddenFarFarFuture = new List<ShapeDistance>();
+            var forbiddenNearFuture = WorldState.FutureTime(1.1d);
+            var forbiddenSoon = WorldState.FutureTime(3d);
+            var forbiddenFarFuture = WorldState.FutureTime(10d);
+            var forbiddenFarFarFuture = DateTime.MaxValue;
             foreach (var s in Sources(Module))
             {
-                forbiddenNearFuture.Add(new SDCapsule(s.Position, s.Rotation, MovementHintLength * 0.5f, radius));
-                forbiddenSoon.Add(new SDCapsule(s.Position, s.Rotation, MovementHintLength, radius));
-                forbiddenFarFuture.Add(new SDCapsule(s.Position, s.Rotation, 2f * MovementHintLength, radius));
-                forbiddenFarFarFuture.Add(new SDCapsule(s.Position, s.Rotation, 3f * MovementHintLength, radius));
-                forbiddenImminent.Add(new SDCircle(s.Position, radius));
+                var pos = s.Position;
+                var rot = s.Rotation;
+                hints.AddForbiddenZone(new SDCapsule(pos, rot, MovementHintLength * 0.5f, radius), forbiddenNearFuture);
+                hints.AddForbiddenZone(new SDCapsule(pos, rot, MovementHintLength, radius), forbiddenSoon);
+                hints.AddForbiddenZone(new SDCapsule(pos, rot, 2f * MovementHintLength, radius), forbiddenFarFuture);
+                hints.AddForbiddenZone(new SDCapsule(pos, rot, 3f * MovementHintLength, radius), forbiddenFarFarFuture);
+                hints.TemporaryObstacles.Add(new SDCircle(pos, radius));
             }
-            hints.TemporaryObstacles.Add(new SDUnion([.. forbiddenImminent]));
-            hints.AddForbiddenZone(new SDUnion([.. forbiddenNearFuture]), WorldState.FutureTime(1.1d));
-            hints.AddForbiddenZone(new SDUnion([.. forbiddenSoon]), WorldState.FutureTime(3d));
-            hints.AddForbiddenZone(new SDUnion([.. forbiddenFarFuture]), WorldState.FutureTime(10d));
-            hints.AddForbiddenZone(new SDUnion([.. forbiddenFarFarFuture]), DateTime.MaxValue);
         }
     }
 }
@@ -59,6 +57,7 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
 // note that if voidzone is predicted by cast start rather than cast event, we have to account for possibility of cast finishing without event (e.g. if actor dies before cast finish)
 // TODO: this has problems when target moves - castevent and spawn position could be quite different
 // TODO: this has problems if voidzone never actually spawns after castevent, eg because of phase changes
+[SkipLocalsInit]
 public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Func<BossModule, IEnumerable<Actor>> sources, double castEventToSpawn = default) : GenericAOEs(module, aid, "GTFO from voidzone!")
 {
     public readonly AOEShapeCircle Shape = new(radius);
@@ -144,6 +143,7 @@ public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Fun
     }
 }
 
+[SkipLocalsInit]
 public class VoidzoneAtCastTargetGroup(BossModule module, float radius, uint[] aids, Func<BossModule, IEnumerable<Actor>> sources, double castEventToSpawn) : VoidzoneAtCastTarget(module, radius, default, sources, castEventToSpawn)
 {
     private readonly uint[] AIDs = aids;
@@ -194,6 +194,7 @@ public class VoidzoneAtCastTargetGroup(BossModule module, float radius, uint[] a
 // these are normal voidzones that could be 'inverted' (e.g. when you need to enter a voidzone at specific time to avoid some mechanic)
 // TODO: i'm not sure whether these should be considered actual voidzones (if so, should i merge them with base component? what about cast prediction?) or some completely other type of mechanic (maybe drawing differently)
 // TODO: might want to have per-player invertability
+[SkipLocalsInit]
 public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, uint aid = default) : CastCounter(module, aid)
 {
     public readonly AOEShapeCircle Shape = new(radius);
@@ -236,6 +237,7 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
 }
 
 // invertible voidzone that is inverted when specific spell is being cast; resolved when cast ends
+[SkipLocalsInit]
 public class PersistentInvertibleVoidzoneByCast(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, uint aid) : PersistentInvertibleVoidzone(module, radius, sources, aid)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

@@ -7,7 +7,7 @@ namespace BossMod;
 
 public static partial class Utils
 {
-    public static string ObjectString(IGameObject obj) => $"{obj.DataId:X} '{obj.Name}' <{obj.EntityId:X}>";
+    public static string ObjectString(IGameObject obj) => $"{obj.BaseId:X} '{obj.Name}' <{obj.EntityId:X}>";
 
     public static string ObjectString(ulong id)
     {
@@ -21,7 +21,7 @@ public static partial class Utils
         : $"{obj.ObjectKind}/{obj.SubKind}";
 
     public static Vector2 XY(this Vector4 v) => new(v.X, v.Y);
-    public static Vector3 XYZ(this Vector4 v) => new(v.X, v.Y, v.Z);
+    public static Vector3 XYZ(this Vector4 v) => v.AsVector3();
     public static Vector2 XZ(this Vector4 v) => new(v.X, v.Z);
     public static Vector2 XZ(this Vector3 v) => new(v.X, v.Z);
 
@@ -228,7 +228,7 @@ public static partial class Utils
     public static float Lerp(float a, float b, float t) => a + (b - a) * t;
 
     // build an array with N copies of same element
-    public static T[] MakeArray<T>(int count, T value)
+    public static T[] MakeArray<T>(int count, T value) where T : struct
     {
         var res = new T[count];
         Array.Fill(res, value);

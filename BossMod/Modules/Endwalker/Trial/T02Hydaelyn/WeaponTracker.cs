@@ -9,7 +9,7 @@ sealed class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.HydaelynsWeapon)
         {
@@ -26,7 +26,7 @@ sealed class WeaponTracker(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.HydaelynsWeapon)
         {

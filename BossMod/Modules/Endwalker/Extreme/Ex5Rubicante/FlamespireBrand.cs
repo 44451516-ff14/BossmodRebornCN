@@ -6,7 +6,7 @@ class Welts(BossModule module) : Components.GenericStackSpread(module, true)
 
     public Mechanic NextMechanic;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -99,7 +99,7 @@ class Flamerake(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 4)
         {

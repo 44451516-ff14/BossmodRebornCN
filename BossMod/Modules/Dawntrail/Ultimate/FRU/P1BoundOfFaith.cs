@@ -49,7 +49,7 @@ sealed class P1BoundOfFaith(BossModule module) : Components.UniformStackSpread(m
         };
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Fire && WorldState.Actors.Find(tether.Target) is var target && target != null)
         {
@@ -159,7 +159,7 @@ sealed class P1BoundOfFaithAIStack(BossModule module) : BossComponent(module)
             }
 
             // all else being equal, try staying closer to center
-            hints.GoalZones.Add(hints.GoalSingleTarget(Arena.Center, 7.5f, 0.5f));
+            hints.GoalZones.Add(AIHints.GoalSingleTarget(Arena.Center, 7.5f, 0.5f));
         }
         else
         {

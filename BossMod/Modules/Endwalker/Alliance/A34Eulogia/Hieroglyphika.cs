@@ -12,7 +12,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Bind)
             BindsAssigned = true;

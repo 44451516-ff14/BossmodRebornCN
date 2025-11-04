@@ -9,7 +9,7 @@ sealed class P7FlamesIceOfAscalon(BossModule module) : Components.GenericAOEs(mo
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.GenericMechanic && actor.OID == (uint)OID.DragonKingThordan)
         {

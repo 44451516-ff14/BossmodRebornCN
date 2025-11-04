@@ -45,7 +45,7 @@ sealed class Heatstroke(BossModule module) : Components.StayMove(module, 3f)
 {
     private BitMask _heatstroke;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Heatstroke && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -54,7 +54,7 @@ sealed class Heatstroke(BossModule module) : Components.StayMove(module, 3f)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -80,7 +80,7 @@ sealed class ColdSweats(BossModule module) : Components.StayMove(module, 3)
 {
     private BitMask _coldsweats;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.ColdSweats && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -89,7 +89,7 @@ sealed class ColdSweats(BossModule module) : Components.StayMove(module, 3)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {

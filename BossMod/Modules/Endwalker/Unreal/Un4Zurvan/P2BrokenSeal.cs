@@ -77,7 +77,7 @@ class P2BrokenSeal(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.InfiniteAnguish or (uint)TetherID.InfiniteFire or (uint)TetherID.InfiniteIce)
         {

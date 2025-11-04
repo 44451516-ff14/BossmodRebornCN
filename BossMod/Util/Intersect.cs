@@ -3,9 +3,11 @@
 // ray-shape intersection functions return parameter along ray dir of intersection point; if intersection does not happen, they return float.MaxValue
 // rayDir is assumed to be normalized
 // WDir rayOriginOffset overload for symmetrical shapes uses offset from shape center for ray origin
+[SkipLocalsInit]
 public static class Intersect
 {
-    public static float RayCircle(WDir rayOriginOffset, WDir rayDir, float circleRadius)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayCircle(in WDir rayOriginOffset, in WDir rayDir, float circleRadius)
     {
         // (rayOriginOffset + t * rayDir) ^ 2 = R^2 => t^2 + 2 * t * rayOriginOffset dot rayDir + rayOriginOffset^2 - R^2 = 0
         var halfB = rayOriginOffset.Dot(rayDir);
@@ -15,19 +17,21 @@ public static class Intersect
         var t = -halfB + MathF.Sqrt(halfDSq);
         return t >= 0f ? t : float.MaxValue;
     }
-    public static float RayCircle(WPos rayOrigin, WDir rayDir, WPos circleCenter, float circleRadius) => RayCircle(rayOrigin - circleCenter, rayDir, circleRadius);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayCircle(in WPos rayOrigin, in WDir rayDir, in WPos circleCenter, float circleRadius) => RayCircle(rayOrigin - circleCenter, rayDir, circleRadius);
 
-    public static bool RayCircle(WDir rayOriginOffset, WDir rayDir, float circleRadius, float maxDist)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool RayCircle(in WDir rayOriginOffset, in WDir rayDir, float circleRadius, float maxDist)
     {
         var t = (-rayOriginOffset).Dot(rayDir);
-        var tClamped = MathF.Max(0f, MathF.Min(maxDist, t));
+        var tClamped = Math.Max(0f, Math.Min(maxDist, t));
 
         var closest = rayOriginOffset + rayDir * tClamped;
         return closest.LengthSq() <= circleRadius * circleRadius;
     }
 
     // halfWidth is along X, halfHeight is along Z
-    public static float RayAABB(WDir rayOriginOffset, WDir rayDir, float halfWidth, float halfHeight)
+    public static float RayAABB(in WDir rayOriginOffset, in WDir rayDir, float halfWidth, float halfHeight)
     {
         // see https://tavianator.com/2022/ray_box_boundary.html
         // rayOriginOffset.i + t.i * rayDir.i = +- halfSize.i => t.i = (+-halfSize.i - rayOriginOffset.i) / rayDir.i
@@ -40,10 +44,12 @@ public static class Intersect
         // then if ray origin is outside box, ti1 = ti2 = +-inf (infinities of same sign)
         // if it's inside box, ti1 = -ti2 = +-inf (infinities of different sign)
         // if it's exactly on bound, either one of the ti is infinity, other is NaN
-        var tx1 = (-halfWidth - rayOriginOffset.X) * invX;
-        var tx2 = (+halfWidth - rayOriginOffset.X) * invX;
-        var tz1 = (-halfHeight - rayOriginOffset.Z) * invZ;
-        var tz2 = (+halfHeight - rayOriginOffset.Z) * invZ;
+        var offsetX = rayOriginOffset.X;
+        var offsetZ = rayOriginOffset.Z;
+        var tx1 = (-halfWidth - offsetX) * invX;
+        var tx2 = (+halfWidth - offsetX) * invX;
+        var tz1 = (-halfHeight - offsetZ) * invZ;
+        var tz2 = (+halfHeight - offsetZ) * invZ;
 
         // naive version - works fine for infinities, but not for nans - clip 'ray segment' to part between two lines
         // tmin = max(tmin, min(t1, t2));
@@ -60,20 +66,22 @@ public static class Intersect
         // so NaN's don't change 'clipped' ray segment
         return tmin > tmax ? float.MaxValue : tmin >= 0f ? tmin : tmax >= 0f ? tmax : float.MaxValue;
     }
-    public static float RayAABB(WPos rayOrigin, WDir rayDir, WPos boxCenter, float halfWidth, float halfHeight) => RayAABB(rayOrigin - boxCenter, rayDir, halfWidth, halfHeight);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayAABB(in WPos rayOrigin, in WDir rayDir, in WPos boxCenter, float halfWidth, float halfHeight) => RayAABB(rayOrigin - boxCenter, rayDir, halfWidth, halfHeight);
 
     // if rotation is 0, half-width is along X and half-height is along Z
-    public static float RayRect(WDir rayOriginOffset, WDir rayDir, WDir rectRotation, float halfWidth, float halfHeight)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayRect(in WDir rayOriginOffset, in WDir rayDir, in WDir rectRotation, float halfWidth, float halfHeight)
     {
         var rectX = rectRotation.OrthoL();
-        WDir rotate(WDir d) => new(d.Dot(rectX), d.Dot(rectRotation));
-        return RayAABB(rotate(rayOriginOffset), rotate(rayDir), halfWidth, halfHeight);
+        return RayAABB(new(rayOriginOffset.Dot(rectX), rayOriginOffset.Dot(rectRotation)), new(rayDir.Dot(rectX), rayDir.Dot(rectRotation)), halfWidth, halfHeight);
     }
-    public static float RayRect(WPos rayOrigin, WDir rayDir, WPos rectCenter, WDir rectRotation, float halfWidth, float halfHeight) => RayRect(rayOrigin - rectCenter, rayDir, rectRotation, halfWidth, halfHeight);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayRect(in WPos rayOrigin, in WDir rayDir, in WPos rectCenter, in WDir rectRotation, float halfWidth, float halfHeight) => RayRect(rayOrigin - rectCenter, rayDir, rectRotation, halfWidth, halfHeight);
 
     // infinite line intersection; 'center of symmetry' is any point on line
     // note that 'line' doesn't have to be normalized
-    public static float RayLine(WDir rayOriginOffset, WDir rayDir, WDir line)
+    public static float RayLine(in WDir rayOriginOffset, in WDir rayDir, in WDir line)
     {
         // rayOriginOffset + t * rayDir = u * line
         // mul by n = line.ortho: rayOriginOffset dot n + t * rayDir dot n = 0 => t = -(rayOriginOffset dot n) / (rayDir dot n)
@@ -86,9 +94,10 @@ public static class Intersect
         return t >= 0 ? t : float.MaxValue;
     }
 
-    public static float RayLine(WPos rayOrigin, WDir rayDir, WPos lineOrigin, WDir line) => RayLine(rayOrigin - lineOrigin, rayDir, line);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayLine(in WPos rayOrigin, in WDir rayDir, in WPos lineOrigin, in WDir line) => RayLine(rayOrigin - lineOrigin, rayDir, line);
 
-    public static float RaySegment(WDir rayOriginOffset, WDir rayDir, WDir oa, WDir ob)
+    public static float RaySegment(in WDir rayOriginOffset, in WDir rayDir, in WDir oa, in WDir ob)
     {
         var lineDir = ob - oa;
         var t = RayLine(rayOriginOffset - oa, rayDir, lineDir);
@@ -101,21 +110,7 @@ public static class Intersect
         return u >= 0f && u <= lineDir.LengthSq() ? t : float.MaxValue;
     }
 
-    public static float RaySegments(WDir rayOriginOffset, WDir rayDir, ReadOnlySpan<(WDir, WDir)> edges)
-    {
-        var minValue = float.MaxValue;
-        var len = edges.Length;
-        for (var i = 0; i < len; ++i)
-        {
-            ref readonly var edge = ref edges[i];
-            var result = RaySegment(rayOriginOffset, rayDir, edge.Item1, edge.Item2);
-            if (result < minValue)
-                minValue = result;
-        }
-        return minValue;
-    }
-
-    public static float RaySegment(WPos rayOrigin, WDir rayDir, WPos vertexA, WPos vertexB)
+    public static float RaySegment(in WPos rayOrigin, in WDir rayDir, in WPos vertexA, in WPos vertexB)
     {
         var lineDir = vertexB - vertexA;
         var t = RayLine(rayOrigin - vertexA, rayDir, lineDir);
@@ -127,44 +122,26 @@ public static class Intersect
         return u >= 0f && u <= lineDir.LengthSq() ? t : float.MaxValue;
     }
 
-    public static float RayPolygon(WDir rayOriginOffset, WDir rayDir, RelPolygonWithHoles poly)
-    {
-        var dist = RaySegments(rayOriginOffset, rayDir, poly.ExteriorEdges);
-        var holes = poly.Holes;
-        var len = holes.Length;
-        for (var i = 0; i < len; ++i)
-        {
-            dist = Math.Min(dist, RaySegments(rayOriginOffset, rayDir, poly.InteriorEdges(holes[i])));
-        }
-        return dist;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayPolygon(in WDir rayOriginOffset, in WDir rayDir, RelSimplifiedComplexPolygon poly)
+        => poly.Raycast(rayOriginOffset, rayDir);
 
-    public static float RayPolygon(WDir rayOriginOffset, WDir rayDir, RelSimplifiedComplexPolygon poly)
-    {
-        var minDistance = float.MaxValue;
-        var parts = poly.Parts;
-        var count = parts.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var distance = RayPolygon(rayOriginOffset, rayDir, parts[i]);
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-            }
-        }
-        return minDistance;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float RayPolygon(in WPos rayOrigin, in WDir rayDir, in WPos polyCenter, RelSimplifiedComplexPolygon poly)
+        => RayPolygon(rayOrigin - polyCenter, rayDir, poly);
 
     // circle-shape intersections; they return true if shapes intersect or touch, false otherwise
     // these are used e.g. for player-initiated aoes
-    public static bool CircleCircle(WDir circleOffset, float circleRadius, float radius)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleCircle(in WDir circleOffset, float circleRadius, float radius)
     {
         var rsum = circleRadius + radius;
         return circleOffset.LengthSq() <= rsum * rsum;
     }
-    public static bool CircleCircle(WPos circleCenter, float circleRadius, WPos center, float radius) => CircleCircle(circleCenter - center, circleRadius, radius);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleCircle(in WPos circleCenter, float circleRadius, in WPos center, float radius) => CircleCircle(circleCenter - center, circleRadius, radius);
 
-    public static bool CircleCone(WDir circleOffset, float circleRadius, float coneRadius, WDir coneDir, Angle halfAngle)
+    public static bool CircleCone(in WDir circleOffset, float circleRadius, float coneRadius, in WDir coneDir, Angle halfAngle)
     {
         var lsq = circleOffset.LengthSq();
         var rsq = circleRadius * circleRadius;
@@ -208,7 +185,8 @@ public static class Intersect
         var corner = side * coneRadius;
         return (circleOffset - corner).LengthSq() <= rsq;
     }
-    public static bool CircleCone(WPos circleCenter, float circleRadius, WPos coneCenter, float coneRadius, WDir coneDir, Angle halfAngle) => CircleCone(circleCenter - coneCenter, circleRadius, coneRadius, coneDir, halfAngle);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleCone(in WPos circleCenter, float circleRadius, in WPos coneCenter, float coneRadius, in WDir coneDir, Angle halfAngle) => CircleCone(circleCenter - coneCenter, circleRadius, coneRadius, coneDir, halfAngle);
 
     public static bool CircleAARect(WDir circleOffset, float circleRadius, float halfExtentX, float halfExtentZ)
     {
@@ -220,16 +198,18 @@ public static class Intersect
             return true; // circle center is inside/on the edge, or close enough to one of the edges to intersect
         return cornerOffset.LengthSq() <= circleRadius * circleRadius; // check whether circle touches the corner
     }
-    public static bool CircleAARect(WPos circleCenter, float circleRadius, WPos rectCenter, float halfExtentX, float halfExtentZ) => CircleAARect(circleCenter - rectCenter, circleRadius, halfExtentX, halfExtentZ);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleAARect(in WPos circleCenter, float circleRadius, in WPos rectCenter, float halfExtentX, float halfExtentZ) => CircleAARect(circleCenter - rectCenter, circleRadius, halfExtentX, halfExtentZ);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleRect(in WDir circleOffset, float circleRadius, in WDir rectZDir, float halfExtentX, float halfExtentZ) => CircleAARect(circleOffset.Rotate(rectZDir.MirrorX()), circleRadius, halfExtentX, halfExtentZ);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleRect(in WPos circleCenter, float circleRadius, in WPos rectCenter, in WDir rectZDir, float halfExtentX, float halfExtentZ) => CircleRect(circleCenter - rectCenter, circleRadius, rectZDir, halfExtentX, halfExtentZ);
 
-    public static bool CircleRect(WDir circleOffset, float circleRadius, WDir rectZDir, float halfExtentX, float halfExtentZ) => CircleAARect(circleOffset.Rotate(rectZDir.MirrorX()), circleRadius, halfExtentX, halfExtentZ);
-    public static bool CircleRect(WPos circleCenter, float circleRadius, WPos rectCenter, WDir rectZDir, float halfExtentX, float halfExtentZ) => CircleRect(circleCenter - rectCenter, circleRadius, rectZDir, halfExtentX, halfExtentZ);
-
-    public static bool CircleDonutSector(WDir circleOffset, float circleRadius, float innerRadius, float outerRadius, WDir sectorDir, Angle halfAngle)
+    public static bool CircleDonutSector(in WDir circleOffset, float circleRadius, float innerRadius, float outerRadius, WDir sectorDir, Angle halfAngle)
     {
         var distSq = circleOffset.LengthSq();
         var maxR = outerRadius + circleRadius;
-        var minR = MathF.Max(0, innerRadius - circleRadius);
+        var minR = Math.Max(0, innerRadius - circleRadius);
 
         if (distSq > maxR * maxR || distSq < minR * minR)
             return false;
@@ -251,7 +231,7 @@ public static class Intersect
 
         static float DistToRay(WDir dir, WDir pt)
             // vector rejection = cross product length / length of ray dir (==1)
-            => MathF.Abs(pt.Cross(dir));
+            => Math.Abs(pt.Cross(dir));
 
         // check if circle intersects side rays
         var dL = DistToRay(sideDirL, circleOffset);
@@ -270,6 +250,76 @@ public static class Intersect
         return (circleOffset - cornerL).LengthSq() <= circleRadius * circleRadius || (circleOffset - cornerR).LengthSq() <= circleRadius * circleRadius;
     }
 
-    public static bool CircleDonutSector(WPos circleCenter, float circleRadius, WPos sectorCenter, float innerRadius, float outerRadius, WDir sectorDir, Angle halfAngle)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool CircleDonutSector(in WPos circleCenter, float circleRadius, in WPos sectorCenter, float innerRadius, float outerRadius, in WDir sectorDir, Angle halfAngle)
     => CircleDonutSector(circleCenter - sectorCenter, circleRadius, innerRadius, outerRadius, sectorDir, halfAngle);
+
+    public static int RayCircleAnglesDeg(WPos centerC, float radius, WPos rayOriginO, WDir rayDirD, out float degEnter, out float degExit)
+    {
+        degEnter = degExit = default;
+
+        // shift to circle space: F = O - C
+        var F = rayOriginO - centerC;
+
+        // Quadratic coefficients for |F + tD|^2 = r^2
+        var A = rayDirD.Dot(rayDirD);
+        var B = 2f * F.Dot(rayDirD);
+        var C = F.Dot(F) - radius * radius;
+
+        var disc = B * B - 4f * A * C;
+        if (disc < 0f)
+        {
+            return 0; // no intersection
+        }
+
+        var s = MathF.Sqrt(Math.Max(0f, disc));
+        var inv2A = 0.5f / A;
+        var t0 = (-B - s) * inv2A; // entry (closest)
+        var t1 = (-B + s) * inv2A; // exit  (farthest)
+
+        // all forward intersections (t >= 0)
+        var t0Ok = t0 >= 0f;
+        var t1Ok = t1 >= 0f;
+
+        if (!t0Ok && !t1Ok)
+        {
+            return 0; // both behind origin
+        }
+
+        // Compute angle for a hit: from center to hit point
+        static float HitDeg(WPos C, WPos O, WDir D, float t)
+        {
+            var p = O + t * D;
+            var v = p - C; // vector from center to hit
+            var a = Angle.Atan2(v.X, v.Z).Normalized();
+            return a.Deg;
+        }
+
+        if (disc == 0f)
+        {
+            // Tangent: one forward hit (might be at t=0 if starting on the boundary)
+            var t = Math.Max(t0, t1); // both equal; ensures non-negative if one is 0
+            if (t < 0f)
+            {
+                return default;
+            }
+            degEnter = HitDeg(centerC, rayOriginO, rayDirD, t);
+            return 1;
+        }
+
+        // Two solutions; keep only those in front
+        if (t0Ok && t1Ok)
+        {
+            degEnter = HitDeg(centerC, rayOriginO, rayDirD, MathF.Min(t0, t1)); // entry
+            degExit = HitDeg(centerC, rayOriginO, rayDirD, MathF.Max(t0, t1)); // exit
+            return 2;
+        }
+        else
+        {
+            // Ray starts inside the circle: only the exit is valid
+            var t = Math.Max(t0, t1);
+            degExit = HitDeg(centerC, rayOriginO, rayDirD, t);
+            return 1;
+        }
+    }
 }

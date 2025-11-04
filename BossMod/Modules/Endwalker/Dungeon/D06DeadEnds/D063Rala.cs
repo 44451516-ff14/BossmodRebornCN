@@ -37,13 +37,13 @@ class Doom(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _doomed = [];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
             _doomed.Add(actor);
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
             _doomed.Remove(actor);

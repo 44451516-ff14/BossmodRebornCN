@@ -188,7 +188,7 @@ sealed class Steelstrike(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -196,8 +196,8 @@ sealed class Steelstrike(BossModule module) : Components.GenericAOEs(module)
                 AddSwordAOE(status.Extra == 0x219 ? swordsFire : swordsIce);
                 if (swordsFire.Count == 5 && swordsIce.Count == 5)
                 {
-                    swordsFire.Sort((a, b) => a.Rotation.Rad.CompareTo(b.Rotation.Rad));
-                    swordsIce.Sort((a, b) => a.Rotation.Rad.CompareTo(b.Rotation.Rad));
+                    swordsFire.Sort(static (a, b) => a.Rotation.Rad.CompareTo(b.Rotation.Rad));
+                    swordsIce.Sort(static (a, b) => a.Rotation.Rad.CompareTo(b.Rotation.Rad));
                 }
                 break;
             case (uint)SID.SoulOfFire:
@@ -222,7 +222,7 @@ sealed class Steelstrike(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -320,7 +320,7 @@ sealed class ThermalDivideSides(BossModule module) : Components.GenericAOEs(modu
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -333,7 +333,7 @@ sealed class ThermalDivideSides(BossModule module) : Components.GenericAOEs(modu
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

@@ -84,7 +84,7 @@ sealed class Fractures(BossModule module) : Components.DirectionalParry(module, 
     private const int sideL = (int)(Side.Right | Side.Back | Side.Front) << 4;
     private static readonly Angle a180 = 180f.Degrees(), a90 = 90f.Degrees(), a20 = 20f.Degrees();
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (actor.OID is not (uint)OID.CrackedMettle1 and not (uint)OID.CrackedMettle2)
             return;
@@ -99,7 +99,7 @@ sealed class Fractures(BossModule module) : Components.DirectionalParry(module, 
             PredictParrySide(actor.InstanceID, sides);
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.RightwardFracture or (uint)SID.LeftwardFracture or (uint)SID.BackwardFracture)
             UpdateState(actor.InstanceID, 0);

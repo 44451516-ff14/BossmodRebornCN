@@ -177,9 +177,10 @@ public sealed class CLL4Dawon(WorldState ws, Actor primary) : BossModule(ws, pri
         var center = Arena.Center;
         for (var i = 0; i < count; ++i)
         {
-            ref readonly var e = ref potHints[i].Actor;
-            ref var enemyPrio = ref potHints[i].Priority;
-            ref readonly var oid = ref e.OID;
+            var h = potHints[i];
+            var e = h.Actor;
+            var enemyPrio = h.Priority;
+            var oid = e.OID;
             if (center == LyonCenter)
             {
                 if (oid != (uint)OID.LyonTheBeastKing)
@@ -194,6 +195,7 @@ public sealed class CLL4Dawon(WorldState ws, Actor primary) : BossModule(ws, pri
                 else if (oid == (uint)OID.LyonTheBeastKing)
                     enemyPrio = AIHints.Enemy.PriorityInvincible;
             }
+            h.Priority = enemyPrio;
         }
     }
 

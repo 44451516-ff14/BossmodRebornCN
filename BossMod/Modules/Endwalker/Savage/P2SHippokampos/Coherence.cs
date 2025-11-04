@@ -89,7 +89,7 @@ class Coherence(BossModule module) : Components.CastCounter(module, (uint)AID.Co
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Coherence)
             _tetherTarget = WorldState.Actors.Find(tether.Target);

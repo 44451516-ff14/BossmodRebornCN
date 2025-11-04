@@ -73,7 +73,7 @@ sealed class HeavensflameKnockback(BossModule module) : Components.SimpleKnockba
             Arena.AddCircle(_playerAdjustedPositions[slot], _aoeRadius);
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         _brokenTethers.Set(Raid.FindSlot(source.InstanceID));
         _brokenTethers.Set(Raid.FindSlot(tether.Target));

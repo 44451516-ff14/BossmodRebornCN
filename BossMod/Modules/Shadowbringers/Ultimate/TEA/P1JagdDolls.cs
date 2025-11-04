@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P1JagdDolls(BossModule module) : BossComponent(module)
 {
     public int NumExhausts;

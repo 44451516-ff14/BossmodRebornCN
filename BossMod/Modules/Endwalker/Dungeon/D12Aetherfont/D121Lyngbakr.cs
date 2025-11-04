@@ -41,7 +41,7 @@ sealed class ExplosiveResonantFrequency(BossModule module) : Components.GenericA
         var index = 0;
         while (index < count)
         {
-            ref readonly var aoe = ref aoes[index];
+            ref var aoe = ref aoes[index];
             if (aoe.Activation >= deadline)
             {
                 break;
@@ -65,7 +65,7 @@ sealed class ExplosiveResonantFrequency(BossModule module) : Components.GenericA
             _aoes.Add(new(shape, spell.LocXZ, default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
             if (_aoes.Count == 11)
             {
-                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                SortHelpers.SortAOEByActivation(_aoes);
             }
         }
     }

@@ -1,10 +1,11 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P2Flarethrower(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP2AOE)
 {
     private Actor? _source;
 
-    private static readonly AOEShapeCone _shape = new(100f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(100f, 45f.Degrees());
 
     public override void Update()
     {

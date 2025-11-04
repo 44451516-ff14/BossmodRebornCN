@@ -37,7 +37,7 @@ sealed class WickedCannon(BossModule module) : Components.GenericAOEs(module)
         };
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         void AddAOE(ushort extra)
         {

@@ -15,7 +15,7 @@ sealed class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAO
         return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var delay = status.ID switch
         {
@@ -26,7 +26,7 @@ sealed class FinalFusedownSelfDestruct(BossModule module) : Components.GenericAO
         if (delay > 0)
         {
             _aoes.Add(new(_shape, actor.Position.Quantized(), default, WorldState.FutureTime(delay)));
-            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            SortHelpers.SortAOEByActivation(_aoes);
         }
     }
 
@@ -49,7 +49,7 @@ sealed class FinalFusedownExplosion(BossModule module) : Components.GenericStack
 
     public void Show() => Spreads = _spreads1;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         (var list, var delay) = status.ID switch
         {

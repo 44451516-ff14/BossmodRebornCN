@@ -104,7 +104,7 @@ class AetheroChemicalLaserCombo(BossModule module) : Components.GenericAOEs(modu
 
         AOEs.Add(new(_shapes[shapeIndex], actor.Position.Quantized(), actor.OID == (uint)OID.OrbInterceptor ? default : actor.Rotation, WorldState.FutureTime(delay)));
         if (AOEs.Count == 6)
-            AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            SortHelpers.SortAOEByActivation(AOEs);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

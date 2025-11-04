@@ -2,6 +2,8 @@
 
 // generic 'directional parry' component that shows actors and sides it's forbidden to attack them from
 // uses common status + custom prediction
+
+[SkipLocalsInit]
 public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(module, actorOID)
 {
     public enum Side
@@ -131,7 +133,7 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == ParrySID)
         {
@@ -141,7 +143,7 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == ParrySID)
         {

@@ -45,7 +45,7 @@ sealed class P2PartySynergy(BossModule module) : CommonAssignments(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -154,7 +154,7 @@ sealed class P2PartySynergyDoubleAOEs(BossModule module) : Components.GenericAOE
 
 sealed class P2PartySynergyOptimizedFire : Components.UniformStackSpread
 {
-    public P2PartySynergyOptimizedFire(BossModule module) : base(module, default, 7f, alwaysShowSpreads: true)
+    public P2PartySynergyOptimizedFire(BossModule module) : base(module, default, 7f)
     {
         AddSpreads(Raid.WithoutSlot(true, true, true));
     }

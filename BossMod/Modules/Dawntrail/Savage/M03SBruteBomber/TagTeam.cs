@@ -62,7 +62,7 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.ChainDeathmatch && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
         {
@@ -108,7 +108,7 @@ sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(modu
                 for (var i = 0; i < len; ++i)
                 {
                     ref var aoe = ref aoes[i];
-                    if (aoe.Origin == pos)
+                    if (aoe.Origin.AlmostEqual(pos, 1f))
                     {
                         index = i;
                         break;

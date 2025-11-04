@@ -24,7 +24,7 @@ class Hydrostasis(BossModule module) : Components.GenericKnockback(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.HydrostasisQuick)
             AddSource(source.Position, WorldState.FutureTime(12d));
@@ -33,6 +33,6 @@ class Hydrostasis(BossModule module) : Components.GenericKnockback(module)
     private void AddSource(WPos pos, DateTime activation)
     {
         _sources.Add(new(pos, 28f, activation));
-        _sources.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+        _sources.Sort(static (a, b) => a.Activation.CompareTo(b.Activation));
     }
 }

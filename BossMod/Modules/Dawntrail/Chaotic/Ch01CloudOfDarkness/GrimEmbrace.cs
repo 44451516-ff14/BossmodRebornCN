@@ -40,7 +40,7 @@ sealed class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(mod
     //        hints.AddSpecialMode(AIHints.SpecialMode.Pyretic, s.Activation); // TODO: reconsider? i want to ensure character won't turn last moment...
     //}
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         var shape = tether.ID switch
         {
@@ -52,13 +52,13 @@ sealed class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(mod
             _states[slot].Shape = shape;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.DeadlyEmbrace && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && slot < _states.Length)
             _states[slot].Activation = status.ExpireAt;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.DeadlyEmbrace && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && slot < _states.Length)
             _states[slot] = default;

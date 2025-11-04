@@ -42,10 +42,10 @@ public enum AID : uint
 
 public enum IconID : uint
 {
-    ChasingAOE = 197 // player
+    LoomingNightmare = 197 // player
 }
 
-sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOEs(module)
+sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(14f, 20f);
     private AOEInstance[] _aoe = [];
@@ -60,7 +60,7 @@ sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOE
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x00 && state == 0x00020001u)
         {
@@ -70,7 +70,7 @@ sealed class MaliciousMistArenaChange(BossModule module) : Components.GenericAOE
     }
 }
 
-sealed class LoomingNightmare(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.LoomingNightmareFirst, (uint)AID.LoomingNightmareRest, 3, 1.6f, 5, true, (uint)IconID.ChasingAOE)
+sealed class LoomingNightmare(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.LoomingNightmareFirst, (uint)AID.LoomingNightmareRest, 3, 1.6f, 5, true, (uint)IconID.LoomingNightmare)
 {
     private int totalChasers;
 
@@ -90,7 +90,7 @@ sealed class LoomingNightmare(BossModule module) : Components.StandardChasingAOE
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Targets[slot])
+        if (TargetsMask[slot])
         {
             hints.AddForbiddenZone(new SDCircle(Arena.Center, 13.5f), Activation);
         }
@@ -123,7 +123,7 @@ sealed class FallingNightmare(BossModule module) : Components.GenericAOEs(module
 
 sealed class SpiritedCharge(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(6f, 1f);
+    private readonly AOEShapeRect rect = new(6f, 1f);
     private readonly List<Actor> _charges = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -198,7 +198,7 @@ sealed class D081HisRoyalHeadnessLeonoggIStates : StateMachineBuilder
     public D081HisRoyalHeadnessLeonoggIStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<MaliciousMistArenaChange>()
+            .ActivateOnEnter<ArenaChange>()
             .ActivateOnEnter<MaliciousMist>()
             .ActivateOnEnter<LoomingNightmare>()
             .ActivateOnEnter<EvilScheme>()

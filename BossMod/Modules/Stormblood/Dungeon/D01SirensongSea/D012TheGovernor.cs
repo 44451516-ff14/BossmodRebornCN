@@ -45,7 +45,7 @@ class EnterNightPull(BossModule module) : Components.GenericKnockback(module)
             target = (actor, WorldState.FutureTime(3d));
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.EnterNight)
             target = default;

@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P4FinalWordDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
 {
     protected override WDir SafeSpotDirection(int slot) => Debuffs[slot] switch
@@ -9,7 +10,7 @@ sealed class P4FinalWordDebuffs(BossModule module) : P4ForcedMarchDebuffs(module
         _ => new(default, 10f), // slightly N of dark beacon
     };
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -44,6 +45,7 @@ sealed class P4FinalWordDebuffs(BossModule module) : P4ForcedMarchDebuffs(module
     }
 }
 
+[SkipLocalsInit]
 sealed class P4FinalWordStillnessMotion(BossModule module) : Components.StayMove(module)
 {
     private Requirement _first;

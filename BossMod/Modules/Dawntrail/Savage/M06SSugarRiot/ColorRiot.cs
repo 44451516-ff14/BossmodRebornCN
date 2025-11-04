@@ -96,7 +96,7 @@ sealed class ColorRiot(BossModule module) : Components.GenericBaitAway(module, d
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CoolTint)
         {
@@ -108,7 +108,7 @@ sealed class ColorRiot(BossModule module) : Components.GenericBaitAway(module, d
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CoolTint)
         {

@@ -28,16 +28,4 @@ class FlareScald(BossModule module) : Components.GenericAOEs(module)
 class ProminenceSpine(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProminenceSpine, new AOEShapeRect(60f, 5f));
 class SparklingBrandingFlare(BossModule module) : Components.CastStackSpread(module, (uint)AID.BrandingFlareAOE, (uint)AID.SparkingFlareAOE, 4f, 4f);
 
-class Nox : Components.StandardChasingAOEs
-{
-    public Nox(BossModule module) : base(module, new AOEShapeCircle(10f), (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6f, 5)
-    {
-        ExcludedTargets = Raid.WithSlot(true, true, true).Mask();
-    }
-
-    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
-    {
-        if (iconID == (uint)IconID.Nox)
-            ExcludedTargets[Raid.FindSlot(actor.InstanceID)] = false;
-    }
-}
+class Nox(BossModule module) : Components.StandardChasingAOEs(module, 10f, (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6d, 5, icon: (uint)IconID.Nox);

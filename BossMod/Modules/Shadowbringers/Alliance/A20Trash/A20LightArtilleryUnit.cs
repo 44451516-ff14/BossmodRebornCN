@@ -43,7 +43,7 @@ sealed class HomingMissileImpact(BossModule module) : Components.BaitAwayCast(mo
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             hints.AddForbiddenZone(new SDRect(Arena.Center, new WDir(default, 1f), 23f, 23f, 23f));
         }

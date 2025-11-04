@@ -50,7 +50,7 @@ public enum IconID : uint
     ChasingAOE = 197 // player
 }
 
-class CometChase(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.CometFirst, (uint)AID.CometRest, 10f, 1.5f, 9, true, (uint)IconID.ChasingAOE)
+class CometChase(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.CometFirst, (uint)AID.CometRest, 10f, 1.5d, 9, true, (uint)IconID.ChasingAOE)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell) { }
 
@@ -62,7 +62,7 @@ class CometChase(BossModule module) : Components.StandardChasingAOEs(module, 4f,
             Advance(spell.LocXZ, MoveDistance, WorldState.CurrentTime);
             if (Chasers.Count == 0)
             {
-                ExcludedTargets = default;
+                Targets.Clear();
                 NumCasts = 0;
             }
         }

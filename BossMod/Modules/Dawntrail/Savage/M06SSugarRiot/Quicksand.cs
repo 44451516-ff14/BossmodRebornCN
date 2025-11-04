@@ -29,7 +29,7 @@ sealed class Quicksand(BossModule module) : Components.GenericAOEs(module)
         return [];
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index is >= 0x1F and <= 0x23)
         {
@@ -59,7 +59,7 @@ sealed class QuicksandDoubleStylePaintBomb(BossModule module) : BossComponent(mo
 {
     public BitMask Targets;
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.ActivateMechanicDoubleStyle2)
         {
@@ -96,7 +96,7 @@ sealed class QuicksandDoubleStyleHeavenBomb(BossModule module) : Components.Gene
         return [];
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.ActivateMechanicDoubleStyle1)
         {

@@ -79,7 +79,7 @@ sealed class IncendiaryBombingBait : Components.GenericBaitAway
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             if (!polygonInit)
             {

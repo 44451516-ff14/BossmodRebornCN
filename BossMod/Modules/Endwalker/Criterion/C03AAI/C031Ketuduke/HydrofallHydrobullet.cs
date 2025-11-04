@@ -36,7 +36,7 @@ class HydrofallHydrobullet(BossModule module) : Components.UniformStackSpread(mo
             hints.Add(string.Join(" -> ", Mechanics.Skip(firstMech).Select(m => m.Spread ? "Spread" : "Stack")));
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.HydrofallTarget or (uint)SID.HydrobulletTarget && Mechanics.Count > 0)
         {

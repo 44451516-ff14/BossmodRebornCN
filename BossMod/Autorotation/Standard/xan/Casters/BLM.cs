@@ -115,7 +115,7 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
 
     public const int AOEBreakpoint = 2;
 
-    private float InstantCastLeft => MathF.Max(TriplecastLeft, SwiftcastLeft);
+    private float InstantCastLeft => Math.Max(TriplecastLeft, SwiftcastLeft);
 
     protected override float GetCastTime(AID aid)
     {
@@ -240,7 +240,7 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
             (BestThunderTarget, TargetThunderLeft) = SelectDotTarget(strategy, dotTarget, GetTargetThunderLeft, 2);
         }
 
-        (BestAOEThunderTarget, NumAOEDotTargets) = SelectTarget(strategy, dotTarget, 25, (primary, other) => DotExpiring(other) && Hints.TargetInAOECircle(other, primary.Position, 5));
+        (BestAOEThunderTarget, NumAOEDotTargets) = SelectTarget(strategy, dotTarget, 25, (primary, other) => DotExpiring(other) && TargetInAOECircle(other, primary.Position, 5));
 
         if (CountdownRemaining > 0)
         {
@@ -261,7 +261,7 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
             return;
         }
 
-        if (primaryTarget == null)
+        if (!Hints.PriorityTargets.Any())
         {
             if (ReadyIn(AID.Transpose) == 0)
             {
@@ -280,9 +280,10 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
 
             if (Unlocked(AID.UmbralSoul) && Ice > 0 && (Ice < 3 || Hearts < MaxHearts || Player.HPMP.CurMP < Player.HPMP.MaxMP))
                 PushGCD(AID.UmbralSoul, Player, GCDPriority.Standard);
-
-            return;
         }
+
+        if (primaryTarget == null)
+            return;
 
         GoalZoneSingle(25);
 
@@ -299,7 +300,7 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
                 PushGCD((AID)PhantomID.Iainuki, primaryTarget, GCDPriority.Max);
 
             if (ready <= GCD + GCDLength * 2)
-                Hints.GoalZones.Add(Hints.GoalSingleTarget(primaryTarget.Actor, 8));
+                Hints.GoalZones.Add(GoalSingleTarget(primaryTarget.Actor, 8));
         }
 
         if (strategy.Enabled(Track.TimeMage))
@@ -319,13 +320,13 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
             }
         }
 
-        if (Polyglot < MaxPolyglot)
-            PushOGCD(AID.Amplifier, Player);
-
         UseLeylines(strategy, primaryTarget);
         UseTriplecastForced(strategy);
 
-        if (Fire > 0)
+        if (Player.InCombat)
+            PushOGCD(AID.Amplifier, Player);
+
+        if (Fire > 0 && Player.InCombat)
         {
             var manafontOk = strategy.Option(Track.Manafont).As<OffensiveStrategy>() switch
             {
@@ -679,6 +680,9 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
     private void UseLeylines(StrategyValues strategy, Enemy? primaryTarget)
     {
         if (Player.FindStatus(SID.LeyLines) != null)
+            return;
+
+        if (!Player.InCombat && CountdownRemaining == null)
             return;
 
         var opt = strategy.Option(Track.Leylines);

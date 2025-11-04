@@ -35,7 +35,7 @@ sealed class ChildsPlay : Components.GenericForcedMarch
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (source.OID == default && tether.ID == (uint)TetherID.ChildsPlay)
         {
@@ -57,7 +57,7 @@ sealed class ChildsPlay : Components.GenericForcedMarch
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PayingThePiper)
         {
@@ -66,7 +66,7 @@ sealed class ChildsPlay : Components.GenericForcedMarch
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PayingThePiper)
         {

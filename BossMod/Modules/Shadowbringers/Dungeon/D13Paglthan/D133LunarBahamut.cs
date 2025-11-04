@@ -80,7 +80,7 @@ sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module,
     {
         if (iconID == (uint)IconID.KanRhai)
         {
-            CurrentBaits.Add(new(Module.PrimaryActor, actor, Cross, WorldState.FutureTime(5.6d), default));
+            CurrentBaits.Add(new(Module.PrimaryActor, actor, Cross, WorldState.FutureTime(5.6d), customRotation: Angle.AnglesCardinals[1]));
         }
     }
 
@@ -94,7 +94,7 @@ sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module,
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             hints.Add("Bait away and move!");
         }

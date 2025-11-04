@@ -3,6 +3,7 @@ using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
+[SkipLocalsInit]
 public sealed class BossModuleMainWindow : UIWindow
 {
     private readonly BossModuleManager _mgr;
@@ -32,7 +33,7 @@ public sealed class BossModuleMainWindow : UIWindow
         ForceMainWindow = BossModuleManager.Config.TrishaMode; // NoBackground flag without ForceMainWindow works incorrectly for whatever reason
 
         if (BossModuleManager.Config.ShowWorldArrows && _mgr.ActiveModule != null && _mgr.WorldState.Party[PartyState.PlayerSlot] is var pc && pc != null)
-            DrawMovementHints(_mgr.ActiveModule.CalculateMovementHintsForRaidMember(PartyState.PlayerSlot, ref pc), pc.PosRot.Y);
+            DrawMovementHints(_mgr.ActiveModule.CalculateMovementHintsForRaidMember(PartyState.PlayerSlot, pc), pc.PosRot.Y);
     }
 
     public override void OnOpen()

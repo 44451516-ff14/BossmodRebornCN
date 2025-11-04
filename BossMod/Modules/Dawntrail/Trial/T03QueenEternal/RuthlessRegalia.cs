@@ -28,12 +28,12 @@ sealed class RuthlessRegalia(BossModule module) : Components.GenericAOEs(module)
             _source = null;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         _tethered.Add(source);
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         _tethered.Clear();
     }

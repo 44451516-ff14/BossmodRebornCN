@@ -1,5 +1,6 @@
 ﻿namespace BossMod;
 
+[SkipLocalsInit]
 public abstract class AOEShape(bool invertForbiddenZone)
 {
     public bool InvertForbiddenZone = invertForbiddenZone;
@@ -25,6 +26,7 @@ public abstract class AOEShape(bool invertForbiddenZone)
     }
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -44,6 +46,7 @@ public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle directionO
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCone(origin, Radius, rotation + DirectionOffset, HalfAngle);
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeCircle(float radius, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -61,6 +64,7 @@ public sealed class AOEShapeCircle(float radius, bool invertForbiddenZone = fals
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCircle(origin, Radius);
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float InnerRadius = innerRadius;
@@ -83,6 +87,7 @@ public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool inv
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedDonut(origin, InnerRadius, OuterRadius);
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float InnerRadius = innerRadius;
@@ -103,6 +108,7 @@ public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, An
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedDonutSector(origin, InnerRadius, OuterRadius, rotation + DirectionOffset, HalfAngle);
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengthBack = default, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float LengthFront = lengthFront;
@@ -111,7 +117,7 @@ public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengt
     public readonly Angle DirectionOffset = directionOffset;
 
     public override string ToString() => $"Rect: l={LengthFront:f3}+{LengthBack:f3}, w={HalfWidth * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
-    public override bool Check(WPos position, WPos origin, Angle rotation) => position.InRect(origin, rotation + DirectionOffset, LengthFront, LengthBack, HalfWidth);
+    public override bool Check(WPos position, WPos origin, Angle rotation) => position.InRect(origin, rotation, LengthFront, LengthBack, HalfWidth);
     public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = default) => arena.ZoneRect(origin, rotation + DirectionOffset, LengthFront, LengthBack, HalfWidth, color);
     public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = default, float thickness = 1f) => arena.AddRect(origin, (rotation + DirectionOffset).ToDirection(), LengthFront, LengthBack, HalfWidth, color, thickness);
     public override ShapeDistance Distance(WPos origin, Angle rotation)
@@ -124,6 +130,7 @@ public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengt
 
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeCross(float length, float halfWidth, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Length = length;
@@ -132,7 +139,7 @@ public sealed class AOEShapeCross(float length, float halfWidth, Angle direction
 
     public override string ToString() => $"Cross: l={Length:f3}, w={HalfWidth * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
     public override bool Check(WPos position, WPos origin, Angle rotation) => position.InCross(origin, rotation + DirectionOffset, Length, HalfWidth);
-    public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = default) => arena.ZonePoly((123u, origin, rotation + DirectionOffset, Length, HalfWidth), ContourPoints(origin, rotation), color);
+    public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = default) => arena.ZoneCross(origin, rotation + DirectionOffset, Length, HalfWidth, ContourPoints(origin, rotation), color);
     public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = default, float thickness = 1f)
     {
         var points = ContourPoints(origin, rotation);
@@ -182,6 +189,7 @@ public sealed class AOEShapeCross(float length, float halfWidth, Angle direction
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCross(origin, rotation + DirectionOffset, Length, HalfWidth);
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float SideLength = sideLength;
@@ -211,6 +219,7 @@ public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle dir
     }
 }
 
+[SkipLocalsInit]
 public sealed class AOEShapeCapsule(float radius, float length, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     public readonly float Radius = radius;
@@ -230,6 +239,26 @@ public sealed class AOEShapeCapsule(float radius, float length, Angle directionO
     public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedCapsule(origin, rotation, Length, Radius);
 }
 
+[SkipLocalsInit]
+public sealed class AOEShapeArcCapsule(float radius, Angle angularLength, WPos orbitCenter, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+{
+    public readonly float Radius = radius;
+    public readonly Angle AngularLength = angularLength;
+    public readonly WPos OrbitCenter = orbitCenter;
+
+    public override string ToString() => $"Capsule: radius={Radius:f3}, length={AngularLength}, orbitCenter={OrbitCenter}, ifz={InvertForbiddenZone}";
+    public override bool Check(WPos position, WPos origin, Angle rotation) => position.InArcCapsule(origin, -(origin - OrbitCenter), AngularLength, Radius);
+
+    public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = default) => arena.ZoneArcCapsule(origin, OrbitCenter, AngularLength, Radius, color);
+    public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = default, float thickness = 1f)
+        => arena.AddArcCapsule(origin, OrbitCenter, AngularLength, Radius, color, thickness);
+    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    {
+        return !InvertForbiddenZone ? new SDArcCapsule(origin, -(origin - OrbitCenter), AngularLength, Radius) : new SDInvertedArcCapsule(origin, -(origin - OrbitCenter), AngularLength, Radius);
+    }
+    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation) => new SDInvertedArcCapsule(origin, -(origin - OrbitCenter), AngularLength, Radius);
+}
+
 public enum OperandType
 {
     Union,
@@ -241,6 +270,7 @@ public enum OperandType
 // shapes1 for unions, shapes 2 for shapes for XOR/intersection with shapes1, differences for shapes that get subtracted after previous operations
 // always create a new instance of AOEShapeCustom if something other than the invertforbiddenzone changes
 // if the origin of the AOE can change, edit the origin default value to prevent cache issues
+[SkipLocalsInit]
 public sealed class AOEShapeCustom : AOEShape
 {
     private readonly IReadOnlyList<Shape> Shapes1;
@@ -400,37 +430,7 @@ public sealed class AOEShapeCustom : AOEShape
     public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = default, float thickness = 1f)
     {
         var combinedPolygon = Polygon ?? GetCombinedPolygon(origin);
-        var parts = combinedPolygon.Parts;
-        var count = parts.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var part = parts[i];
-            var exteriorEdges = part.ExteriorEdges;
-            var exteriorLen = exteriorEdges.Length;
-            for (var j = 0; j < exteriorLen; ++j)
-            {
-                var (start, end) = exteriorEdges[j];
-                arena.PathLineTo(origin + start);
-                if (j != exteriorLen - 1)
-                    arena.PathLineTo(origin + end);
-            }
-            MiniArena.PathStroke(true, color, thickness);
-            var holes = part.Holes;
-            var lenHoles = holes.Length;
-            for (var k = 0; k < lenHoles; ++k)
-            {
-                var interiorEdges = part.InteriorEdges(holes[k]);
-                var interiorLen = interiorEdges.Length;
-                for (var j = 0; j < interiorLen; ++j)
-                {
-                    var (start, end) = interiorEdges[j];
-                    arena.PathLineTo(origin + start);
-                    if (j != interiorLen - 1)
-                        arena.PathLineTo(origin + end);
-                }
-                MiniArena.PathStroke(true, color, thickness);
-            }
-        }
+        arena.AddComplexPolygon(origin, combinedPolygon, color, thickness);
     }
 
     public override ShapeDistance Distance(WPos origin, Angle rotation)

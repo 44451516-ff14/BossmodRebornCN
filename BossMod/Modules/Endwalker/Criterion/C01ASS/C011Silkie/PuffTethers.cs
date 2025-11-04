@@ -22,7 +22,7 @@ abstract class PuffTethers(BossModule module, bool originAtBoss) : BossComponent
         DrawTether(pc, _tracker.FizzlingPuffs);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (actor != Module.PrimaryActor)
             return;

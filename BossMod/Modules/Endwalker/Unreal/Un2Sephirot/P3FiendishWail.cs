@@ -28,7 +28,7 @@ class P3FiendishWail(BossModule module) : Components.CastCounter(module, (uint)A
             Arena.AddCircle(t.Position, _radius, Colors.Danger);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if ((SID)status.ID == SID.ForceAgainstMight)
             _physResistMask.Set(Raid.FindSlot(actor.InstanceID));

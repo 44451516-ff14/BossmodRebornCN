@@ -12,7 +12,7 @@ class P2BahamutsFavorFireball(BossModule module) : Components.UniformStackSpread
             AddStack(Target, _activation, _forbidden);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Firescorched)
         {
@@ -22,7 +22,7 @@ class P2BahamutsFavorFireball(BossModule module) : Components.UniformStackSpread
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Firescorched)
         {
@@ -32,7 +32,7 @@ class P2BahamutsFavorFireball(BossModule module) : Components.UniformStackSpread
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Fireball)
         {
@@ -53,14 +53,14 @@ class P2BahamutsFavorFireball(BossModule module) : Components.UniformStackSpread
 }
 
 // note: if player dies immediately after chain lightning cast, he won't get a status or have aoe cast; if he dies after status application, aoe will be triggered immediately
-class P2BahamutsFavorChainLightning(BossModule module) : Components.UniformStackSpread(module, 0, 5, alwaysShowSpreads: true)
+class P2BahamutsFavorChainLightning(BossModule module) : Components.UniformStackSpread(module, default, 5f)
 {
     private BitMask _pendingTargets;
     private DateTime _expectedStatuses;
 
     public bool ActiveOrSkipped() => Active || _pendingTargets.Any() && WorldState.CurrentTime >= _expectedStatuses && Raid.WithSlot(true, true, true).IncludedInMask(_pendingTargets).All(ip => ip.Item2.IsDead);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Thunderstruck)
         {
@@ -117,16 +117,16 @@ class P2BahamutsFavorDeathstorm(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
         {
             _dooms.Add((actor, status.ExpireAt, false));
-            _dooms.Sort((a, b) => a.expiration.CompareTo(b.expiration));
+            _dooms.Sort(static (a, b) => a.expiration.CompareTo(b.expiration));
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
         {

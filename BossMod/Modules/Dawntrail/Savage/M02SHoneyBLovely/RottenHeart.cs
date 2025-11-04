@@ -23,7 +23,7 @@ sealed class RottenHeartBigBurst(BossModule module) : Components.CastCounter(mod
             Arena.AddLine(pc.Position, partner.Position, ResolveImminent(pcSlot) ? Colors.Danger : Colors.Safe);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.BeelovedVenomA or (uint)SID.BeelovedVenomB && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {

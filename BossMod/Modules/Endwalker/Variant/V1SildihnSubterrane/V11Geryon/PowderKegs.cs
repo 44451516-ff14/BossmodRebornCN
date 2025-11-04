@@ -3,7 +3,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V11Geryon;
 sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = new(5);
-    private static readonly AOEShapeCircle circle = new(15f);
+    private readonly AOEShapeCircle circle = new(15f);
     public static readonly AOEShapeDonut Donut = new(3f, 17f);
     private bool draw = true;
     private bool intake;
@@ -22,7 +22,7 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
         {
             (uint)AID.ColossalSlam or (uint)AID.ColossalCharge1 or (uint)AID.ColossalCharge2 => 5.4d,
             (uint)AID.ColossalSwing => 5.6d,
-            (uint)AID.GigantomillFirstCW or (uint)AID.GigantomillFirstCCW => 5.6d,
+            (uint)AID.GigantomillFirstCW or (uint)AID.GigantomillFirstCCW => -1.5d,
             (uint)AID.ColossalLaunch => 6.7d,
             (uint)AID.RunawayRunoff => 4.5d,
             _ => default
@@ -98,7 +98,7 @@ sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x09 && state is 0x00200010u or 0x00020001u)
         {

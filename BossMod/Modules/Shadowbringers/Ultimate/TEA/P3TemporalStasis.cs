@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(module, (uint)AID.FlarethrowerP3)
 {
     public enum Mechanic { None, AvoidDamage, StayClose, StayFar }
@@ -7,8 +8,8 @@ sealed class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(mo
     public bool Frozen;
     private readonly Mechanic[] _playerMechanics = new Mechanic[PartyState.MaxPartySize];
 
-    private static readonly AOEShapeCone _shapeBJ = new(100f, 45f.Degrees()); // TODO: verify angle
-    private static readonly AOEShapeCone _shapeCC = new(30f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shapeBJ = new(100f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shapeCC = new(30f, 45f.Degrees()); // TODO: verify angle
 
     public override void Update()
     {
@@ -62,7 +63,7 @@ sealed class P3TemporalStasis(BossModule module) : Components.GenericBaitAway(mo
         Arena.AddCircle(SafeSpot(pcSlot, pc), 1f, Colors.Safe);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

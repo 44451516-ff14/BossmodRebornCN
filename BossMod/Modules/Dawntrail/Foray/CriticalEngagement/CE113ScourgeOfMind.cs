@@ -74,7 +74,7 @@ sealed class FireIceTrap(BossModule module) : Components.GenericAOEs(module)
         return CollectionsMarshal.AsSpan(_aoes);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -110,7 +110,7 @@ sealed class FireIceTrap(BossModule module) : Components.GenericAOEs(module)
         void AddAOE(List<AOEInstance> aoes, AOEShapeCircle shape) => aoes.Add(new(shape, position, default, activation));
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

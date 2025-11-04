@@ -36,7 +36,7 @@ class JitteringJounceBait(BossModule module) : Components.BaitAwayChargeTether(m
 {
     public Actor? Target;
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         base.OnTethered(source, tether);
         Target ??= WorldState.Actors.Find(tether.Target);

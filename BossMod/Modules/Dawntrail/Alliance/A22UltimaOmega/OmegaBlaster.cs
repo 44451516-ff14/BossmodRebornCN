@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Alliance.A22UltimaOmega;
 sealed class OmegaBlaster(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = new(2);
-    private static readonly AOEShapeCone cone = new(50f, 90f.Degrees());
+    private readonly AOEShapeCone cone = new(50f, 90f.Degrees());
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -20,7 +20,7 @@ sealed class OmegaBlaster(BossModule module) : Components.GenericAOEs(module)
                 {
                     (aoe1, aoe2) = (aoe2, aoe1);
                 }
-                aoe2.Origin += 1.5f * aoe2.Rotation.ToDirection();
+                aoe2.Origin += 5f * aoe2.Rotation.ToDirection();
             }
         }
     }
@@ -33,7 +33,7 @@ sealed class OmegaBlaster(BossModule module) : Components.GenericAOEs(module)
             if (_aoes.Count == 1)
             {
                 ref var aoe = ref CollectionsMarshal.AsSpan(_aoes)[0];
-                aoe.Origin -= 1.5f * aoe.Rotation.ToDirection();
+                aoe.Origin -= 5f * aoe.Rotation.ToDirection();
             }
         }
     }

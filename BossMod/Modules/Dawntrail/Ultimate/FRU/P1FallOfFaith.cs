@@ -88,7 +88,7 @@ sealed class P1FallOfFaith(BossModule module) : Components.CastCounter(module, d
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         var id = tether.ID;
         if (id is (uint)TetherID.Fire or (uint)TetherID.Lightning)
@@ -130,7 +130,7 @@ sealed class P1FallOfFaith(BossModule module) : Components.CastCounter(module, d
                 conga.Add((slot, group));
         if (conga.Count != 4)
             return; // no assignments
-        conga.Sort((a, b) => a.prio.CompareTo(b.prio));
+        conga.Sort(static (a, b) => a.prio.CompareTo(b.prio));
         var count = conga.Count;
         for (var i = 0; i < count; ++i)
             _playerOrder[conga[i].slot] = i + 5;

@@ -4,13 +4,13 @@ class Enchain(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _targets = [];
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if ((tether.ID == 1 || tether.ID == 57) && source.Type == ActorType.Player)
             _targets.Add(source);
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if ((tether.ID == 1 || tether.ID == 57) && source.Type == ActorType.Player)
             _targets.Remove(source);

@@ -102,14 +102,14 @@ sealed class OneTwoPawShade(BossModule module) : Components.GenericAOEs(module)
             _firstDirection = dir;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (_aoes.Count < 4 && tether.ID == (uint)TetherID.Soulshade)
         {
             var pos = source.Position.Quantized();
             _aoes.Add(new(_shape, pos, source.Rotation + _firstDirection, WorldState.FutureTime(20.3d)));
             _aoes.Add(new(_shape, pos, source.Rotation - _firstDirection, WorldState.FutureTime(23.3d)));
-            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            SortHelpers.SortAOEByActivation(_aoes);
         }
     }
 
@@ -204,7 +204,7 @@ sealed class LeapingOneTwoPaw(BossModule module) : Components.GenericAOEs(module
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Soulshade)
         {

@@ -2,6 +2,8 @@
 
 // wrapper around float, stores angle in radians, provides type-safety and convenience
 // when describing rotation in world, common convention is 0 for 'south'/'down'/(0, -1) and increasing counterclockwise - so +90 is 'east'/'right'/(1, 0)
+
+[SkipLocalsInit]
 public readonly struct Angle(float rad)
 {
     public readonly float Rad = rad;
@@ -75,12 +77,13 @@ public readonly struct Angle(float rad)
         return midDist.Rad > width.Rad ? min : midDist.Rad < -width.Rad ? max : this;
     }
 
-    public override readonly string ToString() => Deg.ToString("f3");
+    public override readonly string ToString() => Deg.ToString("f3", System.Globalization.CultureInfo.InvariantCulture);
     public readonly bool Equals(Angle other) => Rad == other.Rad;
     public override readonly bool Equals(object? obj) => obj is Angle other && Equals(other);
     public override readonly int GetHashCode() => Rad.GetHashCode();
 }
 
+[SkipLocalsInit]
 public static class AngleExtensions
 {
     public static Angle Radians(this float radians) => new(radians);
@@ -88,11 +91,10 @@ public static class AngleExtensions
     public static Angle Degrees(this int degrees) => new(degrees * Angle.DegToRad);
 }
 
+[SkipLocalsInit]
 public static class CosPI
 {
     public const float Pi8th = 1.082392f; // 1 / Math.Cos(Math.PI / 8)
-    public const float Pi16th = 1.019591f; // 1 / Math.Cos(Math.PI / 16)
-    public const float Pi20th = 1.012465f; // 1 / Math.Cos(Math.PI / 20)
     public const float Pi28th = 1.006328f; // 1 / Math.Cos(Math.PI / 28)
     public const float Pi32th = 1.004839f; // 1 / Math.Cos(Math.PI / 32)
     public const float Pi36th = 1.00382f; // 1 / Math.Cos(Math.PI / 36)

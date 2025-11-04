@@ -6,7 +6,7 @@ class SpinnersWheelSelect(BossModule module) : BossComponent(module)
 
     public Branch SelectedBranch;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var branch = status.ID switch
         {
@@ -32,7 +32,7 @@ abstract class SpinnersWheelGaze(BossModule module, bool inverted, uint aid, uin
         return [];
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == sid)
         {
@@ -48,7 +48,7 @@ class SpinnersWheelStayMove(BossModule module) : Components.StayMove(module)
 {
     public int ActiveDebuffs;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -67,7 +67,7 @@ class SpinnersWheelStayMove(BossModule module) : Components.StayMove(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.Pyretic or (uint)SID.FreezingUp)
         {

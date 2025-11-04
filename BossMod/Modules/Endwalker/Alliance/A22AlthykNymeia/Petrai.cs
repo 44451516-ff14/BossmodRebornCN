@@ -8,7 +8,7 @@ class Petrai(BossModule module) : Components.GenericSharedTankbuster(module, (ui
         {
             Source = caster;
             Target = WorldState.Actors.Find(spell.TargetID);
-            Activation = Module.CastFinishAt(spell, 1f);
+            Activation = Module.CastFinishAt(spell, 1d);
         }
     }
 

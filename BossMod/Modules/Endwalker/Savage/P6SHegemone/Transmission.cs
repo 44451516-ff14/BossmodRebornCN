@@ -45,7 +45,7 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
                 _shape.Draw(Arena, e.player.Position, e.direction);
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         switch (tether.ID)
         {
@@ -58,7 +58,7 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -75,7 +75,7 @@ class Transmission(BossModule module) : Components.CastCounter(module, (uint)AID
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

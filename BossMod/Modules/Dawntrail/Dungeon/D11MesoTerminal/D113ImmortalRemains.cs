@@ -87,8 +87,10 @@ sealed class Bombardment(BossModule module) : Components.GenericAOEs(module)
                     break;
                 }
             }
-            AOEs.Add(new(big ? circleBig : circleSmall, (big ? pos + 3.5f * actor.Rotation.Round(1f).ToDirection() : pos).Quantized(), default,
-            AOEs.Count == 0 ? WorldState.FutureTime(9.8d) : AOEs.Ref(0).Activation, actorID: big ? 1ul : default));
+            var shape = big ? circleBig : circleSmall;
+            var loc = (big ? pos + 3.5f * actor.Rotation.Round(1f).ToDirection() : pos).Quantized();
+            AOEs.Add(new(shape, loc, default,
+            AOEs.Count == 0 ? WorldState.FutureTime(9.8d) : AOEs.Ref(0).Activation, actorID: big ? 1ul : default, shapeDistance: shape.Distance(loc, default)));
         }
     }
 
@@ -99,12 +101,31 @@ sealed class Bombardment(BossModule module) : Components.GenericAOEs(module)
             AOEs.Clear();
         }
     }
+
+    public void UpdateAOEs(bool risky)
+    {
+        var aoes = CollectionsMarshal.AsSpan(AOEs);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            aoes[i].Risky = risky;
+        }
+    }
 }
 
-sealed class Impression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Impression, 10f);
+sealed class Impression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Impression, 10f)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        // handled by the knockback component
+    }
+}
+
 sealed class ImpressionKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Impression, 11f)
 {
     private readonly Bombardment _aoe = module.FindComponent<Bombardment>()!;
+    private bool active;
+    private bool updated;
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -114,6 +135,7 @@ sealed class ImpressionKB(BossModule module) : Components.SimpleKnockbacks(modul
         }
         ref readonly var c = ref Casters.Ref(0);
         var act = c.Activation;
+        var innerCircle = new SDCircle(Arena.Center.Quantized(), 10f);
         if (!IsImmune(slot, act))
         {
             var aoes = CollectionsMarshal.AsSpan(_aoe.AOEs);
@@ -125,7 +147,11 @@ sealed class ImpressionKB(BossModule module) : Components.SimpleKnockbacks(modul
                 circles[i] = (aoe.Origin, aoe.ActorID == default ? 4f : 15f);
             }
             // square intentionally slightly smaller to prevent sus knockback
-            hints.AddForbiddenZone(new SDKnockbackInAABBSquareAwayFromOriginPlusAOECirclesMixedRadii(Arena.Center, c.Origin, 11f, 19f, circles, len), act);
+            hints.AddForbiddenZone(new SDKnockbackInAABBSquareAwayFromOriginPlusAOECirclesMixedRadiiPlusAvoidShape(Arena.Center, c.Origin, 11f, 19f, circles, len, innerCircle), act);
+        }
+        else
+        {
+            hints.AddForbiddenZone(innerCircle, act);
         }
     }
 
@@ -141,6 +167,33 @@ sealed class ImpressionKB(BossModule module) : Components.SimpleKnockbacks(modul
             }
         }
         return !Arena.InBounds(pos);
+    }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        base.OnCastStarted(caster, spell);
+        if (spell.Action.ID == WatchedAction)
+        {
+            active = true;
+        }
+    }
+
+    public override void Update()
+    {
+        if (active)
+        {
+            if (!updated && _aoe.AOEs.Count == 8)
+            {
+                _aoe.UpdateAOEs(false);
+                updated = true;
+            }
+            else if (updated && Casters.Count == 0)
+            {
+                _aoe.UpdateAOEs(true);
+                updated = false;
+                active = false;
+            }
+        }
     }
 }
 
@@ -204,8 +257,8 @@ sealed class D113ImmortalRemainsStates : StateMachineBuilder
             .ActivateOnEnter<Electray>()
             .ActivateOnEnter<MemoryOfTheStorm>()
             .ActivateOnEnter<Bombardment>()
-            .ActivateOnEnter<Impression>()
             .ActivateOnEnter<ImpressionKB>()
+            .ActivateOnEnter<Impression>()
             .ActivateOnEnter<MemoryOfThePyre>()
             .ActivateOnEnter<Turmoil>()
             .ActivateOnEnter<Keraunography>();

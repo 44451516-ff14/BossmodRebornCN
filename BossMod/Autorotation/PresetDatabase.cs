@@ -14,17 +14,26 @@ public sealed class PresetDatabase
 
     private readonly FileInfo _dbPath;
 
-    public List<Preset> VisiblePresets
+    public List<Preset> AllPresets
     {
         get
         {
-            if (_cfg.HideDefaultPreset)
+            var countD = DefaultPresets.Count;
+            var countU = UserPresets.Count;
+            List<Preset> presets = new(countD + countU);
+            for (var i = 0; i < countD; ++i)
             {
-                return UserPresets;
+                var def = DefaultPresets[i];
+                if (def.HiddenByDefault == _cfg.HideDefaultPreset)
+                {
+                    presets.Add(def);
+                }
             }
-
-            List<Preset> combinedPresets = [.. DefaultPresets, .. UserPresets];
-            return combinedPresets;
+            for (var i = 0; i < countU; ++i)
+            {
+                presets.Add(UserPresets[i]);
+            }
+            return presets;
         }
     }
 
@@ -82,11 +91,32 @@ public sealed class PresetDatabase
         }
     }
 
-    public IEnumerable<Preset> PresetsForClass(Class c) => VisiblePresets.Where(p => p.Modules.Any(m => m.Definition.Classes[(int)c]));
+    public List<Preset> PresetsForClass(Class c)
+    {
+        var visible = AllPresets;
+        var count = visible.Count;
+        List<Preset> presets = new(count);
+        for (var i = 0; i < count; ++i)
+        {
+            var vis = visible[i];
+            var pm = vis.Modules;
+            var countM = pm.Count;
+            for (var j = 0; j < countM; ++j)
+            {
+                var pmj = pm[j];
+                if (pmj.Definition.Classes[(int)c])
+                {
+                    presets.Add(vis);
+                    break;
+                }
+            }
+        }
+        return presets;
+    }
 
     public Preset? FindPresetByName(ReadOnlySpan<char> name, StringComparison cmp = StringComparison.CurrentCultureIgnoreCase)
     {
-        foreach (var p in VisiblePresets)
+        foreach (var p in AllPresets)
             if (name.Equals(p.Name, cmp))
                 return p;
         return null;

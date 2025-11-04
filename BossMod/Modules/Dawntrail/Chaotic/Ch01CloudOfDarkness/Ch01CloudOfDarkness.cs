@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Chaotic.Ch01CloudOfDarkness;
 
-sealed class Flare(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Flare, (uint)AID.FlareAOE, 25f, 8.1f);
+sealed class Flare(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Flare, (uint)AID.FlareAOE, 25f, 8.1d);
 sealed class StygianShadow(BossModule module) : Components.Adds(module, (uint)OID.StygianShadow);
 sealed class Atomos(BossModule module) : Components.Adds(module, (uint)OID.Atomos);
 sealed class GhastlyGloomCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GhastlyGloomCrossAOE, new AOEShapeCross(40f, 15f));
@@ -9,6 +9,7 @@ sealed class FloodOfDarknessAdd(BossModule module) : Components.CastInterruptHin
 sealed class Excruciate(BossModule module) : Components.BaitAwayCast(module, (uint)AID.Excruciate, 4f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
 sealed class LoomingChaos(BossModule module) : Components.CastCounter(module, (uint)AID.LoomingChaosAOE);
 sealed class Phaser(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.Phaser], new AOEShapeCone(23f, 30f.Degrees()));
+sealed class FeintParticleBeam(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.FeintParticleBeamAOEFirst, (uint)AID.FeintParticleBeamAOERest, 2.1f, 0.4d, 18, icon: (uint)IconID.FeintParticleBeam);
 
 // TODO: tankswap hints component for phase1
 // TODO: phase 2 teleport zones?

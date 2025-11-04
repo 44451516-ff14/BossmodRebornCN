@@ -53,13 +53,13 @@ sealed class PureOfHeartSkyblindBait(BossModule module) : BossComponent(module)
             Arena.AddCircle(player.Position, _radius, Colors.Danger);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Skyblind)
             _baiters.Set(Raid.FindSlot(actor.InstanceID));
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Skyblind)
             _baiters.Clear(Raid.FindSlot(actor.InstanceID));

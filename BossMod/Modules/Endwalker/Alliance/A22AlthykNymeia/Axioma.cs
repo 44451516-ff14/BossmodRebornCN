@@ -6,97 +6,97 @@ class Axioma(BossModule module) : Components.GenericAOEs(module)
     private const string risk2Hint = "Walk into a rift!";
     private const string stayHint = "Stay inside rift!";
     public bool ShouldBeInZone;
-    private bool active;
+    private AOEInstance[] _aoe = [], _aoeInv = [];
 
-    private static readonly PolygonCustom shapeCustom1 = new([new(35.65f, -725), new(35.3f, -726.57f), new(35.25f, -726.83f), new(34.42f, -728.66f),
-    new(33.38f, -730.2f), new(32.17f, -731.72f), new(30.67f, -733.08f), new(28.83f, -734.21f), new(27.19f, -734.83f), new(25, -735.44f),  new(25, -725)]);
-    private static readonly PolygonCustom shapeCustom2 = new([new(75, -725), new(75, -732.32f), new(73.49f, -732.17f), new(72.1f, -731.97f),
-    new(70.54f, -731.49f), new(68.88f, -731.16f), new(67.34f, -731.01f), new(66.02f, -731.01f), new(64.64f, -730.92f), new(63.15f, -730.55f),
-    new(61.64f, -729.96f), new(60.4f, -729.34f), new(59.45f, -728.39f), new(58.74f, -727.34f), new(58.32f, -726.08f), new(58.1f, -725)]);
-    private static readonly PolygonCustom shapeCustom3 = new([new(64.10f, -775), new(59.2f, -775), new(58.54f, -773.85f), new(57.72f, -771.66f),
-    new(57.24f, -769.38f), new(57.03f, -767.12f), new(57.24f, -765), new(57.81f, -762.68f), new(58.56f, -760.89f), new(59.61f, -759.09f),
-    new(61.06f, -757.38f), new(62.99f, -755.92f), new(65.16f, -754.63f), new(67.51f, -754.09f), new(69.88f, -753.99f), new(72.09f, -754.32f),
-    new(73.44f, -754.63f), new(74.57f, -755.01f), new(75, -755.14f), new(75, -759.46f), new(73.47f, -758.86f), new(73.47f, -758.87f),
-    new(73.16f, -758.75f), new(71.17f, -758.22f), new(69.58f, -757.95f), new(68.02f, -758.06f), new(66.52f, -758.39f), new(65.11f, -759.16f),
-    new(63.96f, -760.15f), new(62.89f, -761.36f), new(62.13f, -762.68f), new(61.59f, -764.06f), new(61.19f, -765.64f), new(61.04f, -767.2f),
-    new(61.26f, -769.04f), new(61.6f, -770.57f), new(62.21f, -772.18f), new(62.94f, -773.45f), new(63.75f, -774.56f)]);
-    private static readonly PolygonCustom shapeCustom4 = new([new(42.61f, -775), new(37.38f, -775), new(36.4f, -773.45f), new(35.41f, -771.43f),
-    new(34.71f, -769.39f), new(34.37f, -767.23f), new(34.28f, -765.23f), new(34.37f, -763.22f), new(34.56f, -761.38f), new(34.72f, -759.54f),
-    new(34.95f, -757.71f), new(35.02f, -757.22f), new(39.27f, -755.75f), new(38.92f, -758.26f), new(38.72f, -760.02f), new(38.57f, -761.76f),
-    new(38.39f, -763.48f), new(38.28f, -765.1f), new(38.36f, -766.71f), new(38.57f, -768.33f), new(39.13f, -769.86f), new(39.8f, -771.33f),
-    new(40.73f, -772.79f), new(41.23f, -773.43f), new(41.81f, -774.16f)]);
-    private static readonly PolygonCustom shapeCustom5 = new([new(25, -757.62f), new(25, -753.6f), new(26.54f, -753.73f), new(29.55f, -754.03f),
-    new(31.73f, -754.02f), new(33.74f, -753.66f), new(35.83f, -753.04f), new(37.51f, -752.18f), new(38.8f, -751.22f), new(39.97f, -749.94f),
-    new(40.91f, -748.65f), new(41.76f, -747.09f), new(42.45f, -745.39f), new(42.99f, -743.66f), new(43.4f, -741.94f), new(43.61f, -740.1f),
-    new(43.93f, -737.84f), new(44.1f, -735.59f), new(44.17f, -733.28f), new(44.18f, -730.96f), new(44.21f, -728.77f), new(44.2f, -726.58f),
-    new(44.17f, -725f), new(48.16f, -725f), new(48.2f, -726.57f), new(48.21f, -728.76f), new(48.22f, -730.96f), new(48.21f, -733.25f),
-    new(48.13f, -735.67f), new(48.08f, -736.37f), new(47.96f, -738.06f), new(47.69f, -740.49f), new(47.39f, -742.41f), new(46.94f, -744.47f),
-    new(46.32f, -746.51f), new(45.47f, -748.65f), new(44.45f, -750.55f), new(43.2f, -752.35f), new(41.56f, -754.13f), new(39.5f, -755.65f),
-    new(39.26f, -755.76f), new(37.19f, -756.77f), new(34.98f, -757.44f), new(34.73f, -757.51f), new(32, -757.99f), new(29.25f, -757.99f)]);
-    private static readonly PolygonCustom shapeCustom6 = new([new(63.97f, -755.32f), new(60.49f, -758.06f), new(59.79f, -755.03f),
-    new(59.17f, -752.17f), new(58.78f, -750.63f), new(58.22f, -749.06f), new(57.51f, -747.51f), new(56.57f, -746.04f), new(55.33f, -744.71f),
-    new(54.02f, -743.57f), new(52.47f, -742.63f), new(50.81f, -741.78f), new(48.48f, -740.79f), new(47.65f, -740.45f), new(48.05f, -736.33f),
-    new(50.02f, -737.09f), new(52.5f, -738.17f), new(54.44f, -739.15f), new(56.42f, -740.38f), new(58.26f, -741.94f), new(59.73f, -743.55f),
-    new(61.01f, -745.52f), new(62, -747.65f), new(62.67f, -749.58f), new(63.14f, -751.48f), new(63.79f, -754.5f)]);
-    private static readonly Shape[] union = [shapeCustom1, shapeCustom2, shapeCustom3, shapeCustom4, shapeCustom5, shapeCustom6];
-    private static readonly AOEShapeCustom voidzone = new(union);
+    // extracted from collision data - material ID: 00027004
+    private readonly PolygonCustom vertices1 = new([new(75f, -725f), new(70f, -725f), new(65f, -725f), new(60f, -725f),
+    new(58.143f, -725f), new(58.3167f, -726.1496f), new(58.4458f, -726.56305f), new(58.6982f, -727.3783f), new(59.4078f, -728.42175f),
+    new(60.3447f, -729.3537f), new(61.2174f, -729.77197f), new(61.5917f, -729.95154f), new(63.0951f, -730.49982f), new(64.5921f, -730.87823f),
+    new(65.9846f, -730.99957f), new(67.2878f, -730.97443f), new(68.8071f, -731.13550f), new(70.4964f, -731.46259f), new(72.0493f, -731.90637f),
+    new(73.437f, -732.12659f), new(75f, -732.28339f)]);
+    private readonly PolygonCustom vertices2 = new([new(25.3281f, -735.35754f), new(26.426f, -735.07697f), new(26.562f, -735.04224f), new(26.7076f, -735.00391f),
+    new(26.8697f, -734.96143f), new(27.1617f, -734.84998f), new(28.8127f, -734.22046f), new(30.6479f, -733.09808f), new(32.1464f, -731.73309f), new(33.3692f, -730.21265f),
+    new(34.4045f, -728.67902f), new(35.2253f, -726.82794f), new(35.2813f, -726.56305f), new(35.6056f, -724.99994f), new(25f, -725f), new(25f, -735.44147f)]);
+    private readonly PolygonCustom vertices3 = new([new(48.1426f, -725f), new(44.1429f, -725f), new(44.1762f, -726.56305f), new(44.1904f, -728.75665f),
+    new(44.2046f, -730.93481f), new(44.1878f, -733.24597f), new(44.112f, -735.55365f), new(43.947f, -737.80115f), new(43.6976f, -740.04736f),
+    new(43.4119f, -741.89984f), new(43.0117f, -743.62701f), new(42.4717f, -745.34174f), new(41.7833f, -747.04736f), new(40.933f, -748.59662f),
+    new(40.001f, -749.91089f), new(38.8251f, -751.18555f), new(37.5358f, -752.14978f), new(35.856f, -753.0025f), new(33.7564f, -753.62677f),
+    new(31.7419f, -753.98962f), new(29.5608f, -753.99438f), new(26.5619f, -753.71185f), new(25f, -753.56549f), new(25f, -757.58282f),
+    new(26.562f, -757.72894f), new(29.233f, -757.98077f), new(31.985f, -757.98224f), new(34.7063f, -757.51245f), new(34.9706f, -757.4325f),
+    new(34.9275f, -757.70605f), new(34.7065f, -759.53778f), new(34.5354f, -761.36975f), new(34.36430f, -763.20166f), new(34.25980f, -765.21283f),
+    new(34.35470f, -767.22418f), new(34.69820f, -769.36011f), new(35.39030f, -771.39667f), new(36.37240f, -773.43799f), new(37.38680f, -775.00000f),
+    new(42.5529f, -775f), new(41.7799f, -774.16229f), new(41.1997f, -773.43799f), new(40.696f, -772.79456f), new(39.7612f, -771.32257f),
+    new(39.0821f, -769.85663f), new(38.5269f, -768.32861f), new(38.3204f, -766.70099f), new(38.2376f, -765.09375f), new(38.354f, -763.48639f),
+    new(38.5142f, -761.74622f), new(38.6746f, -760.00574f), new(38.8849f, -758.26562f), new(39.2482f, -755.75745f), new(39.4891f, -755.64038f),
+    new(41.5388f, -754.12415f), new(43.1756f, -752.34467f), new(44.4286f, -750.54120f), new(45.4498f, -748.64709f), new(46.3003f, -746.50061f),
+    new(46.9228f, -744.46594f), new(47.3805f, -742.40259f), new(47.669f, -740.47266f), new(48.4648f, -740.80334f), new(50.7866f, -741.80865f),
+    new(52.45630f, -742.65088f), new(53.9897f, -743.59082f), new(55.3174f, -744.70813f), new(56.5543f, -746.03442f), new(57.4835f, -747.48608f),
+    new(58.2031f, -749.04895f), new(58.76f, -750.61432f), new(59.1578f, -752.15216f), new(59.7885f, -755.02167f), new(60.4404f, -758.06543f),
+    new(59.5972f, -759.05914f), new(58.526f, -760.86078f), new(58.404f, -761.15997f), new(58.0014f, -762.14795f), new(57.7945f, -762.65558f),
+    new(57.2123f, -764.9613f), new(57.0082f, -767.09131f), new(57.2294f, -769.37665f), new(57.7022f, -771.62482f), new(58.521f, -773.80737f),
+    new(59.1997f, -775f), new(64.0821f, -775f), new(63.8263f, -774.67194f), new(63.7223f, -774.53857f), new(63.0506f, -773.67694f),
+    new(62.9063f, -773.43799f), new(62.1757f, -772.18127f), new(61.5527f, -770.55377f), new(61.2136f, -769.0213f), new(61.0067f, -767.1908f),
+    new(61.1576f, -765.61981f), new(61.5483f, -764.03699f), new(62.0992f, -762.65851f), new(62.8508f, -761.34595f), new(63.9279f, -760.12512f),
+    new(65.0842f, -759.15027f), new(66.4947f, -758.35822f), new(67.9801f, -758.02155f), new(69.5422f, -757.93488f), new(71.1551f, -758.17871f),
+    new(73.12f, -758.72607f), new(73.437f, -758.8465f), new(75f, -759.43982f), new(75f, -755.16443f), new(74.5457f, -754.98895f),
+    new(73.437f, -754.62256f), new(72.0707f, -754.28497f), new(69.8698f, -753.96997f), new(67.4927f, -754.05133f), new(65.1489f, -754.59149f),
+    new(63.9314f, -755.31134f), new(63.755f, -754.51202f), new(63.101f, -751.4823f), new(62.6245f, -749.58325f), new(61.9516f, -747.65454f),
+    new(61.6321f, -746.96094f), new(61.1471f, -745.90784f), new(60.9769f, -745.53845f), new(59.689f, -743.58386f), new(58.2183f, -741.95459f),
+    new(57.9486f, -741.724f), new(57.5534f, -741.38574f), new(57.3939f, -741.24945f), new(56.4009f, -740.39966f), new(54.42330f, -739.16846f),
+    new(52.4804f, -738.18896f), new(49.9988f, -737.10950f), new(48.0608f, -736.36029f), new(48.1105f, -735.66815f), new(48.1879f, -733.24176f),
+    new(48.2047f, -730.95795f), new(48.1904f, -728.75311f), new(48.1761f, -726.56305f)]);
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (active)
-        {
-            voidzone.InvertForbiddenZone = ShouldBeInZone;
-            return new AOEInstance[1] { new(voidzone, Arena.Center, default, WorldState.FutureTime(2.5d), ShouldBeInZone ? Colors.SafeFromAOE : default) };
-        }
-        else
-            return [];
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => ShouldBeInZone ? _aoeInv : _aoe;
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x00 && state == 0x00020001u)
-            active = true;
+        {
+            var shape = new AOEShapeCustom([vertices1, vertices2, vertices3]);
+            var center = Arena.Center;
+            var act = DateTime.MaxValue;
+            _aoe = [new(shape, center, default, act, shapeDistance: shape.Distance(center, default))];
+            _aoeInv = [new(shape, center, default, act, Colors.SafeFromAOE, shapeDistance: shape.InvertedDistance(center, default))];
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.InexorablePullAOE)
+        {
             ShouldBeInZone = true;
+            if (_aoeInv.Length != 0)
+            {
+                ref var aoe = ref _aoeInv[0];
+                aoe.Activation = Module.CastFinishAt(spell);
+            }
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.InexorablePullAOE)
+        {
             ShouldBeInZone = false;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!active)
-            return;
-        var aoes = ActiveAOEs(slot, actor);
-        var riskyInZone = false;
-        var riskyOutZone = false;
-        var len = aoes.Length;
-        for (var i = 0; i < len; ++i)
+        if (_aoe.Length == 0)
         {
-            ref readonly var c = ref aoes[i];
-            if (c.Risky)
-            {
-                if (c.Check(actor.Position))
-                    riskyInZone = true;
-                else
-                    riskyOutZone = true;
-            }
-            if (ShouldBeInZone && riskyInZone)
-                break;
+            return;
         }
+        ref var aoe = ref _aoe[0];
+        var isInside = aoe.Check(actor.Position);
 
-        if (!ShouldBeInZone && riskyInZone)
+        if (!ShouldBeInZone && isInside)
+        {
             hints.Add(riskHint);
-        else if (ShouldBeInZone && riskyOutZone)
-            hints.Add(risk2Hint);
-        else if (ShouldBeInZone && riskyInZone)
-            hints.Add(stayHint, false);
+        }
+        else if (ShouldBeInZone)
+        {
+            hints.Add(!isInside ? risk2Hint : stayHint, !isInside);
+        }
     }
 }

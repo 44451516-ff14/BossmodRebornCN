@@ -124,13 +124,13 @@ sealed class P5DeathOfTheHeavensHeavensflame(BossModule module) : Components.Gen
             KnockbackDone = true;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Doom)
             _dooms[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         _brokenTethers[Raid.FindSlot(source.InstanceID)] = true;
         _brokenTethers[Raid.FindSlot(tether.Target)] = true;

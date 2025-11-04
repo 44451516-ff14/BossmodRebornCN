@@ -50,13 +50,13 @@ sealed class Stormcall(BossModule module) : Components.GenericAOEs(module, (uint
         return CollectionsMarshal.AsSpan(_aoes)[..max];
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.OrbMovement)
         {
             _aoes.Add(new(circle, Arena.Center + 30f * (actor.Position - Arena.Center).Normalized(), default, WorldState.FutureTime(status.Extra == 0x1E ? 9.7f : 19.9f), actorID: actor.InstanceID));
             if (_aoes.Count == 3)
-                _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                SortHelpers.SortAOEByActivation(_aoes);
         }
     }
 

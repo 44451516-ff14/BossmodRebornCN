@@ -61,7 +61,7 @@ sealed class Coronation(BossModule module) : Components.GenericAOEs(module, (uin
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.CoronationL or (uint)TetherID.CoronationR)
         {
@@ -94,4 +94,4 @@ sealed class Coronation(BossModule module) : Components.GenericAOEs(module, (uin
     }
 }
 
-sealed class AtomicRay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AtomicRayAOE, 16f, false);
+sealed class AtomicRay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.AtomicRayAOE, 16f);

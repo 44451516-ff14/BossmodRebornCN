@@ -103,4 +103,6 @@ public static class ClassRole
             return true;
         return false;
     }
+
+    public static bool CanEsuna(this Class cls) => cls.GetRole() == Role.Healer || cls == Class.BRD;
 }

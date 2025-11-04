@@ -10,7 +10,7 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
     private BitMask fire;
     private readonly Actor tunnelmachine = module.Enemies((uint)OID.TunnelArmor)[0];
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         base.OnTethered(source, tether);
         if (tether.ID == (uint)TetherID.InfraredBlast)
@@ -101,7 +101,7 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
         return (playerSlot, player, enemy);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.FireResistanceDownII)
         {
@@ -109,7 +109,7 @@ sealed class InfraredBlast(BossModule module) : Components.InterceptTether(modul
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.FireResistanceDownII)
         {

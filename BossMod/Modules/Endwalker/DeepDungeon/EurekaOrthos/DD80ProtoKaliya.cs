@@ -80,7 +80,7 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module, 
         return !Arena.InBounds(pos);
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         bool IsPull(Actor target)
         => source.FindStatus((uint)SID.NegativeChargeDrone) != null && target.FindStatus((uint)SID.PositiveChargePlayer) != null ||
@@ -106,7 +106,7 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module, 
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Magnetism)
         {
@@ -154,7 +154,7 @@ sealed class Barofield(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Barofield)
         {
@@ -163,7 +163,7 @@ sealed class Barofield(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Barofield)
         {

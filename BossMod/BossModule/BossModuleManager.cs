@@ -1,6 +1,7 @@
 ﻿namespace BossMod;
 
 // class that creates and manages instances of proper boss modules in response to world state changes
+[SkipLocalsInit]
 public sealed class BossModuleManager : IDisposable
 {
     public readonly WorldState WorldState;

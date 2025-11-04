@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 abstract class P1ProteanWaveTornado : Components.GenericBaitAway
 {
     private readonly List<Actor> _liquidRage;
@@ -22,6 +23,9 @@ abstract class P1ProteanWaveTornado : Components.GenericBaitAway
     }
 }
 
+[SkipLocalsInit]
 sealed class P1ProteanWaveTornadoVisCast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ProteanWaveTornadoVis, P1ProteanWaveLiquid.Cone);
+[SkipLocalsInit]
 sealed class P1ProteanWaveTornadoVisBait(BossModule module) : P1ProteanWaveTornado(module, false);
+[SkipLocalsInit]
 sealed class P1ProteanWaveTornadoInvis(BossModule module) : P1ProteanWaveTornado(module, true);

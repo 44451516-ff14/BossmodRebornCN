@@ -58,7 +58,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x18 && state == 0x00020001u)
         {
@@ -204,7 +204,7 @@ sealed class Allfire(BossModule module) : Components.GenericAOEs(module)
             AOEs.Add(new(rect, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
             if (AOEs.Count == 16)
             {
-                AOEs.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                SortHelpers.SortAOEByActivation(AOEs);
             }
         }
         else if (!first && spell.Action.ID == (uint)AID.GreatFlood)

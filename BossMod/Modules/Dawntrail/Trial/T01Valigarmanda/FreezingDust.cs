@@ -10,7 +10,7 @@ sealed class FreezingDust(BossModule module) : Components.StayMove(module, 3d)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.FreezingUp && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -18,7 +18,7 @@ sealed class FreezingDust(BossModule module) : Components.StayMove(module, 3d)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status) // it sometimes seems to skip the freezing up debuff?
+    public override void OnStatusGain(Actor actor, ref ActorStatus status) // it sometimes seems to skip the freezing up debuff?
     {
         if (status.ID == (uint)SID.DeepFreeze && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {

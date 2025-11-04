@@ -209,7 +209,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
         {
             var h = potHints[i];
             var e = h.Actor;
-            ref var enemyPrio = ref potHints[i].Priority;
+            var enemyPrio = h.Priority;
             var oid = e.OID;
             if (center == ArenaCenterTop)
             {
@@ -233,6 +233,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
                 else if (oid != (uint)OID.FourthLegionHelldiver1)
                     enemyPrio = AIHints.Enemy.PriorityInvincible;
             }
+            h.Priority = enemyPrio;
         }
     }
 }

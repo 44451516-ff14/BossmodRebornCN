@@ -160,7 +160,7 @@ sealed class P3DiveFromGrace(BossModule module) : Components.CastTowers(module, 
             Arena.AddCircle(s, 1, Colors.Safe);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

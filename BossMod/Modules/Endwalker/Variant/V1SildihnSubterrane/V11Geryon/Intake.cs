@@ -4,11 +4,12 @@ sealed class Intake(BossModule module) : Components.GenericKnockback(module, sto
 {
     private readonly Knockback[] _kbs = new Knockback[4];
     private readonly Explosion _aoe = module.FindComponent<Explosion>()!;
-    private static readonly AOEShapeRect rect = new(40f, 5f);
+    private readonly AOEShapeRect rect = new(40f, 5f);
+    private bool active;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _aoe.AOEs.Count != 0 ? _kbs : [];
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x09)
         {
@@ -26,6 +27,7 @@ sealed class Intake(BossModule module) : Components.GenericKnockback(module, sto
                 {
                     _kbs[i] = new(new WPos(originX, 15f - i * 10f).Quantized(), 25f, act, rect, angle, Kind.TowardsOrigin);
                 }
+                active = true;
             }
         }
     }
@@ -35,12 +37,13 @@ sealed class Intake(BossModule module) : Components.GenericKnockback(module, sto
         if (spell.Action.ID == (uint)AID.Intake)
         {
             Array.Clear(_kbs);
+            active = false;
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_kbs.Length != 0)
+        if (active)
         {
             ref var kb = ref _kbs[0];
             var act = kb.Activation;

@@ -1,8 +1,9 @@
-﻿using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod;
 
+[SkipLocalsInit]
 public abstract class ZoneModule(WorldState ws) : IDisposable
 {
     public readonly WorldState World = ws;
@@ -24,6 +25,8 @@ public abstract class ZoneModule(WorldState ws) : IDisposable
     public virtual bool WantDrawExtra() => false; // return true if it wants to draw something in a separate window
     public virtual void DrawExtra() { }
     public virtual string WindowName() => "";
+
+    public virtual void OnWindowClose() { }
 
     public void DrawGlobalHints()
     {

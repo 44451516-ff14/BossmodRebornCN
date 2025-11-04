@@ -1,6 +1,8 @@
 namespace BossMod.Components;
 
 // component for breakable chains - Note that chainLength for AI considers the minimum distance needed for a chain-pair to be broken (assuming perfectly stacked at cast)
+
+[SkipLocalsInit]
 public class Chains(BossModule module, uint tetherID, uint aid = default, float chainLength = default, bool spreadChains = true) : CastCounter(module, aid)
 {
     public readonly uint TID = tetherID;
@@ -18,7 +20,7 @@ public class Chains(BossModule module, uint tetherID, uint aid = default, float 
         return _partner[pcSlot] == player ? PlayerPriority.Danger : PlayerPriority.Irrelevant;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == TID)
         {
@@ -38,7 +40,7 @@ public class Chains(BossModule module, uint tetherID, uint aid = default, float 
             Arena.AddLine(pc.Position, partner.Position, spreadChains ? default : Colors.Safe);
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == TID)
         {

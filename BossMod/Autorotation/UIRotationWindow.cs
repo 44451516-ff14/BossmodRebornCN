@@ -1,6 +1,6 @@
-﻿using Dalamud.Interface;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
 
 namespace BossMod.Autorotation;
 
@@ -108,7 +108,7 @@ public sealed class UIRotationWindow : UIWindow
                     foreach (var s in m.TransientSettings)
                     {
                         var track = m.Definition.Configs[s.Track];
-                        ImGui.TextUnformatted($"{track.InternalName} = {track.Options[s.Value.Option].InternalName}");
+                        ImGui.TextUnformatted($"{track.InternalName} = {track.ToDisplayString(s.Value)}");
                     }
                 }
             }
@@ -146,6 +146,10 @@ public sealed class UIRotationWindow : UIWindow
 
         foreach (var p in mgr.Database.Presets.PresetsForClass(mgr.Player.Class))
         {
+            if (p.HiddenByDefault)
+            {
+                continue;
+            }
             ImGui.SameLine();
             using var col = ImRaii.PushColor(ImGuiCol.Button, Colors.ButtonPushColor2, mgr.Preset == p);
             using var colHovered = ImRaii.PushColor(ImGuiCol.ButtonHovered, Colors.ButtonPushColor5, mgr.Preset == p);

@@ -54,11 +54,15 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
             if (_aoe.Length == 0)
             {
                 var count = _meteors.Count;
+                var center = Arena.Center;
+                var error = Arena.Bounds.MaxApproxError;
+                var pos = source.Position;
                 for (var i = 0; i < count; ++i)
                 {
-                    polygons.Add(new PolygonCustom(BuildShadowPolygon(source.Position - Arena.Center, _meteors[i] - Arena.Center, Arena.Bounds.MaxApproxError)));
+                    polygons.Add(new PolygonCustom(BuildShadowPolygon(pos - center, _meteors[i] - center, error)));
                 }
-                _aoe = [new(new AOEShapeCustom([.. polygons]), Arena.Center)];
+                var aoe = new AOEShapeCustom([.. polygons]);
+                _aoe = [new(aoe, center, shapeDistance: aoe.Distance(center, default))];
             }
         }
         base.DrawArenaBackground(pcSlot, pc);
@@ -113,7 +117,7 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.VoidMeteorCloseClipping or (uint)TetherID.VoidMeteorCloseGood or (uint)TetherID.VoidMeteorStretchedClipping or (uint)TetherID.VoidMeteorStretchedGood && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
         {
@@ -140,7 +144,7 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
         };
     }
 
-    private static List<WPos> BuildShadowPolygon(WDir sourceOffset, WDir meteorOffset, float maxerror)
+    private static WPos[] BuildShadowPolygon(WDir sourceOffset, WDir meteorOffset, float maxerror)
     {
         var center = Ex7Zeromus.ArenaCenter;
         var toMeteor = meteorOffset - sourceOffset;
@@ -151,13 +155,13 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
         var halfAngleFromMeteor = 90f.Degrees() - halfAngle;
         var circlearc = CurveApprox.CircleArc(_radius * 2, dirFromMeteor + halfAngleFromMeteor, dirFromMeteor - halfAngleFromMeteor, maxerror);
         var count = circlearc.Length;
-        List<WPos> vertices = new(count + 2);
+        WPos[] vertices = new WPos[count + 2];
         for (var i = 0; i < count; ++i)
         {
-            vertices.Add(meteorOffset + circlearc[i] + center);
+            vertices[i] = meteorOffset + circlearc[i] + center;
         }
-        vertices.Add(sourceOffset + 100f * (dirToMeteor + halfAngle).ToDirection() + center);
-        vertices.Add(sourceOffset + 100f * (dirToMeteor - halfAngle).ToDirection() + center);
+        vertices[count] = sourceOffset + 100f * (dirToMeteor + halfAngle).ToDirection() + center;
+        vertices[count + 1] = sourceOffset + 100f * (dirToMeteor - halfAngle).ToDirection() + center;
         return vertices;
     }
 

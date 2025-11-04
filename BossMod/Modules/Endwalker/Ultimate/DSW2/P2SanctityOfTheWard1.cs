@@ -21,7 +21,7 @@ sealed class P2SanctityOfTheWard1Sever(BossModule module) : Components.UniformSt
         if (Stacks.Count == 2 && Source != null)
         {
             Arena.Actor(Source, Colors.Enemy, true);
-            Arena.AddLine(Source.Position, Stacks[NumCasts & 1].Target.Position);
+            Arena.AddLine(Source.Position, Stacks.Ref(NumCasts & 1).Target.Position);
         }
     }
 
@@ -196,6 +196,7 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
 {
     private readonly P2SanctityOfTheWard1Sever? _sever = module.FindComponent<P2SanctityOfTheWard1Sever>();
     private readonly P2SanctityOfTheWard1Flares? _flares = module.FindComponent<P2SanctityOfTheWard1Flares>();
+    private readonly DSW2Config config = Service.Config.Get<DSW2Config>();
     private bool _inited;
     private Angle _severStartDir;
     private bool _chargeEarly;
@@ -209,7 +210,6 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
             _inited = true;
             _severStartDir = Angle.FromDirection(_sever.Source.Position - Arena.Center);
 
-            var config = Service.Config.Get<DSW2Config>();
             _groupEast = config.P2SanctityGroups.BuildGroupMask(1, Raid);
             if (_groupEast.None())
             {
@@ -217,22 +217,24 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
             }
             else
             {
-                if (config.P2SanctityRelative && _severStartDir.Rad < 0)
+                var startDir = _severStartDir.Rad;
+                if (config.P2SanctityRelative && startDir < 0f)
                 {
                     // swap groups for relative assignment if needed
                     _groupEast.Raw ^= 0xff;
                 }
-
+                ref var s0 = ref _sever.Stacks.Ref(0);
+                ref var s1 = ref _sever.Stacks.Ref(1);
                 var effRoles = Service.Config.Get<PartyRolesConfig>().EffectiveRolePerSlot(Raid);
                 if (config.P2SanctitySwapRole == Role.None)
                 {
-                    AssignmentSwapWithRolePartner(effRoles, _sever.Stacks[0].Target, _severStartDir.Rad < 0);
-                    AssignmentSwapWithRolePartner(effRoles, _sever.Stacks[1].Target, _severStartDir.Rad > 0);
+                    AssignmentSwapWithRolePartner(effRoles, s0.Target, startDir < 0f);
+                    AssignmentSwapWithRolePartner(effRoles, s1.Target, startDir > 0f);
                 }
                 else
                 {
-                    AssignmentReassignIfNeeded(_sever.Stacks[0].Target, _severStartDir.Rad < 0);
-                    AssignmentReassignIfNeeded(_sever.Stacks[1].Target, _severStartDir.Rad > 0);
+                    AssignmentReassignIfNeeded(s0.Target, startDir < 0f);
+                    AssignmentReassignIfNeeded(s1.Target, startDir > 0f);
                     if (_groupEast.NumSetBits() != 4)
                     {
                         // to balance, unmarked player of designated role should swap
@@ -251,10 +253,10 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
 
             // second safe spot could be either 3rd or 5th explosion
             var severDirEast = _severStartDir;
-            if (severDirEast.Rad < 0)
-                severDirEast += 180.Degrees();
+            if (severDirEast.Rad < 0f)
+                severDirEast += 180f.Degrees();
             var severDiagonalSE = severDirEast.Rad < Angle.HalfPi;
-            var chargeCW = _flares.ChargeAngle.Rad < 0;
+            var chargeCW = _flares.ChargeAngle.Rad < 0f;
             _chargeEarly = severDiagonalSE == chargeCW;
         }
     }
@@ -282,16 +284,16 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
         if (_groupSwapHints.Length > 0)
             hints.Add($"Swap: {_groupSwapHints}");
         if (_flares != null && _flares.ChargeAngle != default)
-            hints.Add($"Move: {(_flares.ChargeAngle.Rad < 0 ? "clockwise" : "counterclockwise")} {(_chargeEarly ? "early" : "late")}");
+            hints.Add($"Move: {(_flares.ChargeAngle.Rad < 0f ? "clockwise" : "counterclockwise")} {(_chargeEarly ? "early" : "late")}");
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         foreach (var safespot in MovementHintOffsets(pcSlot).Take(1))
         {
-            Arena.AddCircle(Arena.Center + safespot, 1, Colors.Safe);
+            Arena.AddCircle(Arena.Center + safespot, 1f, Colors.Safe);
             if (_groupEast.None())
-                Arena.AddCircle(Arena.Center - safespot, 1, Colors.Safe); // if there are no valid assignments, draw spots for both groups
+                Arena.AddCircle(Arena.Center - safespot, 1f, Colors.Safe); // if there are no valid assignments, draw spots for both groups
         }
     }
 
@@ -323,7 +325,7 @@ sealed class P2SanctityOfTheWard1Hints(BossModule module) : BossComponent(module
 
     private WDir SafeSpotOffset(int slot, Angle dirOffset)
     {
-        var dir = _severStartDir + (_flares?.ChargeAngle.Rad < 0 ? -1 : 1) * dirOffset;
+        var dir = _severStartDir + (_flares?.ChargeAngle.Rad < 0f ? -1f : 1f) * dirOffset;
         if ((dir.Rad < 0) == _groupEast[slot])
             dir += 180f.Degrees();
         return 20f * dir.ToDirection();

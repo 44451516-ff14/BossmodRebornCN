@@ -56,13 +56,13 @@ class SwivelGun(BossModule module) : Components.GenericStackSpread(module)
             Stacks.Add(new(actor, 10f, 8, activation: WorldState.FutureTime(5d), forbiddenPlayers: _forbidden));
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.MagicVulnerabilityUp)
             _forbidden[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.MagicVulnerabilityUp)
             _forbidden.Clear(Raid.FindSlot(actor.InstanceID));

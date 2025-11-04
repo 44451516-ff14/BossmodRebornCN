@@ -1,6 +1,7 @@
 ﻿namespace BossMod.Components;
 
-public class StackTogether(BossModule module, uint iconId, float activationDelay, float radius = 3) : BossComponent(module)
+[SkipLocalsInit]
+public class StackTogether(BossModule module, uint iconId, float activationDelay, float radius = 3f) : BossComponent(module)
 {
     public readonly List<Actor> Targets = [];
     public DateTime Activation;

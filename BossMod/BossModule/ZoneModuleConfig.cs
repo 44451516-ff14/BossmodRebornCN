@@ -11,10 +11,16 @@ public sealed class ZoneModuleConfig : ConfigNode
 
     [PropertyDisplay("在游戏世界中绘制路径点")]
     public bool ShowWaypoints = false;
-    
-    [PropertyDisplay("使用冲刺技能进行导航（Smudge、Elusive Jump等）")]
+
+    [PropertyDisplay("使用冲刺技能进行导航（Smudge、Elusive Jump, etc）")]
     public bool UseDash = false;
 
     [PropertyDisplay("显示xan调试UI")]
     public bool ShowXanDebugger = false;
+
+    [PropertyDisplay ("锁定区域模块窗口移动及鼠标交互")]
+    public bool Lock = false;
+    
+    [PropertyDisplay ("使区域模块窗口透明", tooltip: "移除区域模块窗口周围的黑色边框，若将雷达移至其他显示器则此功能无效")]
+    public bool TransparentMode = false;
 }

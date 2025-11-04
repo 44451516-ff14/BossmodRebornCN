@@ -7,6 +7,7 @@ namespace BossMod;
 //                       rotation 0 corresponds to South, and increases counterclockwise (so East is +pi/2, North is pi, West is -pi/2)
 // - camera azimuth 0 correpsonds to camera looking North and increases counterclockwise
 // - screen coordinates - X points left to right, Y points top to bottom
+[SkipLocalsInit]
 public sealed class MiniArena(WPos center, ArenaBounds bounds)
 {
     public static readonly BossModuleConfig Config = Service.Config.Get<BossModuleConfig>();
@@ -231,6 +232,55 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         drawList.PathStroke(color != default ? color : Colors.Danger, ImDrawFlags.Closed, thickness);
     }
 
+    public void AddArcCapsule(WPos start, WPos orbitCenter, Angle angularLength, float radius, uint color = default, float thickness = 1f)
+    {
+        thickness *= Config.ThicknessScale;
+
+        // centerline geometry
+        var r0 = start - orbitCenter; // orbit -> start
+        var R = r0.Length();
+
+        var theta0 = r0.ToAngle();
+        var theta1 = theta0 + angularLength;
+
+        var u0 = r0 / R;
+        var u1 = u0.Rotate(angularLength);
+        var end = orbitCenter + u1 * R;
+
+        var outerR = R + radius;
+        var innerR = Math.Max(R - radius, 1e-4f);
+
+        var s = Math.Sign(angularLength.Rad);
+        if (s == 0)
+        {
+            s = 1;
+        }
+
+        // tangents at start/end (follow sweep direction)
+        var t0 = s > 0 ? u0.OrthoL() : u0.OrthoR();
+        var t1 = s > 0 ? u1.OrthoL() : u1.OrthoR();
+        var a90 = 90f.Degrees();
+
+        // begin at outer boundary start
+        PathLineTo(orbitCenter + outerR * u0);
+
+        // outer arc (orbit center)
+        PathArcTo(orbitCenter, outerR, theta0.Rad, theta1.Rad);
+
+        // end cap around 'end' (semicircle aligned to tangent)
+        var t1Ang = t1.ToAngle();
+        PathArcTo(end, radius, (t1Ang - a90).Rad, (t1Ang + a90).Rad);
+
+        // inner arc back (orbit center)
+        PathArcTo(orbitCenter, innerR, theta1.Rad, theta0.Rad);
+
+        // start cap around 'start' (reverse to connect inner→outer)
+        var t0Ang = t0.ToAngle();
+        PathArcTo(start, radius, (t0Ang + a90).Rad, (t0Ang - a90).Rad);
+
+        PathStroke(true, color != default ? color : Colors.Danger, thickness);
+    }
+
     public void AddPolygon(ReadOnlySpan<WPos> vertices, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
@@ -240,31 +290,44 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         PathStroke(true, color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddPolygon(IEnumerable<WPos> vertices, uint color = default, float thickness = 1f)
-    {
-        thickness *= Config.ThicknessScale;
-        foreach (var p in vertices)
-            PathLineTo(p);
-        PathStroke(true, color != default ? color : Colors.Danger, thickness);
-    }
-
-    public void AddPolygonTransformed(WPos center, WDir rotation, ReadOnlySpan<WDir> vertices, uint color, float thickness = 1f)
-    {
-        thickness *= Config.ThicknessScale;
-        foreach (var p in vertices)
-            PathLineTo(center + p.Rotate(rotation));
-        PathStroke(true, color != default ? color : Colors.Danger, thickness);
-    }
-
-    public void AddComplexPolygon(WPos center, WDir rotation, RelSimplifiedComplexPolygon poly, uint color, float thickness = 1f)
+    public void AddComplexPolygon(in WPos center, RelSimplifiedComplexPolygon poly, uint color, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
 
-        foreach (var part in poly.Parts)
+        var parts = poly.Parts;
+        var count = parts.Count;
+        for (var i = 0; i < count; ++i)
         {
-            AddPolygonTransformed(center, rotation, part.Exterior, color, thickness);
-            foreach (var h in part.Holes)
-                AddPolygonTransformed(center, rotation, part.Interior(h), color, thickness);
+            var part = parts[i];
+            var exteriorEdges = part.ExteriorEdges;
+            var exteriorLen = exteriorEdges.Length;
+            for (var j = 0; j < exteriorLen; ++j)
+            {
+                var (start, end) = exteriorEdges[j];
+                PathLineTo(center + start);
+                if (j != exteriorLen - 1)
+                {
+                    PathLineTo(center + end);
+                }
+            }
+            PathStroke(true, color, thickness);
+            var holes = part.Holes;
+            var lenHoles = holes.Length;
+            for (var k = 0; k < lenHoles; ++k)
+            {
+                var interiorEdges = part.InteriorEdges(holes[k]);
+                var interiorLen = interiorEdges.Length;
+                for (var j = 0; j < interiorLen; ++j)
+                {
+                    var (start, end) = interiorEdges[j];
+                    PathLineTo(center + start);
+                    if (j != interiorLen - 1)
+                    {
+                        PathLineTo(center + end);
+                    }
+                }
+                PathStroke(true, color, thickness);
+            }
         }
     }
 
@@ -319,7 +382,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
         drawlist.Flags = restoreFlags;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        Vector2 TransformCoords(WDir worldOffset)
+        Vector2 TransformCoords(in WDir worldOffset)
         {
             var x0 = worldOffset.X;
             var z0 = worldOffset.Z;
@@ -331,48 +394,107 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     // draw zones - these are filled primitives clipped to arena border; note that triangulation is cached
     public void ZoneCone(WPos center, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(1, center, innerRadius, outerRadius, centerDirection, halfAngle)] ??= _bounds.ClipAndTriangulateCone(center - Center, innerRadius, outerRadius, centerDirection, halfAngle), color);
-    public void ZoneCircle(WPos center, float radius, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(2, center, radius)] ??= _bounds.ClipAndTriangulateCircle(center - Center, radius), color);
-    public void ZoneDonut(WPos center, float innerRadius, float outerRadius, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(3, center, innerRadius, outerRadius)] ??= _bounds.ClipAndTriangulateDonut(center - Center, innerRadius, outerRadius), color);
-    public void ZoneTri(WPos a, WPos b, WPos c, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(4, a, b, c)] ??= _bounds.ClipAndTriangulateTri(a - Center, b - Center, c - Center), color);
-    public void ZoneIsoscelesTri(WPos apex, WDir height, WDir halfBase, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(5, apex, height, halfBase)] ??= _bounds.ClipAndTriangulateIsoscelesTri(apex - Center, height, halfBase), color);
-    public void ZoneIsoscelesTri(WPos apex, Angle direction, Angle halfAngle, float height, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(6, apex, direction, halfAngle, height)] ??= _bounds.ClipAndTriangulateIsoscelesTri(apex - Center, direction, halfAngle, height), color);
-    public void ZoneRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(7, origin, direction, lenFront, lenBack, halfWidth)] ??= _bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth), color);
-    public void ZoneRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(8, origin, direction, lenFront, lenBack, halfWidth)] ??= _bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth), color);
-    public void ZoneRect(WPos start, WPos end, float halfWidth, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(9, start, end, halfWidth)] ??= _bounds.ClipAndTriangulateRect(start - Center, end - Center, halfWidth), color);
-    public void ZoneComplex(WPos origin, Angle direction, RelSimplifiedComplexPolygon poly, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(10, origin, direction, poly)] ?? _bounds.ClipAndTriangulate(poly.Transform(origin - Center, direction.ToDirection())), color);
-    public void ZonePoly(object key, WPos[] contour, uint color)
     {
-        var hash = TriangulationCache.GetKeyHash(11, key);
-        var triangulation = _triCache[hash];
-        if (triangulation == null)
+        ref var tri = ref _triCache.Get(1, center, innerRadius, outerRadius, centerDirection, halfAngle);
+        tri ??= _bounds.ClipAndTriangulateCone(center - Center, innerRadius, outerRadius, centerDirection, halfAngle);
+        Zone(tri, color);
+    }
+
+    public void ZoneCircle(WPos center, float radius, uint color)
+    {
+        ref var tri = ref _triCache.Get(2, center, radius);
+        tri ??= _bounds.ClipAndTriangulateCircle(center - Center, radius);
+        Zone(tri, color);
+    }
+
+    public void ZoneDonut(WPos center, float innerRadius, float outerRadius, uint color)
+    {
+        ref var tri = ref _triCache.Get(3, center, innerRadius, outerRadius);
+        tri ??= _bounds.ClipAndTriangulateDonut(center - Center, innerRadius, outerRadius);
+        Zone(tri, color);
+    }
+
+    public void ZoneTri(WPos a, WPos b, WPos c, uint color)
+    {
+        ref var tri = ref _triCache.Get(4, a, b, c);
+        tri ??= _bounds.ClipAndTriangulateTri(a - Center, b - Center, c - Center);
+        Zone(tri, color);
+    }
+
+    public void ZoneIsoscelesTri(WPos apex, WDir height, WDir halfBase, uint color)
+    {
+        ref var tri = ref _triCache.Get(5, apex, height, halfBase);
+        tri ??= _bounds.ClipAndTriangulateIsoscelesTri(apex - Center, height, halfBase);
+        Zone(tri, color);
+    }
+
+    public void ZoneIsoscelesTri(WPos apex, Angle direction, Angle halfAngle, float height, uint color)
+    {
+        ref var tri = ref _triCache.Get(6, apex, direction, halfAngle, height);
+        tri ??= _bounds.ClipAndTriangulateIsoscelesTri(apex - Center, direction, halfAngle, height);
+        Zone(tri, color);
+    }
+
+    public void ZoneRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, uint color)
+    {
+        ref var tri = ref _triCache.Get(7, origin, direction, lenFront, lenBack, halfWidth);
+        tri ??= _bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth);
+        Zone(tri, color);
+    }
+
+    public void ZoneRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth, uint color)
+    {
+        ref var tri = ref _triCache.Get(8, origin, direction, lenFront, lenBack, halfWidth);
+        tri ??= _bounds.ClipAndTriangulateRect(origin - Center, direction, lenFront, lenBack, halfWidth);
+        Zone(tri, color);
+    }
+
+    public void ZoneRect(WPos start, WPos end, float halfWidth, uint color)
+    {
+        ref var tri = ref _triCache.Get(9, start, end, halfWidth);
+        tri ??= _bounds.ClipAndTriangulateRect(start - Center, end - Center, halfWidth);
+        Zone(tri, color);
+    }
+
+    public void ZoneCross(WPos origin, Angle length, float range, float halfWidth, WPos[] contour, uint color)
+    {
+        ref var tri = ref _triCache.Get(10, origin, length, range, halfWidth);
+        if (tri == null)
         {
             var len = contour.Length;
-            var adjustedContour = new WDir[len];
-            for (var i = 0; i < len; ++i)
+            var adjusted = new WDir[len];
+            for (var i = 0; i < len; i++)
             {
-                adjustedContour[i] = contour[i] - Center;
+                adjusted[i] = contour[i] - Center;
             }
-            triangulation = _bounds.ClipAndTriangulate(adjustedContour);
-            _triCache[hash] = triangulation;
+            tri = _bounds.ClipAndTriangulate(adjusted);
         }
-        Zone(triangulation, color);
+        Zone(tri, color);
     }
-    public void ZoneRelPoly(object key, WDir[] relContour, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(12, key)] ??= _bounds.ClipAndTriangulate(relContour), color);
+
     public void ZoneRelPoly(int key, RelSimplifiedComplexPolygon poly, uint color)
-        => Zone(_triCache[key] ??= _bounds.ClipAndTriangulate(poly), color);
+    {
+        ref var tri = ref _triCache.GetByHash(key);
+        tri ??= _bounds.ClipAndTriangulate(poly);
+        Zone(tri, color);
+    }
+
     public void ZoneCapsule(WPos start, WDir direction, float radius, float length, uint color)
-        => Zone(_triCache[TriangulationCache.GetKeyHash(12, start, direction, radius, length)] ??= _bounds.ClipAndTriangulateCapsule(start - Center, direction, radius, length), color);
+    {
+        ref var tri = ref _triCache.Get(11, start, direction, radius, length);
+        tri ??= _bounds.ClipAndTriangulateCapsule(start - Center, direction, radius, length);
+        Zone(tri, color);
+    }
+
+    public void ZoneArcCapsule(WPos start, WPos orbitCenter, Angle angularLength, float radius, uint color)
+    {
+        ref var tri = ref _triCache.Get(13, start, orbitCenter, angularLength, radius);
+        // startOffset: local translation; toOrbitCenter: vector from start to orbit center
+        var startOffset = start - Center;
+        var toOrbitCenter = orbitCenter - start;
+        tri ??= _bounds.ClipAndTriangulateArcCapsule(startOffset, toOrbitCenter, angularLength, radius);
+        Zone(tri, color);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void TextScreen(Vector2 center, string text, uint color, float fontSize = 17f)
@@ -405,7 +527,9 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
                 var offset = partExt[j];
                 var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(offset);
                 if (lastPoint != currentPoint)
+                {
                     dl.PathLineTo(currentPoint);
+                }
                 lastPoint = currentPoint;
             }
 
@@ -423,7 +547,9 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
                     var offset = holeInteriorPoints[k];
                     var currentPoint = ScreenCenter + WorldOffsetToScreenOffset(offset);
                     if (lastPoint != currentPoint)
+                    {
                         dl.PathLineTo(currentPoint);
+                    }
                     lastPoint = currentPoint;
                 }
 
@@ -483,13 +609,16 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
         var dir = to - from;
         var l = dir.Length();
+
         if (l == default)
             return; // can't determine projection direction
 
         dir /= l;
         var t = IntersectRayBounds(from, dir);
-        if (t < l)
+        if (t <= l)
+        {
             ActorOutsideBounds(from + t * dir, rotation, color);
+        }
     }
 
     public void Actor(WPos position, Angle rotation, uint color)

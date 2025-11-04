@@ -85,7 +85,7 @@ sealed class BeeBeAOE(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.BeeBeGone or (uint)SID.BeeBeHere)
         {

@@ -4,7 +4,7 @@ sealed class PlayerTemperatures(BossModule module) : BossComponent(module)
 {
     public readonly uint[] Temperatures = new uint[PartyState.MaxAllianceSize];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (Raid.FindSlot(actor.InstanceID) is var slot && slot is < 0 or > 23)
             return;
@@ -25,7 +25,7 @@ sealed class PlayerTemperatures(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (Raid.FindSlot(actor.InstanceID) is var slot && slot is < 0 or > 23)
             return;

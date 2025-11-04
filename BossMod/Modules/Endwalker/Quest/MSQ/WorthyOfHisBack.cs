@@ -56,7 +56,7 @@ public enum AID : uint
     TrueHoly = 25619, // Boss->self, 5.0s cast, range 40 circle
 
     AfflatusAzemFirst = 25617, // Boss->location, 4.0s cast, range 5 circle
-    AfflatusAzemChase = 25618, // Boss->location, 1.0s cast, range 5 circle
+    AfflatusAzemRest = 25618, // Boss->location, 1.0s cast, range 5 circle
 
     Windage = 25616, // TrueAeroIV->self, 2.5s cast, range 5 circle
     WindageSlow = 28116, // TrueAeroIV->self, 9.0s cast, range 5 circle
@@ -74,6 +74,7 @@ public enum AID : uint
 
 public enum IconID : uint
 {
+    AfflatusAzem = 197, // player->self
     RotateCW = 167, // Boss
     RotateCCW = 168 // Boss
 }
@@ -262,7 +263,7 @@ class Enomotos(BossModule module) : Components.Exaflare(module, 6f, (uint)AID.En
 }
 
 class Windage(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Windage, 5f);
-class AfflatusAzem(BossModule module) : Components.StandardChasingAOEs(module, 5f, (uint)AID.AfflatusAzemFirst, (uint)AID.AfflatusAzemChase, 5f, 2.1f, 5, true);
+class AfflatusAzem(BossModule module) : Components.StandardChasingAOEs(module, 5f, (uint)AID.AfflatusAzemFirst, (uint)AID.AfflatusAzemRest, 5f, 2.1f, 5, true, (uint)IconID.AfflatusAzem);
 class WindageSlow(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WindageSlow, 5f);
 class TrueHoly(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.TrueHoly, 20f)
 {

@@ -1,5 +1,6 @@
 namespace BossMod.Components;
 
+[SkipLocalsInit]
 public abstract class CleansableDebuff(BossModule module, uint statusID, string noun = "Doom", string adjective = "doomed") : BossComponent(module)
 {
     private readonly List<Actor> _affected = [];
@@ -8,7 +9,7 @@ public abstract class CleansableDebuff(BossModule module, uint statusID, string 
     private readonly string Noun = noun;
     private readonly string Adjective = adjective;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == StatusID)
         {
@@ -24,7 +25,7 @@ public abstract class CleansableDebuff(BossModule module, uint statusID, string 
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == StatusID)
         {

@@ -8,14 +8,14 @@ sealed class HoneyBLiveHearts(BossModule module) : BossComponent(module)
 {
     public int[] Hearts = new int[PartyState.MaxPartySize];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var hearts = NumHearts(status.ID);
         if (hearts >= 0 && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             Hearts[slot] = hearts;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var hearts = NumHearts(status.ID);
         if (hearts >= 0 && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && Hearts[slot] == hearts)
@@ -128,7 +128,7 @@ abstract class Heartsick(BossModule module, bool roles) : Components.StackWithIc
 sealed class Heartsick1(BossModule module) : Heartsick(module, false);
 sealed class Heartsick2(BossModule module) : Heartsick(module, true);
 
-sealed class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread(module, default, 14f, alwaysShowSpreads: true)
+sealed class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStackSpread(module, default, 14f)
 {
     public int NumCasts;
     public int[] Order = new int[PartyState.MaxPartySize];
@@ -141,7 +141,7 @@ sealed class HoneyBLiveBeat3BigBurst(BossModule module) : Components.UniformStac
         base.AddHints(slot, actor, hints);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PoisonNPop)
         {

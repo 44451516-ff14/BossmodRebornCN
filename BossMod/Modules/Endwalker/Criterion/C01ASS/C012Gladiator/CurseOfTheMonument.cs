@@ -4,7 +4,7 @@ abstract class SunderedRemains(BossModule module, uint aid) : Components.SimpleA
 sealed class NSunderedRemains(BossModule module) : SunderedRemains(module, (uint)AID.NSunderedRemains);
 sealed class SSunderedRemains(BossModule module) : SunderedRemains(module, (uint)AID.SSunderedRemains);
 
-sealed class ScreamOfTheFallen(BossModule module) : Components.UniformStackSpread(module, default, 15f, alwaysShowSpreads: true)
+sealed class ScreamOfTheFallen(BossModule module) : Components.UniformStackSpread(module, default, 15f)
 {
     public int NumCasts;
     private BitMask _second;
@@ -27,7 +27,7 @@ sealed class ScreamOfTheFallen(BossModule module) : Components.UniformStackSprea
                 Arena.AddCircle(t.Position, _towerRadius, Colors.Safe, 2f);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

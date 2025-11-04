@@ -110,7 +110,7 @@ sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBai
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (NumCasts < 8 || tether.ID != (uint)TetherID.Soulshade)
             return; // not relevant tether

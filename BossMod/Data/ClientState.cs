@@ -47,11 +47,13 @@ public struct Cooldown(float elapsed, float total) : IEquatable<Cooldown>
 // this is generally not available for non-player party members, but we can try to guess
 public sealed class ClientState
 {
-    public readonly struct Fate(uint id, Vector3 center, float radius)
+    public readonly struct Fate(uint id, Vector3 center, float radius, byte progress, byte handInCount)
     {
         public readonly uint ID = id;
         public readonly Vector3 Center = center;
         public readonly float Radius = radius;
+        public readonly byte Progress = progress;
+        public readonly byte HandInCount = handInCount;
 
         public static bool operator ==(Fate left, Fate right) => left.ID == right.ID;
         public static bool operator !=(Fate left, Fate right) => left.ID != right.ID;
@@ -120,6 +122,7 @@ public sealed class ClientState
         public readonly bool Equals(DutyAction other) => this == other;
         public override readonly bool Equals(object? obj) => obj is DutyAction other && Equals(other);
         public override readonly int GetHashCode() => (Action, CurCharges, MaxCharges).GetHashCode();
+        public override string ToString() => $"ID: {Action.ID}, Charges: {CurCharges}/{MaxCharges}";
     }
 
     public readonly struct HateInfo(ulong instanceID, Hate[] targets)
@@ -167,6 +170,19 @@ public sealed class ClientState
     public uint[] ContentKeyValueData = new uint[6]; // used for content-specific persistent player attributes, like bozja resistance rank
     public HateInfo CurrentTargetHate = new(default, new Hate[NumHateTargets]);
 
+    public readonly Dictionary<uint, uint> Inventory; // tracks supported regular items and all key items
+
+    public uint GetItemQuantity(uint itemId) => Inventory.TryGetValue(itemId, out var q) ? q : 0;
+
+    public ClientState()
+    {
+        Inventory = [];
+        foreach (var it in ActionDefinitions.Instance.SupportedItems)
+        {
+            Inventory[it] = default;
+        }
+    }
+
     // if an action has SecondaryCostType between 1 and 4, it's considered usable as long as the corresponding timer in this array is >0; the timer is set to 5 when certain ActionEffects are received and ticks down each frame
     // 1: unknown - referenced in ActionManager code but not present in sheets, included for completeness
     // 2: block
@@ -189,7 +205,7 @@ public sealed class ClientState
     public int ClassJobLevel(Class c)
     {
         var index = Service.LuminaRow<Lumina.Excel.Sheets.ClassJob>((uint)c)?.ExpArrayIndex ?? -1;
-        return index >= 0 && index < ClassJobLevels.Length ? ClassJobLevels[index] : -1;
+        return ClassJobLevels.BoundSafeAt(index, (short)-1);
     }
 
     // TODO: think about how to improve it...
@@ -311,23 +327,23 @@ public sealed class ClientState
             ops.Add(new OpForcedMovementDirectionChange(ForcedMovementDirection));
         }
 
-        if (CurrentTargetHate.InstanceID != default)
+        ref readonly var hate = ref CurrentTargetHate;
+        if (hate.InstanceID != default)
         {
-            AddHateOp();
+            ops.Add(new OpHateChange(hate.InstanceID, hate.Targets));
         }
         else
         {
             for (var i = 0; i < NumHateTargets; ++i)
             {
-                ref readonly var target = ref CurrentTargetHate.Targets[i];
-                if (target != default)
+                ref readonly var h = ref hate.Targets[i];
+                if (h != default)
                 {
-                    AddHateOp();
+                    ops.Add(new OpHateChange(hate.InstanceID, hate.Targets));
                     break;
                 }
             }
         }
-        void AddHateOp() => ops.Add(new OpHateChange(CurrentTargetHate.InstanceID, CurrentTargetHate.Targets));
         return ops;
     }
 
@@ -506,16 +522,22 @@ public sealed class ClientState
             Array.Fill(ws.Client.DutyActions, default);
             var len = Slots.Length;
             for (var i = 0; i < len; ++i)
+            {
                 ws.Client.DutyActions[i] = Slots[i];
+            }
             ws.Client.DutyActionsChanged.Fire(this);
         }
 
         public override void Write(ReplayRecorder.Output output)
         {
             output.EmitFourCC("CLDA"u8);
-            output.Emit((byte)Slots.Length);
-            foreach (var s in Slots)
+            var len = Slots.Length;
+            output.Emit((byte)len);
+            for (var i = 0; i < len; ++i)
+            {
+                ref readonly var s = ref Slots[i];
                 output.Emit(s.Action).Emit(s.CurCharges).Emit(s.MaxCharges);
+            }
         }
     }
 
@@ -607,7 +629,7 @@ public sealed class ClientState
             ws.Client.ActiveFate = Value;
             ws.Client.ActiveFateChanged.Fire(this);
         }
-        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLAF"u8).Emit(Value.ID).Emit(Value.Center).Emit(Value.Radius, "f3");
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLAF"u8).Emit(Value.ID).Emit(Value.Center).Emit(Value.Radius, "f3").Emit(Value.Progress).Emit(Value.HandInCount);
     }
 
     public Event<OpActivePetChange> ActivePetChanged = new();
@@ -712,6 +734,23 @@ public sealed class ClientState
         public override void Write(ReplayRecorder.Output output)
         {
             output.EmitFourCC("CLPR"u8).Emit(Value[0]).Emit(Value[1]).Emit(Value[2]).Emit(Value[3]);
+        }
+    }
+
+    public Event<OpInventoryChange> InventoryChanged = new();
+    public sealed class OpInventoryChange(uint itemId, uint quantity) : WorldState.Operation
+    {
+        public readonly uint ItemId = itemId;
+        public readonly uint Quantity = quantity;
+
+        protected override void Exec(WorldState ws)
+        {
+            ws.Client.Inventory[ItemId] = Quantity;
+            ws.Client.InventoryChanged.Fire(this);
+        }
+        public override void Write(ReplayRecorder.Output output)
+        {
+            output.EmitFourCC("INVT"u8).Emit(ItemId).Emit(Quantity);
         }
     }
 }

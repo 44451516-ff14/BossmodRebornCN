@@ -58,7 +58,7 @@ sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PreyLancepoint)
         {
@@ -76,7 +76,7 @@ sealed class HolyIV(BossModule module) : Components.GenericStackSpread(module)
     private int numTargets;
     public int[] InitialPositions = new int[PartyState.MaxPartySize];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PreyLancepoint)
         {
@@ -158,7 +158,7 @@ sealed class HolyIV(BossModule module) : Components.GenericStackSpread(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (actor.IsDead && status.ID == (uint)SID.PreyLancepoint) // if player dies the stack will not happen
         {

@@ -34,7 +34,7 @@ sealed class EngravementOfSouls2Lines(BossModule module) : BossComponent(module)
         DrawOutline(_darkRay, _lightCamp[pcSlot]);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -78,7 +78,7 @@ sealed class EngrameventOfSouls2Spread(BossModule module) : Components.GenericSt
 {
     public int NumCasts;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var radius = status.ID switch
         {

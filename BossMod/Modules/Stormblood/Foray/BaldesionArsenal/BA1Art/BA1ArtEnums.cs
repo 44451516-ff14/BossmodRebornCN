@@ -35,5 +35,5 @@ public enum AID : uint
 
 public enum IconID : uint
 {
-    ChasingAOE = 92 // player->self
+    GloryUnearthed = 92 // player->self
 }

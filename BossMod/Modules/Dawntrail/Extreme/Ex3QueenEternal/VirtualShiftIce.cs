@@ -9,7 +9,7 @@ sealed class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module,
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_unsafeBridges);
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         WDir offset = index switch
         {
@@ -67,7 +67,7 @@ sealed class LawsOfIce(BossModule module) : Components.StayMove(module)
             ++NumCasts;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.FreezingUp)
             ClearState(Raid.FindSlot(actor.InstanceID));
@@ -121,7 +121,7 @@ sealed class Rush(BossModule module) : Components.GenericBaitAway(module)
             ++NumCasts;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.RushShort or (uint)TetherID.RushLong && WorldState.Actors.Find(tether.Target) is var target && target != null)
         {
@@ -134,7 +134,7 @@ sealed class Rush(BossModule module) : Components.GenericBaitAway(module)
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.RushShort or (uint)TetherID.RushLong)
         {
@@ -205,13 +205,13 @@ sealed class RaisedTribute(BossModule module) : Components.GenericWildCharge(mod
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.IceDart && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0 && PlayerRoles[slot] != PlayerRole.Target)
             PlayerRoles[slot] = PlayerRole.Avoid;
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.IceDart && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0 && PlayerRoles[slot] != PlayerRole.Target)
             PlayerRoles[slot] = PlayerRole.Share;

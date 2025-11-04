@@ -97,9 +97,12 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
     protected void PushGCD<P>(AID aid, Actor? target, P priority, float delay = 0) where P : Enum
         => PushGCD(aid, target, (int)(object)priority, delay);
 
-    protected void PushGCD<P>(AID aid, Enemy? target, P priority, float delay = 0) where P : Enum
+    protected void PushGCD<P>(AID aid, Enemy? target, P priority, float delay = 0, bool useOnDyingTarget = true) where P : Enum
     {
         if (target?.Priority is Enemy.PriorityInvincible or Enemy.PriorityForbidden)
+            return;
+
+        if (!useOnDyingTarget && target?.Priority is Enemy.PriorityPointless)
             return;
 
         PushGCD(aid, target?.Actor, (int)(object)priority, delay);
@@ -122,9 +125,12 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
     protected void PushOGCD<P>(AID aid, Actor? target, P priority, float delay = 0) where P : Enum
         => PushOGCD(aid, target, (int)(object)priority, delay);
 
-    protected void PushOGCD<P>(AID aid, Enemy? target, P priority, float delay = 0) where P : Enum
+    protected void PushOGCD<P>(AID aid, Enemy? target, P priority, float delay = 0, bool useOnDyingTarget = true) where P : Enum
     {
         if (target?.Priority is Enemy.PriorityInvincible or Enemy.PriorityForbidden)
+            return;
+
+        if (!useOnDyingTarget && target?.Priority is Enemy.PriorityPointless)
             return;
 
         PushOGCD(aid, target?.Actor, (int)(object)priority, delay);
@@ -220,9 +226,22 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
         var aoe = strategy.Option(SharedTrack.AOE).As<AOEStrategy>();
         var targeting = strategy.Option(SharedTrack.Targeting).As<Targeting>();
 
+        var targetOutOfCombat = primaryTarget?.Priority == Enemy.PriorityUndesirable;
+
         P targetPrio(Actor potentialTarget)
         {
-            var numTargets = Hints.NumPriorityTargetsInAOE(enemy => isInAOE(potentialTarget, enemy.Actor));
+            var numForbidden = Hints.ForbiddenTargets.Count(enemy => isInAOE(potentialTarget, enemy.Actor));
+            var numOk = Hints.PriorityTargets.Count(enemy => isInAOE(potentialTarget, enemy.Actor));
+
+            var numTargets = targetOutOfCombat && numForbidden == 1 && numOk == 0
+                // primary target will be the only one hit by aoe so they are ok to target
+                ? 1
+                : numForbidden > 0
+                    // unwanted targets will be hit
+                    ? 0
+                    // wanted targets will be hit
+                    : numOk;
+
             return prioritize(AdjustNumTargets(strategy, numTargets), potentialTarget);
         }
 
@@ -274,7 +293,7 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
         }
 
         var newTarget = initial;
-        var initialTimer = getTimer(initial?.Actor);
+        var initialTimer = forbidden ? getTimer(null) : getTimer(initial?.Actor);
         var newTimer = initialTimer;
 
         var numTargets = 0;
@@ -302,7 +321,7 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
     protected void GoalZoneSingle(float range)
     {
         if (PlayerTarget != null)
-            Hints.GoalZones.Add(Hints.GoalSingleTarget(PlayerTarget.Actor, range));
+            Hints.GoalZones.Add(GoalSingleTarget(PlayerTarget.Actor, range));
     }
 
     protected void GoalZoneCombined(StrategyValues strategy, float range, Func<WPos, float> fAoe, AID firstUnlockedAoeAction, int minAoe, float? maximumActionRange = null)
@@ -319,9 +338,9 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
         }
         else
         {
-            Hints.GoalZones.Add(Hints.GoalCombined(Hints.GoalSingleTarget(PlayerTarget.Actor, imminent ? positional : Positional.Any, range), fAoe, minAoe));
+            Hints.GoalZones.Add(GoalCombined(GoalSingleTarget(PlayerTarget.Actor, imminent ? positional : Positional.Any, range), fAoe, minAoe));
             if (maximumActionRange is float r)
-                Hints.GoalZones.Add(Hints.GoalSingleTarget(PlayerTarget.Actor, r, 0.5f));
+                Hints.GoalZones.Add(GoalSingleTarget(PlayerTarget.Actor, r, 0.5f));
         }
     }
 
@@ -339,8 +358,8 @@ public abstract class Basexan<AID, TraitID>(RotationModuleManager manager, Actor
             _ => 0
         };
 
-    protected PositionCheck IsSplashTarget => (Actor primary, Actor other) => Hints.TargetInAOECircle(other, primary.Position, 5);
-    protected PositionCheck Is25yRectTarget => (Actor primary, Actor other) => Hints.TargetInAOERect(other, Player.Position, Player.DirectionTo(primary), 25, 2);
+    protected PositionCheck IsSplashTarget => (primary, other) => TargetInAOECircle(other, primary.Position, 5);
+    protected PositionCheck Is25yRectTarget => (primary, other) => TargetInAOERect(other, Player.Position, Player.DirectionTo(primary), 25, 2);
 
     /// <summary>
     /// Get <em>effective</em> cast time for the provided action.<br/>

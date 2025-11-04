@@ -1,4 +1,6 @@
-﻿namespace BossMod.Autorotation;
+﻿using System.Text.Json;
+
+namespace BossMod.Autorotation;
 
 // target selection strategies; there is an extra int parameter that targets can use for storing more info
 public enum StrategyTarget
@@ -39,17 +41,70 @@ public enum StrategyEnemySelection : int
     HighestMaxHP = 4,
 }
 
-// the tuning knobs of the rotation module are represented by strategy config rather than usual global config classes, since we they need to be changed dynamically by planner or manual input
-public record class StrategyConfig(
-    Type OptionEnum, // type of the enum used for options
+public abstract record class StrategyConfig(
     string InternalName, // unique name of the config; it is used for serialization, so it can't really be changed without losing user data (or writing config converter)
     string DisplayName, // if non-empty, this name is used for all UI instead of internal name
-    float UIPriority) // tracks are sorted by UI priority for display; negative are hidden by default
+    float UIPriority // tracks are sorted by UI priority for display; negative are hidden by default
+)
 {
+    public abstract StrategyValue CreateEmpty();
+    public abstract StrategyValue CreateForEditor();
+
+    public abstract string ToDisplayString(StrategyValue val);
+    public abstract void SerializeValue(Utf8JsonWriter writer, StrategyValue val);
+
+    public string UIName => DisplayName.Length > 0 ? DisplayName : InternalName;
+}
+
+// the tuning knobs of the rotation module are represented by strategy config rather than usual global config classes, since we they need to be changed dynamically by planner or manual input
+public record class StrategyConfigTrack(
+    Type OptionEnum, // type of the enum used for options
+    string InternalName,
+    string DisplayName,
+    float UIPriority
+) : StrategyConfig(InternalName, DisplayName, UIPriority)
+{
+    public override StrategyValueTrack CreateEmpty() => new();
+    public override StrategyValueTrack CreateForEditor() => new() { Option = Options.Count > 1 ? 1 : 0 };
+
     public readonly List<StrategyOption> Options = [];
     public readonly List<ActionID> AssociatedActions = []; // these actions will be shown on the track in the planner ui
 
-    public string UIName => DisplayName.Length > 0 ? DisplayName : InternalName;
+    public override string ToDisplayString(StrategyValue val) => Options[((StrategyValueTrack)val).Option].DisplayName;
+    public override void SerializeValue(Utf8JsonWriter writer, StrategyValue val)
+    {
+        writer.WriteString(nameof(StrategyValueTrack.Option), Options[((StrategyValueTrack)val).Option].InternalName);
+    }
+}
+
+public record class StrategyConfigFloat(
+    string InternalName,
+    string DisplayName,
+    float MinValue,
+    float MaxValue,
+    float UIPriority
+) : StrategyConfig(InternalName, DisplayName, UIPriority)
+{
+    public override StrategyValueFloat CreateEmpty() => new() { Value = MinValue };
+    public override StrategyValueFloat CreateForEditor() => new() { Value = MinValue };
+
+    public override string ToDisplayString(StrategyValue val) => ((StrategyValueFloat)val).Value.ToString("f1");
+    public override void SerializeValue(Utf8JsonWriter writer, StrategyValue val)
+    {
+        writer.WriteNumber(nameof(StrategyValueFloat.Value), ((StrategyValueFloat)val).Value);
+    }
+}
+
+public record class StrategyConfigInt(string InternalName, string DisplayName, long MinValue, long MaxValue, float UIPriority) : StrategyConfig(InternalName, DisplayName, UIPriority)
+{
+    public override StrategyValueInt CreateEmpty() => new() { Value = MinValue };
+    public override StrategyValueInt CreateForEditor() => throw new NotImplementedException();
+
+    public override string ToDisplayString(StrategyValue val) => ((StrategyValueInt)val).Value.ToString();
+    public override void SerializeValue(Utf8JsonWriter writer, StrategyValue val)
+    {
+        writer.WriteNumber(nameof(StrategyValueInt.Value), ((StrategyValueInt)val).Value);
+    }
 }
 
 // each strategy config has a unique set of allowed options; each option has a set of properties describing how it is rendered in planner and what further configuration parameters it supports
@@ -68,8 +123,17 @@ public record class StrategyOption(string InternalName, string DisplayName)
     public string UIName => DisplayName.Length > 0 ? DisplayName : InternalName;
 }
 
+public abstract record class StrategyValue
+{
+    public string Comment = "";
+    public float ExpireIn = float.MaxValue;
+
+    public abstract void DeserializeFields(JsonElement js);
+    public abstract void SerializeFields(Utf8JsonWriter writer);
+}
+
 // value represents the concrete option of a config that is selected at a given time; it can be either put on the planner timeline, or configured as part of manual overrides
-public record struct StrategyValue()
+public record class StrategyValueTrack : StrategyValue
 {
     public int Option; // index of the selected option among the Options list of the corresponding config
     public float PriorityOverride = float.NaN; // priority override for the action controlled by the config; not all configs support it, if not set the default priority is used
@@ -77,19 +141,81 @@ public record struct StrategyValue()
     public int TargetParam; // strategy-specific parameter
     public float Offset1; // x or r coordinate
     public float Offset2; // y or phi coordinate
-    public string Comment = ""; // user-editable comment string
-    public float ExpireIn = float.MaxValue; // time until strategy expires
+
+    public override void DeserializeFields(JsonElement js)
+    {
+        if (js.TryGetProperty(nameof(PriorityOverride), out var jprio))
+            PriorityOverride = jprio.GetSingle();
+        if (js.TryGetProperty(nameof(Target), out var jtarget))
+            Target = Enum.Parse<StrategyTarget>(jtarget.GetString() ?? "");
+        if (js.TryGetProperty(nameof(TargetParam), out var jtp))
+            TargetParam = jtp.GetInt32();
+        if (js.TryGetProperty(nameof(Offset1), out var joff1))
+            Offset1 = joff1.GetSingle();
+        if (js.TryGetProperty(nameof(Offset2), out var joff2))
+            Offset2 = joff2.GetSingle();
+        if (js.TryGetProperty(nameof(Comment), out var jcomment))
+            Comment = jcomment.GetString() ?? "";
+    }
+
+    public override void SerializeFields(Utf8JsonWriter writer)
+    {
+        if (!float.IsNaN(PriorityOverride))
+            writer.WriteNumber(nameof(PriorityOverride), PriorityOverride);
+        if (Target != StrategyTarget.Automatic)
+            writer.WriteString(nameof(Target), Target.ToString());
+        if (TargetParam != 0)
+            writer.WriteNumber(nameof(TargetParam), TargetParam);
+        if (Offset1 != 0)
+            writer.WriteNumber(nameof(Offset1), Offset1);
+        if (Offset2 != 0)
+            writer.WriteNumber(nameof(Offset2), Offset2);
+        if (Comment.Length > 0)
+            writer.WriteString(nameof(Comment), Comment);
+    }
+}
+
+public record class StrategyValueFloat : StrategyValue
+{
+    public float Value;
+
+    public override void DeserializeFields(JsonElement js)
+    {
+        if (js.TryGetProperty(nameof(Value), out var v))
+            Value = v.GetSingle();
+    }
+
+    public override void SerializeFields(Utf8JsonWriter writer)
+    {
+        writer.WriteNumber(nameof(Value), Value);
+    }
+}
+
+public record class StrategyValueInt : StrategyValue
+{
+    public long Value;
+
+    public override void DeserializeFields(JsonElement js)
+    {
+        if (js.TryGetProperty(nameof(Value), out var v))
+            Value = v.GetInt64();
+    }
+
+    public override void SerializeFields(Utf8JsonWriter writer)
+    {
+        writer.WriteNumber(nameof(Value), Value);
+    }
 }
 
 public readonly record struct StrategyValues(List<StrategyConfig> Configs)
 {
-    public readonly StrategyValue[] Values = Utils.MakeArray(Configs.Count, new StrategyValue());
+    public readonly StrategyValue[] Values = [.. Configs.Select(c => c.CreateEmpty())];
 
     // unfortunately, c# doesn't support partial type inference, and forcing user to spell out track enum twice is obnoxious, so here's the hopefully cheap solution
-    public readonly ref struct OptionRef(ref StrategyConfig config, ref StrategyValue value)
+    public readonly struct OptionRef(StrategyConfigTrack config, StrategyValueTrack value)
     {
-        public readonly ref readonly StrategyConfig Config = ref config;
-        public readonly ref readonly StrategyValue Value = ref value;
+        public readonly StrategyConfigTrack Config = config;
+        public readonly StrategyValueTrack Value = value;
 
         public OptionType As<OptionType>() where OptionType : Enum
         {
@@ -105,6 +231,8 @@ public readonly record struct StrategyValues(List<StrategyConfig> Configs)
     public readonly OptionRef Option<TrackIndex>(TrackIndex index) where TrackIndex : Enum
     {
         var idx = (int)(object)index;
-        return new(ref Configs.Ref(idx), ref Values[idx]);
+        if (Configs[idx] is StrategyConfigTrack c)
+            return new(c, (StrategyValueTrack)Values[idx]);
+        throw new ArgumentException($"wrong type for strategy option: got {Configs[idx].GetType()}/{Values[idx].GetType()}, expected Track type");
     }
 }

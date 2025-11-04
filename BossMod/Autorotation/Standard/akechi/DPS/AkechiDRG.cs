@@ -288,7 +288,7 @@ public sealed class AkechiDRG(RotationModuleManager manager, Actor player) : Ake
         {
             BuffsStrategy.Automatic => (minimal, OGCDPriority.Severe),
             BuffsStrategy.Together => (minimal && together, OGCDPriority.Severe),
-            BuffsStrategy.RaidBuffsOnly => (minimal && (RaidBuffsLeft > 0 || RaidBuffsIn < 2000), OGCDPriority.Severe),
+            BuffsStrategy.RaidBuffsOnly => (minimal && RaidBuffsLeft > 0, OGCDPriority.Severe),
             BuffsStrategy.Force => (true, OGCDPriority.Forced),
             _ => (false, OGCDPriority.None)
         };
@@ -415,7 +415,7 @@ public sealed class AkechiDRG(RotationModuleManager manager, Actor player) : Ake
         BLcd = CDRemaining(AID.BattleLitany);
         LCcd = CDRemaining(AID.LanceCharge);
         PowerLeft = StatusRemaining(Player, SID.PowerSurge, 30);
-        ChaosLeft = MathF.Max(StatusDetails(primaryTarget?.Actor, SID.ChaosThrust, Player.InstanceID).Left, StatusDetails(primaryTarget?.Actor, SID.ChaoticSpring, Player.InstanceID).Left);
+        ChaosLeft = Math.Max(StatusDetails(primaryTarget?.Actor, SID.ChaosThrust, Player.InstanceID).Left, StatusDetails(primaryTarget?.Actor, SID.ChaoticSpring, Player.InstanceID).Left);
         HasMD = HasEffect(SID.DiveReady);
         HasNastrond = HasEffect(SID.NastrondReady);
         HasLC = LCcd is >= 40 and <= 60;

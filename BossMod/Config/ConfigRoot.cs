@@ -36,11 +36,19 @@ public sealed class ConfigRoot
             var data = ConfigConverter.Schema.Load(file);
             using var json = data.document;
             var ser = Serialization.BuildSerializationOptions();
+
             foreach (var jconfig in data.payload.EnumerateObject())
             {
                 var type = Type.GetType(jconfig.Name);
                 var node = type != null ? _nodes.GetValueOrDefault(type) : null;
-                node?.Deserialize(jconfig.Value, ser);
+                try
+                {
+                    node?.Deserialize(jconfig.Value, ser);
+                }
+                catch (AggregateException exc)
+                {
+                    Service.Logger.Warning(exc, "An error occurred while deserializing the plugin config. As a result, some settings may have unexpected values.");
+                }
             }
         }
         catch (Exception e)

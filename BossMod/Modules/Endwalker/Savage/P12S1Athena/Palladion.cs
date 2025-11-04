@@ -129,7 +129,7 @@ sealed class PalladionStack : Components.UniformStackSpread
     private int _numCasts;
     private readonly Palladion? _palladion;
 
-    public PalladionStack(BossModule module) : base(module, 6, 0, raidwideOnResolve: false)
+    public PalladionStack(BossModule module) : base(module, 6f, default, raidwideOnResolve: false)
     {
         _palladion = module.FindComponent<Palladion>();
         UpdateStack(Module.CastFinishAt(Module.PrimaryActor.CastInfo, 0.3f));
@@ -193,8 +193,8 @@ sealed class PalladionClearCut(BossModule module) : Components.GenericAOEs(modul
 sealed class PalladionWhiteFlame : Components.GenericBaitAway
 {
     private readonly Palladion? _palladion;
-    public static readonly WPos FakeActor = new(100f, 100f);
-    private static readonly AOEShapeRect _shape = new(100f, 2f);
+    public readonly WPos FakeActor = new(100f, 100f);
+    private readonly AOEShapeRect _shape = new(100f, 2f);
 
     public PalladionWhiteFlame(BossModule module) : base(module)
     {
@@ -213,7 +213,7 @@ sealed class PalladionWhiteFlame : Components.GenericBaitAway
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (NumCasts < 4 && !ForbiddenPlayers[slot])
-            hints.Add("Bait next aoe", CurrentBaits.Count != 0 && ActiveBaitsOn(actor).Count == 0);
+            hints.Add("Bait next aoe", CurrentBaits.Count != 0 && !IsBaitTarget(actor));
         base.AddHints(slot, actor, hints);
     }
 
@@ -253,7 +253,7 @@ sealed class PalladionWhiteFlame : Components.GenericBaitAway
 
 sealed class PalladionDestroyPlatforms(BossModule module) : Components.GenericAOEs(module, (uint)AID.PalladionDestroyPlatforms, "Go to safe platform!")
 {
-    private static readonly AOEShapeRect _shape = new(10f, 20f, 10f);
+    private readonly AOEShapeRect _shape = new(10f, 20f, 10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -37,14 +37,14 @@ class HeavensfallBait(BossModule module) : Components.BaitAwayIcon(module, 5f, (
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
             hints.AddForbiddenZone(new SDCircle(D023Tioman.ArenaCenter, 27f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
             hints.Add("Bait away!");
     }
 }
@@ -54,14 +54,14 @@ class Meteor(BossModule module) : Components.BaitAwayIcon(module, 20f, (uint)Ico
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
             hints.AddForbiddenZone(new SDCircle(D023Tioman.ArenaCenter, 27f));
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
             hints.Add("Bait away!");
     }
 

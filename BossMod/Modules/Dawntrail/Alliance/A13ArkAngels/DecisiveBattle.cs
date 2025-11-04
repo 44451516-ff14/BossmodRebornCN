@@ -16,7 +16,7 @@ sealed class DecisiveBattle(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.DecisiveBattle && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0)
         {
@@ -25,7 +25,7 @@ sealed class DecisiveBattle(BossModule module) : BossComponent(module)
     }
 
     // fall back since players outside arena bounds do not get tethered but will still receive status effects
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var boss = status.ID switch
         {
@@ -41,7 +41,7 @@ sealed class DecisiveBattle(BossModule module) : BossComponent(module)
     }
 
     // if player joins fight late, statemachine won't reset this component properly
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.EpicVillain)
         {

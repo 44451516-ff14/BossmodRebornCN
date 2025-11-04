@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P2CompressedWaterLightning(BossModule module) : Components.GenericStackSpread(module)
 {
     public bool ResolveImminent; // we want to show hints shortly before next resolve
@@ -26,7 +27,7 @@ sealed class P2CompressedWaterLightning(BossModule module) : Components.GenericS
             base.DrawArenaForeground(pcSlot, pc);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

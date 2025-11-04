@@ -62,7 +62,7 @@ sealed class P1PowderMarkTrail(BossModule module) : Components.GenericBaitAway(m
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PowderMarkTrail)
         {

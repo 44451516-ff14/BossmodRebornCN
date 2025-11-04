@@ -146,7 +146,7 @@ sealed class P3HelloWorld(BossModule module) : Components.GenericTowers(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

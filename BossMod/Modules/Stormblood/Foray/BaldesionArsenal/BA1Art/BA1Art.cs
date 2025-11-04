@@ -47,7 +47,7 @@ sealed class LegendaryGeasStay(BossModule module) : Components.StayMove(module)
     }
 }
 
-sealed class GloryUnearthed(BossModule module) : Components.OpenWorldChasingAOEs(module, new AOEShapeCircle(10f), (uint)AID.GloryUnearthedFirst, (uint)AID.GloryUnearthedRest, 6.5f, 1.5f, 5, true, (uint)IconID.ChasingAOE);
+sealed class GloryUnearthed(BossModule module) : Components.StandardChasingAOEs(module, 10f, (uint)AID.GloryUnearthedFirst, (uint)AID.GloryUnearthedRest, 6.5f, 1.5d, 5, true, (uint)IconID.GloryUnearthed);
 sealed class PiercingDark(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.PiercingDark, 6f);
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.BaldesionArsenal, GroupID = 639, NameID = 7968, PlanLevel = 70, SortOrder = 1)]

@@ -23,7 +23,7 @@ sealed class MeansEnds(BossModule module) : Components.GenericAOEs(module)
         return aoes;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (_aoes.Count != 2 && status.ID == (uint)SID.MovementIndicator)
         {

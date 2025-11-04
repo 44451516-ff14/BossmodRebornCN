@@ -6,7 +6,7 @@ sealed class DiffuseEnergy(BossModule module) : Components.GenericRotatingAOE(mo
     private readonly List<(Actor source, Actor target)> tethers = new(4);
     private readonly List<(Actor source, WDir direction)> sources = new(2);
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (source.OID != default && tether.ID == (uint)TetherID.ChildsPlay && WorldState.Actors.Find(tether.Target) is Actor t)
         {

@@ -62,13 +62,13 @@ sealed class HydrowaveBait(BossModule module) : Components.BaitAwayTethers(modul
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             hints.AddForbiddenZone(new SDRect(Arena.Center - new WDir(default, -18f), Arena.Center - new WDir(default, 18f), 18f), WorldState.FutureTime(ActivationDelay));
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether) { } // snapshot is ~0.6s after tether disappears
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether) { } // snapshot is ~0.6s after tether disappears
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {

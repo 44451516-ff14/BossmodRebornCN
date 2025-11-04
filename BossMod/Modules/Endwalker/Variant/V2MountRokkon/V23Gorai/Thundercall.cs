@@ -17,7 +17,7 @@ sealed class Thundercall(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
 
         if (actor.OID == (uint)OID.BallOfLevin && status.ID == (uint)SID.SmallOrb)

@@ -169,7 +169,7 @@ sealed class AssaultCannon(BossModule module) : Components.GenericAOEs(module)
             _aoesCones.Add(new(cone, Arena.Center.Quantized(), angles[i], activation));
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CannonOrder)
         {

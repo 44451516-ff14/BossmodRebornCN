@@ -58,7 +58,7 @@ class TippedScales(BossModule module) : Components.GenericAOEs(module, (uint)AID
             hints.Add($"Suggestion: Move {(westWeight > eastWeight ? "east" : "west")!} (Total weight west: {westWeight}, total weight east: {eastWeight})");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Weight)
             switch (status.Extra)

@@ -19,13 +19,13 @@ class ViscousAetheroplasm(BossModule module) : Components.Cleave(module, (uint)A
             hints.Add(Module.PrimaryActor.TargetID == actor.InstanceID ? "Pass aggro to co-tank!" : "Taunt boss!");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if ((SID)status.ID == SID.ViscousAetheroplasm)
             UpdateStacks(actor, status.Extra);
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if ((SID)status.ID == SID.ViscousAetheroplasm)
             UpdateStacks(actor, 0);

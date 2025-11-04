@@ -22,13 +22,13 @@ sealed class P4DarklitDragonsong(BossModule module) : BossComponent(module)
             Arena.AddLine(t.from.Position, t.to.Position, Colors.Safe); // TODO: min/max break distance
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.SpellInWaitingDarkWater)
             Stacks[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.LightRampantChains)
         {
@@ -126,7 +126,7 @@ sealed class P4DarklitDragonsongBrightHunger(BossModule module) : Components.Gen
         hints.AddForbiddenZone(new SDHalfPlane(Arena.Center, new(_darklit.AssignE[slot] ? +1 : -1, default)), Towers[0].Activation);
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.LightRampantChains && ++_numTethers == 4 && _darklit != null)
         {
@@ -178,7 +178,7 @@ sealed class P4DarklitDragonsongPathOfLight(BossModule module) : Components.Gene
                 hints.Add("Bait cone away from raid!");
         }
 
-        if (ActiveBaitsNotOn(actor).Any(b => IsClippedBy(actor, b)))
+        if (ActiveBaitsNotOn(actor).Any(b => IsClippedBy(actor, ref b)))
             hints.Add("GTFO from baited cone!");
     }
 
@@ -201,7 +201,7 @@ sealed class P4DarklitDragonsongPathOfLight(BossModule module) : Components.Gene
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.LightRampantChains)
             ForbiddenPlayers[Raid.FindSlot(source.InstanceID)] = true;
@@ -305,7 +305,7 @@ sealed class P4DarklitDragonsongDarkWater(BossModule module) : Components.Unifor
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.SpellInWaitingDarkWater)
             AddStack(actor, status.ExpireAt);

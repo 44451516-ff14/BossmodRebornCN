@@ -88,12 +88,12 @@ class ChainMine(BossModule module) : Components.GenericAOEs(module)
     private readonly ThermobaricCharge _aoe = module.FindComponent<ThermobaricCharge>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.HexadroneBits)
             _aoes.Add(new(rect, source.Position.Quantized(), source.Rotation, WorldState.FutureTime(5.6d)));
     }
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.HexadroneBits)
         {
@@ -123,13 +123,13 @@ class ThermobaricChargeBait(BossModule module) : Components.GenericBaitAway(modu
 {
     private static readonly AOEShapeCircle circle = new(30f);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
             CurrentBaits.Add(new(Module.PrimaryActor, actor, circle, status.ExpireAt));
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
             CurrentBaits.Clear();

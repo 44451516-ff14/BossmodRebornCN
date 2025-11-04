@@ -62,14 +62,14 @@ class PlayerBound(BossModule module) : BossComponent(module)
             hints.Add("Kill Queer Bubble to free bound player!");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         // True if player has bind status
         if (status.ID == (uint)SID.Bind)
             _bound[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         // False if player no longer has bind status
         if (status.ID == (uint)SID.Bind)

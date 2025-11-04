@@ -24,19 +24,19 @@ sealed class Fusefield(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Bombarium && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             _orders[slot] = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds < 30d ? 1 : 2;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Bombarium && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             _orders[slot] = 0;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (source.OID == (uint)OID.SinisterSpark && tether.ID == (uint)TetherID.Fusefield && WorldState.Actors.Find(tether.Target) is var target && target != null)
             _sparks.Add((source, target, (source.Position - target.Position).LengthSq() < 55f ? 1 : 2));
@@ -59,7 +59,7 @@ sealed class FusefieldVoidzone(BossModule module) : Components.GenericAOEs(modul
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x13)
         {

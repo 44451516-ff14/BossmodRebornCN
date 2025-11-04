@@ -1,6 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
-sealed class P4OpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4)
+[SkipLocalsInit]
+sealed class P4OpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4, 4)
 {
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -20,10 +21,10 @@ sealed class P4OpticalSight(BossModule module) : Components.UniformStackSpread(m
         switch (spell.Action.ID)
         {
             case (uint)AID.IndividualReprobation:
-                Spreads.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
+                Spreads.Clear();
                 break;
             case (uint)AID.CollectiveReprobation:
-                Stacks.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
+                Stacks.Clear();
                 break;
         }
     }

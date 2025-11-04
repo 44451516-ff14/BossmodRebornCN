@@ -25,7 +25,7 @@ sealed class ThornyVine(BossModule module) : Components.Chains(module, (uint)Tet
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         base.OnUntethered(source, tether);
         if (tether.ID == (uint)TetherID.ThornyVine)

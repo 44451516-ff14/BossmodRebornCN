@@ -84,7 +84,7 @@ class Turrets(BossModule module) : Components.GenericKnockback(module, (uint)AID
         base.DrawArenaForeground(pcSlot, pc);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.DarkResistanceDown)
             _forbidden[Raid.FindSlot(actor.InstanceID)] = true;

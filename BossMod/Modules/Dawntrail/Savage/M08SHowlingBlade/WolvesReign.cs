@@ -2,8 +2,8 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
 sealed class WolvesReignConeCircle(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
-    private static readonly AOEShapeCircle circle = new(14f);
+    private readonly AOEShapeCone cone = new(40f, 60f.Degrees());
+    private readonly AOEShapeCircle circle = new(14f);
     private AOEInstance[] _aoe = [];
     private WPos jumpLoc;
     private bool isCone;

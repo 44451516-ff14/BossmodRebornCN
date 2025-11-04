@@ -36,7 +36,7 @@ sealed class ThornsOfDeath(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.ThornsOfDeathNonTank or (uint)TetherID.ThornsOfDeathTank or (uint)TetherID.ThornsOfDeathTakeable)
         {
@@ -49,7 +49,7 @@ sealed class ThornsOfDeath(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID is (uint)TetherID.ThornsOfDeathNonTank or (uint)TetherID.ThornsOfDeathTank or (uint)TetherID.ThornsOfDeathTakeable)
         {

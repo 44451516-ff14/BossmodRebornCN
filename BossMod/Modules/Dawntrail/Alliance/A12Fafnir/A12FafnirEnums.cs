@@ -74,6 +74,7 @@ public enum AID : uint
 
 public enum IconID : uint
 {
+    ProactiveMunition = 197, // Boss->player
     BalefulBreath = 568, // Boss->player
     SharpSpike = 342, // player->self
     HorridRoar = 499, // player->self

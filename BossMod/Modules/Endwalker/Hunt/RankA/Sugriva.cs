@@ -86,7 +86,7 @@ sealed class RockThrowBait(BossModule module) : Components.GenericBaitAway(modul
 {
     private static readonly AOEShapeCircle circle = new(6f);
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
         {

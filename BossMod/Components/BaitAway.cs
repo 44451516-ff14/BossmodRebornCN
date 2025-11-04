@@ -3,6 +3,8 @@
 // generic component for mechanics that require baiting some aoe (by proximity, by tether, etc) away from raid
 // some players can be marked as 'forbidden' - if any of them is baiting, they are warned
 // otherwise we show own bait as as outline (and warn if player is clipping someone) and other baits as filled (and warn if player is being clipped)
+
+[SkipLocalsInit]
 public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysDrawOtherBaits = true, bool centerAtTarget = false, bool tankbuster = false, bool onlyShowOutlines = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.None) : CastCounter(module, aid)
 {
     public struct Bait(Actor source, Actor target, AOEShape shape, DateTime activation = default, BitMask forbidden = default, Angle? customRotation = null, int maxCasts = 1, WDir offset = default)
@@ -24,7 +26,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
 
     public readonly bool AlwaysDrawOtherBaits = alwaysDrawOtherBaits; // if false, other baits are drawn only if they are clipping a player
     public readonly bool CenterAtTarget = centerAtTarget; // if true, aoe source is at target
-    public readonly bool OnlyShowOutlines = onlyShowOutlines; // if true only show outlines
+    public bool OnlyShowOutlines = onlyShowOutlines; // if true only show outlines
     public bool AllowDeadTargets = true; // if false, baits with dead targets are ignored
     public bool EnableHints = true;
     public bool IgnoreOtherBaits; // if true, don't show hints/aoes for baits by others
@@ -41,7 +43,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
             var count = CurrentBaits.Count;
             if (count == 0)
             {
-                return [];
+                return CurrentBaits;
             }
             List<Bait> activeBaits = new(count);
             var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
@@ -65,15 +67,14 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         var count = CurrentBaits.Count;
         if (count == 0)
         {
-            return [];
+            return CurrentBaits;
         }
         List<Bait> activeBaitsOnTarget = new(count);
         var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
-        var id = target.InstanceID;
         for (var i = 0; i < count; ++i)
         {
             ref var bait = ref curBaits[i];
-            if (!bait.Source.IsDead && bait.Target.InstanceID == id)
+            if (!bait.Source.IsDead && bait.Target == target)
             {
                 activeBaitsOnTarget.Add(bait);
             }
@@ -81,20 +82,40 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         return activeBaitsOnTarget;
     }
 
+    public bool IsBaitTarget(Actor target)
+    {
+        var count = CurrentBaits.Count;
+        if (count == 0)
+        {
+            return false;
+        }
+
+        var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
+        for (var i = 0; i < count; ++i)
+        {
+            ref var bait = ref curBaits[i];
+            if (!bait.Source.IsDead && bait.Target == target)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public List<Bait> ActiveBaitsNotOn(Actor target)
     {
         var count = CurrentBaits.Count;
         if (count == 0)
         {
-            return [];
+            return CurrentBaits;
         }
         List<Bait> activeBaitsNotOnTarget = new(count);
         var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
-        var id = target.InstanceID;
+
         for (var i = 0; i < count; ++i)
         {
             ref var bait = ref curBaits[i];
-            if (!bait.Source.IsDead && bait.Target.InstanceID != id)
+            if (!bait.Source.IsDead && bait.Target != target)
             {
                 activeBaitsNotOnTarget.Add(bait);
             }
@@ -103,7 +124,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     }
 
     public WPos BaitOrigin(ref Bait bait) => (CenterAtTarget ? bait.Target : bait.Source).Position + bait.Offset;
-    public bool IsClippedBy(Actor actor, Bait bait) => bait.Shape.Check(actor.Position, BaitOrigin(ref bait), bait.Rotation);
+    public bool IsClippedBy(Actor actor, ref Bait bait) => bait.Shape.Check(actor.Position, BaitOrigin(ref bait), bait.Rotation);
     public List<Actor> PlayersClippedBy(ref Bait bait)
     {
         var actors = Raid.WithoutSlot();
@@ -130,7 +151,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
             return;
         if (ForbiddenPlayers[slot])
         {
-            if (ActiveBaitsOn(actor).Count != 0)
+            if (IsBaitTarget(actor))
             {
                 hints.Add("Avoid baiting!");
             }
@@ -160,7 +181,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
                 ref var bait = ref baits[i];
                 if (bait.Target.InstanceID == id)
                     continue;
-                if (IsClippedBy(actor, bait))
+                if (IsClippedBy(actor, ref bait))
                 {
                     hints.Add("GTFO from baited aoe!");
                     break;
@@ -247,7 +268,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         for (var i = 0; i < len; ++i)
         {
             ref var b = ref baits[i];
-            if (!b.Source.IsDead && b.Target.InstanceID != pcID && (AlwaysDrawOtherBaits || IsClippedBy(pc, b)))
+            if (!b.Source.IsDead && b.Target.InstanceID != pcID && (AlwaysDrawOtherBaits || IsClippedBy(pc, ref b)))
             {
                 b.Shape.Draw(Arena, BaitOrigin(ref b), b.Rotation);
             }
@@ -277,6 +298,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
 }
 
 // bait on all players, requiring everyone to spread out
+[SkipLocalsInit]
 public class BaitAwayEveryone : GenericBaitAway
 {
     public BaitAwayEveryone(BossModule module, Actor? source, AOEShape shape, uint aid = default) : base(module, aid, damageType: AIHints.PredictedDamageType.Raidwide)
@@ -295,6 +317,7 @@ public class BaitAwayEveryone : GenericBaitAway
 }
 
 // component for mechanics requiring tether targets to bait their aoe away from raid
+[SkipLocalsInit]
 public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, uint aid = default, uint enemyOID = default, double activationDelay = default, bool centerAtTarget = false) : GenericBaitAway(module, aid, centerAtTarget: centerAtTarget, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     public BaitAwayTethers(BossModule module, float radius, uint tetherID, uint aid = default, uint enemyOID = default, double activationDelay = default, bool centerAtTarget = true) : this(module, new AOEShapeCircle(radius), tetherID, aid, enemyOID, activationDelay, centerAtTarget) { }
@@ -321,7 +344,7 @@ public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, u
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         var (player, enemy) = DetermineTetherSides(source, tether);
         if (player != null && enemy != null && (EnemyOID == default || enemy.OID == EnemyOID))
@@ -343,7 +366,7 @@ public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, u
         }
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether) // TODO: this is problematic because untethering can happen many frames before the actual cast event, maybe there is a better solution?
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether) // TODO: this is problematic because untethering can happen many frames before the actual cast event, maybe there is a better solution?
     {
         var (player, enemy) = DetermineTetherSides(source, tether);
         if (player != null && enemy != null)
@@ -386,6 +409,7 @@ public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, u
 }
 
 // component for mechanics requiring icon targets to bait their aoe away from raid
+[SkipLocalsInit]
 public class BaitAwayIcon(BossModule module, AOEShape shape, uint iconID, uint aid = default, double activationDelay = 5.1d, bool centerAtTarget = false, Actor? source = null, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide) : GenericBaitAway(module, aid, centerAtTarget: centerAtTarget, tankbuster: tankbuster, damageType: damageType)
 {
     public BaitAwayIcon(BossModule module, float radius, uint iconID, uint aid = default, double activationDelay = 5.1d, bool centerAtTarget = true, Actor? source = null, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide) : this(module, new AOEShapeCircle(radius), iconID, aid, activationDelay, centerAtTarget, source, tankbuster, damageType) { }
@@ -428,6 +452,7 @@ public class BaitAwayIcon(BossModule module, AOEShape shape, uint iconID, uint a
 }
 
 // component for mechanics requiring cast targets to gtfo from raid (aoe tankbusters etc)
+[SkipLocalsInit]
 public class BaitAwayCast(BossModule module, uint aid, AOEShape shape, bool centerAtTarget = false, bool endsOnCastEvent = false, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide) : GenericBaitAway(module, aid, centerAtTarget: centerAtTarget, tankbuster: tankbuster, damageType: damageType)
 {
     public BaitAwayCast(BossModule module, uint aid, float radius, bool centerAtTarget = true, bool endsOnCastEvent = false, bool tankbuster = false, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.Raidwide) : this(module, aid, new AOEShapeCircle(radius), centerAtTarget, endsOnCastEvent, tankbuster, damageType: damageType) { }
@@ -500,6 +525,7 @@ public class BaitAwayCast(BossModule module, uint aid, AOEShape shape, bool cent
 }
 
 // a variation of BaitAwayCast for charges that end at target
+[SkipLocalsInit]
 public class BaitAwayChargeCast(BossModule module, uint aid, float halfWidth) : GenericBaitAway(module, aid, damageType: AIHints.PredictedDamageType.Tankbuster)
 {
     private readonly float HalfWidth = halfWidth;
@@ -550,6 +576,7 @@ public class BaitAwayChargeCast(BossModule module, uint aid, float halfWidth) : 
 }
 
 // a variation of baits with tethers for charges that end at target
+[SkipLocalsInit]
 public class BaitAwayChargeTether(BossModule module, float halfWidth, double activationDelay, uint aidGood, uint aidBad = default, uint tetherIDBad = 57u, uint tetherIDGood = 1u, uint enemyOID = default, float minimumDistance = default)
 : StretchTetherDuo(module, minimumDistance, activationDelay, tetherIDBad, tetherIDGood, new AOEShapeRect(default, halfWidth), default, enemyOID)
 {

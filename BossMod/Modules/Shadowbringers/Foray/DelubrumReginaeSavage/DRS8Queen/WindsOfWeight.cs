@@ -22,7 +22,7 @@ sealed class WindsOfWeight(BossModule module) : Components.GenericAOEs(module)
         return aoes;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.ReversalOfForces)
             _invertedPlayers[Raid.FindSlot(actor.InstanceID)] = true;

@@ -93,5 +93,5 @@ sealed class D043StorgeStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 656, NameID = 8249)]
 public sealed class D043Storge(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsCustom arena = new([new Cross(new(196f, -95f), 20f, 14.5f)], AdjustForHitbox: true);
+    private static readonly ArenaBoundsCustom arena = new([new Cross(new(196f, -95f), 20f, 14.5f)], AdjustForHitboxInwards: true);
 }

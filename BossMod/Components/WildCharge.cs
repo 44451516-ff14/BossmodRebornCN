@@ -1,6 +1,7 @@
 ﻿namespace BossMod.Components;
 
 // generic 'wild charge': various mechanics that consist of charge aoe on some target that other players have to stay in; optionally some players can be marked as 'having to be closest to source' (usually tanks)
+[SkipLocalsInit]
 public class GenericWildCharge(BossModule module, float halfWidth, uint aid = default, float fixedLength = default) : CastCounter(module, aid)
 {
     public enum PlayerRole
@@ -102,7 +103,7 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
 
         if (forbiddenInverted.Count != 0)
         {
-            hints.AddForbiddenZone(new SDIntersection([.. forbiddenInverted]), Activation);
+            hints.AddForbiddenZone(new SDOutsideOfUnion([.. forbiddenInverted]), Activation);
         }
         if (forbidden.Count != 0)
         {

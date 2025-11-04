@@ -27,8 +27,10 @@ class AllergenInjection(BossModule module) : Components.BaitAwayCast(module, (ui
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.Add("Bait away!");
+        }
     }
 }
 
@@ -42,13 +44,13 @@ class RootsOfAtopy(BossModule module) : Components.GenericStackSpread(module)
             Stacks.Add(new(WorldState.Actors.Find(spell.TargetID)!, 6f, 8, 8, activation: Module.CastFinishAt(spell), forbiddenPlayers: _forbidden));
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PiercingResistanceDownII)
             _forbidden[Raid.FindSlot(actor.InstanceID)] = true;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PiercingResistanceDownII)
             _forbidden[Raid.FindSlot(actor.InstanceID)] = false;

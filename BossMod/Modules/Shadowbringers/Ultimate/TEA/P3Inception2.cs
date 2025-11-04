@@ -1,14 +1,15 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // baited flarethrowers
+[SkipLocalsInit]
 sealed class P3Inception2 : Components.GenericBaitAway
 {
-    private int _numAetheroplasmsDone;
+    private int _numAetheroplasmsDone, _numTetrashattersDone;
     private BitMask _taken;
 
-    private static readonly AOEShapeCone _shape = new(100f, 45f.Degrees()); // TODO: verify angle
+    private readonly AOEShapeCone _shape = new(100f, 45f.Degrees());
 
-    public P3Inception2(BossModule module) : base(module)
+    public P3Inception2(BossModule module) : base(module, onlyShowOutlines: true)
     {
         // assume first two are baited by tanks
         ForbiddenPlayers = Raid.WithSlot(true, true, true).WhereActor(a => a.Role != Role.Tank).Mask();
@@ -24,6 +25,10 @@ sealed class P3Inception2 : Components.GenericBaitAway
             if (source != null && target != null)
                 CurrentBaits.Add(new(source, target, _shape));
         }
+        if (_numTetrashattersDone == 4)
+        {
+            OnlyShowOutlines = false;
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -33,6 +38,9 @@ sealed class P3Inception2 : Components.GenericBaitAway
             case (uint)AID.Aetheroplasm:
                 ++_numAetheroplasmsDone;
                 break;
+            case (uint)AID.Tetrashatter:
+                ++_numTetrashattersDone;
+                break;
             case (uint)AID.FlarethrowerP3:
                 ++NumCasts;
                 foreach (var t in spell.Targets)
@@ -41,7 +49,7 @@ sealed class P3Inception2 : Components.GenericBaitAway
                     _taken.Set(slot);
                     ForbiddenPlayers.Set(slot);
                 }
-                if (ForbiddenPlayers.Raw == 0xff)
+                if (ForbiddenPlayers.Raw == 0xffUL)
                 {
                     // assume after both tanks have taken, rest is taken by raid
                     ForbiddenPlayers = _taken;

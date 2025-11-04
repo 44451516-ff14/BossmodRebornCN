@@ -25,13 +25,13 @@ sealed class ProjectionOfTurmoil(BossModule module) : Components.CastCounter(mod
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Projection)
             _targets.Set(Raid.FindSlot(actor.InstanceID));
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Projection)
             _targets.Clear(Raid.FindSlot(actor.InstanceID));

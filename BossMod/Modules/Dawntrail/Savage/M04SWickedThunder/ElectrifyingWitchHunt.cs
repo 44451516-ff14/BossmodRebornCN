@@ -58,7 +58,7 @@ sealed class ElectrifyingWitchHuntResolve(BossModule module) : Components.Generi
         base.AddHints(slot, actor, hints);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

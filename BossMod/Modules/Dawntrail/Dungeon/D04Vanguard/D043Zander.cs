@@ -62,7 +62,7 @@ sealed class ElectrothermiaArenaChange(BossModule module) : Components.GenericAO
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x00 && state == 0x00020001u)
         {
@@ -106,7 +106,7 @@ sealed class SlitherbaneBurstCombo(BossModule module) : Components.GenericAOEs(m
         void AddAOE(AOEShape shape)
         {
             _aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
-            _aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            SortHelpers.SortAOEByActivation(_aoes);
         }
         switch (spell.Action.ID)
         {

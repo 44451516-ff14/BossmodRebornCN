@@ -102,7 +102,7 @@ sealed class BuyersRemorseForcedMarch(BossModule module) : Components.GenericKno
         return [];
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.BuyersRemorseForcedMarch && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -111,7 +111,7 @@ sealed class BuyersRemorseForcedMarch(BossModule module) : Components.GenericKno
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.BuyersRemorseForcedMarch && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -133,7 +133,7 @@ sealed class BuyersRemorseForcedMarch(BossModule module) : Components.GenericKno
 
 sealed class BuyersRemorseECFreeze(BossModule module) : Components.StayMove(module)
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -148,7 +148,7 @@ sealed class BuyersRemorseECFreeze(BossModule module) : Components.StayMove(modu
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.BuyersRemorseDeepFreeze or (uint)SID.BuyersRemorseExtremeCaution && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {
@@ -187,7 +187,7 @@ sealed class WhatreYouBuying(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (Raid.FindSlot(source.InstanceID) is var slot && slot is >= 0 and <= 7)
         {
@@ -212,7 +212,7 @@ sealed class WhatreYouBuying(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Transporting && Raid.FindSlot(actor.InstanceID) is var slot && slot is >= 0 and <= 7)
         {
@@ -329,7 +329,7 @@ sealed class WhatreYouBuying(BossModule module) : Components.GenericAOEs(module)
                 var coin = coinsE[i];
                 if (coin.IsTargetable)
                 {
-                    hints.GoalZones.Add(hints.GoalSingleTarget(coin, 2f, 5f));
+                    hints.GoalZones.Add(AIHints.GoalSingleTarget(coin, 2f, 5f));
                     var distSq = (actor.Position - coin.Position).LengthSq();
                     if (distSq < minDistSq)
                     {

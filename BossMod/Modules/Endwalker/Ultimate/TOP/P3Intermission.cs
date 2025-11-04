@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.Ultimate.TOP;
 
-sealed class P3SniperCannon(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, alwaysShowSpreads: true)
+sealed class P3SniperCannon(BossModule module) : Components.UniformStackSpread(module, 6f, 6f)
 {
     enum PlayerRole { None, Stack, Spread }
 
@@ -21,7 +21,7 @@ sealed class P3SniperCannon(BossModule module) : Components.UniformStackSpread(m
             Arena.AddCircle(s, 1f, Colors.Safe);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -37,7 +37,7 @@ sealed class P3SniperCannon(BossModule module) : Components.UniformStackSpread(m
     }
 
     // note: if player dies, stack/spread immediately hits random target, so we use status loss to end stack/spread
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

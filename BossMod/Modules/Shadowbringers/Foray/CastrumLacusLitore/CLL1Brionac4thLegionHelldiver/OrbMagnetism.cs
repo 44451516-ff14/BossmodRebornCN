@@ -180,7 +180,7 @@ sealed class Magnetism(BossModule module) : Components.GenericKnockback(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Magnetism)
         {

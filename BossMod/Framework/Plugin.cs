@@ -8,7 +8,6 @@ using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace BossMod;
 
@@ -32,6 +31,7 @@ public sealed class Plugin : IDalamudPlugin
     private readonly AI.Broadcast _broadcast;
     private readonly IPCProvider _ipc;
     private readonly DTRProvider _dtr;
+    private readonly MultiboxManager _mbox;
     private TimeSpan _prevUpdateTime;
     private DateTime _throttleJump;
     private DateTime _throttleInteract;
@@ -94,6 +94,7 @@ public sealed class Plugin : IDalamudPlugin
         _broadcast = new();
         _ipc = new(_rotation, _amex, _movementOverride, _ai);
         _dtr = new(_rotation, _ai);
+        _mbox = new(_rotation, _ws);
         _wndBossmod = new(_bossmod, _zonemod);
         _wndBossmodHints = new(_bossmod, _zonemod);
         _wndZone = new(_zonemod);
@@ -121,6 +122,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndBossmodHints.Dispose();
         _wndBossmod.Dispose();
         _configUI.Dispose();
+        _mbox.Dispose();
         _dtr.Dispose();
         _ipc.Dispose();
         _ai.Dispose();
@@ -276,7 +278,7 @@ public sealed class Plugin : IDalamudPlugin
         // see ActionManager.IsActionUnlocked
         var gameMain = FFXIVClientStructs.FFXIV.Client.Game.GameMain.Instance();
         return link == 0
-            || Service.LuminaRow<Lumina.Excel.Sheets.TerritoryType>(gameMain->CurrentTerritoryTypeId)?.TerritoryIntendedUse.RowId == 31 // deep dungeons check is hardcoded in game
+            || Service.LuminaRow<Lumina.Excel.Sheets.TerritoryType>(gameMain->CurrentTerritoryTypeId)?.TerritoryIntendedUse.RowId == 31u // deep dungeons check is hardcoded in game
             || FFXIVClientStructs.FFXIV.Client.Game.UI.UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(link);
     }
 
@@ -285,17 +287,14 @@ public sealed class Plugin : IDalamudPlugin
         _movementOverride.DesiredDirection = _hints.ForcedMovement;
         _movementOverride.MisdirectionThreshold = _hints.MisdirectionThreshold;
         _movementOverride.DesiredSpinDirection = _hints.SpinDirection;
-        // update forced target, if needed (TODO: move outside maybe?)
-        if (_hints.ForcedTarget != null && _hints.ForcedTarget.IsTargetable)
-        {
-            var obj = _hints.ForcedTarget.SpawnIndex >= 0 ? FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager.Instance()->Objects.IndexSorted[_hints.ForcedTarget.SpawnIndex].Value : null;
-            if (obj != null && obj->EntityId != _hints.ForcedTarget.InstanceID)
-                Service.Log($"[ExecHints] Unexpected new target: expected {_hints.ForcedTarget.InstanceID:X} at #{_hints.ForcedTarget.SpawnIndex}, but found {obj->EntityId:X}");
-            FFXIVClientStructs.FFXIV.Client.Game.Control.TargetSystem.Instance()->Target = obj;
-        }
+
+        var targetSystem = FFXIVClientStructs.FFXIV.Client.Game.Control.TargetSystem.Instance();
+        SetTarget(_hints.ForcedTarget, &targetSystem->Target);
+        SetTarget(_hints.ForcedFocusTarget, &targetSystem->FocusTarget);
+
         foreach (var s in _hints.StatusesToCancel)
         {
-            var res = FFXIVClientStructs.FFXIV.Client.Game.StatusManager.ExecuteStatusOff(s.statusId, s.sourceId != 0 ? (uint)s.sourceId : 0xE0000000);
+            var res = FFXIVClientStructs.FFXIV.Client.Game.StatusManager.ExecuteStatusOff(s.statusId, s.sourceId != default ? (uint)s.sourceId : 0xE0000000);
             Service.Log($"[ExecHints] Canceling status {s.statusId} from {s.sourceId:X} -> {res}");
         }
         if (_hints.WantJump && _ws.CurrentTime > _throttleJump)
@@ -315,6 +314,25 @@ public sealed class Plugin : IDalamudPlugin
                 FFXIVClientStructs.FFXIV.Client.Game.Control.TargetSystem.Instance()->InteractWithObject(GetActorObject(_hints.InteractWithTarget), false);
                 _throttleInteract = _ws.FutureTime(1.1d);
             }
+        }
+    }
+
+    private unsafe void SetTarget(Actor? target, FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject** targetPtr)
+    {
+        if (target == null || !target.IsTargetable)
+            return;
+
+        var obj = target.SpawnIndex >= 0 ? FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager.Instance()->Objects.IndexSorted[target.SpawnIndex].Value : null;
+        if (obj != null && obj->EntityId != target.InstanceID)
+            Service.Log($"[ExecHints] Unexpected new target: expected {target.InstanceID:X} at #{target.SpawnIndex}, but found {obj->EntityId:X}");
+
+        // 50 in-game units is the maximum distance before nameplates stop rendering (making the mob effectively untargetable)
+        // targeting a mob that isn't visible is bad UX
+        if (_ws.Party.Player() is { } player)
+        {
+            var distSq = (player.PosRot.XYZ() - target.PosRot.XYZ()).LengthSquared();
+            if (distSq < 2500f)
+                *targetPtr = obj;
         }
     }
 
@@ -387,7 +405,7 @@ public sealed class Plugin : IDalamudPlugin
             return;
         }
         var normalizedInput = userInput.ToUpperInvariant();
-        var preset = _rotation.Database.Presets.VisiblePresets
+        var preset = _rotation.Database.Presets.AllPresets
             .FirstOrDefault(p => p.Name.Trim().Equals(normalizedInput, StringComparison.OrdinalIgnoreCase))
             ?? RotationModuleManager.ForceDisable;
         if (preset != null)

@@ -77,7 +77,7 @@ class MortalFlame(BossModule module) : BossComponent(module)
         return module.Enemies(D093Lugus.FurnitureA);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.MortalFlame)
         {
@@ -86,7 +86,7 @@ class MortalFlame(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.MortalFlame)
             burning[Raid.FindSlot(actor.InstanceID)] = false;
@@ -102,10 +102,12 @@ class MortalFlame(BossModule module) : BossComponent(module)
         for (var i = 0; i < count; ++i)
         {
             var h = furniture[i];
-            forbidden[i] = new SDInvertedCircle(h.Position, h.HitboxRadius - 0.1f);
+            forbidden[i] = new SDInvertedCircle(h.Position, 0.8f);
         }
         if (forbidden.Length != 0)
+        {
             hints.AddForbiddenZone(new SDIntersection(forbidden), _activation);
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -154,8 +156,10 @@ class BlackFlame(BossModule module) : Components.GenericBaitAway(module, centerA
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count == 0)
+        if (!IsBaitTarget(actor))
+        {
             return;
+        }
 
         var furniture = MortalFlame.Furniture(Module);
         var count = furniture.Count;
@@ -178,8 +182,10 @@ class BlackFlame(BossModule module) : Components.GenericBaitAway(module, centerA
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
-        if (ActiveBaitsOn(pc).Count == 0)
+        if (!IsBaitTarget(pc))
+        {
             return;
+        }
         var furniture = MortalFlame.Furniture(Module);
         var count = furniture.Count;
         for (var i = 0; i < count; ++i)
@@ -191,9 +197,10 @@ class BlackFlame(BossModule module) : Components.GenericBaitAway(module, centerA
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count == 0)
-            return;
-        hints.Add("Bait away, avoid intersecting furniture hitboxes!");
+        if (IsBaitTarget(actor))
+        {
+            hints.Add("Bait away, avoid intersecting furniture hitboxes!");
+        }
     }
 }
 
@@ -207,13 +214,14 @@ class FiresIre(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fire
 class Plummet(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Plummet, 3f);
 class FiresDomainTether(BossModule module) : Components.StretchTetherDuo(module, default, default)
 {
-    private static readonly WDir offset = new(default, 23.5f);
+    private readonly WDir offset = new(default, 23.5f);
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveBaitsOn(actor).Count == 0)
-            return;
-        hints.AddForbiddenZone(new SDRect(Arena.Center + offset, Arena.Center - offset, 23.5f));
+        if (IsBaitTarget(actor))
+        {
+            hints.AddForbiddenZone(new SDRect(Arena.Center + offset, Arena.Center - offset, 23.5f));
+        }
     }
 }
 
@@ -249,7 +257,7 @@ class FiresDomain(BossModule module) : Components.GenericBaitAway(module)
 
 class FiresIreBait(BossModule module) : Components.GenericBaitAway(module)
 {
-    private static readonly AOEShapeCone cone = new(20f, 45f.Degrees());
+    private readonly AOEShapeCone cone = new(20f, 45f.Degrees());
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -267,20 +275,20 @@ class FiresIreBait(BossModule module) : Components.GenericBaitAway(module)
     {
         if (CurrentBaits.Count == 0)
             return;
-        var baitsNotOnActor = ActiveBaitsNotOn(actor);
-        var countNoA = baitsNotOnActor.Count;
+        var baitsNotOnActor = CollectionsMarshal.AsSpan(ActiveBaitsNotOn(actor));
+        var countNoA = baitsNotOnActor.Length;
 
         for (var i = 0; i < countNoA; ++i)
         {
-            var b = baitsNotOnActor[i];
+            ref var b = ref baitsNotOnActor[i];
             hints.AddForbiddenZone(cone, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
         }
 
-        var baitsOnActor = ActiveBaitsNotOn(actor);
+        var baitsOnActor = ActiveBaitsOn(actor);
         var countoA = baitsOnActor.Count;
         if (countoA != 0)
         {
-            var b = baitsOnActor[0].Activation;
+            var b = baitsOnActor.Ref(0).Activation;
             var furniture = MortalFlame.Furniture(Module);
             List<Actor> party = [.. Raid.WithoutSlot(false, true, true)];
             party.Remove(actor);
@@ -289,7 +297,9 @@ class FiresIreBait(BossModule module) : Components.GenericBaitAway(module)
             actors.AddRange(furniture);
             actors.AddRange(party);
             for (var i = 0; i < total; ++i)
+            {
                 hints.AddForbiddenZone(new SDCircle(actors[i].Position, 10f), b);
+            }
         }
     }
 
@@ -306,7 +316,7 @@ class FiresIreBait(BossModule module) : Components.GenericBaitAway(module)
             Arena.AddCircle(a.Position, a.HitboxRadius, Colors.Danger);
         }
 
-        cone.Outline(Arena, pc.Position - (pc.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(pc), bait[0].Rotation);
+        cone.Outline(Arena, pc.Position - (pc.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(pc), bait.Ref(0).Rotation);
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
@@ -315,16 +325,17 @@ class FiresIreBait(BossModule module) : Components.GenericBaitAway(module)
         var count = baits.Count;
         if (count == 0)
             return;
+        var baitss = CollectionsMarshal.AsSpan(baits);
         for (var i = 0; i < count; ++i)
         {
-            var b = baits[i];
+            ref var b = ref baitss[i];
             cone.Draw(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
             hints.Add("Bait away, avoid intersecting furniture hitboxes!");
     }
 }

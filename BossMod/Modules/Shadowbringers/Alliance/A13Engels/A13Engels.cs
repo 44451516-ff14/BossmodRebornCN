@@ -15,7 +15,7 @@ class DemolishStructureArenaChange(BossModule module) : Components.GenericAOEs(m
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x0B && state == 0x00020001u)
         {
@@ -44,7 +44,7 @@ class IncendiaryBombing1(BossModule module) : Components.SpreadFromIcon(module, 
 class DiffuseLaser(BossModule module) : Components.RaidwideCast(module, (uint)AID.DiffuseLaser);
 class SurfaceMissile2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurfaceMissile2, 6);
 
-class GuidedMissile(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(6), (uint)AID.GuidedMissile2, (uint)AID.GuidedMissile3, 5.5f, 1, 4, true);
+class GuidedMissile(BossModule module) : Components.StandardChasingAOEs(module, 6f, (uint)AID.GuidedMissile2, (uint)AID.GuidedMissile3, 5.5f, 1d, 4, true, (uint)IconID.GuidedMissile);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 700, NameID = 9147)]
 public class A13MarxEngels(WorldState ws, Actor primary) : BossModule(ws, primary, StartingArenaCenter, StartingBounds)

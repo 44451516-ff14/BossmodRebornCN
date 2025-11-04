@@ -2,6 +2,7 @@ namespace BossMod;
 
 // utility that recalculates ai hints based on different data sources (eg active bossmodule, etc)
 // when there is no active bossmodule (eg in outdoor or on trash), we try to guess things based on world state (eg actor casts)
+[SkipLocalsInit]
 public sealed class AIHintsBuilder : IDisposable
 {
     private const float RaidwideSize = 30f;
@@ -69,7 +70,7 @@ public sealed class AIHintsBuilder : IDisposable
             FillEnemies(hints, playerAssignment == PartyRolesConfig.Assignment.MT || playerAssignment == PartyRolesConfig.Assignment.OT && !_ws.Party.WithoutSlot(false, false, true).Any(p => p != player && p.Role == Role.Tank), outOfCombatPriority);
             if (activeModule != null)
             {
-                activeModule.CalculateAIHints(playerSlot, ref player, ref playerAssignment, ref hints);
+                activeModule.CalculateAIHints(playerSlot, player, playerAssignment, hints);
             }
             else
             {
@@ -80,7 +81,7 @@ public sealed class AIHintsBuilder : IDisposable
         hints.Normalize();
         if (_rsr != null)
         {
-            var soon = _ws.CurrentTime.AddSeconds(0.5d);
+            var soon = _ws.CurrentTime.AddSeconds(0.75d);
             var hasForbiddenDirection = hints.ForbiddenDirections.Count > 0;
 
             if (!isRSRpaused && (hasForbiddenDirection && hints.ForbiddenDirections.Ref(0).activation < soon || hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < soon) && _rsr.IsInstalled)
@@ -131,6 +132,11 @@ public sealed class AIHintsBuilder : IDisposable
                 priority = priorityPassive; // Default undesirable
 
             var enemy = hints.Enemies[index] = new(actor, priority, playerIsDefaultTank);
+
+            // maybe unnecessary?
+            if (actor.FateID > 0u && actor.FateID == allowedFateID && !Utils.IsBossFate(actor.FateID))
+                enemy.ForbidDOTs = true;
+
             hints.PotentialTargets.Add(enemy);
         }
     }
@@ -138,19 +144,33 @@ public sealed class AIHintsBuilder : IDisposable
     private void CalculateAutoHints(AIHints hints, Actor player)
     {
         var inFate = Utils.IsPlayerSyncedToFate(_ws);
-        var center = inFate ? _ws.Client.ActiveFate.Center : player.PosRot.XYZ();
+        var fate = _ws.Client.ActiveFate;
+        var center = inFate ? fate.Center : player.PosRot.XYZ();
         var (e, bitmap) = Obstacles.Find(center);
         var resolution = bitmap?.PixelSize ?? 0.5f;
         if (inFate)
         {
-            hints.PathfindMapCenter = new(_ws.Client.ActiveFate.Center.XZ());
-            hints.PathfindMapBounds = (_activeFateBounds ??= new ArenaBoundsCircle(_ws.Client.ActiveFate.Radius, resolution, true));
+            hints.PathfindMapCenter = new(fate.Center.XZ());
+
+            // if in a big fate with no obstacle map available, reduce resolution to avoid destroying fps
+            // fates don't need precise pathfinding anyway since they are just orange circle simulators
+            if (bitmap == null)
+            {
+                resolution = fate.Radius switch
+                {
+                    > 60f => 2,
+                    > 30f => 1,
+                    _ => resolution
+                };
+            }
+
+            hints.PathfindMapBounds = (_activeFateBounds ??= new ArenaBoundsCircle(fate.Radius, resolution));
             if (e != null && bitmap != null)
             {
                 var originCell = (hints.PathfindMapCenter - e.Origin) / resolution;
                 var originX = (int)originCell.X;
                 var originZ = (int)originCell.Z;
-                var halfSize = (int)(_ws.Client.ActiveFate.Radius / resolution);
+                var halfSize = (int)(fate.Radius / resolution);
                 hints.PathfindMapObstacles = new(bitmap, new(originX - halfSize, originZ - halfSize, originX + halfSize, originZ + halfSize));
             }
         }
@@ -232,7 +252,7 @@ public sealed class AIHintsBuilder : IDisposable
         var data = GetSpellData(actionID);
 
         // gaze
-        if (data.VFX == 25)
+        if (data.VFX == 25u)
         {
             if (GuessShape(ref data, ref actor) is AOEShape sh)
                 _activeGazes[actor.InstanceID] = (actor, _ws.Actors.Find(castInfo.TargetID), sh);

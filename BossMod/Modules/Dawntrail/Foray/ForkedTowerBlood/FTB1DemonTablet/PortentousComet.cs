@@ -4,7 +4,7 @@ sealed class PortentousCometeor(BossModule module) : Components.SimpleAOEs(modul
 
 sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitAway(module, onlyShowOutlines: true, centerAtTarget: true)
 {
-    private static readonly AOEShapeCircle circle = new(43f);
+    private readonly AOEShapeCircle circle = new(43f);
     private Actor? meteor;
 
     public override void OnActorCreated(Actor actor)
@@ -15,7 +15,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.CraterLater)
         {
@@ -33,7 +33,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0 && meteor != null)
+        if (IsBaitTarget(actor) && meteor != null)
         {
             hints.AddForbiddenZone(new SDInvertedCircle(meteor.Position, 1f), CurrentBaits.Ref(0).Activation);
         }
@@ -41,7 +41,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
         {
             hints.Add("Take bait to side with meteor!");
         }
@@ -50,7 +50,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
-        if (ActiveBaitsOn(pc).Count != 0 && meteor != null)
+        if (IsBaitTarget(pc) && meteor != null)
         {
             Arena.AddCircle(meteor.Position, 2f, Colors.Vulnerable, 2f);
         }
@@ -58,7 +58,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
 
     public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
     {
-        if (ActiveBaitsOn(actor).Count != 0 && meteor != null)
+        if (IsBaitTarget(actor) && meteor != null)
         {
             movementHints.Add(actor.Position, meteor.Position, Colors.Safe);
         }
@@ -67,7 +67,7 @@ sealed class PortentousCometeorBait(BossModule module) : Components.GenericBaitA
 
 sealed class PortentousCometKnockback(BossModule module) : Components.GenericKnockback(module)
 {
-    private static readonly AOEShapeCircle circle = new(4f);
+    private readonly AOEShapeCircle circle = new(4f);
     private readonly List<(Actor target, Angle dir)> targets = new(4);
     private DateTime activation;
     private readonly LandingKnockback _kb = module.FindComponent<LandingKnockback>()!;

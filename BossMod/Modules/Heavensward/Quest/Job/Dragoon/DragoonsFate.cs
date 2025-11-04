@@ -33,7 +33,7 @@ class Prey(BossModule module) : BossComponent(module)
 
     private Actor? PreyCur;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Prey)
             PreyCur = actor;
@@ -59,7 +59,7 @@ class Prey(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         // sometimes partner loses prey status *after* we get it
         if (status.ID == (uint)SID.Prey && actor == PreyCur)

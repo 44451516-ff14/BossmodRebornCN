@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 namespace BossMod;
 
 [JsonConverter(typeof(JsonColorConverter))]
+[SkipLocalsInit]
 public readonly struct Color(uint abgr)
 {
     public readonly uint ABGR = abgr;
@@ -32,6 +33,7 @@ public readonly struct Color(uint abgr)
     public readonly Vector4 ToFloat4() => new Vector4(R, G, B, A) * ToFloat;
 }
 
+[SkipLocalsInit]
 public class JsonColorConverter : JsonConverter<Color>
 {
     public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -46,6 +48,7 @@ public class JsonColorConverter : JsonConverter<Color>
     }
 }
 
+[SkipLocalsInit]
 public static class Colors
 {
     private static readonly ColorConfig _config = Service.Config.Get<ColorConfig>();
@@ -57,6 +60,7 @@ public static class Colors
     public static uint Danger => _config.ArenaDanger.ABGR;
     public static uint Safe => _config.ArenaSafe.ABGR;
     public static uint Trap => _config.ArenaTrap.ABGR;
+    public static uint Light => _config.ArenaLight.ABGR;
     public static uint PC => _config.ArenaPC.ABGR;
     public static uint Enemy => _config.ArenaEnemy.ABGR;
     public static uint Object => _config.ArenaObject.ABGR;
@@ -128,4 +132,8 @@ public static class Colors
     public static uint PathfindingColor2 => _config.PathfindingColors[1].ABGR;
     public static uint PathfindingColor3 => _config.PathfindingColors[2].ABGR;
     public static uint PathfindingColor4 => _config.PathfindingColors[3].ABGR;
+    public static uint PathfindingColor5 => _config.PathfindingColors5.ABGR;
+    public static uint PathfindingColor6 => _config.PathfindingColors6.ABGR;
+    public static uint PathfindingColor7 => _config.PathfindingColors7.ABGR;
+    public static uint PathfindingColor8 => _config.PathfindingColors8.ABGR;
 }

@@ -7,8 +7,10 @@ sealed class AbsoluteAuthorityFlare(BossModule module) : Components.BaitAwayIcon
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.Add("Bait away!");
+        }
     }
 }
 
@@ -19,7 +21,9 @@ sealed class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStac
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.DoritoStack && Stacks.Count == 0)
+        {
             Stacks.Add(new(actor, 3f, 8, 8, activation: WorldState.FutureTime(5.1d)));
+        }
     }
 
     public override void Update()
@@ -72,13 +76,13 @@ sealed class AbsoluteAuthorityDorito(BossModule module) : Components.GenericStac
 
 sealed class AuthoritysHold(BossModule module) : Components.StayMove(module, 3)
 {
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.AuthoritysHold && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             PlayerStates[slot] = new(Requirement.Stay, status.ExpireAt);
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.AuthoritysHold && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
             PlayerStates[slot] = default;
@@ -101,7 +105,7 @@ sealed class AuthoritysGaze(BossModule module) : Components.GenericGaze(module)
         return eyes;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AuthoritysGaze)
         {
@@ -110,7 +114,7 @@ sealed class AuthoritysGaze(BossModule module) : Components.GenericGaze(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AuthoritysGaze)
             _affected.Remove(actor);

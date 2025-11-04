@@ -149,9 +149,10 @@ sealed class HoundOutOfHell(BossModule module) : Components.BaitAwayChargeCast(m
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (ActiveBaitsOn(actor).Count == 0)
-            return;
-        base.AddAIHints(slot, actor, assignment, hints);
+        if (IsBaitTarget(actor))
+        {
+            base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 }
 

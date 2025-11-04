@@ -72,9 +72,9 @@ sealed class TerminusEstUnseen(BossModule module) : Components.CastWeakpoint(mod
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell) { }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        base.OnStatusGain(actor, status);
+        base.OnStatusGain(actor, ref status);
         if (_casters.Count == 0 && status.ID is (uint)SID.BackUnseen or (uint)SID.LeftUnseen or (uint)SID.RightUnseen)
         {
             var angle = _aoe.CommonAngle;

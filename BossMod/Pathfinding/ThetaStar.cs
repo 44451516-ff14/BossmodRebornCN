@@ -2,6 +2,7 @@
 
 namespace BossMod.Pathfinding;
 
+[SkipLocalsInit]
 public sealed class ThetaStar
 {
     public enum Score
@@ -50,8 +51,11 @@ public sealed class ThetaStar
     // statistics
     public int NumSteps;
     public int NumReopens;
+    private bool _hasTeleporters;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref Node NodeByIndex(int index) => ref _nodes[index];
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public WPos CellCenter(int index) => _map.GridToWorld(index % _map.Width, index / _map.Width, 0.5f, 0.5f);
 
     // gMultiplier is typically inverse speed, which turns g-values into time
@@ -72,17 +76,27 @@ public sealed class ThetaStar
         _deltaGDiag = _deltaGSide * 1.414214f;
         _mapResolution = map.Resolution;
         _mapHalfResolution = map.Resolution * 0.5f;
+        _hasTeleporters = map.HasTeleporters;
+
+        var startFrac = map.WorldToGridFrac(startPos);
+        var gridPos = Map.FracToGrid(startFrac);
+        var start = map.ClampToGrid(gridPos);
+        StartNodeIndex = _bestIndex = _fallbackIndex = _map.GridToIndex(start.x, start.y);
+        var gridPosX = gridPos.x;
+        var gridPosY = gridPos.y;
+        if (gridPosX < 0 || gridPosX >= map.Width || gridPosY < 0 || gridPosY >= map.Height) // hack to make AI go back into arena bounds after failed knockbacks etc
+        {
+            _map.PixelPriority[StartNodeIndex] = float.MinValue;
+        }
 
         PrefillH();
 
-        var startFrac = map.WorldToGridFrac(startPos);
-        var start = map.ClampToGrid(Map.FracToGrid(startFrac));
-        StartNodeIndex = _bestIndex = _fallbackIndex = _map.GridToIndex(start.x, start.y);
         _startMaxG = _map.PixelMaxG[StartNodeIndex];
         _startPrio = _map.PixelPriority[StartNodeIndex];
         //if (_startMaxG < 0)
         //    _startMaxG = float.MaxValue; // TODO: this is a hack that allows navigating outside the obstacles, reconsider...
         _startScore = CalculateScore(_startMaxG, _startMaxG, _startMaxG, StartNodeIndex);
+
         NumSteps = NumReopens = 0;
 
         startFrac.X -= start.x + 0.5f;
@@ -101,12 +115,9 @@ public sealed class ThetaStar
     }
 
     // returns whether search is to be terminated; on success, first node of the open list would contain found goal
-    private static readonly (int dx, int dy, float step)[] _nbrs =
-    [
-        ( 0,-1, 1f), (-1,-1, 1.414214f), ( 1,-1, 1.414214f),
-        (-1, 0, 1f),                  ( 1, 0, 1f),
-        ( 0, 1, 1f), (-1, 1, 1.414214f), ( 1, 1, 1.414214f),
-    ];
+    private static readonly int[] _dx = [0, -1, 1, -1, 1, 0, -1, 1];
+    private static readonly int[] _dy = [-1, -1, -1, 0, 0, 1, 1, 1];
+    private static readonly bool[] _diagonal = [false, true, true, false, false, false, true, true];
 
     public bool ExecuteStep()
     {
@@ -138,7 +149,8 @@ public sealed class ThetaStar
         // neighbor loop with bounds checks and packed cost
         for (var i = 0; i < 8; ++i)
         {
-            var (dx, dy, stepMul) = _nbrs[i];
+            var dx = _dx[i];
+            var dy = _dy[i];
             var nx = px + dx;
             var ny = py + dy;
             if ((uint)nx >= widthu || (uint)ny >= height)
@@ -147,15 +159,38 @@ public sealed class ThetaStar
             }
 
             var nIdx = ny * width + nx;
-            VisitNeighbour(pIdx, nx, ny, nIdx, stepMul == 1f ? _deltaGSide : _deltaGDiag);
+            VisitNeighbour(pIdx, nx, ny, nIdx, !_diagonal[i] ? _deltaGSide : _deltaGDiag, dx, dy);
+        }
+
+        if (_hasTeleporters)
+        {
+            if (!_map.HasTeleEdges(pIdx) && !_map.IsTeleShadow(pIdx) && TryCommitDirectApproachToNearestEntrance(pIdx))
+            {
+                return true;
+            }
+            var edges = _map.TeleEdgesForIndex(pIdx);
+            var len = edges.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                VisitTeleporterEdge(pIdx, edges[i]);
+            }
         }
         return true;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Execute()
     {
-        while (_nodes[_bestIndex].HScore > 0f && _fallbackIndex == StartNodeIndex && ExecuteStep())
-            ;
+        var pixelMaxG = _map.PixelMaxG;
+        while (_fallbackIndex == StartNodeIndex && ExecuteStep())
+        {
+            ref var nd = ref _nodes[_bestIndex]; // instead of only looking for the perfect cell we search for a cell that is reasonably better
+            var isLeeWayOverZero = nd.PathLeeway > 0f;
+            if (isLeeWayOverZero && nd.Score >= Score.SafeMaxPrio || !isLeeWayOverZero && nd.Score > _startScore && pixelMaxG[_bestIndex] > pixelMaxG[StartNodeIndex] + 2f || nd.HScore <= 0f)
+            {
+                break;
+            }
+        }
         return BestIndex();
     }
 
@@ -163,7 +198,9 @@ public sealed class ThetaStar
     {
         ref var nd = ref _nodes[_bestIndex];
         if (nd.Score > _startScore)
+        {
             return _bestIndex; // we've found something better than start
+        }
 
         if (_fallbackIndex != StartNodeIndex)
         {
@@ -171,16 +208,17 @@ public sealed class ThetaStar
             var destIndex = _fallbackIndex;
             ref var ndp = ref _nodes[destIndex];
             var parentIndex = ndp.ParentIndex;
-            while (_nodes[parentIndex].Score < _startScore)
+
+            ref var current = ref _nodes[parentIndex];
+            while (current.Score < _startScore)
             {
                 destIndex = parentIndex;
-                ref var ndd = ref _nodes[destIndex];
-                parentIndex = ndd.ParentIndex;
+                ref var ndd = ref current;
+                parentIndex = current.ParentIndex;
+                current = ref _nodes[parentIndex];
             }
 
             // TODO: this is very similar to LineOfSight, try to unify implementations...
-            ref var startNode = ref _nodes[parentIndex];
-            ref var destNode = ref _nodes[destIndex];
             var (x2, y2) = _map.IndexToGrid(destIndex);
             var (x1, y1) = _map.IndexToGrid(parentIndex);
             var dx = x2 - x1;
@@ -202,10 +240,13 @@ public sealed class ThetaStar
                 var tx = hsx * invx; // if negative, we'll never intersect it
                 var ty = hsy * invy;
                 if (tx < 0f || x1 == x2)
+                {
                     tx = float.MaxValue;
+                }
                 if (ty < 0f || y1 == y2)
+                {
                     ty = float.MaxValue;
-
+                }
                 var nextIndex = parentIndex;
                 if (tx < ty)
                 {
@@ -218,7 +259,8 @@ public sealed class ThetaStar
                     nextIndex += indexDeltaY;
                 }
 
-                if (_nodes[nextIndex].Score < _startScore)
+                ref var next = ref _nodes[nextIndex];
+                if (next.Score < _startScore)
                 {
                     return parentIndex;
                 }
@@ -253,7 +295,9 @@ public sealed class ThetaStar
     public static int CompareNodeScores(ref Node nodeL, ref Node nodeR)
     {
         if (nodeL.Score != nodeR.Score)
+        {
             return nodeL.Score > nodeR.Score ? -2 : +2;
+        }
 
         const float Eps = 1e-5f;
         // TODO: should we use leeway here or distance?..
@@ -263,79 +307,112 @@ public sealed class ThetaStar
         var fl = gl + nodeL.HScore;
         var fr = gr + nodeR.HScore;
         if (fl + Eps < fr)
+        {
             return -1;
+        }
         if (fr + Eps < fl)
+        {
             return +1;
+        }
         if (gl != gr)
+        {
             return gl > gr ? -1 : 1; // tie-break towards larger g-values
+        }
         return 0;
     }
 
-    public bool LineOfSight(int x0, int y0, int x1, int y1, float parentGScore, out float lineOfSightLeeway, out float lineOfSightDist, out float lineOfSightMinG)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float BestTeleHeuristicForEntrance(int entranceIdx)
     {
-        lineOfSightLeeway = float.MaxValue;
-        lineOfSightMinG = float.MaxValue;
+        var edges = _map.TeleEdgesForIndex(entranceIdx);
+        ref var entrance = ref _nodes[entranceIdx];
+        var best = entrance.HScore; // fallback to prefilled EDT
+        var len = edges.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var e = ref edges[i];
+            ref var dest = ref _nodes[e.DestIndex];
+            var destH = dest.HScore;
+            var cand = destH + Math.Max(0f, e.UseTime);
+            if (cand < best)
+            {
+                best = cand;
+            }
+        }
+        return best;
+    }
 
-        var dx = x1 - x0;
-        var dy = y1 - y0;
+    // LOS to a specific cell that ignores tele-shadow (but respects walls). Used to "commit" to an entrance
+    private bool LineOfSightToExactCellAllowShadow(int x0, int y0, int xe, int ye, float parentGScore, out float approachLeeway, out float approachDist, out float approachMinG)
+    {
+        approachLeeway = float.MaxValue;
+        approachMinG = float.MaxValue;
 
-        var shiftdx = dx >> 31;
-        var shiftdy = dy >> 31;
+        var dxRaw = xe - x0;
+        var dyRaw = ye - y0;
+        var shiftdx = dxRaw >> 31;
+        var shiftdy = dyRaw >> 31;
+        var stepX = dxRaw == 0 ? 0 : (shiftdx | 1);
+        var stepY = dyRaw == 0 ? 0 : (shiftdy | 1);
+        var dx = (dxRaw ^ shiftdx) - shiftdx;
+        var dy = (dyRaw ^ shiftdy) - shiftdy;
 
-        var stepX = dx == 0 ? 0 : (shiftdx | 1); // Sign of dx
-        var stepY = dy == 0 ? 0 : (shiftdy | 1); // Sign of dy
+        approachDist = MathF.Sqrt(dx * dx + dy * dy);
 
-        dx = (dx ^ shiftdx) - shiftdx;  // Absolute value of dx
-        dy = (dy ^ shiftdy) - shiftdy;  // Absolute value of dy
-
-        // grid distance in cells (Euclidean) – used only at the end
-        lineOfSightDist = MathF.Sqrt(dx * dx + dy * dy);
-
-        // Precompute inverse (avoid div-by-zero branching via MaxValue)
         var invdx = dx != 0 ? 1f / dx : float.MaxValue;
         var invdy = dy != 0 ? 1f / dy : float.MaxValue;
-
         var tMaxX = _mapHalfResolution * invdx;
         var tMaxY = _mapHalfResolution * invdy;
         var tDeltaX = _mapResolution * invdx;
         var tDeltaY = _mapResolution * invdy;
 
-        int x = x0, y = y0, w = _map.Width;
+        int x = x0, y = y0;
+        var w = _map.Width;
         var pixG = _map.PixelMaxG;
         var cumulativeG = parentGScore;
+        const float kEps = 0.003f;
 
-        // Quick bound: if parent already unsafe and we dip further, bail early.
-        // (Keeps correctness because we only use LOS as an optional improvement.)
-        while (true)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool CheckCell(int cx, int cy, float gAtEntry, ref float minG, ref float minLeeway)
         {
-            var maxG = pixG[y * w + x];
+            var idx = cy * w + cx;
+            var maxG = pixG[idx];
             if (maxG < 0f)
             {
-                return false; // blocked
+                return false; // walls/bounds only (shadow intentionally ignored)
+            }
+            if (maxG < minG)
+            {
+                minG = maxG;
+            }
+            var leeway = maxG - gAtEntry;
+            if (leeway < minLeeway)
+            {
+                minLeeway = leeway;
+            }
+            return true;
+        }
+
+        while (true)
+        {
+            if (!CheckCell(x, y, cumulativeG, ref approachMinG, ref approachLeeway))
+            {
+                return false;
             }
 
-            if (maxG < lineOfSightMinG)
+            if (x == xe && y == ye)
             {
-                lineOfSightMinG = maxG;
-            }
-            var leeway = maxG - cumulativeG;
-            if (leeway < lineOfSightLeeway)
-            {
-                lineOfSightLeeway = leeway;
+                return true;
             }
 
-            if (x == x1 && y == y1)
-            {
-                break;
-            }
-
-            if (tMaxX < tMaxY)
+            var diff = tMaxX - tMaxY;
+            if (diff < -kEps)
             {
                 tMaxX += tDeltaX;
                 x += stepX;
                 cumulativeG += _deltaGSide;
             }
-            else if (tMaxY < tMaxX)
+            else if (diff > kEps)
             {
                 tMaxY += tDeltaY;
                 y += stepY;
@@ -343,6 +420,15 @@ public sealed class ThetaStar
             }
             else
             {
+                var gAtCorner = cumulativeG + _deltaGSide;
+                if (!CheckCell(x + stepX, y, gAtCorner, ref approachMinG, ref approachLeeway))
+                {
+                    return false;
+                }
+                if (!CheckCell(x, y + stepY, gAtCorner, ref approachMinG, ref approachLeeway))
+                {
+                    return false;
+                }
                 tMaxX += tDeltaX;
                 tMaxY += tDeltaY;
                 x += stepX;
@@ -350,10 +436,247 @@ public sealed class ThetaStar
                 cumulativeG += _deltaGDiag;
             }
         }
-        return true;
     }
 
-    private void VisitNeighbour(int parentIndex, int nodeX, int nodeY, int nodeIndex, float deltaGrid)
+    // scan a small square around 'parent' for entrance cells, pick the best reachable by LOS
+    private bool TryCommitDirectApproachToNearestEntrance(int parentIndex, int maxRadiusCells = 14, int maxCandidates = 3)
+    {
+        var w = _map.Width;
+        var h = _map.Height;
+        var (px, py) = _map.IndexToGrid(parentIndex);
+        ref var parent = ref _nodes[parentIndex];
+        var parentG = parent.GScore;
+
+        var x1 = Math.Max(0, px - maxRadiusCells);
+        var y1 = Math.Max(0, py - maxRadiusCells);
+        var x2 = Math.Min(w - 1, px + maxRadiusCells);
+        var y2 = Math.Min(h - 1, py + maxRadiusCells);
+
+        Span<int> idxBuf = stackalloc int[32];
+        Span<float> fEstBuf = stackalloc float[32];
+        Span<float> distBuf = stackalloc float[32];
+        Span<float> leewayBuf = stackalloc float[32];
+        Span<float> minGBuf = stackalloc float[32];
+
+        var candCount = 0;
+        var bestF = float.MaxValue;
+
+        for (var y = y1; y <= y2; ++y)
+        {
+            var rowBase = y * w;
+            for (var x = x1; x <= x2; ++x)
+            {
+                var idx = rowBase + x;
+                if (!_map.HasTeleEdges(idx))
+                {
+                    continue;
+                }
+
+                if (!LineOfSightToExactCellAllowShadow(px, py, x, y, parentG, out var leeway, out var dist, out var minG))
+                {
+                    continue;
+                }
+
+                var fEst = parentG + _deltaGSide * dist + BestTeleHeuristicForEntrance(idx);
+
+                if (candCount < maxCandidates)
+                {
+                    idxBuf[candCount] = idx;
+                    fEstBuf[candCount] = fEst;
+                    distBuf[candCount] = dist;
+                    leewayBuf[candCount] = leeway;
+                    minGBuf[candCount] = minG;
+                    ++candCount;
+                    if (fEst < bestF)
+                    {
+                        bestF = fEst;
+                    }
+                }
+                else
+                {
+                    var worst = 0;
+                    for (var i = 1; i < candCount; ++i)
+                    {
+                        if (fEstBuf[i] > fEstBuf[worst])
+                        {
+                            worst = i;
+                        }
+                    }
+
+                    if (fEst < fEstBuf[worst])
+                    {
+                        idxBuf[worst] = idx;
+                        fEstBuf[worst] = fEst;
+                        distBuf[worst] = dist;
+                        leewayBuf[worst] = leeway;
+                        minGBuf[worst] = minG;
+                        if (fEst < bestF)
+                        {
+                            bestF = fEst;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (candCount == 0)
+        {
+            return false;
+        }
+
+        var eps = Math.Max(2f * _deltaGSide, 0.05f * bestF);
+        var committed = 0;
+
+        for (var i = 0; i < candCount && committed < maxCandidates; ++i)
+        {
+            if (fEstBuf[i] > bestF + eps)
+            {
+                continue;
+            }
+
+            VisitTeleporterViaEntrance(parentIndex, idxBuf[i], _deltaGSide * distBuf[i], leewayBuf[i], minGBuf[i]);
+            ++committed;
+        }
+
+        return committed > 0;
+    }
+
+    public bool LineOfSight(int x0, int y0, int x1, int y1, float parentGScore, out float lineOfSightLeeway, out float lineOfSightDist, out float lineOfSightMinG)
+    {
+        lineOfSightLeeway = float.MaxValue;
+        lineOfSightMinG = float.MaxValue;
+
+        var dxRaw = x1 - x0;
+        var dyRaw = y1 - y0;
+
+        var shiftdx = dxRaw >> 31;
+        var shiftdy = dyRaw >> 31;
+        var stepX = dxRaw == 0 ? 0 : (shiftdx | 1);
+        var stepY = dyRaw == 0 ? 0 : (shiftdy | 1);
+
+        var dx = (dxRaw ^ shiftdx) - shiftdx;
+        var dy = (dyRaw ^ shiftdy) - shiftdy;
+
+        lineOfSightDist = MathF.Sqrt(dx * dx + dy * dy);
+
+        var invdx = dx != 0 ? 1f / dx : float.MaxValue;
+        var invdy = dy != 0 ? 1f / dy : float.MaxValue;
+
+        // DDA params
+        var tMaxX = _mapHalfResolution * invdx;
+        var tMaxY = _mapHalfResolution * invdy;
+        var tDeltaX = _mapResolution * invdx;
+        var tDeltaY = _mapResolution * invdy;
+
+        int x = x0, y = y0;
+        var w = _map.Width;
+        var pixG = _map.PixelMaxG;
+        var cumulativeG = parentGScore;
+
+        // Teleporter awareness
+        var hasTeleporters = _hasTeleporters;
+        var startedInShadow = false;
+        if (hasTeleporters)
+        {
+            var startIdx = y0 * w + x0;
+            var endIdx = y1 * w + x1;
+            var startIsEntrance = _map.HasTeleEdges(startIdx);
+            var endIsEntrance = _map.HasTeleEdges(endIdx);
+
+            // walking LOS directly into an entrance from outside must not bypass the compound "step-into-entrance + teleport"
+            if (!startIsEntrance && endIsEntrance)
+            {
+                return false;
+            }
+            startedInShadow = _map.IsTeleShadow(startIdx);
+        }
+
+        const float kEps = 0.003f;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool CheckCellAndUpdate(int cx, int cy, float gAtEntry, ref float minG, ref float minLeeway)
+        {
+            var idx = cy * w + cx;
+
+            if (hasTeleporters && !startedInShadow)
+            {
+                // forbid crossing into any tele shadow cell unless we started inside.
+                if (_map.IsTeleShadow(idx))
+                {
+                    return false;
+                }
+            }
+
+            var maxG = pixG[idx];
+            if (maxG < 0f)
+            {
+                return false;
+            }
+
+            if (maxG < minG)
+            {
+                minG = maxG;
+            }
+            var leeway = maxG - gAtEntry;
+            if (leeway < minLeeway)
+            {
+                minLeeway = leeway;
+            }
+            return true;
+        }
+
+        while (true)
+        {
+            if (!CheckCellAndUpdate(x, y, cumulativeG, ref lineOfSightMinG, ref lineOfSightLeeway))
+            {
+                return false;
+            }
+
+            if (x == x1 && y == y1)
+            {
+                return true;
+            }
+
+            var diff = tMaxX - tMaxY;
+            if (diff < -kEps)
+            {
+                tMaxX += tDeltaX;
+                x += stepX;
+                cumulativeG += _deltaGSide;
+            }
+            else if (diff > kEps)
+            {
+                tMaxY += tDeltaY;
+                y += stepY;
+                cumulativeG += _deltaGSide;
+            }
+            else
+            {
+                // corner: check both side-adjacent cells too (supercover)
+                var gAtCorner = cumulativeG + _deltaGSide;
+
+                // peek X side
+                if (!CheckCellAndUpdate(x + stepX, y, gAtCorner, ref lineOfSightMinG, ref lineOfSightLeeway))
+                {
+                    return false;
+                }
+
+                // peek Y side
+                if (!CheckCellAndUpdate(x, y + stepY, gAtCorner, ref lineOfSightMinG, ref lineOfSightLeeway))
+                {
+                    return false;
+                }
+
+                tMaxX += tDeltaX;
+                tMaxY += tDeltaY;
+                x += stepX;
+                y += stepY;
+                cumulativeG += _deltaGDiag;
+            }
+        }
+    }
+
+    private void VisitNeighbour(int parentIndex, int nodeX, int nodeY, int nodeIndex, float deltaGrid, int dx, int dy)
     {
         ref var currentParentNode = ref _nodes[parentIndex];
         ref var destNode = ref _nodes[nodeIndex];
@@ -366,16 +689,48 @@ public sealed class ThetaStar
         var pixelMaxG = _map.PixelMaxG;
         var destPixG = pixelMaxG[nodeIndex];
         var parentPixG = pixelMaxG[parentIndex];
-        if (destPixG < 0f && parentPixG >= 0f)
+        if (destPixG < 0f && parentPixG >= 0f || parentPixG == -1f && destPixG < -1f)
         {
             return; // impassable
         }
 
+        // diagonal corner-cutting check
+        if (dx != 0 && dy != 0)
+        {
+            var sideX = parentIndex + dx; // (px + sign(dx), py)
+            var sideY = parentIndex + dy * _map.Width; // (px, py + sign(dy))
+            if (!Passable(pixelMaxG, sideX) || !Passable(pixelMaxG, sideY))
+            {
+                return;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool Passable(float[] g, int idx) => (uint)idx < (uint)g.Length && g[idx] >= 0f;
+        }
+
+        // avoid accidental teleports
+        // if we are outside and the destination is an entrance → do no allow a plain walk-in
+        // treat it as "approach via entrance then teleport" compound transitions
+        // Outside → direct entrance neighbor → use compound teleport
+        if (_hasTeleporters && !_map.HasTeleEdges(parentIndex))
+        {
+            // Neighbor is an entrance: do compound step
+            if (_map.HasTeleEdges(nodeIndex))
+            {
+                VisitTeleporterViaEntrance(parentIndex, nodeIndex, deltaGrid);
+                return;
+            }
+
+            // Otherwise, block stepping into the shadow ring to avoid accidental walk-ins
+            if (!_map.IsTeleShadow(parentIndex) && _map.IsTeleShadow(nodeIndex))
+            {
+                return;
+            }
+        }
         var stepCost = deltaGrid; // either _deltaGSide or _deltaGDiag
         var candidateG = currentParentNode.GScore + stepCost;
 
-        var candidateLeeway = MathF.Min(currentParentNode.PathLeeway, Math.Min(destPixG, parentPixG) - candidateG);
-        var candidateMinG = MathF.Min(currentParentNode.PathMinG, destPixG);
+        var candidateLeeway = Math.Min(currentParentNode.PathLeeway, Math.Min(destPixG, parentPixG) - candidateG);
+        var candidateMinG = Math.Min(currentParentNode.PathMinG, destPixG);
 
         var altNode = new Node
         {
@@ -388,23 +743,22 @@ public sealed class ThetaStar
             Score = CalculateScore(destPixG, candidateMinG, candidateLeeway, nodeIndex)
         };
         ref var altnode = ref altNode;
-        if ((currentParentNode.Score >= Score.Safe || currentParentNode.Score >= Score.UnsafeAsStart && altnode.PathLeeway < 0f) && altnode.Score == Score.JustBad) // don't leave safe cells if it requires going through bad cells
-            return;
+        // if (currentParentNode.Score >= Score.UnsafeAsStart && altnode.PathLeeway < 0f && altnode.Score == Score.JustBad) // don't leave safe cells if it requires going through bad cells
+        // {
+        //     return;
+        // }
 
         var grandParentIndex = currentParentNode.ParentIndex;
         ref var grandparentnode = ref _nodes[grandParentIndex];
         if (grandParentIndex != nodeIndex && grandparentnode.PathMinG >= currentParentNode.PathMinG)
         {
             var (gx, gy) = _map.IndexToGrid(grandParentIndex);
-
-            // Attempt to see if we can go directly from grandparent to (nodeX, nodeY)
             if (LineOfSight(gx, gy, nodeX, nodeY, grandparentnode.GScore, out var losLeeway, out var losDist, out var losMinG))
             {
                 var losScore = CalculateScore(destPixG, losMinG, losLeeway, nodeIndex);
                 if (losScore >= altnode.Score)
                 {
-                    parentIndex = grandParentIndex;
-                    altnode.GScore = _nodes[parentIndex].GScore + _deltaGSide * losDist;
+                    altnode.GScore = _nodes[grandParentIndex].GScore + _deltaGSide * losDist;
                     altnode.ParentIndex = grandParentIndex;
                     altnode.PathLeeway = losLeeway;
                     altnode.PathMinG = losMinG;
@@ -417,12 +771,250 @@ public sealed class ThetaStar
         if (visit)
         {
             if (destNode.OpenHeapIndex < 0)
+            {
                 ++NumReopens;
+            }
             destNode = altnode;
             AddToOpen(nodeIndex);
         }
     }
 
+    private void VisitTeleporterEdge(int parentIndex, in Map.TeleEdge edge)
+    {
+        ref var parent = ref _nodes[parentIndex];
+
+        var pixelMaxG = _map.PixelMaxG;
+        var parentPixG = pixelMaxG[parentIndex];
+        var destPixG = pixelMaxG[edge.DestIndex];
+        if (destPixG < 0f)
+        {
+            return; // blocked landing
+        }
+
+        // wait at entrance if cooldown not elapsed
+        var wait = Math.Max(0f, edge.NotBeforeG - parent.GScore);
+        var candidateG = parent.GScore + wait + Math.Max(0f, edge.UseTime);
+
+        // ensure waiting at entrance is survivable, then ensure landing is survivable at candidate time
+        var leewayAtWait = parentPixG - (parent.GScore + wait);
+        var leewayAtDest = destPixG - candidateG;
+
+        var candidateLeeway = Math.Min(parent.PathLeeway, Math.Min(leewayAtWait, leewayAtDest));
+        var candidateMinG = Math.Min(parent.PathMinG, destPixG);
+
+        var altnode = new Node
+        {
+            GScore = candidateG,
+            HScore = _nodes[edge.DestIndex].HScore,
+            ParentIndex = parentIndex,
+            OpenHeapIndex = _nodes[edge.DestIndex].OpenHeapIndex,
+            PathLeeway = candidateLeeway,
+            PathMinG = candidateMinG,
+            Score = CalculateScore(destPixG, candidateMinG, candidateLeeway, edge.DestIndex)
+        };
+
+        ref var nalt = ref altnode;
+        // if (parent.Score >= Score.UnsafeAsStart && nalt.PathLeeway < 0f && nalt.Score == Score.JustBad)
+        // {
+        //     return;
+        // }
+
+        ref var destNode = ref _nodes[edge.DestIndex];
+        var visit = destNode.OpenHeapIndex == 0 || CompareNodeScores(ref altnode, ref destNode) < (destNode.OpenHeapIndex < 0 ? -1 : 0);
+        if (visit)
+        {
+            if (destNode.OpenHeapIndex < 0)
+            {
+                ++NumReopens;
+            }
+            destNode = nalt;
+            AddToOpen(edge.DestIndex);
+        }
+    }
+
+    private void VisitTeleporterViaEntrance(int parentIndex, int viaEntranceIndex, float stepCostIntoEntrance)
+    {
+        ref var parent = ref _nodes[parentIndex];
+
+        var pixG = _map.PixelMaxG;
+        var entrancePixG = pixG[viaEntranceIndex];
+        if (entrancePixG < 0f)
+        {
+            return;
+        }
+
+        var gAfterStep = parent.GScore + stepCostIntoEntrance;
+        var baseLeeway = Math.Min(parent.PathLeeway, entrancePixG - gAfterStep);
+        var baseMinG = Math.Min(parent.PathMinG, entrancePixG);
+
+        // upsert entrance node (so path extraction aims for entrance first)
+        ref var eNodeOld = ref _nodes[viaEntranceIndex];
+        var eNodeNew = new Node
+        {
+            GScore = gAfterStep,
+            HScore = eNodeOld.HScore,
+            ParentIndex = parentIndex,
+            OpenHeapIndex = eNodeOld.OpenHeapIndex,
+            PathLeeway = baseLeeway,
+            PathMinG = baseMinG,
+            Score = CalculateScore(entrancePixG, baseMinG, baseLeeway, viaEntranceIndex)
+        };
+        ref var nnew = ref eNodeNew;
+        nnew.HScore = Math.Min(nnew.HScore, BestTeleHeuristicForEntrance(viaEntranceIndex));
+        if (parent.Score >= Score.UnsafeAsStart && nnew.PathLeeway < 0f && nnew.Score == Score.JustBad)
+        {
+            return;
+        }
+
+        var visitEntrance = eNodeOld.OpenHeapIndex == 0 || CompareNodeScores(ref eNodeNew, ref eNodeOld) < (eNodeOld.OpenHeapIndex < 0 ? -1 : 0);
+
+        if (visitEntrance)
+        {
+            if (eNodeOld.OpenHeapIndex < 0)
+            {
+                ++NumReopens;
+            }
+            eNodeOld = nnew;
+            AddToOpen(viaEntranceIndex);
+        }
+
+        // from entrance, consider teleport edges to destinations
+        var edges = _map.TeleEdgesForIndex(viaEntranceIndex);
+        var len = edges.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var e = ref edges[i];
+            var destIdx = e.DestIndex;
+            var destPixG = pixG[destIdx];
+            if (destPixG < 0f)
+            {
+                continue;
+            }
+
+            var g = gAfterStep;
+            var wait = Math.Max(0f, e.NotBeforeG - g);
+            g += wait + Math.Max(0f, e.UseTime);
+
+            var candLeeway = Math.Min(baseLeeway, destPixG - g);
+            var candMinG = Math.Min(baseMinG, destPixG);
+
+            ref var destNode = ref _nodes[destIdx];
+            var newNode = new Node
+            {
+                GScore = g,
+                HScore = destNode.HScore,
+                ParentIndex = viaEntranceIndex,   // parent is an entrance
+                OpenHeapIndex = destNode.OpenHeapIndex,
+                PathLeeway = candLeeway,
+                PathMinG = candMinG,
+                Score = CalculateScore(destPixG, candMinG, candLeeway, destIdx)
+            };
+
+            ref var nnode = ref newNode;
+            if (parent.Score >= Score.UnsafeAsStart && nnode.PathLeeway < 0f && nnode.Score == Score.JustBad)
+            {
+                continue;
+            }
+
+            var visit = destNode.OpenHeapIndex == 0 || CompareNodeScores(ref newNode, ref destNode) < (destNode.OpenHeapIndex < 0 ? -1 : 0);
+
+            if (visit)
+            {
+                if (destNode.OpenHeapIndex < 0)
+                {
+                    ++NumReopens;
+                }
+                destNode = newNode;
+                AddToOpen(destIdx);
+            }
+        }
+    }
+
+    private void VisitTeleporterViaEntrance(int parentIndex, int viaEntranceIndex, float stepCostIntoEntrance, float approachLeeway, float approachMinG)
+    {
+        ref var parent = ref _nodes[parentIndex];
+
+        var pixG = _map.PixelMaxG;
+        var entrancePixG = pixG[viaEntranceIndex];
+        if (entrancePixG < 0f)
+        {
+            return;
+        }
+
+        var gAfterStep = parent.GScore + stepCostIntoEntrance;
+        var baseLeeway = Math.Min(parent.PathLeeway, Math.Min(approachLeeway, entrancePixG - gAfterStep));
+        var baseMinG = Math.Min(parent.PathMinG, Math.Min(approachMinG, entrancePixG));
+
+        // upsert entrance node, with boosted (reduced) heuristic through the teleporter
+        ref var eNodeOld = ref _nodes[viaEntranceIndex];
+        var eH = Math.Min(eNodeOld.HScore, BestTeleHeuristicForEntrance(viaEntranceIndex));
+
+        var eNodeNew = new Node
+        {
+            GScore = gAfterStep,
+            HScore = eH, // make the entrance attractive early
+            ParentIndex = parentIndex,
+            OpenHeapIndex = eNodeOld.OpenHeapIndex,
+            PathLeeway = baseLeeway,
+            PathMinG = baseMinG,
+            Score = CalculateScore(entrancePixG, baseMinG, baseLeeway, viaEntranceIndex)
+        };
+
+        var visitEntrance = eNodeOld.OpenHeapIndex == 0 || CompareNodeScores(ref eNodeNew, ref eNodeOld) < (eNodeOld.OpenHeapIndex < 0 ? -1 : 0);
+        if (visitEntrance)
+        {
+            if (eNodeOld.OpenHeapIndex < 0)
+            {
+                ++NumReopens;
+            }
+            eNodeOld = eNodeNew;
+            AddToOpen(viaEntranceIndex);
+        }
+
+        // from entrance, relax teleport landings
+        var edges = _map.TeleEdgesForIndex(viaEntranceIndex);
+        var len = edges.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref readonly var e = ref edges[i];
+            var destIdx = e.DestIndex;
+            var destPixG = pixG[destIdx];
+            if (destPixG < 0f)
+            {
+                continue;
+            }
+
+            var g = gAfterStep;
+            var wait = Math.Max(0f, e.NotBeforeG - g);
+            g += wait + Math.Max(0f, e.UseTime);
+
+            var candLeeway = Math.Min(baseLeeway, destPixG - g);
+            var candMinG = Math.Min(baseMinG, destPixG);
+
+            ref var destNode = ref _nodes[destIdx];
+            var newNode = new Node
+            {
+                GScore = g,
+                HScore = destNode.HScore,
+                ParentIndex = viaEntranceIndex,
+                OpenHeapIndex = destNode.OpenHeapIndex,
+                PathLeeway = candLeeway,
+                PathMinG = candMinG,
+                Score = CalculateScore(destPixG, candMinG, candLeeway, destIdx)
+            };
+
+            var visit = destNode.OpenHeapIndex == 0 || CompareNodeScores(ref newNode, ref destNode) < (destNode.OpenHeapIndex < 0 ? -1 : 0);
+            if (visit)
+            {
+                if (destNode.OpenHeapIndex < 0)
+                {
+                    ++NumReopens;
+                }
+                destNode = newNode;
+                AddToOpen(destIdx);
+            }
+        }
+    }
     private void PrefillH()
     {
         var width = _map.Width;
@@ -432,11 +1024,11 @@ public sealed class ThetaStar
         var pixelPriority = _map.PixelPriority;
         var nodes = _nodes;
 
-        const float INFf = 1e18f;
-        const double INFd = 1e18d;
+        const float INFf = 1e30f; // large but safe for float ops
+        const double INFd = 1e300d; // keep far from finite s intersections
+
         var deltaGSide = _deltaGSide;
 
-        // temporary storage for column-pass squared distances
         var colDist = ArrayPool<float>.Shared.Rent(width * height);
         try
         {
@@ -451,8 +1043,10 @@ public sealed class ThetaStar
                 Span<float> d = stackalloc float[n];
                 Span<int> v = stackalloc int[n];
                 Span<double> z = stackalloc double[n + 1];
+                // f: input; d: output; v: parabola sites; z: intersections
                 for (var x = x1; x < x2; ++x)
                 {
+                    // features: 0 at goals, +INF elsewhere
                     for (var y = 0; y < n; ++y)
                     {
                         var idx = y * width + x;
@@ -468,7 +1062,7 @@ public sealed class ThetaStar
                 }
             });
 
-            // 2) Row-wise 1D EDT (parallel over rows) using column results -> final distances
+            // 2) Row-wise 1D EDT from column results (parallel over rows)
             partitioner = Partitioner.Create(0, height);
             Parallel.ForEach(partitioner, range =>
             {
@@ -479,7 +1073,6 @@ public sealed class ThetaStar
                 Span<float> d = stackalloc float[n];
                 Span<int> v = stackalloc int[n];
                 Span<double> z = stackalloc double[n + 1];
-
                 for (var y = y1; y < y2; ++y)
                 {
                     var rowBase = y * width;
@@ -487,6 +1080,7 @@ public sealed class ThetaStar
                     {
                         f[x] = colDist[rowBase + x];
                     }
+
                     DistanceTransform1D(f, d, v, z, n, INFd);
 
                     for (var x = 0; x < n; ++x)
@@ -505,42 +1099,40 @@ public sealed class ThetaStar
         {
             ArrayPool<float>.Shared.Return(colDist, false);
         }
-        // 1D squared distance transform (Felzenszwalb) using provided buffers
+
+        // Felzenszwalb 1D squared distance transform
+        // f: 0 at sites, +INF elsewhere. d: output squared distance
         static void DistanceTransform1D(Span<float> f, Span<float> d, Span<int> v, Span<double> z, int n, double INF)
         {
             var k = 0;
             v[0] = 0;
             z[0] = -INF;
-            z[1] = INF;
+            z[1] = +INF;
 
             for (var q = 1; q < n; ++q)
             {
-                double s;
-                while (true)
+                // compute intersection with current lower envelope
+                var s = Intersection(f, q, v[k]);
+
+                // important invariant: z[0] stays -INF; we never allow k < 0
+                while (s <= z[k])
                 {
-                    var vk = v[k];
-                    // compute intersection
-                    // (f[q] + q*q) - (f[vk] + vk*vk)
-                    var num = f[q] + (float)q * q - (f[vk] + (float)vk * vk);
-                    var den = 2d * (q - vk);
-                    s = num / den;
-                    if (s <= z[k])
+                    --k;
+                    if (k < 0)
                     {
-                        --k;
-                        if (k < 0)
-                        {
-                            break;
-                        }
-                        continue;
+                        k = 0; // keep envelope valid
+                        break; // will recompute s below with v[0]
                     }
-                    break;
+                    s = Intersection(f, q, v[k]);
                 }
+
                 ++k;
                 v[k] = q;
                 z[k] = s;
-                z[k + 1] = INF;
+                z[k + 1] = +INF;
             }
 
+            // evaluate distances
             k = 0;
             for (var q = 0; q < n; ++q)
             {
@@ -551,37 +1143,31 @@ public sealed class ThetaStar
                 var diff = q - v[k];
                 d[q] = diff * diff + f[v[k]];
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static double Intersection(Span<float> f, int q, int vk)
+            {
+                // s = ((f[q] + q^2) - (f[vk] + vk^2)) / (2(q - vk))
+                // use double for stability
+                double fq = f[q];
+                double fv = f[vk];
+                return (fq + q * q - (fv + vk * vk)) / (2d * (q - vk));
+            }
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveOptimization)]
     private void AddToOpen(int nodeIndex)
     {
         ref var nd = ref _nodes[nodeIndex];
 
-        // New insertion: must sift up from the leaf position
         if (nd.OpenHeapIndex <= 0)
         {
             _openList.Add(nodeIndex);
             nd.OpenHeapIndex = _openList.Count;
-            PercolateUp(_openList.Count - 1);
-            return;
         }
-
-        // Node already in heap: only sift if priority improved vs parent.
-        var heapIndex = nd.OpenHeapIndex - 1;
-        if (heapIndex > 0)
-        {
-            var parentHeapIndex = (heapIndex - 1) >> 1;
-            var parentNodeIndex = _openList[parentHeapIndex];
-            ref var parent = ref _nodes[parentNodeIndex];
-
-            // If nd is strictly better than parent, it must move up.
-            if (CompareNodeScores(ref nd, ref parent) < 0)
-            {
-                PercolateUp(heapIndex);
-                return;
-            }
-        }
+        // update location
+        PercolateUp(nd.OpenHeapIndex - 1);
     }
 
     // remove first (minimal) node from open heap and mark as closed
@@ -659,4 +1245,14 @@ public sealed class ThetaStar
         openSpan[heapIndex] = nodeIndex;
         node.OpenHeapIndex = heapIndex + 1;
     }
+}
+
+public readonly struct Teleporter(WPos entrance, WPos exit, float radius, bool bidirectional, float useTime = 0f, float notBeforeG = 0f)
+{
+    public readonly WPos Entrance = entrance;
+    public readonly WPos Exit = exit;
+    public readonly float Radius = radius;
+    public readonly bool Bidirectional = bidirectional;
+    public readonly float UseTime = useTime;
+    public readonly float NotBeforeG = notBeforeG;
 }

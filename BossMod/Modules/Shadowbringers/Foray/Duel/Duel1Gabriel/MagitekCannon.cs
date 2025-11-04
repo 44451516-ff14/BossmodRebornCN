@@ -21,7 +21,7 @@ sealed class MagitekCannonVoidzone(BossModule module) : Components.VoidzoneAtCas
     }
 }
 
-sealed class MagitekCannonChase(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.MagitekCannonFirst, (uint)AID.MagitekCannonRest, 30f, 3.2f, 5, true, (uint)IconID.MagitekCannon)
+sealed class MagitekCannonChase(BossModule module) : Components.StandardChasingAOEs(module, 3f, (uint)AID.MagitekCannonFirst, (uint)AID.MagitekCannonRest, 30f, 3.2d, 5, true, (uint)IconID.MagitekCannon)
 {
     public override void OnEventCast(Actor caster, ActorCastEvent spell) { }
 
@@ -33,7 +33,7 @@ sealed class MagitekCannonChase(BossModule module) : Components.StandardChasingA
             Advance(spell.LocXZ, MoveDistance, WorldState.CurrentTime);
             if (Chasers.Count == 0)
             {
-                ExcludedTargets = default;
+                Targets.Clear();
                 NumCasts = 0;
             }
         }
@@ -42,7 +42,7 @@ sealed class MagitekCannonChase(BossModule module) : Components.StandardChasingA
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Targets[slot])
+        if (TargetsMask[slot])
         {
             hints.AddForbiddenZone(new SDCircle(Arena.Center, 13.5f));
         }

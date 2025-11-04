@@ -8,7 +8,7 @@ sealed class Stormcall(BossModule module) : Components.GenericAOEs(module, (uint
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOEs.Count == 0 ? [] : CollectionsMarshal.AsSpan(AOEs)[..1];
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Stormcall)
         {

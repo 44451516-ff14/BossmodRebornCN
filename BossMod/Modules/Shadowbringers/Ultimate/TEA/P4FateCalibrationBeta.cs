@@ -1,6 +1,7 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 // TODO: consider drawing tethers & shared sentence?..
+[SkipLocalsInit]
 sealed class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebuffs(module)
 {
     private enum Color { Unknown, Light, Dark }
@@ -11,7 +12,7 @@ sealed class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebu
     private readonly int[] _nearTethers = [-1, -1];
     private int _sharedSentence = -1;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -36,7 +37,7 @@ sealed class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebu
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         switch (tether.ID)
         {
@@ -109,6 +110,7 @@ sealed class P4FateCalibrationBetaDebuffs(BossModule module) : P4ForcedMarchDebu
     }
 }
 
+[SkipLocalsInit]
 sealed class P4FateCalibrationBetaJJump(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true)
 {
     private bool _enabled;
@@ -147,7 +149,8 @@ sealed class P4FateCalibrationBetaJJump(BossModule module) : Components.GenericB
     }
 }
 
-sealed class P4FateCalibrationBetaOpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4)
+[SkipLocalsInit]
+sealed class P4FateCalibrationBetaOpticalSight(BossModule module) : Components.UniformStackSpread(module, 6f, 6f, 4, 4)
 {
     private enum Mechanic { Unknown, Stack, Spread }
 
@@ -188,23 +191,24 @@ sealed class P4FateCalibrationBetaOpticalSight(BossModule module) : Components.U
                     _stackTargets.Add(target);
                 break;
             case (uint)AID.IndividualReprobation:
-                Spreads.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
+                Spreads.Clear();
                 Done = true;
                 break;
             case (uint)AID.CollectiveReprobation:
-                Stacks.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
+                Stacks.Clear();
                 Done = true;
                 break;
         }
     }
 }
 
+[SkipLocalsInit]
 sealed class P4FateCalibrationBetaRadiantSacrament(BossModule module) : Components.GenericAOEs(module)
 {
     private Actor? _caster;
     private bool _enabled;
 
-    private static readonly AOEShapeDonut _shape = new(8f, 60f);
+    private readonly AOEShapeDonut _shape = new(8f, 60f);
 
     public void Show() => _enabled = true;
 

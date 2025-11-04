@@ -58,18 +58,19 @@ sealed class Meteors(BossModule module) : Components.GenericBaitAway(module, cen
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.Add("Place meteor!");
+        }
         base.AddHints(slot, actor, hints);
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        var baits = ActiveBaitsOn(actor);
-        if (baits.Count != 0)
+        if (IsBaitTarget(actor))
         {
-            var act = baits[0].Activation;
+            var act = CurrentBaits.Ref(0).Activation;
             var center = Arena.Center;
             var dir = new WDir(default, 1f);
             hints.AddForbiddenZone(new SDInvertedRect(center, dir, 16f, 16f, 16f), act);

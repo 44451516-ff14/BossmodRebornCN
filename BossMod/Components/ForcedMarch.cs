@@ -3,6 +3,8 @@
 // generic component dealing with 'forced march' mechanics
 // these mechanics typically feature 'march left/right/forward/backward' debuffs, which rotate player and apply 'forced march' on expiration
 // if there are several active march debuffs, we assume they are chained together
+
+[SkipLocalsInit]
 public class GenericForcedMarch(BossModule module, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false) : BossComponent(module)
 {
     public sealed class PlayerState
@@ -53,7 +55,7 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
     {
         var moves = State.GetOrAdd(player.InstanceID).PendingMoves;
         moves.Add((direction, duration, activation));
-        moves.Sort((a, b) => a.activation.CompareTo(b.activation));
+        moves.Sort(static (a, b) => a.activation.CompareTo(b.activation));
     }
 
     public bool HasForcedMovements(Actor player) => State.GetValueOrDefault(player.InstanceID)?.Active(Module) ?? false;
@@ -133,12 +135,13 @@ public class GenericForcedMarch(BossModule module, float activationLimit = float
 }
 
 // typical forced march is driven by statuses
+[SkipLocalsInit]
 public class StatusDrivenForcedMarch(BossModule module, float duration, uint statusForward, uint statusBackward, uint statusLeft, uint statusRight, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue, bool stopAfterWall = false, bool stopAtWall = false) : GenericForcedMarch(module, activationLimit, stopAfterWall, stopAtWall)
 {
     public float Duration = duration;
     public readonly uint[] Statuses = [statusForward, statusLeft, statusBackward, statusRight, statusForced, statusForcedNPCs]; // 5 elements: fwd, left, back, right, forced, forcedNPCs
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var statusKind = Array.IndexOf(Statuses, status.ID);
         if (statusKind >= 4)
@@ -151,7 +154,7 @@ public class StatusDrivenForcedMarch(BossModule module, float duration, uint sta
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var statusKind = Array.IndexOf(Statuses, status.ID);
         if (statusKind >= 4)
@@ -176,6 +179,7 @@ public class StatusDrivenForcedMarch(BossModule module, float duration, uint sta
 }
 
 // action driven forced march
+[SkipLocalsInit]
 public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration, Angle rotation, float actioneffectdelay, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue) : GenericForcedMarch(module, activationLimit)
 {
     public readonly float Duration = duration;
@@ -185,7 +189,7 @@ public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration
     public readonly uint StatusForcedNPCs = statusForcedNPCs;
     public readonly uint Aid = aid;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == StatusForced || status.ID == StatusForcedNPCs)
         {
@@ -203,7 +207,7 @@ public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == StatusForced || status.ID == StatusForcedNPCs)
             DeactivateForcedMovement(actor);

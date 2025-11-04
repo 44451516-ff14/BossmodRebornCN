@@ -97,7 +97,7 @@ sealed class WideningNarrowingWitchHuntBait(BossModule module) : Components.Gene
             hints.Add($"Next bait: {CurMechanic}");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Marker && CurMechanic == Mechanic.None)
         {

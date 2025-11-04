@@ -1,31 +1,50 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 sealed class P1FluidSwing(BossModule module) : Components.Cleave(module, (uint)AID.FluidSwing, new AOEShapeCone(11.5f, 45f.Degrees()));
+[SkipLocalsInit]
 sealed class P1FluidStrike(BossModule module) : Components.Cleave(module, (uint)AID.FluidStrike, new AOEShapeCone(11.6f, 45f.Degrees()), [(uint)OID.LiquidHand]);
+[SkipLocalsInit]
 sealed class P1Sluice(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Sluice, 5f);
+[SkipLocalsInit]
 sealed class P1Splash(BossModule module) : Components.CastCounter(module, (uint)AID.Splash);
+[SkipLocalsInit]
 sealed class P1Drainage(BossModule module) : Components.TankbusterTether(module, (uint)AID.DrainageP1, (uint)TetherID.Drainage, 6f);
 
+[SkipLocalsInit]
 sealed class P2JKick(BossModule module) : Components.CastCounter(module, (uint)AID.JKick);
+[SkipLocalsInit]
 sealed class P2HawkBlasterOpticalSight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HawkBlasterP2, 10f);
+[SkipLocalsInit]
 sealed class P2Photon(BossModule module) : Components.CastCounter(module, (uint)AID.PhotonAOE);
+[SkipLocalsInit]
 sealed class P2SpinCrusher(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SpinCrusher, new AOEShapeCone(10f, 45f.Degrees()));
+[SkipLocalsInit]
 sealed class P2Drainage(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones) // TODO: verify distance
 {
     private static List<Actor> GetVoidzones(BossModule module) => module.Enemies((uint)OID.LiquidRage);
 }
 
+[SkipLocalsInit]
 sealed class P2PropellerWind(BossModule module) : Components.CastLineOfSightAOE(module, (uint)AID.PropellerWind, 50f)
 {
     public override ReadOnlySpan<Actor> BlockerActors() => CollectionsMarshal.AsSpan(Module.Enemies((uint)OID.GelidGaol));
 }
 
+[SkipLocalsInit]
 sealed class P2DoubleRocketPunch(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.DoubleRocketPunch, 3f);
-sealed class P3ChasteningHeat(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ChasteningHeat, 5f);
-sealed class P3DivineSpear(BossModule module) : Components.Cleave(module, (uint)AID.DivineSpear, new AOEShapeCone(24.2f, 45f.Degrees()), [(uint)OID.AlexanderPrime]); // TODO: verify angle
+[SkipLocalsInit]
+sealed class P3ChasteningHeat(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ChasteningHeat, 5f, tankbuster: true, damageType: AIHints.PredictedDamageType.Tankbuster);
+[SkipLocalsInit]
+sealed class P3DivineSpear(BossModule module) : Components.Cleave(module, (uint)AID.DivineSpear, new AOEShapeCone(24.2f, 45f.Degrees()), [(uint)OID.AlexanderPrime]);
+[SkipLocalsInit]
 sealed class P3DivineJudgmentRaidwide(BossModule module) : Components.CastCounter(module, (uint)AID.DivineJudgmentRaidwide);
 
+[SkipLocalsInit]
+sealed class P4IrresistibleGrace(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.IrresistibleGrace, 6f, 8, 8);
+
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP1, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 694u, NameID = 9042u, PlanLevel = 80, Category = BossModuleInfo.Category.Ultimate, Expansion = BossModuleInfo.Expansion.Shadowbringers, SortOrder = 1)]
+[SkipLocalsInit]
 public sealed class TEA : BossModule
 {
     public Actor? LiquidHand2;

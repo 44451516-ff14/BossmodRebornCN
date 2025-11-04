@@ -118,13 +118,13 @@ sealed class Esuna(BossModule module) : BossComponent(module)
 {
     private readonly List<Actor> _affected = new(2);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.Bleeding or (uint)SID.HPRecoveryDown)
             _affected.Add(actor);
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.Bleeding or (uint)SID.HPRecoveryDown)
             _affected.Remove(actor);

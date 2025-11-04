@@ -69,13 +69,13 @@ sealed class ThirdArtOfDarknessCleave(BossModule module) : Components.GenericAOE
         base.AddHints(slot, actor, hints);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.OuterDarkness)
             PlatformPlayers.Set(Raid.FindSlot(actor.InstanceID));
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.OuterDarkness)
             PlatformPlayers.Clear(Raid.FindSlot(actor.InstanceID));

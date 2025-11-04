@@ -5,7 +5,7 @@ sealed class StrongerTogether(BossModule module) : BossComponent(module)
     private readonly A32HanselGretel bossmod = (A32HanselGretel)module;
     private bool strongerTogether;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.StrongerTogether)
         {
@@ -13,7 +13,7 @@ sealed class StrongerTogether(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.StrongerTogether)
         {

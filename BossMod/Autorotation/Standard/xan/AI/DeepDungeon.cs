@@ -25,13 +25,16 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
         Manticore,
         Succubus,
         Kuribu,
-        Dreadnaught
+        Dreadnaught,
+        Bomb,
+        Mudball
     }
 
     enum SID : uint
     {
         Transfiguration = 565,
         ItemPenalty = 1094,
+        Transfiguration2 = 4708,
     }
 
     public override void Execute(StrategyValues strategy, Actor? primaryTarget, float estimatedAnimLockDelay, bool isMoving)
@@ -40,13 +43,16 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
             return;
 
         var transformation = Transformation.None;
-        if (Player.FindStatus(SID.Transfiguration) is { } status)
+        var stat = Player.FindStatus(SID.Transfiguration) ?? Player.FindStatus(SID.Transfiguration2);
+        if (stat is { } status)
         {
             transformation = (status.Extra & 0xFF) switch
             {
                 42 => Transformation.Manticore,
                 43 => Transformation.Succubus,
                 49 => Transformation.Kuribu,
+                54 => Transformation.Mudball,
+                55 => Transformation.Bomb,
                 244 => Transformation.Dreadnaught,
                 _ => Transformation.None
             };
@@ -60,7 +66,7 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
 
         if (IsRanged && !Player.InCombat && primaryTarget is Actor target && !target.InCombat && !target.IsAlly)
             // bandaid fix to help deal with constant LOS issues
-            Hints.GoalZones.Add(Hints.GoalSingleTarget(target, 3, 0.1f));
+            Hints.GoalZones.Add(AIHints.GoalSingleTarget(target, 3, 0.1f));
 
         SetupKiteZone(strategy, primaryTarget);
 
@@ -72,14 +78,15 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
             DeepDungeonState.DungeonType.POTD => (ActionDefinitions.IDPotionSustaining, ActionDefinitions.IDPotionMax),
             DeepDungeonState.DungeonType.HOH => (ActionDefinitions.IDPotionEmpyrean, ActionDefinitions.IDPotionSuper),
             DeepDungeonState.DungeonType.EO => (ActionDefinitions.IDPotionOrthos, ActionDefinitions.IDPotionHyper),
+            DeepDungeonState.DungeonType.PT => (ActionDefinitions.IDPotionPilgrim, ActionDefinitions.IDPotionUltra),
             _ => (default, default)
         };
 
         if (regenAction != default && ShouldPotion(strategy))
-            Hints.ActionsToExecute.Push(regenAction, Player, ActionQueue.Priority.Medium);
+            Hints.ActionsToExecute.Push(regenAction, Player, ActionQueue.Priority.ManualGCD - 1);
 
         if (potAction != default && Player.HPRatio <= 0.3f)
-            Hints.ActionsToExecute.Push(potAction, Player, ActionQueue.Priority.VeryHigh);
+            Hints.ActionsToExecute.Push(potAction, Player, ActionQueue.Priority.ManualGCD - 1);
     }
 
     private bool IsRanged => Player.Class.GetRole() is Role.Ranged or Role.Healer;
@@ -116,7 +123,7 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
 
     private void SetupKiteZone(StrategyValues strategy, Actor? primaryTarget)
     {
-        if (!IsRanged || primaryTarget == null || !Player.InCombat || !strategy.Enabled(Track.Kite))
+        if (!IsRanged || primaryTarget == null || !Player.InCombat || !strategy.Enabled(Track.Kite) || World.DeepDungeon.IsBossFloor)
             return;
 
         // wew
@@ -154,27 +161,37 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
         switch (t)
         {
             case Transformation.Manticore:
-                goal = Hints.GoalSingleTarget(primaryTarget, 3f);
+                goal = AIHints.GoalSingleTarget(primaryTarget, 3f);
                 numTargets = 1;
                 attack = ActionID.MakeSpell(Roleplay.AID.Pummel);
                 break;
             case Transformation.Succubus:
-                goal = Hints.GoalSingleTarget(primaryTarget, 25f);
+                goal = AIHints.GoalSingleTarget(primaryTarget, 25f);
                 numTargets = Hints.NumPriorityTargetsInAOECircle(primaryTarget.Position, 5f);
                 attack = ActionID.MakeSpell(Roleplay.AID.VoidFireII);
                 castTime = 2.5f;
                 break;
             case Transformation.Kuribu:
                 // heavenly judge is ground targeted
-                goal = Hints.GoalSingleTarget(primaryTarget.Position, 25f);
+                goal = AIHints.GoalSingleTarget(primaryTarget.Position, 25f);
                 numTargets = Hints.NumPriorityTargetsInAOECircle(primaryTarget.Position, 6f);
                 attack = ActionID.MakeSpell(Roleplay.AID.HeavenlyJudge);
                 castTime = 2.5f;
                 break;
             case Transformation.Dreadnaught:
-                goal = Hints.GoalSingleTarget(primaryTarget, 3f);
+                goal = AIHints.GoalSingleTarget(primaryTarget, 3f);
                 numTargets = 1;
                 attack = ActionID.MakeSpell(Roleplay.AID.Rotosmash);
+                break;
+            case Transformation.Bomb:
+                numTargets = 1;
+                goal = AIHints.GoalSingleTarget(primaryTarget, 14f);
+                attack = ActionID.MakeSpell(Roleplay.AID.BigBurst);
+                break;
+            case Transformation.Mudball:
+                numTargets = 1;
+                goal = AIHints.GoalSingleTarget(primaryTarget.Position, 25f);
+                attack = ActionID.MakeSpell(Roleplay.AID.RockyRoll);
                 break;
             default:
                 return;
@@ -184,12 +201,23 @@ public sealed class DeepDungeonAI(RotationModuleManager manager, Actor player) :
             return;
 
         Hints.GoalZones.Add(goal);
-        Hints.ActionsToExecute.Push(attack, primaryTarget, ActionQueue.Priority.High, targetPos: primaryTarget.PosRot.XYZ(), castTime: castTime - 0.5f);
+        if (t == Transformation.Mudball)
+        {
+            if (primaryTarget.Position.InCircle(Player.Position, 25))
+                Hints.ActionsToExecute.Push(attack, Player, ActionQueue.Priority.High, facingAngle: Player.AngleTo(primaryTarget));
+        }
+        else if (t == Transformation.Bomb)
+        {
+            if (primaryTarget.Position.InCircle(Player.Position, 15 + primaryTarget.HitboxRadius))
+                Hints.ActionsToExecute.Push(attack, Player, ActionQueue.Priority.High, castTime: 1);
+        }
+        else
+            Hints.ActionsToExecute.Push(attack, primaryTarget, ActionQueue.Priority.High, targetPos: primaryTarget.PosRot.XYZ(), castTime: castTime - 0.5f);
     }
 
     private bool ShouldPotion(StrategyValues strategy)
     {
-        if (World.Actors.Any(w => w.OID == (uint)OID.Unei) || !strategy.Enabled(Track.Potion))
+        if (!strategy.Enabled(Track.Potion) || World.Actors.Any(w => w.OID == (uint)OID.Unei))
             return false;
 
         var ratio = Player.ClassCategory is ClassCategory.Tank ? 0.4f : 0.6f;

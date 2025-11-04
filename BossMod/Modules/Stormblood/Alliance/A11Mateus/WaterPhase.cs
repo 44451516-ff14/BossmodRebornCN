@@ -99,8 +99,10 @@ class Snowpierce(BossModule module) : Components.BaitAwayChargeCast(module, (uin
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
-        if (ActiveBaitsOn(pc).Count == 0)
+        if (!IsBaitTarget(pc))
+        {
             return;
+        }
         var froth = Module.Enemies((uint)OID.Froth);
         var count = froth.Count;
         for (var i = 0; i < count; ++i)
@@ -112,7 +114,9 @@ class Snowpierce(BossModule module) : Components.BaitAwayChargeCast(module, (uin
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count != 0)
+        if (IsBaitTarget(actor))
+        {
             hints.Add("Bait away, avoid intersecting bubble hitboxes!");
+        }
     }
 }

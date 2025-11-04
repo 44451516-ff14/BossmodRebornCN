@@ -10,13 +10,13 @@ sealed class FreezingDust(BossModule module) : Components.StayMove(module)
             Array.Fill(PlayerStates, new(Requirement.Move, Module.CastFinishAt(spell, 1)));
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.FreezingUp)
             ++NumActiveFreezes;
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.FreezingUp)
             --NumActiveFreezes;

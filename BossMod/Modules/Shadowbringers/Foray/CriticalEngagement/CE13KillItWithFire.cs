@@ -56,7 +56,7 @@ sealed class DeadLeaves(BossModule module) : Components.GenericAOEs(module, defa
         return CollectionsMarshal.AsSpan(_tenderStatuses[slot] ? _tenderAOEs : _jealousStatuses[slot] ? _jealousAOEs : []);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -69,7 +69,7 @@ sealed class DeadLeaves(BossModule module) : Components.GenericAOEs(module, defa
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

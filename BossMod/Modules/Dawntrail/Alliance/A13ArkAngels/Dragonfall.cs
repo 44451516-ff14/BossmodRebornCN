@@ -4,7 +4,7 @@ sealed class Dragonfall(BossModule module) : Components.UniformStackSpread(modul
 {
     public int NumCasts;
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Dragonfall)
         {

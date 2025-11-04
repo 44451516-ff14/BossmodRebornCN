@@ -32,7 +32,7 @@ sealed class StampedingThunder(BossModule module) : Components.GenericAOEs(modul
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x00 && state is 0x00400004u or 0x00800004u)
         {
@@ -81,7 +81,7 @@ sealed class ElectronStream(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -215,7 +215,7 @@ sealed class ElectronStreamCurrent(BossModule module) : Components.GenericAOEs(m
             movementHints.Add(actor.Position, p, Colors.Safe);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.RemoteCurrent or (uint)SID.ProximateCurrent or (uint)SID.SpinningConductor or (uint)SID.RoundhouseConductor or (uint)SID.ColliderConductor)
         {

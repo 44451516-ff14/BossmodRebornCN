@@ -59,7 +59,7 @@ class PyricBreath(BossModule module) : Components.GenericAOEs(module)
         return aoes;
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID is (uint)SID.MiddleHead or (uint)SID.LeftHead or (uint)SID.RightHead)
             buffs.Add(status.ID);

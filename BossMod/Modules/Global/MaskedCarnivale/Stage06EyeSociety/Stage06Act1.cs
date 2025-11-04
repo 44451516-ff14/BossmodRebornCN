@@ -28,7 +28,7 @@ sealed class DemonEye(BossModule module) : Components.CastGaze(module, (uint)AID
         return _blinded[slot] ? [] : base.ActiveEyes(slot, actor);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
         {
@@ -36,7 +36,7 @@ sealed class DemonEye(BossModule module) : Components.CastGaze(module, (uint)AID
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
         {
@@ -51,7 +51,7 @@ sealed class ColdStare(BossModule module) : Components.SimpleAOEs(module, (uint)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _blinded[slot] ? [] : base.ActiveAOEs(slot, actor);
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
         {
@@ -59,7 +59,7 @@ sealed class ColdStare(BossModule module) : Components.SimpleAOEs(module, (uint)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
         {
@@ -72,7 +72,7 @@ sealed class TearyTwirl(BossModule module) : Components.StackWithCastTargets(mod
 {
     private BitMask _blinded;
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
         {
@@ -80,7 +80,7 @@ sealed class TearyTwirl(BossModule module) : Components.StackWithCastTargets(mod
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Blind)
         {

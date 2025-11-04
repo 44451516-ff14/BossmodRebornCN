@@ -53,11 +53,11 @@ sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(
         }
     }
 
-    public override void OnEventEnvControl(byte index, uint state)
+    public override void OnMapEffect(byte index, uint state)
     {
         if (index == 0x27 && state == 0x00020001u)
         {
-            Arena.Bounds = D062Amalgam.DefaultBounds;
+            Arena.Bounds = new ArenaBoundsSquare(20f);
             _aoe = [];
         }
     }
@@ -122,9 +122,7 @@ sealed class D062AmalgamStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus, LTS), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 827, NameID = 12864)]
-public sealed class D062Amalgam(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, StartingBounds)
+public sealed class D062Amalgam(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsSquare(23f))
 {
     public static readonly WPos ArenaCenter = new(-533f, -373f);
-    public static readonly ArenaBoundsSquare StartingBounds = new(23f);
-    public static readonly ArenaBoundsSquare DefaultBounds = new(20f);
 }

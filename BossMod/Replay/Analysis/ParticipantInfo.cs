@@ -199,12 +199,13 @@ sealed class ParticipantInfo : CommonEnumInfo
         sb.AppendLine($"    Helper = 0x233C,");
         sb.AppendLine("}");
         sb.AppendLine();
+        sb.AppendLine("[SkipLocalsInit]");
         sb.AppendLine($"sealed class {name}States : StateMachineBuilder");
         sb.AppendLine("{");
         sb.AppendLine($"    public {name}States(BossModule module) : base(module)");
         sb.AppendLine("    {");
         if (withStates)
-            sb.AppendLine($"        DeathPhase(0, SinglePhase);");
+            sb.AppendLine($"        DeathPhase(default, SinglePhase);");
         else
             sb.AppendLine($"        TrivialPhase();");
         sb.AppendLine("    }");
@@ -213,14 +214,31 @@ sealed class ParticipantInfo : CommonEnumInfo
             sb.AppendLine();
             sb.AppendLine("    private void SinglePhase(uint id)");
             sb.AppendLine("    {");
-            sb.AppendLine("        SimpleState(id + 0xFF0000u, 10000, \"???\");");
+            sb.AppendLine("        SimpleState(id + 0xFF0000u, 10000f, \"???\");");
             sb.AppendLine("    }");
             sb.AppendLine();
             sb.AppendLine("    //private void XXX(uint id, float delay)");
         }
         sb.AppendLine("}");
         sb.AppendLine();
-        sb.AppendLine($"[ModuleInfo(BossModuleInfo.Maturity.WIP, PrimaryActorOID = (uint)OID.{name}, GroupType = BossModuleInfo.GroupType.CFC, GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u, NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u, Category = BossModuleInfo.Category.Placeholder, Expansion = BossModuleInfo.Expansion.Placeholder, SortOrder = 1)]");
+        sb.AppendLine("[ModuleInfo(BossModuleInfo.Maturity.WIP,");
+        sb.AppendLine($"StatesType = typeof({name}States),");
+        sb.AppendLine($"ConfigType = null, // replace null with typeof({name}Config) if applicable");
+        sb.AppendLine("ObjectIDType = typeof(OID),");
+        sb.AppendLine("ActionIDType = null, // replace null with typeof(AID) if applicable");
+        sb.AppendLine("StatusIDType = null, // replace null with typeof(SID) if applicable");
+        sb.AppendLine("TetherIDType = null, // replace null with typeof(TetherID) if applicable");
+        sb.AppendLine("IconIDType = null, // replace null with typeof(IconID) if applicable");
+        sb.AppendLine($"PrimaryActorOID = (uint)OID.{name},");
+        sb.AppendLine("Contributors = \"\",");
+        sb.AppendLine("Expansion = BossModuleInfo.Expansion.Placeholder,");
+        sb.AppendLine("Category = BossModuleInfo.Category.Placeholder,");
+        sb.AppendLine("GroupType = BossModuleInfo.GroupType.CFC,");
+        sb.AppendLine($"GroupID = {(data.Zones.Count != 0 ? data.Zones[0].cfcId : default)}u,");
+        sb.AppendLine($"NameID = {(data.Names.Count != 0 ? data.Names[0].id : default)}u,");
+        sb.AppendLine("SortOrder = 1,");
+        sb.AppendLine("PlanLevel = 0)]");
+        sb.AppendLine("[SkipLocalsInit]");
         sb.AppendLine($"public sealed class {name}(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f));");
         return sb;
     }

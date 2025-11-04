@@ -36,13 +36,13 @@ sealed class IvoryPalm(BossModule module) : Components.GenericGaze(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         // only tethers in this fight are from this mechanic, so no need to check tether IDs
         Tethers.Add((WorldState.Actors.Find(tether.Target)!, source));
     }
 
-    public override void OnUntethered(Actor source, ActorTetherInfo tether)
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         Tethers.Remove((WorldState.Actors.Find(tether.Target)!, source));
     }

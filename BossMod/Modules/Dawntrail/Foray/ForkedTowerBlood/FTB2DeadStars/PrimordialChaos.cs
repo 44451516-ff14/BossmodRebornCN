@@ -11,7 +11,7 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => slot < PartyState.MaxPartySize ? CollectionsMarshal.AsSpan(_aoesPerPlayer[slot]) : [];
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var id = status.ID;
         if (NumTelegraphCasts == 0 && id is (uint)SID.NovaOoze or (uint)SID.IceOoze && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
@@ -20,7 +20,7 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (actor.IsDead && status.ID is (uint)SID.NovaOoze or (uint)SID.IceOoze && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
         {

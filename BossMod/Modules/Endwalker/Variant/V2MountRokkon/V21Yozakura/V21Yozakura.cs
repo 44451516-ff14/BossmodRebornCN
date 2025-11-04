@@ -87,12 +87,12 @@ sealed class AccursedSeedling(BossModule module) : Components.Voidzone(module, 4
     private static List<Actor> GetSeedlings(BossModule module) => module.Enemies((uint)OID.AccursedSeedling);
 }
 
-sealed class RootArrangement(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.RockRootArrangementFirst, (uint)AID.RockRootArrangementRest, 4, 1, 4, true, (uint)IconID.ChasingAOE)
+sealed class RootArrangement(BossModule module) : Components.StandardChasingAOEs(module, 4f, (uint)AID.RockRootArrangementFirst, (uint)AID.RockRootArrangementRest, 4, 1, 4, true, (uint)IconID.RootArrangement)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (Targets[slot])
+        if (TargetsMask[slot])
         {
             hints.AddForbiddenZone(new SDRect(Arena.Center + new WDir(19f, default), Arena.Center + new WDir(-19f, default), 20f), Activation);
         }

@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
 
+[SkipLocalsInit]
 abstract class LimitCut(BossModule module, double alphaDelay) : Components.GenericBaitAway(module)
 {
     private enum State { Teleport, Alpha, Blasty }

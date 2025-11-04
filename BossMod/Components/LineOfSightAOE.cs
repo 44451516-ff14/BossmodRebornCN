@@ -1,6 +1,7 @@
 ﻿namespace BossMod.Components;
 
 // generic component that shows line-of-sight cones for arbitrary origin and blocking shapes
+[SkipLocalsInit]
 public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : GenericAOEs(module, aid, "Hide behind obstacle!")
 {
     public DateTime NextExplosion;
@@ -100,7 +101,9 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
             }
             if (unionShapes.Count != 0)
             {
-                Safezones.Add(new(new AOEShapeCustom([.. unionShapes], [.. differenceShapes], invertForbiddenZone: true), Arena.Center, default, activation, Colors.SafeFromAOE));
+                var shape = new AOEShapeCustom([.. unionShapes], [.. differenceShapes], invertForbiddenZone: true);
+                var origin = Arena.Center;
+                Safezones.Add(new(shape, origin, default, activation, Colors.SafeFromAOE, shapeDistance: shape.Distance(origin, default)));
             }
         }
     }
@@ -115,6 +118,7 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
 }
 
 // simple line-of-sight aoe that happens at the end of the cast
+[SkipLocalsInit]
 public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
 {
     public readonly List<Actor> Casters = [];
@@ -170,7 +174,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
         }
     }
 
-    public void Refresh()
+    protected void Refresh()
     {
         var caster = ActiveCaster;
         WPos? position = caster != null ? caster.CastInfo!.LocXZ : null;
@@ -187,6 +191,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
     }
 }
 
+[SkipLocalsInit]
 public abstract class CastLineOfSightAOEComplex(BossModule module, uint aid, RelSimplifiedComplexPolygon blockerShape, int maxCasts = int.MaxValue, double riskyWithSecondsLeft = default, float maxRange = default) : GenericAOEs(module, aid)
 {
     public readonly RelSimplifiedComplexPolygon BlockerShape = blockerShape;
@@ -234,9 +239,9 @@ public abstract class CastLineOfSightAOEComplex(BossModule module, uint aid, Rel
         {
             var center = Arena.Center;
             var pos = caster.Position; // these LoS casts seem to typically use caster.Position instead of spell.LocXz
-            AOEs.Add(new(new AOEShapeCustom([new PolygonCustomRel(Visibility.Compute(pos - center, BlockerShape))],
-            MaxRange != default ? [new DonutV(pos, MaxRange, 1000f, 64)] : null),
-            center, default, Module.CastFinishAt(spell), actorID: caster.InstanceID));
+            var shape = new AOEShapeCustom([new PolygonCustomRel(BlockerShape.Visibility(pos - center))],
+            MaxRange != default ? [new DonutV(pos, MaxRange, 1000f, 64)] : null);
+            AOEs.Add(new(shape, center, default, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(center, default)));
         }
     }
 
@@ -249,8 +254,7 @@ public abstract class CastLineOfSightAOEComplex(BossModule module, uint aid, Rel
             var aoes = CollectionsMarshal.AsSpan(AOEs);
             for (var i = 0; i < count; ++i)
             {
-                ref var aoe = ref aoes[i];
-                if (aoe.ActorID == id)
+                if (aoes[i].ActorID == id)
                 {
                     AOEs.RemoveAt(i);
                     return;

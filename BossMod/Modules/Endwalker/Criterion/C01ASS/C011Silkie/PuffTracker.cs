@@ -13,7 +13,7 @@ sealed class PuffTracker(BossModule module) : BossComponent(module)
         Arena.Actors(FizzlingPuffs, Colors.Other5, true);
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {
@@ -35,7 +35,7 @@ sealed class PuffTracker(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         switch (status.ID)
         {

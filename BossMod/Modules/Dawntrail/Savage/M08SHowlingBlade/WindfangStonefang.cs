@@ -2,9 +2,9 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
 sealed class WindfangStonefang(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCross cross = new(15f, 3f);
-    private static readonly AOEShapeCircle circle = new(9f);
-    private static readonly AOEShapeDonut donut = new(8f, 20f);
+    private readonly AOEShapeCross cross = new(15f, 3f);
+    private readonly AOEShapeCircle circle = new(9f);
+    private readonly AOEShapeDonut donut = new(8f, 20f);
     public bool Draw;
     private readonly List<AOEInstance> _aoes = new(2);
 
@@ -39,7 +39,7 @@ sealed class WindfangStonefang(BossModule module) : Components.GenericAOEs(modul
 
 sealed class StonefangBait(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
-    private static readonly AOEShapeCone cone = new(40f, 15f.Degrees());
+    private readonly AOEShapeCone cone = new(40f, 15f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -61,7 +61,7 @@ sealed class StonefangBait(BossModule module) : Components.GenericBaitAway(modul
 
 sealed class WindfangBait(BossModule module) : Components.GenericBaitStack(module)
 {
-    private static readonly AOEShapeCone cone = new(40f, 15f.Degrees());
+    private readonly AOEShapeCone cone = new(40f, 15f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

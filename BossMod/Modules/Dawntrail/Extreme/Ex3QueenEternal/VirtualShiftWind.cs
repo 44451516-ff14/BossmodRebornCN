@@ -19,7 +19,7 @@ sealed class WindOfChange(BossModule module) : Components.GenericKnockback(modul
         return [];
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var dir = status.ID switch
         {

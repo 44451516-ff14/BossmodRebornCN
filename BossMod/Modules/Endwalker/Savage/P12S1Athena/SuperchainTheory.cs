@@ -72,7 +72,7 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
             else if (WorldState.Actors.Find(source.Tether.Target) is var origin && origin != null)
             {
                 Chains.Add(new(origin, source, shape, WorldState.FutureTime(ActivationDelay((source.Position - origin.Position).Length()))));
-                Chains.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+                Chains.Sort(static (a, b) => a.Activation.CompareTo(b.Activation));
                 _pendingTethers.RemoveAt(i);
             }
         }
@@ -222,7 +222,7 @@ abstract class SuperchainTheory(BossModule module) : BossComponent(module)
         }
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         _pendingTethers.Add(source);
     }

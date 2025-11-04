@@ -129,30 +129,30 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var id = status.ID;
         if (id == (uint)SID.WickedWater)
         {
-            wickedWater[Raid.FindSlot(actor.InstanceID)] = true;
+            wickedWater.Set(Raid.FindSlot(actor.InstanceID));
             WickedWaterActive = true;
         }
         else if (id == (uint)SID.GelidGaol)
         {
-            gelidGaol[Raid.FindSlot(actor.InstanceID)] = true;
+            gelidGaol.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var id = status.ID;
         if (id == (uint)SID.WickedWater)
         {
-            wickedWater[Raid.FindSlot(actor.InstanceID)] = false;
+            wickedWater.Clear(Raid.FindSlot(actor.InstanceID));
         }
         else if (id == (uint)SID.GelidGaol)
         {
-            gelidGaol[Raid.FindSlot(actor.InstanceID)] = false;
+            gelidGaol.Clear(Raid.FindSlot(actor.InstanceID));
         }
     }
 

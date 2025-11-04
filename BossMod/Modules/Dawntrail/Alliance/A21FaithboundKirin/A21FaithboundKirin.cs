@@ -24,7 +24,7 @@ public sealed class A21FaithboundKirin(WorldState ws, Actor primary) : BossModul
     new Rectangle(new(-830.55426f, 760.55426f), 5f, 2.5f, -45f.Degrees()),
     new Rectangle(new(-822.5f, 780f), 5f, 2.5f, -89.98f.Degrees()), new Rectangle(new(-830.55426f, 799.44574f), 2.5f, 5f, -45f.Degrees()),
     new Rectangle(new(-850f, 807.5f), 5f, 2.5f), new Rectangle(new(-869.44574f, 799.44574f), 2.5f, 5f, 45f.Degrees()), new Rectangle(new(-877.5f, 780f), 5f, 2.5f, 89.98f.Degrees()),
-    new Rectangle(new(-869.44574f, 760.55426f), 5f, 2.5f, 45f.Degrees())], AdjustForHitbox: true);
+    new Rectangle(new(-869.44574f, 760.55426f), 5f, 2.5f, 45f.Degrees())], AdjustForHitboxInwards: true);
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

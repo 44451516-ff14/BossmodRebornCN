@@ -27,7 +27,7 @@ sealed class RunawayRunoff(BossModule module) : Components.SimpleKnockbacks(modu
 
                 // knockback distance can be greater than distance between source and inner ring of the donut, but we have a few seconds to move after
                 // so we mainly want to ensure getting knocked back into the right direction at least, we can achieve this by inflating the donut hole
-                hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOrigin(donutPos, kb.Origin, 18f, 6f), act);
+                hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOrigin(donutPos, kb.Origin, 18f, 7f), act);
             }
         }
     }
@@ -38,7 +38,7 @@ sealed class RunawayRunoff(BossModule module) : Components.SimpleKnockbacks(modu
         var len = aoes.Length;
         for (var i = 0; i < len; ++i)
         {
-            ref readonly var aoe = ref aoes[i];
+            ref var aoe = ref aoes[i];
             if (aoe.Shape != Explosion.Donut && aoe.Check(pos)) // allow getting knocked into the donut since there is time to move after kb
             {
                 return true;

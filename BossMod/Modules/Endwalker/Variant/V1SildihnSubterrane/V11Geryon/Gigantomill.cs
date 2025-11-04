@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V11Geryon;
 
 sealed class Gigantomill(BossModule module) : Components.GenericRotatingAOE(module)
 {
-    private static readonly AOEShapeCross cross = new(72f, 5f);
+    private readonly AOEShapeCross cross = new(72f, 5f);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {

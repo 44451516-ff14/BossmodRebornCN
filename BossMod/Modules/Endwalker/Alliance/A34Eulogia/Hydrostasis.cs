@@ -11,7 +11,7 @@ class Hydrostasis(BossModule module) : Components.GenericKnockback(module)
         if (spell.Action.ID is (uint)AID.HydrostasisAOE1 or (uint)AID.HydrostasisAOE2 or (uint)AID.HydrostasisAOE3)
         {
             _sources.Add(new(caster.Position, 28f, Module.CastFinishAt(spell)));
-            _sources.Sort((a, b) => a.Activation.CompareTo(b.Activation));
+            _sources.Sort(static (a, b) => a.Activation.CompareTo(b.Activation));
         }
     }
 
@@ -32,18 +32,23 @@ class Hydrostasis(BossModule module) : Components.GenericKnockback(module)
         var count = _sources.Count;
         if (count != 0)
         {
-            ref readonly var c = ref _sources.Ref(0);
-            var act = c.Activation;
-            if (!IsImmune(slot, act))
+            var casters = CollectionsMarshal.AsSpan(_sources);
+            for (var i = 0; i < count; ++i)
             {
-                if (count > 1)
+                ref readonly var c = ref casters[i];
+                var act = c.Activation;
+                var center = Arena.Center;
+                if (!IsImmune(slot, act))
                 {
-                    ref readonly var c2 = ref _sources.Ref(1);
-                    hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOriginIntoDirection(Arena.Center, c.Origin, 28f, 29f, (c2.Origin - c.Origin).Normalized(), 15f.Degrees()), act);
-                }
-                else
-                {
-                    hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOrigin(Arena.Center, c.Origin, 28f, 29f), act);
+                    if (count > i + 1)
+                    {
+                        ref readonly var c2 = ref casters[i + 1];
+                        hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOriginIntoDirection(center, c.Origin, 28f, 29f, (c2.Origin - c.Origin).Normalized(), 15f.Degrees()), act);
+                    }
+                    else
+                    {
+                        hints.AddForbiddenZone(new SDKnockbackInCircleAwayFromOrigin(center, c.Origin, 28f, 29f), act);
+                    }
                 }
             }
         }

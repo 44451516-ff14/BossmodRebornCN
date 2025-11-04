@@ -1,6 +1,6 @@
 namespace BossMod.Dawntrail.Savage.M06SSugarRiot;
 
-sealed class HeatingBurningUp(BossModule module) : Components.GenericStackSpread(module, true, true, true)
+sealed class HeatingBurningUp(BossModule module) : Components.GenericStackSpread(module, true, true)
 {
     private readonly (Actor, DateTime)[] defamation = new (Actor, DateTime)[8];
     private (Actor, DateTime)? _stack;
@@ -33,7 +33,7 @@ sealed class HeatingBurningUp(BossModule module) : Components.GenericStackSpread
         }
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.HeatingUp)
         {

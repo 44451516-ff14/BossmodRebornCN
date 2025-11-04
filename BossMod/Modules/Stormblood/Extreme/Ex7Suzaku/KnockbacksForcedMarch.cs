@@ -38,7 +38,7 @@ abstract class PayThePiper : Components.GenericForcedMarch
         OverrideDirection = true;
     }
 
-    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         var target = WorldState.Actors.Find(tether.Target)!;
         if (target == Module.PrimaryActor || tether.ID != (uint)TetherID.PayThePiper)
@@ -55,7 +55,7 @@ abstract class PayThePiper : Components.GenericForcedMarch
             AddForcedMovement(target, direction, 4f, WorldState.FutureTime(10d));
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PayingThePiper)
         {
@@ -64,7 +64,7 @@ abstract class PayThePiper : Components.GenericForcedMarch
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.PayingThePiper)
             DeactivateForcedMovement(actor);

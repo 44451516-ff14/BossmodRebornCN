@@ -89,6 +89,8 @@ public abstract class ConfigNode
     // deserialize fields from json; default implementation should work fine for most cases
     public virtual void Deserialize(JsonElement j, JsonSerializerOptions ser)
     {
+        var agg = new List<JsonException>();
+
         var type = GetType();
         foreach (var jfield in j.EnumerateObject())
         {

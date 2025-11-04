@@ -41,14 +41,13 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveBaitsOn(actor).Count == 0)
+        if (IsBaitTarget(actor))
         {
-            return;
+            hints.Add("Pass the lightning to a rod!");
         }
-        hints.Add("Pass the lightning to a rod!");
     }
 
-    public override void OnStatusGain(Actor actor, ActorStatus status)
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.LightningRod)
         {
@@ -65,7 +64,7 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.LightningRod)
         {
@@ -100,7 +99,7 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaitsOn(actor).Count == 0)
+        if (!IsBaitTarget(actor))
         {
             return;
         }
@@ -118,7 +117,7 @@ sealed class LightningBolt(BossModule module) : Components.GenericBaitAway(modul
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (ActiveBaitsOn(pc).Count == 0)
+        if (!IsBaitTarget(pc))
         {
             return;
         }

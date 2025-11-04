@@ -16,7 +16,7 @@ class Shadesmite3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.S
 class Pitfall(BossModule module) : Components.RaidwideCast(module, (uint)AID.Pitfall);
 class FullSwing(BossModule module) : Components.RaidwideCast(module, (uint)AID.FullSwing);
 
-class Nox(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(10), (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6f, 5, true);
+class Nox(BossModule module) : Components.StandardChasingAOEs(module, 10f, (uint)AID.NoxAOEFirst, (uint)AID.NoxAOERest, 5.5f, 1.6d, 5, true, (uint)IconID.Nox);
 
 abstract class MarrowDrain(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(10.44f, 60.Degrees()));
 class MarrowDrain1(BossModule module) : MarrowDrain(module, (uint)AID.MarrowDrain1);

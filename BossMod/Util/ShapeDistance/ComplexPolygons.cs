@@ -1,45 +1,46 @@
 namespace BossMod;
 
+[SkipLocalsInit]
 public sealed class SDComplexPolygonInvertedContains(RelSimplifiedComplexPolygon Polygon, WPos Center) : ShapeDistance
 {
     private readonly RelSimplifiedComplexPolygon polygon = Polygon;
     private readonly WPos center = Center;
 
-    public override float Distance(WPos p)
-    {
-        if (polygon.Contains(p - center))
-        {
-            return default;
-        }
-        return 1f;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p) => polygon.Contains(p - center);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
+[SkipLocalsInit]
 public readonly struct SDPolygonWithHolesBase
 {
     private readonly RelSimplifiedComplexPolygon _polygon;
     private readonly float _originX, _originZ;
     private readonly Edge[] _edges;
-    private readonly SpatialIndex _spatialIndex;
+    private readonly SpatialIndex _spatialIndex; // faster but less exact than the PolygonBoundaryIndex2D, should be sufficient though since we test upto 5 points per cell during rasterization anyway
 
     public SDPolygonWithHolesBase(WPos origin, RelSimplifiedComplexPolygon polygon)
     {
         _originX = origin.X;
         _originZ = origin.Z;
         _polygon = polygon;
-        var edgeCount = 0;
-        var countPolygonParts = polygon.Parts.Count;
-        for (var i = 0; i < countPolygonParts; ++i)
+
+        var parts = polygon.Parts;
+        var countP = parts.Count;
+        var vertsCount = 0;
+        for (var i = 0; i < countP; ++i)
         {
-            var part = polygon.Parts[i];
-            edgeCount += part.ExteriorEdges.Length;
-            var lenPolygonHoles = part.Holes.Length;
-            for (var j = 0; j < lenPolygonHoles; ++j)
-                edgeCount += part.InteriorEdges(j).Length;
+            vertsCount += parts[i].VerticesCount;
         }
-        _edges = new Edge[edgeCount];
+
+        _edges = new Edge[vertsCount];
         var edgeIndex = 0;
-        for (var i = 0; i < countPolygonParts; ++i)
+        for (var i = 0; i < countP; ++i)
         {
             var part = polygon.Parts[i];
             var exteriorEdges = GetEdges(part.Exterior, origin);
@@ -85,7 +86,7 @@ public readonly struct SDPolygonWithHolesBase
         }
     }
 
-    public readonly float Distance(WPos p)
+    public readonly float Distance(in WPos p)
     {
         var pX = p.X;
         var pZ = p.Z;
@@ -113,7 +114,7 @@ public readonly struct SDPolygonWithHolesBase
         return MathF.Sqrt(minDistanceSq);
     }
 
-    public readonly float DistanceInverted(WPos p)
+    public readonly float DistanceInverted(in WPos p)
     {
         var pX = p.X;
         var pZ = p.Z;
@@ -140,26 +141,54 @@ public readonly struct SDPolygonWithHolesBase
         }
         return MathF.Sqrt(minDistanceSq);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly bool Contains(in WPos p)
+    {
+        var pX = p.X;
+        var pZ = p.Z;
+        return _polygon.Contains(new(pX - _originX, pZ - _originZ));
+    }
 }
 
+[SkipLocalsInit]
 public sealed class SDPolygonWithHoles(SDPolygonWithHolesBase core) : ShapeDistance
 {
     private readonly SDPolygonWithHolesBase _core = core;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override float Distance(WPos p)
+    public override float Distance(in WPos p)
     {
         return _core.Distance(p);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        return _core.Contains(p);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
 
+[SkipLocalsInit]
 public sealed class SDInvertedPolygonWithHoles(SDPolygonWithHolesBase core) : ShapeDistance
 {
     private readonly SDPolygonWithHolesBase _core = core;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override float Distance(WPos p)
+    public override float Distance(in WPos p)
     {
         return _core.DistanceInverted(p);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        return !_core.Contains(p);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }

@@ -63,7 +63,7 @@ public sealed class PartyState
     // select non-null and optionally alive raid members
     public Actor[] WithoutSlot(bool includeDead = false, bool excludeAlliance = false, bool excludeNPCs = false)
     {
-        var limit = excludeNPCs ? MaxAllianceSize : MaxAllies;
+        var limit = excludeNPCs && excludeAlliance ? MaxPartySize : excludeNPCs ? MaxAllianceSize : MaxAllies;
         var result = new Actor[limit];
         var count = 0;
 
@@ -108,7 +108,7 @@ public sealed class PartyState
 
     public (int, Actor)[] WithSlot(bool includeDead = false, bool excludeAlliance = false, bool excludeNPCs = false)
     {
-        var limit = excludeNPCs ? MaxAllianceSize : MaxAllies;
+        var limit = excludeNPCs && excludeAlliance ? MaxPartySize : excludeNPCs ? MaxAllianceSize : MaxAllies;
         var result = new (int, Actor)[limit];
         var count = 0;
 

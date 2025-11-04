@@ -26,7 +26,7 @@ sealed class AuroralUppercut(BossModule module) : Components.GenericKnockback(mo
         }
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (_kb.Length != 0 && status.ID == (uint)SID.Knockback)
         {
@@ -95,7 +95,7 @@ sealed class AuroralUppercutHint(BossModule module) : Components.GenericAOEs(mod
         void SetAOE(AOEShapeCustom shape) => _aoe = [new(shape, Arena.Center, default, Module.CastFinishAt(spell, 1.6d), Colors.SafeFromAOE)];
     }
 
-    public override void OnStatusLose(Actor actor, ActorStatus status)
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (_aoe.Length != 0 && status.ID == (uint)SID.Knockback)
         {
