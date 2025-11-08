@@ -12,7 +12,7 @@ public sealed class BossModuleConfig : ConfigNode
     [PropertyDisplay("允许模块自动使用技能", tooltip: "例如：在击退发生前自动使用防击退技能")]
     public bool AllowAutomaticActions = true;
 
-    [PropertyDisplay("显示测试雷达和提示窗口", tooltip: "用于在不进入BOSS战的情况下配置雷达和提示窗口", separator: true)]
+    [PropertyDisplay("[设置调整用]显示测试雷达和提示窗口", tooltip: "无需进入首领战即可配置雷达和提示窗口，便于调试", separator: true)]
     public bool ShowDemo = false;
 
     // 雷达窗口设置
@@ -77,7 +77,8 @@ public sealed class BossModuleConfig : ConfigNode
     [PropertyDisplay("始终显示所有存活队友")]
     public bool ShowIrrelevantPlayers = false;
 
-    [PropertyDisplay("根据职责着色未染色玩家标记")]
+    [PropertyDisplay("为雷达中无默认颜色的玩家按职责显示颜色")]
+
     public bool ColorPlayersBasedOnRole = false;
 
     [PropertyDisplay("始终显示焦点目标队友", separator: true)]
@@ -100,13 +101,13 @@ public sealed class BossModuleConfig : ConfigNode
     public bool ShowPlayerHints = true;
 
     // 其他设置
-    [PropertyDisplay("在游戏场景中显示移动指引", tooltip: "使用频率较低，可在游戏场景中显示箭头指示特定机制的移动方向")]
+    [PropertyDisplay("在游戏中显示移动提示", tooltip: "使用较少，但可以在游戏中显示箭头，指示在某些机制中移动的位置")]
     public bool ShowWorldArrows = false;
 
     [PropertyDisplay("显示近战范围指示器")]
     public bool ShowMeleeRangeIndicator = false;
 
-    [PropertyDisplay("Maximum load distance", tooltip: "Maximum load distance in yalms")]
+    [PropertyDisplay("最大加载距离", tooltip: "最大加载距离（单位：yalms）")]
     [PropertySlider(0.1f, 500f, Speed = 0.1f, Logarithmic = true)]
     public float MaxLoadDistance = 500f;
 }

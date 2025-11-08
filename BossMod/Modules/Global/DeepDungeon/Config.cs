@@ -5,54 +5,54 @@ using Lumina.Excel.Sheets;
 
 namespace BossMod.Global.DeepDungeon;
 
-[ConfigDisplay(Name = "Auto-DeepDungeon (Experimental)", Parent = typeof(ModuleConfig))]
+[ConfigDisplay(Name = "自动深层迷宫（实验性）", Parent = typeof(ModuleConfig))]
 public sealed class AutoDDConfig : ConfigNode
 {
     public enum ClearBehavior
     {
-        [PropertyDisplay("Do not auto target")]
+        [PropertyDisplay("不自动选择目标")]
         None,
-        [PropertyDisplay("Stop when passage opens")]
+        [PropertyDisplay("通道开启时停止")]
         Passage,
-        [PropertyDisplay("Target everything if not at level cap, otherwise stop when passage opens")]
+        [PropertyDisplay("未达到等级上限时攻击所有敌人，达到后通道开启时停止")]
         Leveling,
-        [PropertyDisplay("Target everything")]
+        [PropertyDisplay("攻击所有敌人")]
         All,
     }
 
-    [PropertyDisplay("Enable module", tooltip: "WARNING: This feature is very experimental and most likely will contain bugs or unintended behavior.\nTo enable this feature in its current state, you must activate 'Work-in-Progress' maturity modules in the `Full Duty Automation` tab.")]
+    [PropertyDisplay("启用模块", tooltip: "警告：此功能处于非常实验性的阶段，很可能存在漏洞或意外行为。\n要启用当前状态下的此功能，您必须在`完全任务自动化`选项卡中激活'进行中'成熟度的模块。")]
     public bool Enable = true;
-    [PropertyDisplay("Enable minimap")]
+    [PropertyDisplay("启用小地图")]
     public bool EnableMinimap = true;
-    [PropertyDisplay("Try to avoid traps", tooltip: "Avoid known trap locations sourced from PalacePal data. Does not need PalacePal installed since data is included in BMR. (Traps revealed by a Pomander of Sight will always be avoided regardless of this setting.)")]
+    [PropertyDisplay("尝试避开陷阱", tooltip: "避开源自PalacePal数据的已知陷阱位置。（无论此设置如何，由洞察宝玉揭示的陷阱始终会被避开。）")]
     public bool TrapHints = true;
-    [PropertyDisplay("Automatically navigate to Cairn of Passage")]
+    [PropertyDisplay("自动导航到通路祭坛")]
     public bool AutoPassage = true;
 
-    [PropertyDisplay("Automatic mob targeting behavior")]
+    [PropertyDisplay("自动怪物目标行为")]
     public ClearBehavior AutoClear = ClearBehavior.Leveling;
 
-    [PropertyDisplay("Disable DoTs on non-boss floors (only affects BMR autorotation)")]
+    [PropertyDisplay("在非首领楼层禁用持续伤害DOT技能（仅影响 VBM 自动旋转）")]
     public bool ForbidDOTs = false;
 
-    [PropertyDisplay("Max number of mobs to pull before pausing navigation (0 = do not navigate while in combat)")]
+    [PropertyDisplay("暂停导航前的最大拉怪数量（0 = 战斗中不进行导航）")]
     [PropertySlider(0, 15)]
     public int MaxPull = 0;
-    [PropertyDisplay("Try to use terrain to LOS attacks")]
+    [PropertyDisplay("尝试利用地形躲避攻击")]
     public bool AutoLOS = false;
 
-    [PropertyDisplay("Automatically navigate to coffers")]
+    [PropertyDisplay("自动导航到宝箱")]
     public bool AutoMoveTreasure = true;
-    [PropertyDisplay("Prioritize opening coffers over Cairn of Passage")]
+    [PropertyDisplay("优先开启宝箱而非通路祭坛")]
     public bool OpenChestsFirst = false;
-    [PropertyDisplay("Open gold coffers")]
+    [PropertyDisplay("开启金宝箱")]
     public bool GoldCoffer = true;
-    [PropertyDisplay("Open silver coffers")]
+    [PropertyDisplay("开启银宝箱")]
     public bool SilverCoffer = true;
-    [PropertyDisplay("Open bronze coffers")]
+    [PropertyDisplay("开启铜宝箱")]
     public bool BronzeCoffer = true;
 
-    [PropertyDisplay("Reveal all rooms before proceeding to next floor")]
+    [PropertyDisplay("在进入下一层前探索所有房间")]
     public bool FullClear = false;
 
     public BitMask AutoPoms;
@@ -61,10 +61,11 @@ public sealed class AutoDDConfig : ConfigNode
 
     public override void DrawCustom(UITree tree, WorldState ws)
     {
-        foreach (var _ in tree.Node("Automatic pomander usage"))
+        foreach (var _ in tree.Node("自动使用魔石"))
         {
-            ImGui.TextWrapped("Highlighted pomanders will be used when a gold chest contains one that you can't carry.");
-            ImGui.TextWrapped("This feature is disabled in parties.");
+            ImGui.TextWrapped("当黄金宝箱中包含你无法携带的魔石时，会自动使用已标记高亮的魔石。");
+            ImGui.TextWrapped("该功能在队伍中禁用。");
+
 
             for (var i = 1; i < (int)PomanderID.Count; i++)
                 using (ImRaii.PushId($"pom{i}"))
