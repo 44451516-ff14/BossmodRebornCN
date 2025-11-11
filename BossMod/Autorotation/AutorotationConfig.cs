@@ -28,7 +28,7 @@ public sealed class AutorotationConfig : ConfigNode
 
     [PropertyDisplay ("在游戏里面中显示位置提示", tooltip: "显示位置技能提示，指示移动到目标的侧面或背面")]
     public bool ShowPositionals = false;
-    
+
     [PropertyDisplay("脱战后自动禁用自动循环")]
     public bool ClearPresetOnCombatEnd = false;
 
