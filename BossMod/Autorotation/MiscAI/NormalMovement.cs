@@ -4,13 +4,12 @@ namespace BossMod.Autorotation.MiscAI;
 
 public sealed class NormalMovement : RotationModule
 {
-    public enum Track { Destination, Range, Cast, SpecialModes, ForbiddenZoneCushion, Async }
+    public enum Track { Destination, Range, Cast, SpecialModes, ForbiddenZoneCushion }
     public enum DestinationStrategy { None, Pathfind, Explicit }
     public enum RangeStrategy { Any, MaxRange, GreedGCDExplicit, GreedLastMomentExplicit, GreedAutomatic }
     public enum CastStrategy { Leeway, Explicit, Greedy, FinishMove, DropMove, FinishInstants, DropInstants }
     public enum ForbiddenZoneCushionStrategy { None, Small, Medium, Large }
     public enum SpecialModesStrategy { Automatic, Ignore }
-    public enum AsyncStrategy { Off, On }
 
     public const float GreedTolerance = 0.15f;
 
@@ -31,35 +30,35 @@ public sealed class NormalMovement : RotationModule
     {
         var res = new RotationModuleDefinition("Automatic movement", "Automatically move character based on pathfinding or explicit coordinates.", "AI", "veyn", RotationModuleQuality.Good, new(~0ul), 1000, 1, RotationModuleOrder.Movement, CanUseWhileRoleplaying: true);
         res.Define(Track.Destination).As<DestinationStrategy>("Destination", "Destination", 30)
-            .AddOption(DestinationStrategy.None, "None", "No automatic movement")
-            .AddOption(DestinationStrategy.Pathfind, "Pathfind", "Use standard pathfinding to find best position")
-            .AddOption(DestinationStrategy.Explicit, "Explicit", "Move to specific point", supportedTargets: ActionTargets.Area);
+            .AddOption(DestinationStrategy.None, "No automatic movement")
+            .AddOption(DestinationStrategy.Pathfind, "Use standard pathfinding to find best position")
+            .AddOption(DestinationStrategy.Explicit, "Move to specific point", supportedTargets: ActionTargets.Area);
 
         // note that these options used to be melee-specific - internal names are kept unchanged for convenience
         res.Define(Track.Range).As<RangeStrategy>("Range", "Range", 20)
-            .AddOption(RangeStrategy.Any, "Any", "Go directly to destination")
-            .AddOption(RangeStrategy.MaxRange, "MaxMelee", "Stay within maximum effective range of target closest to destination", supportedTargets: ActionTargets.Hostile)
-            .AddOption(RangeStrategy.GreedGCDExplicit, "MeleeGreedGCDExplicit", "Stay within effective range until last GCD; ensure destination is reached by the plan entry end", supportedTargets: ActionTargets.Hostile)
-            .AddOption(RangeStrategy.GreedLastMomentExplicit, "MeleeGreedLastMomentExplicit", "Stay within effective range until last possible moment; ensure destination is reached by the plan entry end", supportedTargets: ActionTargets.Hostile)
-            .AddOption(RangeStrategy.GreedAutomatic, "MeleeGreedAutomatic", "Stay within effective range as long as possible; try to ensure safety is reached before mechanic resolves", supportedTargets: ActionTargets.Hostile)
+            .AddOption(RangeStrategy.Any, "Go directly to destination")
+            .AddOption(RangeStrategy.MaxRange, "Stay within maximum effective range of target closest to destination", supportedTargets: ActionTargets.Hostile)
+            .AddOption(RangeStrategy.GreedGCDExplicit, "Stay within effective range until last GCD; ensure destination is reached by the plan entry end", supportedTargets: ActionTargets.Hostile)
+            .AddOption(RangeStrategy.GreedLastMomentExplicit, "Stay within effective range until last possible moment; ensure destination is reached by the plan entry end", supportedTargets: ActionTargets.Hostile)
+            .AddOption(RangeStrategy.GreedAutomatic, "Stay within effective range as long as possible; try to ensure safety is reached before mechanic resolves", supportedTargets: ActionTargets.Hostile)
             /*.AddOption(RangeStrategy.Drag, "Drag", "Drag the target to specified spot, but maintain gcd uptime", supportedTargets: ActionTargets.Hostile)*/; // TODO
 
         res.Define(Track.Cast).As<CastStrategy>("Cast", "Cast", 10)
-            .AddOption(CastStrategy.Leeway, "Leeway", "Continue slidecasting as long as there is enough time to get to safety")
-            .AddOption(CastStrategy.Explicit, "Explicit", "Continue slidecasting as long as there is enough time to reach destination by the plan entry end")
-            .AddOption(CastStrategy.Greedy, "Greedy", "Don't stop casting, even when it risks getting clipped by aoes")
-            .AddOption(CastStrategy.FinishMove, "FinishMove", "Start moving as soon as cast ends, use instants until destination is reached")
-            .AddOption(CastStrategy.DropMove, "DropMove", "Start moving asap, interrupting casts if necessary, use instants until destination is reached")
-            .AddOption(CastStrategy.FinishInstants, "FinishInstants", "Don't use any more casts after current cast ends")
-            .AddOption(CastStrategy.DropInstants, "DropInstants", "Don't cast, interrupt current cast if needed");
+            .AddOption(CastStrategy.Leeway, "Continue slidecasting as long as there is enough time to get to safety")
+            .AddOption(CastStrategy.Explicit, "Continue slidecasting as long as there is enough time to reach destination by the plan entry end")
+            .AddOption(CastStrategy.Greedy, "Don't stop casting, even when it risks getting clipped by aoes")
+            .AddOption(CastStrategy.FinishMove, "Start moving as soon as cast ends, use instants until destination is reached")
+            .AddOption(CastStrategy.DropMove, "Start moving asap, interrupting casts if necessary, use instants until destination is reached")
+            .AddOption(CastStrategy.FinishInstants, "Don't use any more casts after current cast ends")
+            .AddOption(CastStrategy.DropInstants, "Don't cast, interrupt current cast if needed");
         res.Define(Track.SpecialModes).As<SpecialModesStrategy>("SpecialModes", "Special", -1)
-            .AddOption(SpecialModesStrategy.Automatic, "Automatic", "Automatically deal with special conditions (knockbacks, pyretics, etc)")
-            .AddOption(SpecialModesStrategy.Ignore, "Ignore", "Ignore any special conditions (knockbacks, pyretics, etc)");
+            .AddOption(SpecialModesStrategy.Automatic, "Automatically deal with special conditions (knockbacks, pyretics, etc)")
+            .AddOption(SpecialModesStrategy.Ignore, "Ignore any special conditions (knockbacks, pyretics, etc)");
         res.Define(Track.ForbiddenZoneCushion).As<ForbiddenZoneCushionStrategy>("ForbiddenZoneCushion", "Overdodge", 25)
-            .AddOption(ForbiddenZoneCushionStrategy.None, "None", "Do not use any buffer in pathfinding")
-            .AddOption(ForbiddenZoneCushionStrategy.Small, "Small", "Prefer to stay 0.5y away from forbidden zones")
-            .AddOption(ForbiddenZoneCushionStrategy.Medium, "Medium", "Prefer to stay 1.5y away from forbidden zones")
-            .AddOption(ForbiddenZoneCushionStrategy.Large, "Large", "Prefer to stay 3y away from forbidden zones");
+            .AddOption(ForbiddenZoneCushionStrategy.None, "Do not use any buffer in pathfinding")
+            .AddOption(ForbiddenZoneCushionStrategy.Small, "Prefer to stay 0.5y away from forbidden zones")
+            .AddOption(ForbiddenZoneCushionStrategy.Medium, "Prefer to stay 1.5y away from forbidden zones")
+            .AddOption(ForbiddenZoneCushionStrategy.Large, "Prefer to stay 3y away from forbidden zones");
         return res;
     }
 
@@ -71,7 +70,7 @@ public sealed class NormalMovement : RotationModule
     private Task<NavigationDecision> _decisionTask = Task.FromResult(default(NavigationDecision));
     private NavigationDecision _lastDecision;
 
-    private NavigationDecision GetDecision(StrategyValues strategy, float speed, float cushionSize)
+    private NavigationDecision GetDecision(float speed, float cushionSize)
     {
         if (_decisionTask.IsCompletedSuccessfully)
         {
@@ -149,7 +148,7 @@ public sealed class NormalMovement : RotationModule
         switch (destinationStrategy)
         {
             case DestinationStrategy.Pathfind:
-                navi = GetDecision(strategy, speed, cushionSize);
+                navi = GetDecision(speed, cushionSize);
                 resetStats = false;
                 break;
             case DestinationStrategy.Explicit:

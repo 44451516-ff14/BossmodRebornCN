@@ -32,6 +32,5 @@ sealed class Quantumlevel(BossModule module) : BossComponent(module)
         {
             QuantumLevel += hp.Extra;
         }
-        Service.Log($"{QuantumLevel}");
     }
 }

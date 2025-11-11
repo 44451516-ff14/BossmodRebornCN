@@ -4,7 +4,7 @@ using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
 
-public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan<AID, TraitID>(manager, player, PotionType.Strength)
+public sealed class MNK(RotationModuleManager manager, Actor player) : AttackxanOld<AID, TraitID>(manager, player, PotionType.Strength)
 {
     public enum Track { BH = SharedTrack.Buffs, RoF, FiresReply, RoW, WindsReply, PB, Nadi, Blitz, SSS, FormShift, Meditation, TC, Potion, Engage, TN }
     public enum PotionStrategy
@@ -99,10 +99,10 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         def.DefineSimple(Track.BH, "BH", minLevel: 70, uiPriority: 99).AddAssociatedActions(AID.Brotherhood);
 
         def.Define(Track.RoF).As<RoFStrategy>("RoF", uiPriority: 96)
-            .AddOption(RoFStrategy.Automatic, "Auto", "Automatically use RoF during burst window", minLevel: 68)
-            .AddOption(RoFStrategy.Force, "Force", "Use ASAP", minLevel: 68)
-            .AddOption(RoFStrategy.ForceMidWeave, "ForceMid", "Use ASAP, but retain late-weave to ensure maximum GCDs covered", minLevel: 68)
-            .AddOption(RoFStrategy.Delay, "Delay", "Do not use", minLevel: 68)
+            .AddOption(RoFStrategy.Automatic, "Automatically use RoF during burst window", minLevel: 68)
+            .AddOption(RoFStrategy.Force, "Use ASAP", minLevel: 68)
+            .AddOption(RoFStrategy.ForceMidWeave, "Use ASAP, but retain late-weave to ensure maximum GCDs covered", minLevel: 68)
+            .AddOption(RoFStrategy.Delay, "Do not use", minLevel: 68)
             .AddAssociatedActions(AID.RiddleOfFire);
         def.Define(Track.FiresReply).As<FRStrategy>("FiresReply", uiPriority: 95)
             .AddOption(FRStrategy.Automatic, "Use after Opo GCD", minLevel: 100)
@@ -129,8 +129,8 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
             .AddAssociatedActions(AID.PerfectBalance);
         def.Define(Track.Nadi).As<NadiStrategy>("Nadi", uiPriority: 88)
             .AddOption(NadiStrategy.Automatic, "Automatically choose best nadi (double lunar opener, otherwise alternate)", minLevel: 60)
-            .AddOption(NadiStrategy.Lunar, "Lunar", minLevel: 60)
-            .AddOption(NadiStrategy.Solar, "Solar", minLevel: 60);
+            .AddOption(NadiStrategy.Lunar, minLevel: 60)
+            .AddOption(NadiStrategy.Solar, minLevel: 60);
         def.Define(Track.Blitz).As<BlitzStrategy>("Blitz", uiPriority: 87)
             .AddOption(BlitzStrategy.Automatic, "Use ASAP", minLevel: 60)
             .AddOption(BlitzStrategy.RoF, "Hold blitz until Riddle of Fire is active", minLevel: 60)

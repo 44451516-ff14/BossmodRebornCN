@@ -9,6 +9,7 @@ sealed class Q1FinalVerseStates : StateMachineBuilder
     {
         _module = module;
         DeathPhase(default, SinglePhase)
+            .ActivateOnEnter<Quantumlevel>()
             .ActivateOnEnter<TerrorEyeVoidTrapBallOfFire>()
             ;
     }
@@ -35,7 +36,8 @@ sealed class Q1FinalVerseStates : StateMachineBuilder
             [QuantumLevel.Level40] = (6u, SinglePhaseQ40),
         };
 
-        ConditionFork(id, default, () => _module.FindComponent<Quantumlevel>() != null && _module.FindComponent<Quantumlevel>()!.QuantumLevel >= 15u, SelectCase, dispatch, "Select quantum level");
+        ConditionFork(id, default, () => _module.FindComponent<Quantumlevel>()!.QuantumLevel >= 15u, SelectCase, dispatch, "Select quantum level")
+            .DeactivateOnExit<Quantumlevel>();
     }
 
     private QuantumLevel SelectCase()

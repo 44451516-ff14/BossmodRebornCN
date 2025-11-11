@@ -4,7 +4,7 @@ using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
 
-public sealed class MCH(RotationModuleManager manager, Actor player) : Attackxan<AID, TraitID>(manager, player, PotionType.Dexterity)
+public sealed class MCH(RotationModuleManager manager, Actor player) : AttackxanOld<AID, TraitID>(manager, player, PotionType.Dexterity)
 {
     public enum Track { Queen = SharedTrack.Count, Wildfire, Hypercharge, Tools }
     public enum QueenStrategy
@@ -25,19 +25,19 @@ public sealed class MCH(RotationModuleManager manager, Actor player) : Attackxan
     {
         var def = new RotationModuleDefinition("xan MCH", "Machinist", "Standard rotation (xan)|Ranged", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.MCH), 100);
 
-        def.DefineShared().AddAssociatedActions(AID.BarrelStabilizer);
+        def.DefineShared("Barrel Stabilizer").AddAssociatedActions(AID.BarrelStabilizer);
 
         def.Define(Track.Queen).As<QueenStrategy>("Queen", "Queen")
-            .AddOption(QueenStrategy.MinGauge, "Min", "Summon at 50+ gauge")
-            .AddOption(QueenStrategy.FullGauge, "Full", "Summon at 100 gauge")
-            .AddOption(QueenStrategy.RaidBuffsOnly, "Buffed", "Delay summon until raid buffs, regardless of gauge")
-            .AddOption(QueenStrategy.Never, "Never", "Do not automatically summon Queen at all")
+            .AddOption(QueenStrategy.MinGauge, "Summon at 50+ gauge")
+            .AddOption(QueenStrategy.FullGauge, "Summon at 100 gauge")
+            .AddOption(QueenStrategy.RaidBuffsOnly, "Delay summon until raid buffs, regardless of gauge")
+            .AddOption(QueenStrategy.Never, "Do not automatically summon Queen at all")
             .AddAssociatedActions(AID.AutomatonQueen, AID.RookAutoturret);
 
         def.Define(Track.Wildfire).As<WildfireStrategy>("WF", "Wildfire")
-            .AddOption(WildfireStrategy.ASAP, "ASAP", "Use as soon as possible (delay in opener until after Full Metal Field)")
-            .AddOption(WildfireStrategy.Delay, "Delay", "Do not use")
-            .AddOption(WildfireStrategy.Hypercharge, "Hypercharge", "Delay until Hypercharge window");
+            .AddOption(WildfireStrategy.ASAP, "Use as soon as possible (delay in opener until after Full Metal Field)")
+            .AddOption(WildfireStrategy.Delay, "Do not use")
+            .AddOption(WildfireStrategy.Hypercharge, "Delay until Hypercharge window");
 
         def.DefineSimple(Track.Hypercharge, "Hypercharge").AddAssociatedActions(AID.Hypercharge);
         def.DefineSimple(Track.Tools, "Tools").AddAssociatedActions(AID.Drill, AID.AirAnchor, AID.ChainSaw, AID.Bioblaster);

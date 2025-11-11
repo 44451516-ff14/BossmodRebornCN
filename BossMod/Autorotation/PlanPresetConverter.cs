@@ -20,6 +20,8 @@ public static class PlanPresetConverter
         return res;
     }
 
+    record struct OptionRename(string Module, string Option, string Before, string After);
+
     // returns always 1 element for plans, or multiple (1 per preset) for preset database
     private static IEnumerable<JsonObject> EnumerateEntriesModules(JsonNode root, bool plan)
     {

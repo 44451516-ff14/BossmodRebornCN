@@ -29,7 +29,7 @@ sealed class SandPillarEarthbreak(BossModule module) : Components.GenericAOEs(mo
 {
     private readonly AOEShapeCircle circleSmall = new(4f), circleBig = new(10f);
     private readonly List<AOEInstance> _aoes = new(7);
-    private static readonly (WPos initialPos, Angle rotation)[] positions =
+    private readonly (WPos initialPos, Angle rotation)[] positions =
     [
         (new(-135.623f, 147.871f), -45f.Degrees()),
         (new(-142.695f, 144.942f), default),
@@ -43,17 +43,6 @@ sealed class SandPillarEarthbreak(BossModule module) : Components.GenericAOEs(mo
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
-    public override void Update()
-    {
-        if (_aoes.Count <= 1)
-        {
-            return;
-        }
-        var aoes = CollectionsMarshal.AsSpan(_aoes);
-        ref var aoe = ref aoes[0];
-        aoe.Color = Colors.Danger;
-    }
-
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         switch (spell.Action.ID)
@@ -65,7 +54,7 @@ sealed class SandPillarEarthbreak(BossModule module) : Components.GenericAOEs(mo
                     var cPos = caster.Position;
                     for (var i = 0; i < 8; ++i)
                     {
-                        ref readonly var pos = ref positions[i];
+                        ref var pos = ref positions[i];
                         var initialPosition = pos.initialPos;
                         if (initialPosition.AlmostEqual(cPos, 1f))
                         {
@@ -81,6 +70,10 @@ sealed class SandPillarEarthbreak(BossModule module) : Components.GenericAOEs(mo
                 else
                 {
                     _aoes.RemoveAt(0);
+                    if (count > 2)
+                    {
+                        _aoes.Ref(0).Color = Colors.Danger;
+                    }
                 }
                 break;
             case (uint)AID.Earthbreak:

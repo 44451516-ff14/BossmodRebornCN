@@ -25,7 +25,6 @@ public sealed class Q1FinalVerse : BossModule
 {
     public Q1FinalVerse(WorldState ws, Actor primary) : base(ws, primary, ArenaCenter, new ArenaBoundsCustom([new Rectangle(ArenaCenter, 20f, 15f)], AdjustForHitboxOutwards: true))
     {
-        ActivateComponent<Quantumlevel>();
         ActivateComponent<LightAndDark>();
         FindComponent<LightAndDark>()!.AddAOE();
         vodorigas = Enemies((uint)OID.VodorigaMinion);

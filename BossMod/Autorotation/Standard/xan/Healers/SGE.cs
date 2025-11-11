@@ -4,7 +4,7 @@ using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
 
-public sealed class SGE(RotationModuleManager manager, Actor player) : Castxan<AID, TraitID>(manager, player, PotionType.Mind)
+public sealed class SGE(RotationModuleManager manager, Actor player) : CastxanOld<AID, TraitID>(manager, player, PotionType.Mind)
 {
     public enum Track { Kardia = SharedTrack.Count, Druo }
     public enum KardiaStrategy { Auto, Manual }
@@ -14,14 +14,14 @@ public sealed class SGE(RotationModuleManager manager, Actor player) : Castxan<A
     {
         var def = new RotationModuleDefinition("xan SGE", "Sage", "Standard rotation (xan)|Healers", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SGE), 100);
 
-        def.DefineShared();
+        def.DefineShared("Phlegma");
 
         def.Define(Track.Kardia).As<KardiaStrategy>("Kardia")
-            .AddOption(KardiaStrategy.Auto, "Auto", "Automatically choose Kardia target")
-            .AddOption(KardiaStrategy.Manual, "Manual", "Don't automatically choose Kardia target");
+            .AddOption(KardiaStrategy.Auto, "Automatically choose Kardia target")
+            .AddOption(KardiaStrategy.Manual, "Don't automatically choose Kardia target");
         def.Define(Track.Druo).As<DruoStrategy>("Druochole")
-            .AddOption(DruoStrategy.Auto, "Auto", "Prevent Addersgall overcap by using Druochole on lowest-HP ally")
-            .AddOption(DruoStrategy.Manual, "Manual", "Do not automatically use Druochole");
+            .AddOption(DruoStrategy.Auto, "Prevent Addersgall overcap by using Druochole on lowest-HP ally")
+            .AddOption(DruoStrategy.Manual, "Do not automatically use Druochole");
 
         return def;
     }

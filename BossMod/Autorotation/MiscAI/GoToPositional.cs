@@ -6,8 +6,8 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
     {
         Positional
     }
+
     private static readonly Positional[] positionals = Enum.GetValues<Positional>();
-    private static readonly string[] positionalNames = Enum.GetNames<Positional>();
 
     public static RotationModuleDefinition Definition()
     {
@@ -16,7 +16,7 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
         var track = def.Define(Tracks.Positional).As<Positional>("Positional", "Positional");
         for (var i = 0; i < 4; ++i)
         {
-            track.AddOption(positionals[i], positionalNames[i]);
+            track.AddOption(positionals[i]);
         }
         return def;
     }

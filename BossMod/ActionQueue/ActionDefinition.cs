@@ -374,7 +374,7 @@ public sealed class ActionDefinitions : IDisposable
         if (from != to && hints.PathfindMapBounds is ArenaBoundsCustom)
         {
             var len = (to - from).Length();
-            var distToNearestWall = hints.PathfindMapBounds.IntersectRay(from - center, to - from);
+            var distToNearestWall = hints.PathfindMapBounds.IntersectRay(from - center, (to - from).Normalized());
             if (distToNearestWall >= 0f && distToNearestWall < len)
             {
                 return true;

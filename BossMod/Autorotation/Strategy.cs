@@ -41,15 +41,76 @@ public enum StrategyEnemySelection : int
     HighestMaxHP = 4,
 }
 
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class TrackAttribute() : Attribute
+{
+    public TrackAttribute(string name) : this()
+    {
+        DisplayName = name;
+    }
+
+    public string Name => DisplayName;
+    public string DisplayName = "";
+    public string? InternalName;
+    public float UiPriority;
+    public Type? Renderer;
+    public ActionID[] ActionIDs = [];
+
+    public object Action
+    {
+        set => Actions = [value];
+        get => Actions[0];
+    }
+    public object[] Actions
+    {
+        set => ActionIDs = [.. value.Select(v => ActionID.MakeSpell((Enum)v))];
+        get => [.. ActionIDs];
+    }
+}
+
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class NumberAttribute() : Attribute
+{
+    public float UiPriority;
+    public string DisplayName = "";
+
+    public Type? Renderer;
+
+    public float MinValue;
+    public float MaxValue = float.MaxValue;
+    public float Speed = 1;
+    public bool Slider = true;
+}
+
+[AttributeUsage(AttributeTargets.Field | AttributeTargets.Enum)]
+public sealed class OptionAttribute() : Attribute
+{
+    public OptionAttribute(string name) : this()
+    {
+        DisplayName = name;
+    }
+
+    public string Name => DisplayName;
+    public string DisplayName = "";
+    public float Cooldown;
+    public float Effect;
+    public ActionTargets Targets = ActionTargets.None;
+    public int MinLevel = 1;
+    public int MaxLevel = int.MaxValue;
+    public float DefaultPriority = ActionQueue.Priority.Medium;
+}
+
 public abstract record class StrategyConfig(
     string InternalName, // unique name of the config; it is used for serialization, so it can't really be changed without losing user data (or writing config converter)
     string DisplayName, // if non-empty, this name is used for all UI instead of internal name
-    float UIPriority // tracks are sorted by UI priority for display; negative are hidden by default
+    float UIPriority, // tracks are sorted by UI priority for display; negative are hidden by default
+    Type Renderer // custom drawing for regular config, plan UI still uses old editor
 )
 {
     public abstract StrategyValue CreateEmpty();
     public abstract StrategyValue CreateForEditor();
 
+    public abstract bool IsDefault(StrategyValue val);
     public abstract string ToDisplayString(StrategyValue val);
     public abstract void SerializeValue(Utf8JsonWriter writer, StrategyValue val);
 
@@ -61,16 +122,18 @@ public record class StrategyConfigTrack(
     Type OptionEnum, // type of the enum used for options
     string InternalName,
     string DisplayName,
-    float UIPriority
-) : StrategyConfig(InternalName, DisplayName, UIPriority)
+    float UIPriority,
+    Type Renderer
+) : StrategyConfig(InternalName, DisplayName, UIPriority, Renderer)
 {
-    public override StrategyValueTrack CreateEmpty() => new();
-    public override StrategyValueTrack CreateForEditor() => new() { Option = Options.Count > 1 ? 1 : 0 };
-
     public readonly List<StrategyOption> Options = [];
     public readonly List<ActionID> AssociatedActions = []; // these actions will be shown on the track in the planner ui
 
-    public override string ToDisplayString(StrategyValue val) => Options[((StrategyValueTrack)val).Option].DisplayName;
+    public override StrategyValueTrack CreateEmpty() => new();
+    public override StrategyValueTrack CreateForEditor() => new() { Option = Options.Count > 1 ? 1 : 0 };
+
+    public override bool IsDefault(StrategyValue val) => ((StrategyValueTrack)val).Option == 0;
+    public override string ToDisplayString(StrategyValue val) => Options[((StrategyValueTrack)val).Option].UIName;
     public override void SerializeValue(Utf8JsonWriter writer, StrategyValue val)
     {
         writer.WriteString(nameof(StrategyValueTrack.Option), Options[((StrategyValueTrack)val).Option].InternalName);
@@ -82,12 +145,16 @@ public record class StrategyConfigFloat(
     string DisplayName,
     float MinValue,
     float MaxValue,
-    float UIPriority
-) : StrategyConfig(InternalName, DisplayName, UIPriority)
+    float UIPriority,
+    Type Renderer,
+    bool Drag = true,
+    float Speed = 1
+) : StrategyConfig(InternalName, DisplayName, UIPriority, Renderer)
 {
     public override StrategyValueFloat CreateEmpty() => new() { Value = MinValue };
     public override StrategyValueFloat CreateForEditor() => new() { Value = MinValue };
 
+    public override bool IsDefault(StrategyValue val) => (((StrategyValueFloat)val).Value - MinValue) < 1e-8;
     public override string ToDisplayString(StrategyValue val) => ((StrategyValueFloat)val).Value.ToString("f1");
     public override void SerializeValue(Utf8JsonWriter writer, StrategyValue val)
     {
@@ -95,11 +162,21 @@ public record class StrategyConfigFloat(
     }
 }
 
-public record class StrategyConfigInt(string InternalName, string DisplayName, long MinValue, long MaxValue, float UIPriority) : StrategyConfig(InternalName, DisplayName, UIPriority)
+public record class StrategyConfigInt(
+    string InternalName,
+    string DisplayName,
+    long MinValue,
+    long MaxValue,
+    float UIPriority,
+    Type Renderer,
+    bool Drag = true,
+    float Speed = 1
+) : StrategyConfig(InternalName, DisplayName, UIPriority, Renderer)
 {
     public override StrategyValueInt CreateEmpty() => new() { Value = MinValue };
     public override StrategyValueInt CreateForEditor() => throw new NotImplementedException();
 
+    public override bool IsDefault(StrategyValue val) => ((StrategyValueInt)val).Value == MinValue;
     public override string ToDisplayString(StrategyValue val) => ((StrategyValueInt)val).Value.ToString();
     public override void SerializeValue(Utf8JsonWriter writer, StrategyValue val)
     {
@@ -128,6 +205,8 @@ public abstract record class StrategyValue
     public string Comment = "";
     public float ExpireIn = float.MaxValue;
 
+    public virtual bool IsDefault() => false;
+
     public abstract void DeserializeFields(JsonElement js);
     public abstract void SerializeFields(Utf8JsonWriter writer);
 }
@@ -141,6 +220,8 @@ public record class StrategyValueTrack : StrategyValue
     public int TargetParam; // strategy-specific parameter
     public float Offset1; // x or r coordinate
     public float Offset2; // y or phi coordinate
+
+    public override bool IsDefault() => Option == 0;
 
     public override void DeserializeFields(JsonElement js)
     {
@@ -234,5 +315,58 @@ public readonly record struct StrategyValues(List<StrategyConfig> Configs)
         if (Configs[idx] is StrategyConfigTrack c)
             return new(c, (StrategyValueTrack)Values[idx]);
         throw new ArgumentException($"wrong type for strategy option: got {Configs[idx].GetType()}/{Values[idx].GetType()}, expected Track type");
+    }
+
+    public float GetFloat<TrackIndex>(TrackIndex index) where TrackIndex : Enum
+    {
+        var idx = (int)(object)index;
+        if (Configs[idx] is StrategyConfigFloat)
+            return ((StrategyValueFloat)Values[idx]).Value;
+        throw new ArgumentException($"wrong type for strategy option: got {Configs[idx].GetType()}/{Values[idx].GetType()}, expected Float type");
+    }
+
+    public long GetInt<TrackIndex>(TrackIndex index) where TrackIndex : Enum
+    {
+        var idx = (int)(object)index;
+        if (Configs[idx] is StrategyConfigInt)
+            return ((StrategyValueInt)Values[idx]).Value;
+        throw new ArgumentException($"wrong type for strategy option: got {Configs[idx].GetType()}/{Values[idx].GetType()}, expected Int type");
+    }
+}
+
+public record struct Track<T>(T Value, StrategyValue Raw) where T : struct
+{
+    public readonly float ExpireIn => Raw.ExpireIn;
+
+    public static implicit operator T(Track<T> self) => self.Value;
+
+    public override readonly string ToString() => $"Track({Value}, Raw={Raw})";
+}
+
+static class ValueConverter
+{
+    public static T FromValues<T>(StrategyValues values) where T : struct
+    {
+        object val = default(T);
+
+        var i = 0;
+        foreach (var field in typeof(T).GetFields())
+        {
+            switch (values.Values[i])
+            {
+                case StrategyValueTrack t:
+                    field.SetValue(val, Activator.CreateInstance(field.FieldType, [Enum.ToObject(field.FieldType.GenericTypeArguments[0], t.Option), t]));
+                    break;
+                case StrategyValueFloat f:
+                    field.SetValue(val, new Track<float>(f.Value, f));
+                    break;
+                case StrategyValueInt i2:
+                    field.SetValue(val, new Track<long>(i2.Value, i2));
+                    break;
+            }
+            i++;
+        }
+
+        return (T)val;
     }
 }

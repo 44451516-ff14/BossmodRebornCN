@@ -22,10 +22,13 @@ public sealed class AutorotationConfig : ConfigNode
     [PropertyDisplay("隐藏VBM默认预设", tooltip: "创建自定义预设后，启用此选项可隐藏内置的默认预设")]
     public bool HideDefaultPreset = false;
 
+
     [PropertyDisplay("显示定位指引标记", tooltip: "显示定位技能提示，指示应移动至目标侧面或背面")]
+    public bool SuggestHealerAI = true;
+
+    [PropertyDisplay ("在游戏里面中显示位置提示", tooltip: "显示位置技能提示，指示移动到目标的侧面或背面")]
     public bool ShowPositionals = false;
-
-
+    
     [PropertyDisplay("脱战后自动禁用自动循环")]
     public bool ClearPresetOnCombatEnd = false;
 

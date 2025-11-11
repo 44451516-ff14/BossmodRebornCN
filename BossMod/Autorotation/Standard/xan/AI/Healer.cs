@@ -43,9 +43,9 @@ public sealed class HealerAI(RotationModuleManager manager, Actor player) : AIBa
         def.AbilityTrack(Track.Heal, "Heal");
 
         def.Define(Track.Esuna).As<HintedStrategy>("Esuna2", "Esuna")
-            .AddOption(HintedStrategy.Disabled, "Disabled", "Don't use")
-            .AddOption(HintedStrategy.HintOnly, "HintOnly", "Cleanse targets suggested by active module")
-            .AddOption(HintedStrategy.Enabled, "Enabled", "Cleanse all eligible party members")
+            .AddOption(HintedStrategy.Disabled, "Don't use")
+            .AddOption(HintedStrategy.HintOnly, "Cleanse targets suggested by active module")
+            .AddOption(HintedStrategy.Enabled, "Cleanse all eligible party members")
             .AddAssociatedActions(ClassShared.AID.Esuna);
 
         def.AbilityTrack(Track.StayNearParty, "Stay near party");

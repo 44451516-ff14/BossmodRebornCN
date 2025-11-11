@@ -4,7 +4,7 @@ using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.xan;
 
-public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan<AID, TraitID>(manager, player, PotionType.Strength)
+public sealed class SAM(RotationModuleManager manager, Actor player) : AttackxanOld<AID, TraitID>(manager, player, PotionType.Strength)
 {
     public enum Track { Higanbana = SharedTrack.Count, Enpi, Meikyo, Opener }
 
@@ -35,32 +35,32 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
     {
         var def = new RotationModuleDefinition("xan SAM", "Samurai", "Standard rotation (xan)|Melee", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SAM), 100);
 
-        def.DefineShared().AddAssociatedActions(AID.Ikishoten, AID.HissatsuSenei);
+        def.DefineShared("Ikishoten/Ogi").AddAssociatedActions(AID.Ikishoten, AID.HissatsuSenei);
 
         def.Define(Track.Higanbana).As<OffensiveStrategy>("Higanbana")
-            .AddOption(OffensiveStrategy.Automatic, "Auto", "Refresh every 60s according to standard rotation", supportedTargets: ActionTargets.Hostile)
-            .AddOption(OffensiveStrategy.Delay, "Delay", "Don't apply")
-            .AddOption(OffensiveStrategy.Force, "Force", "Apply to target ASAP, regardless of remaining duration", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Automatic, "Refresh every 60s according to standard rotation", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Delay, "Don't apply")
+            .AddOption(OffensiveStrategy.Force, "Apply to target ASAP, regardless of remaining duration", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(AID.Higanbana);
 
         def.Define(Track.Enpi).As<EnpiStrategy>("Enpi")
-            .AddOption(EnpiStrategy.Enhanced, "Enhanced", "Use if Enhanced Enpi is active")
-            .AddOption(EnpiStrategy.None, "None", "Do not use")
-            .AddOption(EnpiStrategy.Ranged, "Ranged", "Use when out of range")
+            .AddOption(EnpiStrategy.Enhanced, "Use if Enhanced Enpi is active")
+            .AddOption(EnpiStrategy.None, "Do not use")
+            .AddOption(EnpiStrategy.Ranged, "Use when out of range")
             .AddAssociatedActions(AID.Enpi);
 
         def.Define(Track.Meikyo).As<MeikyoStrategy>("Meikyo")
-            .AddOption(MeikyoStrategy.Auto, "Auto", "Use every minute or so")
-            .AddOption(MeikyoStrategy.Delay, "Delay", "Don't use")
-            .AddOption(MeikyoStrategy.Force, "Force", "Use ASAP (unless already active)")
-            .AddOption(MeikyoStrategy.HoldOne, "HoldOne", "Only use if charges are capped")
+            .AddOption(MeikyoStrategy.Auto, "Use every minute or so")
+            .AddOption(MeikyoStrategy.Delay, "Don't use")
+            .AddOption(MeikyoStrategy.Force, "Use ASAP (unless already active)")
+            .AddOption(MeikyoStrategy.HoldOne, "Only use if charges are capped")
             .AddAssociatedActions(AID.MeikyoShisui);
 
         def.Define(Track.Opener).As<OpenerStrategy>("Opener")
-            .AddOption(OpenerStrategy.Standard, "Standard", "Standard opener; Gekko (damage buff), Kasha, Midare, Higanbana, Ogi")
-            .AddOption(OpenerStrategy.KashaStandard, "KashaStandard", "Standard opener, but use Kasha first for immediate haste buff")
-            .AddOption(OpenerStrategy.GekkoBana, "GekkoBana", "Apply Higanbana immediately")
-            .AddOption(OpenerStrategy.KashaBana, "KashaBana", "Use Kasha, then (unbuffed) Higanbana");
+            .AddOption(OpenerStrategy.Standard, "Standard opener; Gekko (damage buff), Kasha, Midare, Higanbana, Ogi")
+            .AddOption(OpenerStrategy.KashaStandard, "Standard opener, but use Kasha first for immediate haste buff")
+            .AddOption(OpenerStrategy.GekkoBana, "Apply Higanbana immediately")
+            .AddOption(OpenerStrategy.KashaBana, "Use Kasha, then (unbuffed) Higanbana");
 
         return def;
     }

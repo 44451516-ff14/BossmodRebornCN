@@ -18,8 +18,8 @@ sealed class AIController(WorldState ws, ActionManagerEx amex, MovementOverride 
     private readonly MovementOverride _movement = movement;
 
     public bool IsVerticalAllowed => Service.Condition[ConditionFlag.InFlight];
-    public Angle CameraFacing => (Camera.Instance?.CameraAzimuth ?? 0).Radians() + 180.Degrees();
-    public Angle CameraAltitude => (Camera.Instance?.CameraAltitude ?? 0).Radians();
+    public Angle CameraFacing => (Camera.Instance?.CameraAzimuth ?? 0f).Radians() + 180f.Degrees();
+    public Angle CameraAltitude => (Camera.Instance?.CameraAltitude ?? 0f).Radians();
 
     public void Clear()
     {

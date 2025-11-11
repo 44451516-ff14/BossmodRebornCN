@@ -1,10 +1,12 @@
 ﻿namespace BossMod.Heavensward.Alliance.A21ArachneEve;
 
-class A21ArachneEveStates : StateMachineBuilder
+[SkipLocalsInit]
+sealed class A21ArachneEveStates : StateMachineBuilder
 {
     public A21ArachneEveStates(BossModule module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<SpiderWeb>()
             .ActivateOnEnter<DarkSpike>()
             .ActivateOnEnter<SilkenSpray>()
             .ActivateOnEnter<ShadowBurst>()
@@ -12,8 +14,7 @@ class A21ArachneEveStates : StateMachineBuilder
             .ActivateOnEnter<FrondAffeared>()
             .ActivateOnEnter<TheWidowsEmbrace>()
             .ActivateOnEnter<TheWidowsKiss>()
-            .ActivateOnEnter<Tremblor1>()
-            .ActivateOnEnter<Tremblor2>()
-            .ActivateOnEnter<Tremblor3>();
+            .ActivateOnEnter<Pitfall>()
+            .ActivateOnEnter<Tremblor>();
     }
 }

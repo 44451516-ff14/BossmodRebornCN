@@ -16,8 +16,19 @@ class SplitEnd1(BossModule module) : SplitEnd(module, (uint)AID.SplitEnd1);
 class SplitEnd2(BossModule module) : SplitEnd(module, (uint)AID.SplitEnd2);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 168, NameID = 4897)]
-public class A25Calofisteri(WorldState ws, Actor primary) : BossModule(ws, primary, new(-300, -35), new ArenaBoundsCircle(30))
+[SkipLocalsInit]
+public sealed class A25Calofisteri : BossModule
 {
+    public A25Calofisteri(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private A25Calofisteri(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-300f, -34f), 29.5f, 96)], [new Rectangle(new(-300f, -4.26167f), 16.5f, 1.25f)]);
+        return (arena.Center, arena);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

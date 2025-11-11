@@ -47,13 +47,14 @@ public struct Cooldown(float elapsed, float total) : IEquatable<Cooldown>
 // this is generally not available for non-player party members, but we can try to guess
 public sealed class ClientState
 {
-    public readonly struct Fate(uint id, Vector3 center, float radius, byte progress, byte handInCount)
+    public readonly struct Fate(uint id, Vector3 center, float radius, byte progress, byte handInCount, uint objectiveNpc)
     {
         public readonly uint ID = id;
         public readonly Vector3 Center = center;
         public readonly float Radius = radius;
         public readonly byte Progress = progress;
         public readonly byte HandInCount = handInCount;
+        public readonly uint ObjectiveNpc = objectiveNpc;
 
         public static bool operator ==(Fate left, Fate right) => left.ID == right.ID;
         public static bool operator !=(Fate left, Fate right) => left.ID != right.ID;
@@ -629,7 +630,7 @@ public sealed class ClientState
             ws.Client.ActiveFate = Value;
             ws.Client.ActiveFateChanged.Fire(this);
         }
-        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLAF"u8).Emit(Value.ID).Emit(Value.Center).Emit(Value.Radius, "f3").Emit(Value.Progress).Emit(Value.HandInCount);
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("CLAF"u8).Emit(Value.ID).Emit(Value.Center).Emit(Value.Radius, "f3").Emit(Value.Progress).Emit(Value.HandInCount).Emit(Value.ObjectiveNpc);
     }
 
     public Event<OpActivePetChange> ActivePetChanged = new();
