@@ -3,6 +3,6 @@ namespace BossMod;
 [ConfigDisplay(Parent = typeof(ActionTweaksConfig))]
 class GNBConfig : ConfigNode
 {
-    [PropertyDisplay("Prevent use of 'Lightning Shot' too early when in pre-pull")]
+    [PropertyDisplay("防止在开怪前过早使用'闪雷弹'")]
     public bool ForbidEarlyLightningShot = true;
 }

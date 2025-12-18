@@ -3,6 +3,6 @@
 [ConfigDisplay(Parent = typeof(ActionTweaksConfig))]
 class WHMConfig : ConfigNode
 {
-    [PropertyDisplay("Align Aetherial Shift with camera direction")]
+    [PropertyDisplay("使以太步与镜头方向对齐")]
     public bool AlignDashToCamera = false;
 }

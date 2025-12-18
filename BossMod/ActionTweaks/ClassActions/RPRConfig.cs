@@ -3,9 +3,9 @@
 [ConfigDisplay(Parent = typeof(ActionTweaksConfig))]
 class RPRConfig : ConfigNode
 {
-    [PropertyDisplay("Forbid Harpe too early in prepull")]
+    [PropertyDisplay("禁止在开怪前过早使用收割")]
     public bool ForbidEarlyHarpe = true;
 
-    [PropertyDisplay("Align Hell's Egress/Ingress with camera direction")]
+    [PropertyDisplay("使地狱之门/地狱之路与镜头方向对齐")]
     public bool AlignDashToCamera = false;
 }

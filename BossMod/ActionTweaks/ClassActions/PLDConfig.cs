@@ -3,27 +3,27 @@
 [ConfigDisplay(Parent = typeof(ActionTweaksConfig))]
 class PLDConfig : ConfigNode
 {
-    [PropertyDisplay("Prevent use of 'Holy Spirit' too early when in pre-pull")]
+    [PropertyDisplay("防止在开怪前过早使用'神圣'")]
     public bool ForbidEarlyHolySpirit = true;
 
-    [PropertyDisplay("Prevent use of 'Shield Lob' too early when in pre-pull (if Holy Spirit is not unlocked)")]
+    [PropertyDisplay("防止在开怪前过早使用'盾牌投掷'（如果神圣未解锁）")]
     public bool ForbidEarlyShieldLob = true;
 
     public enum WingsBehavior : uint
     {
-        [PropertyDisplay("Game default (character-relative, backwards)")]
+        [PropertyDisplay("游戏默认（角色相对，向后）")]
         Default = 0,
 
-        [PropertyDisplay("Character-relative, forwards")]
+        [PropertyDisplay("角色相对，向前")]
         CharacterForward = 1,
 
-        [PropertyDisplay("Camera-relative, backwards")]
+        [PropertyDisplay("镜头相对，向后")]
         CameraBackward = 2,
 
-        [PropertyDisplay("Camera-relative, forwards")]
+        [PropertyDisplay("镜头相对，向前")]
         CameraForward = 3,
     }
 
-    [PropertyDisplay("Passage of Arms direction")]
+    [PropertyDisplay("武装圣域方向")]
     public WingsBehavior Wings = WingsBehavior.Default;
 }
