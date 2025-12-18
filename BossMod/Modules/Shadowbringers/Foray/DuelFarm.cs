@@ -16,15 +16,15 @@ public sealed class DuelAttribute(uint nameID, uint prepNameID, uint fateID = de
 [ConfigDisplay(Name = "Bozja duel farming", Parent = typeof(ShadowbringersConfig))]
 public class DuelFarmConfig : ConfigNode
 {
-    [PropertyDisplay("Max range to look for new mobs to pull")]
+    [PropertyDisplay("寻找新怪物的最大范围")]
     [PropertySlider(20, 100, Speed = 0.1f)]
     public float MaxPullDistance = 30f;
 
-    [PropertyDisplay("Max number of mobs to pull at once (0 for no limit)")]
+    [PropertyDisplay("一次拉怪的最大数量（0表示无限制）")]
     [PropertySlider(0, 30, Speed = 0.1f)]
     public int MaxPullCount = 10;
 
-    [PropertyDisplay("Show auto farm window")]
+    [PropertyDisplay("显示自动刷怪窗口")]
     public bool ShowAutoFarmWindow = false;
 
     public bool AssistMode;

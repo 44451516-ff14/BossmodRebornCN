@@ -62,10 +62,10 @@ sealed class AIConfig : ConfigNode
 
     [PropertyDisplay("启用非战斗离开(AFK)模式", tooltip: "非战斗状态下等待指定秒数后启用离开模式。任何移动将重置计时器，或在离开模式已激活时禁用该模式")]
     public float AFKModeTimer = 10;
-    [PropertyDisplay("Minimum distance to hitbox")]
+    [PropertyDisplay("到碰撞箱的最小距离")]
     public float MinDistance = default;
 
-    [PropertyDisplay("Preferred distance to forbidden zones")]
+    [PropertyDisplay("到禁止区域的偏好距离")]
     public float PreferredDistance = default;
 
 
@@ -80,7 +80,7 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("骑乘时保持静止-Idle while mounted")]
     public bool ForbidAIMovementMounted = false;
 
-    [PropertyDisplay("Echo slash commands to chat")]
+    [PropertyDisplay("将斜杠命令回显到聊天")]
     public bool EchoToChat = true;
 
     public string? AIAutorotPresetName;
