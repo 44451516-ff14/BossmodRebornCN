@@ -4,3 +4,10 @@ bin/
 *.user
 logs/
 .idea/
+
+release/BossModReborn/
+release/BossModReborn/BossModReborn.deps.json
+release/BossModReborn/BossModReborn.dll
+release/BossModReborn/BossModReborn.json
+release/BossModReborn/BossModReborn.pdb
+release/BossModReborn/DefaultRotationPresets.json

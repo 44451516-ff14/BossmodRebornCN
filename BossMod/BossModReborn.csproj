@@ -1,103 +1,114 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Authors></Authors>
-    <Company></Company>
-    <Version>0.0.0.0</Version>
-    <Description>Boss mod.</Description>
-    <Copyright></Copyright>
-    <PackageProjectUrl></PackageProjectUrl>
-  </PropertyGroup>
+<Project Sdk="Dalamud.CN.NET.Sdk/14.0.0">
+    <PropertyGroup>
+        <Authors></Authors>
+        <Company></Company>
+        <Version>7.4.0.0</Version>
+        <Description>Boss mod.</Description>
+        <Copyright></Copyright>
+        <PackageProjectUrl></PackageProjectUrl>
+    </PropertyGroup>
 
-<PropertyGroup>
-  <AssemblyName>BossModReborn</AssemblyName>
-</PropertyGroup>
+    <PropertyGroup>
+        <AssemblyName>BossModReborn</AssemblyName>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <Platforms>x64</Platforms>
-    <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <Platforms>x64</Platforms>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Using Include="System" />
-    <Using Include="System.Collections" />
-    <Using Include="System.Collections.Concurrent" />
-    <Using Include="System.Collections.Generic" />
-    <Using Include="System.Collections.Immutable" />
-    <Using Include="System.Runtime.InteropServices" />
-    <Using Include="System.Runtime.CompilerServices" />
-    <Using Include="System.Linq" />
-    <Using Include="System.Numerics" />
-    <Using Include="System.Threading.Tasks;" />
-    <Using Include="System.Text" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
-    <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="14.0.0" />
-    <PackageReference Include="PInvoke.User32" Version="0.7.124" />
-    <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100" />
-    <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj" />
-
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud.Common">
-      <HintPath>$(DalamudLibPath)Dalamud.Common.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Dalamud.Bindings.ImGui">
-      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Dalamud.Bindings.ImPlot">
-      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImPlot.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="Lumina.Excel">
-      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="DefaultRotationPresets.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Pathfinding\ObstacleMaps\*" />
-  </ItemGroup>
-
-  <Target Name="CopyOnlyPInvoke" AfterTargets="Build" Condition=" '$(CopyLocalLockFileAssemblies)' != 'true' ">
     <ItemGroup>
-      <_PInvokeFromNuGet Include="@(RuntimeCopyLocalItems)" Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'PInvoke.User32' &#xD;&#xA;                                   and $([System.String]::Copy('%(RuntimeCopyLocalItems.Extension)').ToLower()) == '.dll'" />
+        <Using Include="System"/>
+        <Using Include="System.Collections"/>
+        <Using Include="System.Collections.Concurrent"/>
+        <Using Include="System.Collections.Generic"/>
+        <Using Include="System.Collections.Immutable"/>
+        <Using Include="System.Runtime.InteropServices"/>
+        <Using Include="System.Runtime.CompilerServices"/>
+        <Using Include="System.Linq"/>
+        <Using Include="System.Numerics"/>
+        <Using Include="System.Threading.Tasks;"/>
+        <Using Include="System.Text"/>
     </ItemGroup>
-    <Copy SourceFiles="@(_PInvokeFromNuGet)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
-  </Target>
-  
+
+    <PropertyGroup>
+        <DalamudLibPath>$(appdata)\XIVLauncherCN\addon\Hooks\dev\</DalamudLibPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
+        <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
+    </PropertyGroup>
+
+    <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">
+        <ItemGroup>
+            <FilesToDelete Include="$(OutputPath)Dalamud.Common.dll"/>
+            <FilesToDelete Include="$(OutputPath)Dalamud.Common.pdb"/>
+            <FilesToDelete Include="$(OutputPath)System.Data.SQLite.dll"/>
+            <FilesToDelete Include="$(OutputPath)TerraFX.Interop.Windows.dll"/>
+        </ItemGroup>
+        <Delete Files="@(FilesToDelete)" ContinueOnError="true"/>
+    </Target>
+
+    <ItemGroup>
+        <None Update="DefaultRotationPresets.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Pathfinding\ObstacleMaps\*"/>
+    </ItemGroup>
+
+    <Target Name="CopyOnlyPInvoke" AfterTargets="Build" Condition=" '$(CopyLocalLockFileAssemblies)' != 'true' ">
+        <ItemGroup>
+            <_PInvokeFromNuGet Include="@(RuntimeCopyLocalItems)" Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'PInvoke.User32' &#xD;&#xA;                                   and $([System.String]::Copy('%(RuntimeCopyLocalItems.Extension)').ToLower()) == '.dll'"/>
+        </ItemGroup>
+        <Copy SourceFiles="@(_PInvokeFromNuGet)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true"/>
+    </Target>
+
+    <ItemGroup>
+        <Reference Include="Dalamud.Common"/>
+        <Reference Include="TerraFX.Interop.Windows"/>
+        <PackageReference Include="PInvoke.User32" Version="0.7.124" />
+    </ItemGroup>
+
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <OutputPath>$(MSBuildProjectDirectory)\..\release\BossModReborn</OutputPath>
+    </PropertyGroup>
+
+    <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">
+        <ItemGroup>
+            <FilesToDelete Include="$(OutputPath)Dalamud.Common.dll"/>
+            <FilesToDelete Include="$(OutputPath)Dalamud.Common.pdb"/>
+            <FilesToDelete Include="$(OutputPath)System.Data.SQLite.dll"/>
+            <FilesToDelete Include="$(OutputPath)TerraFX.Interop.Windows.dll"/>
+<!--            <FilesToDelete Include="$(OutputPath)PInvoke.User32.dll"/>-->
+        </ItemGroup>
+        <Delete Files="@(FilesToDelete)" ContinueOnError="true"/>
+    </Target>
+
+    <Target Name="CreateZipPackage" AfterTargets="RemoveUnwantedFiles" Condition="'$(Configuration)' == 'Release'">
+        <PropertyGroup>
+            <ZipOutputPath>$(OutputPath)\latest.zip</ZipOutputPath>
+            <TempZipPath>$(MSBuildProjectDirectory)\..\release\latest_temp.zip</TempZipPath>
+        </PropertyGroup>
+        <Message Text="开始创建打包文件: $(ZipOutputPath)" Importance="high"/>
+        <Delete Files="$(ZipOutputPath)" ContinueOnError="true"/>
+        <Delete Files="$(TempZipPath)" ContinueOnError="true"/>
+        <ItemGroup>
+            <FilesToZip Include="$(OutputPath)\*.*" Exclude="$(OutputPath)\latest.zip"/>
+        </ItemGroup>
+        <ZipDirectory SourceDirectory="$(OutputPath)" DestinationFile="$(TempZipPath)" Overwrite="true"/>
+        <Move SourceFiles="$(TempZipPath)" DestinationFiles="$(ZipOutputPath)"/>
+        <Message Text="打包完成: $(ZipOutputPath)" Importance="high"/>
+    </Target>
 </Project>
