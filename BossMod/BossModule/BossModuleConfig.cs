@@ -75,10 +75,10 @@ public sealed class BossModuleConfig : ConfigNode
     public bool ShowWaymarks = false;
 
 
-    [PropertyDisplay("Show signs on radar ('attack', 'bind', 'ignore', and shape markers)")]
+    [PropertyDisplay("在雷达上显示标记（'攻击'、'束缚'、'忽略'和形状标记）")]
     public bool ShowSigns = false;
 
-    [PropertyDisplay("Always show all alive party members")]
+    [PropertyDisplay("始终显示所有存活的队伍成员")]
     public bool ShowIrrelevantPlayers = false;
 
     [PropertyDisplay("为雷达中无默认颜色的玩家按职责显示颜色")]
