@@ -31,6 +31,16 @@ sealed class P3Inception1(BossModule module) : Components.CastCounter(module, (u
         }
     }
 
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (hints.FindEnemy(((TEA)Module).TrueHeart()) is AIHints.Enemy heart)
+        {
+            heart.ForbidDOTs = true;
+            // hitting heart advances combo
+            heart.Priority = AIHints.Enemy.PriorityPointless;
+        }
+    }
+
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (!AllSpheresSpawned)

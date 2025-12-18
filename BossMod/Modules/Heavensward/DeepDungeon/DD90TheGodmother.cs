@@ -20,7 +20,7 @@ public enum AID : uint
     SelfDestruct = 7106 // LavaBomb->self, 3.0s cast, range 6+R circle
 }
 
-sealed class GreyBomb(BossModule module) : Components.Adds(module, (uint)OID.GreyBomb, 5);
+sealed class GreyBomb(BossModule module) : Components.Adds(module, (uint)OID.GreyBomb, 5, true);
 sealed class Burst(BossModule module) : Components.RaidwideCast(module, (uint)AID.Burst, "Kill the Grey Bomb! or take 80% of your Max HP");
 // future thing to do: maybe add a tether between bomb/boss to show it needs to show the aoe needs to explode on them. . . 
 sealed class HypothermalCombustion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HypothermalCombustion, 7.2f)

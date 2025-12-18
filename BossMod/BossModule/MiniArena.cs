@@ -94,9 +94,6 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     public Vector2 WorldPositionToScreenPosition(WPos p)
     {
         return ScreenCenter + WorldOffsetToScreenOffset(p - Center);
-        //var viewPos = SharpDX.Vector3.Transform(new SharpDX.Vector3(worldOffset.X, 0, worldOffset.Z), CameraView);
-        //return ScreenHalfSize * new Vector2(viewPos.X / viewPos.Z, viewPos.Y / viewPos.Z);
-        //return ScreenHalfSize * new Vector2(viewPos.X, viewPos.Y) / WorldHalfSize;
     }
 
     // this is useful for drawing on margins (TODO better api)

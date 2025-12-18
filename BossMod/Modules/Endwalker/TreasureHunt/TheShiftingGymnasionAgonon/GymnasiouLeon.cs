@@ -10,6 +10,7 @@ public enum OID : uint
     GymnasticEggplant = 0x3D50, // R0.84, icon 2, needs to be killed in order from 1 to 5 for maximum rewards
     GymnasticOnion = 0x3D4F, // R0.84, icon 1, needs to be killed in order from 1 to 5 for maximum rewards
     GymnasticTomato = 0x3D52, // R0.84, icon 4, needs to be killed in order from 1 to 5 for maximum rewards
+    GymnasiouLampas = 0x3D4D, //R=2.001, bonus loot adds
     Helper = 0x233C
 }
 
@@ -32,14 +33,12 @@ public enum AID : uint
     PungentPirouette = 32303, // GymnasticGarlic->self, 3.5s cast, range 7 circle
     TearyTwirl = 32301, // GymnasticOnion->self, 3.5s cast, range 7 circle
     HeavySmash = 32317, // GymnasiouLyssa->location, 3.0s cast, range 6 circle
-    Telega = 9630 // Mandragoras/GymnasiouLyssa->self, no cast, single-target, bonus add disappear
+    Telega = 9630 // BonusAdds->self, no cast, single-target, bonus add disappear
 }
 
 class InfernoBlast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InfernoBlast, new AOEShapeRect(46f, 10f));
 
-abstract class Circles(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, 12f);
-class Roar(BossModule module) : Circles(module, (uint)AID.Roar);
-class FlareStar(BossModule module) : Circles(module, (uint)AID.FlareStar);
+sealed class RoarFlareStar(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Roar, (uint)AID.FlareStar], 12f);
 
 class MarkOfTheBeast(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MarkOfTheBeast, new AOEShapeCone(8f, 60f.Degrees()));
 class Pounce(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Pounce);
@@ -56,8 +55,7 @@ class GymnasiouLeonStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<InfernoBlast>()
-            .ActivateOnEnter<Roar>()
-            .ActivateOnEnter<FlareStar>()
+            .ActivateOnEnter<RoarFlareStar>()
             .ActivateOnEnter<MarkOfTheBeast>()
             .ActivateOnEnter<Pounce>()
             .ActivateOnEnter<MagmaChamber>()
@@ -71,7 +69,7 @@ class GymnasiouLeonStates : StateMachineBuilder
 public class GymnasiouLeon(WorldState ws, Actor primary) : THTemplate(ws, primary)
 {
     private static readonly uint[] bonusAdds = [(uint)OID.GymnasticEggplant, (uint)OID.GymnasticGarlic, (uint)OID.GymnasticOnion, (uint)OID.GymnasticTomato,
-    (uint)OID.GymnasticQueen, (uint)OID.GymnasiouLyssa];
+    (uint)OID.GymnasticQueen, (uint)OID.GymnasiouLyssa, (uint)OID.GymnasiouLampas];
     public static readonly uint[] All = [(uint)OID.Boss, (uint)OID.GymnasiouLeonMikros, .. bonusAdds];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -89,11 +87,12 @@ public class GymnasiouLeon(WorldState ws, Actor primary) : THTemplate(ws, primar
             var e = hints.PotentialTargets[i];
             e.Priority = e.Actor.OID switch
             {
-                (uint)OID.GymnasticOnion => 6,
-                (uint)OID.GymnasticEggplant => 5,
-                (uint)OID.GymnasticGarlic => 4,
-                (uint)OID.GymnasticTomato => 3,
-                (uint)OID.GymnasticQueen or (uint)OID.GymnasiouLyssa => 2,
+                (uint)OID.GymnasticOnion => 7,
+                (uint)OID.GymnasticEggplant => 6,
+                (uint)OID.GymnasticGarlic => 5,
+                (uint)OID.GymnasticTomato => 4,
+                (uint)OID.GymnasticQueen or (uint)OID.GymnasiouLyssa => 3,
+                (uint)OID.GymnasiouLampas => 2,
                 (uint)OID.GymnasiouLeonMikros => 1,
                 _ => 0
             };

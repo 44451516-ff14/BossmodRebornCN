@@ -31,7 +31,7 @@ sealed class DebugTeleport : IDisposable
         ImGui.InputFloat("No clip speed (yalms/s)", ref _noClipSpeed, 0.1f, 1f, "%.3f");
         _noClipSpeed = Math.Clamp(_noClipSpeed, 0.001f, 1000f);
 
-        var localPlayer = Service.ClientState.LocalPlayer;
+        var localPlayer = Service.ObjectTable.LocalPlayer;
         var pos = localPlayer != null ? localPlayer.Position : Vector3.Zero;
         ImGui.Separator();
         ImGui.EndGroup();
@@ -71,7 +71,7 @@ sealed class DebugTeleport : IDisposable
 
     private unsafe void SetPlayerPosition(Vector3 position)
     {
-        var p = Service.ClientState.LocalPlayer;
+        var p = Service.ObjectTable.LocalPlayer;
         if (p == null)
         {
             return;
@@ -87,7 +87,7 @@ sealed class DebugTeleport : IDisposable
             return;
         }
 
-        var p = Service.ClientState.LocalPlayer;
+        var p = Service.ObjectTable.LocalPlayer;
         if (p == null)
         {
             return;

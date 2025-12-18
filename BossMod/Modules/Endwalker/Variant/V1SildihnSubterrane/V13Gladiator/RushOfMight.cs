@@ -29,7 +29,9 @@ sealed class RushOfMight(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.RushOfMightFront or (uint)AID.RushOfMightBack)
         {
-            _aoes.Add(new(cone, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), risky: false));
+            var loc = spell.LocXZ;
+            var rot = spell.Rotation;
+            _aoes.Add(new(cone, loc, rot, Module.CastFinishAt(spell), risky: false, shapeDistance: cone.Distance(loc, rot)));
             if (_aoes.Count == 2)
             {
                 var aoes = CollectionsMarshal.AsSpan(_aoes);

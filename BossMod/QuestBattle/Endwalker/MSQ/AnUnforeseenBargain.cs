@@ -63,4 +63,3 @@ internal class AnUnforeseenBargain(WorldState ws) : QuestBattle(ws)
             _zero.Execute(player, hints);
     }
 }
-

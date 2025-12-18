@@ -61,7 +61,7 @@ public readonly struct ActionID(uint raw)
     public readonly uint SpellId() => Type switch
     {
         ActionType.Spell => ID,
-        ActionType.Item => Service.LuminaRow<Lumina.Excel.Sheets.Item>(ID % 500000u)?.ItemAction.ValueNullable?.Type ?? default,
+        ActionType.Item => Service.LuminaRow<Lumina.Excel.Sheets.Item>(ID % 500000u)?.ItemAction.ValueNullable?.Action.RowId ?? default,
         ActionType.KeyItem => Service.LuminaRow<Lumina.Excel.Sheets.EventItem>(ID)?.Action.RowId ?? default,
         ActionType.Ability => 2u, // 'interaction'
         ActionType.General => Service.LuminaRow<Lumina.Excel.Sheets.GeneralAction>(ID)?.Action.RowId ?? default, // note: duty action 1/2 (26/27) use special code

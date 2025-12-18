@@ -94,7 +94,9 @@ public sealed class ColumnPlannerTrackStrategy(Timeline timeline, StateMachineTr
         if (e.Value is StrategyValueTrack t)
         {
             var opt = config.Options[t.Option];
-            e.Window.Color = t.Option > 0 && t.Option <= Timeline.Colors.PlannerWindow.Length ? Timeline.Colors.PlannerWindow[t.Option - 1] : Timeline.Colors.PlannerFallback;
+            e.Window.Color = opt.Color > 0 ? new(opt.Color)
+                : t.Option > 0 && t.Option <= Timeline.Colors.PlannerWindow.Length ? Timeline.Colors.PlannerWindow[t.Option - 1]
+                : Timeline.Colors.PlannerFallback;
             e.CooldownLength = opt.Cooldown;
             e.EffectLength = opt.Effect;
         }

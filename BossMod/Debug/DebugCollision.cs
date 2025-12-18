@@ -92,6 +92,43 @@ public static unsafe class CollisionOutlinesExtractor
         return Paths64ToPolys(union, yLUT, edges, scale, snapInt, minAreaMeters2);
     }
 
+    public static List<PolygonWithHoles> ExtractPolygonsUnionMany(
+        IReadOnlyList<nint> meshPtrs, ulong wantedMaterialId, ulong wantedMask,
+        float snapEpsXZ = 1e-4f, Vector2 centerXZ = default, float radius = 0f, bool strictRadius = true,
+        MaterialMatchMode matchMode = MaterialMatchMode.PrimExact, long scale = 1024 * 1024, float minAreaMeters2 = 1e-6f)
+    {
+        var res = new List<PolygonWithHoles>();
+        var countM = meshPtrs.Count;
+        if (meshPtrs == null || countM == 0)
+        {
+            return res;
+        }
+
+        var snapInt = ComputeSnapInt(snapEpsXZ, scale);
+        var subjects = new Paths64();
+        var yLUT = new Dictionary<Point64, float>(1 << 16);
+        var edges = new List<EdgeY>(1 << 18);
+
+        for (var i = 0; i < countM; ++i)
+        {
+            var cm = (ColliderMesh*)meshPtrs[i];
+            if (cm == null || cm->MeshIsSimple || cm->Mesh == null)
+            {
+                continue;
+            }
+
+            CollectSubjectTriangles(cm, wantedMaterialId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
+        }
+
+        if (subjects.Count == 0)
+        {
+            return res;
+        }
+
+        var union = Clipper.Union(subjects, FillRule.NonZero);
+        return Paths64ToPolys(union, yLUT, edges, scale, snapInt, minAreaMeters2);
+    }
+
     private static void CollectSubjectTriangles(ColliderMesh* coll, ulong wantedId, ulong wantedMask, Vector2 centerXZ, float radius, bool strictRadius, MaterialMatchMode matchMode,
        long scale, long snapInt, Paths64 subjects, Dictionary<Point64, float> yLUT, List<EdgeY> edges)
     {
@@ -436,7 +473,7 @@ public static unsafe class CollisionOutlinesExtractor
 
         // check if lies on any recorded edge (exact integer colinearity)
         var count = edges.Count;
-        for (int i = 0, n = count; i < n; i++)
+        for (int i = 0, n = count; i < n; ++i)
         {
             var e = edges[i];
             if (!OnSegment(p, e.A, e.B))
@@ -705,6 +742,10 @@ public sealed unsafe class DebugCollision() : IDisposable
     private float _exportSnapEpsXZ = 1e-5f;
     private float _exportMinArea = 1e-6f;
 
+    private string _exportMeshIdListHex = "";
+    private bool _selectionMode = false;
+    private readonly HashSet<ulong> _meshSelection = [];
+
     private static readonly (int, int)[] _boxEdges =
     [
         (0, 1), (1, 3), (3, 2), (2, 0),
@@ -819,7 +860,7 @@ public sealed unsafe class DebugCollision() : IDisposable
             return true;
         }
 
-        // fr simple/primitive colliders, compare the object's material to the UI selection
+        // for simple/primitive colliders, compare the object's material to the UI selection
         // keep the ones whose (objectMaterial ^ wantedId) has no differences inside the active mask bits
         var wantedId = _materialId.Raw;
         ulong objValue = coll->ObjectMaterialValue; // primitives only have object-level material
@@ -920,6 +961,48 @@ public sealed unsafe class DebugCollision() : IDisposable
 
             // drop tiny fragments after union
             ImGui.SliderFloat("Min area (yalm^2)", ref _exportMinArea, 0f, 0.01f, "%.6f");
+
+            ImGui.Separator();
+            ImGui.Checkbox("Selection mode (multi-pick)", ref _selectionMode);
+            ImGui.SameLine();
+            ImGui.TextDisabled($"Selected: {_meshSelection.Count}");
+
+            ImGui.BeginDisabled(_meshSelection.Count == 0);
+            if (ImGui.Button("Append selected → mesh-id list"))
+            {
+                AppendIdsToList(ref _exportMeshIdListHex, _meshSelection);
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Clear selection"))
+            {
+                _meshSelection.Clear();
+            }
+            ImGui.EndDisabled();
+
+            ImGui.SameLine();
+            if (ImGui.Button("Select all visible"))
+            {
+                SelectAllVisibleMeshes(add: true);
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Deselect all visible"))
+            {
+                SelectAllVisibleMeshes(add: false);
+            }
+
+            ImGui.Separator();
+            ImGui.TextDisabled("Merge by mesh-id list (hex pointers, any separators: , ; space tab newline)");
+            ImGui.InputTextMultiline("MeshId list (hex)", ref _exportMeshIdListHex, 4096, new Vector2(-1, ImGui.GetTextLineHeight() * 6));
+            var (okList, meshIds) = TryParseHexU64List(_exportMeshIdListHex);
+            ImGui.Text(okList ? $"Parsed {meshIds.Count} unique mesh ids" : "Enter hex values like 0x7FFB1234ABCD0000");
+
+            ImGui.BeginDisabled(!okList || meshIds.Count == 0);
+            if (ImGui.Button("Copy polygons (WPos, mesh-id list)"))
+                ExportPolysByMeshIdList(meshIds, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector2XZ);
+            ImGui.SameLine();
+            if (ImGui.Button("Copy polygons (Vector3, mesh-id list)"))
+                ExportPolysByMeshIdList(meshIds, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector3XYZ);
+            ImGui.EndDisabled();
         }
     }
 
@@ -995,9 +1078,34 @@ public sealed unsafe class DebugCollision() : IDisposable
                 color = Colors.TextColor3;
         }
         using var n = _tree.Node2($"{type} {(nint)coll:X}, layers={coll->LayerMask:X8}, layout-id={coll->LayoutObjectId:X16}, refs={coll->NumRefs}, material={coll->ObjectMaterialValue:X}/{coll->ObjectMaterialMask:X}, flags={flagsText}###{(nint)coll:X}", false, color);
+        if (_selectionMode && type == ColliderType.Mesh)
+        {
+            var cm = (ColliderMesh*)coll;
+            if (cm->Mesh != null && !cm->MeshIsSimple)
+            {
+                var ptr = (ulong)(nuint)cm;
+                bool sel = _meshSelection.Contains(ptr);
+                ImGui.SameLine();
+                if (ImGui.Checkbox($"##sel_mesh_{(nint)coll:X}", ref sel))
+                {
+                    if (sel) _meshSelection.Add(ptr); else _meshSelection.Remove(ptr);
+                }
+                ImGui.SameLine(); ImGui.TextDisabled("pick");
+            }
+        }
         if (ImGui.BeginPopupContextItem($"###{(nint)coll:X}"))
         {
             ContextCollider(coll);
+            if (type == ColliderType.Mesh)
+            {
+                ImGui.TextDisabled("Mesh Id (pointer)");
+                var cm = (ColliderMesh*)coll;
+                var ptr = (ulong)(nuint)cm;
+                if (ImGui.MenuItem("Copy mesh id (hex)"))
+                    ImGui.SetClipboardText(FormatHexU64(ptr));
+                if (ImGui.MenuItem("Append mesh id to list"))
+                    AppendIdToList(ref _exportMeshIdListHex, ptr.ToString("X16"));
+            }
             ImGui.EndPopup();
         }
         if (n.SelectedOrHovered)
@@ -1026,6 +1134,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                             var elem = cast->Elements + i;
                             var entryRaw = (uint*)entry;
                             using var mn = _tree.Node2($"Mesh {i}: file=tr{entry->MeshId:d4}.pcb, bounds={AABBStr(entry->Bounds)} == {(nint)elem->Mesh:X}###mesh_{i}", elem->Mesh == null);
+
                             if (mn.SelectedOrHovered && elem->Mesh != null)
                                 VisualizeCollider(&elem->Mesh->Collider, _materialId, _materialMask);
                             if (mn.Opened)
@@ -1141,7 +1250,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                 vertices.Add((transformedVertex, i, i < node->NumVertsRaw ? 'r' : 'c'));
             }
 
-            var playerPos = Service.ClientState.LocalPlayer!.Position;
+            var playerPos = Service.ObjectTable.LocalPlayer!.Position;
             // Sort vertices by distance to player position, ignore height
 
             vertices.Sort((a, b) =>
@@ -1412,7 +1521,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                 var wantedMask = _materialMask.Raw;
 
                 // center: player if radius > 0 else ignored
-                var p = Service.ClientState.LocalPlayer!.Position;
+                var p = Service.ObjectTable.LocalPlayer!.Position;
                 var centerXZ = new Vector2(p.X, p.Z);
                 var useRadius = _exportRadiusXZ > 0f;
 
@@ -1445,7 +1554,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                 var wantedId = _materialId.Raw;
                 var wantedMask = _materialMask.Raw;
 
-                var p = Service.ClientState.LocalPlayer!.Position;
+                var p = Service.ObjectTable.LocalPlayer!.Position;
                 var centerXZ = new Vector2(p.X, p.Z);
                 var useRadius = _exportRadiusXZ > 0f;
 
@@ -1494,4 +1603,254 @@ public sealed unsafe class DebugCollision() : IDisposable
         var deg = rad * (180f / MathF.PI);
         return new Angle(rad).Normalized();
     }
+
+    private static bool TryParseHexU64(string s, out ulong value)
+    {
+        s = (s ?? string.Empty).Trim();
+        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+        {
+            s = s[2..];
+        }
+        return ulong.TryParse(s, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out value);
+    }
+
+    private static (bool ok, HashSet<ulong> ids) TryParseHexU64List(string s)
+    {
+        HashSet<ulong> set = [];
+        if (string.IsNullOrWhiteSpace(s))
+            return (true, set);
+
+        var span = s.AsSpan();
+        int i = 0, n = span.Length;
+
+        while (i < n)
+        {
+            // skip separators
+            while (i < n && IsSep(span[i]))
+            {
+                ++i;
+            }
+            if (i >= n)
+            {
+                break;
+            }
+
+            var start = i;
+            var has0x = false;
+            if (i + 1 < n && span[i] == '0' && (span[i + 1] == 'x' || span[i + 1] == 'X'))
+            {
+                has0x = true;
+                i += 2;
+            }
+
+            var hexStart = i;
+            while (i < n && IsHex(span[i]))
+            {
+                ++i;
+            }
+            var hexLen = i - hexStart;
+
+            if (hexLen == 0)
+            {
+                return (false, set); // invalid token
+            }
+
+            var token = span.Slice(has0x ? start + 2 : start, has0x ? 2 + hexLen - 2 : (i - start)).ToString();
+            token = token.TrimStart('0', 'x', 'X'); // normalize leading
+            if (token.Length == 0)
+            {
+                token = "0";
+            }
+
+            if (!ulong.TryParse(token, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out var val))
+            {
+                return (false, set);
+            }
+
+            set.Add(val);
+        }
+
+        return (true, set);
+
+        static bool IsSep(char c) => c == ',' || c == ';' || char.IsWhiteSpace(c);
+        static bool IsHex(char c)
+            => c is >= '0' and <= '9' or
+            >= 'a' and <= 'f' or
+            >= 'A' and <= 'F';
+    }
+
+    private void ExportPolysByMeshIdList(HashSet<ulong> ids, CollisionOutlinesExtractor.ClipboardVectorFormat fmt)
+    {
+        var module = Framework.Instance()->BGCollisionModule;
+        List<nint> meshPtrs = [];
+
+        foreach (var s in module->SceneManager->Scenes)
+        {
+            foreach (var coll in s->Scene->Colliders)
+            {
+                switch (coll->GetColliderType())
+                {
+                    case ColliderType.Mesh:
+                        {
+                            var cm = (ColliderMesh*)coll;
+                            if (cm->Mesh != null && !cm->MeshIsSimple)
+                            {
+                                var addr = (ulong)(nuint)cm;
+                                if (ids.Contains(addr))
+                                    meshPtrs.Add((nint)cm);
+                            }
+                            break;
+                        }
+                    case ColliderType.Streamed:
+                        {
+                            var cs = (ColliderStreamed*)coll;
+                            if (cs->Header != null && cs->Elements != null)
+                            {
+                                for (var i = 0; i < cs->Header->NumMeshes; ++i)
+                                {
+                                    var cm = (cs->Elements + i)->Mesh;
+                                    if (cm == null || cm->MeshIsSimple || cm->Mesh == null)
+                                    {
+                                        continue;
+                                    }
+                                    var addr = (ulong)(nuint)cm;
+                                    if (ids.Contains(addr))
+                                    {
+                                        meshPtrs.Add((nint)cm);
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                }
+            }
+        }
+
+        ExportPolys(meshPtrs, fmt);
+    }
+
+    private void ExportPolys(List<nint> meshPtrs, CollisionOutlinesExtractor.ClipboardVectorFormat fmt)
+    {
+        var wantedId = _materialId.Raw;
+        var wantedMask = _materialMask.Raw;
+
+        var p = Service.ObjectTable.LocalPlayer!.Position;
+        var centerXZ = new Vector2(p.X, p.Z);
+        var useRadius = _exportRadiusXZ > 0f;
+
+        var polys = CollisionOutlinesExtractor.ExtractPolygonsUnionMany(
+            meshPtrs, wantedId, wantedMask,
+            _exportSnapEpsXZ,
+            useRadius ? centerXZ : default,
+            useRadius ? _exportRadiusXZ : 0f,
+            _exportStrictRadius,
+            _exportMatchMode,
+            minAreaMeters2: _exportMinArea);
+
+        var text = CollisionOutlinesExtractor.FormatForClipboard(polys, fmt, 5);
+        ImGui.SetClipboardText(text);
+    }
+
+    private void SelectAllVisibleMeshes(bool add)
+    {
+        var module = Framework.Instance()->BGCollisionModule;
+        foreach (var s in module->SceneManager->Scenes)
+        {
+            foreach (var coll in s->Scene->Colliders)
+            {
+                if (!FilterCollider(coll))
+                {
+                    continue;
+                }
+
+                switch (coll->GetColliderType())
+                {
+                    case ColliderType.Mesh:
+                        {
+                            var cm = (ColliderMesh*)coll;
+                            if (cm->Mesh != null && !cm->MeshIsSimple)
+                            {
+                                var addr = (ulong)(nuint)cm;
+                                if (add)
+                                {
+                                    _meshSelection.Add(addr);
+                                }
+                                else
+                                {
+                                    _meshSelection.Remove(addr);
+                                }
+                            }
+                            break;
+                        }
+                    case ColliderType.Streamed:
+                        {
+                            SelectAllSubMeshes((ColliderStreamed*)coll, add);
+                            break;
+                        }
+                }
+            }
+        }
+    }
+
+    private void SelectAllSubMeshes(ColliderStreamed* cs, bool add)
+    {
+        if (cs == null || cs->Header == null || cs->Elements == null)
+        {
+            return;
+        }
+        for (var i = 0; i < cs->Header->NumMeshes; ++i)
+        {
+            var cm = (cs->Elements + i)->Mesh;
+            if (cm == null || cm->MeshIsSimple || cm->Mesh == null)
+            {
+                continue;
+            }
+            var addr = (ulong)(nuint)cm;
+            if (add)
+            {
+                _meshSelection.Add(addr);
+            }
+            else
+            {
+                _meshSelection.Remove(addr);
+            }
+        }
+    }
+
+    private static void AppendIdToList(ref string dst, string idHexNoPrefix)
+    {
+        var tok = $"0x{idHexNoPrefix}";
+        if (string.IsNullOrWhiteSpace(dst))
+        {
+            dst = tok;
+            return;
+        }
+        if (dst.IndexOf(tok, StringComparison.OrdinalIgnoreCase) < 0)
+        {
+            dst = dst.TrimEnd() + Environment.NewLine + tok;
+        }
+    }
+
+    private static void AppendIdsToList(ref string dst, HashSet<ulong> ids)
+    {
+        var sb = new StringBuilder(dst?.TrimEnd() ?? "");
+        var first = sb.Length == 0;
+        foreach (var v in ids)
+        {
+            var tok = $"0x{v:X16}";
+            if (sb.ToString().Contains(tok, StringComparison.OrdinalIgnoreCase))
+            {
+                continue; // avoid visual dups
+            }
+            if (!first)
+            {
+                sb.AppendLine();
+            }
+            sb.Append(tok);
+            first = false;
+        }
+        dst = sb.ToString();
+    }
+
+    private static string FormatHexU64(ulong v) => $"0x{v:X16}";
 }

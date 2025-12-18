@@ -38,7 +38,7 @@ sealed class MalformedPrayer(BossModule module) : Components.GenericTowers(modul
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoe.Casters.Count != 0 && Towers.Count != 0 && !Towers[0].IsInside(actor))
+        if (_aoe.Casters.Count != 0 && Towers.Count != 0 && !Towers.Ref(0).IsInside(actor))
         {
             hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 3f));
         }

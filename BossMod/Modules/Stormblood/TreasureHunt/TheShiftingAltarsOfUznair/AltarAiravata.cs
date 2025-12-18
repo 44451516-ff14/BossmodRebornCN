@@ -23,7 +23,7 @@ public enum AID : uint
     Spin = 8599, // AltarMatanga->self, no cast, range 6+R 120-degree cone
     RaucousScritch = 8598, // AltarMatanga->self, 2.5s cast, range 5+R 120-degree cone
     Hurl = 5352, // AltarMatanga->location, 3.0s cast, range 6 circle
-    Telega = 9630 // AltarMatanga/GoldWhisker->self, no cast, single-target, bonus adds disappear
+    Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
 public enum IconID : uint
@@ -36,41 +36,55 @@ sealed class SpinBoss(BossModule module) : Components.SimpleAOEs(module, (uint)A
 sealed class BarbarousScream(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BarbarousScream, 14f);
 sealed class Huff(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Huff);
 
-sealed class Buffet(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Buffet, 20f, kind: Kind.DirForward, stopAtWall: true)
+sealed class Buffet(BossModule module) : Components.GenericKnockback(module, (uint)AID.Buffet, stopAtWall: true)
 {
-    private bool targeted;
     private Actor? target;
+    private DateTime activation;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.BuffetTarget)
         {
-            targeted = true;
             target = actor;
+            activation = WorldState.FutureTime(3.1d);
         }
     }
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => target == actor ? base.ActiveKnockbacks(slot, actor) : [];
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
+    {
+        if (target != actor)
+        {
+            return [];
+        }
+        var pos = target.Position;
+        return new Knockback[] { new(pos, 20f, activation, kind: Kind.DirForward, direction: (pos - Module.PrimaryActor.Position).ToAngle()) };
+    }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         base.OnCastFinished(caster, spell);
         if (spell.Action.ID == (uint)AID.Buffet)
-            targeted = false;
+        {
+            target = null;
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         base.AddHints(slot, actor, hints);
-        if (target == actor && targeted)
+        if (target == actor)
+        {
             hints.Add("Bait away!");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         base.AddAIHints(slot, actor, assignment, hints);
-        if (target == actor && targeted)
+        if (target == actor)
+        {
             hints.AddForbiddenZone(new SDCircle(Arena.Center, 17.5f));
+        }
     }
 }
 
@@ -78,10 +92,17 @@ sealed class Buffet2(BossModule module) : Components.BaitAwayCast(module, (uint)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (!IsBaitTarget(actor))
+        if (CurrentBaits.Count != 0 && !IsBaitTarget(actor))
         {
             ref var b = ref CurrentBaits.Ref(0);
-            hints.AddForbiddenZone(b.Shape, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
+            var t = b.Target;
+            var tPos = t.Position;
+            var prim = Module.PrimaryActor;
+            var mPos = prim.Position;
+            var len = (tPos - mPos).Length();
+            var max = t.HitboxRadius + prim.HitboxRadius;
+            var min = len > max ? len : Math.Clamp(len, 0f, max);
+            hints.AddForbiddenZone(b.Shape, tPos - min * prim.DirectionTo(t), b.Rotation);
         }
     }
 
@@ -90,16 +111,30 @@ sealed class Buffet2(BossModule module) : Components.BaitAwayCast(module, (uint)
         if (IsBaitTarget(pc))
         {
             ref var b = ref CurrentBaits.Ref(0);
-            b.Shape.Outline(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
+            var t = b.Target;
+            var tPos = t.Position;
+            var prim = Module.PrimaryActor;
+            var mPos = prim.Position;
+            var len = (tPos - mPos).Length();
+            var max = t.HitboxRadius + prim.HitboxRadius;
+            var min = len > max ? len : Math.Clamp(len, 0f, max);
+            b.Shape.Outline(Arena, tPos - min * prim.DirectionTo(t), b.Rotation);
         }
     }
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
-        if (!IsBaitTarget(pc))
+        if (CurrentBaits.Count != 0 && !IsBaitTarget(pc))
         {
             ref var b = ref CurrentBaits.Ref(0);
-            b.Shape.Draw(Arena, b.Target.Position - (b.Target.HitboxRadius + Module.PrimaryActor.HitboxRadius) * Module.PrimaryActor.DirectionTo(b.Target), b.Rotation);
+            var t = b.Target;
+            var tPos = t.Position;
+            var prim = Module.PrimaryActor;
+            var mPos = prim.Position;
+            var len = (tPos - mPos).Length();
+            var max = t.HitboxRadius + prim.HitboxRadius;
+            var min = len > max ? len : Math.Clamp(len, 0f, max);
+            b.Shape.Draw(Arena, tPos - min * prim.DirectionTo(t), b.Rotation);
         }
     }
 }

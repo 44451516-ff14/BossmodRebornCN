@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Objects.Types;
 using System.Globalization;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BossMod;
@@ -20,10 +21,29 @@ public static partial class Utils
         : obj.SubKind == 0 ? $"{obj.ObjectKind}"
         : $"{obj.ObjectKind}/{obj.SubKind}";
 
+    public static string ShowObject<T>(T obj)
+    {
+        var sb = new StringBuilder(typeof(T).Name);
+        sb.Append(" {");
+        var first = true;
+        foreach (var f in typeof(T).GetFields())
+        {
+            if (!first)
+                sb.Append(',');
+            var v = f.GetValue(obj);
+            sb.Append($" {f.Name} = {v}");
+            first = false;
+        }
+        sb.Append(" }");
+        return sb.ToString();
+    }
+
     public static Vector2 XY(this Vector4 v) => new(v.X, v.Y);
     public static Vector3 XYZ(this Vector4 v) => v.AsVector3();
     public static Vector2 XZ(this Vector4 v) => new(v.X, v.Z);
     public static Vector2 XZ(this Vector3 v) => new(v.X, v.Z);
+
+    public static WPos ToWPos(this Vector3 v) => new(v.X, v.Z);
 
     public static bool AlmostEqual(float a, float b, float eps) => Math.Abs(a - b) <= eps;
 
@@ -237,6 +257,14 @@ public static partial class Utils
         return res;
     }
 
+    public static T[] GenArray<T>(int count, Func<T> gen)
+    {
+        var res = new T[count];
+        for (var i = 0; i < count; i++)
+            res[i] = gen();
+        return res;
+    }
+
     public static bool TextMatch(string haystack, string needle) => haystack.Contains(needle, StringComparison.InvariantCultureIgnoreCase);
 
     // bounds-checking access
@@ -328,4 +356,6 @@ public static partial class Utils
             }
         }
     }
+
+    public static DateTime Clamp(this DateTime dt, DateTime min, DateTime max) => dt < min ? min : dt > max ? max : dt;
 }

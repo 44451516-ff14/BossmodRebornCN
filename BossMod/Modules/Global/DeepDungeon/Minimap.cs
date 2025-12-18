@@ -34,7 +34,7 @@ public sealed class Minimap(DeepDungeonState state, Angle playerRotation, int cu
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <returns>Integer index of the room the user clicked on.</returns>
     public int Draw()
@@ -47,7 +47,8 @@ public sealed class Minimap(DeepDungeonState state, Angle playerRotation, int cu
         for (var i = 0; i < lenC; ++i)
         {
             ref readonly var c = ref State.Chests[i];
-            if (c.Room > 0)
+            // FIXME
+            if (c.Room is > 0 and < 25)
                 chests[c.Room] |= (RoomChest)(1 << (c.Type - 1));
         }
 

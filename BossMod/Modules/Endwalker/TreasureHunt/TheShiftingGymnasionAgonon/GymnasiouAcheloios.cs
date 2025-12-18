@@ -42,7 +42,7 @@ public enum AID : uint
     PungentPirouette = 32303, // GymnasticGarlic->self, 3.5s cast, range 7 circle
     TearyTwirl = 32301, // GymnasticOnion->self, 3.5s cast, range 7 circle
     HeavySmash = 32317, // GymnasiouLyssa->location, 3.0s cast, range 6 circle
-    Telega = 9630 // Mandragoras/GymnasiouLyssa->self, no cast, single-target, bonus add disappear
+    Telega = 9630 // BonusAdds->self, no cast, single-target, bonus add disappear
 }
 
 class DoubleHammer(BossModule module) : Components.GenericAOEs(module)
@@ -185,11 +185,12 @@ public class GymnasiouAcheloios(WorldState ws, Actor primary) : THTemplate(ws, p
             var e = hints.PotentialTargets[i];
             e.Priority = e.Actor.OID switch
             {
-                (uint)OID.GymnasticOnion => 6,
-                (uint)OID.GymnasticEggplant => 5,
-                (uint)OID.GymnasticGarlic => 4,
-                (uint)OID.GymnasticTomato => 3,
-                (uint)OID.GymnasticQueen or (uint)OID.GymnasiouLyssa or (uint)OID.GymnasiouLampas => 2,
+                (uint)OID.GymnasticOnion => 7,
+                (uint)OID.GymnasticEggplant => 6,
+                (uint)OID.GymnasticGarlic => 5,
+                (uint)OID.GymnasticTomato => 4,
+                (uint)OID.GymnasticQueen or (uint)OID.GymnasiouLyssa => 3,
+                (uint)OID.GymnasiouLampas => 2,
                 (uint)OID.GymnasiouSouchos => 1,
                 _ => 0
             };

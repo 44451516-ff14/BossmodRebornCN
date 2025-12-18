@@ -257,4 +257,31 @@ public static class ActorEnumeration
         }
         return (match, mismatch);
     }
+
+    public static IEnumerable<(int, Actor)> ClockOrder(this IEnumerable<(int, Actor)> range, Actor starting, WPos center, bool counterclockwise = false)
+    {
+        var startingAngle = (starting.Position - center).ToAngle();
+
+        return counterclockwise
+            ? range.OrderBy(r =>
+            {
+                var (slot, actor) = r;
+                var thisAngle = (actor.Position - center).ToAngle().Rad;
+                if (actor != starting && thisAngle < startingAngle.Rad)
+                    thisAngle += Angle.DoublePI;
+
+                return thisAngle;
+            })
+            : range.OrderByDescending(r =>
+            {
+                var (slot, actor) = r;
+                var thisAngle = (actor.Position - center).ToAngle().Rad;
+                if (actor != starting && thisAngle > startingAngle.Rad)
+                    thisAngle -= Angle.DoublePI;
+
+                return thisAngle;
+            });
+    }
+
+    public static IEnumerable<Actor> ClockOrder(this IEnumerable<Actor> range, Actor starting, WPos center, bool counterclockwise = false) => range.Select(r => (0, r)).ClockOrder(starting, center, counterclockwise).Select(r => r.Item2);
 }

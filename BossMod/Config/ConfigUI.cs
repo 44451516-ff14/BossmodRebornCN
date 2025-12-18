@@ -170,7 +170,7 @@ public sealed class ConfigUI : IDisposable
         ImGui.Separator();
         ImGui.Text("AI:");
         ImGui.Separator();
-        for (var i = 0; i < 28; ++i)
+        for (var i = 0; i < 30; ++i)
         {
             ref readonly var text = ref _availableAICommands[i];
             ImGui.Text($"/bmrai {text.Item1}: {text.Item2}");

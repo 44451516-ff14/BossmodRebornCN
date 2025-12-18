@@ -53,6 +53,3 @@ sealed class P2PacketFilter(BossModule module) : Components.GenericInvincible(mo
         }
     }
 }
-
-sealed class P4HPThreshold(BossModule module) : Components.HPThreshold(module, (uint)OID.BossP3, 0.2f);
-sealed class P5HPThreshold(BossModule module) : Components.HPThreshold(module, (uint)OID.BossP5, 0.2f);

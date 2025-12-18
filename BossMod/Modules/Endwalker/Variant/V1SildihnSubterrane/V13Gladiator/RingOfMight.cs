@@ -13,7 +13,7 @@ abstract class RingOfMight(BossModule module, AOEShape[] shapes, double riskyWit
         if (Sequences.Count != 0)
         {
             ref var s = ref Sequences.Ref(0);
-            if (Shapes[1] is AOEShapeDonut donut)
+            if (s.NumCastsDone == 0 && Shapes[1] is AOEShapeDonut donut)
             {
                 hints.AddForbiddenZone(new SDInvertedCircle(s.Origin, donut.InnerRadius + 2f), s.NextActivation);
             }
@@ -21,10 +21,8 @@ abstract class RingOfMight(BossModule module, AOEShape[] shapes, double riskyWit
     }
 }
 
-sealed class RingOfMight1(BossModule module) : RingOfMight(module, _shapes, riskyWithSecondsLeft: 3d)
+sealed class RingOfMight1(BossModule module) : RingOfMight(module, [new AOEShapeCircle(8f), new AOEShapeDonut(8f, 30f)], riskyWithSecondsLeft: 3d)
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(8f), new AOEShapeDonut(8f, 30f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RingOfMight1Out)
@@ -48,10 +46,8 @@ sealed class RingOfMight1(BossModule module) : RingOfMight(module, _shapes, risk
     }
 }
 
-sealed class RingOfMight2(BossModule module) : RingOfMight(module, _shapes, riskyWithSecondsLeft: 4d)
+sealed class RingOfMight2(BossModule module) : RingOfMight(module, [new AOEShapeCircle(13f), new AOEShapeDonut(13f, 30f)], riskyWithSecondsLeft: 4d)
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(13f), new AOEShapeDonut(13f, 30f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RingOfMight2Out)
@@ -75,10 +71,8 @@ sealed class RingOfMight2(BossModule module) : RingOfMight(module, _shapes, risk
     }
 }
 
-sealed class RingOfMight3(BossModule module) : RingOfMight(module, _shapes, riskyWithSecondsLeft: 5d)
+sealed class RingOfMight3(BossModule module) : RingOfMight(module, [new AOEShapeCircle(18f), new AOEShapeDonut(18f, 30f)], riskyWithSecondsLeft: 5d)
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(18f), new AOEShapeDonut(18f, 30f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.RingOfMight3Out)

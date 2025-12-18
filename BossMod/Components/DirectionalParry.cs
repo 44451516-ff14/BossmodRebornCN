@@ -4,7 +4,7 @@
 // uses common status + custom prediction
 
 [SkipLocalsInit]
-public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(module, actorOID)
+public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenPriority = AIHints.Enemy.PriorityForbidden) : AddsMulti(module, actorOID)
 {
     public enum Side
     {
@@ -17,6 +17,7 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
     }
 
     public const uint ParrySID = 680u; // common 'directional parry' status
+    public readonly int ForbiddenPriority = forbiddenPriority;
 
     public readonly Dictionary<ulong, int> ActorStates = []; // value == active-side | (imminent-side << 4)
     public bool Active
@@ -99,7 +100,7 @@ public class DirectionalParry(BossModule module, uint[] actorOID) : AddsMulti(mo
             if ((forbiddenSides & attackSide) != default)
             {
                 if (active != default)
-                    hints.SetPriority(target, AIHints.Enemy.PriorityForbidden);
+                    hints.SetPriority(target, ForbiddenPriority);
 
                 if (actor.TargetID == id)
                 {

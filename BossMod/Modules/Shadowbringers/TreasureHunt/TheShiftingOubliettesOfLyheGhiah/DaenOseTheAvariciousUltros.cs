@@ -9,12 +9,14 @@ public enum OID : uint
     SecretTomato = 0x3020, // R0.84, icon 4, needs to be killed in order from 1 to 5 for maximum rewards
     SecretOnion = 0x301D, // R0.84, icon 1, needs to be killed in order from 1 to 5 for maximum rewards
     SecretEgg = 0x301E, // R0.84, icon 2, needs to be killed in order from 1 to 5 for maximum rewards
+    FuathTrickster = 0x3033, // R0.75
+    KeeperOfKeys = 0x3034, // R3.23
     Helper = 0x233C
 }
 
 public enum AID : uint
 {
-    AutoAttack = 872, // DaenOseTheAvariciousUltros/SecretTomato/SecretQueen->player, no cast, single-target
+    AutoAttack = 872, // DaenOseTheAvariciousUltros/BonusAdds->player, no cast, single-target
     Change = 21741, // DaenOseTheAvariciousUltros->self, 6.0s cast, single-target, boss morphs into Ultros
 
     TentacleVisual = 21753, // DaenOseTheAvariciousUltros->self, no cast, single-target
@@ -40,7 +42,11 @@ public enum AID : uint
     HeirloomScream = 6451, // SecretTomato->self, 3.5s cast, range 6+R circle
     PluckAndPrune = 6449, // SecretEgg->self, 3.5s cast, range 6+R circle
     PungentPirouette = 6450, // SecretGarlic->self, 3.5s cast, range 6+R circle
-    Telega = 9630 // Mandragoras->self, no cast, single-target, bonus adds disappear
+    Mash = 21767, // KeeperOfKeys->self, 3.0s cast, range 13 width 4 rect
+    Inhale = 21770, // KeeperOfKeys->self, no cast, range 20 120-degree cone, attract 25 between hitboxes, shortly before Spin
+    Spin = 21769, // KeeperOfKeys->self, 4.0s cast, range 11 circle
+    Scoop = 21768, // KeeperOfKeys->self, 4.0s cast, range 15 120-degree cone
+    Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
 sealed class AquaBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AquaBreath, new AOEShapeCone(13f, 45f.Degrees()));
@@ -90,6 +96,9 @@ sealed class WaveOfTurmoil(BossModule module) : Components.SimpleKnockbacks(modu
 
 sealed class MandragoraAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PluckAndPrune, (uint)AID.TearyTwirl,
 (uint)AID.HeirloomScream, (uint)AID.PungentPirouette, (uint)AID.Pollen], 6.84f);
+sealed class Spin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spin, 11f);
+sealed class Mash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Mash, new AOEShapeRect(13f, 2f));
+sealed class Scoop(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Scoop, new AOEShapeCone(15f, 60f.Degrees()));
 
 sealed class DaenOseTheAvariciousUltrosStates : StateMachineBuilder
 {
@@ -106,6 +115,9 @@ sealed class DaenOseTheAvariciousUltrosStates : StateMachineBuilder
             .ActivateOnEnter<ThunderIII>()
             .ActivateOnEnter<WaveOfTurmoil>()
             .ActivateOnEnter<MandragoraAOEs>()
+            .ActivateOnEnter<Spin>()
+            .ActivateOnEnter<Mash>()
+            .ActivateOnEnter<Scoop>()
             .Raw.Update = () => AllDeadOrDestroyed(DaenOseTheAvariciousUltros.All);
     }
 }
@@ -131,7 +143,7 @@ PlanLevel = 0)]
 public sealed class DaenOseTheAvariciousUltros(WorldState ws, Actor primary) : THTemplate(ws, primary)
 {
     private static readonly uint[] bonusAdds = [(uint)OID.SecretEgg, (uint)OID.SecretGarlic, (uint)OID.SecretOnion, (uint)OID.SecretTomato,
-    (uint)OID.SecretQueen];
+    (uint)OID.SecretQueen, (uint)OID.FuathTrickster, (uint)OID.KeeperOfKeys];
     public static readonly uint[] All = [(uint)OID.DaenOseTheAvariciousUltros, .. bonusAdds];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -148,11 +160,12 @@ public sealed class DaenOseTheAvariciousUltros(WorldState ws, Actor primary) : T
             var e = hints.PotentialTargets[i];
             e.Priority = e.Actor.OID switch
             {
-                (uint)OID.SecretOnion => 5,
-                (uint)OID.SecretEgg => 4,
-                (uint)OID.SecretGarlic => 3,
-                (uint)OID.SecretTomato => 2,
-                (uint)OID.SecretQueen => 1,
+                (uint)OID.SecretOnion => 6,
+                (uint)OID.SecretEgg => 5,
+                (uint)OID.SecretGarlic => 4,
+                (uint)OID.SecretTomato => 3,
+                (uint)OID.SecretQueen or (uint)OID.FuathTrickster => 2,
+                (uint)OID.KeeperOfKeys => 1,
                 _ => 0
             };
         }

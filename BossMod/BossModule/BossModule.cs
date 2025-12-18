@@ -291,6 +291,8 @@ public abstract class BossModule : IDisposable
             Arena.CardinalNames();
         if (WindowConfig.ShowWaymarks && WorldState.Waymarks.AnyWaymarks)
             DrawWaymarks();
+        if (WindowConfig.ShowSigns)
+            DrawSigns();
 
         // draw non-player alive party members
         DrawPartyMembers(pcSlot, pc);
@@ -566,6 +568,26 @@ public abstract class BossModule : IDisposable
                     Arena.TextWorld(pos, text, Colors.Shadows, WindowConfig.WaymarkFontSize + 3f);
                 }
                 Arena.TextWorld(pos, text, color, WindowConfig.WaymarkFontSize);
+            }
+        }
+    }
+
+    private void DrawSigns()
+    {
+        for (var i = Sign.Attack1; i < Sign.Count; ++i)
+        {
+            var actor = WorldState.Actors.Find(WorldState.Waymarks[i]);
+            if (actor == null)
+                continue;
+
+            var iconId = i.IconId();
+            if (Service.Texture.TryGetFromGameIcon(iconId, out var tex))
+            {
+                var wrap = tex.GetWrapOrEmpty();
+                var pos = Arena.WorldPositionToScreenPosition(actor.Position);
+                var scale = WindowConfig.ArenaScale * 24;
+
+                ImGui.GetWindowDrawList().AddImage(wrap.Handle, pos - new Vector2(scale), pos);
             }
         }
     }

@@ -60,6 +60,13 @@ public sealed class AIHints
         Shared, // cast is expected to hit multiple players; modules might have special behavior when intentionally taking this damage solo
     }
 
+    public enum FateSync
+    {
+        None, // do nothing
+        Enable, // level sync to fate
+        Disable // unsync from fate
+    }
+
     public readonly struct DamagePrediction(BitMask players, DateTime activation, PredictedDamageType type = PredictedDamageType.None)
     {
         public readonly BitMask Players = players;
@@ -149,6 +156,7 @@ public sealed class AIHints
     // misc stuff to execute
     public bool WantJump;
     public bool WantDismount;
+    public FateSync WantFateSync;
 
     // clear all stored data
     public void Clear()
@@ -178,6 +186,7 @@ public sealed class AIHints
         StatusesToCancel.Clear();
         WantJump = false;
         WantDismount = false;
+        WantFateSync = FateSync.None;
     }
 
     public void PrioritizeTargetsByOID(uint oid, int priority = default)

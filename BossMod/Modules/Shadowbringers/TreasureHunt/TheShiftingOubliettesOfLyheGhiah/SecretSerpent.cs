@@ -11,13 +11,14 @@ public enum OID : uint
     SecretOnion = 0x301D, // R0.84, icon 1, needs to be killed in order from 1 to 5 for maximum rewards
     SecretEgg = 0x301E, // R0.84, icon 2, needs to be killed in order from 1 to 5 for maximum rewards
     KeeperOfKeys = 0x3034, // R3.23
+    FuathTrickster = 0x3033, // R0.75
     Helper = 0x233C
 }
 
 public enum AID : uint
 {
     AutoAttack1 = 870, // SecretSerpent/SerpentHatchling->player, no cast, single-target
-    AutoAttack2 = 872, // Mandragoras->player, no cast, single-target
+    AutoAttack2 = 872, // BonusAdds->player, no cast, single-target
 
     Douse = 21701, // SecretSerpent->location, 3.0s cast, range 8 circle
     Drench1 = 21700, // SecretSerpent->self, 3.0s cast, range 10+R 90-degree cone
@@ -34,7 +35,7 @@ public enum AID : uint
     HeirloomScream = 6451, // SecretTomato->self, 3.5s cast, range 6+R circle
     PluckAndPrune = 6449, // SecretEgg->self, 3.5s cast, range 6+R circle
     PungentPirouette = 6450, // SecretGarlic->self, 3.5s cast, range 6+R circle
-    Telega = 9630 // Mandragoras->self, no cast, single-target, bonus adds disappear
+    Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
 sealed class DouseVoidzone(BossModule module) : Components.Voidzone(module, 7.5f, GetVoidzones)
@@ -113,7 +114,7 @@ public sealed class SecretSerpent : THTemplate
     private readonly List<Actor> hatchlings;
 
     private static readonly uint[] bonusAdds = [(uint)OID.SecretEgg, (uint)OID.SecretGarlic, (uint)OID.SecretOnion, (uint)OID.SecretTomato,
-    (uint)OID.SecretQueen, (uint)OID.KeeperOfKeys];
+    (uint)OID.SecretQueen, (uint)OID.KeeperOfKeys, (uint)OID.FuathTrickster];
     public static readonly uint[] All = [(uint)OID.SecretSerpent, (uint)OID.SerpentHatchling, .. bonusAdds];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -131,11 +132,12 @@ public sealed class SecretSerpent : THTemplate
             var e = hints.PotentialTargets[i];
             e.Priority = e.Actor.OID switch
             {
-                (uint)OID.SecretOnion => 6,
-                (uint)OID.SecretEgg => 5,
-                (uint)OID.SecretGarlic => 4,
-                (uint)OID.SecretTomato => 3,
-                (uint)OID.SecretQueen or (uint)OID.KeeperOfKeys => 2,
+                (uint)OID.SecretOnion => 7,
+                (uint)OID.SecretEgg => 6,
+                (uint)OID.SecretGarlic => 5,
+                (uint)OID.SecretTomato => 4,
+                (uint)OID.SecretQueen or (uint)OID.FuathTrickster => 3,
+                (uint)OID.KeeperOfKeys => 2,
                 (uint)OID.SerpentHatchling => 1,
                 _ => 0
             };

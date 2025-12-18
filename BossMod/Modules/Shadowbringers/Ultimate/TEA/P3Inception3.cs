@@ -1,4 +1,4 @@
-﻿namespace BossMod.Shadowbringers.Ultimate.TEA;
+namespace BossMod.Shadowbringers.Ultimate.TEA;
 
 [SkipLocalsInit]
 sealed class P3Inception3Sacrament(BossModule module) : Components.GenericAOEs(module, (uint)AID.SacramentInception)
@@ -109,3 +109,52 @@ sealed class P3Inception3Debuffs(BossModule module) : Components.GenericStackSpr
 
 [SkipLocalsInit]
 sealed class P3TrueHeart(BossModule module) : Components.Adds(module, (uint)OID.TrueHeart, AIHints.Enemy.PriorityPointless);
+
+[SkipLocalsInit]
+sealed class P3Inception3EarlyHints(BossModule module) : BossComponent(module)
+{
+    private WPos[]? _safespots;
+    private readonly TEA bossmod = (TEA)module;
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (_safespots != null)
+            Arena.AddCircle(_safespots[pcSlot], 1f, Colors.Safe);
+    }
+
+    public override void AddMovementHints(int slot, Actor actor, MovementHints movementHints)
+    {
+        if (_safespots != null)
+            movementHints.Add((actor.Position, _safespots[slot], Colors.Safe));
+    }
+
+    public override void Update()
+    {
+        if (_safespots != null)
+            return;
+
+        var h = bossmod.TrueHeart();
+        if (h != null && h.LastFrameMovement != default)
+        {
+            var dir = h.LastFrameMovement.Normalized();
+            var edgeDist = Intersect.RayCircle(h.Position, dir, Arena.Center, 21.5f);
+            if (edgeDist is > 0 and < float.MaxValue)
+            {
+                Init(h.Position + dir * edgeDist);
+            }
+        }
+    }
+
+    private void Init(WPos heartPosition)
+    {
+        _safespots = new WPos[8];
+        var center = Arena.Center;
+        var relNorth = (heartPosition - center).ToAngle();
+
+        foreach (var (slot, actor) in Raid.WithSlot())
+        {
+            var safeSide = actor.Role is Role.Tank || actor.FindStatus((uint)SID.SharedSentence) != null ? -90f.Degrees() : 90f.Degrees();
+            _safespots[slot] = center + (relNorth + safeSide).ToDirection() * 18f;
+        }
+    }
+}

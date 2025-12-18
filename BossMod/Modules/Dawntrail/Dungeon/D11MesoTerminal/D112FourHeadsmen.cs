@@ -59,14 +59,14 @@ public enum SID : uint
 
 public enum TetherID : uint
 {
-    CellBlock = 249 // BloodyHeadsman/PaleHeadsman/RavenousHeadsman/PestilentHeadsman->player
+    CellBlock = 249, // BloodyHeadsman/PaleHeadsman/RavenousHeadsman/PestilentHeadsman->player
+    Chains = 341 // PaleHeadsman/RavenousHeadsman/PestilentHeadsman/BloodyHeadsman->player
 }
 
 sealed class Prisons(BossModule module) : BossComponent(module)
 {
     private readonly List<DonutV> borders = new(4);
     private readonly CellBlock _cell = module.FindComponent<CellBlock>()!;
-    private bool prisonsDisabled;
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
@@ -99,18 +99,17 @@ sealed class Prisons(BossModule module) : BossComponent(module)
 
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
+        var isDefault = Arena.Bounds == D112FourHeadsmen.DefaultBounds;
         if (_cell.AssignedBoss[pcSlot] == null)
         {
-            if (Arena.Bounds != D112FourHeadsmen.DefaultBounds)
+            if (!isDefault)
             {
                 Arena.Bounds = D112FourHeadsmen.DefaultBounds;
-                prisonsDisabled = true;
             }
         }
-        else if (prisonsDisabled)
+        else if (isDefault)
         {
             UpdateArena();
-            prisonsDisabled = false;
         }
     }
 }
@@ -118,9 +117,9 @@ sealed class Prisons(BossModule module) : BossComponent(module)
 sealed class CellBlock(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly Actor?[] AssignedBoss = new Actor?[4];
-    private readonly D112FourHeadsmen bossmod = (D112FourHeadsmen)module;
     public readonly List<AOEInstance> _aoes = new(2);
     private readonly AOEShapeRect square = new(8f, 8f, 8f);
+    private readonly D112FourHeadsmen bossmod = (D112FourHeadsmen)module;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AssignedBoss[slot] == null ? CollectionsMarshal.AsSpan(_aoes) : [];
 
@@ -165,11 +164,19 @@ sealed class CellBlock(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
+    {
+        if (tether.ID is (uint)TetherID.CellBlock or (uint)TetherID.Chains && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
+        {
+            AssignedBoss[slot] = source;
+        }
+    }
+
     public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
-        if (tether.ID == (uint)TetherID.CellBlock && Raid.FindSlot(source.InstanceID) is var slot && slot >= 0)
+        if (tether.ID == (uint)TetherID.Chains && Raid.FindSlot(tether.Target) is var slot && slot >= 0)
         {
-            AssignedBoss[slot] = WorldState.Actors.Find(tether.Target);
+            AssignedBoss[slot] = null;
         }
     }
 
@@ -336,9 +343,12 @@ sealed class PealOfJudgment(BossModule module) : Components.Exaflare(module, new
         {
             var count2 = count - 1;
             var pos = actor.Position;
+            var isMid = pos.X is < 70f and > 50f;
             for (var i = count2; i >= 0; --i)
             {
-                if (Lines[i].Next.AlmostEqual(pos, 10f))
+                var l = Lines[i];
+                var rot = l.Rotation;
+                if (l.Next.AlmostEqual(pos, 10f) && (isMid ? (rot.AlmostEqual(90f.Degrees(), Angle.DegToRad) || rot.AlmostEqual(-90f.Degrees(), Angle.DegToRad)) : (rot.AlmostEqual(default, Angle.DegToRad) || rot.AlmostEqual(180f.Degrees(), Angle.DegToRad))))
                 {
                     Lines.RemoveAt(i);
                 }

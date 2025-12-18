@@ -288,7 +288,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
 
     // see ActionEffectHandler.Receive - there are a few hardcoded actions here
     private bool ExpectAnimationLockUpdate(ActionEffectHandler.Header* header)
-        => header->SourceSequence != 0 && !(header->ActionType == CSActionType.Action && (NIN.AID)header->ActionId is NIN.AID.Ten1 or NIN.AID.Chi1 or NIN.AID.Jin1 or NIN.AID.Ten2 or NIN.AID.Chi2 or NIN.AID.Jin2)
+        => header->SourceSequence != 0 && !(header->ActionType == (byte)CSActionType.Action && (NIN.AID)header->ActionId is NIN.AID.Ten1 or NIN.AID.Chi1 or NIN.AID.Jin1 or NIN.AID.Ten2 or NIN.AID.Chi2 or NIN.AID.Jin2)
         || header->ForceAnimationLock;
 
     // perform some action transformations to simplify implementation of queueing; UseActionLocation expects some normalization to be already done
@@ -312,9 +312,9 @@ public sealed unsafe class ActionManagerEx : IDisposable
                     return id != 0 ? new(ActionType.Spell, id) : action;
                 }
                 // special case for lunar sprint, copied from UseGeneralAction
-                else if (action == ActionDefinitions.IDGeneralSprint && GameMain.Instance()->CurrentTerritoryIntendedUseId == 60)
+                else if (action == ActionDefinitions.IDGeneralSprint && GameMain.Instance()->CurrentTerritoryIntendedUseId == FFXIVClientStructs.FFXIV.Client.Enums.TerritoryIntendedUse.CosmicExploration)
                 {
-                    return new(ActionType.Spell, 43357);
+                    return new(ActionType.Spell, 43357u);
                 }
                 else if (action == ActionDefinitions.IDGeneralSprint || action == ActionDefinitions.IDGeneralDuty1 || action == ActionDefinitions.IDGeneralDuty2)
                 {
@@ -403,7 +403,12 @@ public sealed unsafe class ActionManagerEx : IDisposable
         var currentTargetId = isCasting ? (ulong)castInfo->TargetId : (AutoQueue.Target?.InstanceID ?? InvalidEntityId);
         var currentTargetSelf = currentTargetId == player->EntityId;
         var currentTargetObj = currentTargetSelf ? &player->GameObject : currentTargetId is not 0 and not InvalidEntityId ? GameObjectManager.Instance()->Objects.GetObjectByGameObjectId(currentTargetId) : null;
-        WPos? currentTargetPos = currentTargetObj != null ? new WPos(currentTargetObj->Position.X, currentTargetObj->Position.Z) : null;
+        WPos? currentTargetPos = null;
+        if (currentTargetObj != null)
+        {
+            var realPos = *currentTargetObj->GetPosition();
+            currentTargetPos = new(realPos.X, realPos.Z);
+        }
         var currentTargetLoc = isCasting ? new WPos(castInfo->TargetLocation.X, castInfo->TargetLocation.Z) : new(AutoQueue.TargetPos.XZ()); // note: this only matters for area-targeted spells, for which targetlocation in castinfo is set correctly
         var idealOrientation = currentAction ? _smartRotationTweak.GetSpellOrientation(GetSpellIdForAction(currentAction), new(player->Position.X, player->Position.Z), currentTargetSelf, currentTargetPos, currentTargetLoc) : null;
         var avoidGaze = _smartRotationTweak.GetSafeRotation(current, idealOrientation, isCasting ? 75.Degrees() : 45.Degrees());
@@ -572,15 +577,15 @@ public sealed unsafe class ActionManagerEx : IDisposable
 
     private bool UseBozjaFromHolsterDirectorDetour(PublicContentBozja* self, uint holsterIndex, uint slot)
     {
-        var prevRot = GetPlayerRotation();
-        var res = _useBozjaFromHolsterDirectorHook.Original(self, holsterIndex, slot);
-        var currRot = GetPlayerRotation();
-        if (res)
-        {
-            var entry = (BozjaHolsterID)self->State.HolsterActions[(int)holsterIndex];
-            HandleActionRequest(ActionID.MakeBozjaHolster(entry, (int)slot), 0, 0xE0000000, default, prevRot, currRot);
-        }
-        return res;
+        var state = PublicContentBozja.GetState();
+        if (state == null)
+            return false;
+        var action = new ActionID(slot == 0 ? ActionType.BozjaHolsterSlot0 : ActionType.BozjaHolsterSlot1, state->HolsterActions[(int)holsterIndex]);
+
+        if (_manualQueue.Push(action, 0xE0000000, 0, false, () => (0, null), () => 0xE0000000))
+            return true;
+
+        return UseBozjaHolsterNative(action);
     }
 
     private bool UseBozjaHolsterNative(ActionID action)

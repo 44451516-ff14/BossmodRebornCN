@@ -61,7 +61,7 @@ sealed class DonutSectorTowers(BossModule module) : Components.GenericTowers(mod
             Span<bool> activeTiles = stackalloc bool[16];
             Span<bool> visited = stackalloc bool[16];
             Span<(int ring, int idx)> stack = stackalloc (int, int)[16];
-            var angle = 22.5f.Degrees();
+            var angle = 22.5001f.Degrees(); // small epsilon to prevent wedges not merging correctly due to floating point rounding in some cases
             var pos = Arena.Center;
 
             for (var i = 0; i < 8; ++i)

@@ -19,7 +19,9 @@ public enum OID : uint
 public enum AID : uint
 {
     AutoAttack1 = 870, // DaenOseTheAvariciousTyphon/WrigglingMenace->player, no cast, single-target
-    AutoAttack2 = 872, // Mandragoras->player, no cast, single-target
+    AutoAttack2 = 872, // BonusAdds->player, no cast, single-target
+    ChangeVisual1 = 21742, // Helper->self, no cast, single-target
+    ChangeVisual2 = 21783, // DaenOseTheAvariciousTyphon->self, 6.0s cast, single-target, boss morphs into Typhon
 
     AChoo = 21689, // DaenOseTheAvariciousTyphon->self, 3.0s cast, range 12 90-degree cone
 

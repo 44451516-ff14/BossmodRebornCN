@@ -10,6 +10,7 @@ public enum OID : uint
     DungeonOnion = 0x2A06, // R0.84, icon 1, needs to be killed in order from 1 to 5 for maximum rewards
     DungeonEgg = 0x2A07, // R0.84, icon 2, needs to be killed in order from 1 to 5 for maximum rewards
     KeeperOfKeys = 0x2A05, // R3.23
+    WaterVoidzone = 0x1E9998, // R0.5
     Helper = 0x233C
 }
 
@@ -38,6 +39,29 @@ public enum AID : uint
 }
 
 sealed class Wellbore(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Wellbore, 15f);
+sealed class WellboreVoidzone(BossModule module) : Components.Voidzone(module, 8f, GetVoidzones) // not sure if size is correct, visual of the voidzone is somewhere between 7.5 and 8
+{
+    private static Actor[] GetVoidzones(BossModule module)
+    {
+        var enemies = module.Enemies((uint)OID.WaterVoidzone);
+        var count = enemies.Count;
+        if (count == 0)
+        {
+            return [];
+        }
+        var voidzones = new Actor[count];
+        var index = 0;
+        for (var i = 0; i < count; ++i)
+        {
+            var z = enemies[i];
+            if (z.EventState != 7)
+            {
+                voidzones[index++] = z;
+            }
+        }
+        return voidzones[..index];
+    }
+}
 sealed class Compress1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Compress1, new AOEShapeCross(100f, 3.5f));
 sealed class Compress2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Compress2, new AOEShapeRect(102.1f, 3.5f));
 sealed class Accelerate(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.Accelerate, 6f, 8, 8);
@@ -58,6 +82,7 @@ sealed class GoliathStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Wellbore>()
+            .ActivateOnEnter<WellboreVoidzone>()
             .ActivateOnEnter<Compress1>()
             .ActivateOnEnter<Compress2>()
             .ActivateOnEnter<Accelerate>()

@@ -118,7 +118,7 @@ sealed class DebugGraphics
         foreach (var v in _watchedRenderObjects)
         {
             var obj = (FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object*)v.Key;
-            Camera.Instance?.DrawWorldLine(Service.ClientState.LocalPlayer!.Position, obj->Position, Colors.TextColor3);
+            Camera.Instance?.DrawWorldLine(Service.ObjectTable.LocalPlayer!.Position, obj->Position, Colors.TextColor3);
         }
     }
 
@@ -339,14 +339,6 @@ sealed class DebugGraphics
         ImGui.TextUnformatted($"{device->Width:f6} {device->Height:f6}");
     }
 
-    private void DrawMatrix(SharpDX.Matrix mtx)
-    {
-        ImGui.TextUnformatted($"{mtx[0]:f6} {mtx[1]:f6} {mtx[2]:f6} {mtx[3]:f6}");
-        ImGui.TextUnformatted($"{mtx[4]:f6} {mtx[5]:f6} {mtx[6]:f6} {mtx[7]:f6}");
-        ImGui.TextUnformatted($"{mtx[8]:f6} {mtx[9]:f6} {mtx[10]:f6} {mtx[11]:f6}");
-        ImGui.TextUnformatted($"{mtx[12]:f6} {mtx[13]:f6} {mtx[14]:f6} {mtx[15]:f6}");
-    }
-
     private void DrawMatrix(FFXIVClientStructs.FFXIV.Common.Math.Matrix4x4 mtx)
     {
         ImGui.TextUnformatted($"{mtx[0]:f6} {mtx[1]:f6} {mtx[2]:f6} {mtx[3]:f6}");
@@ -357,7 +349,7 @@ sealed class DebugGraphics
 
     public void DrawOverlay()
     {
-        if (Camera.Instance == null || Service.ClientState.LocalPlayer == null)
+        if (Camera.Instance == null || Service.ObjectTable.LocalPlayer == null)
             return;
 
         ImGui.Checkbox("Circle", ref _overlayCircle);
@@ -373,7 +365,7 @@ sealed class DebugGraphics
 
         var mx = (int)(_overlayMaxOffset.X / _overlayStep.X);
         var mz = (int)(_overlayMaxOffset.Y / _overlayStep.Y);
-        var y = Service.ClientState.LocalPlayer.Position.Y;
+        var y = Service.ObjectTable.LocalPlayer.Position.Y;
 
         var rotationMatrix = Matrix3x2.CreateRotation(-_overlayRotation.Rad);
         Vector2 TransformPoint(Vector2 point) => Vector2.Transform(point - _overlayCenter, rotationMatrix) + _overlayCenter;
@@ -412,7 +404,7 @@ sealed class DebugGraphics
 
     public static unsafe FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object* FindSceneRoot()
     {
-        var player = Utils.GameObjectInternal(Service.ClientState.LocalPlayer);
+        var player = Utils.GameObjectInternal(Service.ObjectTable.LocalPlayer);
         if (player == null || player->DrawObject == null)
             return null;
 

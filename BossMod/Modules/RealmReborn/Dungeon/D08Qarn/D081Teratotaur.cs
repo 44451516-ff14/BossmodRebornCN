@@ -23,7 +23,7 @@ public enum AID : uint
 
 public enum SID : uint
 {
-    Doom = 1970 // Boss->player, extra=0x0
+    Doom = 5187 // Boss->player, extra=0x0
 }
 
 sealed class Triclip(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Triclip);

@@ -11,6 +11,7 @@ public enum OID : uint
     SecretOnion = 0x301D, // R0.84, icon 1, needs to be killed in order from 1 to 5 for maximum rewards
     SecretEgg = 0x301E, // R0.84, icon 2, needs to be killed in order from 1 to 5 for maximum rewards 
     KeeperOfKeys = 0x3034, // R3.23
+    FuathTrickster = 0x3033, // R0.75
     Helper = 0x233C
 }
 
@@ -36,7 +37,7 @@ public enum AID : uint
     Inhale = 21770, // KeeperOfKeys->self, no cast, range 20 120-degree cone, attract 25 between hitboxes, shortly before Spin
     Spin = 21769, // KeeperOfKeys->self, 4.0s cast, range 11 circle
     Scoop = 21768, // KeeperOfKeys->self, 4.0s cast, range 15 120-degree cone
-    Telega = 9630 // Mandragoras/KeeperOfKeys->self, no cast, single-target, bonus adds disappear
+    Telega = 9630 // BonusAdds->self, no cast, single-target, bonus adds disappear
 }
 
 sealed class Hydrofan(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hydrofan, new AOEShapeCone(44f, 15f.Degrees()));
@@ -95,7 +96,7 @@ public sealed class SecretUndine : THTemplate
     }
     private readonly List<Actor> aether;
     private static readonly uint[] bonusAdds = [(uint)OID.SecretEgg, (uint)OID.SecretGarlic, (uint)OID.SecretOnion, (uint)OID.SecretTomato,
-    (uint)OID.SecretQueen, (uint)OID.KeeperOfKeys];
+    (uint)OID.SecretQueen, (uint)OID.KeeperOfKeys, (uint)OID.FuathTrickster];
     public static readonly uint[] All = [(uint)OID.SecretUndine, (uint)OID.AqueousAether, .. bonusAdds];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -113,11 +114,12 @@ public sealed class SecretUndine : THTemplate
             var e = hints.PotentialTargets[i];
             e.Priority = e.Actor.OID switch
             {
-                (uint)OID.SecretOnion => 6,
-                (uint)OID.SecretEgg => 5,
-                (uint)OID.SecretGarlic => 4,
-                (uint)OID.SecretTomato => 3,
-                (uint)OID.SecretQueen or (uint)OID.KeeperOfKeys => 2,
+                (uint)OID.SecretOnion => 7,
+                (uint)OID.SecretEgg => 6,
+                (uint)OID.SecretGarlic => 5,
+                (uint)OID.SecretTomato => 4,
+                (uint)OID.SecretQueen or (uint)OID.FuathTrickster => 3,
+                (uint)OID.KeeperOfKeys => 2,
                 (uint)OID.AqueousAether => 1,
                 _ => 0
             };
