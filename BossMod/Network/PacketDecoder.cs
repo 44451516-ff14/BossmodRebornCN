@@ -379,12 +379,12 @@ public abstract unsafe class PacketDecoder
     private TextNode DecodeDDMap(DeepDungeonMap* p)
     {
         List<Lumina.Excel.Sheets.DeepDungeonFloorEffectUI> effects = [];
-        if (Service.LuminaRow<Lumina.Excel.Sheets.DeepDungeonStatus>(p->StatusId) is { } v && v.RowId > 0u)
-            effects.Add(v.FloorEffectUI.Value);
-        if (Service.LuminaRow<Lumina.Excel.Sheets.DeepDungeonBan>(p->BanId) is { } v2 && v2.RowId > 0u)
-            effects.Add(v2.FloorEffectUI.Value);
-        if (Service.LuminaRow<Lumina.Excel.Sheets.DeepDungeonDanger>(p->DangerId) is { } v3 && v3.RowId > 0u)
-            effects.Add(v3.FloorEffectUI.Value);
+        if (Service.LuminaRow<Lumina.Excel.Sheets.DeepDungeonStatus>(p->StatusId)?.FloorEffectUI.ValueNullable is { } v && v.RowId > 0u)
+            effects.Add(v);
+        if (Service.LuminaRow<Lumina.Excel.Sheets.DeepDungeonBan>(p->BanId)?.FloorEffectUI.ValueNullable is { } v2 && v2.RowId > 0u)
+            effects.Add(v2);
+        if (Service.LuminaRow<Lumina.Excel.Sheets.DeepDungeonDanger>(p->DangerId)?.FloorEffectUI.ValueNullable is { } v3 && v3.RowId > 0u)
+            effects.Add(v3);
 
         return new($"Layout={p->LayoutInitType}, effects=[{string.Join(", ", effects.Select(e => e.Name))}]");
     }

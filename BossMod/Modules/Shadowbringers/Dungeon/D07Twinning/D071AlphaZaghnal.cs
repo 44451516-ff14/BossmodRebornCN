@@ -154,13 +154,13 @@ sealed class ForlornImpact(BossModule module) : Components.GenericBaitAway(modul
         var bait = ActiveBaitsOn(actor);
         if (bait.Count != 0)
         {
-            ref var b = ref bait.Ref(0);
             var cages = Module.Enemies((uint)OID.IronCage);
             var count = cages.Count;
             if (count == 0)
             {
                 return;
             }
+            ref var b = ref bait.Ref(0);
             for (var i = 0; i < count; ++i)
             {
                 var a = cages[i];

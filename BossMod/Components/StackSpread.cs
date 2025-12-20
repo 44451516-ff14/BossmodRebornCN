@@ -246,7 +246,7 @@ public abstract class GenericStackSpread(BossModule module, bool raidwideOnResol
         {
             hints.Add(StackHint);
         }
-    // else: don't show anything, all potential stacks are already satisfied without a player
+        // else: don't show anything, all potential stacks are already satisfied without a player
 
     done:
         for (var i = 0; i < lenSpreads; ++i)

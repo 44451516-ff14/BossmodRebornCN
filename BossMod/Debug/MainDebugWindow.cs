@@ -82,6 +82,10 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         {
             _debugParty.Draw(false);
         }
+        if (ImGui.CollapsingHeader("Inventory"))
+        {
+            DrawInventory();
+        }
         if (ImGui.CollapsingHeader("Party (duty recorder)"))
         {
             _debugParty.Draw(true);
@@ -267,6 +271,32 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
             ImGui.TextUnformatted(elem.Position.ToString());
             ImGui.TableNextColumn();
             ImGui.TextUnformatted(elem.CastInfo.Rotation.ToString());
+        }
+        ImGui.EndTable();
+    }
+
+    private void DrawInventory()
+    {
+        var player = Service.ObjectTable.LocalPlayer;
+        if (player == null)
+            return;
+
+        ImGui.BeginTable("items", 3, ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg);
+        ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 30);
+        ImGui.TableSetupColumn("Quant", ImGuiTableColumnFlags.WidthFixed, 30);
+        ImGui.TableSetupColumn("Name");
+        ImGui.TableHeadersRow();
+        foreach (var (k, i) in ws.Client.Inventory)
+        {
+            ImGui.TableNextRow();
+            ImGui.TableNextColumn();
+            ImGui.TextUnformatted(k.ToString());
+            ImGui.TableNextColumn();
+            ImGui.TextUnformatted(i.ToString());
+            ImGui.TableNextColumn();
+            var namebase = Service.LuminaRow<Lumina.Excel.Sheets.Item>(k % 500000)?.Name.ToString() ?? "<unknown>";
+            var namefull = k > 500000 ? $"{namebase} (HQ)" : namebase;
+            ImGui.TextUnformatted(namefull);
         }
         ImGui.EndTable();
     }
