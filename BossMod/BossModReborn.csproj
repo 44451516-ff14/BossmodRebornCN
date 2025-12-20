@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Dalamud.CN.NET.Sdk/14.0.0">
+<Project Sdk="Dalamud.CN.NET.Sdk/14.0.1">
     <PropertyGroup>
         <Authors></Authors>
         <Company></Company>
-        <Version>7.4.0.3</Version>
+        <Version>7.4.0.4</Version>
         <Description>Boss mod.</Description>
         <Copyright></Copyright>
         <PackageProjectUrl></PackageProjectUrl>
