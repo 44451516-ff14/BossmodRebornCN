@@ -327,3 +327,55 @@ public sealed class SDKnockbackFixedDirectionIntoCircle(WDir Direction, WPos Cir
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
+
+[SkipLocalsInit]
+public sealed class SDKnockbackInCircleLeftRightAlongZAxis(WPos Center, float Distance, float Radius) : ShapeDistance
+{
+    private readonly WPos center = Center;
+    private readonly float originZ = Center.Z;
+    private readonly WDir dir1 = new(default, Distance);
+    private readonly WDir dir2 = new(default, -Distance);
+    private readonly float radius = Radius;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        if (!(p + (p.Z > originZ ? dir1 : dir2)).InCircle(center, radius))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}
+
+[SkipLocalsInit]
+public sealed class SDKnockbackInCircleLeftRightAlongXAxis(WPos Center, float Distance, float Radius) : ShapeDistance
+{
+    private readonly WPos center = Center;
+    private readonly float originX = Center.X;
+    private readonly WDir dir1 = new(Distance, default);
+    private readonly WDir dir2 = new(-Distance, default);
+    private readonly float radius = Radius;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        if (!(p + (p.X > originX ? dir1 : dir2)).InCircle(center, radius))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}

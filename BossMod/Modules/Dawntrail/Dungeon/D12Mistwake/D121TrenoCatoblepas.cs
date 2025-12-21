@@ -197,6 +197,7 @@ sealed class RayOfLightning(BossModule module) : Components.LineStack(module, ic
 
 [SkipLocalsInit]
 sealed class ThunderIIAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderIIAOE, 5f);
+
 [SkipLocalsInit]
 sealed class ThunderIISpread(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderIISpread, 5f)
 {

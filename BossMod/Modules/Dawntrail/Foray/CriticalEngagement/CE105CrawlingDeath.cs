@@ -162,38 +162,44 @@ sealed class Crosshatch(BossModule module) : Components.GenericAOEs(module)
     {
         var count = _aoes.Count;
         if (count == 0 || _aoe.AOEs.Count != 0)
-            return [];
-
-        var aoes = CollectionsMarshal.AsSpan(_aoes);
-        for (var i = 0; i < 2; ++i)
         {
-            aoes[i].Risky = true;
+            return [];
         }
-        return aoes;
+        return CollectionsMarshal.AsSpan(_aoes);
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         var id = spell.Action.ID;
-        if (spell.Action.ID is (uint)AID.HorizontalCrosshatch1 or (uint)AID.HorizontalCrosshatch2 or (uint)AID.VerticalCrosshatch1 or (uint)AID.VerticalCrosshatch2)
+        if (id is (uint)AID.HorizontalCrosshatch1 or (uint)AID.HorizontalCrosshatch2 or (uint)AID.VerticalCrosshatch1 or (uint)AID.VerticalCrosshatch2)
         {
             Angle[] angles = [-90.004f.Degrees(), 89.999f.Degrees(), -0.003f.Degrees(), 180f.Degrees()];
-            if (id is (uint)AID.VerticalCrosshatch1 or (uint)AID.VerticalCrosshatch2)
-            {
-                angles.Reverse();
-            }
+
+            var reverse = id is (uint)AID.VerticalCrosshatch1 or (uint)AID.VerticalCrosshatch2;
+
             for (var i = 0; i < 4; ++i)
             {
-                _aoes.Add(new(ClawingShadow.Cone, spell.LocXZ, angles[i], Module.CastFinishAt(spell, i < 2 ? default : 2f), i < 2 ? Colors.Danger : default, i < 2));
+                var index = reverse ? 3 - i : i;
+
+                _aoes.Add(new(ClawingShadow.Cone, spell.LocXZ, angles[index], Module.CastFinishAt(spell, i < 2 ? default : 2f), i < 2 ? Colors.Danger : default, i < 2));
             }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0 && spell.Action.ID == (uint)AID.RakingScratch)
+        var count = _aoes.Count;
+        if (count != 0 && spell.Action.ID == (uint)AID.RakingScratch)
         {
             _aoes.RemoveAt(0);
+            if (count == 3)
+            {
+                var aoes = CollectionsMarshal.AsSpan(_aoes);
+                for (var i = 0; i < 2; ++i)
+                {
+                    aoes[i].Risky = true;
+                }
+            }
         }
     }
 
