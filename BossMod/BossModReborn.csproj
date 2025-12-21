@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors></Authors>
         <Company></Company>
-        <Version>7.4.0.5</Version>
+        <Version>7.4.0.6</Version>
         <Description>Boss mod.</Description>
         <Copyright></Copyright>
         <PackageProjectUrl></PackageProjectUrl>
@@ -47,6 +47,7 @@
         <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
     </PropertyGroup>
 
+<!--    <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">-->
     <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">
         <ItemGroup>
             <FilesToDelete Include="$(OutputPath)Dalamud.Common.dll"/>
@@ -82,33 +83,8 @@
 
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-        <OutputPath>$(MSBuildProjectDirectory)\..\release\BossModReborn</OutputPath>
+        <OutputPath>$(MSBuildProjectDirectory)\..\release\</OutputPath>
     </PropertyGroup>
 
-    <Target Name="RemoveUnwantedFiles" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(Configuration)' == 'Release'">
-        <ItemGroup>
-            <FilesToDelete Include="$(OutputPath)Dalamud.Common.dll"/>
-            <FilesToDelete Include="$(OutputPath)Dalamud.Common.pdb"/>
-            <FilesToDelete Include="$(OutputPath)System.Data.SQLite.dll"/>
-            <FilesToDelete Include="$(OutputPath)TerraFX.Interop.Windows.dll"/>
-<!--            <FilesToDelete Include="$(OutputPath)PInvoke.User32.dll"/>-->
-        </ItemGroup>
-        <Delete Files="@(FilesToDelete)" ContinueOnError="true"/>
-    </Target>
-
-    <Target Name="CreateZipPackage" AfterTargets="RemoveUnwantedFiles" Condition="'$(Configuration)' == 'Release'">
-        <PropertyGroup>
-            <ZipOutputPath>$(OutputPath)\latest.zip</ZipOutputPath>
-            <TempZipPath>$(MSBuildProjectDirectory)\..\release\latest_temp.zip</TempZipPath>
-        </PropertyGroup>
-        <Message Text="开始创建打包文件: $(ZipOutputPath)" Importance="high"/>
-        <Delete Files="$(ZipOutputPath)" ContinueOnError="true"/>
-        <Delete Files="$(TempZipPath)" ContinueOnError="true"/>
-        <ItemGroup>
-            <FilesToZip Include="$(OutputPath)\*.*" Exclude="$(OutputPath)\latest.zip"/>
-        </ItemGroup>
-        <ZipDirectory SourceDirectory="$(OutputPath)" DestinationFile="$(TempZipPath)" Overwrite="true"/>
-        <Move SourceFiles="$(TempZipPath)" DestinationFiles="$(ZipOutputPath)"/>
-        <Message Text="打包完成: $(ZipOutputPath)" Importance="high"/>
-    </Target>
+    
 </Project>

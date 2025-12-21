@@ -6,9 +6,10 @@ logs/
 .idea/
 
 release/BossModReborn/
-release/BossModReborn/BossModReborn.deps.json
-release/BossModReborn/BossModReborn.dll
-release/BossModReborn/BossModReborn.json
-release/BossModReborn/BossModReborn.pdb
-release/BossModReborn/DefaultRotationPresets.json
+release/BossModReborn.deps.json
+release/BossModReborn.dll
+release/BossModReborn.json
+release/BossModReborn.pdb
+release/DefaultRotationPresets.json
+release/PInvoke.User32.dll
 FFXIVClientStructs
