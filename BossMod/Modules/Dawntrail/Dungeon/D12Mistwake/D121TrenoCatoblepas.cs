@@ -289,7 +289,7 @@ sealed class D121TrenoCatoblepasStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
+[ModuleInfo(BossModuleInfo.Maturity.AISupport,
 StatesType = typeof(D121TrenoCatoblepasStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

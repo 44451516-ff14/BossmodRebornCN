@@ -1,4 +1,8 @@
-﻿namespace BossMod;
+﻿// using System.IO;
+// using System.Globalization;
+
+namespace BossMod;
+
 // radius is the largest horizontal/vertical dimension: radius for circle, max of width/height for rect
 // note: this class to represent *relative* arena bounds (relative to arena center) - the reason being that in some cases effective center moves every frame, and bounds caches a lot (clip poly & base map for pathfinding)
 // note: if arena bounds are changed, new instance is recreated; max approx error can change without recreating the instance
@@ -402,6 +406,38 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         var halfWidth = (maxX - minX) * 0.5f;
         var halfHeight = (maxZ - minZ) * 0.5f;
         var dir = center.ToWDir();
+
+        // var sb = new StringBuilder();
+        // sb.AppendLine("WPos[] vertices");
+        // sb.AppendLine("[");
+
+        // const int perLine = 5;
+        // var count = 0;
+        // var culture = CultureInfo.InvariantCulture;
+        // for (var i = 0; i < countCombined; ++i)
+        // {
+        //     var verts = combined[i].Vertices;
+        //     for (var j = 0; j < verts.Count; ++j)
+        //     {
+        //         if (count % perLine == 0)
+        //             sb.Append("    ");
+
+        //         var v = verts[j];
+        //         sb.Append($"new({v.X.ToString(culture)}f, {v.Z.ToString(culture)}f), ");
+
+        //         count++;
+
+        //         if (count % perLine == 0)
+        //             sb.AppendLine();
+        //     }
+        // }
+
+        // if (count % perLine != 0)
+        //     sb.AppendLine();
+
+        // sb.AppendLine("];");
+
+        // File.WriteAllText("vertices.txt", sb.ToString());
 
         for (var i = 0; i < countCombined; ++i)
         {

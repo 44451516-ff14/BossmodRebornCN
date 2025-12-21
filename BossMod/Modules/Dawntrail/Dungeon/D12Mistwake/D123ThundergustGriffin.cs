@@ -121,6 +121,7 @@ sealed class StormSurge(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
+[SkipLocalsInit]
 sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly List<Knockback> _kbs = new(2);
@@ -166,6 +167,7 @@ sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback
     }
 }
 
+[SkipLocalsInit]
 sealed class D123ThundergustGriffinStates : StateMachineBuilder
 {
     public D123ThundergustGriffinStates(BossModule module) : base(module)
@@ -184,7 +186,7 @@ sealed class D123ThundergustGriffinStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
+[ModuleInfo(BossModuleInfo.Maturity.AISupport,
 StatesType = typeof(D123ThundergustGriffinStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

@@ -19,7 +19,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
     0x375C, 0x375A, 0x3759, 0x375B, 0x35E0, 0x35E1, 0x35F1, 0x35F3, 0x3604, 0x39BF, 0x39BD, 0x39C0, 0x39C1, 0x39BE, 0x402D, 0x402E, 0x40B1, 0x3D7F, 0x3D80, 0x3D7E, 0x465C, 0x465D, 0x465E,
     0x466D, 0x466E, 0x466F, 0x466B, 0x466C, 0x2ED7, 0x2EDB, 0x2EDA, 0x2EF2, 0x2EDC, 0x2EF5, 0x2EF6, 0x2EF4, 0x2EDD, 0x2EF1, 0x2EDC, 0x2EF3, 0x2EEE, 0x2EED, 0x2EF0,
     0x2EEF, 0x2FCC, 0x2FCB, 0x195D, 0x195B, 0x195C, 0x338F, 0x326A, 0x3269, 0x334B, 0x3267, 0x3268, 0x3266, 0x31A8, 0x488E, 0x49B3, 0x49B4, 0x49B5,
-    0x4A60, 0x4A59, 0x4ACE, 0x4A5A, 0x4A57];
+    0x4A60, 0x4A59, 0x4ACE, 0x4A5A, 0x4A57, 0x5CA, 0x603];
     public static readonly HashSet<uint> BoringSIDs = [43, 44, 418, 364, 902, 414, 1050, 368, 362, 1086, 1461, 1463, 365, 1778, 1755, 360, 1411, 2625, 2626, 2627, 2415, 2449, 361, 367, 2355, 413,
     4233, 4244, 4227, 4239, 4226, 4229, 4209, 4265, 2932, 4266, 4267, 4268, 4262, 4228];
     private readonly HashSet<ActionID> _filteredActions = [];
@@ -135,6 +135,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
             ActorState.OpCastEvent op => FilterInterestingActor(op.InstanceID, op.Timestamp, false) && !_filteredActions.Contains(op.Value.Action),
             ActorState.OpEffectResult => false,
             ActorState.OpStatus op => FilterInterestingStatuses(op.InstanceID, op.Index, op.Timestamp) && FilterInterestingActor(op.InstanceID, op.Timestamp, true),
+            ActorState.OpPlayActionTimelineEvent op => FilterInterestingActor(op.InstanceID, op.Timestamp, true),
             ActorState.OpIncomingEffect => false,
             PartyState.OpLimitBreakChange => false,
             PartyState.OpModify => false,

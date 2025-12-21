@@ -188,7 +188,7 @@ sealed class D122AmdusiasStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified,
+[ModuleInfo(BossModuleInfo.Maturity.AISupport,
 StatesType = typeof(D122AmdusiasStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),
