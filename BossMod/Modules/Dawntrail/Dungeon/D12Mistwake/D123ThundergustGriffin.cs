@@ -47,7 +47,9 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.Thunderspark && Arena.Bounds.Radius > 20f)
         {
-            _aoe = [new(new AOEShapeDonut(20f, 30f), D123ThundergustGriffin.ArenaCenter, default, Module.CastFinishAt(spell, 0.7d))];
+            var shape = new AOEShapeDonut(20f, 30f);
+            var pos = D123ThundergustGriffin.ArenaCenter;
+            _aoe = [new(shape, pos, default, Module.CastFinishAt(spell, 0.7d), shapeDistance: shape.Distance(pos, default))];
         }
     }
 
@@ -55,7 +57,7 @@ sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
     {
         if (index == 0x17 && state == 0x00020001u)
         {
-            Arena.Bounds = new ArenaBoundsCustom([new Polygon(Arena.Center, 20f, 64)]);
+            Arena.Bounds = new ArenaBoundsCustom([new Polygon(Arena.Center, 20f, 64)], MapResolution: 0.35f);
             _aoe = [];
         }
     }
@@ -98,7 +100,7 @@ sealed class ElectrogeneticForce(BossModule module) : Components.SimpleAOEs(modu
 sealed class StormSurge(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    private readonly AOEShapeRect rect = new(50f, 10f);
+    private readonly AOEShapeRect rect = new(50f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
@@ -125,7 +127,7 @@ sealed class StormSurge(BossModule module) : Components.GenericAOEs(module)
 sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly List<Knockback> _kbs = new(2);
-
+    private ShapeDistance distance;
     private static readonly AOEShapeRect rect = new(30f, 30f);
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_kbs);
@@ -137,8 +139,12 @@ sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback
             var act = Module.CastFinishAt(spell);
             var pos = Arena.Center;
             var rot = spell.Rotation;
-            _kbs.Add(new(pos, 12f, act, rect, rot + 90f.Degrees(), Kind.DirForward));
-            _kbs.Add(new(pos, 12f, act, rect, rot - 90f.Degrees(), Kind.DirForward));
+            var offset = 90f.Degrees();
+            var rot1 = rot + offset;
+            var isAlongZAxis = rot1.AlmostEqual(default, Angle.DegToRad) || rot1.AlmostEqual(180f.Degrees(), Angle.DegToRad);
+            _kbs.Add(new(pos, 12f, act, rect, rot1, Kind.DirForward));
+            _kbs.Add(new(pos, 12f, act, rect, rot - offset, Kind.DirForward));
+            distance = isAlongZAxis ? new SDKnockbackInCircleLeftRightAlongZAxis(Arena.Center, 12f, 19f) : new SDKnockbackInCircleLeftRightAlongXAxis(Arena.Center, 12f, 19f);
         }
     }
 
@@ -159,9 +165,7 @@ sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback
             var act = kb.Activation;
             if (!IsImmune(slot, act))
             {
-                var dir = kb.Direction;
-                var isAlongXAxis = dir.AlmostEqual(90f.Degrees(), Angle.DegToRad) || dir.AlmostEqual(-90f.Degrees(), Angle.DegToRad);
-                hints.AddForbiddenZone(isAlongXAxis ? new SDKnockbackInCircleLeftRightAlongXAxis(Arena.Center, 12f, 19f) : new SDKnockbackInCircleLeftRightAlongZAxis(Arena.Center, 12f, 19f), act);
+                hints.AddForbiddenZone(distance, act);
             }
         }
     }

@@ -2,70 +2,68 @@
 
 public enum OID : uint
 {
-    Boss = 0x605, // x1
-    MoucheVolante = 0x606, // spawn during fight
-    Amanuensis = 0x607, // spawn during fight
-    Crystal = 0x1E8594 // x6, EventObj type
+    AllSeeingEye = 0x4A8A, // R2.7
+    Helper = 0x233C
 }
 
 public enum AID : uint
 {
-    AutoAttack = 870, // Boss/Amanuensis->player, no cast, single-target
+    AutoAttack = 870, // AllSeeingEye->player, no cast, single-target
 
-    CursedGaze = 512, // Boss->self, 2.5s cast, range 6+2.7 90-degree cone
-    DreadGaze = 513, // Boss->self, 3.0s cast, range 6+2.7 90-degree cone
-    EyesOnMe = 951, // Boss->self, no cast, raidwide
-
-    AutoAttackAdd = 878, // MoucheVolante->player, no cast, single-target
-    Thunderstrike = 1097, // MoucheVolante->self, 2.0s cast, range 10+1.2 width 3 rect
-    Condemnation = 1100 // Amanuensis->self, 2.5s cast, range 6+1.3 90-degree cone
+    EyesOnMe = 45569, // AllSeeingEye->self, 5.0s cast, range 33 circle
+    BlusteringBlink = 45570, // AllSeeingEye->self, 3.0s cast, range 55 width 10 rect
+    VoidMatterVisual = 45567, // AllSeeingEye->self, 7.5+0,5s cast, single-target
+    VoidMatter = 45568 // Helper->location, 8.0s cast, range 10 circle
 }
 
-public enum SID : uint
-{
-    Invincibility = 325 // none->Boss, extra=0x0
-}
+[SkipLocalsInit]
+sealed class BlusteringBlink(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlusteringBlink, new AOEShapeRect(55f, 5f));
 
-abstract class Gaze(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeCone(8.7f, 45.Degrees()));
-class CursedGaze(BossModule module) : Gaze(module, (uint)AID.CursedGaze);
-class DreadGaze(BossModule module) : Gaze(module, (uint)AID.DreadGaze);
+[SkipLocalsInit]
+sealed class VoidMatter(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidMatter, 10f, 6);
 
-class Thunderstrike(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Thunderstrike, new AOEShapeRect(11.2f, 1.5f));
-class Condemnation(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Condemnation, new AOEShapeCone(7.3f, 45.Degrees()));
+[SkipLocalsInit]
+sealed class EyesOnMe(BossModule module) : Components.RaidwideCast(module, (uint)AID.EyesOnMe);
 
-// try to always stay in active crystal closest to boss
-class Positioning(BossModule module) : BossComponent(module)
-{
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        if (Module.PrimaryActor.CastInfo == null) // do not restrict zone while boss is casting, to allow avoiding aoe, even if it means temporarily leaving crystal veil
-        {
-            var closestCrystal = Module.Enemies((uint)OID.Crystal).Closest(Module.PrimaryActor.Position);
-            if (closestCrystal != null)
-                hints.AddForbiddenZone(new SDInvertedCircle(closestCrystal.Position, 8)); // TODO: verify range
-        }
-    }
-}
-
-class D111AllSeeingEyeStates : StateMachineBuilder
+[SkipLocalsInit]
+sealed class D111AllSeeingEyeStates : StateMachineBuilder
 {
     public D111AllSeeingEyeStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<CursedGaze>()
-            .ActivateOnEnter<DreadGaze>()
-            .ActivateOnEnter<Thunderstrike>()
-            .ActivateOnEnter<Condemnation>()
-            .ActivateOnEnter<Positioning>();
+            .ActivateOnEnter<BlusteringBlink>()
+            .ActivateOnEnter<VoidMatter>()
+            .ActivateOnEnter<EyesOnMe>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 13, NameID = 1397)]
-public class D111AllSeeingEye(WorldState ws, Actor primary) : BossModule(ws, primary, new(40, 70), new ArenaBoundsSquare(30))
+[ModuleInfo(BossModuleInfo.Maturity.AISupport,
+StatesType = typeof(D111AllSeeingEyeStates),
+ConfigType = null,
+ObjectIDType = typeof(OID),
+ActionIDType = typeof(AID),
+StatusIDType = null,
+TetherIDType = null,
+IconIDType = null,
+PrimaryActorOID = (uint)OID.AllSeeingEye,
+Contributors = "The Combat Reborn Team (Malediktus)",
+Expansion = BossModuleInfo.Expansion.RealmReborn,
+Category = BossModuleInfo.Category.Dungeon,
+GroupType = BossModuleInfo.GroupType.CFC,
+GroupID = 13u,
+NameID = 1397u,
+SortOrder = 1,
+PlanLevel = 0)]
+[SkipLocalsInit]
+public sealed class D111AllSeeingEye : BossModule
 {
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    public D111AllSeeingEye(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D111AllSeeingEye(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
     {
-        if (PrimaryActor.FindStatus(SID.Invincibility) != null)
-            hints.PotentialTargets.RemoveAll(e => e.Actor == PrimaryActor);
+        var arena = new ArenaBoundsCustom([new Polygon(new(48f, 78f), 19.5f, 64)], [new Rectangle(new(62.43887f, 92.40965f), 8f, 1.25f, 45.855f.Degrees())]);
+        return (arena.Center, arena);
     }
 }

@@ -160,7 +160,7 @@ Category = BossModuleInfo.Category.Dungeon,
 GroupType = BossModuleInfo.GroupType.CFC,
 GroupID = 5u,
 NameID = 1532u,
-SortOrder = 2,
+SortOrder = 3,
 PlanLevel = 0)]
 [SkipLocalsInit]
 public sealed class D123MisersMistress : BossModule
