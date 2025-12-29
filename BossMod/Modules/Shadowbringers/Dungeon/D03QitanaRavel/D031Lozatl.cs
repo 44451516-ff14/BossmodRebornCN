@@ -21,32 +21,30 @@ public enum AID : uint
     LozatlsFury2 = 15503 // Boss->self, 4.0s cast, range 60 width 20 rect
 }
 
+[SkipLocalsInit]
 sealed class LozatlsFury(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.LozatlsFury1, (uint)AID.LozatlsFury2], new AOEShapeRect(60f, 10f));
+[SkipLocalsInit]
+sealed class Stonefist(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Stonefist);
+[SkipLocalsInit]
+sealed class LozatlsScorn(BossModule module) : Components.RaidwideCast(module, (uint)AID.LozatlsScorn);
+[SkipLocalsInit]
+sealed class SunToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SunToss, 5f);
 
-class Stonefist(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.Stonefist);
-class LozatlsScorn(BossModule module) : Components.RaidwideCast(module, (uint)AID.LozatlsScorn);
-class SunToss(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SunToss, 5f);
-
-class RonkanLight(BossModule module) : Components.GenericAOEs(module)
+[SkipLocalsInit]
+sealed class RonkanLight(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect rect = new(60f, 20f);
+    private readonly AOEShapeRect rect = new(60f, 20f);
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        void AddAOE(Angle rot) => _aoe = [new(rect, D031Lozatl.ArenaCenter, rot, WorldState.FutureTime(8d))];
         if (state == 0x00040008u)
         {
-            if (actor.Position.AlmostEqual(new(8f, 328f), 1f))
-            {
-                AddAOE(90f.Degrees());
-            }
-            else if (actor.Position.AlmostEqual(new(-7f, 328f), 1f))
-            {
-                AddAOE(-90f.Degrees());
-            }
+            var rot = actor.Position.X == 10f ? 90f.Degrees() : -90f.Degrees();
+            var pos = D031Lozatl.ArenaCenter;
+            _aoe = [new(rect, D031Lozatl.ArenaCenter, rot, WorldState.FutureTime(8d), shapeDistance: rect.Distance(pos, rot))];
         }
     }
 
@@ -59,7 +57,8 @@ class RonkanLight(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D031LozatlStates : StateMachineBuilder
+[SkipLocalsInit]
+sealed class D031LozatlStates : StateMachineBuilder
 {
     public D031LozatlStates(BossModule module) : base(module)
     {
@@ -72,8 +71,9 @@ class D031LozatlStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 651, NameID = 8231)]
-public class D031Lozatl(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 651u, NameID = 8231u)]
+[SkipLocalsInit]
+public sealed class D031Lozatl(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     public static readonly WPos ArenaCenter = new(default, 315f);
     private static readonly ArenaBoundsCustom arena = new([new Polygon(ArenaCenter, 19.5f * CosPI.Pi40th, 40)],

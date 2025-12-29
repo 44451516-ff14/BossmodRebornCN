@@ -327,7 +327,7 @@ public sealed class ArenaBoundsSquare(float halfWidth, Angle rotation = default,
 // first array contains platforms that will be united, second optional array contains shapes that will be subtracted
 // for convenience third array will optionally perform additional unions at the end
 // offset shrinks the pathfinding map only, for example if the edges of the arena are deadly and floating point errors cause the AI to fall of the map or problems like that
-// AdjustForHitbox adjusts both the visible map and the pathfinding map
+// AdjustForHitbox adjusts both the visible map and the pathfinding map (ignores additional unions)
 [SkipLocalsInit]
 public sealed class ArenaBoundsCustom : ArenaBounds
 {
@@ -363,9 +363,7 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         var unionPolygons = ParseShapes(unionShapes);
         var differencePolygons = ParseShapes(differenceShapes);
         var additionalPolygons = ParseShapes(additionalShapes);
-        var combine = CombinePolygons(unionPolygons, differencePolygons, additionalPolygons);
-        var adjust = adjustForHitboxInwards ? -0.5f : adjustForHitboxOutwards ? 0.5f : default;
-        var combinedPoly = adjust != default ? combine.Offset(adjust, Clipper2Lib.JoinType.Round) : combine;
+        var combinedPoly = CombinePolygons(unionPolygons, differencePolygons, additionalPolygons, adjustForHitboxInwards ? -0.5f : adjustForHitboxOutwards ? 0.5f : default);
 
         float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
         var combined = combinedPoly.Parts;
@@ -546,7 +544,7 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         return map;
     }
 
-    private static RelSimplifiedComplexPolygon CombinePolygons(RelSimplifiedComplexPolygon[] unionPolygons, RelSimplifiedComplexPolygon[] differencePolygons, RelSimplifiedComplexPolygon[] secondUnionPolygons)
+    private static RelSimplifiedComplexPolygon CombinePolygons(RelSimplifiedComplexPolygon[] unionPolygons, RelSimplifiedComplexPolygon[] differencePolygons, RelSimplifiedComplexPolygon[] secondUnionPolygons, float offset)
     {
         var clipper = new PolygonClipper();
         var operandUnion = new PolygonClipper.Operand();
@@ -570,12 +568,13 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         }
 
         var combinedShape = clipper.Difference(operandUnion, operandDifference);
+        var polyAdjust = offset != default ? combinedShape.Offset(offset, Clipper2Lib.JoinType.Round) : combinedShape;
         if (secUnionLen != 0)
         {
-            combinedShape = clipper.Union(new PolygonClipper.Operand(combinedShape), operandSecondUnion);
+            polyAdjust = clipper.Union(new PolygonClipper.Operand(polyAdjust), operandSecondUnion);
         }
 
-        return combinedShape;
+        return polyAdjust;
     }
 
     public override string ToString()
