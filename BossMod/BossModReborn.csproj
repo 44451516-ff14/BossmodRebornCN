@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors></Authors>
         <Company></Company>
-        <Version>7.4.1.0</Version>
+        <Version>7.4.1.1</Version>
         <Description>Boss mod.</Description>
         <Copyright></Copyright>
         <PackageProjectUrl></PackageProjectUrl>
@@ -59,7 +59,7 @@
     </Target>
 
     <ItemGroup>
-        <None Update="DefaultRotationPresets.json">
+        <None Include="DefaultRotationPresets.json">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
