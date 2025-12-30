@@ -22,7 +22,7 @@ sealed class ArcaneLighning(BossModule module) : Components.GenericAOEs(module, 
 {
     public readonly List<AOEInstance> AOEs = [];
 
-    private static readonly AOEShapeRect _shape = new(50f, 2.5f);
+    private readonly AOEShapeRect rect = new(50f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
@@ -30,7 +30,9 @@ sealed class ArcaneLighning(BossModule module) : Components.GenericAOEs(module, 
     {
         if (actor.OID == (uint)OID.ArcaneSphere)
         {
-            AOEs.Add(new(_shape, actor.Position.Quantized(), actor.Rotation, WorldState.FutureTime(8.6d)));
+            var pos = actor.Position.Quantized();
+            var rot = actor.Rotation;
+            AOEs.Add(new(rect, pos, rot, WorldState.FutureTime(8.6d), shapeDistance: rect.Distance(pos, rot)));
         }
     }
 }

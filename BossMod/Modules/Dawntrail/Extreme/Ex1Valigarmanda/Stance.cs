@@ -4,9 +4,9 @@ sealed class Stance(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
 
-    private static readonly AOEShapeCone _shapeCone = new(50f, 40f.Degrees());
-    private static readonly AOEShapeCone _shapeOut = new(24f, 90f.Degrees());
-    private static readonly AOEShapeDonut _shapeIn = new(8f, 30f);
+    private readonly AOEShapeCone _shapeCone = new(50f, 40f.Degrees());
+    private readonly AOEShapeCone _shapeOut = new(24f, 90f.Degrees());
+    private readonly AOEShapeDonut _shapeIn = new(8f, 30f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
@@ -21,7 +21,9 @@ sealed class Stance(BossModule module) : Components.GenericAOEs(module)
         };
         if (shape != null)
         {
-            _aoe = [new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell))];
+            var rot = spell.Rotation;
+            var pos = spell.LocXZ;
+            _aoe = [new(shape, pos, rot, Module.CastFinishAt(spell), shapeDistance: shape.Distance(pos, rot))];
         }
     }
 
@@ -56,7 +58,7 @@ sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(modul
 {
     public readonly List<AOEInstance> AOEs = [];
 
-    private static readonly AOEShapeCross _shape = new(40f, 2.5f);
+    private readonly AOEShapeCross rect = new(40f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 
@@ -66,8 +68,10 @@ sealed class ChillingCataclysm(BossModule module) : Components.GenericAOEs(modul
         {
             var act = WorldState.FutureTime(5.6d);
             var pos = actor.Position.Quantized();
-            AOEs.Add(new(_shape, pos, Angle.AnglesCardinals[1], act));
-            AOEs.Add(new(_shape, pos, Angle.AnglesIntercardinals[1], act));
+            var rot1 = Angle.AnglesCardinals[1];
+            var rot2 = Angle.AnglesIntercardinals[1];
+            AOEs.Add(new(rect, pos, rot1, act, shapeDistance: rect.Distance(pos, rot1)));
+            AOEs.Add(new(rect, pos, rot2, act, shapeDistance: rect.Distance(pos, rot2)));
         }
     }
 }

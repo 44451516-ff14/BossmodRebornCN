@@ -54,7 +54,7 @@ sealed class MountainFireCone(BossModule module) : Components.GenericAOEs(module
 {
     private readonly MountainFire? _tower = module.FindComponent<MountainFire>();
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeCone _shape = new(40f, 165f.Degrees());
+    private readonly AOEShapeCone cone = new(40f, 165f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -87,7 +87,9 @@ sealed class MountainFireCone(BossModule module) : Components.GenericAOEs(module
     {
         if (spell.Action.ID == (uint)AID.MountainFireTower)
         {
-            _aoe = [new(_shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell, 0.4d))];
+            var rot = spell.Rotation;
+            var pos = spell.LocXZ;
+            _aoe = [new(cone, pos, rot, Module.CastFinishAt(spell, 0.4d), shapeDistance: cone.Distance(pos, rot))];
         }
     }
 

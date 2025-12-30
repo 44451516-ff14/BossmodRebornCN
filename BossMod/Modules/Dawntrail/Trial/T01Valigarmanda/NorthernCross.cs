@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Trial.T01Valigarmanda;
 sealed class NorthernCross(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeRect _shape = new(25f, 30f);
+    private readonly AOEShapeRect rect = new(60f, 12.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
@@ -13,15 +13,16 @@ sealed class NorthernCross(BossModule module) : Components.GenericAOEs(module)
         {
             return;
         }
-        var offset = state switch
+        var pos = state switch
         {
-            0x00200010u => -90f.Degrees(),
-            0x00020001u => 90f.Degrees(),
-            _ => default
+            0x00200010u => new(131.487f, 107.988f),
+            0x00020001u => new(116.472f, 127.977f),
+            _ => (WPos)default
         };
-        if (offset != default)
+        if (pos != default)
         {
-            _aoe = [new(_shape, Arena.Center, -126.875f.Degrees() + offset, WorldState.FutureTime(9.2d))];
+            var rot = -126.875f.Degrees();
+            _aoe = [new(rect, pos, -126.875f.Degrees(), WorldState.FutureTime(9.2d), shapeDistance: rect.Distance(pos, rot))];
         }
     }
 

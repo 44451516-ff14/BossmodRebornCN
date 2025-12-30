@@ -4,7 +4,7 @@ sealed class VolcanicDrop(BossModule module) : Components.GenericAOEs(module, (u
 {
     public AOEInstance[] AOE = [];
 
-    private static readonly AOEShapeCircle _shape = new(20f);
+    private readonly AOEShapeCircle circle = new(20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOE;
 
@@ -17,7 +17,8 @@ sealed class VolcanicDrop(BossModule module) : Components.GenericAOEs(module, (u
         // 02000100 - active volcano, eruption end after puddles
         if (index is 0x0E or 0x0F && state == 0x00200010u)
         {
-            AOE = [new(_shape, Arena.Center + new WDir(index == 0x0E ? 13f : -13f, default), default, WorldState.FutureTime(7.8d))];
+            var pos = (Arena.Center + new WDir(index == 0x0E ? 13f : -13f, default)).Quantized();
+            AOE = [new(circle, pos, default, WorldState.FutureTime(7.8d), shapeDistance: circle.Distance(pos, default))];
         }
     }
 }
