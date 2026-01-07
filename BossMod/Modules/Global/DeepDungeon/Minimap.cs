@@ -47,8 +47,7 @@ public sealed class Minimap(DeepDungeonState state, Angle playerRotation, int cu
         for (var i = 0; i < lenC; ++i)
         {
             ref readonly var c = ref State.Chests[i];
-            // FIXME
-            if (c.Room is > 0 and < 25)
+            if (c.Room is > 0)
                 chests[c.Room] |= (RoomChest)(1 << (c.Type - 1));
         }
 

@@ -2,26 +2,27 @@ namespace BossMod.Stormblood.Dungeon.D01SirensongSea.D012TheGovernor;
 
 public enum OID : uint
 {
-    Boss = 0x1AFC, // R3.5
+    TheGovernor = 0x1AFC, // R3.5
     TheGroveller = 0x1AFD, // R1.5
     Helper = 0x18D6 // R0.5
 }
 
 public enum AID : uint
 {
-    AutoAttack = 872, // Boss->player, no cast, single-target
-    ShadowFlow1 = 8030, // Boss->self, 3.0s cast, single-target
+    AutoAttack = 872, // TheGovernor->player, no cast, single-target
+
+    ShadowFlow1 = 8030, // TheGovernor->self, 3.0s cast, single-target
     ShadowFlow2 = 8034, // TheGroveller->self, no cast, single-target
     ShadowFlowCone = 8031, // TheGroveller->self, no cast, single-target
     Shadowstrike = 8029, // TheGroveller->player, no cast, single-target
-    Bloodburst = 8028, // Boss->self, 4.0s cast, range 80+R circle
-    EnterNight = 8032, // Boss->player, 3.0s cast, single-target, pull 40 between centers
-    ShadowSplit = 8033 // Boss->self, 3.0s cast, single-target
+    Bloodburst = 8028, // TheGovernor->self, 4.0s cast, range 80+R circle
+    EnterNight = 8032, // TheGovernor->player, 3.0s cast, single-target, pull 40 between centers
+    ShadowSplit = 8033 // TheGovernor->self, 3.0s cast, single-target
 }
 
 public enum TetherID : uint
 {
-    EnterNight = 61 // Boss->player
+    EnterNight = 61 // TheGovernor->player
 }
 
 public enum IconID : uint
@@ -29,31 +30,47 @@ public enum IconID : uint
     EnterNight = 22 // player
 }
 
-class EnterNightPull(BossModule module) : Components.GenericKnockback(module)
+[SkipLocalsInit]
+sealed class EnterNightPull(BossModule module) : Components.GenericKnockback(module)
 {
-    private (Actor, DateTime) target;
+    private int target = -1;
+    private Knockback[] _kb;
+
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        if (target.Item1 == actor)
-            return new Knockback[1] { new(Module.PrimaryActor.Position, 40f, target.Item2, default, default, Kind.TowardsOrigin) };
+        if (slot == target)
+        {
+            ref readonly var kb = ref _kb[0];
+            var pos = Module.PrimaryActor.Position;
+            if (pos != kb.Origin) // boss can move after cast started due to interpolation
+            {
+                _kb = [new(pos, 40f, kb.Activation, default, default, Kind.TowardsOrigin)];
+            }
+            return _kb;
+        }
         return [];
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if (iconID is ((uint)IconID.EnterNight))
-            target = (actor, WorldState.FutureTime(3d));
+        if (iconID == ((uint)IconID.EnterNight))
+        {
+            target = Raid.FindSlot(targetID);
+            _kb = [new(Module.PrimaryActor.Position, 40f, WorldState.FutureTime(3d), default, default, Kind.TowardsOrigin)];
+        }
     }
 
     public override void OnUntethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.EnterNight)
-            target = default;
+        {
+            target = -1;
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (target.Item1 == actor)
+        if (target == slot)
         {
             hints.ActionsToExecute.Push(ActionDefinitions.Armslength, actor, ActionQueue.Priority.High);
             hints.ActionsToExecute.Push(ActionDefinitions.Surecast, actor, ActionQueue.Priority.High);
@@ -61,20 +78,24 @@ class EnterNightPull(BossModule module) : Components.GenericKnockback(module)
     }
 }
 
-class EnterNight(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.EnterNight, 16f, activationDelay: 4.3d);
+[SkipLocalsInit]
+sealed class EnterNight(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.EnterNight, 16f, activationDelay: 4.3d);
 
-class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
+[SkipLocalsInit]
+sealed class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(6f);
-    private static readonly AOEShapeCone cone = new(22f, 23.Degrees());
-    private readonly List<AOEInstance> _aoes = [];
+    private readonly AOEShapeCircle circle = new(6f);
+    private readonly AOEShapeCone cone = new(22f, 23f.Degrees());
+    private readonly List<AOEInstance> _aoes = new(15);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count > 5 ? CollectionsMarshal.AsSpan(_aoes) : [];
 
-    public override void Update()
+    public override void OnActorRenderflagsChange(Actor actor, int renderflags)
     {
-        if (_aoes.Count != 0)
-            _aoes.RemoveAll(aoe => aoe.Activation < WorldState.CurrentTime);
+        if (renderflags == 16384 && actor.OID == (uint)OID.TheGroveller)
+        {
+            _aoes.Clear();
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -87,14 +108,19 @@ class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
             if (_aoes.Count == 6)
             {
                 _aoes.Add(new(circle, pos, default, activation));
-                foreach (var g in Module.Enemies((uint)OID.TheGroveller))
-                    _aoes.Add(new(circle, g.Position.Quantized(), default, activation));
+                var grovellers = Module.Enemies((uint)OID.TheGroveller);
+                var count = grovellers.Count;
+                for (var i = 0; i < count; ++i)
+                {
+                    _aoes.Add(new(circle, grovellers[i].Position.Quantized(), default, activation));
+                }
             }
         }
     }
 }
 
-class DO12TheGovernorStates : StateMachineBuilder
+[SkipLocalsInit]
+sealed class DO12TheGovernorStates : StateMachineBuilder
 {
     public DO12TheGovernorStates(BossModule module) : base(module)
     {
@@ -105,9 +131,35 @@ class DO12TheGovernorStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus), erdelf", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 238, NameID = 6072)]
-public class DO12TheGovernor(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
+StatesType = typeof(DO12TheGovernorStates),
+ConfigType = null,
+ObjectIDType = typeof(OID),
+ActionIDType = typeof(AID),
+StatusIDType = null,
+TetherIDType = typeof(TetherID),
+IconIDType = typeof(IconID),
+PrimaryActorOID = (uint)OID.TheGovernor,
+Contributors = "The Combat Reborn Team (Malediktus), erdelf",
+Expansion = BossModuleInfo.Expansion.Stormblood,
+Category = BossModuleInfo.Category.Dungeon,
+GroupType = BossModuleInfo.GroupType.CFC,
+GroupID = 238u,
+NameID = 6072u,
+SortOrder = 2,
+PlanLevel = 0)]
+[SkipLocalsInit]
+public sealed class DO12TheGovernor : BossModule
 {
-    public static readonly WPos ArenaCenter = new(-8, 79);
-    private static readonly ArenaBoundsCustom arena = new([new Circle(ArenaCenter, 19.25f)], [new Rectangle(new(-1.5f, 60.5f), 20, 1.25f, -20.Degrees()), new Rectangle(new(-8, 99), 20, 1)]);
+    public DO12TheGovernor(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+    public static readonly WPos ArenaCenter = new(-8f, 79f);
+
+    private DO12TheGovernor(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(ArenaCenter, 19.25f, 32)],
+        [new Rectangle(new(-1.5f, 60.5f), 20f, 1.25f, -20f.Degrees()), new Rectangle(new(-8f, 99f), 20f, 1f)]);
+        return (arena.Center, arena);
+    }
 }

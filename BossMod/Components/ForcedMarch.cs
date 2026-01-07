@@ -180,7 +180,7 @@ public class StatusDrivenForcedMarch(BossModule module, float duration, uint sta
 
 // action driven forced march
 [SkipLocalsInit]
-public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration, Angle rotation, float actioneffectdelay, uint statusForced = 1257u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue) : GenericForcedMarch(module, activationLimit)
+public class ActionDrivenForcedMarch(BossModule module, uint aid, float duration, Angle rotation, float actioneffectdelay, uint statusForced = 5174u, uint statusForcedNPCs = 3629u, float activationLimit = float.MaxValue) : GenericForcedMarch(module, activationLimit)
 {
     public readonly float Duration = duration;
     public readonly float Actioneffectdelay = actioneffectdelay;
