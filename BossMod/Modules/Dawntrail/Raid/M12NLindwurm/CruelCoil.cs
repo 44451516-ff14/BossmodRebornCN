@@ -18,7 +18,6 @@ sealed class CruelCoil(BossModule module) : BossComponent(module)
     {
         if (status.ID == (uint)SID._Gen_Bind)
             UpdateArena();
-
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -83,47 +82,9 @@ sealed class CruelCoil(BossModule module) : BossComponent(module)
         }
     }
 
-    private Rectangle Rect => new(Arena.Center, 20f, 15f);
-    private Circle InnerCirc => new(Arena.Center, 12f);
-    private Circle OuterCirc => new(Arena.Center, 13f);
-
     private void UpdateArena(int state = 0)
     {
-        List<Shape> union = [];
-        List<Shape> diff = [];
-        List<Shape> plus = [];
-        union.Add(Rect);
-        diff.Add(OuterCirc);
-        plus.Add(InnerCirc);
-
-        if (state != 0)
-        {
-            Rectangle rect;
-            Angle rot;
-            switch (state)
-            {
-                case 0x09:
-                    rot = 45.Degrees();
-                    rect = new(Arena.Center - rot.ToDirection() * 7.5f, 1f, 7.5f, rot);
-                    break;
-                case 0x07:
-                    rot = -45.Degrees();
-                    rect = new(Arena.Center + rot.ToDirection() * 7.5f, 1f, 7.5f, rot);
-                    break;
-                case 0x05:
-                    rot = 45.Degrees();
-                    rect = new(Arena.Center + rot.ToDirection() * 7.5f, 1f, 7.5f, rot);
-                    break;
-                default:
-                    rot = -45.Degrees();
-                    rect = new(Arena.Center - rot.ToDirection() * 7.5f, 1f, 7.5f, rot);
-                    break;
-            }
-            plus.Add(rect);
-        }
-
-        Arena.Bounds = new ArenaBoundsCustom([.. union], [.. diff], [.. plus]);
-        //better:
-        // Arena.Bounds = new ArenaBoundsCustom([new Rectangle(Arena.Center, 20f, 15f)], [new DonutSegmentV(Arena.Center, 9.5f, 13.5f, 45f.Degrees(), 160f.Degrees(), 128)]);
+        var centerDir = (state == 0 ? 0f : (state - 0x02) * -45f).Degrees();
+        Arena.Bounds = new ArenaBoundsCustom([new Rectangle(Arena.Center, 20f, 15f)], [new DonutSegmentV(Arena.Center, 9.5f, 13.5f, centerDir, (state == 0 ? 180f : 160f).Degrees(), 128)]);
     }
 }

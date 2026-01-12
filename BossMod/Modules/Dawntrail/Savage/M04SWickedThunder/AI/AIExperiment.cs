@@ -84,18 +84,18 @@ sealed class AIExperiment(RotationModuleManager manager, Actor player) : AIRotat
     {
         var burst = module.FindComponent<ElectrifyingWitchHuntBurst>();
         var electray = module.FindComponent<Electray>();
-        var electrayH = electray?.AOEs.FirstOrDefault(aoe => aoe.Origin.Z is > 95 and < 105) ?? default;
+        var electrayH = electray?.AOEs.FirstOrDefault(aoe => aoe.Origin.Z is > 95f and < 105f) ?? default;
         if (burst?.Casters.Count > 0 && electrayH.Shape != null)
         {
             var horizNSafe = electrayH.Origin.Z < 100;
             var uptimePos = ElectrifyingWitchHuntInitialPosition(module, strategy) + new WDir(0, horizNSafe ? -0.2f : +0.2f);
-            var centerUnsafe = burst.Casters.Any(c => c.Origin.X is > 98 and < 102);
+            var centerUnsafe = burst.Casters.Any(c => c.Origin.X is > 98f and < 102f);
             if (!centerUnsafe)
                 return uptimePos;
             var vertShiftW = burst.Casters.Sum(c => c.Origin.X - module.Center.X) < 0;
-            // var downtimePos = uptimePos with { X = module.Center.X - 16.2f + (vertShiftW ? -1.5f : +1.5f) };
-            // var timeToSafety = (uptimePos - downtimePos).Length() / Speed();
-            // return module.StateMachine.TimeSinceTransition + GCD + timeToSafety < (module.StateMachine.ActiveState?.Duration ?? 0) ? uptimePos : downtimePos;
+            var downtimePos = new WPos(module.Center.X - 16.2f + (vertShiftW ? -1.5f : +1.5f), uptimePos.Z);
+            var timeToSafety = (uptimePos - downtimePos).Length() / Speed();
+            return module.StateMachine.TimeSinceTransition + GCD + timeToSafety < (module.StateMachine.ActiveState?.Duration ?? 0) ? uptimePos : downtimePos;
         }
         return ElectrifyingWitchHuntInitialPosition(module, strategy);
     }
@@ -110,10 +110,10 @@ sealed class AIExperiment(RotationModuleManager manager, Actor player) : AIRotat
             var wantBait = !resolve.ForbidBait[Manager.PlayerSlot];
             var baitFar = resolve.CurMechanic == ElectrifyingWitchHuntResolve.Mechanic.Far;
             var goFar = wantBait == baitFar;
-            var centerUnsafe = burst.Casters.Any(c => c.Origin.X is > 98 and < 102);
+            var centerUnsafe = burst.Casters.Any(c => c.Origin.X is > 98f and < 102f);
             if (!centerUnsafe && !goFar)
                 return defaultPos; // default is good enough for uptime...
-            var vertShiftW = burst.Casters.Sum(c => c.Origin.X - module.Center.X) < 0;
+            var vertShiftW = burst.Casters.Sum(c => c.Origin.X - module.Center.X) < 0f;
             var safeX = !centerUnsafe ? -5 : -16.2f + (vertShiftW ? -1.5f : +1.5f);
             var safeSpot = new WPos(module.Center.X + safeX, module.Center.Z - (goFar ? 12 : 3));
             var timeToSafety = (defaultPos - safeSpot).Length() / Speed();
@@ -164,16 +164,13 @@ sealed class AIExperiment(RotationModuleManager manager, Actor player) : AIRotat
         return GCD + timeToSafety >= timeToDodge ? safePos : defaultPos;
     }
 
-
     private WPos IonPlatformAOEs(M04SWickedThunder module, IonClusterPlatformStrategy strategy, bool nextIsDeadly)
     {
         var thunder = module.FindComponent<StampedingThunder>();
-        if (thunder?.AOE == null)
+        if (thunder == null || thunder?.AOE.Length == 0)
             return new(module.Center.X, module.Center.Z - 15);
 
-
-        // var offset = thunder.AOE.Value.Origin.X > module.Center.X ? -1 : 1;
-        var offset = thunder.AOE.Length > 0 && thunder.AOE[0].Origin.X > module.Center.X ? -1 : 1;
+        var offset = thunder!.AOE[0].Origin.X > module.Center.X ? -1 : 1;
         var uptimePos = module.PrimaryActor.Position + new WDir(offset * 7.8f, 0.1f);
         var downtimePos = module.PrimaryActor.Position + new WDir(offset * 10.2f, 0.1f);
 

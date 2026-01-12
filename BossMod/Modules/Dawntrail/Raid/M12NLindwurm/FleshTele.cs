@@ -1,6 +1,4 @@
-﻿using TerraFX.Interop.Windows;
-
-namespace BossMod.Dawntrail.Raid.M12NLindwurm;
+﻿namespace BossMod.Dawntrail.Raid.M12NLindwurm;
 
 sealed class FleshTele(BossModule module) : BossComponent(module)
 {
@@ -68,24 +66,20 @@ sealed class FleshTele(BossModule module) : BossComponent(module)
 
     private bool DestinationUnsafe(WPos pos)
     {
-        if (_reach.ActiveCasters.Length > 0)
+        var aoes = _reach.ActiveCasters;
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            foreach(var c in _reach.ActiveCasters)
-            {
-                if (c.Check(pos))
-                    return true;
-            }
+            if (aoes[i].Check(pos))
+                return true;
         }
-
-        if (_burst.ActiveCasters.Length > 0)
+        aoes = CollectionsMarshal.AsSpan(_burst.AOEs);
+        len = aoes.Length;
+        for (var i = 0; i < len; ++i)
         {
-            foreach(var c in _burst.ActiveCasters)
-            {
-                if (c.Check(pos))
-                    return true;
-            }
+            if (aoes[i].Check(pos))
+                return true;
         }
-
         return !Arena.InBounds(pos);
     }
 
@@ -94,7 +88,7 @@ sealed class FleshTele(BossModule module) : BossComponent(module)
         var pos = actor.Position;
         var dir = actor.Rotation;
 
-        var projected = pos + ((dir.ToDirection() * 15f) * (isForward ? 1f : -1f));
+        var projected = pos + dir.ToDirection() * 15f * (isForward ? 1f : -1f);
         return (pos, projected, dir);
     }
 }
