@@ -423,7 +423,7 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         //         var v = verts[j];
         //         sb.Append($"new({v.X.ToString(culture)}f, {v.Z.ToString(culture)}f), ");
 
-        //         count++;
+        //         ++count;
 
         //         if (count % perLine == 0)
         //             sb.AppendLine();

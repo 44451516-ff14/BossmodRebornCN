@@ -1,7 +1,4 @@
-﻿
-using BossMod.Autorotation.xan;
-
-namespace BossMod.Dawntrail.Raid.M12NLindwurm;
+﻿namespace BossMod.Dawntrail.Raid.M12NLindwurm;
 
 sealed class TheFixer(BossModule module) : Components.RaidwideCast(module, (uint)AID.TheFixer);
 sealed class SerpentineScourge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SerpentineScourge, new AOEShapeRect(30f, 10f));
@@ -13,7 +10,24 @@ sealed class VenomousScourge(BossModule module) : Components.SpreadFromIcon(modu
 sealed class GrandEntrance(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.GrandEntrance1, (uint)AID.GrandEntrance2], 2f);
 sealed class VisceralBurst(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.TankBait, (uint)AID.VisceralBurst, 6f, 5d);
 sealed class MindlessFlesh(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MindlessFlesh1, (uint)AID.MindlessFlesh2, (uint)AID.MindlessFlesh3, (uint)AID.MindlessFlesh4, (uint)AID.MindlessFlesh5], new AOEShapeRect(30f, 4f), 2);
-sealed class MindlessFleshBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MindlessFleshBig, new AOEShapeRect(30f, 17.5f), riskyWithSecondsLeft: 8d);
+sealed class MindlessFleshBig(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MindlessFleshBig, new AOEShapeRect(30f, 17.5f), riskyWithSecondsLeft: 9d)
+{
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        var count = Casters.Count;
+        if (count == 0)
+        {
+            return [];
+        }
+
+        var aoes = CollectionsMarshal.AsSpan(Casters);
+        if (aoes[0].Activation.AddSeconds(-9d) < WorldState.CurrentTime)
+        {
+            return aoes;
+        }
+        return [];
+    }
+}
 sealed class Burst(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(12f);

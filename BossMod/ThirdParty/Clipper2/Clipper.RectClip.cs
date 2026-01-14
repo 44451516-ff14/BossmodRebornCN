@@ -70,7 +70,7 @@ namespace Clipper2Lib
       }
       else
       {
-        currIdx--;
+        --currIdx;
         OutPt2? prevOp = results_[currIdx];
         if (prevOp!.pt == pt) return prevOp;
         result = new OutPt2(pt)
@@ -98,9 +98,9 @@ namespace Clipper2Lib
         switch (pip)
         {
           case PointInPolygonResult.IsInside:
-            ioCount--; break;
+            --ioCount; break;
           case PointInPolygonResult.IsOutside:
-            ioCount++; break;
+            ++ioCount; break;
         }
         if (Math.Abs(ioCount) > 1) break;
       }
@@ -472,7 +472,7 @@ namespace Clipper2Lib
               else
               {
                 Add(path[i]);
-                i++;
+                ++i;
                 continue;
               }
               break;

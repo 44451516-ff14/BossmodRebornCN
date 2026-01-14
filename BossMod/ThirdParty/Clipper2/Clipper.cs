@@ -1091,7 +1091,7 @@ namespace Clipper2Lib
       {
         while (i < len - 1 && 
           InternalClipper.IsCollinear(path[len - 1], path[i], path[i + 1])) ++i;
-        while (i < len - 1 && InternalClipper.IsCollinear(path[len - 2], path[len - 1], path[i])) len--;
+        while (i < len - 1 && InternalClipper.IsCollinear(path[len - 2], path[len - 1], path[i])) --len;
       }
 
       if (len - i < 3)

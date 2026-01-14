@@ -84,7 +84,7 @@ public sealed class TrackPartyHealth(WorldState World)
             if (act.PendingHPDifferences.Any(p => -p.Value >= act.HPMP.MaxHP))
                 continue;
 
-            count++;
+            ++count;
 
             var valCurrent = p.DoomRemaining > 0 ? 0.01f : p.CurrentHPRatio;
             if (valCurrent < minCur)

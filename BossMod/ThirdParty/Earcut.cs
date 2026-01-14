@@ -560,13 +560,13 @@ public sealed class Earcut
                     {
                         e = p;
                         p = p.nextZ;
-                        pSize--;
+                        --pSize;
                     }
                     else
                     {
                         e = q;
                         q = q.nextZ;
-                        qSize--;
+                        --qSize;
                     }
 
                     if (tail != null)

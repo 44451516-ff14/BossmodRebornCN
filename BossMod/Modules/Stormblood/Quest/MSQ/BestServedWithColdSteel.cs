@@ -134,7 +134,7 @@ class MagitekSelfDetonate(BossModule module) : Components.CastCounter(module, (u
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
-            NumCasts++;
+            ++NumCasts;
     }
 }
 

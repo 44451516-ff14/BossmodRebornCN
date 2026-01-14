@@ -2544,15 +2544,15 @@ namespace Clipper2Lib
     {
       int k = 0;
       foreach (HorzSegment hs in _horzSegList)
-        if (UpdateHorzSegment(hs)) k++;
+        if (UpdateHorzSegment(hs)) ++k;
       if (k < 2) return;
       _horzSegList.Sort(HorzSegSort);
 
-      for (int i = 0; i < k - 1; i++)
+      for (int i = 0; i < k - 1; ++i)
       {
         HorzSegment hs1 = _horzSegList[i];
         // for each HorzSegment, find others that overlap
-        for (int j = i + 1; j < k; j++)
+        for (int j = i + 1; j < k; ++j)
         {
           HorzSegment hs2 = _horzSegList[j];
           if ((hs2.leftOp!.pt.X >= hs1.rightOp!.pt.X) ||

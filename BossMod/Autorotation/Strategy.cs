@@ -402,7 +402,7 @@ static class ValueConverter
                     field.SetValue(val, new Track<long>(i2.Value, i2, float.NaN));
                     break;
             }
-            i++;
+            ++i;
         }
 
         return (T)val;

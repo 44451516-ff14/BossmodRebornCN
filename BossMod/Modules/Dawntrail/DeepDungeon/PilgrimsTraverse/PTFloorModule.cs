@@ -144,14 +144,14 @@ public abstract class PTFloorModule(WorldState ws) : AutoClear(ws, 100)
                 break;
 
             case (uint)AID.HailOfHeelsCast:
-                AddVoidzone(actor, new AOEShapeCone(8, 90.Degrees()), 3);
+                AddVoidzone(actor, new AOEShapeCone(8f, 90f.Degrees()), 3);
                 break;
 
             case (uint)AID.HailOfHeels:
                 var vz = Voidzones.FindIndex(v => v.Source.InstanceID == actor.InstanceID);
                 if (vz >= 0)
                 {
-                    Voidzones.Ref(vz).Counter--;
+                    --Voidzones.Ref(vz).Counter;
                     if (Voidzones[vz].Counter <= 0)
                         Voidzones.RemoveAt(vz);
                 }

@@ -166,7 +166,7 @@ public sealed class StateMachineTree
         }
         else
         {
-            node.NumBranches++; // leaf
+            ++node.NumBranches; // leaf
         }
 
         return (node, state.Duration + succDuration);

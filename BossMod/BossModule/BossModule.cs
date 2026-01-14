@@ -585,7 +585,7 @@ public abstract class BossModule : IDisposable
             {
                 var wrap = tex.GetWrapOrEmpty();
                 var pos = Arena.WorldPositionToScreenPosition(actor.Position);
-                var scale = WindowConfig.ArenaScale * 24;
+                var scale = WindowConfig.ArenaScale * 24f;
 
                 ImGui.GetWindowDrawList().AddImage(wrap.Handle, pos - new Vector2(scale), pos);
             }

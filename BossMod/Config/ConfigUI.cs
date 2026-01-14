@@ -329,7 +329,7 @@ public sealed class ConfigUI : IDisposable
                 if (f != path[i])
                     return false;
 
-                i++;
+                ++i;
             }
 
             return true;

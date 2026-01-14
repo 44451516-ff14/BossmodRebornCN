@@ -231,7 +231,7 @@ public sealed class SGE(RotationModuleManager manager, Actor player) : Castxan<A
             ++total;
             if (actor.Class.GetRole() == Role.Tank)
             {
-                tanks++;
+                ++tanks;
                 tank ??= actor;
             }
         }

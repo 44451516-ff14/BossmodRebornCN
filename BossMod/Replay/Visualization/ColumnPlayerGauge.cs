@@ -374,11 +374,11 @@ public sealed class ColumnPlayerGaugeSAM : ColumnPlayerGauge
     {
         var senCount = 0;
         if (sen.HasFlag(SenFlags.Setsu))
-            senCount++;
+            ++senCount;
         if (sen.HasFlag(SenFlags.Getsu))
-            senCount++;
+            ++senCount;
         if (sen.HasFlag(SenFlags.Ka))
-            senCount++;
+            ++senCount;
 
         return senCount;
     }

@@ -102,7 +102,7 @@ class GunmetalSoul(BossModule module) : Components.GenericAOEs(module)
         for (var i = 0; i < countE; ++i)
         {
             if (enemies[i].EventState != 7)
-                count++;
+                ++count;
         }
 
         if (count == 0)
