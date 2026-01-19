@@ -20,7 +20,7 @@ StatusIDType = typeof(SID),
 TetherIDType = null,
 IconIDType = typeof(IconID),
 PrimaryActorOID = (uint)OID.Doomtrain,
-Contributors = "",
+Contributors = "Malediktus, Xaenalt",
 Expansion = BossModuleInfo.Expansion.Dawntrail,
 Category = BossModuleInfo.Category.Extreme,
 GroupType = BossModuleInfo.GroupType.CFC,
@@ -41,18 +41,4 @@ public sealed class Ex7Doomtrain : BossModule
         [new Square(new(102.5f, 97.5f), 2.01f), new Square(new(97.5f, 107.5f), 2.01f)], AdjustForHitboxInwards: true);
         return (arena.Center, arena);
     }
-
-    // car 3: new ArenaBoundsRect(10.5f, 15f), new(100f, 200f)
-    // intermission: new ArenaBoundsCustom([new Polygon(new(-400f, -400f), 14.495f, 64)]);
-    // private static (WPos center, ArenaBoundsCustom arena) BuildArena()
-    // {
-    //     var arena = new ArenaBoundsCustom([new Rectangle(new(100f, 250f), 10.5f, 15f)],
-    //     [new Rectangle(new(107.5f, 250f), 2.297f, 4.797f), new Rectangle(new(100f, 252.5f), 5f, 1.95f),
-    //     new Rectangle(new(92.5f, 257.5f), 2.297f, 7.297f)], [new Square(new(107.5f, 247.5f), 2.5f), new Rectangle(new(107.75f, 252.5f), 2.25f, 2.5f),
-    //     new Rectangle(new(92.5f, 259.75f), 2.5f, 4.75f), new Rectangle(new(92.25f, 252.5f), 2.25f, 2.5f)], AdjustForHitboxInwards: true);
-    //     return (arena.Center, arena);
-    // }
-
-    // car 5: 92.5, 292.5, 97.5, 292.5, 97.5, 297.5
-    // 0x10         0x11                0x15
 }

@@ -2,9 +2,9 @@
 
 // all adds spawn before arena change, including doornail and flail
 // prioritize doornail 1st for all, then lower priority for melees once outside of melee range
-sealed class DeadlyDoornail(BossModule module) : Components.Adds(module, (uint)OID.DeadlyDoornail, 2);
+sealed class DeadlyDoornail(BossModule module) : Components.Adds(module, (uint)OID.DeadlyDoornail, 3);
 // prioritize for melees once doornail outside melee range
-sealed class FatalFlail(BossModule module) : Components.Adds(module, (uint)OID.FatalFlail, 1);
+sealed class FatalFlail(BossModule module) : Components.Adds(module, (uint)OID.FatalFlail, 2);
 sealed class Plummet(BossModule module) : Components.CastTowers(module, (uint)AID.Plummet, 3f)
 {
     private BitMask _nonTanks;
@@ -35,7 +35,7 @@ sealed class ElectrocutionVoidzone(BossModule module) : Components.GenericAOEs(m
     // map effect 13 0x00080004 for end, same time it dies
     // starts 1s after Electrocution ends
     // starts at 3f, grows at a rate of .5/s
-    // is there a maximum size?
+    // is there a maximum size? max around 10f
 
     private bool _show = false;
     private bool _active = false;
@@ -57,6 +57,7 @@ sealed class ElectrocutionVoidzone(BossModule module) : Components.GenericAOEs(m
         {
             var elapsed = (WorldState.CurrentTime - _start).TotalMilliseconds;
             radius += (float)(elapsed / 2000d);
+            radius = radius >= 10f ? 10f : radius;
             aoe[0] = new(new AOEShapeCircle(radius), _doornailPos);
         }
 

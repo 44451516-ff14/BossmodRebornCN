@@ -33,9 +33,78 @@ sealed class SickestTakeOffLine(BossModule module) : Components.SimpleAOEs(
 sealed class SickSwellKB(BossModule module) : Components.SimpleKnockbacks(
     module,
     (uint)AID.SickSwell1,   // boss cast is the clean trigger
-    distance: 15f,
+    distance: 10f,
     kind: Components.SimpleKnockbacks.Kind.DirForward,
-    stopAtWall: false); // outside wall is deadly
+    stopAtWall: false) // outside wall is deadly
+{
+    // Conservative "treat all circles as this radius" for the PlusAOECircles helper.
+    private const float DangerRadius = 9f;
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (Casters.Count == 0)
+            return;
+
+        ref readonly var c = ref Casters.Ref(0);
+        var act = c.Activation;
+
+        if (IsImmune(slot, act))
+            return;
+
+        var square = (ArenaBoundsSquare)Arena.Bounds;
+
+        var center = Arena.Center;
+        var dir = 15f * c.Direction.ToDirection(); // includes distance, not normalized
+
+        var origins = BuildDangerCircleOrigins(slot, actor, act);
+
+        if (origins.Length > 0)
+        {
+            hints.AddForbiddenZone(
+                new SDKnockbackInAABBSquareFixedDirectionPlusAOECircles(center, dir, square.HalfWidth, origins, DangerRadius, origins.Length),
+                act);
+        }
+        else
+        {
+            // Still forbid getting knocked out of bounds even if no circles are active.
+            hints.AddForbiddenZone(
+                new SDKnockbackInAABBSquareFixedDirection(center, dir, square.HalfWidth),
+                act);
+        }
+    }
+
+    private WPos[] BuildDangerCircleOrigins(int slot, Actor actor, DateTime act)
+    {
+        var res = new List<WPos>(32);
+
+        AddCircleOriginsFrom(Module.FindComponent<HotAerialFirePuddles>(), slot, actor, act, res);
+        AddCircleOriginsFrom(Module.FindComponent<PyrotationPuddles>(), slot, actor, act, res);
+        AddCircleOriginsFrom(Module.FindComponent<AlleyOopInfernoPuddles>(), slot, actor, act, res);
+
+        return res.Count > 0 ? res.ToArray() : [];
+    }
+
+    private static void AddCircleOriginsFrom(Components.GenericAOEs? comp, int slot, Actor actor, DateTime act, List<WPos> dst)
+    {
+        if (comp == null)
+            return;
+
+        var aoes = comp.ActiveAOEs(slot, actor);
+        for (var i = 0; i < aoes.Length; ++i)
+        {
+            ref readonly var aoe = ref aoes[i];
+
+            // Only include circles that will be active by knockback resolution time.
+            if (aoe.Activation > act)
+                continue;
+
+            if (aoe.Shape is AOEShapeCircle)
+                dst.Add(aoe.Origin);
+        }
+    }
+}
+
+
 // Pyrotation stack marker (helper->players, no cast, range 6 circle).
 sealed class PyrotationStack(BossModule module) : Components.StackWithIcon(
     module,
@@ -95,15 +164,13 @@ sealed class XtremeSpectacularEdge(BossModule module) : Components.SimpleAOEs(
     module,
     (uint)AID.XtremeSpectacular2,
     new AOEShapeRect(50f, 18f));
-sealed class XtremeSpectacularHits(BossModule module) : Components.CastCounterMulti(module, new uint[] { (uint)AID.XtremeSpectacular3, (uint)AID.XtremeSpectacular4 })
-{
-    public override void AddGlobalHints(GlobalHints hints)
-    {
-        
-        if (NumCasts > 0)
-            hints.Add("Raidwide damage - Healer Intensive! Use Cooldowns! (Xtreme Spectacular)");
-    }
-}
+sealed class XtremeSpectacularRaidwide(BossModule module)
+    : Components.RaidwideCastsDelay(
+        module,
+        new uint[] { (uint)AID.XtremeSpectacular2 }, // visual cast
+        new uint[] { (uint)AID.XtremeSpectacular3, (uint)AID.XtremeSpectacular4 }, // instant hits
+        delay: 0.0,
+        hint: "Raidwide damage - Healer intensive! Use cooldowns!");
 
 // =========================
 // Module

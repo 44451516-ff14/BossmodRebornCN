@@ -26,7 +26,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         Arena2(id + 0xC0000u, 5f);
         HellInACell(id + 0xD0000u, 8.5f);
         SanguineScratch(id + 0xE0000u, 22.1f);
-        Enrage(id + 0xF0000u, 2.9f);
+        Enrage(id + 0xF0000u, 3.9f);
         SimpleState(id + 0xFF0000u, 10000f, "???");
     }
 
@@ -148,10 +148,10 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // write the states in order? or turn it into 1 big state/component?
 
         ComponentCondition<AetherlettingCone>(id + 0x10, 4f, comp => comp.ActiveCasters.Length > 0, "Cones start");
-        ComponentCondition<AetherlettingCone>(id + 0x20, 11f, comp => comp.NumCasts >= 8, "Cones end")
+        ComponentCondition<AetherlettingCone>(id + 0x20, 15.2f, comp => comp.NumCasts >= 8, "Cones end")
             .DeactivateOnExit<AetherlettingCone>();
 
-        ComponentCondition<AetherlettingPuddle>(id + 0x30, 6f, comp => comp.NumFinishedSpreads >= 8, "Puddles end")
+        ComponentCondition<AetherlettingPuddle>(id + 0x30, 1.9f, comp => comp.NumFinishedSpreads >= 8, "Puddles end")
             .DeactivateOnExit<AetherlettingPuddle>();
 
         ComponentCondition<AetherlettingCross>(id + 0x40, 14.5f, comp => comp.NumCasts >= 8, "Crosses end")
@@ -255,7 +255,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
 
         // Hell In A Cell cast at exact same time as Bloody Bondage; would ActivateOnEnter work with CastStart on Hell?
         ComponentCondition<BloodyBondage>(id + 0x30, 11f, comp => comp.NumCasts > 0, "Towers (party 1)")
-            .ActivateOnExit<CharnelCells>()
+            .ActivateOnEnter<CharnelCells>()
             .ActivateOnExit<UltrasonicSpreadTank>()
             .ActivateOnExit<UltrasonicSpreadRest>()
             .ActivateOnExit<UltrasonicAmp>()
@@ -286,8 +286,8 @@ sealed class M09SVampFataleStates : StateMachineBuilder
     {
         ComponentCondition<BreakdownWing>(id, delay, comp => comp.NumCasts > 0, "Bat explosion 1");
         ComponentCondition<BreakdownWing>(id + 0x10, 21.3f, comp => comp.NumCasts > 2, "Bat explosion 2")
-            .DeactivateOnExit<SanguineScratch>()
             .DeactivateOnExit<BreakdownWing>()
+            .DeactivateOnExit<SanguineScratch>()
             .ActivateOnExit<BrutalRain>();
 
         ComponentCondition<BrutalRain>(id + 0x20, 1.7f, comp => comp.Stacks.Count > 0, "Party stack");

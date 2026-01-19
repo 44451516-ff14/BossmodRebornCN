@@ -110,3 +110,64 @@ public sealed class SDKnockbackInAABBRectLeftRightAlongZAxisPlusAOERects(WPos Ce
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
 }
+
+[SkipLocalsInit]
+public sealed class SDKnockbackInAABBRectFixedDirectionPlusAOECircle(WPos Center, WDir Direction, float HalfWidth, float HalfHeight, WPos CircleOrigin, float Radius) : ShapeDistance
+{
+    private readonly WPos center = Center;
+    private readonly WDir direction = Direction; // direction includes distance, not normalized
+    private readonly float halfWidth = HalfWidth;
+    private readonly float halfHeight = HalfHeight;
+    private readonly WPos circleOrigin = CircleOrigin;
+    private readonly float radius = Radius;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        var projected = p + direction;
+        return !projected.InRect(center, halfWidth, halfHeight) || projected.InCircle(circleOrigin, radius);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}
+
+[SkipLocalsInit]
+public sealed class SDKnockbackInAABBRectFixedDirectionPlusAOECircles(WPos Center, WDir Direction, float HalfWidth, float HalfHeight, WPos[] Origins, float Radius, int Length) : ShapeDistance
+{
+    private readonly WPos center = Center;
+    private readonly WDir direction = Direction; // direction includes distance, not normalized
+    private readonly float halfWidth = HalfWidth;
+    private readonly float halfHeight = HalfHeight;
+    private readonly WPos[] origins = Origins;
+    private readonly float radius = Radius;
+    private readonly int len = Length;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        var projected = p + direction;
+        if (!projected.InRect(center, halfWidth, halfHeight))
+        {
+            return true;
+        }
+
+        for (var i = 0; i < len; ++i)
+        {
+            if (projected.InCircle(origins[i], radius))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}

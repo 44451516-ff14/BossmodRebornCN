@@ -1,20 +1,25 @@
 ﻿
 namespace BossMod.Dawntrail.Savage.M09SVampFatale;
 
-// TODO: track bat players are tethered to, figure out max distance
+// TODO: track bat players are tethered to, figure out max distance; still OK within boss hitbox (12f from center, say 10f max?)
 // 3s from last scratch to bat explode; explosion only 1s cast so maybe necessary
 // can AI move into donut if standing on edge of hitbox during mech?
+// tethers persist through death?
+// do tethers attach to players if they were dead when deathmatch resolved?
 sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
 {
+    private readonly SanguineScratch _scratch = module.FindComponent<SanguineScratch>()!;
     // end pos always opposite of start; unnecessary to store end pos?
     class Vampette
     {
-        public Actor Actor;
+        public required Actor Actor;
         public WPos StartPos;
         public WPos EndPos;
     }
     private readonly List<Vampette> _vamps = [];
     private readonly List<AOEInstance> _aoes = [];
+    private readonly float _vampRadius = 10f;
+    private readonly Actor?[] _vampTethered = new Actor?[8];
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (_aoes.Count == 0)
@@ -26,6 +31,9 @@ sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
+        if (actor.OID != (uint)OID.VampetteFatale)
+            return;
+
         if (status.ID == (uint)SID._Gen_2056)
         {
             // 0x426 = circle, 0x427 = donut
@@ -41,8 +49,16 @@ sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
                 }
             }
         }
-    }
 
+        // gains this just as first tethers go out; could use this instead of action timeline
+        if (status.ID == (uint)SID.VampetteDistance)
+        {
+            var start = actor.Position;
+            var end = Arena.Center - (actor.Position - Arena.Center);
+            _vamps.Add(new() { Actor = actor, StartPos = start, EndPos = end });
+        }
+    }
+    /*
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         // get vampette start pos here, end pos is opposite of starting
@@ -57,7 +73,7 @@ sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
             }
         }
     }
-
+    */
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.BreakdownDrop1 or (uint)AID.BreakdownDrop2 or (uint)AID.BreakwingBeat1 or (uint)AID.BreakwingBeat2)
@@ -66,57 +82,81 @@ sealed class BreakdownWing(BossModule module) : Components.GenericAOEs(module)
             _aoes.Clear();
         }
     }
-}
-//sealed class BreakdownDrop(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BreakdownDrop1, (uint)AID.BreakdownDrop2], 7f);
-//sealed class BreakwingBeat(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.BreakwingBeat1, (uint)AID.BreakwingBeat2], new AOEShapeDonut(8f, 15f));
-/*
-sealed class SanguineScratch(BossModule module) : Components.GenericAOEs(module)
-{
-    private readonly List<AOEInstance> _aoes = [];
-    private readonly AOEShapeCone _cone = new(40f, 15f.Degrees());
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
-        if (_aoes.Count == 0)
-            return [];
-        else if (_aoes.Count < 8)
-            return CollectionsMarshal.AsSpan(_aoes);
-        else
-            return CollectionsMarshal.AsSpan(_aoes)[..8];
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.SanguineScratchFirst)
+        // tethers practically same time as action timeline (0.0 - 0.1s)
+        if (tether.ID == (uint)TetherID.Chains)
         {
-            // boss does 8 cones x5, including SanguineScratchFirst
-            // hector video shows cones rotate to previous safe spots, rotate 90/4 (22.5) degrees each cast?
-            // 2.4s between casts
-            // handle in groups of 8? add all AOEs for 5 sets and sort by activation?
-            for (var i = 0; i < 5; i++)
-            {
-                _aoes.Add(new(_cone, caster.Position, caster.Rotation + (22.5f * i).Degrees(), Module.CastFinishAt(spell).AddSeconds(2.4d * i)));
-            }
+            var slot = Raid.FindSlot(source.InstanceID);
 
-            if (_aoes.Count == 40)
-                _aoes.Sort((a, b) => a.Activation <= b.Activation ? 1 : -1);
+            if (slot == -1)
+                return;
+
+            var actor = WorldState.Actors.Find(tether.Target);
+            if (actor == null)
+                return;
+
+            if (actor.OID != (uint)OID.VampetteFatale)
+                return;
+
+            _vampTethered[slot] = actor;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
-        if (spell.Action.ID is (uint)AID.SanguineScratchFirst or (uint)AID.SanguineScratchRest)
+        base.DrawArenaBackground(pcSlot, pc);
+        if (_vamps.Count == 0)
+            return;
+
+        var tethered = _vampTethered[pcSlot];
+        if (tethered == null)
+            return;
+
+        var danger = pc.DistanceToPoint(tethered.Position) > _vampRadius;
+
+        for (var i = 0; i < _vamps.Count; i++)
         {
-            // remove one at a time or by same activation?
-            if (_aoes.Count > 0)
-            {
-                ++NumCasts;
-                _aoes.RemoveAt(0);
-            }
+            if (tethered.InstanceID == _vamps[i].Actor.InstanceID)
+                Arena.AddCircle(_vamps[i].Actor.Position, _vampRadius, danger ? Colors.Danger : Colors.Safe, 2f);
+        }
+
+        Arena.AddLine(pc.Position, tethered.Position, danger ? Colors.Danger : Colors.Safe, 1f);
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        if (_vamps.Count == 0)
+            return;
+
+        var tethered = _vampTethered[slot];
+        if (tethered == null)
+            return;
+
+        if (actor.DistanceToPoint(tethered.Position) > _vampRadius)
+        {
+            hints.Add("Too far from bat!");
         }
     }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (_vamps.Count == 0)
+            return;
+
+        if (_vampTethered[slot] == null)
+            return;
+
+        hints.GoalZones.Add(AIHints.GoalSingleTarget(_vampTethered[slot]!.Position, 7f, 10f));
+
+        // ignore blasts until scratches are done
+        if (_scratch.ActiveAOEs(slot, actor).Length != 0)
+            return;
+
+        base.AddAIHints(slot, actor, assignment, hints);
+    }
 }
-*/
 sealed class SanguineScratch(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];

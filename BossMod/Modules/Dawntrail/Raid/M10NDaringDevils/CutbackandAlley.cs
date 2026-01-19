@@ -45,7 +45,7 @@ sealed class AlleyOopInfernoSpread(BossModule module)
 sealed class AlleyOopInfernoPuddles(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _puddles = [];
-    private static readonly AOEShapeCircle Shape = new(6f); 
+    private static readonly AOEShapeCircle Shape = new(5f); 
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
         => CollectionsMarshal.AsSpan(_puddles);

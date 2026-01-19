@@ -6,7 +6,7 @@ sealed class HotAerialTowers(BossModule module) : Components.CastTowers(
     (uint)AID.HotAerial2,
     radius: 6f,
     minSoakers: 1,
-    maxSoakers: 8,
+    maxSoakers: 1,
     damageType: AIHints.PredictedDamageType.Raidwide);
 
 // Persistent fire puddles left behind after Red Hot jumps to each tower location.

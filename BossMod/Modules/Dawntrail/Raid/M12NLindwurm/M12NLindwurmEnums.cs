@@ -15,7 +15,8 @@ public enum AID : uint
 {
     _AutoAttack_ = 46225, // 4AFA->player, no cast, single-target
     TheFixer = 46228, // Lindwurm->self, 5.0s cast, range 60 circle
-    _Weaponskill_Bloodshed = 46182, // Lindwurm->self, 0.5+6.0s cast, single-target (boss arm regen visuals)
+    BloodshedLeft = 46181, // Lindwurm->self, 0.5+6.0s cast, single-target
+    BloodshedRight = 46182, // Lindwurm->self, 0.5+6.0s cast, single-target
     SerpentineScourgeLeft = 46183, // Lindwurm->self, 1.0+1.0s cast, single-target, left
     SerpentineScourgeRight = 46184, // Lindwurm->self, 1.0+1.0s cast, single-target, right
     SerpentineScourge = 47547, // 233C->self, 2.0s cast, range 30 width 20 rect

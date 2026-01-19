@@ -32,7 +32,7 @@ sealed class M10NDaringDevilsStates : StateMachineBuilder
 
             .ActivateOnEnter<PyrotationStack>()
             .ActivateOnEnter<PyrotationPuddles>()
-            .ActivateOnEnter<XtremeSpectacularHits>()
+            .ActivateOnEnter<XtremeSpectacularRaidwide>()
             .ActivateOnEnter<XtremeSpectacularEdge>()
 
             .ActivateOnEnter<InsaneAirSnaps>()
