@@ -644,3 +644,335 @@ public class BaitAwayChargeTether(BossModule module, float halfWidth, double act
         }
     }
 }
+
+[SkipLocalsInit]
+public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits = true, bool onlyShowOutlines = false) : CastCounter(module, default)
+{
+    public struct Bait(WPos source, AOEShape shape, DateTime activation = default, int numTargets = 1, bool nearest = true, bool stack = false, int minStack = 1, int maxStack = 1, bool centerAtTarget = false, bool tankbuster = false, uint caster = default, Role role = Role.None, BitMask forbidden = default, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.None, Angle? customRotation = null, WDir offset = default)
+    {
+        public WPos Position = source;
+        public AOEShape Shape = shape;
+        public DateTime Activation = activation;
+        public bool FromNearest = nearest;
+        public int NumTargets = numTargets;
+        public bool IsStack = stack;
+        public int MinStack = minStack;
+        public int MaxStack = maxStack;
+        public Role SpecifiedRole = role;
+        public BitMask ForbiddenPlayers = forbidden; // these players should avoid baiting
+        public bool CenterAtTarget = centerAtTarget; // if true, aoe source is at target
+        public WDir Offset = offset;
+        public bool IsTankbuster = tankbuster;
+        public uint CasterID = caster;
+        public AIHints.PredictedDamageType DamageType = damageType;
+        public Angle? CustomRotation = customRotation;
+
+        public Bait(Actor source, AOEShape shape, DateTime activation = default, int numTargets = 1, bool nearest = true, bool stack = false, int minStack = 1, int maxStack = 1, bool centerAtTarget = false, bool tankbuster = false, uint caster = default, Role role = Role.None, BitMask forbidden = default, AIHints.PredictedDamageType damageType = AIHints.PredictedDamageType.None, Angle? customRotation = null, WDir offset = default)
+            : this(source.Position, shape, activation, numTargets, nearest, stack, minStack, maxStack, centerAtTarget, tankbuster, caster, role, forbidden, damageType, customRotation, offset) { }
+    }
+
+    public readonly bool AlwaysDrawOtherBaits = alwaysDrawOtherBaits; // if false, other baits are drawn only if they are clipping a player
+    public bool OnlyShowOutlines = onlyShowOutlines; // if true only show outlines
+    public bool AllowDeadTargets = false; // if false, baits with dead targets are ignored
+    public bool EnableHints = true;
+    public bool IgnoreOtherBaits; // if true, don't show hints/aoes for baits by others
+    public PlayerPriority BaiterPriority = PlayerPriority.Interesting;
+    public List<Bait> CurrentBaits = [];
+    public const string BaitAwayHint = "Bait away from raid!";
+    public const string BaitAOEHint = "GTFO from baited AOE!";
+
+    public List<Bait> ActiveBaits
+    {
+        get
+        {
+            var count = CurrentBaits.Count;
+            if (count == 0)
+            {
+                return CurrentBaits;
+            }
+            List<Bait> activeBaits = new(count);
+            var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
+            for (var i = 0; i < count; ++i)
+            {
+                ref var bait = ref curBaits[i];
+                var casterId = bait.CasterID;
+                if (casterId != default)
+                {
+                    var caster = Module.Enemies(casterId);
+                    if (caster.Count == 0)
+                        continue;
+
+                    if (caster[0].IsDeadOrDestroyed)
+                        continue;
+                }
+
+                var targets = GetTargets(bait);
+                var len = targets.Length;
+
+                for (var j = 0; j < len; j++)
+                {
+                    if (AllowDeadTargets || !targets[j].IsDead)
+                    {
+                        activeBaits.Add(bait);
+                        break;
+                    }
+                }
+            }
+            return activeBaits;
+        }
+    }
+
+    public WPos BaitOrigin(ref Bait bait, Actor target) => (bait.CenterAtTarget ? target.Position : bait.Position) + bait.Offset;
+    public Angle BaitRotation(ref Bait bait, Actor target) => Angle.FromDirection(target.Position - bait.Position);
+    public bool IsClippedBy(Actor pc, ref Bait bait, Actor target) => bait.Shape.Check(pc.Position, BaitOrigin(ref bait, target), BaitRotation(ref bait, target));
+    public List<Actor> PlayersClippedBy(ref Bait bait, Actor target)
+    {
+        var actors = Raid.WithoutSlot();
+        var len = actors.Length;
+        List<Actor> result = new(len);
+        for (var i = 0; i < len; ++i)
+        {
+            var actor = actors[i];
+            var id = actor.InstanceID;
+            if (id != target.InstanceID && bait.Shape.Check(actor.Position, BaitOrigin(ref bait, target), BaitRotation(ref bait, target)))
+            {
+                result.Add(actor);
+            }
+        }
+
+        return result;
+    }
+    public bool IsBaitTarget(ref Bait bait, Actor target)
+    {
+        var targets = GetTargets(bait);
+        var length = targets.Length;
+
+        for (var j = 0; j < length; j++)
+        {
+            if (targets[j].InstanceID == target.InstanceID)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        var baits = CollectionsMarshal.AsSpan(ActiveBaits);
+        var len = baits.Length;
+
+        if (len == 0)
+            return;
+
+        for (var i = 0; i < len; i++)
+        {
+            ref var b = ref baits[i];
+            var baiter = IsBaitTarget(ref b, actor) ? actor : default;
+            if (baiter == default)
+                continue;
+
+            var clippedPlayers = PlayersClippedBy(ref b, baiter);
+            var clippedCount = clippedPlayers.Count;
+            //hints.Add($"Clipped ({clippedCount})", false);
+
+            if (b.IsStack)
+            {
+                // increment to include player in stack count
+                clippedCount++;
+                if (clippedCount < b.MinStack)
+                {
+                    hints.Add("Not enough in stack!");
+                    break;
+                }
+                else if (clippedCount > b.MaxStack)
+                {
+                    hints.Add("Too many in stack!");
+                    break;
+                }
+            }
+            else
+            {
+                if (clippedPlayers.Count != 0)
+                {
+                    hints.Add(BaitAwayHint);
+                    break;
+                }
+            }
+        }
+        if (!IgnoreOtherBaits)
+        {
+            for (var i = 0; i < len; i++)
+            {
+                ref var b = ref baits[i];
+                var targets = GetTargets(b);
+                var tarLen = targets.Length;
+
+                // show all baits, or all baits aside from yourself
+                var subTargets = new Actor[tarLen - (IsBaitTarget(ref b, actor) ? 1 : 0)];
+                var subCount = 0;
+                for (var j = 0; j < tarLen; j++)
+                {
+                    if (targets[j] != actor)
+                    {
+                        subTargets[subCount++] = targets[j];
+                    }
+                }
+
+                for (var j = 0; j < subCount; j++)
+                {
+                    var target = subTargets[j];
+                    if (IsClippedBy(actor, ref b, target))
+                    {
+                        if (b.IsStack)
+                        {
+                            var clippedPlayers = PlayersClippedBy(ref b, target);
+                            if (clippedPlayers.Count + 1 > b.MaxStack)
+                            {
+                                hints.Add(BaitAOEHint);
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            hints.Add(BaitAOEHint);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public override void DrawArenaBackground(int pcSlot, Actor pc)
+    {
+        if (OnlyShowOutlines || IgnoreOtherBaits)
+            return;
+
+        BitMask targetted = default;
+        var baits = CollectionsMarshal.AsSpan(ActiveBaits);
+        var len = baits.Length;
+        var pcID = pc.InstanceID;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var b = ref baits[i];
+            var targets = GetTargets(b);
+            var tarLen = targets.Length;
+
+            for (var j = 0; j < tarLen; j++)
+            {
+                var target = targets[j];
+                var slot = Raid.FindSlot(target.InstanceID);
+                targetted.Set(slot);
+
+                // always draw stacks even if player isn't clipped by it
+                if (target.InstanceID != pcID && (AlwaysDrawOtherBaits || b.IsStack || IsClippedBy(pc, ref b, target)))
+                {
+                    b.Shape.Draw(Arena, BaitOrigin(ref b, target), BaitRotation(ref b, target), b.IsStack ? Colors.Safe : Colors.AOE);
+                }
+            }
+        }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        var baits = CollectionsMarshal.AsSpan(ActiveBaits);
+        var len = baits.Length;
+        var pcID = pc.InstanceID;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var b = ref baits[i];
+            var targets = GetTargets(b);
+            var tarLen = targets.Length;
+
+            for (var j = 0; j < tarLen; j++)
+            {
+                var target = targets[j];
+                if (OnlyShowOutlines || !OnlyShowOutlines && target.InstanceID == pcID)
+                {
+                    b.Shape.Outline(Arena, BaitOrigin(ref b, target), BaitRotation(ref b, target));
+                }
+            }
+        }
+    }
+
+    private bool IsActive => CurrentBaits.Count > 0;
+
+    public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
+    {
+        // one bait can have multiple targets
+        // just show everyone if there are active baits
+        // maybe write so it only shows players that are baiting or getting clipped by bait?
+        if (!IsActive)
+            return PlayerPriority.Irrelevant;
+
+        var baits = CollectionsMarshal.AsSpan(ActiveBaits);
+        var len = baits.Length;
+
+        for (var i = 0; i < len; i++)
+        {
+            ref var bait = ref baits[i];
+            if (IsBaitTarget(ref bait, player))
+            {
+                return PlayerPriority.Danger;
+            }
+        }
+
+        return PlayerPriority.Normal;
+    }
+
+    public ReadOnlySpan<Actor> GetTargets(Bait bait)
+    {
+        var party = Raid.WithSlot(AllowDeadTargets, true, true);
+        if (bait.ForbiddenPlayers.Any())
+        {
+            party = [.. party.ExcludedFromMask(bait.ForbiddenPlayers)];
+        }
+
+        var partyLen = party.Length;
+
+        var partyRoles = new Actor[partyLen];
+        var roleLen = 0;
+        for (var i = 0; i < partyLen; i++)
+        {
+            var actor = party[i].Item2;
+            if (bait.SpecifiedRole == Role.None || actor.Role == bait.SpecifiedRole)
+            {
+                partyRoles[roleLen++] = actor;
+            }
+        }
+
+        (Actor actor, float distSq)[] distances = new (Actor, float)[roleLen];
+        var result = new Actor[roleLen];
+
+        for (var i = 0; i < roleLen; ++i)
+        {
+            var p = party[i];
+            var distSq = (p.Item2.Position - bait.Position).LengthSq();
+            distances[i] = (p.Item2, distSq);
+        }
+
+        var isNearest = bait.FromNearest;
+
+        var targets = Math.Min(bait.NumTargets, roleLen);
+        for (var i = 0; i < targets; ++i)
+        {
+            var selIdx = i;
+            for (var j = i + 1; j < roleLen; ++j)
+            {
+                if (isNearest && distances[j].distSq < distances[selIdx].distSq || !isNearest && distances[j].distSq > distances[selIdx].distSq)
+                    selIdx = j;
+            }
+
+            if (selIdx != i)
+            {
+                (distances[selIdx], distances[i]) = (distances[i], distances[selIdx]);
+            }
+
+            result[i] = distances[i].actor;
+        }
+
+        return result.AsSpan()[..targets];
+    }
+}

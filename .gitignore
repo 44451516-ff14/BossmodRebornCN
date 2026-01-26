@@ -4,7 +4,6 @@ bin/
 *.user
 logs/
 .idea/
-
 release/BossModReborn/
 release/BossModReborn.deps.json
 release/BossModReborn.dll
