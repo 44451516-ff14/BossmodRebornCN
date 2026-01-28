@@ -6,6 +6,7 @@ sealed class FleshTele(BossModule module) : BossComponent(module)
     private readonly Burst _burst = module.FindComponent<Burst>()!;
     private DateTime _activation;
     private readonly Dictionary<ulong, bool> _jumps = [];
+    private const float _distance = 16f;
 
     private RelSimplifiedComplexPolygon _poly;
 
@@ -70,7 +71,7 @@ sealed class FleshTele(BossModule module) : BossComponent(module)
         if (!_jumps.ContainsKey(pc.InstanceID))
             return;
 
-        var tp = GetTeleport(pc, 15f, _jumps[pc.InstanceID]);
+        var tp = GetTeleport(pc, _distance, _jumps[pc.InstanceID]);
         Arena.ActorProjected(tp.from, tp.to, tp.rotation, Colors.Danger);
         Arena.AddLine(tp.from, tp.to);
     }
@@ -83,7 +84,7 @@ sealed class FleshTele(BossModule module) : BossComponent(module)
         if (!_jumps.ContainsKey(actor.InstanceID))
             return;
 
-        var tp = GetTeleport(actor, 15f, _jumps[actor.InstanceID]);
+        var tp = GetTeleport(actor, _distance, _jumps[actor.InstanceID]);
         if (DestinationUnsafe(tp.to))
             hints.Add("About to teleport into danger!");
     }
@@ -97,9 +98,9 @@ sealed class FleshTele(BossModule module) : BossComponent(module)
             return;
 
         var rot = actor.Rotation;
-        var dir = rot.ToDirection() * 15f * (_jumps[actor.InstanceID] ? 1f : -1f);
+        var dir = rot.ToDirection() * _distance * (_jumps[actor.InstanceID] ? 1f : -1f);
 
-        var tp = GetTeleport(actor, 15f, _jumps[actor.InstanceID]);
+        var tp = GetTeleport(actor, _distance, _jumps[actor.InstanceID]);
 
         // check if tp is in bounds; if not, need to rotate
         // teleport just barely safe; -1 offset not enough, or just coincidence it was safe?

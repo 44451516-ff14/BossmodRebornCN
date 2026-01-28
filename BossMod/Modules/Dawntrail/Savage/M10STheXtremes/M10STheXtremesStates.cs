@@ -34,27 +34,27 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnExit<FlameFloaterPuddle>()
             .DeactivateOnExit<HotImpact>();
 
-        ComponentCondition<FlameFloater>(id + 0x10, 8.4f, comp => comp.Active, "Flame Floater order"); //22.65
-        ComponentCondition<FlameFloater>(id + 0x11, 7.4f, comp => comp.NumCasts > 0, "Flame Floater start"); //30.04
-        ComponentCondition<FlameFloater>(id + 0x12, 9.7f, comp => comp.NumCasts >= 4, "Flame Floater end") //39.72
+        ComponentCondition<FlameFloater>(id + 0x10, 8.4f, static comp => comp.Active, "Flame Floater order"); //22.65
+        ComponentCondition<FlameFloater>(id + 0x11, 7.4f, static comp => comp.NumCasts > 0, "Flame Floater start"); //30.04
+        ComponentCondition<FlameFloater>(id + 0x12, 9.7f, static comp => comp.NumCasts >= 4, "Flame Floater end") //39.72
             .ActivateOnExit<AlleyOopInferno>()
             .ActivateOnExit<AlleyOopInfernoPuddle>()
             .DeactivateOnExit<FlameFloater>();
 
-        ComponentCondition<AlleyOopInferno>(id + 0x20, 13.2f, comp => comp.NumFinishedSpreads > 0, "Spread puddles") // 47.91 - 52.895
+        ComponentCondition<AlleyOopInferno>(id + 0x20, 13.2f, static comp => comp.NumFinishedSpreads > 0, "Spread puddles") // 47.91 - 52.895
             .DeactivateOnExit<AlleyOopInferno>();
 
         CastStart(id + 0x30, (uint)AID.CutbackBlazeCast, 4.5f, "Bait safe cone")
             .ActivateOnExit<CutbackBlaze>()
             .ActivateOnExit<CutbackBlazePuddle>();
 
-        ComponentCondition<CutbackBlaze>(id + 0x31, 5.2f, comp => comp.NumCasts > 0)
+        ComponentCondition<CutbackBlaze>(id + 0x31, 5.2f, static comp => comp.NumCasts > 0)
             .ActivateOnExit<Pyrorotation>()
             .ActivateOnExit<PyrorotationPuddle>()
             .DeactivateOnExit<CutbackBlaze>();
 
-        ComponentCondition<Pyrorotation>(id + 0x40, 6.5f, comp => comp.CastCounter > 0, "Stack x3 start"); // 63.69 icon - 69.01 1st hit - 72.96 last hit
-        ComponentCondition<Pyrorotation>(id + 0x41, 4f, comp => !comp.Active)
+        ComponentCondition<Pyrorotation>(id + 0x40, 6.5f, static comp => comp.CastCounter > 0, "Stack x3 start"); // 63.69 icon - 69.01 1st hit - 72.96 last hit
+        ComponentCondition<Pyrorotation>(id + 0x41, 4f, static comp => !comp.Active)
             .DeactivateOnExit<Pyrorotation>();
 
         Cast(id + 0x50, (uint)AID.DiversDareRed, 4.3f, 5f, "Raidwide") // 77.21 - 82.27
@@ -79,7 +79,7 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnEnter<SickestTakeOff>();
 
         //ActorTargetable(id + 0x20, _module.DeepBlue, true, 11.3f, "Targetable") //117.2 - 117.61 stack/spread
-        ComponentCondition<AwesomeSplashSlab>(id + 0x20, 11.7f, comp => !comp.Active, "Stack/spread")
+        ComponentCondition<AwesomeSplashSlab>(id + 0x20, 11.7f, static comp => !comp.Active, "Stack/spread")
             .ActivateOnExit<AlleyOopWater>()
             .ActivateOnExit<AlleyOopWaterAfter>()
             .DeactivateOnExit<SickSwell1>()
@@ -87,16 +87,17 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .DeactivateOnExit<AwesomeSplashSlab>()
             .DeactivateOnExit<FreakyPyrotation>();
 
-        ComponentCondition<AlleyOopWater>(id + 0x30, 8.3f, comp => comp.NumCasts > 0, "Cones");
-        ComponentCondition<AlleyOopWaterAfter>(id + 0x40, 2.5f, comp => comp.NumCasts > 0, "Followup")
+        ComponentCondition<AlleyOopWater>(id + 0x30, 8.3f, static comp => comp.NumCasts > 0, "Cones")
+            .ExecOnEnter<AlleyOopWater>(static comp => comp.CurrentState = AlleyOopWater.State.BlueOnly);
+        ComponentCondition<AlleyOopWaterAfter>(id + 0x40, 2.5f, static comp => comp.NumCasts > 0, "Followup")
             .DeactivateOnExit<AlleyOopWater>()
             .DeactivateOnExit<AlleyOopWaterAfter>();
 
         ActorCast(id + 0x50, _module.DeepBlue, (uint)AID.DeepImpactCast, 3f, 5f, true)
             .ActivateOnEnter<DeepImpact>()
             .ActivateOnEnter<DeepImpactKnockback>();
-        //ComponentCondition<DeepImpact>(id + 0x51, 0.5f, comp => !comp.Active, "Baited tankbuster cleave")
-        ComponentCondition<DeepImpact>(id + 0x51, 0.8f, comp => comp.ActiveBaits.Count == 0, "Baited tankbuster cleave", checkDelay: 1f)
+        //ComponentCondition<DeepImpact>(id + 0x51, 0.5f, static comp => !comp.Active, "Baited tankbuster cleave")
+        ComponentCondition<DeepImpact>(id + 0x51, 0.8f, static comp => comp.ActiveBaits.Count == 0, "Baited tankbuster cleave", checkDelay: 1f)
             .DeactivateOnExit<DeepImpactKnockback>()
             .DeactivateOnExit<DeepImpact>();
 
@@ -113,9 +114,9 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
         Targetable(id + 0x10, false, 10.1f, "Both untargetable"); // 161.97
 
-        ComponentCondition<XtremeSpectacular>(id + 0x20, 7f, comp => comp.NumCasts > 0, "Proximity AOE"); // 168.94
+        ComponentCondition<XtremeSpectacular>(id + 0x20, 7f, static comp => comp.NumCasts > 0, "Proximity AOE"); // 168.94
 
-        ComponentCondition<XtremeSpectacularLast>(id + 0x30, 4.8f, comp => comp.NumCasts > 0, "Raidwides") // 173.72
+        ComponentCondition<XtremeSpectacularLast>(id + 0x30, 4.8f, static comp => comp.NumCasts > 0, "Raidwides") // 173.72
             .DeactivateOnExit<XtremeSpectacular>()
             .DeactivateOnExit<XtremeSpectacularLast>();
     }
@@ -129,8 +130,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
         // red is primary so just use red casts
         CastStart(id + 0x10, (uint)AID.InsaneAirRed, 11.3f, "Insane Air start"); // 188.91
-        ComponentCondition<InsaneAirTest>(id + 0x20, 5.9f, comp => comp.ActiveBaits.Count > 0, "1st mechanic");
-        ComponentCondition<InsaneAirTest>(id + 0x30, 31f, comp => comp.ActiveBaits.Count == 0, "Insane Air end") // 219.92
+        ComponentCondition<InsaneAirTest>(id + 0x20, 5.9f, static comp => comp.ActiveBaits.Count > 0, "1st mechanic");
+        ComponentCondition<InsaneAirTest>(id + 0x30, 31f, static comp => comp.ActiveBaits.Count == 0, "Insane Air end") // 219.92
             .DeactivateOnExit<InsaneAirTest>();
 
         Cast(id + 0x40, (uint)AID.DiversDareRed, 4.7f, 5.1f, "Raidwide") // 224.58 - 229.66
@@ -152,11 +153,16 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnEnter<AlleyOopInfernoPuddle>();
 
         // puddles resolve 0.5s before alley oop; use alley oop for state
-        ComponentCondition<AlleyOopWater>(id + 0x10, 13f, comp => comp.NumCasts > 0, "Cones + puddles") // 252.96 - 258.02 - 258.47
+        ComponentCondition<AlleyOopWater>(id + 0x10, 13f, static comp => comp.NumCasts > 0, "Cones + puddles") // 252.96 - 258.02 - 258.47
+            .ExecOnEnter<AlleyOopWater>(static comp => comp.CurrentState = AlleyOopWater.State.Snaking)
+            .ExecOnEnter<AlleyOopInferno>(static comp => comp.CurrentState = AlleyOopInferno.State.Snaking)
             .DeactivateOnExit<AlleyOopWater>()
             .DeactivateOnExit<AlleyOopInferno>();
 
-        ComponentCondition<AlleyOopWaterAfter>(id + 0x20, 2.7f, comp => comp.NumCasts > 0, "Followup") // 261.13
+        ComponentCondition<AlleyOopWaterAfter>(id + 0x20, 2.7f, static comp => comp.NumCasts > 0, "Followup") // 261.13
+            .ActivateOnEnter<DeepVarial>()
+            .ActivateOnEnter<AlleyOopInferno>()
+            .ExecOnEnter<AlleyOopInferno>(static comp => comp.CurrentState = AlleyOopInferno.State.DeepVarial)
             .ActivateOnExit<SickSwell1>()
             .ActivateOnExit<SickestTakeOff>()
             .DeactivateOnExit<AlleyOopWaterAfter>();
@@ -166,14 +172,14 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnExit<AwesomeSplashSlabAerial>()
             .DeactivateOnExit<HotImpact2>();
 
+        // change deep varial activation earlier for early detection using action timeline
         ActorCast(id + 0x40, _module.DeepBlue, (uint)AID.DeepVarialCast, 1.1f, 6.8f, true, "Big cone AOE") // 270.52 - 277.3
-            .ActivateOnEnter<DeepVarial>()
-            .ActivateOnEnter<AlleyOopInferno>()
+            //.ActivateOnEnter<DeepVarial>()
             .ActivateOnEnter<SteamBurst>()
             .DeactivateOnExit<DeepVarial>();
 
         // inferno resolve 0.3s after stack/spread; use fire for state
-        ComponentCondition<AlleyOopInferno>(id + 0x50, 4.9f, comp => comp.NumFinishedSpreads > 0, "Stack/spreads") // inferno start 275.54 - water stack/spread 280.32 - fire spread 280.61 - steam burst 281.61
+        ComponentCondition<AlleyOopInferno>(id + 0x50, 4.9f, static comp => comp.NumFinishedSpreads > 0, "Stack/spreads") // inferno start 275.54 - water stack/spread 280.32 - fire spread 280.61 - steam burst 281.61
             .ActivateOnEnter<FreakyPyrotation>() // use to hide takeoff LP stack until after freaky
             .ActivateOnEnter<AwesomeSplashSlab>()
             .DeactivateOnExit<AlleyOopInferno>()
@@ -183,24 +189,24 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnEnter<HotAerial>();
 
         // hot aerial 1 290.72 - water knockback 300.05 - cutback blaze start 303.09 - water stack/spread 304.68 - cutback actual 308.29
-        ComponentCondition<SickSwell1>(id + 0x70, 17.7f, comp => comp.NumCasts > 0, "Knockback")
+        ComponentCondition<SickSwell1>(id + 0x70, 17.7f, static comp => comp.NumCasts > 0, "Knockback")
             .DeactivateOnExit<SickSwell1>()
             .DeactivateOnExit<SickestTakeOff>();
 
-        ComponentCondition<AwesomeSplashSlab>(id + 0x80, 2.6f, comp => !comp.Active, "Water stack/spread")
+        ComponentCondition<AwesomeSplashSlab>(id + 0x80, 2.6f, static comp => !comp.Active, "Water stack/spread")
             .ActivateOnExit<CutbackBlaze>()
             .DeactivateOnExit<AwesomeSplashSlab>()
             .DeactivateOnExit<FreakyPyrotation>();
 
-        ComponentCondition<CutbackBlaze>(id + 0x90, 3.6f, comp => comp.NumCasts > 0, "Bait safe cone")
+        ComponentCondition<CutbackBlaze>(id + 0x90, 3.6f, static comp => comp.NumCasts > 0, "Bait safe cone")
             .ActivateOnEnter<CutbackBlazePuddle>()
             .DeactivateOnExit<CutbackBlaze>();
 
         ActorCast(id + 0xA0, _module.DeepBlue, (uint)AID.DeepImpactCast, 0.7f, 5f, true)
             .ActivateOnEnter<DeepImpact>()
             .ActivateOnEnter<DeepImpactKnockback>();
-        //ComponentCondition<DeepImpact>(id + 0xA1, 0.5f, comp => !comp.Active, "Baited tankbuster cleave")
-        ComponentCondition<DeepImpact>(id + 0xA1, 0.8f, comp => comp.ActiveBaits.Count == 0, "Baited tankbuster cleave", checkDelay: 1f)
+        //ComponentCondition<DeepImpact>(id + 0xA1, 0.5f, static comp => !comp.Active, "Baited tankbuster cleave")
+        ComponentCondition<DeepImpact>(id + 0xA1, 0.8f, static comp => comp.ActiveBaits.Count == 0, "Baited tankbuster cleave", checkDelay: 1f)
             .DeactivateOnExit<DeepImpactKnockback>()
             .DeactivateOnExit<DeepImpact>();
 
@@ -218,10 +224,10 @@ sealed class M10STheXtremesStates : StateMachineBuilder
     {
         // Deep Aerial isn't necessarily finished casting when changing state
         // better to check active towers?
-        ComponentCondition<DeepAerial>(id, delay, comp => comp.Towers.Count > 0, "")
+        ComponentCondition<DeepAerial>(id, delay, static comp => comp.Towers.Count > 0, "")
             .ActivateOnEnter<DeepAerial>();
 
-        ComponentCondition<DeepAerial>(id + 0x10, 6f, comp => comp.NumCasts > 0, "Towers + arena change")
+        ComponentCondition<DeepAerial>(id + 0x10, 6f, static comp => comp.NumCasts > 0, "Towers + arena change")
             //.ActivateOnExit<WateryGrave>()
             .DeactivateOnExit<DeepAerial>();
 
@@ -234,7 +240,7 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         // casts waves x6, 342.26 - 347.36 - 390.21
         CastStart(id + 0x30, (uint)AID.XtremeWaveRedFirstCast, 3f, "Deep aerial start");
 
-        ComponentCondition<RedTether>(id + 0x40, 48.3f, comp => comp.NumCasts >= 6, "Deep aerial finish");
+        ComponentCondition<RedTether>(id + 0x40, 48.3f, static comp => comp.NumCasts >= 6, "Deep aerial finish");
 
         Cast(id + 0x50, (uint)AID.DiversDareRed, 5.3f, 5f, "Raidwide") // 395.54 - 400.5
             .ActivateOnEnter<DiversDareRed>()
@@ -259,33 +265,35 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
         Cast(id + 0x10, (uint)AID.AlleyOopInfernoCast, 4f, 5.1f, "Flame puddles") // 420.42 - 425.5
             .ActivateOnEnter<AlleyOopInferno>()
+            .ExecOnEnter<AlleyOopInferno>(static comp => comp.CurrentState = AlleyOopInferno.State.SplitArena)
             .ActivateOnEnter<AlleyOopInfernoPuddle>()
             .ActivateOnExit<SteamBurst>()
             .ActivateOnExit<AlleyOopWater>()
             .ActivateOnExit<AlleyOopWaterAfter>()
             .DeactivateOnExit<AlleyOopInferno>();
 
-        ComponentCondition<AlleyOopWater>(id + 0x20, 8.3f, comp => comp.NumCasts > 0, "Cones") // cast start 425.4 - 431.06
+        ComponentCondition<AlleyOopWater>(id + 0x20, 8.3f, static comp => comp.NumCasts > 0, "Cones") // cast start 425.4 - 431.06
+            .ExecOnEnter<AlleyOopWater>(static comp => comp.CurrentState = AlleyOopWater.State.SplitArena)
             .ActivateOnEnter<FreakyPyrotation>() // use to hide takeoff LP stack until after freaky
             .ActivateOnEnter<PyrorotationPuddle>()
             .ActivateOnEnter<AwesomeSplashSlab>();
 
-        ComponentCondition<AlleyOopWaterAfter>(id + 0x30, 2.5f, comp => comp.NumCasts > 0, "Followup") // freaky pyrorotation icons 433.39 - followup 433.65
+        ComponentCondition<AlleyOopWaterAfter>(id + 0x30, 2.5f, static comp => comp.NumCasts > 0, "Followup") // freaky pyrorotation icons 433.39 - followup 433.65
             .DeactivateOnExit<AlleyOopWater>()
             .DeactivateOnExit<AlleyOopWaterAfter>();
 
-        ComponentCondition<FreakyPyrotation>(id + 0x40, 5.3f, comp => comp.NumFinishedStacks > 0, "Fire puddles"); // 438.67
+        ComponentCondition<FreakyPyrotation>(id + 0x40, 5.3f, static comp => comp.NumFinishedStacks > 0, "Fire puddles"); // 438.67
 
-        ComponentCondition<SickSwell1>(id + 0x50, 7.5f, comp => comp.NumCasts > 0, "Knockback") // 439.66 - 446.7
+        ComponentCondition<SickSwell1>(id + 0x50, 7.5f, static comp => comp.NumCasts > 0, "Knockback") // 439.66 - 446.7
             .DeactivateOnExit<SickestTakeOff>()
             .DeactivateOnExit<SickSwell1>();
 
-        ComponentCondition<AwesomeSplashSlab>(id + 0x60, 2.6f, comp => !comp.Active, "LP stack") // raidwide cast start 448.83 - 449.25
+        ComponentCondition<AwesomeSplashSlab>(id + 0x60, 2.6f, static comp => !comp.Active, "LP stack") // raidwide cast start 448.83 - 449.25
             .ActivateOnEnter<DiversDareRed>()
             .ActivateOnEnter<DiversDareBlue>()
             .DeactivateOnExit<AwesomeSplashSlab>();
 
-        ComponentCondition<DiversDareRed>(id + 0x70, 4.7f, comp => comp.NumCasts > 0, "Raidwide") // 438.83 - 453.96
+        ComponentCondition<DiversDareRed>(id + 0x70, 4.7f, static comp => comp.NumCasts > 0, "Raidwide") // 438.83 - 453.96
             .DeactivateOnExit<SteamBurst>()
             .DeactivateOnExit<DiversDareRed>()
             .DeactivateOnExit<DiversDareBlue>()
@@ -300,8 +308,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnEnter<XtremeWatersnaking>()
             .ActivateOnExit<InsaneAirTest>();
 
-        ComponentCondition<InsaneAirTest>(id + 0x10, 8f, comp => comp.ActiveBaits.Count > 0, "Insane Air 2 start"); // 477.42
-        ComponentCondition<InsaneAirTest>(id + 0x20, 41f, comp => comp.ActiveBaits.Count == 0, "Insane Air end") // 518.46
+        ComponentCondition<InsaneAirTest>(id + 0x10, 8f, static comp => comp.ActiveBaits.Count > 0, "Insane Air 2 start"); // 477.42
+        ComponentCondition<InsaneAirTest>(id + 0x20, 41f, static comp => comp.ActiveBaits.Count == 0, "Insane Air end") // 518.46
             .ActivateOnEnter<Bailout>()
             .ActivateOnEnter<BlastingSnapPuddle>()
             .ActivateOnEnter<PyrorotationPuddle>()
@@ -320,7 +328,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
     private void AlleyOopPyro(uint id, float delay)
     {
-        ComponentCondition<AlleyOopWater>(id, delay, comp => comp.NumCasts > 0, "Cones + puddle bait") // 538.8 - 547.06
+        ComponentCondition<AlleyOopWater>(id, delay, static comp => comp.NumCasts > 0, "Cones + puddle bait") // 538.8 - 547.06
+            .ExecOnEnter<AlleyOopWater>(static comp => comp.CurrentState = AlleyOopWater.State.PostInsane)
             .ActivateOnEnter<AlleyOopWaterAfter>()
             .ActivateOnEnter<AlleyOopInferno>()
             .ActivateOnEnter<AlleyOopInfernoPuddle>()
@@ -331,17 +340,17 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnExit<PyrorotationPuddle>()
             .DeactivateOnExit<AlleyOopWater>();
 
-        ComponentCondition<AlleyOopWaterAfter>(id + 0x10, 2.6f, comp => comp.NumCasts > 0, "Followup + puddles")
+        ComponentCondition<AlleyOopWaterAfter>(id + 0x10, 2.6f, static comp => comp.NumCasts > 0, "Followup + puddles")
             .DeactivateOnExit<AlleyOopWaterAfter>()
             .DeactivateOnExit<AlleyOopInferno>();
 
         // deep impact and pyrorotation start casting roughly same time
         // probably safer to activate it beforehand instead of relying on cast
         // pyrorotation happens slightly before, resolves later, use to control state
-        ComponentCondition<Pyrorotation>(id + 0x20, 3.3f, comp => comp.Active); // 550.25
-        ComponentCondition<DeepImpact>(id + 0x21, 5.7f, comp => comp.NumCasts > 0, "Puddles + baited tankbuster cleave");
+        ComponentCondition<Pyrorotation>(id + 0x20, 3.3f, static comp => comp.Active); // 550.25
+        ComponentCondition<DeepImpact>(id + 0x21, 5.7f, static comp => comp.NumCasts > 0, "Puddles + baited tankbuster cleave");
 
-        ComponentCondition<Pyrorotation>(id + 0x30, 9.2f, comp => !comp.Active, "Finish puddles") // 883.45
+        ComponentCondition<Pyrorotation>(id + 0x30, 9.2f, static comp => !comp.Active, "Finish puddles") // 883.45
             .DeactivateOnExit<DeepImpact>()
             .DeactivateOnExit<DeepImpactKnockback>()
             .DeactivateOnExit<Pyrorotation>();

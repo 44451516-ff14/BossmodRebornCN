@@ -179,11 +179,11 @@ public sealed class ActionDefinitions : IDisposable
     public static readonly ActionID Surecast = new(ActionType.Spell, 7559u);
     public static readonly ActionID Esuna = new(ActionType.Spell, 7568u);
     public static readonly ActionID WardensPaean = new(ActionType.Spell, 3561u);
-    public static readonly ActionID IDPotionStr = new(ActionType.Item, 1045995u); // hq grade 3 gemdraught of strength
-    public static readonly ActionID IDPotionDex = new(ActionType.Item, 1045996u); // hq grade 3 gemdraught of dexterity
-    public static readonly ActionID IDPotionVit = new(ActionType.Item, 1045997u); // hq grade 3 gemdraught of vitality
-    public static readonly ActionID IDPotionInt = new(ActionType.Item, 1045998u); // hq grade 3 gemdraught of intelligence
-    public static readonly ActionID IDPotionMnd = new(ActionType.Item, 1045999u); // hq grade 3 gemdraught of mind
+    public static readonly ActionID IDPotionStr = new(ActionType.Item, 1049234u); // hq grade 4 gemdraught of strength
+    public static readonly ActionID IDPotionDex = new(ActionType.Item, 1049235u); // hq grade 4 gemdraught of dexterity
+    public static readonly ActionID IDPotionVit = new(ActionType.Item, 1049236u); // hq grade 4 gemdraught of vitality
+    public static readonly ActionID IDPotionInt = new(ActionType.Item, 1049237u); // hq grade 4 gemdraught of intelligence
+    public static readonly ActionID IDPotionMnd = new(ActionType.Item, 1049238u); // hq grade 4 gemdraught of mind
 
     // content specific consumables
     public static readonly ActionID IDPotionSustaining = new(ActionType.Item, 20309u);
@@ -316,10 +316,25 @@ public sealed class ActionDefinitions : IDisposable
             return true;
 
         var dist = player.DistanceToHitbox(target);
-        var dir = player.DirectionTo(target).Normalized();
+        var dir = player.AngleTo(target);
         var src = player.Position;
 
-        return IsDashDangerous(src, src + dir * Math.Max(0, dist), hints);
+        // facing target (to dash) would make us fail gaze, directional bait, etc
+        // TODO: only forbid if dash duration is longer than time to deadline?
+        var dirs = hints.ForbiddenDirections;
+        var count = dirs.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var d = dirs[i];
+            if (dir.AlmostEqual(d.center, d.halfWidth.Rad))
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+        return IsDashDangerous(src, src + dir.ToDirection() * Math.Max(0, dist), hints);
     }
 
     public static bool DashToPositionCheck(WorldState _, Actor player, ActionQueue.Entry action, AIHints hints)

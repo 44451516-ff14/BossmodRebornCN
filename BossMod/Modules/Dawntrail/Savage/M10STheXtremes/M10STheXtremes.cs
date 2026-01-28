@@ -21,7 +21,7 @@ sealed class DebuffTracker(BossModule module) : BossComponent(module)
             {
                 WaterPlayers.Set(slot);
             }
-            if (status.ID is (uint)SID.Firesnaking or (uint)SID.XtremeFiresnaking)
+            else
             {
                 FirePlayers.Set(slot);
             }
@@ -40,7 +40,7 @@ sealed class DebuffTracker(BossModule module) : BossComponent(module)
             {
                 WaterPlayers.Clear(slot);
             }
-            if (status.ID is (uint)SID.Firesnaking or (uint)SID.XtremeFiresnaking)
+            else
             {
                 FirePlayers.Clear(slot);
             }
@@ -53,7 +53,7 @@ sealed class DebuffTracker(BossModule module) : BossComponent(module)
         {
             hints.Add("Fire debuff", false);
         }
-        if (WaterPlayers[slot])
+        else if (WaterPlayers[slot])
         {
             hints.Add("Water debuff", false);
         }

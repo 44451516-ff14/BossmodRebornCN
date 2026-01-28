@@ -8,30 +8,23 @@ public enum OID : uint
     XtremeAether = 0x4B59, // R1.500, x?
     SickSwell = 0x4B5A, // R1.000, x?
     TheXtremes = 0x4BDF, // R1.000, x?
-    _Gen_WateryGrave = 0x4AC0, // R1.000, x?
     WateryGrave = 0x4B5C, // R4.000, x0 (spawn during fight)
     PuddleFlameFloater = 0x1EBF30, // R0.500, x0 (spawn during fight), EventObj type (FLameFloater puddles)
     PuddleAlleyOopInferno = 0x1EBF31, // R0.500, x0 (spawn during fight), EventObj type (AlleyOppInferno puddles)
     PuddlePyrorotation = 0x1EBF32, // R0.500, x0 (spawn during fight), EventObj type (Pyrorotation puddles)
     PuddleCutbackBlaze = 0x1EBF33, // R0.500, x0 (spawn during fight), EventObj type (Cutback Blaze puddle)
     PuddleInsaneAirCone = 0x1EBFCE, // R0.500, x0 (spawn during fight), EventObj type
-    _Gen_ = 0x1E932D, // R2.000, x?, EventObj type
-    _Gen_1 = 0xF680F, // R1.100, x?, EventNpc type
-    _Gen_2 = 0x4AE7, // R1.000, x?
 }
 
 public enum AID : uint
 {
     // Red Hot
-    _AutoAttack_ = 48639, // 4B57->player, no cast, single-target
     HotImpact = 46518, // 4B57->players, 5.0s cast, range 6 circle
-    _Ability_ = 46456, // 4B57->location, no cast, single-target
     FlameFloaterCast = 46522, // 4B57->self, 7.0s cast, single-target
     FlameFloater1 = 46523, // 4B57->location, no cast, range 60 width 8 rect
     FlameFloater2 = 46524, // 4B57->location, no cast, range 60 width 8 rect
     FlameFloater3 = 46525, // 4B57->location, no cast, range 60 width 8 rect
     FlameFloater4 = 46526, // 4B57->location, no cast, range 60 width 8 rect
-    _Ability_1 = 46460, // 4B57->self, no cast, single-target
     AlleyOopInfernoCast = 46528, // 4B57->self, 4.3+0.7s cast, single-target
     AlleyOopInferno = 46529, // 233C->players, 5.0s cast, range 5 circle
     CutbackBlazeCast = 46537, // 4B57->self, 4.3+0.7s cast, single-target
@@ -41,9 +34,7 @@ public enum AID : uint
     DiversDareRed = 46520, // 4B57->self, 5.0s cast, range 60 circle
 
     // Deep Blue
-    _AutoAttack_1 = 48640, // 4B58->player, no cast, single-target
-    _Weaponskill_SickSwell = 46539, // 4B58->self, 3.0s cast, single-target
-    _Weaponskill_SickestTakeOff = 46541, // 4B58->self, 4.0s cast, single-target
+    BlueJump = 46457, // DeepBlue->location, no cast, single-target
     SickestTakeOff = 46542, // 233C->self, 7.0s cast, range 50 width 15 rect (unsafe lane)
     SickSwell1 = 46540, // 233C->self, 7.0s cast, range 50 width 50 rect (raidwide + knockback)
     AwesomeSplash = 46543, // 233C->players, no cast, range 5 circle
@@ -57,21 +48,17 @@ public enum AID : uint
     DeepImpactCast = 46519, // 4B58->self, 4.9s cast, single-target
     DeepImpact = 44486, // 4B58->players, no cast, range 6 circle
     DiversDareBlue = 46521, // 4B58->self, 5.0s cast, range 60 circle
-    _Ability_2 = 46457, // 4B58->location, no cast, single-target
     XtremeSpectacularCastRed = 46553, // 4B57->self, 4.0s cast, single-target
     XtremeSpectacularCastBlue = 46554, // 4B58->self, 4.0s cast, single-target
     XtremeSpectacular = 46500, // 4BDF->self, 7.4s cast, range 50 width 40 rect
     XtremeSpectacularRest = 46556, // 4BDF->self, no cast, range 60 circle
     XtremeSpectacularLast = 47050, // 4BDF->self, no cast, range 60 circle
-    _Ability_EpicBrotherhood = 46459, // 4B58->4B57, no cast, single-target
-    _Ability_EpicBrotherhood1 = 46458, // 4B57->4B58, no cast, single-target
 
     // Together
     InsaneAirRed = 47255, // 4B57->self, 5.9+1.5s cast, single-target
     InsaneAirBlue = 47256, // 4B58->self, 5.9+1.5s cast, single-target
     InsaneAirRedRest = 47257, // 4B57->self, 3.9+1.5s cast, single-target
     InsaneAirBlueRest = 47258, // 4B58->self, 3.9+1.5s cast, single-target
-    _Weaponskill_ReEntryPlunge = 46580, // 4B58->self, no cast, single-target
     BlastingSnapVisual = 46575, // 4B57->self, no cast, single-target
     PlungingSnapVisual = 46576, // 4B58->self, no cast, single-target
     BlastingSnap = 46577, // 233C->self, no cast, range 60 ?-degree cone (spread)
@@ -84,8 +71,6 @@ public enum AID : uint
     VerticalPlungeVisual = 46584, // 4B58->self, no cast, single-target
     VerticalBlast = 46585, // 233C->player, no cast, range 6 circle (tb)
     VerticalPlunge = 46586, // 233C->player, no cast, range 6 circle
-    Unknown6Circle = 46587, // 233C->player, no cast, range 6 circle
-    _Ability_3 = 46461, // 4B58->self, no cast, single-target
     Firesnaking = 45953, // 4B57->self, 5.0s cast, range 60 circle
     Watersnaking = 45954, // 4B58->self, 5.0s cast, range 60 circle
     SteamBurst = 46587, // 4B59->self, 3.0s cast, range 9 circle
@@ -102,7 +87,6 @@ public enum AID : uint
     HotAerial4 = 47393, // 233C->players, no cast, range 6 circle
     DeepAerialCast = 46563, // 4B58->location, 5.0s cast, single-target
     DeepAerial = 46564, // 233C->self, 6.0s cast, range 6 circle
-    _Weaponskill_ = 46570, // 4AC0->player, no cast, single-target
     XtremeWaveRedFirstCast = 46533, // 4B57->self, 4.9s cast, single-target
     XtremeWaveBlueFirstCast = 46534, // 4B58->self, 4.9s cast, single-target
     XtremeWaveRedRestCast = 46535, // 4B57->self, 4.9s cast, single-target
@@ -110,7 +94,7 @@ public enum AID : uint
     XtremeWaveRed = 46545, // 4B57->location, no cast, range 60 width 8 rect
     XtremeWaveBlue = 46546, // 4B58->location, no cast, range 60 width 8 rect
     ScathingSteam = 44487, // 4B5C->self, 1.0s cast, range 60 circle (XtremeWaveRed going through orb)
-    _Weaponskill_ImpactZone = 46572, // 4B5C->self, no cast, range 60 circle
+    _Weaponskill_ImpactZone = 46572, // 4B5C->self, no cast, range 60 circle (wipe if orb isn't killed)
     _Weaponskill_ImpactZone1 = 46571, // 4AC0->self, no cast, range 60 circle
     FlameFloaterSplitCast = 46548, // 4B57->self, 5.0s cast, single-target
     FlameFloaterSplit = 46527, // 4B57->location, no cast, range 60 width 8 rect
@@ -158,7 +142,7 @@ public enum TetherID : uint
 {
     FlameTetherShort = 378, // _Gen_2/player->player
     FlameTetherLong = 379, // _Gen_2/player->player/_Gen_2
-    _Gen_Tether_chn_m0982_2c = 372, // DeepBlue->_Gen_2
+    SickSwell = 372, // DeepBlue->_Gen_2
     TetherShort = 57, // _Gen_2->player
     TetherLong = 17, // _Gen_2->player
 }

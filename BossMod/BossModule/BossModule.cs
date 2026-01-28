@@ -197,6 +197,7 @@ public abstract class BossModule : IDisposable
             WorldState.Actors.EventObjectStateChange.Subscribe(OnActorEState),
             WorldState.Actors.EventObjectAnimation.Subscribe(OnActorEAnim),
             WorldState.Actors.PlayActionTimelineEvent.Subscribe(OnActorPlayActionTimelineEvent),
+            WorldState.Actors.PlayActionTimelineSync.Subscribe(OnActorPlayActionTimelineSync),
             WorldState.Actors.EventNpcYell.Subscribe(OnActorNpcYell),
             WorldState.Actors.ModelStateChanged.Subscribe(OnActorModelStateChange),
             WorldState.MapEffect.Subscribe(OnMapEffect),
@@ -817,6 +818,13 @@ public abstract class BossModule : IDisposable
         var count = Components.Count;
         for (var i = 0; i < count; ++i)
             Components[i].OnActorPlayActionTimelineEvent(actor, id);
+    }
+
+    private void OnActorPlayActionTimelineSync(Actor actor, List<(ulong, ushort)> events)
+    {
+        var count = Components.Count;
+        for (var i = 0; i < count; ++i)
+            Components[i].OnActorPlayActionTimelineSync(actor, events);
     }
 
     private void OnActorNpcYell(Actor actor, ushort id)

@@ -45,6 +45,7 @@ sealed class DirectedGrotesquerie(BossModule module) : Components.GenericBaitAwa
     {
         if (status.ID == (uint)SID._Gen_Direction)
         {
+            // 408 = front, 409 = right, 40A = behind, 40B = left
             if (status.Extra is < 0x408 or > 0x40B)
                 return;
 
@@ -81,30 +82,23 @@ sealed class DirectedGrotesquerie(BossModule module) : Components.GenericBaitAwa
             hints.Add("Bait away!");
         }
     }
-    // copied and modified from cenote boss 1, need to test if rotation for forbidden direction is right
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (CurrentBaits.Count == 0)
-        {
-            return;
-        }
-
         base.AddAIHints(slot, actor, assignment, hints);
+
+        // point bait outwards
+        // add forbidden direction if clipping players
+        // rotation added as part of bait shape so just use player rotation?
         var activeBaits = CollectionsMarshal.AsSpan(ActiveBaitsOn(actor));
         if (activeBaits.Length != 0)
         {
             ref var b = ref activeBaits[0];
-            var party = Raid.WithSlot(false, true, true);
-            var lenP = party.Length;
-            for (var j = 0; j < lenP; j++)
+            var clipped = PlayersClippedBy(ref b);
+            var count = clipped.Count;
+            if (count > 0)
             {
-                var extra = _direction[party[j].Item1];
-                if (extra == 0)
-                    continue;
-
-                var rotation = ((extra - 0x408) * -90).Degrees();
-                var p = party[j].Item2;
-                hints.ForbiddenDirections.Add((Angle.FromDirection(p.Position - actor.Position) + rotation, 15f.Degrees(), b.Activation));
+                hints.ForbiddenDirections.Add((actor.Rotation, 15f.Degrees(), b.Activation));
             }
         }
     }

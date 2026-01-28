@@ -111,6 +111,7 @@ sealed class InsaneAirTest(BossModule module) : Components.GenericBaitProximity(
 
     public class Ability
     {
+        // IsBlue unnecessary? insane air always proximity regardless of color debuff
         public bool IsBlue;
         public Mechanic Mechanic;
         public WPos Position;

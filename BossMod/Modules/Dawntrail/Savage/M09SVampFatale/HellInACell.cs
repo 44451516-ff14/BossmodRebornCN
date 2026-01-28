@@ -1,7 +1,4 @@
-﻿using Dalamud.Game.ClientState.JobGauge.Enums;
-using TerraFX.Interop.Windows;
-
-namespace BossMod.Dawntrail.Savage.M09SVampFatale;
+﻿namespace BossMod.Dawntrail.Savage.M09SVampFatale;
 
 // draw hints based on hector guide? config file for different strats? let user handle it?
 // if soaked 1st tower, hell awaits status lasts enough to prevent soaking 2nd

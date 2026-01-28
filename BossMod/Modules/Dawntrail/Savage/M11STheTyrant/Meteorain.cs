@@ -4,7 +4,7 @@ sealed class CometTethers(BossModule module) : Components.TankbusterTether(modul
 sealed class CosmicKiss(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.CosmicKissIcon, (uint)AID.CosmicKiss, 4f, 5d);
 sealed class Tether1(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.ShortTether, 40f, new AOEShapeRect(60f, 5f));
 sealed class Tether2(BossModule module) : Components.StretchTetherSingle(module, (uint)TetherID.LongTether, 40f, new AOEShapeRect(60f, 5f));
-sealed class FireBreath(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(60f, 5f), (uint)IconID.CosmicKissIcon, (uint)AID.FireBreath1);
+sealed class FireBreath(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(60f, 3f), (uint)IconID.CosmicKissIcon, (uint)AID.FireBreath1);
 sealed class MajesticMeteor : Components.SimpleAOEs
 {
     public MajesticMeteor(BossModule module) : base(module, (uint)AID.MajesticMeteorBaits, 3f, 24)
@@ -213,6 +213,8 @@ sealed class MeteorainPortals(BossModule module) : Components.GenericAOEs(module
 {
     // Meteorain line: length 60, width 10 (half-width = 5)
     private static readonly AOEShapeRect Shape = new(60f, 5f);
+    // Expose portals so hints can get AOE info
+    internal IEnumerable<byte> ActivePortalIndices => _activePortals.Keys;
 
     // MapEffect index -> portal position
     private static readonly Dictionary<byte, WPos> PortalPositions = new()
@@ -333,3 +335,167 @@ sealed class TwoWayFireball(BossModule module)
 
 sealed class FourWayFireball(BossModule module)
     : TyrantFireballLines(module, (uint)AID.FourWayFireballStart, 4);
+
+sealed class MeteorMechanicHints(BossModule module) : BossComponent(module)
+{
+    private readonly MeteorainPortals _meteorain = module.FindComponent<MeteorainPortals>()!;
+    private readonly Tether1 _t1 = module.FindComponent<Tether1>()!;
+    private readonly Tether2 _t2 = module.FindComponent<Tether2>()!;
+    private readonly FireBreath _icons = module.FindComponent<FireBreath>()!;
+
+    // ---------------- FIRE SAFE SPOTS ----------------
+
+    private static readonly WPos[] Fire_Left_LeftSafe =
+    [
+        new(83f, 88f),
+        new(83f, 112f),
+    ];
+
+    private static readonly WPos[] Fire_Left_RightSafe =
+    [
+        new(85f, 88f),
+        new(85f, 112f),
+    ];
+
+    private static readonly WPos[] Fire_Right_LeftSafe =
+    [
+        new(115f, 88f),
+        new(115f, 112f),
+    ];
+
+    private static readonly WPos[] Fire_Right_RightSafe =
+    [
+        new(117f, 88f),
+        new(117f, 112f),
+    ];
+
+    // ---------------- TETHER SAFE SPOTS ----------------
+
+    private static readonly WPos[] Tether_Left_LeftSafe =
+    [
+        new(83f, 80.5f),
+        new(83f, 119.5f),
+    ];
+
+    private static readonly WPos[] Tether_Left_RightSafe =
+    [
+        new(85f, 80.5f),
+        new(85f, 119.5f),
+    ];
+
+    private static readonly WPos[] Tether_Right_LeftSafe =
+    [
+        new(115f, 80.5f),
+        new(115f, 119.5f),
+    ];
+
+    private static readonly WPos[] Tether_Right_RightSafe =
+    [
+        new(117f, 80.5f),
+        new(117f, 119.5f),
+    ];
+
+    // ---------------- DRAWING ----------------
+
+    public override void DrawArenaForeground(int slot, Actor pc)
+    {
+        DeterminePlatformSafeSides(out var leftPlatformLeftSafe, out var rightPlatformLeftSafe);
+
+        var onLeftPlatform = pc.Position.X < 100f;
+        var leftSafe = onLeftPlatform ? leftPlatformLeftSafe : rightPlatformLeftSafe;
+
+        var tetherSource = GetTetherSourceOn(pc);
+
+        //  Tether player, only show ONE spot
+        if (tetherSource != null)
+        {
+            var spot = ChooseTetherSpot(tetherSource, leftPlatformLeftSafe, rightPlatformLeftSafe);
+            Arena.AddCircle(spot, 1f, Colors.Safe);
+            return;
+        }
+
+        // Fire breath player, show both safe spots on platform
+        if (HasFireIcon(pc))
+        {
+            var spots = GetFireSpots(onLeftPlatform, leftSafe);
+            for (var i = 0; i < spots.Length; ++i)
+                Arena.AddCircle(spots[i], 1f, Colors.Safe);
+        }
+    }
+
+    // ---------------- LOGIC ----------------
+
+    private void DeterminePlatformSafeSides(out bool leftPlatformLeftSafe, out bool rightPlatformLeftSafe)
+    {
+        leftPlatformLeftSafe = false;
+        rightPlatformLeftSafe = false;
+
+        foreach (var idx in _meteorain.ActivePortalIndices)
+        {
+            switch (idx)
+            {
+                case 0x16: leftPlatformLeftSafe = false; break;
+                case 0x17: leftPlatformLeftSafe = true; break;
+                case 0x18: rightPlatformLeftSafe = false; break;
+                case 0x19: rightPlatformLeftSafe = true; break;
+            }
+        }
+    }
+
+    private static WPos[] GetFireSpots(bool leftPlatform, bool leftSafe)
+    {
+        if (leftPlatform)
+            return leftSafe ? Fire_Left_LeftSafe : Fire_Left_RightSafe;
+        else
+            return leftSafe ? Fire_Right_LeftSafe : Fire_Right_RightSafe;
+    }
+
+    private static WPos ChooseTetherSpot(Actor src, bool leftPlatformLeftSafe, bool rightPlatformLeftSafe)
+    {
+        var centerZ = 100f;
+
+        var wantSouth = src.Position.Z < centerZ;
+        var wantWest = src.Position.X > 125f;
+
+        var leftSpots = leftPlatformLeftSafe ? Tether_Left_LeftSafe : Tether_Left_RightSafe;
+        var rightSpots = rightPlatformLeftSafe ? Tether_Right_LeftSafe : Tether_Right_RightSafe;
+
+        var spots = wantWest ? leftSpots : rightSpots;
+
+        for (var i = 0; i < spots.Length; ++i)
+        {
+            var s = spots[i];
+            if ((s.Z > centerZ) == wantSouth)
+                return s;
+        }
+
+        return spots[0];
+    }
+
+    // ---------------- DATA ACCESS ----------------
+
+    private Actor? GetTetherSourceOn(Actor pc)
+    {
+        var baits = _t1.CurrentBaits;
+        for (var i = 0; i < baits.Count; ++i)
+            if (baits[i].Target == pc)
+                return baits[i].Source;
+
+        baits = _t2.CurrentBaits;
+        for (var i = 0; i < baits.Count; ++i)
+            if (baits[i].Target == pc)
+                return baits[i].Source;
+
+        return null;
+    }
+
+    private bool HasFireIcon(Actor pc)
+    {
+        var baits = _icons.CurrentBaits;
+        for (var i = 0; i < baits.Count; ++i)
+            if (baits[i].Target == pc)
+                return true;
+
+        return false;
+    }
+}

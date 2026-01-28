@@ -43,7 +43,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         Cast(id, (uint)AID.HardcoreCast, delay, 3f)
             .ActivateOnEnter<Hardcore>();
 
-        ComponentCondition<Hardcore>(id + 0x10, 2f, comp => comp.CurrentBaits.Count == 0, "Tankbuster spread")
+        ComponentCondition<Hardcore>(id + 0x10, 2f, static comp => comp.CurrentBaits.Count == 0, "Tankbuster spread")
             .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<Hardcore>();
     }
@@ -62,14 +62,14 @@ sealed class M09SVampFataleStates : StateMachineBuilder
             .ActivateOnEnter<CurseOfTheBombpyre>()
             .ActivateOnEnter<BrutalRain>();
 
-        ComponentCondition<VampStomp>(id + 0x10, 5f, comp => comp.NumCasts > 0, "Circle AOE")
+        ComponentCondition<VampStomp>(id + 0x10, 5f, static comp => comp.NumCasts > 0, "Circle AOE")
             .DeactivateOnExit<VampStomp>();
 
-        ComponentCondition<BlastBeat>(id + 0x20, 11f, comp => comp.NumCasts >= 10, "Bombpyre resolve")
+        ComponentCondition<BlastBeat>(id + 0x20, 11f, static comp => comp.NumCasts >= 10, "Bombpyre resolve")
             .DeactivateOnExit<BlastBeat>();
 
         // does timeline get thrown off if waiting for spreads? just keep it active, or deactivate after party stack?
-        ComponentCondition<CurseOfTheBombpyre>(id + 0x30, 2f, comp => comp.Spreads.Count == 0, "Finish spreads")
+        ComponentCondition<CurseOfTheBombpyre>(id + 0x30, 2f, static comp => comp.Spreads.Count == 0, "Finish spreads")
             .DeactivateOnExit<CurseOfTheBombpyre>()
             .DeactivateOnExit<BombpyreRing>();
     }
@@ -79,13 +79,13 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // stack appears just before bombpyre fully ends, safe to check count = 0 without waiting for count > 0?
         // brutal rain can be 3+ hits; depends on number of times used or satisfied stacks?
         // change brutal rain either delay higher or max overdue higher, can be 3+ hits, 1 sec per hit
-        ComponentCondition<BrutalRain>(id, delay, comp => comp.Stacks.Count == 0, "Party stack", checkDelay: 1f)
+        ComponentCondition<BrutalRain>(id, delay, static comp => comp.Stacks.Count == 0, "Party stack", checkDelay: 1f)
             .DeactivateOnExit<BrutalRain>();
 
         CastStart(id + 0x10, (uint)AID.SadisticScreech, 6.3f)
             .ActivateOnEnter<SadisticScreech>();
 
-        ComponentCondition<ArenaChanges>(id + 0x20, 5.9f, comp => comp.Active, "Raidwide + Arena change")
+        ComponentCondition<ArenaChanges>(id + 0x20, 5.9f, static comp => comp.Active, "Raidwide + Arena change")
             .DeactivateOnExit<SadisticScreech>()
             .ActivateOnExit<Coffinmaker>()
             .ActivateOnExit<Coffinfiller>()
@@ -96,7 +96,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
 
     private void Arena1(uint id, float delay)
     {
-        ComponentCondition<Coffinmaker>(id, delay, comp => comp.ActiveActors.Count > 0, "Coffinmaker spawn");
+        ComponentCondition<Coffinmaker>(id, delay, static comp => comp.ActiveActors.Count > 0, "Coffinmaker spawn");
 
         // boss may become targetable while casting last 2 halfmoons depending on DPS
         //Targetable(id + 0x10, true, 69.5f, "Enrage 1");
@@ -107,10 +107,10 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // sadistic screech always starts ~132.5s
 
         // can't use CastStart on sadistic screech if boss has another cast before it
-        ComponentCondition<HalfMoon>(id + 0x10, 55.6f, comp => comp.NumCasts >= 8);
+        ComponentCondition<HalfMoon>(id + 0x10, 55.6f, static comp => comp.NumCasts >= 8);
         CastStart(id + 0x20, (uint)AID.SadisticScreech, 9.2f).ActivateOnEnter<SadisticScreech>();
 
-        ComponentCondition<ArenaChanges>(id + 0x30, 5.7f, comp => !comp.Active, "Raidwide + Arena change")
+        ComponentCondition<ArenaChanges>(id + 0x30, 5.7f, static comp => !comp.Active, "Raidwide + Arena change")
             .DeactivateOnExit<SadisticScreech>()
             .DeactivateOnExit<Coffinfiller>()
             .DeactivateOnExit<DeadWake>()
@@ -122,7 +122,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
     {
         Cast(id, (uint)AID.CrowdKillCast, delay, 0.5f)
             .ActivateOnEnter<CrowdKill>();
-        ComponentCondition<CrowdKill>(id + 0x10, 5.3f, comp => comp.NumCasts > 0, "Raidwide")
+        ComponentCondition<CrowdKill>(id + 0x10, 5.3f, static comp => comp.NumCasts > 0, "Raidwide")
             .DeactivateOnExit<CrowdKill>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
@@ -131,7 +131,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
     {
         CastStart(id, (uint)AID.FinaleFataleCast, delay)
             .ActivateOnEnter<FinaleFatale>();
-        ComponentCondition<FinaleFatale>(id + 0x10, 6.1f, comp => comp.NumCasts > 0, "Raidwide")
+        ComponentCondition<FinaleFatale>(id + 0x10, 6.1f, static comp => comp.NumCasts > 0, "Raidwide")
             .DeactivateOnExit<FinaleFatale>()
             .ActivateOnEnter<PulpingPulse>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -147,27 +147,27 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // puddles and crosses already casting while cones are still going off
         // write the states in order? or turn it into 1 big state/component?
 
-        ComponentCondition<AetherlettingCone>(id + 0x10, 4f, comp => comp.ActiveCasters.Length > 0, "Cones start");
-        ComponentCondition<AetherlettingCone>(id + 0x20, 15.2f, comp => comp.NumCasts >= 8, "Cones end")
+        ComponentCondition<AetherlettingCone>(id + 0x10, 4f, static comp => comp.ActiveCasters.Length > 0, "Cones start");
+        ComponentCondition<AetherlettingCone>(id + 0x20, 15.2f, static comp => comp.NumCasts >= 8, "Cones end")
             .DeactivateOnExit<AetherlettingCone>();
 
-        ComponentCondition<AetherlettingPuddle>(id + 0x30, 1.9f, comp => comp.NumFinishedSpreads >= 8, "Puddles end")
+        ComponentCondition<AetherlettingPuddle>(id + 0x30, 1.9f, static comp => comp.NumFinishedSpreads >= 8, "Puddles end")
             .DeactivateOnExit<AetherlettingPuddle>();
 
-        ComponentCondition<AetherlettingCross>(id + 0x40, 14.5f, comp => comp.NumCasts >= 8, "Crosses end")
+        ComponentCondition<AetherlettingCross>(id + 0x40, 14.5f, static comp => comp.NumCasts >= 8, "Crosses end")
             .DeactivateOnExit<AetherlettingCross>()
             .ActivateOnEnter<HalfMoon>();
     }
 
     private void HalfMoon(uint id, float delay)
     {
-        ComponentCondition<HalfMoon>(id, delay, comp => comp.NumCasts > 0, "Cleave 1");
-        ComponentCondition<HalfMoon>(id + 0x10, 3f, comp => comp.NumCasts > 1, "Cleave 2")
+        ComponentCondition<HalfMoon>(id, delay, static comp => comp.NumCasts > 0, "Cleave 1");
+        ComponentCondition<HalfMoon>(id + 0x10, 3f, static comp => comp.NumCasts > 1, "Cleave 2")
             .DeactivateOnExit<HalfMoon>()
             .ActivateOnExit<BrutalRain>();
 
-        ComponentCondition<BrutalRain>(id + 0x20, 2.1f, comp => comp.Stacks.Count > 0);
-        ComponentCondition<BrutalRain>(id + 0x30, 10.1f, comp => comp.Stacks.Count == 0, "Party stack")
+        ComponentCondition<BrutalRain>(id + 0x20, 2.1f, static comp => comp.Stacks.Count > 0);
+        ComponentCondition<BrutalRain>(id + 0x30, 10.1f, static comp => comp.Stacks.Count == 0, "Party stack")
             .DeactivateOnExit<BrutalRain>();
     }
 
@@ -175,7 +175,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
     {
         Cast(id, (uint)AID.InsatiableThirstCast, delay, 2.8f)
             .ActivateOnEnter<InsatiableThirst>();
-        ComponentCondition<InsatiableThirst>(id + 0x10, 3.2f, comp => comp.NumCasts > 0, "Raidwide")
+        ComponentCondition<InsatiableThirst>(id + 0x10, 3.2f, static comp => comp.NumCasts > 0, "Raidwide")
             .DeactivateOnExit<InsatiableThirst>()
             .SetHint(StateMachine.StateHint.Raidwide);
 
@@ -184,7 +184,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
             .ActivateOnEnter<GravegrazerBig>()
             .ActivateOnEnter<GravegrazerSmall>();
 
-        ComponentCondition<ArenaChanges>(id + 0x20, 5.9f, comp => comp.Active, "Raidwide + Arena change")
+        ComponentCondition<ArenaChanges>(id + 0x20, 5.9f, static comp => comp.Active, "Raidwide + Arena change")
             .DeactivateOnExit<SadisticScreech>()
             .SetHint(StateMachine.StateHint.Raidwide);
     }
@@ -195,23 +195,23 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // 3x aoes + add spawn
         // 2x raidwides between towers
         // sadistic screech + arena change
-        ComponentCondition<ArenaChanges>(id, delay, comp => comp.Active)
+        ComponentCondition<ArenaChanges>(id, delay, static comp => comp.Active)
             .ActivateOnEnter<DeadlyDoornail>()
             .ActivateOnEnter<FatalFlail>()
             .ActivateOnEnter<Plummet>()
             .ActivateOnEnter<Electrocution>()
             .ActivateOnEnter<ElectrocutionVoidzone>();
 
-        ComponentCondition<Plummet>(id + 0x10, 12.2f, comp => comp.NumCasts > 0, "Tank towers 1");
+        ComponentCondition<Plummet>(id + 0x10, 12.2f, static comp => comp.NumCasts > 0, "Tank towers 1");
         KillerVoice(id + 0x20, 4f);
-        ComponentCondition<Plummet>(id + 0x30, 9.1f, comp => comp.NumCasts > 2, "Tank towers 2");
+        ComponentCondition<Plummet>(id + 0x30, 9.1f, static comp => comp.NumCasts > 2, "Tank towers 2");
         KillerVoice(id + 0x40, 4f);
-        ComponentCondition<Plummet>(id + 0x50, 9.1f, comp => comp.NumCasts > 4, "Tank towers 3");
+        ComponentCondition<Plummet>(id + 0x50, 9.1f, static comp => comp.NumCasts > 4, "Tank towers 3");
 
         CastStart(id + 0x60, (uint)AID.SadisticScreech, 18f)
             .ActivateOnEnter<SadisticScreech>();
 
-        ComponentCondition<ArenaChanges>(id + 0x70, 5.7f, comp => !comp.Active, "Raidwide + Arena change")
+        ComponentCondition<ArenaChanges>(id + 0x70, 5.7f, static comp => !comp.Active, "Raidwide + Arena change")
             .DeactivateOnExit<SadisticScreech>()
             .DeactivateOnExit<GravegrazerBig>()
             .DeactivateOnExit<GravegrazerSmall>()
@@ -232,7 +232,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         CastStart(id + 0x10, (uint)AID.FinaleFataleCast, 12.8f)
             .ActivateOnEnter<FinaleFatale>();
 
-        ComponentCondition<FinaleFatale>(id + 0x20, 6.1f, comp => comp.NumCasts > 0, "Raidwide")
+        ComponentCondition<FinaleFatale>(id + 0x20, 6.1f, static comp => comp.NumCasts > 0, "Raidwide")
             .DeactivateOnExit<FinaleFatale>()
             .ActivateOnExit<BloodyBondage>()
             .SetHint(StateMachine.StateHint.Raidwide);
@@ -254,7 +254,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // LP tower starts 448.939
 
         // Hell In A Cell cast at exact same time as Bloody Bondage; would ActivateOnEnter work with CastStart on Hell?
-        ComponentCondition<BloodyBondage>(id + 0x30, 11f, comp => comp.NumCasts > 0, "Towers (party 1)")
+        ComponentCondition<BloodyBondage>(id + 0x30, 11f, static comp => comp.NumCasts > 0, "Towers (party 1)")
             .ActivateOnEnter<CharnelCells>()
             .ActivateOnExit<UltrasonicSpreadTank>()
             .ActivateOnExit<UltrasonicSpreadRest>()
@@ -262,12 +262,12 @@ sealed class M09SVampFataleStates : StateMachineBuilder
             .DeactivateOnExit<PulpingPulse>();
 
         // 2nd tower spawn time static or relative to previous cells killed?
-        ComponentCondition<BloodyBondage>(id + 0x40, 22.4f, comp => comp.NumCasts > 4, "Towers (party 2)")
+        ComponentCondition<BloodyBondage>(id + 0x40, 22.4f, static comp => comp.NumCasts > 4, "Towers (party 2)")
             .ActivateOnEnter<PulpingPulse>()
             .ActivateOnExit<CharnelCells>()
             .DeactivateOnExit<BloodyBondage>();
 
-        ComponentCondition<PulpingPulse>(id + 0x50, 24.2f, comp => comp.NumCasts > 10)
+        ComponentCondition<PulpingPulse>(id + 0x50, 24.2f, static comp => comp.NumCasts > 10)
             .ActivateOnExit<BloodyBondageUndeadDeathmatch>()
             .DeactivateOnExit<CharnelCells>()
             .DeactivateOnExit<UltrasonicSpreadTank>()
@@ -276,7 +276,7 @@ sealed class M09SVampFataleStates : StateMachineBuilder
 
         // spawns 2 vampettes 440.106 to use later for sanguince scratch
 
-        ComponentCondition<BloodyBondageUndeadDeathmatch>(id + 0x60, 6.2f, comp => comp.NumCasts > 0, "Light party towers")
+        ComponentCondition<BloodyBondageUndeadDeathmatch>(id + 0x60, 6.2f, static comp => comp.NumCasts > 0, "Light party towers")
             .DeactivateOnExit<BloodyBondageUndeadDeathmatch>()
             .ActivateOnExit<SanguineScratch>()
             .ActivateOnExit<BreakdownWing>();
@@ -284,14 +284,14 @@ sealed class M09SVampFataleStates : StateMachineBuilder
 
     private void SanguineScratch(uint id, float delay)
     {
-        ComponentCondition<BreakdownWing>(id, delay, comp => comp.NumCasts > 0, "Bat explosion 1");
-        ComponentCondition<BreakdownWing>(id + 0x10, 21.3f, comp => comp.NumCasts > 2, "Bat explosion 2")
+        ComponentCondition<BreakdownWing>(id, delay, static comp => comp.NumCasts > 0, "Bat explosion 1");
+        ComponentCondition<BreakdownWing>(id + 0x10, 21.3f, static comp => comp.NumCasts > 2, "Bat explosion 2")
             .DeactivateOnExit<BreakdownWing>()
             .DeactivateOnExit<SanguineScratch>()
             .ActivateOnExit<BrutalRain>();
 
-        ComponentCondition<BrutalRain>(id + 0x20, 1.7f, comp => comp.Stacks.Count > 0, "Party stack");
-        ComponentCondition<BrutalRain>(id + 0x30, 10f, comp => comp.Stacks.Count == 0, "Stack resolve")
+        ComponentCondition<BrutalRain>(id + 0x20, 1.7f, static comp => comp.Stacks.Count > 0, "Party stack");
+        ComponentCondition<BrutalRain>(id + 0x30, 10f, static comp => comp.Stacks.Count == 0, "Stack resolve")
             .DeactivateOnExit<BrutalRain>()
             .ActivateOnExit<HalfMoon>();
     }
@@ -304,8 +304,8 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         CurseOfTheBombpyre(id, delay);
 
         // no party stack after thie one; take party stack out of HalfMoon above?
-        ComponentCondition<HalfMoon>(id + 0x10, 4.8f, comp => comp.NumCasts > 0, "Cleave 1");
-        ComponentCondition<HalfMoon>(id + 0x20, 3f, comp => comp.NumCasts > 1, "Cleave 2")
+        ComponentCondition<HalfMoon>(id + 0x10, 4.8f, static comp => comp.NumCasts > 0, "Cleave 1");
+        ComponentCondition<HalfMoon>(id + 0x20, 3f, static comp => comp.NumCasts > 1, "Cleave 2")
             .DeactivateOnExit<HalfMoon>()
             .ActivateOnExit<SanguineScratch>();
 
@@ -313,12 +313,12 @@ sealed class M09SVampFataleStates : StateMachineBuilder
         // sanguine scratch, no bats, only 1 set
         // insatiable thirst start 565.273
         // can't do cast start check for insatiable since boss casts sanguine first; check for both casts in order or wait for sanguine to end
-        ComponentCondition<SanguineScratch>(id + 0x40, 21.9f, comp => comp.NumCasts >= 40)
+        ComponentCondition<SanguineScratch>(id + 0x40, 21.9f, static comp => comp.NumCasts >= 40)
             .DeactivateOnExit<SanguineScratch>();
 
         Cast(id + 0x50, (uint)AID.InsatiableThirstCast, 4.6f, 2.8f)
             .ActivateOnEnter<InsatiableThirst>();
-        ComponentCondition<InsatiableThirst>(id + 0x60, 3.2f, comp => comp.NumCasts > 0, "Raidwide")
+        ComponentCondition<InsatiableThirst>(id + 0x60, 3.2f, static comp => comp.NumCasts > 0, "Raidwide")
             .DeactivateOnExit<InsatiableThirst>()
             .SetHint(StateMachine.StateHint.Raidwide);
         CrowdKill(id + 0x70, 7.9f);

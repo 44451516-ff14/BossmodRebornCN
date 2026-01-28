@@ -62,10 +62,8 @@ sealed class BrutalRain(BossModule module) : Components.StackWithIcon(module, (u
 
 sealed class SadisticScreech(BossModule module) : Components.RaidwideCast(module, (uint)AID.SadisticScreech);
 sealed class Coffinmaker(BossModule module) : Components.Adds(module, (uint)OID.Coffinmaker);
-sealed class Coffinfiller(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CoffinfillerLong, (uint)AID.CoffinfillerMed, (uint)AID.CoffinfillerShort], new AOEShapeRect(32f, 2.5f), 2, riskyWithSecondsLeft: 2.5d);
-sealed class DeadWake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadWake, new AOEShapeRect(10f, 10f), riskyWithSecondsLeft: 2.5d);
-//sealed class HalfMoon(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HalfMoonLL, (uint)AID.HalfMoonRR, (uint)AID.HalfMoonBigLL, (uint)AID.HalfMoonBigRR, (uint)AID.HalfMoonLR, (uint)AID.HalfMoonRL, (uint)AID.HalfMoonBigLR, (uint)AID.HalfMoonBigRL], new AOEShapeCone(64f, 90.Degrees()), 1, 1);
-// change risky time only during Arena1 and only for melee classes for AI melee uptime; if ranges are too far out and risky is short they can get hit
+sealed class Coffinfiller(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CoffinfillerLong, (uint)AID.CoffinfillerMed, (uint)AID.CoffinfillerShort], new AOEShapeRect(32f, 2.5f), 2);
+sealed class DeadWake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DeadWake, new AOEShapeRect(10f, 10f));
 sealed class HalfMoon(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.HalfMoonLL, (uint)AID.HalfMoonRR, (uint)AID.HalfMoonBigLL, (uint)AID.HalfMoonBigRR, (uint)AID.HalfMoonLR, (uint)AID.HalfMoonRL, (uint)AID.HalfMoonBigLR, (uint)AID.HalfMoonBigRL], new AOEShapeCone(64f, 90.Degrees()), 1, 1)
 {
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;

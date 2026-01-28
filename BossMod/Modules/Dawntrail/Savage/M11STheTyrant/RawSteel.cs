@@ -1,6 +1,7 @@
+using BossMod.Components;
 namespace BossMod.Dawntrail.Savage.M11STheTyrant;
 
-sealed class RawSteelTrophyAxe(BossModule module) : Components.GenericStackSpread(module, false)
+sealed class RawSteelTrophyAxe(BossModule module) : GenericStackSpread(module, false)
 {
     public int NumCasts;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -41,7 +42,7 @@ sealed class RawSteelTrophyAxe(BossModule module) : Components.GenericStackSprea
         }
     }
 }
-sealed class RawSteelTrophyScythe(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
+sealed class RawSteelTrophyScythe(BossModule module) : GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private readonly AOEShapeCone tankCone = new(60f, 45.Degrees());
     private readonly AOEShapeCone healerCone = new(60f, 15.Degrees());

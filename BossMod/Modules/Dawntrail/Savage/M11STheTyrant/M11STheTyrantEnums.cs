@@ -6,10 +6,10 @@ public enum OID : uint
     Helper = 0x233C,
     _Gen_TheTyrant = 0x4AEA, // R3.000-30.000, x?
     _Gen_TheTyrant1 = 0x233C, // R0.500, x?, Helper type
-    _Gen_ = 0x4AF2, // R1.000, x?
+    TrophyWeapon_Sword = 0x4AF2, // R1.000, x?
     Comet = 0x4AED, // R2.160, x? ; These are the rocks that spawn from Meteorain
-    _Gen_1 = 0x4AF0, // R1.000, x?
-    _Gen_2 = 0x4AF1, // R1.000, x?
+    TrophyWeapon_Axe = 0x4AF0, // R1.000, x?
+    TrophyWeapon_Scythe = 0x4AF1, // R1.000, x?
     _Gen_Actor1ea1a1 = 0x1EA1A1, // R2.000, x?, EventObj type
     _Gen_TheTyrant2 = 0x4AEC, // R5.000-10.000, x?
     _Gen_Exit = 0x1E850B, // R0.500, x?, EventObj type
