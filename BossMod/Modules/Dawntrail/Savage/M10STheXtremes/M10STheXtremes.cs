@@ -86,7 +86,7 @@ sealed class XtremeWatersnaking(BossModule module) : Components.RaidwideCast(mod
 sealed class XtremeFiresnaking(BossModule module) : Components.RaidwideCast(module, (uint)AID.XtremeFiresnaking);
 sealed class Bailout(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Bailout1, (uint)AID.Bailout2], 15f);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(M10STheXtremesStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

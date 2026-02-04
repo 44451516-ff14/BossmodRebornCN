@@ -37,8 +37,25 @@ sealed class SerpentineScourge(BossModule module) : Components.GenericAOEs(modul
             _aoes.Clear();
         }
     }
+
+    public override void OnActorUntargetable(Actor actor)
+    {
+        if (actor.OID == (uint)OID.Lindwurm)
+        {
+            _aoes.Clear();
+        }
+    }
 }
-sealed class RavenousReach(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RavenousReach, new AOEShapeCone(35f, 60f.Degrees()), riskyWithSecondsLeft: 7d);
+sealed class RavenousReach(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RavenousReach, new AOEShapeCone(35f, 60f.Degrees()), riskyWithSecondsLeft: 7d)
+{
+    public override void OnActorUntargetable(Actor actor)
+    {
+        if (actor.OID == (uint)OID.Lindwurm)
+        {
+            Casters.Clear();
+        }
+    }
+}
 sealed class Splattershed(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.Splattershed1Visual, (uint)AID.Splattershed2Visual]);
 sealed class BringDownTheHouse(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BringDownTheHouse, new AOEShapeRect(15f, 5f));
 sealed class SplitScourge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SplitScourge, new AOEShapeRect(30f, 5f));

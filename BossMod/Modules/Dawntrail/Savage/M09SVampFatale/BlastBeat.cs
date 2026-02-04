@@ -31,7 +31,10 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
                 continue;
 
             if (vamps[i].Activation.AddSeconds(-1 * _blastDelay) <= WorldState.CurrentTime)
-                aoes.Add(new(new AOEShapeCircle(8f), vamps[i].EndPos, activation: vamps[i].Activation));
+            {
+                //aoes.Add(new(new AOEShapeCircle(8f), vamps[i].EndPos, activation: vamps[i].Activation));
+                aoes.Add(new(new AOEShapeCircle(8.25f), vamps[i].EndPos, activation: vamps[i].Activation));
+            }
         }
 
         return CollectionsMarshal.AsSpan([.. aoes]);
@@ -57,6 +60,9 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
 
             for (var i = 0; i < len; i++)
             {
+                // predicted explosion on at least 1st bats are incorrect, still clipped despite showing safe on radar; 90 degrees too far?
+                // between replays it appears to be anywhere from 88 to 92 degrees; mal says maybe due calculated by server ticks not hard rotation
+                // either increase radius slightly above 8f, or remove predicted AOE and replace with actual on cast start 
                 if (vamps[i].Actor.InstanceID == actor.InstanceID)
                 {
                     var vamp = vamps[i];
@@ -92,6 +98,34 @@ sealed class BlastBeat(BossModule module) : Components.GenericAOEs(module)
             }
         }
     }
+    /*
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.BlastBeatVampette)
+        {
+            var predictedVamps = CollectionsMarshal.AsSpan(_vampettes);
+            var len = predictedVamps.Length;
+            var index = -1;
+
+            for (var i = 0; i < len; i++)
+            {
+                var v = predictedVamps[i];
+                if (caster.InstanceID == v.Actor.InstanceID)
+                {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index == -1)
+                return;
+
+            _vampettes.RemoveAt(index);
+            var vamp = new Vampette() { Actor = caster, Rotation = default, Activation = Module.CastFinishAt(spell), EndPos = spell.LocXZ };
+            _vampettes.Add(vamp);
+        }
+    }
+    */
 }
 
 // show spreads based on proximity to ring?
