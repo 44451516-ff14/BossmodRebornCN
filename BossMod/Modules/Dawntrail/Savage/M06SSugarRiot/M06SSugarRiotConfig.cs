@@ -38,14 +38,14 @@ public sealed class M06SSugarRiotConfig() : ConfigNode
                     var str = values[indices[i]];
                     ImGui.PushID(i);
 
-                    if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowUp, "^", $"###up{i}") && i > 0)
+                    if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowUp, $"###up{i}") && i > 0)
                     {
                         (indices[i - 1], indices[i]) = (indices[i], indices[i - 1]);
                         Modified.Fire();
                     }
 
                     ImGui.SameLine();
-                    if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowDown, "v", $"###down{i}") && i < lenI - 1)
+                    if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowDown, $"###down{i}") && i < lenI - 1)
                     {
                         (indices[i + 1], indices[i]) = (indices[i], indices[i + 1]);
                         Modified.Fire();

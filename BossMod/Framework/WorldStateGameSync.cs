@@ -87,7 +87,7 @@ sealed class WorldStateGameSync : IDisposable
     private unsafe delegate void ProcessPacketFateTradeDelegate(void* a1, ulong a2);
     private readonly Hook<ProcessPacketFateTradeDelegate> _processPacketFateTradeHook;
 
-    private unsafe delegate void InventoryAckDelegate(uint a1, void* a2);
+    private unsafe delegate void InventoryAckDelegate(InventoryManager* mgr, uint a1, void* a2);
     private readonly Hook<InventoryAckDelegate> _inventoryAckHook;
 
     private unsafe delegate void ProcessPacketPlayActionTimelineSync(Network.ServerIPC.PlayActionTimelineSync* data);
@@ -180,10 +180,11 @@ sealed class WorldStateGameSync : IDisposable
 
 
 
+
         //Client::Network::PacketDispatcher_OnReceivePacket
         //Client::Network::PacketDispatcher_HandleInventoryActionAckPacket
-        _inventoryAckHook = Service.Hook.HookFromSignature<InventoryAckDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8D 57 ?? 41 8B CE E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B D7", InventoryAckDetour);
-        // _inventoryAckHook = Service.Hook.HookFromSignature<InventoryAckDelegate>("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8D 57 10 41 8B CE E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B D7", InventoryAckDetour);
+
+        _inventoryAckHook = Service.Hook.HookFromSignature<InventoryAckDelegate>("48 89 5C 24 ?? 57 48 83 EC 30 48 8B 05 ?? ?? ?? ?? 48 8B D9 41 0F B6 50 ??", InventoryAckDetour);
 
         _inventoryAckHook.Enable();
         Service.Log($"[WSG] InventoryAck address = {_inventoryAckHook.Address:X}");
@@ -1170,15 +1171,13 @@ sealed class WorldStateGameSync : IDisposable
     private unsafe byte ProcessLegacyMapEffectDetour(EventFramework* fwk, EventId eventId, byte seq, byte unk, void* data, ulong length)
     {
         var res = _processLegacyMapEffectHook.Original(fwk, eventId, seq, unk, data, length);
-
         _globalOps.Add(new WorldState.OpLegacyMapEffect(seq, unk, new Span<byte>(data, (int)length).ToArray()));
-
         return res;
     }
 
-    private unsafe void InventoryAckDetour(uint a1, void* a2)
+    private unsafe void InventoryAckDetour(InventoryManager* mgr, uint a1, void* a2)
     {
-        _inventoryAckHook.Original(a1, a2);
+        _inventoryAckHook.Original(mgr, a1, a2);
         _needInventoryUpdate = true;
     }
 
