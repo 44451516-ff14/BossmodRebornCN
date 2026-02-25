@@ -1,3 +1,4 @@
+#pragma warning disable IDE0028
 using BossMod.Components;
 namespace BossMod.Dawntrail.Savage.M11STheTyrant;
 
@@ -206,10 +207,10 @@ sealed class AssaultWeaponTimeline(BossModule module) : BossComponent(module)
         if (_discovered.Count == 0)
             return;
 
-        int firstIndex = 0;
-        float bestDiff = float.MaxValue;
+        var firstIndex = 0;
+        var bestDiff = float.MaxValue;
 
-        for (int i = 0; i < _discovered.Count; ++i)
+        for (var i = 0; i < _discovered.Count; ++i)
         {
             var diff = MathF.Abs((_discovered[i].Actor.Rotation - bossRot).Normalized().Rad);
             if (diff < bestDiff)
@@ -225,10 +226,10 @@ sealed class AssaultWeaponTimeline(BossModule module) : BossComponent(module)
         var first = _discovered[firstIndex];
         _sequence.Add(first);
 
-        int secondIndex = -1;
-        float bestCW = float.MaxValue;
+        var secondIndex = -1;
+        var bestCW = float.MaxValue;
 
-        for (int i = 0; i < _discovered.Count; ++i)
+        for (var i = 0; i < _discovered.Count; ++i)
         {
             if (i == firstIndex)
                 continue;
@@ -244,7 +245,7 @@ sealed class AssaultWeaponTimeline(BossModule module) : BossComponent(module)
         if (secondIndex >= 0)
             _sequence.Add(_discovered[secondIndex]);
 
-        for (int i = 0; i < _discovered.Count; ++i)
+        for (var i = 0; i < _discovered.Count; ++i)
             if (i != firstIndex && i != secondIndex)
                 _sequence.Add(_discovered[i]);
     }
@@ -351,7 +352,10 @@ sealed class AssaultEvolvedSword(BossModule module) : GenericAOEs(module)
     {
         // Helper resolves the mechanic
         if (_active && (AID)cast.Action.ID == AID.AssaultEvolved_SwordCross)
+        {
             Clear();
+            NumCasts++;
+        }
     }
 
     private void Arm()
@@ -407,6 +411,7 @@ sealed class AssaultEvolvedAxeStack(BossModule module) : BossComponent(module)
 {
     private Actor? _target;
     private const float Radius = 6f;
+    public int NumCasts;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -417,6 +422,7 @@ sealed class AssaultEvolvedAxeStack(BossModule module) : BossComponent(module)
                 break;
 
             case AID.AssaultEvolved_HeavyWeight:
+                NumCasts++;
                 _target = null; // clear on resolution
                 break;
         }
@@ -472,7 +478,10 @@ sealed class AssaultEvolvedScythe(BossModule module) : GenericAOEs(module)
     {
         // Helper resolves the donut → clear everything
         if (_active && (AID)cast.Action.ID == AID.AssaultEvolved_ScytheDonut)
+        {
             Clear();
+            NumCasts++;
+        }
     }
 
     private void Arm(WPos dashPos)

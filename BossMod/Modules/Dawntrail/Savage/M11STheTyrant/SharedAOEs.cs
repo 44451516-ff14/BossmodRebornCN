@@ -1,3 +1,4 @@
+#pragma warning disable IDE0028
 namespace BossMod.Dawntrail.Savage.M11STheTyrant;
 
 sealed class Cometite : Components.SimpleAOEs
@@ -25,6 +26,7 @@ sealed class GreatWallOfFire(BossModule module) : Components.BaitAwayCast(module
 sealed class GreatWallOfFireExplosion(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.GreatWallOfFire1, (uint)AID.GreatWallOfFire2, (uint)AID.GreatWallOfFireExplosion], new AOEShapeRect(60f, 3f));
 sealed class FearsomeFireball(BossModule module) : Components.LineStack(module, (uint)IconID.FearsomeFireballIcon, (uint)AID.FearsomeFireball1, 5d, 60f, 4f, 4, 6, 1, true);
 sealed class OneAndOnly(BossModule module) : Components.RaidwideCast(module, (uint)AID.OneAndOnly, "Raidwide");
+sealed class Shockwave(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Shockwave, new AOEShapeCircle(1f)); //Just want to track casts; we actually use this AID in TripleTyrannhilation
 sealed class Flatliner(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Flatliner, new AOEShapeRect(30f, 5f, 30f));
 sealed class FlatlinerKB(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Flatliner1, 15f, true, 1, new AOEShapeCircle(60f));
 sealed class ArcadionAvalanche(BossModule module) :
@@ -73,7 +75,7 @@ sealed class MaelstromGustCones(BossModule module) : Components.GenericAOEs(modu
 
     private readonly List<Actor> _maelstroms = new(4);
     private readonly List<AOEInstance> _aoes = new(8);
-    private bool _resolved;
+    public bool _resolved;
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
@@ -119,3 +121,5 @@ sealed class MaelstromGustCones(BossModule module) : Components.GenericAOEs(modu
 }
 sealed class AtomicImpactVoidZones(BossModule module) :
     Components.Voidzone(module, 5f, module => module.Enemies((uint)OID.AtomicImpactVoidZones).Where(z => z.EventState != 7));
+sealed class DanceOfDomination(BossModule module) : Components.RaidwideCastsDelay(module, [(uint)AID.DanceOfDominationTrophy], [(uint)AID.DanceOfDomination, (uint)AID.DanceOfDomination1, (uint)AID.DanceOfDomination2, (uint)AID.DanceOfDomination3], 6f, "Multi-hit Raidwide");
+sealed class Charybdistopia(BossModule module) : Components.CastHint(module, (uint)AID.Charybdistopia, "Set hp to 1");

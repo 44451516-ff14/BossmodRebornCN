@@ -122,7 +122,6 @@ sealed class WorldStateGameSync : IDisposable
         Service.Log($"[WSG] ProcessPacketEffectResult address = 0x{_processPacketEffectResultHook.Address:X}");
 
         _processPacketEffectResultBasicHook = Service.Hook.HookFromSignature<ProcessPacketEffectResultDelegate>("40 53 41 54 41 55 48 83 EC 40 83 3D ?? ?? ?? ?? ??", ProcessPacketEffectResultBasicDetour);
-        _processPacketEffectResultBasicHook = Service.Hook.HookFromSignature<ProcessPacketEffectResultDelegate>("40 53 41 54 41 55 48 83 EC 40 83 3D ?? ?? ?? ?? ??", ProcessPacketEffectResultBasicDetour);
         _processPacketEffectResultBasicHook.Enable();
         Service.Log($"[WSG] ProcessPacketEffectResultBasic address = 0x{_processPacketEffectResultBasicHook.Address:X}");
 
@@ -198,6 +197,7 @@ sealed class WorldStateGameSync : IDisposable
     {
         _processPlayActionTimelineSyncHook.Dispose();
         _inventoryAckHook.Dispose();
+        _processLegacyMapEffectHook.Dispose();
         _processMapEffect1Hook.Dispose();
         _processMapEffect2Hook.Dispose();
         _processMapEffect3Hook.Dispose();

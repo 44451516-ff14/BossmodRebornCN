@@ -23,11 +23,16 @@ public enum AID : uint
 {
     AutoAttack = 46085, // 4AEC->player, no cast, single-target
     CrownOfArcadia = 46086, // 4AEC->self, 5.0s cast, range 60 circle
-    RawSteelTrophy = 46115, // 4AEC->self, 2.0+4.0s cast, single-target ; summons weapon, this was a scythe
+    RawSteelTrophyScythe = 46115, // 4AEC->self, 2.0+4.0s cast, single-target ; summons weapon, this was a scythe
     RawSteel = 46093, // 4AEC->self, no cast, single-target
     RawSteel1 = 46094, // 4AEC->self, no cast, single-target
-    RawSteel2 = 46095, // 233C->self, no cast, range 60 90-degree cone ; Tanks spread
-    HeavyHitter = 46096, // 233C->self, no cast, range 60 ?-degree cone ; Party stack cone for RawSteelTrophy
+    RawSteel_TankCones = 46095, // 233C->self, no cast, range 60 90-degree cone ; Tanks spread
+    RawSteel_HeavyHitter = 46096, // 233C->self, no cast, range 60 ?-degree cone ; Party stack cone for RawSteelTrophy
+    RawSteelTrophyAxe = 46114, // 4AEC->self, 2.0+4.0s cast, single-target ; This is the axe trophy
+    RawSteel3 = 46090, // 4AEC->self, no cast, single-target
+    RawSteel_TankStack = 46091, // 4AEC->players, no cast, range 6 circle ; Axe tank stack
+    RawSteel_Impact = 46092, // 233C->player, no cast, range 6 circle ; Axe party spread
+
     _Ability_ = 46084, // 4AEC->location, no cast, single-target
     TrophyWeapons = 46102, // 4AEC->self, 3.0s cast, single-target ; summons 3 weapons on floor
     AssaultEvolved = 46103, // 4AEC->self, 6.0s cast, single-target ; Animation showing jump to first weapon
@@ -52,13 +57,10 @@ public enum AID : uint
     EyeOfTheHurricane = 46116, // 233C->players, 5.0s cast, range 6 circle ; This is the 4 party stacks after dance of dominion
     Explosion1 = 46112, // 233C->self, 5.0s cast, range 60 width 10 rect
     Explosion2 = 47036, // 233C->self, 5.5s cast, range 60 width 10 rect
-    RawSteelTrophy1 = 46114, // 4AEC->self, 2.0+4.0s cast, single-target ; This is the axe trophy
-    RawSteel3 = 46090, // 4AEC->self, no cast, single-target
-    RawSteel4 = 46091, // 4AEC->players, no cast, range 6 circle
-    Impact = 46092, // 233C->player, no cast, range 6 circle
+
     Charybdistopia = 46117, // 4AEC->self, 5.0s cast, range 60 circle ; Drop to 1hp
     UltimateTrophyWeapons = 47085, // 4AEC->self, 3.0s cast, single-target ; Good place to transition state
-    AssaultApex = 47086, // 4AEC->self, 5.0s cast, single-target
+    AssaultApex = 47086, // 4AEC->self, 5.0s cast, single-target ; Starts the UltimateTrophyWeapons sequence
     PowerfulGust = 46119, // 233C->self, no cast, range 60 ?-degree cone ; Maelstrom baited cones
     ImmortalReign = 46120, // 4AEC->self, 3.0+1.0s cast, single-target
     OneAndOnly = 46121, // 4AEC->self, 6.0+2.0s cast, single-target
@@ -67,8 +69,8 @@ public enum AID : uint
     GreatWallOfFire1 = 46124, // 4AEC->self, no cast, range 60 width 6 rect
     GreatWallOfFire2 = 46125, // 233C->self, no cast, single-target
     GreatWallOfFireExplosion = 46126, // 233C->self, 3.0s cast, range 60 width 6 rect ; tankbuster aftershock
-    _Spell_OrbitalOmen = 46130, // 4AEC->self, 5.0s cast, single-target
-    _Weaponskill_FireAndFury = 46127, // 4AEC->self, 4.0+1.0s cast, single-target
+    OrbitalOmen = 46130, // 4AEC->self, 5.0s cast, single-target
+    FireAndFury = 46127, // 4AEC->self, 4.0+1.0s cast, single-target
     OrbitalOmen_Lines = 46131, // 233C->self, 6.0s cast, range 60 width 10 rect
     FireAndFuryFront = 46129, // 233C->self, 5.0s cast, range 60 90-degree cone
     FireAndFuryBack = 46128, // 233C->self, 5.0s cast, range 60 90-degree cone
@@ -78,9 +80,9 @@ public enum AID : uint
     CosmicKiss = 46133, // 4AED->self, no cast, range 4 circle ; icon 244 this is the comet impact which leaves a rock
     ForegoneFatality = 46134, // 4AEA->player/4AED, no cast, single-target ; tank tether damage
     Comet_Explosion = 46136, // 4AED->self, 3.0s cast, range 8 circle ; comets explode when they die
-    _Ability_UnmitigatedExplosion = 46135, // 4AED->self, no cast, range 60 circle
+    UnmitigatedExplosion = 46135, // 4AED->self, no cast, range 60 circle
     TripleTyrannhilation1 = 46139, // 4AEC->self, no cast, single-target
-    _Spell_Charybdis = 46118, // 233C->player, no cast, single-target
+    Charybdis = 46118, // 233C->player, no cast, single-target
     TripleTyrannhilation2 = 46140, // 4AEC->self, 7.0+1.0s cast, single-target
     Shockwave = 46141, // 233C->self, no cast, range 60 circle ; Three burst attack from Triple Tyrannhilation, LOS with comets
     Comet_Destroyed = 46142, // 4AED->self, no cast, single-target ; When shockwave destroys a comet
@@ -89,7 +91,7 @@ public enum AID : uint
     Flatliner1 = 47760, // 233C->self, 6.0s cast, range 60 circle
     MajesticMeteor = 46144, // 4AEC->self, 5.0s cast, single-target ; summons towers
     ExplosionTower = 46148, // 233C->self, 10.0s cast, range 4 circle ; tower knockback explosions
-    _Spell_UnmitigatedExplosion = 46149, // 233C->self, no cast, range 60 circle
+    UnmitigatedExplosion_MissedTower = 46149, // 233C->self, no cast, range 60 circle
     MajesticMeteorBaits = 46145, // 233C->location, 3.0s cast, range 6 circle ; baited puddles
     FireBreath = 46150, // 4AEC->self, 8.0+1.0s cast, single-target
     FireBreath1 = 46151, // 233C->self, no cast, range 60 width 6 rect ; This might be the line AOEs at icon 244 during arena splits?
@@ -111,7 +113,7 @@ public enum AID : uint
     MajesticMeteorStorm = 46165, // Helper->location, 3.0s cast, range 6 circle ; Meteors targeted on party
     CosmicKissTower = 46166, // Helper->location, 5.0s cast, range 4 circle ; tank towers?
     WeightyImpactTower = 46167, // Helper->location, 5.0s cast, range 4 circle ; DPS towers?
-    _Spell_UnmitigatedExplosion2 = 46168, // Helper->self, no cast, range 60 circle ; miss tower get bleed
+    UnmitigatedExplosion_MissedTower2 = 46168, // Helper->self, no cast, range 60 circle ; miss tower get bleed
     MajesticMeteowrathSecond = 46169, // Helper->self, no cast, range 60 width 10 rect ; tether ID 57/249 rectangles during end
     FourWayFireballStart = 46170, // Boss->self, 6.0+1.0s cast, single-target
     FourWayFireballEnd = 46171, // Helper->self, no cast, range 60 width 6 rect

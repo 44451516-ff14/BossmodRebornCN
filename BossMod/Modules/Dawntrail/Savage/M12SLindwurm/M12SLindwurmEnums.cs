@@ -70,9 +70,10 @@ public enum AID : uint
     Constrictor3 = 46274, // 0.7s cast, range 13 circle
     Slaughtershed1 = 46275, // 2.7s cast, single-target
     Slaughtershed2 = 46278, // 2.7s cast, single-target
-    unk_46283 = 46283, // no cast, single-target
-    unk_46284 = 46284, // no cast, single-target
-    unk_46286 = 46286, // no cast, single-target
+    SerpentineScourge_WestEast = 46283, // no cast, single-target ; This is staging cleaves: west then east (SerpentineScourge2 47548 Helper 233C)  West Cleave centered 90, 85      East Cleave centered 110, 85
+    RaptorKnuckles_WestEast = 46284, // no cast, single-target ; This is staging knockbacks: west then east (RaptorKnuckles2 47559 Helper 233C)     West Knockback centered 82, 89   East Knockback centered 118, 89
+    SerpentineScourge_EastWest = 46285, // no cast, single-target ; This is staging cleaves: east then west (SerpentineScourge2 47548 Helper 233C)  West Cleave centered 90, 85      East Cleave centered 110, 85
+    RaptorKnuckles_EastWest = 46286, // no cast, single-target ; This is staging knockbacks: east then west (RaptorKnuckles2 47559 Helper 233C)     West Knockback centered 82, 89   East Knockback centered 118, 89
     RaptorKnuckles0 = 46287, // no cast, single-target
     RaptorKnuckles1 = 46288, // no cast, single-target
     SerpentineScourge0 = 46289, // no cast, single-target
@@ -185,11 +186,11 @@ public enum IconID : uint
 {
     SharedGrotesquerie = 93, // stack marker
     SpreadBurstingGrotesquerie = 139, // spread marker
-    Icon161 = 161, // com_share3t
-    Icon317 = 317, // com_share3_7s0p
-    Icon344 = 344, // tank_lockonae_6m_5s_01t
+    FourthWallFusion2_Icon = 161, // FourthWallFusion2, party stack
+    FourthWallFusion1_Icon = 317, // Stack marker during slaughtershed (FourthWallFusion1)
+    VisceralBurst_Icon = 344, // VisceralBurst tank buster icon
     Countdown = 354, // countdown timer for DirectedGrotesquerie
-    Icon375 = 375, // target_ae_s7k1
+    DramaticLysis_Icon = 375, // Spread marker during slaughtershed (DramaticLysis4)
     Icon598 = 598, // sharelaser2tank5sec_c0k1
     Icon657 = 657, // x6rc_cellchain_01x
 }

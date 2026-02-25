@@ -6,9 +6,8 @@ sealed class RawSteelTrophyAxe(BossModule module) : GenericStackSpread(module, f
     public int NumCasts;
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.RawSteelTrophy1)
+        if (spell.Action.ID == (uint)AID.RawSteelTrophyAxe)
         {
-            NumCasts++;
             var activation = Module.CastFinishAt(spell, 0.1d);
             var party = Module.WorldState.Party.WithoutSlot();
             var len = party.Length;
@@ -35,10 +34,11 @@ sealed class RawSteelTrophyAxe(BossModule module) : GenericStackSpread(module, f
     }
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID is (uint)AID.RawSteel4 or (uint)AID.Impact)
+        if (spell.Action.ID is (uint)AID.RawSteel_TankStack or (uint)AID.RawSteel_Impact)
         {
             Stacks.Clear();
             Spreads.Clear();
+            NumCasts++;
         }
     }
 }
@@ -49,7 +49,7 @@ sealed class RawSteelTrophyScythe(BossModule module) : GenericBaitAway(module, d
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.RawSteelTrophy)
+        if (spell.Action.ID == (uint)AID.RawSteelTrophyScythe)
         {
             var act = Module.CastFinishAt(spell, 0.1d);
             var party = Module.WorldState.Party.WithoutSlot();
@@ -73,9 +73,10 @@ sealed class RawSteelTrophyScythe(BossModule module) : GenericBaitAway(module, d
     }
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID is (uint)AID.RawSteel2 or (uint)AID.HeavyHitter)
+        if (spell.Action.ID is (uint)AID.RawSteel_TankCones or (uint)AID.RawSteel_HeavyHitter)
         {
             CurrentBaits.Clear();
+            ++NumCasts;
         }
     }
 }

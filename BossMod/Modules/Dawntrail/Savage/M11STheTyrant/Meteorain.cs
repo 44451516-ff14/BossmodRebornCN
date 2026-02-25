@@ -1,3 +1,4 @@
+#pragma warning disable IDE0028
 namespace BossMod.Dawntrail.Savage.M11STheTyrant;
 
 sealed class CometTethers(BossModule module) : Components.TankbusterTether(module, (uint)AID.ForegoneFatality, (uint)TetherID.CometTether, 0f);
@@ -65,7 +66,7 @@ sealed class TripleTyrannhilation(BossModule module)
     private readonly List<Actor> _blockers = new(4);
     private readonly List<(WPos Center, float Radius)> _blockerData = new(4);
 
-    private bool _active;
+    public bool _active;
     private WPos? _origin;
 
     private MeteorainComets? Comets => _comets ??= Module.FindComponent<MeteorainComets>();
