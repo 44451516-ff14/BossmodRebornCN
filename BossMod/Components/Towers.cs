@@ -595,8 +595,9 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
                 var numInside = t.NumInside(Module);
                 var max = t.MaxSoakers;
                 var correctAmount = numInside >= t.MinSoakers && numInside <= max;
-                var forbiddenSlot = t.AllowedSoakers!.Contains(actor);
                 t.InitializeAllowedSoakers(Module);
+                var forbiddenSlot = !t.AllowedSoakers!.Contains(actor);
+
                 if (!forbiddenSlot && (numInside < max || isInside && correctAmount))
                 {
                     forbiddenInverted.Add(new SDInvertedCircle(t.Position, t.Radius));

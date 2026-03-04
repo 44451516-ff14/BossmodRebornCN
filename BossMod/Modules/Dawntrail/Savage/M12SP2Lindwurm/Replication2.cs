@@ -11,7 +11,7 @@ class Replication2Staging(BossModule module)
         var eff = _config.GetReplication2();
 
         var relNorth = eff.RelativeNorth;
-        var angleAdj = (c.Position - relNorth.Angle + 180.Degrees()).Normalized();
+        var angleAdj = (c.Position - relNorth.Angle + 180f.Degrees()).Normalized();
 
         return eff.GetRole(Clockspot.GetClosest(angleAdj));
     }
@@ -40,11 +40,11 @@ class Replication2Staging(BossModule module)
         {
             var maxIdx = i;
 
-            var maxVal = ((span[i].Actor.Position - center).ToAngle() - northAngle + 180.Degrees()).Normalized().Rad;
+            var maxVal = ((span[i].Actor.Position - center).ToAngle() - northAngle + 180f.Degrees()).Normalized().Rad;
 
             for (var j = i + 1; j < count; ++j)
             {
-                var val = ((span[j].Actor.Position - center).ToAngle() - northAngle + 180.Degrees()).Normalized().Rad;
+                var val = ((span[j].Actor.Position - center).ToAngle() - northAngle + 180f.Degrees()).Normalized().Rad;
 
                 if (val > maxVal)
                 {
@@ -127,7 +127,7 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
 
     public BitMask Targets;
 
-    public static readonly AOEShapeCone Shape = new(50, 5.Degrees());
+    public static readonly AOEShapeCone Shape = new(50, 5f.Degrees());
 
     public Replication2ScaldingWaves(BossModule module)
         : base(module)
@@ -349,7 +349,7 @@ sealed class Replication2HemorrhagicProjection : Components.GenericBaitAway
     private readonly DateTime _activation;
     private BitMask _targets;
 
-    public static readonly AOEShapeCone Shape = new(50, 25.Degrees());
+    public static readonly AOEShapeCone Shape = new(50f, 22.5f.Degrees());
 
     public Replication2HemorrhagicProjection(BossModule module)
         : base(module, centerAtTarget: true)

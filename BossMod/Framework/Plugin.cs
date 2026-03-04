@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Common;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
@@ -37,6 +37,7 @@ public sealed class Plugin : IDalamudPlugin
     private DateTime _throttleJump;
     private DateTime _throttleInteract;
     private DateTime _throttleFateSync;
+    private DateTime _throttleLeaveDuty;
 
     // windows
     private readonly ConfigUI _configUI; // TODO: should be a proper window!
@@ -306,6 +307,12 @@ public sealed class Plugin : IDalamudPlugin
             //Service.Log($"[ExecHints] Jumping...");
             FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance()->UseAction(FFXIVClientStructs.FFXIV.Client.Game.ActionType.GeneralAction, 2);
             _throttleJump = _ws.FutureTime(0.1d);
+        }
+
+        if (_hints.ShouldLeaveDuty && _ws.CurrentTime >= _throttleLeaveDuty)
+        {
+            EventFramework.LeaveCurrentContent(false);
+            _throttleLeaveDuty = _ws.FutureTime(1d);
         }
 
         if ((AI.AIManager.Instance?.Beh != null || Autorotation.MiscAI.NormalMovement.Instance != null) && CheckInteractRange(_ws.Party.Player(), _hints.InteractWithTarget))

@@ -304,7 +304,7 @@ public sealed class ActionDefinitions : IDisposable
     public static Actor? FindEsunaTarget(WorldState ws) => ws.Party.WithoutSlot().FirstOrDefault(p => p.Statuses.Any(s => Utils.StatusIsRemovable(s.ID)));
     public static Actor? SmartTargetEsunable(WorldState ws, Actor player, Actor? primaryTarget, AIHints hints) => SmartTargetFriendly(primaryTarget) ?? FindEsunaTarget(ws) ?? player;
 
-    public static bool DashToTargetCheck(WorldState _, Actor player, ActionQueue.Entry action, AIHints hints)
+    public static bool DashToTargetCheck(WorldState ws, Actor player, ActionQueue.Entry action, AIHints hints)
     {
         var target = action.Target;
         if (target == null || !_config.DashSafety)
@@ -331,6 +331,11 @@ public sealed class ActionDefinitions : IDisposable
                 return true;
             }
         }
+
+        // TODO: check against action's animation lock duration instead of constant 0.8?
+        var (mode, deadline) = hints.ImminentSpecialMode;
+        if (mode is AIHints.SpecialMode.Pyretic or AIHints.SpecialMode.NoMovement && deadline <= ws.FutureTime(0.8d))
+            return true;
 
         return IsDashDangerous(src, src + dir.ToDirection() * Math.Max(0f, dist), hints);
     }
