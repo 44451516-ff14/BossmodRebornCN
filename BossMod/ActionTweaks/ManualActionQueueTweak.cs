@@ -1,4 +1,6 @@
-﻿namespace BossMod;
+﻿using System.Xml.Linq;
+
+namespace BossMod;
 
 // Custom queue for manual actions.
 // When running autorotation, we typically still want the ability to execute actions manually (e.g. if there is no plan available, or if some emergency happens).
@@ -21,6 +23,27 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
     private readonly ActionTweaksConfig _config = Service.Config.Get<ActionTweaksConfig>();
     private readonly List<Entry> _queue = [];
     private bool _emergencyMode;
+
+    private static bool IsRSREnabled()
+    {
+        try
+        {
+            const string rsrName = "Rotation Solver Reborn";
+            var plugins = Service.PluginInterface.InstalledPlugins;
+            foreach (var p in plugins)
+            {
+                if ((p.Name.Equals(rsrName, StringComparison.OrdinalIgnoreCase) || p.InternalName.Equals(rsrName, StringComparison.OrdinalIgnoreCase)) && p.IsLoaded)
+                {
+                    return true;
+                }
+            }
+        }
+        catch
+        {
+            // ignore errors and assume not installed
+        }
+        return false;
+    }
 
     public void RemoveExpired()
     {
@@ -70,7 +93,7 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
 
     public bool Push(ActionID action, ulong targetId, float castTime, bool allowTargetOverride, Func<(ulong, Vector3?)> getAreaTarget, Func<ulong> targetNearest)
     {
-        if (!_config.UseManualQueue)
+        if (!_config.UseManualQueue || !IsRSREnabled())
             return false; // we don't use queue at all
 
         var player = ws.Party.Player();
@@ -203,7 +226,7 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
             return false; // target is valid, but not found in world, bail... (TODO this shouldn't be happening really)
 
         // custom smart-targeting
-        if (allowSmartTarget && _config.SmartTargets && def.SmartTarget != null)
+        if (allowSmartTarget && _config.SmartTargets && !IsRSREnabled() && def.SmartTarget != null)
             target = def.SmartTarget(ws, player, target, hints);
 
         // fallback: if requested, use native "target nearest" function to try to find a valid hostile target
