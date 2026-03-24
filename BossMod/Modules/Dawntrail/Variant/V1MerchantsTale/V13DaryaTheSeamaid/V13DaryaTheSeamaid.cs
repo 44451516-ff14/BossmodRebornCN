@@ -4,8 +4,101 @@ sealed class PiercingPlunge(BossModule module) : Components.RaidwideCast(module,
 sealed class SurgingCurrent(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SurgingCurrent, new AOEShapeCone(60f, 90f.Degrees()));
 sealed class AquaBall(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.AquaBall, (uint)AID.AquaBall1], 5f);
 sealed class Hydrocannon(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(70f, 3f), (uint)IconID.TankLaserLockon, (uint)AID.Hydrocannon);
-sealed class BigWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BigWave, 36f, kind: Kind.DirForward);
+//sealed class BigWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BigWave, 36f, kind: Kind.DirForward);
+sealed class BigWave(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BigWave, 36f, kind: Kind.DirForward)
+{
+    private readonly List<SDCircle> _aquaballs = [];
+    private readonly List<WPos> _aquapos = [];
+    private DateTime _activation = default;
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        base.OnCastStarted(caster, spell);
+        if (spell.Action.ID == (uint)AID.AquaBall1)
+        {
+            _aquaballs.Add(new(caster.Position, 5f));
+            _aquapos.Add(caster.Position);
+            _activation = Module.CastFinishAt(spell);
+        }
+    }
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        base.OnCastFinished(caster, spell);
+        if (spell.Action.ID == (uint)AID.AquaBall1)
+        {
+            _aquaballs.Clear();
+            _aquapos.Clear();
+            _activation = default;
+        }
+    }
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        if (IsKnockbackIntoAOE(slot, actor))
+        {
+            hints.Add("About to be knocked into danger!");
+        }
+        else
+        {
+            base.AddHints(slot, actor, hints);
+        }
+    }
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        var kbs = ActiveKnockbacks(slot, actor);
+        if (kbs.Length == 0)
+            return;
+
+        var kb = kbs[0];
+        var dir = kb.Direction.ToDirection() * kb.Distance;
+
+        var aquaballs = CollectionsMarshal.AsSpan(_aquapos).ToArray();
+        var len = aquaballs.Length;
+        hints.AddForbiddenZone(new SDKnockbackInAABBRectFixedDirectionPlusAOECircles(Arena.Center, dir, 20f, 20f, aquaballs, 5f, len), _activation);
+    }
+    private bool IsKnockbackIntoAOE(int slot, Actor actor)
+    {
+        var kbs = ActiveKnockbacks(slot, actor);
+        if (kbs.Length == 0)
+            return false;
+
+        var aquaballs = CollectionsMarshal.AsSpan(_aquaballs);
+        var len = aquaballs.Length;
+        if (len == 0)
+            return false;
+
+        var kb = kbs[0];
+        var dir = kb.Direction.ToDirection() * kb.Distance;
+        var est = actor.Position + dir;
+
+        for (var i = 0; i < len; i++)
+        {
+            if (aquaballs[i].Contains(est))
+                return true;
+        }
+
+        return false;
+    }
+}
 sealed class AlluringOrder(BossModule module) : Components.StatusDrivenForcedMarch(module, 3f, (uint)SID.ForwardMarch, 0, 0, 0);
+sealed class SirenSphere(BossModule module) : Components.Voidzone(module, 2f, GetSirenSpheres, 3f)
+{
+    public static Actor[] GetSirenSpheres(BossModule module)
+    {
+        var enemies = module.Enemies((uint)OID.SirenSphere);
+        var count = enemies.Count;
+        if (count == 0)
+            return [];
+
+        var voidzones = new Actor[count];
+        var index = 0;
+        for (var i = 0; i < count; ++i)
+        {
+            var z = enemies[i];
+            if (z.Renderflags == 0 && z.EventState != 7 && !z.IsDeadOrDestroyed)
+                voidzones[index++] = z;
+        }
+        return voidzones[..index];
+    }
+}
 sealed class CeaselessCurrent(BossModule module) : Components.Exaflare(module, new AOEShapeRect(4f, 20f, 4f))
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -66,7 +159,7 @@ sealed class AquaSpear(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.AquaSpear)
         {
-            _aoes.Add(new(new AOEShapeRect(8f, 4f), caster.Position));
+            _aoes.Add(new(new AOEShapeRect(4f, 4f, 4f), caster.Position));
         }
     }
     public override void OnActorDestroyed(Actor actor)

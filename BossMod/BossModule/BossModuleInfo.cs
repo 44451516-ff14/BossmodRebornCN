@@ -55,6 +55,7 @@ public static class BossModuleInfo
         MaskedCarnivale,
         GoldSaucer,
         Quantum,
+        Advanced,
 
         Count
     }

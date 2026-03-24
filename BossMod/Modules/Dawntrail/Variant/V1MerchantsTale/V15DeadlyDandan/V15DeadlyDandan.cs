@@ -1,4 +1,5 @@
-﻿
+﻿using TerraFX.Interop.Windows;
+
 namespace BossMod.Dawntrail.VariantCriterion.V1MerchantsTale.V15DeadlyDandan;
 
 sealed class MurkyWaters(BossModule module) : Components.RaidwideCast(module, (uint)AID.MurkyWaters);
@@ -35,7 +36,26 @@ sealed class UnfathomableHorror(BossModule module) : Components.ConcentricAOEs(m
         }
     }
 }
-sealed class AiryBubbles(BossModule module) : Components.Voidzone(module, 6f, module => module.Enemies((uint)OID.AiryBubble).Where(x => x.EventState != 7));
+sealed class AiryBubbles(BossModule module) : Components.Voidzone(module, 5f, GetBubbles, 4f)
+{
+    public static Actor[] GetBubbles(BossModule module)
+    {
+        var enemies = module.Enemies((uint)OID.AiryBubble);
+        var count = enemies.Count;
+        if (count == 0)
+            return [];
+
+        var voidzones = new Actor[count];
+        var index = 0;
+        for (var i = 0; i < count; ++i)
+        {
+            var z = enemies[i];
+            if (z.Renderflags == 0 && z.EventState != 7)
+                voidzones[index++] = z;
+        }
+        return voidzones[..index];
+    }
+}
 sealed class Devour(BossModule module) : Components.GenericAOEs(module)
 {
     // jump distance variable, stops once far enough from arena? eg. 55.5f on one jump, 60f the next, stops 30f away from arena center
@@ -99,6 +119,7 @@ sealed class StingingTentacle(BossModule module) : Components.GenericAOEs(module
     // slows down slightly at max in/out rotation before moving back opposite way
     private bool _active = false;
     private readonly List<Actor> _tentacles = [];
+    private DateTime _activation = default;
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (!_active)
@@ -113,7 +134,7 @@ sealed class StingingTentacle(BossModule module) : Components.GenericAOEs(module
         List<AOEInstance> aoes = [];
         for (var i = 0; i < len; i++)
         {
-            aoes.Add(new(new AOEShapeRect(50f, 7f), tentacles[i].Position, tentacles[i].Rotation));
+            aoes.Add(new(new AOEShapeRect(50f, 7f), tentacles[i].Position, tentacles[i].Rotation, _activation));
         }
         return CollectionsMarshal.AsSpan(aoes);
     }
@@ -128,11 +149,19 @@ sealed class StingingTentacle(BossModule module) : Components.GenericAOEs(module
             }
         }
     }
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.StingingTentacleCast)
+        {
+            _activation = Module.CastFinishAt(spell);
+        }
+    }
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.StingingTentacle)
         {
             _active = false;
+            _activation = default;
             _tentacles.Clear();
         }
     }

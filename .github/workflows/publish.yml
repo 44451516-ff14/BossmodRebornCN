@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -21,9 +21,9 @@ jobs:
           "tag=$tag" | Out-File -Append -FilePath $Env:GITHUB_ENV
           
       - name: Set up .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: '10.0.x'
 
       - name: Download Dalamud Latest
         run: |
@@ -34,13 +34,16 @@ jobs:
         run: dotnet restore BossMod\BossModReborn.csproj
 
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release BossMod\BossModReborn.csproj -p:AssemblyVersion=${{ env.tag }} -p:FileVersion=${{ env.tag }} -p:InformationalVersion=${{ env.tag }} --output .\build
+        run: dotnet build --no-restore -c Release BossMod\BossModReborn.csproj -p:AssemblyVersion=${{ env.tag }} -p:FileVersion=${{ env.tag }} -p:PackageVersion=${{ env.tag }} -p:InformationalVersion=${{ env.tag }} --output .\build
+
+      - name: Cleanup Build Output
+        run: Get-ChildItem .\build\* -Exclude BossModReborn.*,DefaultRotationPresets.json,PInvoke.User32.dll | Remove-Item -Force -Recurse
 
       - name: Zip Plugin
-        run: Compress-Archive -Path .\build\* -DestinationPath .\build\BossModReborn.zip
+        run: Compress-Archive -Path .\build\* -DestinationPath .\build\latest.zip
 
       - name: Publish Plugin
         uses: softprops/action-gh-release@v2
         with:
-          files: ./build/BossModReborn.zip
+          files: ./build/latest.zip
           token: ${{ secrets.GITHUB_TOKEN }}

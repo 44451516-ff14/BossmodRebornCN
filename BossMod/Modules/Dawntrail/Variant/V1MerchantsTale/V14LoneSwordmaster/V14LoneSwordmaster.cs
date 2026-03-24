@@ -1,9 +1,4 @@
-﻿
-using TerraFX.Interop.DirectX;
-using TerraFX.Interop.Windows;
-using static BossMod.AIHints;
-
-namespace BossMod.Dawntrail.VariantCriterion.V1MerchantsTale.V14LoneSwordmaster;
+﻿namespace BossMod.Dawntrail.VariantCriterion.V1MerchantsTale.V14LoneSwordmaster;
 
 sealed class DebuffTracker(BossModule module) : BossComponent(module)
 {
@@ -62,6 +57,26 @@ sealed class DebuffTracker(BossModule module) : BossComponent(module)
         };
 
         return angles;
+    }
+
+    public Angle? GetUnyieldingAngle(int slot, bool sourceNorthSouth)
+    {
+        if (slot < 0 || slot > 7)
+            return null;
+
+        if (Malefic[slot] == 0)
+            return null;
+
+        Angle? angle = Malefic[slot] switch
+        {
+            (uint)SID.MaleficSE => sourceNorthSouth ? Angle.AnglesCardinals[0] : Angle.AnglesCardinals[2],
+            (uint)SID.MaleficNE => sourceNorthSouth ? Angle.AnglesCardinals[0] : Angle.AnglesCardinals[1],
+            (uint)SID.MaleficSW => sourceNorthSouth ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[2],
+            (uint)SID.MaleficNW => sourceNorthSouth ? Angle.AnglesCardinals[3] : Angle.AnglesCardinals[1],
+            _ => null
+        };
+
+        return angle;
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
@@ -170,6 +185,16 @@ sealed class ConcentravityMagnetFloor(BossModule module) : Components.GenericAOE
             _aoes.Clear();
         }
     }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+        if (_aoes.Count == 0)
+            return;
+
+        // make outside of arena unsafe so there's leeway for knockback
+        hints.AddForbiddenZone(new AOEShapeRect(16f, 16f, 16f, invertForbiddenZone: true), Arena.Center);
+    }
 }
 sealed class ConcentrativityRocks(BossModule module) : Components.GenericKnockback(module)
 {
@@ -177,6 +202,7 @@ sealed class ConcentrativityRocks(BossModule module) : Components.GenericKnockba
     // followed by boss with 17f knockback from boss
     // stunned during knockbacks so clear after 1st
     private readonly List<Knockback> Casters = new(2);
+    private DateTime _finishAt = default;
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(Casters);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -185,9 +211,9 @@ sealed class ConcentrativityRocks(BossModule module) : Components.GenericKnockba
         {
             if (spell.TargetID == Raid.Player()!.InstanceID)
             {
-                var finishAt = Module.CastFinishAt(spell);
-                Casters.Add(new(caster.Position, 20f, finishAt, kind: spell.Action.ID == (uint)AID.Repel ? Kind.AwayFromOrigin : Kind.TowardsOrigin));
-                Casters.Add(new(Arena.Center, 17f, finishAt.AddSeconds(4d)));
+                _finishAt = Module.CastFinishAt(spell);
+                Casters.Add(new(caster.Position, 20f, _finishAt, kind: spell.Action.ID == (uint)AID.Repel ? Kind.AwayFromOrigin : Kind.TowardsOrigin));
+                Casters.Add(new(Arena.Center, 17f, _finishAt.AddSeconds(4d)));
             }
         }
     }
@@ -210,6 +236,35 @@ sealed class ConcentrativityRocks(BossModule module) : Components.GenericKnockba
 
         // if attract, want to be on away from helper such that we get pulled into middle
         // if repel, want to be next to helper such that we get pushed towards middle
+        // don't need to consider 2nd kb, should be safe as long as sent to center
+        if (kbs[0].Kind == Kind.AwayFromOrigin)
+            hints.AddForbiddenZone(new SDKnockbackInAABBSquareAwayFromOriginIntoCircle(Arena.Center, kbs[0].Origin, 20f, 20f, Arena.Center, 2.5f), _finishAt);
+        else
+            hints.AddForbiddenZone(new SDKnockbackTowardsOriginIntoCircle(Arena.Center, kbs[0].Origin, 20f, Arena.Center, 2.5f), _finishAt);
+    }
+
+    sealed class SDKnockbackTowardsOriginIntoCircle(WPos Center, WPos Origin, float MaxDistance, WPos CircleOrigin, float Radius) : ShapeDistance
+    {
+        private readonly WPos center = Center;
+        private readonly WPos origin = Origin;
+        private readonly float maxDistance = MaxDistance;
+        private readonly WPos circleOrigin = CircleOrigin;
+        private readonly float radius = Radius;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool Contains(in WPos p)
+        {
+            var distance = (origin - p).Length();
+            distance = distance > maxDistance ? maxDistance : distance;
+            var projected = p + distance * (origin - p).Normalized();
+            return !projected.InCircle(circleOrigin, radius);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
     }
 }
 sealed class HeavensConfluenceIcon(BossModule module) : Components.BaitAwayIcon(module, 5f, (uint)IconID.HeavensConfluence)
@@ -265,6 +320,7 @@ sealed class WillOfTheUnderworld(BossModule module) : Components.SimpleAOEs(modu
     // safe spot depends on player Malefic debuff
     // 1,2, or 4 at a time
     // in path 12, stand behind fallen rock with malefic in safe direction
+    // slightly wider than 10f? ate a vuln stack sitting on the edge of safe spot
     private readonly DebuffTracker _debuffs = module.FindComponent<DebuffTracker>()!;
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -503,6 +559,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
             }
         }
 
+        // base avoid other player baited AOEs
         base.AddHints(slot, actor, hints);
         var count = CurrentBaits.Count;
         var id = actor.InstanceID;
@@ -553,6 +610,56 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
             {
                 b.Shape.Outline(Arena, BaitOrigin(ref b), b.Rotation);
             }
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (ActiveBaits.Count == 0)
+            return;
+
+        var angles = _debuffs.GetAngles(slot);
+        var unsafeAngles = _debuffs.GetUnsafeAngles(slot);
+        var len = angles.Length;
+        if (len == 0)
+            return;
+
+        var hasTether = _playerTethers.TryGetValue(actor, out var tethers);
+        if (!hasTether)
+            return;
+
+        var source = tethers.Source;
+        var inter = tethers.Intermediate;
+
+        // if source is same direction as safe side, stand in that path; try standing close to avoid clipping other players
+        bool sourceSafe = true;
+        for (var i = 0; i < len; i++)
+        {
+            if (source.Rotation.AlmostEqual(unsafeAngles[i], 0.02f))
+            {
+                sourceSafe = false;
+                break;
+            }
+        }
+
+        if (sourceSafe)
+        {
+            hints.AddForbiddenZone(new AOEShapeRect(40f, 2f, invertForbiddenZone: true), source.Position, source.Rotation);
+            hints.GoalZones.Add(AIHints.GoalSingleTarget(source, 2f));
+            return;
+        }
+
+        // add AOE from 1st bait as forbidden only if side is unsafe
+        //base.AddAIHints(slot, actor, assignment, hints);
+
+        // determine if source is N/S or E/W, need to move perpendicular
+        // source sits directly on edge (20f from center), anywhere along that edge
+        hints.AddForbiddenZone(new AOEShapeRect(40f, 2f), source.Position, source.Rotation);
+        var isNorthSouth = source.Position.Z is -795f or -835f;
+        var interAngle = _debuffs.GetUnyieldingAngle(slot, isNorthSouth);
+        if (interAngle != null)
+        {
+            hints.AddForbiddenZone(new AOEShapeRect(40f, 2f), inter.Position, interAngle.Value);
         }
     }
 }

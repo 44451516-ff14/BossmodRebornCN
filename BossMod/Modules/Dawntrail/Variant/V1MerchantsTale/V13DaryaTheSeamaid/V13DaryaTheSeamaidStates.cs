@@ -16,6 +16,7 @@ class V13DaryaTheSeamaidStates : StateMachineBuilder
             .ActivateOnEnter<Hydrocannon>()
             .ActivateOnEnter<BigWave>()
             .ActivateOnEnter<AlluringOrder>()
-            .ActivateOnEnter<AquaSpear>();
+            .ActivateOnEnter<AquaSpear>()
+            .ActivateOnEnter<SirenSphere>();
     }
 }

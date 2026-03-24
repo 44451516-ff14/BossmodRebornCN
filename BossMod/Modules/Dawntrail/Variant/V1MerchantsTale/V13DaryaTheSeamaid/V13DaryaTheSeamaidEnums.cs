@@ -51,6 +51,7 @@ public enum AID : uint
     _Ability_2 = 45781, // 4A92->self, no cast, single-target
     _Spell_Hydrocannon = 45801, // DaryaTheSeaMaid->self, 4.0+1.0s cast, single-target
     Hydrocannon = 45802, // Helper->self/player, 5.0s cast, range 70 width 6 rect
+    _Ability_Explosion = 45782, // SirenSphere->player, no cast, single-target
     // Path 6
     _Ability_AquaSpear = 45783, // DaryaTheSeaMaid->self, 4.0s cast, single-target
     AquaSpear = 45784, // Helper->self, 3.0s cast, range 8 width 8 rect

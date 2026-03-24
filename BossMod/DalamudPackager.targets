@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Target Name="DalamudPackagerDebug"
+          AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Debug'">
+    <DalamudPackager ProjectDir="$(ProjectDir)"
+                     OutputPath="$(OutputPath)"
+                     AssemblyName="$(AssemblyName)"
+                     MakeZip="false"
+                     Author="$(Author)"
+                     Name="$(Name)"
+                     Description="$(Description)" />
+  </Target>
+
+  <Target Name="DalamudPackagerRelease"
+          AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release'">
+    <DalamudPackager ProjectDir="$(ProjectDir)"
+                     OutputPath="$(OutputPath)"
+                     AssemblyName="$(AssemblyName)"
+                     MakeZip="false"
+                     Author="$(Author)"
+                     Name="$(Name)"
+                     Description="$(Description)" />
+  </Target>
+</Project>
