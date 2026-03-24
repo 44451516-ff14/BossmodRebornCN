@@ -7,7 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
 namespace BossMod;
 
-sealed class DebugTeleport : IDisposable
+sealed partial class DebugTeleport : IDisposable
 {
     private bool _enableNoClip;
     private bool _subscribed;
@@ -181,7 +181,10 @@ sealed class DebugTeleport : IDisposable
         static bool IsKeyPressed(int vk)
         {
             static bool IsBitSet(short b, int bit) => (b & (1 << bit)) != 0;
-            return vk != 0 && IsBitSet(PInvoke.User32.GetAsyncKeyState(vk), 15);
+            return vk != 0 && IsBitSet(GetAsyncKeyState(vk), 15);
         }
     }
+
+    [LibraryImport("user32.dll"), DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    private static partial short GetAsyncKeyState(int vKey);
 }

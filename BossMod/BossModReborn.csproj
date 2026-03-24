@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors></Authors>
         <Company></Company>
-        <Version>7.4.1.13</Version>
+        <Version>7.4.1.15</Version>
         <Description>Boss mod.</Description>
         <Copyright></Copyright>
         <PackageProjectUrl></PackageProjectUrl>
@@ -68,23 +68,22 @@
         <EmbeddedResource Include="Pathfinding\ObstacleMaps\*"/>
     </ItemGroup>
 
-    <Target Name="CopyOnlyPInvoke" AfterTargets="Build" Condition=" '$(CopyLocalLockFileAssemblies)' != 'true' ">
-        <ItemGroup>
-            <_PInvokeFromNuGet Include="@(RuntimeCopyLocalItems)" Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'PInvoke.User32' &#xD;&#xA;                                   and $([System.String]::Copy('%(RuntimeCopyLocalItems.Extension)').ToLower()) == '.dll'"/>
-        </ItemGroup>
-        <Copy SourceFiles="@(_PInvokeFromNuGet)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true"/>
-    </Target>
-
     <ItemGroup>
         <Reference Include="Dalamud.Common"/>
         <Reference Include="TerraFX.Interop.Windows"/>
-        <PackageReference Include="PInvoke.User32" Version="0.7.124" />
     </ItemGroup>
 
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <OutputPath>$(MSBuildProjectDirectory)\..\release\</OutputPath>
     </PropertyGroup>
-
+    
+    
+    <Target Name="CleanupOutput" AfterTargets="Build" BeforeTargets="DalamudPackage">
+        <ItemGroup>
+            <_ExtraOutputFiles Include="$(OutputPath)*" Exclude="$(OutputPath)BossModReborn.*;$(OutputPath)DefaultRotationPresets.json" />
+        </ItemGroup>
+        <Delete Files="@(_ExtraOutputFiles)" />
+    </Target>
     
 </Project>

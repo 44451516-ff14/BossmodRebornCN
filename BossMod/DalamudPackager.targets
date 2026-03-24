@@ -21,6 +21,48 @@
                      MakeZip="false"
                      Author="$(Author)"
                      Name="$(Name)"
-                     Description="$(Description)" />
+                     InternalName="$(InternalName)"
+                     AssemblyVersion="$(AssemblyVersion)"
+                     MinimumDalamudVersion="$(MinimumDalamudVersion)"
+                     Punchline="$(Punchline)"
+                     Description="$(Description)"
+                     ApplicableVersion="$(ApplicableVersion)"
+                     RepoUrl="$(RepoUrl)"
+                     Tags="$(Tags)"
+                     CategoryTags="$(CategoryTags)"
+                     DalamudApiLevel="$(DalamudApiLevel)"
+                     LoadRequiredState="$(LoadRequiredState)"
+                     LoadSync="$(LoadSync)"
+                     CanUnloadAsync="$(CanUnloadAsync)"
+                     LoadPriority="$(LoadPriority)"
+                     ImageUrls="$(ImageUrls)"
+                     IconUrl="$(IconUrl)"
+                     Changelog="$(Changelog)"
+                     AcceptsFeedback="$(AcceptsFeedback)"
+                     FeedbackMessage="$(FeedbackMessage)" />
+  </Target>
+
+  <Target Name="CreateLocalReleaseZip"
+          AfterTargets="DalamudPackagerRelease"
+          Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <LocalPackageDir>$([MSBuild]::EnsureTrailingSlash('$(OutputPath)$(AssemblyName)'))</LocalPackageDir>
+      <LocalPackageZip>$(LocalPackageDir)latest.zip</LocalPackageZip>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(LocalPackageDir)" />
+
+    <Exec Command="powershell -NoLogo -NoProfile -Command &quot;$ErrorActionPreference = 'Stop'; if (Test-Path '$(LocalPackageDir)') { Get-ChildItem '$(LocalPackageDir)' -Force | Remove-Item -Recurse -Force -ErrorAction Stop }&quot;" />
+
+    <ItemGroup>
+      <_LocalPackageFiles Include="$(OutputPath)$(AssemblyName).dll" />
+      <_LocalPackageFiles Include="$(OutputPath)$(AssemblyName).deps.json" />
+      <_LocalPackageFiles Include="$(OutputPath)$(AssemblyName).json" />
+      <_LocalPackageFiles Include="$(OutputPath)DefaultRotationPresets.json" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_LocalPackageFiles)" DestinationFolder="$(LocalPackageDir)" SkipUnchangedFiles="false" />
+
+    <Exec Command="powershell -NoLogo -NoProfile -Command &quot;$ErrorActionPreference = 'Stop'; Compress-Archive -LiteralPath @('$(LocalPackageDir)$(AssemblyName).dll','$(LocalPackageDir)$(AssemblyName).deps.json','$(LocalPackageDir)$(AssemblyName).json','$(LocalPackageDir)DefaultRotationPresets.json') -DestinationPath '$(LocalPackageZip)' -Force&quot;" />
   </Target>
 </Project>
