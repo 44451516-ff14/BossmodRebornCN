@@ -2,7 +2,6 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using Dalamud.Bindings.ImGui;
-using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace BossMod;
 

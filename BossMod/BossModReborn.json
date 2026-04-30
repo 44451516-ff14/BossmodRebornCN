@@ -5,6 +5,7 @@
   "Punchline": "不再被副本机制坑倒",
   "Description": "一组用于简化首领战处理的工具。",
   "RepoUrl": "https://github.com/FFXIV-CombatReborn/BossmodReborn",
+  "DalamudApiLevel": 15,
   "IconUrl": "https://raw.githubusercontent.com/FFXIV-CombatReborn/RebornAssets/main/IconAssets/BMR_Icon.png",
   "ImageUrls": [
     "https://raw.githubusercontent.com/awgil/ffxiv_bossmod/master/Data/image1.png",
