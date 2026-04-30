@@ -664,7 +664,7 @@ sealed class UnyieldingWill(BossModule module) : Components.GenericBaitAway(modu
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(V14LoneSwordmasterStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

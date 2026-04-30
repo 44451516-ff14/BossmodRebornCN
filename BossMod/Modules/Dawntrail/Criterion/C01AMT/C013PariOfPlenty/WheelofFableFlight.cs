@@ -1,19 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Criterion.C01AMT.C013PariOfPlenty;
 
-// spell 45479 - left - other one is most likely right from direction of looking forward (the actor point of view)
-
-// 628 - ORANGE
-// 629 - BLUE
-
-// Cause the aoe to from
-// D4 - 180 -> 629 -> -0
-// D5 - -90 -> 629 -> 90
-// D6 - 0 -> 628 -> -180
-// D7 - 90 -> 628 -> -90
-
-// TODO clean up class after testing has been completed
 // TODO figure out who gets the stack - its always support / DPS - but can we tell who?
-
 class WheelOfFableFlight(BossModule module) : Components.GenericAOEs(module) {
     private List<AOEInstance> aoes = [];
     private Angle offset;
@@ -52,8 +39,8 @@ class WheelOfFableFlight(BossModule module) : Components.GenericAOEs(module) {
             (AID)spell.Action.ID == AID.WheelOfFireflight1 || 
             (AID)spell.Action.ID == AID.WheelOfFireflight2 || 
             (AID)spell.Action.ID == AID.WheelOfFireflight3) {
-            
             aoes.Clear();
+            NumCasts++;
         }
     }
 
@@ -75,14 +62,14 @@ class WheelofFableFlightStackSpread(BossModule module) : Components.UniformStack
         }
     }
     
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell) {
-        if ((AID)spell.Action.ID == AID.KindledFlameStack) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
+        if ((AID)spell.Action.ID == AID.KindledFlame1) {
             Stacks.Clear();
             return;
         }
         
-        if ((AID)spell.Action.ID == AID.ScatteredKindlingSpread) {
+        if ((AID)spell.Action.ID == AID.ScatteredKindling1) {
             Spreads.Clear();
-        }       
+        }
     }
 }

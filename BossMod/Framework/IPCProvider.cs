@@ -1,5 +1,6 @@
 ﻿using BossMod.AI;
 using BossMod.Autorotation;
+using BossMod.Pathfinding;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -10,9 +11,167 @@ sealed class IPCProvider : IDisposable
 {
     private Action? _disposeActions;
 
-    public IPCProvider(RotationModuleManager autorotation, ActionManagerEx amex, MovementOverride movement, AIManager ai)
+    public IPCProvider(BossModuleManager bossmod, AIHints hints, RotationModuleManager autorotation, ActionManagerEx amex, MovementOverride movement, AIManager ai, ObstacleMapManager obstacles)
     {
         Register("HasModuleByDataId", (uint dataId) => BossModuleRegistry.FindByOID(dataId) != null);
+
+        // Timeline IPC endpoints for external plugin integration (e.g. RotationSolverReborn)
+        Register("HasActiveModule", () => bossmod.ActiveModule?.StateMachine.ActiveState != null);
+        Register("ActiveModuleName", () => bossmod.ActiveModule?.PrimaryActor.Name.ToString());
+
+        // Debug endpoint: walks the state machine and reports what it finds
+        Register("Debug.TimelineWalk", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module == null)
+                return "No active module";
+            var sm = module.StateMachine;
+            if (sm.ActiveState == null)
+                return "ActiveState is null";
+
+            var sb = new StringBuilder();
+            sb.Append($"Phase={sm.ActivePhaseIndex} State={sm.ActiveState.ID:X}({sm.ActiveState.Name}) Dur={sm.ActiveState.Duration:F1}s Hint={sm.ActiveState.EndHint}");
+            var count = 0;
+            var next = sm.ActiveState;
+            var foundRW = false;
+            var foundTB = false;
+            while (next != null && count < 20)
+            {
+                if (!foundRW && next.EndHint.HasFlag(StateMachine.StateHint.Raidwide))
+                {
+                    foundRW = true;
+                    sb.Append($" | RW@{next.ID:X}({next.Name})");
+                }
+                if (!foundTB && next.EndHint.HasFlag(StateMachine.StateHint.Tankbuster))
+                {
+                    foundTB = true;
+                    sb.Append($" | TB@{next.ID:X}({next.Name})");
+                }
+                next = next.NextStates?.Length == 1 ? next.NextStates[0] : null;
+                count++;
+            }
+            if (!foundRW)
+                sb.Append(" | RW=NONE");
+            if (!foundTB)
+                sb.Append(" | TB=NONE");
+            if (next == null && count < 20)
+                sb.Append($" | Chain ended at {count} states");
+            if (count >= 20)
+                sb.Append(" | Walked 20+ states");
+            return sb.ToString();
+        });
+
+        Register("Timeline.NextRaidwideIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.Raidwide);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Timeline.NextTankbusterIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.Tankbuster);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Timeline.NextKnockbackIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.Knockback);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Timeline.NextDowntimeIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.DowntimeStart);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Timeline.NextDowntimeEndIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.DowntimeEnd);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Timeline.NextVulnerableIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.VulnerableStart);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Timeline.NextVulnerableEndIn", () =>
+        {
+            var module = bossmod.ActiveModule;
+            if (module?.StateMachine.ActiveState == null)
+                return float.MaxValue;
+            var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.VulnerableEnd);
+            return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Hints.NextDamageIn", () =>
+        {
+            var predicted = hints.PredictedDamage;
+            return predicted.Count == 0 ? float.MaxValue : (float)(predicted[0].Activation - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Hints.NextDamageType", () =>
+        {
+            var predicted = hints.PredictedDamage;
+            return predicted.Count == 0 ? 0 : (int)predicted[0].Type;
+        });
+
+        // Type-specific damage prediction endpoints — search ALL entries for the first matching type
+        Register("Hints.NextRaidwideDamageIn", () =>
+        {
+            var predicted = hints.PredictedDamage;
+            var now = DateTime.Now;
+            for (var i = 0; i < predicted.Count; ++i)
+            {
+                if (predicted[i].Type == AIHints.PredictedDamageType.Raidwide)
+                    return (float)(predicted[i].Activation - now).TotalSeconds;
+            }
+            return float.MaxValue;
+        });
+
+        Register("Hints.NextTankbusterDamageIn", () =>
+        {
+            var predicted = hints.PredictedDamage;
+            var now = DateTime.Now;
+            for (var i = 0; i < predicted.Count; ++i)
+            {
+                if (predicted[i].Type == AIHints.PredictedDamageType.Tankbuster)
+                    return (float)(predicted[i].Activation - now).TotalSeconds;
+            }
+            return float.MaxValue;
+        });
+
+        Register("Hints.SpecialModeIn", () =>
+        {
+            return hints.ImminentSpecialMode == default
+                ? float.MaxValue
+                : (float)(hints.ImminentSpecialMode.activation - DateTime.Now).TotalSeconds;
+        });
+
+        Register("Hints.SpecialModeType", () =>
+        {
+            return hints.ImminentSpecialMode == default ? 0 : (int)hints.ImminentSpecialMode.mode;
+        });
         Register("Configuration", (List<string> args, bool save) => Service.Config.ConsoleCommand(args.AsSpan(), save));
 
         var lastModified = DateTime.Now;
@@ -180,6 +339,10 @@ sealed class IPCProvider : IDisposable
 
         Register("AI.SetPreset", (string name) => ai.SetAIPreset(autorotation.Database.Presets.AllPresets.FirstOrDefault(x => x.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))));
         Register("AI.GetPreset", () => ai.GetAIPreset);
+
+        Register("ObstacleMap.Generate", (Vector3 centerWorld, float radius, bool writeToFile) => obstacles.GenerateMap(centerWorld, radius, writeToFile));
+        Register("ObstacleMap.GetGenerationStatus", () => obstacles.GenerationStatus);
+        Register("ObstacleMap.HasTempMap", obstacles.HasTempMap);
     }
 
     public void Dispose() => _disposeActions?.Invoke();

@@ -1,6 +1,4 @@
-﻿using TerraFX.Interop.Windows;
-
-namespace BossMod.Dawntrail.VariantCriterion.V1MerchantsTale.V15DeadlyDandan;
+﻿namespace BossMod.Dawntrail.VariantCriterion.V1MerchantsTale.V15DeadlyDandan;
 
 sealed class MurkyWaters(BossModule module) : Components.RaidwideCast(module, (uint)AID.MurkyWaters);
 sealed class Spit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spit, new AOEShapeCone(50f, 60f.Degrees())); // could draw early during 2nd devour 
@@ -167,7 +165,7 @@ sealed class StingingTentacle(BossModule module) : Components.GenericAOEs(module
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(V15DeadlyDandanStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),
@@ -184,4 +182,4 @@ GroupID = 1066u,
 NameID = 14475u,
 SortOrder = 6,
 PlanLevel = 0)]
-public class V15DeadlyDandan(WorldState ws, Actor primary) : BossModule(ws, primary, new(805, 670), new ArenaBoundsCircle(20f));
+public class V15DeadlyDandan(WorldState ws, Actor primary) : BossModule(ws, primary, new(805f, 670f), new ArenaBoundsCircle(20f));

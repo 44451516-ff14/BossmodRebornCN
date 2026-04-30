@@ -348,7 +348,7 @@ sealed class ThievesWeaves(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(V12PariOfPlentyStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

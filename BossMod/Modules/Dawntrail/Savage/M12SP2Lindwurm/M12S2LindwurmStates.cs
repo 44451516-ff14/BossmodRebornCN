@@ -20,6 +20,7 @@ class M12S2LindwurmStates : StateMachineBuilder
     void Replication1(uint id, float delay)
     {
         Cast(id, (uint)AID.ArcadiaAflame, delay, 5, "Raidwide")
+            .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<ArcadiaAflame>()
             .DeactivateOnExit<ArcadiaAflame>();
 
@@ -62,6 +63,7 @@ class M12S2LindwurmStates : StateMachineBuilder
             .ActivateOnEnter<DoubleSobatBuster>()
             .ActivateOnEnter<DoubleSobatRepeat>();
         ComponentCondition<DoubleSobatBuster>(id + 1, 5.6f, b => b.NumCasts > 0, "Half-room buster")
+            .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<DoubleSobatBuster>();
         ComponentCondition<DoubleSobatRepeat>(id + 0x10, 4.6f, b => b.NumCasts > 0, "Half-room cleave")
             .ActivateOnEnter<EsotericFinisher>()
@@ -70,6 +72,7 @@ class M12S2LindwurmStates : StateMachineBuilder
             .ExecOnExit<EsotericFinisher>(f => f.EnableHints = true);
 
         ComponentCondition<EsotericFinisher>(id + 0x20, 2.5f, f => f.NumCasts > 0, "Double tankbuster")
+            .SetHint(StateMachine.StateHint.Tankbuster)
             .DeactivateOnExit<EsotericFinisher>();
     }
 
@@ -151,6 +154,7 @@ class M12S2LindwurmStates : StateMachineBuilder
             .DeactivateOnExit<Netherworld>();
 
         Cast(id + 0x300, (uint)AID.ArcadiaAflame, 1.8f, 5, "Raidwide")
+            .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<ArcadiaAflame>()
             .DeactivateOnExit<ArcadiaAflame>();
 
@@ -160,6 +164,7 @@ class M12S2LindwurmStates : StateMachineBuilder
     void IdyllicDream(uint id, float delay)
     {
         Cast(id, (uint)AID.IdyllicDream, delay, 5, "Raidwide")
+            .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<IdyllicDreamRaidwide>()
             .ActivateOnEnter<IdyllicDreamStaging>()
             .ActivateOnEnter<IdyllicDreamArena>()
@@ -196,6 +201,7 @@ class M12S2LindwurmStates : StateMachineBuilder
             .ActivateOnEnter<LindwurmsMeteor>();
         ComponentCondition<IdyllicDreamPowerGusherSnakingKick>(id + 0x151, 0.9f, k => k.NumCasts > 0, "Stored AOEs");
         CastEnd(id + 0x152, 4.1f, "Raidwide")
+            .SetHint(StateMachine.StateHint.Raidwide)
             .DeactivateOnExit<LindwurmsMeteor>();
 
         // platform transform during cast, towers appear on platforms at cast end
@@ -307,6 +313,7 @@ class M12S2LindwurmStates : StateMachineBuilder
             .DeactivateOnExit<IdyllicDreamPowerGusherSnakingKick>();
 
         Cast(id + 0x400, (uint)AID.IdyllicDream, 1, 5, "Raidwide")
+            .SetHint(StateMachine.StateHint.Raidwide)
             .ActivateOnEnter<IdyllicDreamRaidwide>()
             .DeactivateOnExit<IdyllicDreamRaidwide>()
             .DeactivateOnExit<IdyllicDreamArena>();
@@ -318,8 +325,10 @@ class M12S2LindwurmStates : StateMachineBuilder
             .ActivateOnEnter<ArcadianHell5x>()
             .ActivateOnEnter<ArcadianHell9x>();
 
-        Cast(id + 0x10, (uint)AID.ArcadianHellRaidwide, 8.5f, 5, "Raidwide x5");
-        Cast(id + 0x20, (uint)AID.ArcadianHellRaidwide, 11.3f, 5, "Raidwide x9");
+        Cast(id + 0x10, (uint)AID.ArcadianHellRaidwide, 8.5f, 5, "Raidwide x5")
+            .SetHint(StateMachine.StateHint.Raidwide);
+        Cast(id + 0x20, (uint)AID.ArcadianHellRaidwide, 11.3f, 5, "Raidwide x9")
+            .SetHint(StateMachine.StateHint.Raidwide);
 
         Cast(id + 0x100, (uint)AID.ArcadianHellEnrage, 12.9f, 10, "Enrage");
     }

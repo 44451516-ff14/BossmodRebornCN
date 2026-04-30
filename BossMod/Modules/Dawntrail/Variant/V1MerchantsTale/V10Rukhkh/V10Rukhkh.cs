@@ -182,7 +182,7 @@ sealed class FallingRock(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(V10RukhkhStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

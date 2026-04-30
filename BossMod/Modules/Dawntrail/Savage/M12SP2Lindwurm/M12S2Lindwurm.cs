@@ -8,7 +8,7 @@ class LindwurmsMeteor(BossModule module) : Components.RaidwideCast(module, (uint
 class ArcadianHell5x(BossModule module) : Components.RaidwideCast(module, (uint)AID.ArcadianHell4x);
 class ArcadianHell9x(BossModule module) : Components.RaidwideCast(module, (uint)AID.ArcadianHell8x);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 GroupType = BossModuleInfo.GroupType.CFC,
 StatesType = typeof(M12S2LindwurmStates),
 ConfigType = typeof(M12S2LindwurmConfig),

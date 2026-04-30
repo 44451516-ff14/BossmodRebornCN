@@ -42,7 +42,7 @@ sealed class FireWell(BossModule module) : Components.StackWithIcon(module, (uin
 
 sealed class ScouringScorn(BossModule module) : Components.RaidwideCast(module, (uint)AID.ScouringScorn);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(PariOfPlentyStates),
 ConfigType = null, // replace null with typeof(PariOfPlentyConfig) if applicable
 ObjectIDType = typeof(OID),

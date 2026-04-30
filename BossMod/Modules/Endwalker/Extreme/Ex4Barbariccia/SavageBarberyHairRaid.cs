@@ -5,7 +5,7 @@ class SavageBarbery(BossModule module) : Components.GenericAOEs(module)
     private readonly List<AOEInstance> _aoes = [];
     public int NumActiveCasts => _aoes.Count;
     private static readonly AOEShapeDonut donut = new(6f, 20f);
-    private static readonly AOEShapeRect rect = new(40, 12f);
+    private static readonly AOEShapeRect rect = new(40f, 6f);
     private static readonly AOEShapeCircle circle = new(20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

@@ -422,7 +422,7 @@ sealed class SunkenTreasure(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(Ad012DaryaTheSeamaidStates),
 ConfigType = null, // replace null with typeof(DaryaTheSeaMaidConfig) if applicable
 ObjectIDType = typeof(OID),

@@ -44,7 +44,7 @@ sealed class RefreshingOverkill2(BossModule module) : Components.RaidwideCast(mo
 sealed class Splattershed2(BossModule module) : Components.RaidwideCast(module, (uint)AID.Splattershed2);
 sealed class unk_48028(BossModule module) : Components.RaidwideCast(module, (uint)AID.unk_48028);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     Contributors = "SRP, additional enhancements by Topas",
     PrimaryActorOID = (uint)OID.Lindwurm1,
     GroupType = BossModuleInfo.GroupType.CFC,

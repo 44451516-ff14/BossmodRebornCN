@@ -296,3 +296,17 @@ public class SimpleChargeAOEGroups(BossModule module, uint[] aids, float halfWid
         }
     }
 }
+
+[SkipLocalsInit]
+public class ProximityAOEs(BossModule module, uint aid, float radius) : SimpleAOEs(module, aid, radius)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        base.AddAIHints(slot, actor, assignment, hints);
+
+        if (Casters.Count != 0)
+        {
+            hints.AddPredictedDamage(Raid.WithSlot().Mask(), Casters.Ref(0).Activation);
+        }
+    }
+}

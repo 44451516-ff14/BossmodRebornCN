@@ -2,10 +2,10 @@
 
 class Fireflight(BossModule module) : Components.GenericAOEs(module) {
     private List<AOEInstance> aoes = [];
-    private List<PathAOE> pathAOEs = new();
-    private int side = 0;
+    public List<PathAOE> pathAOEs = new();
+    public int side = 0;
 
-    private class PathAOE() {
+    public class PathAOE() {
         public Actor? actor;
         public WPos startPosition;
         public WPos endPosition;
@@ -27,12 +27,14 @@ class Fireflight(BossModule module) : Components.GenericAOEs(module) {
         if ((AID)spell.Action.ID == AID.CarpetRide1 || (AID)spell.Action.ID == AID.CarpetRide2) {
             if (pathAOEs.Count > 0) {
                 pathAOEs.RemoveAt(0);
+                NumCasts++;
             }
         }
     }
     
     public override void OnUntethered(Actor source, in ActorTetherInfo tether) {
         if (tether.ID == (uint)TetherID.CarpetRideTether) {
+            Service.Log($"tether {source.Position}");
             PathAOE pathAoe = new PathAOE();
             Actor? actor = WorldState.Actors.Find(tether.Target);
 
@@ -65,7 +67,7 @@ class Fireflight(BossModule module) : Components.GenericAOEs(module) {
             Angle delta = baseAng.DistanceToAngle(nextAng);
             Angle final = (baseAng + delta).Normalized();
 
-            var halfWidth = pathAOE.aoePosition == 2 ? 27 : 40;
+            var halfWidth = pathAOE.aoePosition == 2 ? 27 : 60;
             uint colour = (shown < 1) ? Colors.Danger : Colors.AOE;
             
             var shape = new AOEShapeRect(40, halfWidth, 0f, dirOffset);

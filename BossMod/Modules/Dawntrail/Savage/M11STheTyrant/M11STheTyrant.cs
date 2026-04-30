@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Savage.M11STheTyrant;
 sealed class CrownOfArcadia(BossModule module) : Components.RaidwideCast(module, (uint)AID.CrownOfArcadia);
 sealed class UltimateTrophyWeapons(BossModule module) : Components.CastHint(module, (uint)AID.UltimateTrophyWeapons, "Ultimate Trophy Weapons");
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(M11STheTyrantStates),
 ConfigType = null, // replace null with typeof(TheTyrantConfig) if applicable
 ObjectIDType = typeof(OID),

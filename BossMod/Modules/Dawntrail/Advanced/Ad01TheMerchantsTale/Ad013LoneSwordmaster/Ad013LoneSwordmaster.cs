@@ -585,7 +585,7 @@ sealed class SilentEight(BossModule module) : Components.GenericBaitAway(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(Ad013LoneSwordmasterStates),
 ConfigType = null, // replace null with typeof(LoneSwordmasterConfig) if applicable
 ObjectIDType = typeof(OID),

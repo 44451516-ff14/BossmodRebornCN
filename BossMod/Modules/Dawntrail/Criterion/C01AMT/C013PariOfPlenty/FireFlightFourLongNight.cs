@@ -45,6 +45,7 @@ class WitchHunt(BossModule module) : Components.GenericBaitAway(module, (uint)AI
                 Order.RemoveAt(0);
                 if (Order.Count > 0) {
                     NextActivation = WorldState.FutureTime(3.1f);
+                    NumCasts++;
                 }
             }
         }
@@ -108,7 +109,7 @@ class WitchHuntStack(BossModule module) : Components.GenericBaitStack(module, (u
 class FireFlightFourLongNight(BossModule module) : Components.GenericAOEs(module) {
     private List<AOEInstance> aoes = [];
     private List<Angle> rotations = [];
-    bool startLeft = false;
+    public bool startLeft = false;
     private IconID lastAction = 0;
     private Angle bossAngle;
     
@@ -128,6 +129,7 @@ class FireFlightFourLongNight(BossModule module) : Components.GenericAOEs(module
             (AID)spell.Action.ID == AID.WheelOfFireflight2 || (AID)spell.Action.ID == AID.WheelOfFireflight3) {
             if (rotations.Count > 0) {
                 rotations.RemoveAt(0);
+                NumCasts++;
             }
         }
     }
@@ -166,5 +168,20 @@ class FireFlightFourLongNight(BossModule module) : Components.GenericAOEs(module
         }
         
         return CollectionsMarshal.AsSpan(aoes);
+    }
+}
+
+class CharmedFlightFourNights : FireFlightFourLongNight {
+    public CharmedFlightFourNights(BossModule module) : base(module) {}
+    
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
+        if ((AID)spell.Action.ID == AID.CharmedFlightFourNightsRight) {
+            startLeft = false;
+            return;
+        }
+        
+        if ((AID)spell.Action.ID == AID.CharmedFlightFourNightsLeft) {
+            startLeft = true;
+        }
     }
 }

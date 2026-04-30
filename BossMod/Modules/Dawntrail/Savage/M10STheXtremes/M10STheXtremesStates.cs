@@ -32,7 +32,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnEnter<HotImpact>()
             .ActivateOnExit<FlameFloater>()
             .ActivateOnExit<FlameFloaterPuddle>()
-            .DeactivateOnExit<HotImpact>();
+            .DeactivateOnExit<HotImpact>()
+            .SetHint(StateMachine.StateHint.Tankbuster);
 
         ComponentCondition<FlameFloater>(id + 0x10, 8.4f, static comp => comp.Active, "Flame Floater order"); //22.65
         ComponentCondition<FlameFloater>(id + 0x11, 7.4f, static comp => comp.NumCasts > 0, "Flame Floater start"); //30.04
@@ -63,9 +64,11 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .DeactivateOnExit<FlameFloaterPuddle>()
             .DeactivateOnExit<AlleyOopInfernoPuddle>()
             .DeactivateOnExit<CutbackBlazePuddle>()
-            .DeactivateOnExit<PyrorotationPuddle>();
+            .DeactivateOnExit<PyrorotationPuddle>()
+            .SetHint(StateMachine.StateHint.Raidwide);
 
-        Targetable(id + 0x60, false, 6.4f, "Red untargetable"); // 88.655
+        Targetable(id + 0x60, false, 6.4f, "Red untargetable") // 88.655
+            .SetHint(StateMachine.StateHint.DowntimeStart);
     }
 
     private void DeepBlue(uint id, float delay)
@@ -99,11 +102,13 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         //ComponentCondition<DeepImpact>(id + 0x51, 0.5f, static comp => !comp.Active, "Baited tankbuster cleave")
         ComponentCondition<DeepImpact>(id + 0x51, 0.8f, static comp => comp.ActiveBaits.Count == 0, "Baited tankbuster cleave", checkDelay: 1f)
             .DeactivateOnExit<DeepImpactKnockback>()
-            .DeactivateOnExit<DeepImpact>();
+            .DeactivateOnExit<DeepImpact>()
+            .SetHint(StateMachine.StateHint.Tankbuster);
 
         ActorCast(id + 0x60, _module.DeepBlue, (uint)AID.DiversDareBlue, 1.4f, 5f, true, "Raidwide") // 138.67 - 143.65
             .ActivateOnExit<DiversDareBlue>()
-            .DeactivateOnExit<DiversDareBlue>();
+            .DeactivateOnExit<DiversDareBlue>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void XtremeSpectacular(uint id, float delay)
@@ -118,7 +123,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
         ComponentCondition<XtremeSpectacularLast>(id + 0x30, 4.8f, static comp => comp.NumCasts > 0, "Raidwides") // 173.72
             .DeactivateOnExit<XtremeSpectacular>()
-            .DeactivateOnExit<XtremeSpectacularLast>();
+            .DeactivateOnExit<XtremeSpectacularLast>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void InsaneAir1(uint id, float delay)
@@ -136,7 +142,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
         Cast(id + 0x40, (uint)AID.DiversDareRed, 4.7f, 5.1f, "Raidwide") // 224.58 - 229.66
             .DeactivateOnExit<PyrorotationPuddle>()
-            .DeactivateOnExit<BlastingSnapPuddle>();
+            .DeactivateOnExit<BlastingSnapPuddle>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Snaking(uint id, float delay)
@@ -150,7 +157,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .ActivateOnEnter<AlleyOopWater>()
             .ActivateOnEnter<AlleyOopWaterAfter>()
             .ActivateOnEnter<AlleyOopInferno>()
-            .ActivateOnEnter<AlleyOopInfernoPuddle>();
+            .ActivateOnEnter<AlleyOopInfernoPuddle>()
+            .SetHint(StateMachine.StateHint.Raidwide);
 
         // puddles resolve 0.5s before alley oop; use alley oop for state
         ComponentCondition<AlleyOopWater>(id + 0x10, 13f, static comp => comp.NumCasts > 0, "Cones + puddles") // 252.96 - 258.02 - 258.47
@@ -170,11 +178,12 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         Cast(id + 0x30, (uint)AID.HotImpact2, 3.3f, 5f, "Shared tankbuster") // 264.42 - 269.42
             .ActivateOnEnter<HotImpact2>()
             .ActivateOnExit<AwesomeSplashSlabAerial>()
-            .DeactivateOnExit<HotImpact2>();
+            .DeactivateOnExit<HotImpact2>()
+            .SetHint(StateMachine.StateHint.Tankbuster);
 
         // change deep varial activation earlier for early detection using action timeline
         ActorCast(id + 0x40, _module.DeepBlue, (uint)AID.DeepVarialCast, 1.1f, 6.8f, true, "Big cone AOE") // 270.52 - 277.3
-            //.ActivateOnEnter<DeepVarial>()
+                                                                                                           //.ActivateOnEnter<DeepVarial>()
             .ActivateOnEnter<SteamBurst>()
             .DeactivateOnExit<DeepVarial>();
 
@@ -191,7 +200,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         // hot aerial 1 290.72 - water knockback 300.05 - cutback blaze start 303.09 - water stack/spread 304.68 - cutback actual 308.29
         ComponentCondition<SickSwell1>(id + 0x70, 17.7f, static comp => comp.NumCasts > 0, "Knockback")
             .DeactivateOnExit<SickSwell1>()
-            .DeactivateOnExit<SickestTakeOff>();
+            .DeactivateOnExit<SickestTakeOff>()
+            .SetHint(StateMachine.StateHint.Knockback);
 
         ComponentCondition<AwesomeSplashSlab>(id + 0x80, 2.6f, static comp => !comp.Active, "Water stack/spread")
             .ActivateOnExit<CutbackBlaze>()
@@ -208,7 +218,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         //ComponentCondition<DeepImpact>(id + 0xA1, 0.5f, static comp => !comp.Active, "Baited tankbuster cleave")
         ComponentCondition<DeepImpact>(id + 0xA1, 0.8f, static comp => comp.ActiveBaits.Count == 0, "Baited tankbuster cleave", checkDelay: 1f)
             .DeactivateOnExit<DeepImpactKnockback>()
-            .DeactivateOnExit<DeepImpact>();
+            .DeactivateOnExit<DeepImpact>()
+            .SetHint(StateMachine.StateHint.Tankbuster);
 
         Cast(id + 0xB0, (uint)AID.DiversDareRed, 2.1f, 5f, "Raidwide") // 316.62 - 321.66
             .ActivateOnEnter<DiversDareRed>()
@@ -217,7 +228,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .DeactivateOnExit<DiversDareBlue>()
             .DeactivateOnExit<AlleyOopInfernoPuddle>()
             .DeactivateOnExit<CutbackBlazePuddle>()
-            .DeactivateOnExit<SteamBurst>();
+            .DeactivateOnExit<SteamBurst>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void DeepAerial(uint id, float delay)
@@ -252,7 +264,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .DeactivateOnExit<WateryGrave>()
             .DeactivateOnExit<ScathingSteam>()
             .DeactivateOnExit<RedTether>()
-            .DeactivateOnExit<BlueTether>();
+            .DeactivateOnExit<BlueTether>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void SplitArena(uint id, float delay)
@@ -286,7 +299,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
 
         ComponentCondition<SickSwell1>(id + 0x50, 7.5f, static comp => comp.NumCasts > 0, "Knockback") // 439.66 - 446.7
             .DeactivateOnExit<SickestTakeOff>()
-            .DeactivateOnExit<SickSwell1>();
+            .DeactivateOnExit<SickSwell1>()
+            .SetHint(StateMachine.StateHint.Knockback);
 
         ComponentCondition<AwesomeSplashSlab>(id + 0x60, 2.6f, static comp => !comp.Active, "LP stack") // raidwide cast start 448.83 - 449.25
             .ActivateOnEnter<DiversDareRed>()
@@ -298,7 +312,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .DeactivateOnExit<DiversDareRed>()
             .DeactivateOnExit<DiversDareBlue>()
             .DeactivateOnEnter<AlleyOopInfernoPuddle>()
-            .DeactivateOnExit<PyrorotationPuddle>();
+            .DeactivateOnExit<PyrorotationPuddle>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void InsaneAir2(uint id, float delay)
@@ -306,7 +321,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         Cast(id, (uint)AID.XtremeFiresnaking, delay, 5f, "Raidwide (snaking)") // 464.6 - 469.74
             .ActivateOnEnter<XtremeFiresnaking>()
             .ActivateOnEnter<XtremeWatersnaking>()
-            .ActivateOnExit<InsaneAirTest>();
+            .ActivateOnExit<InsaneAirTest>()
+            .SetHint(StateMachine.StateHint.Raidwide);
 
         ComponentCondition<InsaneAirTest>(id + 0x10, 8f, static comp => comp.ActiveBaits.Count > 0, "Insane Air 2 start"); // 477.42
         ComponentCondition<InsaneAirTest>(id + 0x20, 41f, static comp => comp.ActiveBaits.Count == 0, "Insane Air end") // 518.46
@@ -323,7 +339,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
             .DeactivateOnExit<BlastingSnapPuddle>()
             .DeactivateOnExit<PyrorotationPuddle>()
             .DeactivateOnExit<DiversDareRed>()
-            .DeactivateOnExit<DiversDareBlue>();
+            .DeactivateOnExit<DiversDareBlue>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void AlleyOopPyro(uint id, float delay)
@@ -348,7 +365,8 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         // probably safer to activate it beforehand instead of relying on cast
         // pyrorotation happens slightly before, resolves later, use to control state
         ComponentCondition<Pyrorotation>(id + 0x20, 3.3f, static comp => comp.Active); // 550.25
-        ComponentCondition<DeepImpact>(id + 0x21, 5.7f, static comp => comp.NumCasts > 0, "Puddles + baited tankbuster cleave");
+        ComponentCondition<DeepImpact>(id + 0x21, 5.7f, static comp => comp.NumCasts > 0, "Puddles + baited tankbuster cleave")
+            .SetHint(StateMachine.StateHint.Tankbuster);
 
         ComponentCondition<Pyrorotation>(id + 0x30, 9.2f, static comp => !comp.Active, "Finish puddles") // 883.45
             .DeactivateOnExit<DeepImpact>()
@@ -358,11 +376,13 @@ sealed class M10STheXtremesStates : StateMachineBuilder
         Cast(id + 0x40, (uint)AID.DiversDareRed, 4.4f, 5f, "Raidwide 1")
             .ActivateOnEnter<DiversDareRed>()
             .ActivateOnEnter<DiversDareBlue>()
-            .DeactivateOnExit<PyrorotationPuddle>();
+            .DeactivateOnExit<PyrorotationPuddle>()
+            .SetHint(StateMachine.StateHint.Raidwide);
 
         Cast(id + 0x50, (uint)AID.DiversDareRed, 4.2f, 5f, "Raidwide 2")
             .DeactivateOnExit<DiversDareRed>()
-            .DeactivateOnExit<DiversDareBlue>();
+            .DeactivateOnExit<DiversDareBlue>()
+            .SetHint(StateMachine.StateHint.Raidwide);
     }
 
     private void Enrage(uint id, float delay)

@@ -101,7 +101,7 @@ sealed class Voyage(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(V11GenieStates),
 ConfigType = null,
 ObjectIDType = typeof(OID),

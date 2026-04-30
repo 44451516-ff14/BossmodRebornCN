@@ -97,7 +97,7 @@ public sealed class Plugin : IDalamudPlugin
         _rotation = new(_rotationDB, _bossmod, _hints);
         _ai = new(_rotation, _amex, _movementOverride);
         _broadcast = new();
-        _ipc = new(_rotation, _amex, _movementOverride, _ai);
+        _ipc = new(_bossmod, _hints, _rotation, _amex, _movementOverride, _ai, _hintsBuilder.Obstacles);
         _dtr = new(_rotation, _ai);
         _mbox = new(_rotation, _ws);
         _wndBossmod = new(_bossmod, _zonemod);
@@ -355,10 +355,9 @@ public sealed class Plugin : IDalamudPlugin
             return false;
 
         // treasure chests have no client-side interact range check at all; just assume they use the standard "small" range, seems to be accurate from testing
-        if (targetObj->ObjectKind is FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Treasure)
-            return player?.DistanceToHitbox(target) <= 2.09f;
-
-        return EventFramework.Instance()->CheckInteractRange(playerObj, targetObj, 1, false);
+        return targetObj->ObjectKind is FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Treasure
+            ? player?.DistanceToHitbox(target) <= 2.09f
+            : EventFramework.Instance()->CheckInteractRange(playerObj, targetObj, 1, false);
     }
 
     private unsafe void HandleFateSync()

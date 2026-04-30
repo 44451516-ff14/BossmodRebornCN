@@ -12,7 +12,7 @@ class ArchInferno(BossModule module) : Components.VoidzoneAtCastTarget(module, 5
 }
 class InfernoDevilFirst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InfernoDevilFirst, 10f);
 class InfernoDevilRest(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InfernoDevilRest, 10f);
-class Conflagration(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Conflagration, new AOEShapeRect(20f, 5f));
+class Conflagration(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Conflagration, new AOEShapeRect(40f, 5f));
 class RadialFlagration(BossModule module) : Components.SimpleProtean(module, (uint)AID.RadialFlagrationAOE, new AOEShapeCone(21f, 15f.Degrees())); // TODO: verify angle
 class SpikeOfFlame(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.SpikeOfFlame, 5f);
 class FourfoldFlame(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FourfoldFlame, 6f, 4, 4);
