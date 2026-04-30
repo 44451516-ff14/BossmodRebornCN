@@ -21,8 +21,6 @@
                      MakeZip="false"
                      Author="$(Author)"
                      Name="$(Name)"
-                     InternalName="$(InternalName)"
-                     AssemblyVersion="$(AssemblyVersion)"
                      MinimumDalamudVersion="$(MinimumDalamudVersion)"
                      Punchline="$(Punchline)"
                      Description="$(Description)"

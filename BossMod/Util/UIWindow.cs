@@ -3,6 +3,8 @@ using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
+using TitleBarButton = Dalamud.Interface.Windowing.Window.TitleBarButton;
+
 // windows are automatically registered/unregistered with global window system on construction/disposal
 // there are two common kinds of windows: 'normal' and 'detached'
 // normal windows are expected to be managed by some class:

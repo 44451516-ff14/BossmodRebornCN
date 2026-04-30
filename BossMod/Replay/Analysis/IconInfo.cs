@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 
 namespace BossMod.ReplayAnalysis;
@@ -49,7 +49,7 @@ sealed class IconInfo : CommonEnumInfo
         {
             tree.LeafNode($"Source IDs: {OIDListString(data.SourceOIDs)}");
             tree.LeafNode($"Target IDs: {(data.TargetOIDs.Count == 0 ? "???" : data.SeenTargetNonSelf ? OIDListString(data.TargetOIDs) : "self")}");
-            tree.LeafNode($"VFX: {Service.LuminaRow<Lockon>(iid)?.IconName}");
+            tree.LeafNode($"VFX: {Service.LuminaRow<Lockon>(iid)?.Unknown0}");
         }
     }
 
@@ -75,7 +75,7 @@ sealed class IconInfo : CommonEnumInfo
 
     private string EnumMemberString(uint iid, IconData data)
     {
-        string generateIconName() => Service.LuminaRow<Lockon>(iid)?.IconName.ToString() ?? iid.ToString();
+        string generateIconName() => Service.LuminaRow<Lockon>(iid)?.Unknown0.ToString() ?? iid.ToString();
 
         var name = _iidType?.GetEnumName(iid) ?? $"_Gen_Icon_{generateIconName()}";
         return $"{name} = {iid}, // {OIDListString(data.SourceOIDs)}->{(data.TargetOIDs.Count == 0 ? "???" : data.SeenTargetNonSelf ? OIDListString(data.TargetOIDs) : "self")}";
