@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation.xan;
+namespace BossMod.Autorotation.xan;
 
 public sealed class RangedAI(RotationModuleManager manager, Actor player) : AIBase<RangedAI.Strategy>(manager, player)
 {
@@ -6,7 +6,7 @@ public sealed class RangedAI(RotationModuleManager manager, Actor player) : AIBa
     {
         [Track("Head Graze", InternalName = "Head Graze", Action = ClassShared.AID.HeadGraze)]
         public Track<EnabledByDefault> Interrupt;
-        [Track("Second Wind", InternalName = "Second Wind", Action = ClassShared.AID.SecondWind)]
+        [Track("内丹", InternalName = "内丹", Action = ClassShared.AID.SecondWind)]
         public Track<EnabledByDefault> SecondWind;
         [Track("Limit Break", InternalName = "Limit Break", Actions = [ClassShared.AID.Desperado, ClassShared.AID.BigShot])]
         public Track<EnabledByDefault> LimitBreak;

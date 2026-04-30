@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation.Utility;
+namespace BossMod.Autorotation.Utility;
 //Contribution by Akechi
 //Discord @akechdz or 'Akechi' on Puni.sh for maintenance
 
@@ -12,7 +12,7 @@ public sealed class RolePvPUtility(RotationModuleManager manager, Actor player) 
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: PvP", "PvP Rotation Module", "PvP", "Akechi", RotationModuleQuality.Basic, BitMask.Build(
+        var res = new RotationModuleDefinition("Utility: PvP", "PvP 循环模块", "PvP", "Akechi", RotationModuleQuality.Basic, BitMask.Build(
                 Class.PLD, Class.WAR, Class.DRK, Class.GNB,
                 Class.WHM, Class.SCH, Class.AST, Class.SGE,
                 Class.MNK, Class.DRG, Class.NIN, Class.SAM, Class.RPR, Class.VPR,
@@ -48,7 +48,7 @@ public sealed class RolePvPUtility(RotationModuleManager manager, Actor player) 
             .AddOption(DefensiveStrategy.Forbid, "Forbid use of Purify")
             .AddAssociatedActions(ClassShared.AID.PurifyPvP);
 
-        res.Define(Track.Sprint).As<DefensiveStrategy>("Sprint", uiPriority: 150)
+        res.Define(Track.Sprint).As<DefensiveStrategy>("冲刺", uiPriority: 150)
             .AddOption(DefensiveStrategy.Allow, "Allow use of Sprint when no target is nearby within 30 yalms")
             .AddOption(DefensiveStrategy.Forbid, "Forbid use of Sprint")
             .AddAssociatedActions(ClassShared.AID.Sprint);

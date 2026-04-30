@@ -1,4 +1,4 @@
-﻿using BossMod.SMN;
+using BossMod.SMN;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -59,7 +59,7 @@ public sealed class SMN(RotationModuleManager manager, Actor player) : Castxan<A
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan SMN", "Summoner", "Standard rotation (xan)|Casters", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SMN, Class.ACN), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan SMN", "Summoner", "标准循环 (xan)|法系", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SMN, Class.ACN), 100).WithStrategies<Strategy>();
     }
 
     public SmnFlags TranceFlags;

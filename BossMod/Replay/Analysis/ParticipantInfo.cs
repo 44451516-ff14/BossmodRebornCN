@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System.Globalization;
 
@@ -105,12 +105,12 @@ sealed class ParticipantInfo : CommonEnumInfo
 
     public void DrawContextMenu()
     {
-        if (ImGui.MenuItem("Generate enum for boss module"))
+        if (ImGui.MenuItem("为 Boss 模块生成枚举"))
         {
             ImGui.SetClipboardText(AddOIDEnum(new()).ToString());
         }
 
-        if (ImGui.MenuItem("Generate missing enum values for boss module"))
+        if (ImGui.MenuItem("为 Boss 模块生成缺失的枚举值"))
         {
             var sb = new StringBuilder();
             foreach (var (name, val) in Utils.DedupKeys(_data.Where(kv => _oidType?.GetEnumName(kv.Key) == null).Select(d => EnumMemberString(d.Key, d.Value))))

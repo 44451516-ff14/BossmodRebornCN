@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayVisualization;
 
@@ -30,7 +30,7 @@ public sealed class ColumnEnemyDetails : Timeline.ColumnGroup
         {
             DrawColumnToggle(_casts, "Casts");
             DrawColumnToggle(_hp, "HP");
-            foreach (var _1 in tree.Node("Statuses"))
+            foreach (var _1 in tree.Node("状态"))
                 _statuses.DrawConfig(tree);
         }
         _separator.Width = AnyVisible ? 1 : 0;

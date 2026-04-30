@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using BossMod.Autorotation.xan;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Objects.Types;
@@ -70,7 +70,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         {
             _debugObjects.DrawUIObjects();
         }
-        if (ImGui.CollapsingHeader("Statuses"))
+        if (ImGui.CollapsingHeader("状态"))
         {
             DrawStatuses();
         }
@@ -131,7 +131,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         {
             _debugAction.DrawActionManagerExtensions();
         }
-        if (ImGui.CollapsingHeader("Actions"))
+        if (ImGui.CollapsingHeader("动作"))
         {
             _debugAction.DrawActionData();
         }
@@ -244,7 +244,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     {
         ImGui.BeginTable("enemies", 7, ImGuiTableFlags.Resizable);
         ImGui.TableSetupColumn("Caster");
-        ImGui.TableSetupColumn("Target");
+        ImGui.TableSetupColumn("目标");
         ImGui.TableSetupColumn("Action");
         ImGui.TableSetupColumn("Time");
         ImGui.TableSetupColumn("Location");
@@ -284,7 +284,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         ImGui.BeginTable("items", 3, ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg);
         ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 30);
         ImGui.TableSetupColumn("Quant", ImGuiTableColumnFlags.WidthFixed, 30);
-        ImGui.TableSetupColumn("Name");
+        ImGui.TableSetupColumn("名称");
         ImGui.TableHeadersRow();
         foreach (var (k, i) in ws.Client.Inventory)
         {
@@ -315,10 +315,10 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
 
         ImGui.BeginTable("effects", 6, ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg);
         ImGui.TableSetupColumn("Seq", ImGuiTableColumnFlags.WidthFixed, 30);
-        ImGui.TableSetupColumn("Index", ImGuiTableColumnFlags.WidthFixed, 30);
+        ImGui.TableSetupColumn("索引", ImGuiTableColumnFlags.WidthFixed, 30);
         ImGui.TableSetupColumn("Action");
         ImGui.TableSetupColumn("Source");
-        ImGui.TableSetupColumn("Target");
+        ImGui.TableSetupColumn("目标");
         ImGui.TableSetupColumn("Effects");
         ImGui.TableHeadersRow();
         foreach (var entry in aeh->IncomingEffects)
@@ -359,7 +359,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         ImGui.TextUnformatted($"StD: {overall.StdDevCurrent:f3} (current) / {overall.StdDevCurrent:f3} (predicted)");
 
         ImGui.BeginTable("partyhealth", 4, ImGuiTableFlags.Resizable);
-        ImGui.TableSetupColumn("Name");
+        ImGui.TableSetupColumn("名称");
         ImGui.TableSetupColumn("HP");
         ImGui.TableSetupColumn("Type");
         ImGui.TableHeadersRow();
@@ -386,7 +386,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         var targPos = Service.ObjectTable.LocalPlayer?.TargetObject?.Position ?? new();
         var angle = player?.Rotation.Radians() ?? default; //Angle.FromDirection(new((targPos - selfPos).XZ()));
         var ts = FFXIVClientStructs.FFXIV.Client.Game.Control.TargetSystem.Instance();
-        DrawTarget("Target", ts->Target, selfPos, angle);
+        DrawTarget("目标", ts->Target, selfPos, angle);
         DrawTarget("Soft target", ts->SoftTarget, selfPos, angle);
         DrawTarget("GPose target", ts->GPoseTarget, selfPos, angle);
         DrawTarget("Mouseover", ts->MouseOverTarget, selfPos, angle);
@@ -431,7 +431,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
             }
         }
 
-        using (ImRaii.Table("Target", 2))
+        using (ImRaii.Table("目标", 2))
         {
             for (var i = 0; i < markers->Markers.Length; i++)
             {
@@ -468,7 +468,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         }
 
         ImGui.BeginTable("attrs", 2);
-        ImGui.TableSetupColumn("Index");
+        ImGui.TableSetupColumn("索引");
         ImGui.TableSetupColumn("Value");
         ImGui.TableHeadersRow();
         for (var i = 0; i < 74; ++i)

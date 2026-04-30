@@ -1,4 +1,4 @@
-﻿// TODO: revise and refactor voidzone components;
+// TODO: revise and refactor voidzone components;
 namespace BossMod.Components;
 
 // voidzone (circle aoe that stays active for some time) centered at each existing object with specified OID, assumed to be persistent voidzone center
@@ -6,7 +6,7 @@ namespace BossMod.Components;
 // TODO: typically sources are either eventobj's with eventstate != 7 or normal actors that are non dead; other conditions are much rarer
 
 [SkipLocalsInit]
-public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, float moveHintLength = default) : GenericAOEs(module, default, "GTFO from voidzone!")
+public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumerable<Actor>> sources, float moveHintLength = default) : GenericAOEs(module, default, "离开危险区域！")
 {
     public readonly float MovementHintLength = moveHintLength;
     public readonly AOEShape Shape = moveHintLength == default ? new AOEShapeCircle(radius) : new AOEShapeCapsule(radius, moveHintLength);
@@ -58,7 +58,7 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
 // TODO: this has problems when target moves - castevent and spawn position could be quite different
 // TODO: this has problems if voidzone never actually spawns after castevent, eg because of phase changes
 [SkipLocalsInit]
-public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Func<BossModule, IEnumerable<Actor>> sources, double castEventToSpawn = default) : GenericAOEs(module, aid, "GTFO from voidzone!")
+public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Func<BossModule, IEnumerable<Actor>> sources, double castEventToSpawn = default) : GenericAOEs(module, aid, "离开危险区域！")
 {
     public readonly AOEShapeCircle Shape = new(radius);
     public readonly Func<BossModule, IEnumerable<Actor>> Sources = sources;
@@ -209,7 +209,7 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
         if (Inverted)
             hints.Add(inVoidzone ? "Stay in voidzone" : "Go to voidzone!", !inVoidzone);
         else if (inVoidzone)
-            hints.Add("GTFO from voidzone!");
+            hints.Add("离开危险区域！");
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)

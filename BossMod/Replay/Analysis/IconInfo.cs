@@ -55,7 +55,7 @@ sealed class IconInfo : CommonEnumInfo
 
     public void DrawContextMenu()
     {
-        if (ImGui.MenuItem("Generate enum for boss module"))
+        if (ImGui.MenuItem("为 Boss 模块生成枚举"))
         {
             var sb = new StringBuilder("public enum IconID : uint\n{\n");
             foreach (var (iid, data) in _data)
@@ -64,7 +64,7 @@ sealed class IconInfo : CommonEnumInfo
             ImGui.SetClipboardText(sb.ToString());
         }
 
-        if (ImGui.MenuItem("Generate missing enum values for boss module"))
+        if (ImGui.MenuItem("为 Boss 模块生成缺失的枚举值"))
         {
             var sb = new StringBuilder();
             foreach (var (iid, data) in _data.Where(kv => _iidType?.GetEnumName(kv.Key) == null))

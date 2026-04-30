@@ -1,4 +1,4 @@
-﻿using BossMod.Data;
+using BossMod.Data;
 using BossMod.DRG;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
@@ -47,9 +47,9 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
     {
         [Option("Use on cooldown, once Power Surge is active")]
         Automatic,
-        [Option("Don't use", Cooldown = 20)] // hack to make UI display how long LC will last if we use it immediately at the end of the window
+        [Option("不要使用", Cooldown = 20)] // hack to make UI display how long LC will last if we use it immediately at the end of the window
         Delay,
-        [Option("Use ASAP", Effect = 20, Cooldown = 60)]
+        [Option("尽快使用", Effect = 20, Cooldown = 60)]
         Force
     }
 
@@ -61,13 +61,13 @@ public sealed class DRG(RotationModuleManager manager, Actor player) : Attackxan
         HoldMD,
         [Option("Do not use either")]
         Delay,
-        [Option("Use ASAP", Effect = 15, Cooldown = 30, Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Effect = 15, Cooldown = 30, Targets = ActionTargets.Hostile)]
         Force
     }
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan DRG", "Dragoon", "Standard rotation (xan)|Melee", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.DRG, Class.LNC), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan DRG", "Dragoon", "标准循环 (xan)|近战", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.DRG, Class.LNC), 100).WithStrategies<Strategy>();
     }
 
     public int Eyes;

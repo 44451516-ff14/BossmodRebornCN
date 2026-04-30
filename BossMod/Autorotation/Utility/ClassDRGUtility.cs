@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassDRGUtility(RotationModuleManager manager, Actor player) : RoleMeleeUtility(manager, player)
 {
@@ -9,13 +9,13 @@ public sealed class ClassDRGUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: DRG", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.DRG), 100);
+        var res = new RotationModuleDefinition("Utility: DRG", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.DRG), 100);
         DefineShared(res, IDLimitBreak3);
 
         res.Define(Track.WingedGlide).As<DashStrategy>("Winged Glide", "W.Glide", 20)
             .AddOption(DashStrategy.None, "No use.")
-            .AddOption(DashStrategy.GapClose, "Use as gapcloser if outside melee range", 60, 0, ActionTargets.Hostile, 45)
-            .AddOption(DashStrategy.GapCloseHold1, "Use as gapcloser if outside melee range; conserves 1 charge for manual usage", 60, 0, ActionTargets.Hostile, 84)
+            .AddOption(DashStrategy.GapClose, "超出近战距离时作为突进使用", 60, 0, ActionTargets.Hostile, 45)
+            .AddOption(DashStrategy.GapCloseHold1, "超出近战距离时作为突进使用；保留 1 层供手动使用", 60, 0, ActionTargets.Hostile, 84)
             .AddAssociatedActions(DRG.AID.WingedGlide);
 
         return res;

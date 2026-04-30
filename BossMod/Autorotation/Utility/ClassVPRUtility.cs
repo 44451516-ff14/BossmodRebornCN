@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassVPRUtility(RotationModuleManager manager, Actor player) : RoleMeleeUtility(manager, player)
 {
@@ -9,11 +9,11 @@ public sealed class ClassVPRUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: VPR", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.VPR), 100);
+        var res = new RotationModuleDefinition("Utility: VPR", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.VPR), 100);
         DefineShared(res, IDLimitBreak3);
 
         res.Define(Track.Slither).As<DashStrategy>("Slither", "", 20)
-            .AddOption(DashStrategy.None, "No use")
+            .AddOption(DashStrategy.None, "不使用")
             .AddOption(DashStrategy.GapClose, "Use as gapcloser if outside melee range; uses all charges if needed", 30, 0, ActionTargets.Party | ActionTargets.Hostile, 35)
             .AddOption(DashStrategy.GapCloseHold1, "Use as gapcloser if outside melee range; holds 1 charge for manual usage", 30, 0, ActionTargets.Party | ActionTargets.Hostile, 35)
             .AddOption(DashStrategy.GapCloseHold2, "Use as gapcloser if outside melee range; holds 2 charges for manual usage", 30, 0, ActionTargets.Party | ActionTargets.Hostile, 84)

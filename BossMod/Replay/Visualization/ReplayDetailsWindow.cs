@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using System.IO;
@@ -152,7 +152,7 @@ sealed class ReplayDetailsWindow : UIWindow
                 }
 
                 ImGui.SameLine();
-                if (ImGui.Button(plans.SelectedIndex >= 0 ? "Edit" : "New"))
+                if (ImGui.Button(plans.SelectedIndex >= 0 ? "Edit" : "新建"))
                 {
                     if (plans.SelectedIndex < 0)
                     {
@@ -378,10 +378,10 @@ sealed class ReplayDetailsWindow : UIWindow
         ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
         ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
         ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200);
-        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("Target", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("Cast", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("Statuses", ImGuiTableColumnFlags.None, 100);
+        ImGui.TableSetupColumn("名称", ImGuiTableColumnFlags.None, 100);
+        ImGui.TableSetupColumn("目标", ImGuiTableColumnFlags.None, 100);
+        ImGui.TableSetupColumn("咏唱", ImGuiTableColumnFlags.None, 100);
+        ImGui.TableSetupColumn("状态", ImGuiTableColumnFlags.None, 100);
         ImGui.TableSetupColumn("Hints", ImGuiTableColumnFlags.None, 250);
         ImGui.TableHeadersRow();
         foreach ((int slot, var player) in _player.WorldState.Party.WithSlot(true))
@@ -454,10 +454,10 @@ sealed class ReplayDetailsWindow : UIWindow
         ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
         ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
         ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200);
-        ImGui.TableSetupColumn("Name");
-        ImGui.TableSetupColumn("Target");
-        ImGui.TableSetupColumn("Cast");
-        ImGui.TableSetupColumn("Statuses");
+        ImGui.TableSetupColumn("名称");
+        ImGui.TableSetupColumn("目标");
+        ImGui.TableSetupColumn("咏唱");
+        ImGui.TableSetupColumn("状态");
         ImGui.TableHeadersRow();
         foreach (var enemy in actors)
         {
@@ -479,10 +479,10 @@ sealed class ReplayDetailsWindow : UIWindow
         ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
         ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
         ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200);
-        ImGui.TableSetupColumn("Name");
-        ImGui.TableSetupColumn("Target");
-        ImGui.TableSetupColumn("Cast");
-        ImGui.TableSetupColumn("Statuses");
+        ImGui.TableSetupColumn("名称");
+        ImGui.TableSetupColumn("目标");
+        ImGui.TableSetupColumn("咏唱");
+        ImGui.TableSetupColumn("状态");
         ImGui.TableHeadersRow();
         foreach (var actor in _player.WorldState.Actors)
         {
@@ -586,7 +586,7 @@ sealed class ReplayDetailsWindow : UIWindow
         var player = new ReplayPlayer(_player.Replay);
         player.WorldState.Frame.Timestamp = _player.Replay.Ops[0].Timestamp;
         player.AdvanceTo(enc.Time.Start, () => { });
-        using var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, $"Encounter_{Utils.StringToIdentifier(primaryActorName ?? "unknown")}");
+        using var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, $"Encounter_{Utils.StringToIdentifier(primaryActorName ?? "未知")}");
         player.AdvanceTo(enc.Time.End, () => { });
     }
 }

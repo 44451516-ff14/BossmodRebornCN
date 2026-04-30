@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 
@@ -48,7 +48,7 @@ public sealed class UIPresetEditor
         }
         else
         {
-            Preset = new("New");
+            Preset = new("新建");
             NameConflict = CheckNameConflict();
             MakeNameUnique();
             Modified = false; // don't bother...
@@ -86,7 +86,7 @@ public sealed class UIPresetEditor
     {
         using (ImRaii.Disabled(_sourcePresetDefault))
         {
-            if (ImGui.InputText("Name", ref Preset.Name, 256))
+            if (ImGui.InputText("名称", ref Preset.Name, 256))
             {
                 Modified = true;
                 NameConflict = CheckNameConflict();
@@ -96,7 +96,7 @@ public sealed class UIPresetEditor
         using var table = ImRaii.Table("preset_details", 2);
         if (!table)
             return;
-        ImGui.TableSetupColumn("Modules", ImGuiTableColumnFlags.WidthFixed, 200 * ImGuiHelpers.GlobalScale);
+        ImGui.TableSetupColumn("模块", ImGuiTableColumnFlags.WidthFixed, 200 * ImGuiHelpers.GlobalScale);
         ImGui.TableSetupColumn("Strategies");
         ImGui.TableNextColumn();
         DrawModulesList();
@@ -171,7 +171,7 @@ public sealed class UIPresetEditor
         if (ImGui.Button("Add##module", width))
             ImGui.OpenPopup("add_module");
 
-        if (UIMisc.Button("Remove##module", width.X, (_selectedModuleIndex < 0, "Select any module to remove"), (!ImGui.GetIO().KeyShift, "Hold shift")))
+        if (UIMisc.Button("Remove##module", width.X, (_selectedModuleIndex < 0, "Select any module to remove"), (!ImGui.GetIO().KeyShift, "按住 Shift")))
         {
             var m = Preset.Modules[_selectedModuleIndex];
             AddAvailableModule(m.Type, m.Definition, m.Builder, _availableModules);

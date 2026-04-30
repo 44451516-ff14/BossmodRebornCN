@@ -1,4 +1,4 @@
-﻿using BossMod.SGE;
+using BossMod.SGE;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -38,7 +38,7 @@ public sealed class SGE(RotationModuleManager manager, Actor player) : Castxan<A
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan SGE", "Sage", "Standard rotation (xan)|Healers", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SGE), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan SGE", "Sage", "标准循环 (xan)|治疗", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SGE), 100).WithStrategies<Strategy>();
     }
 
     public int Gall;

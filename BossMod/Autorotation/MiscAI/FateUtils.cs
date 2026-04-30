@@ -11,20 +11,20 @@ public sealed class FateUtils(RotationModuleManager manager, Actor player) : Rot
 
         res.Define(Track.Handin).As<Flag>("Hand-in")
             .AddOption(Flag.Enabled, "Automatically hand in FATE items at 10+")
-            .AddOption(Flag.Disabled, "Do nothing");
+            .AddOption(Flag.Disabled, "什么都不做");
 
         res.Define(Track.Collect).As<Flag>("Collect")
             .AddOption(Flag.Enabled, "Try to collect FATE items instead of engaging in combat")
-            .AddOption(Flag.Disabled, "Do nothing");
+            .AddOption(Flag.Disabled, "什么都不做");
 
         res.Define(Track.Sync).As<AIHints.FateSync>("Sync")
-            .AddOption(AIHints.FateSync.None, "Do nothing")
+            .AddOption(AIHints.FateSync.None, "什么都不做")
             .AddOption(AIHints.FateSync.Enable, "Always enable level sync if possible")
             .AddOption(AIHints.FateSync.Disable, "Always disable level sync if possible");
 
         res.Define(Track.Chocobo).As<Flag>("Chocobo")
             .AddOption(Flag.Enabled, "Resummon chocobo if <60s on timer")
-            .AddOption(Flag.Disabled, "Do nothing");
+            .AddOption(Flag.Disabled, "什么都不做");
 
         return res;
     }

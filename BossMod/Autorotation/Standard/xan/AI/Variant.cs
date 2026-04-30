@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation.xan;
+namespace BossMod.Autorotation.xan;
 
 public class VariantAI(RotationModuleManager manager, Actor player) : AIBase<VariantAI.Strategy>(manager, player)
 {
@@ -30,7 +30,7 @@ public class VariantAI(RotationModuleManager manager, Actor player) : AIBase<Var
     {
         [Option("Use at half HP or lower")]
         Enabled,
-        [Option("Don't use")]
+        [Option("不要使用")]
         Disabled,
     }
 

@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using static BossMod.AIHints;
 using static FFXIVClientStructs.FFXIV.Client.Game.ActionManager;
@@ -561,7 +561,7 @@ public abstract class AkechiTools<AID, TraitID>(RotationModuleManager manager, A
 static class ToolsExtensions
 {
     public static RotationModuleDefinition.ConfigRef<SoftTargetStrategy> DefineTargeting(this RotationModuleDefinition res)
-        => res.Define(SharedTrack.Targeting).As<SoftTargetStrategy>("Targeting", "", 295)
+        => res.Define(SharedTrack.Targeting).As<SoftTargetStrategy>("目标选择", "", 295)
             .AddOption(SoftTargetStrategy.Automatic, "Allow auto-selecting best target for maximum optimal DPS output - does not change hard target")
             .AddOption(SoftTargetStrategy.AutoHard, "Allow auto-selecting best target for maximum optimal DPS output - will change hard target")
             .AddOption(SoftTargetStrategy.Manual, "Forbid auto-selecting best target, instead executing only on whichever target is currently selected");

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -90,7 +90,7 @@ public static class ConfigConverter
                         }
                         var jplan = (JsonObject)plan!;
                         jplan.Remove("PlanAbilities");
-                        jplan["Actions"] = actions;
+                        jplan["动作"] = actions;
                     }
                 }
             }
@@ -149,7 +149,7 @@ public static class ConfigConverter
         using var manifest = Serialization.WriteJson(manifestStream);
         manifest.WriteStartObject();
         manifest.WriteNumber("version", 0);
-        manifest.WriteStartObject("payload");
+        manifest.WriteStartObject("载荷");
         foreach (var (ct, cfg) in payload.AsObject())
         {
             if (!cfg!.AsObject().TryRemoveNode("CooldownPlans", out var cdplans))
@@ -178,8 +178,8 @@ public static class ConfigConverter
                     using var jplan = Serialization.WriteJson(planStream);
                     jplan.WriteStartObject();
                     jplan.WriteNumber("version", 0);
-                    jplan.WriteStartObject("payload");
-                    jplan.WriteString("Name", plan!["Name"]!.GetValue<string>());
+                    jplan.WriteStartObject("载荷");
+                    jplan.WriteString("名称", plan!["名称"]!.GetValue<string>());
                     jplan.WriteString("Encounter", t);
                     jplan.WriteString("Class", cls);
                     jplan.WriteNumber("Level", type != null ? BossModuleRegistry.FindByType(type)?.PlanLevel ?? 0 : 0);
@@ -187,19 +187,19 @@ public static class ConfigConverter
                     foreach (var d in plan["Timings"]!["PhaseDurations"]!.AsArray())
                         jplan.WriteNumberValue(d!.GetValue<float>());
                     jplan.WriteEndArray();
-                    jplan.WriteStartObject("Modules");
+                    jplan.WriteStartObject("模块");
                     ConvertV9WriteTrack(jplan, $"BossMod.Autorotation.Class{cls}Utility", utilityTracks);
                     ConvertV9WriteTrack(jplan, $"BossMod.Autorotation.Legacy.Legacy{cls}", rotationTracks);
                     jplan.WriteEndObject();
                     if (oplan.TryGetPropertyValue("Targets", out var jtargets))
                     {
-                        jplan.WriteStartArray("Targeting");
+                        jplan.WriteStartArray("目标选择");
                         foreach (var target in jtargets!.AsArray())
                         {
                             var jt = target!.AsObject();
                             if (jt.TryRemoveNode("OID", out var oid))
                             {
-                                jt["Target"] = "EnemyByOID";
+                                jt["目标"] = "EnemyByOID";
                                 jt["TargetParam"] = int.Parse(oid!.GetValue<string>()[2..], System.Globalization.NumberStyles.HexNumber);
                             }
                             jt.WriteTo(jplan);
@@ -221,27 +221,27 @@ public static class ConfigConverter
     private static Dictionary<string, List<JsonObject>> ConvertV9ActionsToUtilityTracks(JsonObject plan)
     {
         Dictionary<string, List<JsonObject>> tracks = [];
-        if (!plan.TryGetPropertyValue("Actions", out var actions))
+        if (!plan.TryGetPropertyValue("动作", out var actions))
             return tracks;
         foreach (var action in actions!.AsArray())
         {
             var aobj = action!.AsObject();
-            aobj["Option"] = "Use";
+            aobj["选项"] = "Use";
             if (aobj.TryRemoveNode("LowPriority", out var jprio))
                 aobj.Add("PriorityOverride", jprio!.GetValue<bool>() ? ActionQueue.Priority.Low : ActionQueue.Priority.High);
-            if (aobj.TryRemoveNode("Target", out var jtarget))
+            if (aobj.TryRemoveNode("目标", out var jtarget))
             {
                 switch (jtarget!["Type"]!.GetValue<string>()!)
                 {
-                    case "Self":
-                        aobj["Target"] = "Self";
+                    case "自身":
+                        aobj["目标"] = "自身";
                         break;
                     case "EnemyByOID":
-                        aobj["Target"] = "EnemyByOID";
+                        aobj["目标"] = "EnemyByOID";
                         aobj["TargetParam"] = jtarget["OID"]!.GetValue<int>();
                         break;
                     case "LowestHPPartyMember":
-                        aobj["Target"] = "PartyWithLowestHP";
+                        aobj["目标"] = "PartyWithLowestHP";
                         aobj["TargetParam"] = jtarget["AllowSelf"]!.GetValue<bool>() ? 1 : 0;
                         break;
                 }
@@ -253,15 +253,15 @@ public static class ConfigConverter
                 {
                     case "Bloodwhetting":
                         id = "BW";
-                        aobj["Option"] = "BW";
+                        aobj["选项"] = "BW";
                         break;
                     case "RawIntuition":
                         id = "BW";
-                        aobj["Option"] = "RI";
+                        aobj["选项"] = "RI";
                         break;
                     case "NascentFlash":
                         id = "BW";
-                        aobj["Option"] = "NF";
+                        aobj["选项"] = "NF";
                         break;
                 }
                 tracks.GetOrAdd(id).Add(aobj);
@@ -280,7 +280,7 @@ public static class ConfigConverter
             var t = tracks[track] = [.. values!.AsArray().Select(n => n!.AsObject())];
             foreach (var v in t)
                 if (v.TryRemoveNode("Value", out var jv))
-                    v["Option"] = jv;
+                    v["选项"] = jv;
         }
         return tracks;
     }

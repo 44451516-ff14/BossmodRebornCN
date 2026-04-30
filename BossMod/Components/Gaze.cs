@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod.Components;
 
@@ -42,7 +42,7 @@ public abstract class GenericGaze(BossModule module, uint aid = default) : CastC
             ref readonly var eye = ref eyes[i];
             if (actor.Position.InCircle(eye.Position, eye.Range) && HitByEye(ref actor, eye) != eye.Inverted)
             {
-                hints.Add(eye.Inverted ? "Face the eye!" : "Turn away from gaze!");
+                hints.Add(eye.Inverted ? "Face the eye!" : "背对视线！");
                 break;
             }
         }

@@ -68,7 +68,7 @@ public sealed class DebugObjects
                 if (obj is IBattleChara battleChara)
                 {
                     _tree.LeafNode($"Cast: {Utils.CastTimeString(battleChara.CurrentCastTime, battleChara.TotalCastTime)} {new ActionID((ActionType)battleChara.CastActionType, battleChara.CastActionId)}");
-                    foreach (var nn in _tree.Node("Statuses"))
+                    foreach (var nn in _tree.Node("状态"))
                     {
                         for (var j = 0; j < battleChara.StatusList.Length; ++j)
                         {
@@ -111,7 +111,7 @@ public sealed class DebugObjects
     {
         var module = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->UIModule->GetUI3DModule();
         ImGui.BeginTable("uiobj", 3, ImGuiTableFlags.Resizable);
-        ImGui.TableSetupColumn("Index");
+        ImGui.TableSetupColumn("索引");
         ImGui.TableSetupColumn("GameObj");
         ImGui.TableSetupColumn("NamePlateKind");
         ImGui.TableHeadersRow();
@@ -148,7 +148,7 @@ public sealed class DebugObjects
                 if (chara.IsCasting)
                 {
                     var target = Service.ObjectTable.SearchById(chara.CastTargetObjectId);
-                    var targetString = target != null ? Utils.ObjectString(target) : "unknown";
+                    var targetString = target != null ? Utils.ObjectString(target) : "未知";
                     res.Append($", castAction={new ActionID((ActionType)chara.CastActionType, chara.CastActionId)}, castTarget={targetString}, castLoc={Utils.Vec3String(Utils.BattleCharaInternal(chara)->GetCastInfo()->TargetLocation)}, castTime={Utils.CastTimeString(chara.CurrentCastTime, chara.TotalCastTime)}");
                 }
                 foreach (var status in chara!.StatusList)
@@ -181,7 +181,7 @@ public sealed class DebugObjects
 
     private unsafe void ObjectContextMenu(IGameObject obj)
     {
-        if (ImGui.MenuItem("Target"))
+        if (ImGui.MenuItem("目标"))
         {
             Service.TargetManager.Target = obj;
         }

@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
+using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 
 namespace BossMod.Autorotation;
 
@@ -34,8 +34,8 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
             .AddOption(BurstStrategy.ForceExtendST, "Force extend ST buff by the end of the window, potentially overcapping gauge and/or ST")
             .AddOption(BurstStrategy.IgnoreST, "Aggressively spend gauge, disregarding ST buff, even if is not up/running out soon (useful before long downtimes)");
 
-        res.Define(Track.Potion).As<PotionStrategy>("Potion", uiPriority: 70)
-            .AddOption(PotionStrategy.Manual, "Do not use automatically")
+        res.Define(Track.Potion).As<PotionStrategy>("爆发药", uiPriority: 70)
+            .AddOption(PotionStrategy.Manual, "不要自动使用")
             .AddOption(PotionStrategy.AlignWithRaidBuffs, "Align with 2-minute raid buffs (0/6, 2/8, etc)", 270, 30)
             .AddOption(PotionStrategy.AlignWithIR, "Align with IR, allow on odd minutes (0/5/10)")
             .AddOption(PotionStrategy.Immediate, "Use ASAP, even if without ST and with IR on cd (0/4:30/9)", 270, 30)
@@ -43,8 +43,8 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
 
         res.Define(Track.PrimalRend).As<PrimalRendStrategy>("PR", uiPriority: 30)
             .AddOption(PrimalRendStrategy.Automatic, "Use normally: rend only when already in melee range, delay until raidbuffs if possible", 0, 0, ActionTargets.Hostile, 90)
-            .AddOption(PrimalRendStrategy.Forbid, "Do not use automatically", 0, 0, ActionTargets.Hostile, 90)
-            .AddOption(PrimalRendStrategy.Force, "Force use ASAP", 0, 0, ActionTargets.Hostile, 90)
+            .AddOption(PrimalRendStrategy.Forbid, "不要自动使用", 0, 0, ActionTargets.Hostile, 90)
+            .AddOption(PrimalRendStrategy.Force, "强制尽快使用", 0, 0, ActionTargets.Hostile, 90)
             .AddOption(PrimalRendStrategy.GapClose, "Use Rend if outside melee range as a gap-closer", 0, 0, ActionTargets.Hostile, 90)
             .AddOption(PrimalRendStrategy.SmuggleNextPotion, "Delay until last possible GCD, if potion will be ready by the time ruin expires (useful for smuggling ruin into unaligned pot window)", 0, 0, ActionTargets.Hostile, 90)
             .AddOption(PrimalRendStrategy.SmuggleAlignedPotion, "Delay until last possible GCD, if potion will be ready by the time ruin expires and would overlap raidbuffs (useful for smuggling ruin into aligned pot window)", 0, 0, ActionTargets.Hostile, 90)
@@ -54,14 +54,14 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
         res.Define(Track.Tomahawk).As<TomahawkStrategy>("Tomahawk", uiPriority: 10)
             .AddOption(TomahawkStrategy.OpenerRanged, "Use as very first GCD and only if outside melee range")
             .AddOption(TomahawkStrategy.Opener, "Use as very first GCD regardless of range")
-            .AddOption(TomahawkStrategy.Forbid, "Do not use automatically")
+            .AddOption(TomahawkStrategy.Forbid, "不要自动使用")
             .AddOption(TomahawkStrategy.Force, "Force use ASAP (even in melee range)")
             .AddOption(TomahawkStrategy.Ranged, "Use if outside melee range")
             .AddAssociatedActions(WAR.AID.Tomahawk);
 
         res.Define(Track.InnerRelease).As<OffensiveStrategy>("IR", uiPriority: 50)
             .AddOption(OffensiveStrategy.Automatic, "Use normally (whenever ST is up)")
-            .AddOption(OffensiveStrategy.Delay, "Delay")
+            .AddOption(OffensiveStrategy.Delay, "延迟")
             .AddOption(OffensiveStrategy.Force, "Force use ASAP (even during downtime or without ST)")
             .AddAssociatedActions(WAR.AID.Berserk, WAR.AID.InnerRelease);
 
@@ -74,13 +74,13 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
 
         res.Define(Track.Upheaval).As<OffensiveStrategy>("Upheaval", uiPriority: 40)
             .AddOption(OffensiveStrategy.Automatic, "Use normally (ASAP, assuming ST is up)")
-            .AddOption(OffensiveStrategy.Delay, "Delay")
+            .AddOption(OffensiveStrategy.Delay, "延迟")
             .AddOption(OffensiveStrategy.Force, "Force use ASAP (even without ST)")
             .AddAssociatedActions(WAR.AID.Upheaval, WAR.AID.Orogeny);
 
         res.Define(Track.Wrath).As<OffensiveStrategy>("Wrath", uiPriority: -10)
             .AddOption(OffensiveStrategy.Automatic, "Use normally (ASAP, assuming ST is up)")
-            .AddOption(OffensiveStrategy.Delay, "Delay")
+            .AddOption(OffensiveStrategy.Delay, "延迟")
             .AddOption(OffensiveStrategy.Force, "Force use ASAP (even without ST)")
             .AddAssociatedActions(WAR.AID.PrimalWrath);
 
@@ -91,7 +91,7 @@ public sealed class VeynWAR(RotationModuleManager manager, Actor player) : Rotat
             .AddOption(OnslaughtStrategy.Force, "Use all charges ASAP")
             .AddOption(OnslaughtStrategy.ForceReserve, "Use all charges except one ASAP")
             .AddOption(OnslaughtStrategy.ReserveTwo, "Reserve 2 charges, trying to prevent overcap")
-            .AddOption(OnslaughtStrategy.GapClose, "Use as gapcloser if outside melee range")
+            .AddOption(OnslaughtStrategy.GapClose, "超出近战距离时作为突进使用")
             .AddAssociatedActions(WAR.AID.Onslaught);
 
         res.Define(Track.Bozja).As<BozjaStrategy>("Bozja", uiPriority: -20)

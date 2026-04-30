@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility.Raii;
 
@@ -70,7 +70,7 @@ public sealed class UIRotationWindow : UIWindow
                 }
 
                 ImGui.SameLine();
-                if (ImGui.Button(plans.SelectedIndex >= 0 ? "Edit" : "New"))
+                if (ImGui.Button(plans.SelectedIndex >= 0 ? "Edit" : "新建"))
                 {
                     if (plans.SelectedIndex < 0)
                     {
@@ -137,7 +137,7 @@ public sealed class UIRotationWindow : UIWindow
         using (ImRaii.PushColor(ImGuiCol.ButtonHovered, Colors.ButtonPushColor3, mgr.Preset == RotationModuleManager.ForceDisable))
         using (ImRaii.PushColor(ImGuiCol.ButtonActive, Colors.ButtonPushColor4, mgr.Preset == RotationModuleManager.ForceDisable))
         {
-            if (ImGui.Button("Disabled"))
+            if (ImGui.Button("禁用"))
             {
                 mgr.Preset = mgr.Preset == RotationModuleManager.ForceDisable ? null : RotationModuleManager.ForceDisable;
                 modified |= true;

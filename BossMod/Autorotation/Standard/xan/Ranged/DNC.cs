@@ -1,4 +1,4 @@
-﻿using BossMod.DNC;
+using BossMod.DNC;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -22,7 +22,7 @@ public sealed class DNC(RotationModuleManager manager, Actor player) : Attackxan
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan DNC", "Dancer", "Standard rotation (xan)|Ranged", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.DNC), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan DNC", "Dancer", "标准循环 (xan)|远敏", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.DNC), 100).WithStrategies<Strategy>();
     }
 
     public enum PartnerStrategy

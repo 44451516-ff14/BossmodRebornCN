@@ -1,4 +1,4 @@
-﻿using BossMod.GNB;
+using BossMod.GNB;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -19,7 +19,7 @@ public sealed class GNB(RotationModuleManager manager, Actor player) : Attackxan
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan GNB", "Gunbreaker", "Standard rotation (xan)|Tanks", "xan", RotationModuleQuality.WIP, BitMask.Build(Class.GNB), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan GNB", "Gunbreaker", "标准循环 (xan)|坦克", "xan", RotationModuleQuality.WIP, BitMask.Build(Class.GNB), 100).WithStrategies<Strategy>();
     }
 
     public int Ammo;

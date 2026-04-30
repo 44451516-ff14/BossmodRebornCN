@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using System.IO;
 using System.Text.Json;
@@ -113,22 +113,22 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
         if (UIMisc.Button("Save as copy", _selectedPresetIndex < 0, "Can't save new preset as copy"))
             SaveCurrentPresetAsCopy();
         ImGui.SameLine();
-        if (UIMisc.Button("Revert", 0, (!HaveUnsavedModifications, "Current preset is not modified"), (_selectedPresetIndex < 0, "No preset is selected")))
+        if (UIMisc.Button("Revert", 0, (!HaveUnsavedModifications, "Current preset is not modified"), (_selectedPresetIndex < 0, "未选择预设")))
             RevertCurrentPreset();
         ImGui.SameLine();
-        if (UIMisc.Button("New", HaveUnsavedModifications, "Current preset is modified, save or discard changes"))
+        if (UIMisc.Button("新建", HaveUnsavedModifications, "当前预设已修改，请保存或放弃更改"))
             CreateNewPreset(-1, false);
         ImGui.SameLine();
-        if (UIMisc.Button("Copy", 0, (HaveUnsavedModifications, "Current preset is modified, save or discard changes"), (_selectedPresetIndex < 0, "No preset is selected")))
+        if (UIMisc.Button("Copy", 0, (HaveUnsavedModifications, "当前预设已修改，请保存或放弃更改"), (_selectedPresetIndex < 0, "未选择预设")))
             CreateNewPreset(_selectedPresetIndex, _selectedPresetDefault);
         ImGui.SameLine();
-        if (UIMisc.Button("Delete", 0, (_selectedPresetDefault, "The default preset can't be deleted. If you would like to hide it, you can do so in Settings -> Autorotation."), (!ImGui.GetIO().KeyShift, "Hold shift to delete"), (_selectedPresetIndex < 0, "No preset is selected")))
+        if (UIMisc.Button("删除", 0, (_selectedPresetDefault, "The default preset can't be deleted. If you would like to hide it, you can do so in Settings -> Autorotation."), (!ImGui.GetIO().KeyShift, "Hold shift to delete"), (_selectedPresetIndex < 0, "未选择预设")))
             DeleteCurrentPreset();
         ImGui.SameLine();
-        if (UIMisc.Button("Export", _selectedPreset == null, "No preset is selected"))
+        if (UIMisc.Button("Export", _selectedPreset == null, "未选择预设"))
             ExportToClipboard();
         ImGui.SameLine();
-        if (UIMisc.Button("Import", HaveUnsavedModifications, "Current preset is modified, save or discard changes"))
+        if (UIMisc.Button("Import", HaveUnsavedModifications, "当前预设已修改，请保存或放弃更改"))
             ImportNewPresetFromClipboard();
     }
 
@@ -161,7 +161,7 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
         }
     }
 
-    private bool DrawSaveCurrentPresetButton() => UIMisc.Button("Save", 0, (!HaveUnsavedModifications, "Current preset is not modified"), (_selectedPreset?.NameConflict ?? false, "Current preset name is empty or duplicates name of other existing preset"));
+    private bool DrawSaveCurrentPresetButton() => UIMisc.Button("保存", 0, (!HaveUnsavedModifications, "Current preset is not modified"), (_selectedPreset?.NameConflict ?? false, "Current preset name is empty or duplicates name of other existing preset"));
 
     private void RevertCurrentPreset() => _selectedPreset = new(PresetDB, _selectedPresetIndex, _selectedPresetDefault, _selectedModuleType);
 
@@ -249,7 +249,7 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
             var json = JsonNode.Parse(ImGui.GetClipboardText());
 
             // handle case where someone has posted the entire raw json for whatever reason
-            if (json?.AsObject()?.TryGetPropertyValue("payload", out var obj) == true)
+            if (json?.AsObject()?.TryGetPropertyValue("载荷", out var obj) == true)
                 json = obj;
 
             // let users import encounter-specific plans from here for convenience

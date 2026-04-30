@@ -2,8 +2,8 @@
   "Author": "The Combat Reborn Team",
   "Name": "Bossmod Reborn",
   "InternalName": "BossModReborn",
-  "Punchline": "Don't fail at raid mechanics anymore",
-  "Description": "A bunch of utilities to simplify bosses.",
+  "Punchline": "不再被副本机制坑倒",
+  "Description": "一组用于简化首领战处理的工具。",
   "RepoUrl": "https://github.com/FFXIV-CombatReborn/BossmodReborn",
   "IconUrl": "https://raw.githubusercontent.com/FFXIV-CombatReborn/RebornAssets/main/IconAssets/BMR_Icon.png",
   "ImageUrls": [

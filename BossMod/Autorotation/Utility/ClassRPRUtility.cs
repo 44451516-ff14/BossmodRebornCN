@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassRPRUtility(RotationModuleManager manager, Actor player) : RoleMeleeUtility(manager, player)
 {
@@ -8,7 +8,7 @@ public sealed class ClassRPRUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: RPR", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.RPR), 100);
+        var res = new RotationModuleDefinition("Utility: RPR", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.RPR), 100);
         DefineShared(res, IDLimitBreak3);
 
         DefineSimpleConfig(res, Track.ArcaneCrest, "Crest", "", 600, RPR.AID.ArcaneCrest, 5);

@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 namespace BossMod;
 
 [SkipLocalsInit]
@@ -15,7 +15,7 @@ public sealed class StateMachineWindow : UIWindow
 
     public override void Draw()
     {
-        if (ImGui.CollapsingHeader("Settings"))
+        if (ImGui.CollapsingHeader("设置"))
         {
             ImGui.Checkbox("Draw unnamed nodes", ref _col.DrawUnnamedNodes);
             ImGui.Checkbox("Draw tankbuster nodes only", ref _col.DrawTankbusterNodesOnly);

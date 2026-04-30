@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public abstract class RoleHealerUtility(RotationModuleManager manager, Actor player) : GenericUtility(manager, player)
 {
@@ -7,7 +7,7 @@ public abstract class RoleHealerUtility(RotationModuleManager manager, Actor pla
 
     protected static void DefineShared(RotationModuleDefinition def, ActionID lb3)
     {
-        DefineSimpleConfig(def, SharedTrack.Sprint, "Sprint", "", 10, ClassShared.AID.Sprint, 10);
+        DefineSimpleConfig(def, SharedTrack.Sprint, "冲刺", "", 10, ClassShared.AID.Sprint, 10);
 
         DefineLimitBreak(def, SharedTrack.LB, ActionTargets.Self, 8)
             .AddAssociatedActions(ClassShared.AID.HealingWind, ClassShared.AID.BreathOfTheEarth)
@@ -18,8 +18,8 @@ public abstract class RoleHealerUtility(RotationModuleManager manager, Actor pla
         DefineSimpleConfig(def, SharedTrack.LucidDreaming, "LucidDreaming", "Lucid", 30, ClassShared.AID.LucidDreaming, 21);
 
         // TODO: combine standard/ex options
-        def.Define(SharedTrack.Swiftcast).As<SwiftcastOption>("Swiftcast", "Swift", 20)
-            .AddOption(SwiftcastOption.None, "Do not use automatically")
+        def.Define(SharedTrack.Swiftcast).As<SwiftcastOption>("即刻咏唱", "Swift", 20)
+            .AddOption(SwiftcastOption.None, "不要自动使用")
             .AddOption(SwiftcastOption.Use, "Use Swiftcast (10s)", 60, 10, ActionTargets.Self, 22, 93)
             .AddOption(SwiftcastOption.UseEx, "Use Swiftcast (15s)", 40, 10, ActionTargets.Self, 94)
             .AddAssociatedActions(ClassShared.AID.Swiftcast);

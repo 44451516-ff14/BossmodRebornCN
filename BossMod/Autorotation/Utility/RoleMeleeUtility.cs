@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 // base class that simplifies implementation of physical melee dps utility modules, contains shared track definitions
 public abstract class RoleMeleeUtility(RotationModuleManager manager, Actor player) : GenericUtility(manager, player)
@@ -8,7 +8,7 @@ public abstract class RoleMeleeUtility(RotationModuleManager manager, Actor play
 
     protected static void DefineShared(RotationModuleDefinition def, ActionID lb3)
     {
-        DefineSimpleConfig(def, SharedTrack.Sprint, "Sprint", "", 100, ClassShared.AID.Sprint, 10);
+        DefineSimpleConfig(def, SharedTrack.Sprint, "冲刺", "", 100, ClassShared.AID.Sprint, 10);
 
         DefineLimitBreak(def, SharedTrack.LB, ActionTargets.Hostile)
             .AddAssociatedActions(ClassShared.AID.Braver, ClassShared.AID.Bladedance)
@@ -22,7 +22,7 @@ public abstract class RoleMeleeUtility(RotationModuleManager manager, Actor play
         // TODO: combine standard/ex options
         // TODO: add 'if-not-active' strategy with configurable min-time-left
         def.Define(SharedTrack.Feint).As<FeintOption>("Feint", "", 250)
-            .AddOption(FeintOption.None, "Do not use automatically")
+            .AddOption(FeintOption.None, "不要自动使用")
             .AddOption(FeintOption.Use, "Use Feint (10s)", 90, 10, ActionTargets.Hostile, 22, 97)
             .AddOption(FeintOption.UseEx, "Use Feint (15s)", 90, 15, ActionTargets.Hostile, 98)
             .AddAssociatedActions(ClassShared.AID.Feint);

@@ -1,4 +1,4 @@
-﻿using BossMod.BLM;
+using BossMod.BLM;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -20,13 +20,13 @@ public sealed class AkechiBLM(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi BLM", "Standard Rotation Module", "Standard rotation (Akechi)|DPS", "Akechi", RotationModuleQuality.Basic, BitMask.Build(Class.THM, Class.BLM), 100);
+        var res = new RotationModuleDefinition("Akechi BLM", "标准循环模块", "Standard rotation (Akechi)|DPS", "Akechi", RotationModuleQuality.Basic, BitMask.Build(Class.THM, Class.BLM), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionInt);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.Automatic, "Automatically use best rotation based on targets nearby")
             .AddOption(AOEStrategy.ForceST, "Force single-target rotation, regardless of targets nearby")
             .AddOption(AOEStrategy.ForceAOE, "Force AOE rotation, regardless of targets nearby")
@@ -90,7 +90,7 @@ public sealed class AkechiBLM(RotationModuleManager manager, Actor player) : Ake
             .AddOption(CommonStrategy.Delay, "Delay Triplecast", 0, 0, ActionTargets.Self, 66)
             .AddAssociatedActions(AID.Triplecast);
 
-        res.Define(Track.Swiftcast).As<CommonStrategy>("Swift", "Swiftcast", 195)
+        res.Define(Track.Swiftcast).As<CommonStrategy>("Swift", "即刻咏唱", 195)
             .AddOption(CommonStrategy.Automatic, "Automatically use Swiftcast when when available to instant-cast Blizzard III after Fire Phase (e.g. Despair->Transpose->Swiftcast->B3 etc.)", 0, 0, ActionTargets.Self, 66)
             .AddOption(CommonStrategy.Force, "Force Swiftcast ASAP", 0, 10, ActionTargets.Self, 18, 93)
             .AddOption(CommonStrategy.ForceWeave, "Force Swiftcast in next possible weave slot", 0, 10, ActionTargets.Self, 18, 93)
@@ -110,7 +110,7 @@ public sealed class AkechiBLM(RotationModuleManager manager, Actor player) : Ake
             .AddOption(TPUSStrategy.Forbid, "Forbid Transpose & Umbral Soul combo", minLevel: 35)
             .AddAssociatedActions(AID.Transpose, AID.UmbralSoul);
 
-        res.Define(Track.Movement).As<MovementStrategy>("Move", "Movement Options", 199)
+        res.Define(Track.Movement).As<MovementStrategy>("移动", "Movement Options", 199)
             .AddOption(MovementStrategy.Allow, "Allow all appropriate abilities for use while moving - Swiftcast->Triplecast->Polyglots->Thunder->Scathe if nothing left")
             .AddOption(MovementStrategy.AllowNoScathe, "Allow all appropriate abilities for use while moving except for Scathe - Swiftcast->Triplecast->Polyglots->Thunder->None")
             .AddOption(MovementStrategy.OnlyGCDs, "Only use instant cast GCDs for use while moving - Polyglots->Thunder->Scathe if nothing left")
@@ -119,7 +119,7 @@ public sealed class AkechiBLM(RotationModuleManager manager, Actor player) : Ake
             .AddOption(MovementStrategy.OnlyScathe, "Only use Scathe while moving (not recommended)")
             .AddOption(MovementStrategy.Forbid, "Forbid any abilities for use while moving");
 
-        res.Define(Track.Casting).As<CastingOption>("Cast", "Cast While Moving", 199)
+        res.Define(Track.Casting).As<CastingOption>("咏唱", "Cast While Moving", 199)
             .AddOption(CastingOption.Forbid, "Forbid hard-casting while moving")
             .AddOption(CastingOption.Allow, "Allow hard-casting while moving");
 

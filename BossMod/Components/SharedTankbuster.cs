@@ -1,4 +1,4 @@
-﻿namespace BossMod.Components;
+namespace BossMod.Components;
 
 // generic 'shared tankbuster' component; assumes only 1 concurrent cast is active
 // TODO: revise and improve (track invuln, ai hints, num stacked tanks?)
@@ -42,7 +42,7 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
         }
         else
         {
-            hints.Add("GTFO from tank!", InAOE(actor));
+            hints.Add("离开坦克！", InAOE(actor));
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using BossMod.MCH;
+using BossMod.MCH;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -19,13 +19,13 @@ public sealed class AkechiMCH(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi MCH", "Standard Rotation Module", "Standard rotation (Akechi)|DPS", "Akechi", RotationModuleQuality.Basic, BitMask.Build((int)Class.MCH), 100);
+        var res = new RotationModuleDefinition("Akechi MCH", "标准循环模块", "Standard rotation (Akechi)|DPS", "Akechi", RotationModuleQuality.Basic, BitMask.Build((int)Class.MCH), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionDex);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.AutoFinish, "Automatically select best rotation based on targets nearby - finishes current combo if possible")
             .AddOption(AOEStrategy.AutoBreak, "Automatically select best rotation based on targets nearby - will break current combo if in one")
             .AddOption(AOEStrategy.ForceST, "Force Single-Target rotation, regardless of targets nearby")

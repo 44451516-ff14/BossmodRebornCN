@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 
 namespace BossMod.Autorotation;
 
@@ -27,13 +27,13 @@ public static class PlanPresetConverter
     {
         if (plan)
         {
-            yield return root!["Modules"]!.AsObject();
+            yield return root!["模块"]!.AsObject();
         }
         else
         {
             foreach (var preset in root.AsArray())
             {
-                yield return preset!["Modules"]!.AsObject();
+                yield return preset!["模块"]!.AsObject();
             }
         }
     }

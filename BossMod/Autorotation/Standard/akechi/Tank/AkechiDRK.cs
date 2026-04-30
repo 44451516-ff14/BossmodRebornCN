@@ -1,4 +1,4 @@
-﻿using BossMod.DRK;
+using BossMod.DRK;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -16,13 +16,13 @@ public sealed class AkechiDRK(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi DRK", "Standard Rotation Module", "Standard rotation (Akechi)|Tank", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.DRK), 100);
+        var res = new RotationModuleDefinition("Akechi DRK", "标准循环模块", "标准循环 (Akechi)|坦克", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.DRK), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionStr);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.AutoFinish, "Automatically select best rotation based on targets nearby - finishes current combo if possible")
             .AddOption(AOEStrategy.ForceSTFinish, "Force Single-Target rotation, regardless of targets nearby - finishes current combo if possible")
             .AddOption(AOEStrategy.ForceAOEFinish, "Force AoE rotation, regardless of targets nearby - finishes current combo if possible")

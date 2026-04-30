@@ -1,4 +1,4 @@
-﻿namespace BossMod.Components;
+namespace BossMod.Components;
 
 // generic 'wild charge': various mechanics that consist of charge aoe on some target that other players have to stay in; optionally some players can be marked as 'having to be closest to source' (usually tanks)
 [SkipLocalsInit]
@@ -34,7 +34,7 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
                 if (EnumerateAOEs(slot).Any(aoe => InAOE(aoe, actor)))
                     hints.Add("GTFO from other charges!");
                 else if (!AnyRoleCloser(GetAOEForTarget(Source.Position, actor.Position), PlayerRole.Share, PlayerRole.Share, (actor.Position - Source.Position).LengthSq()))
-                    hints.Add("Hide behind tank!");
+                    hints.Add("躲到坦克身后！");
                 break;
             case PlayerRole.Share:
             case PlayerRole.ShareNotFirst:
@@ -54,7 +54,7 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
                 else if (numShares > 1)
                     hints.Add("Stay in single charge!");
                 else if (badShare)
-                    hints.Add(PlayerRoles[slot] == PlayerRole.Share ? "Move closer to charge source!" : "Hide behind tank!");
+                    hints.Add(PlayerRoles[slot] == PlayerRole.Share ? "Move closer to charge source!" : "躲到坦克身后！");
                 break;
             case PlayerRole.Avoid:
                 if (EnumerateAOEs().Any(aoe => InAOE(aoe, actor)))

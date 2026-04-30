@@ -1,4 +1,4 @@
-﻿using BossMod.PLD;
+using BossMod.PLD;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -18,13 +18,13 @@ public sealed class AkechiPLD(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi PLD", "Standard Rotation Module", "Standard rotation (Akechi)|Tank", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.GLA, (int)Class.PLD), 100);
+        var res = new RotationModuleDefinition("Akechi PLD", "标准循环模块", "标准循环 (Akechi)|坦克", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.GLA, (int)Class.PLD), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionStr);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.AutoFinish, "Automatically select best rotation based on targets nearby - finishes current combo if possible")
             .AddOption(AOEStrategy.ForceSTFinish, "Force Single-Target rotation, regardless of targets nearby - finishes current combo if possible")
             .AddOption(AOEStrategy.ForceAOEFinish, "Force AoE rotation, regardless of targets nearby - finishes current combo if possible")
@@ -87,7 +87,7 @@ public sealed class AkechiPLD(RotationModuleManager manager, Actor player) : Ake
             .AddOption(HolyStrategy.Delay, "Delay use of Holy actions", 0, 0, ActionTargets.None, 64)
             .AddAssociatedActions(AID.HolySpirit, AID.HolyCircle);
 
-        res.Define(Track.Dash).As<DashStrategy>("Dash", "Intervene", 95)
+        res.Define(Track.Dash).As<DashStrategy>("冲刺", "Intervene", 95)
             .AddOption(DashStrategy.Automatic, "Normal use of Intervene")
             .AddOption(DashStrategy.Force, "Force use of Intervene", 30, 0, ActionTargets.Hostile, 66)
             .AddOption(DashStrategy.Force1, "Force use of Intervene; Hold one charge for manual usage", 30, 0, ActionTargets.Hostile, 66)

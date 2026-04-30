@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 // base class that simplifies implementation of utility modules - these are really only useful for planning support
 public abstract class GenericUtility(RotationModuleManager manager, Actor player) : RotationModule(manager, player)
@@ -14,7 +14,7 @@ public abstract class GenericUtility(RotationModuleManager manager, Actor player
         var action = ActionID.MakeSpell(aid);
         var adata = adefs[action]!;
         def.Define(expectedIndex).As<SimpleOption>(internalName, displayName, uiPriority)
-            .AddOption(SimpleOption.None, "Do not use automatically")
+            .AddOption(SimpleOption.None, "不要自动使用")
             .AddOption(SimpleOption.Use, $"Use {action.Name()}", adata.Cooldown, effect, adata.AllowedTargets, adefs.ActionMinLevel(action), defaultPriority: defaultPriority)
             .AddAssociatedActions(aid);
     }
@@ -23,7 +23,7 @@ public abstract class GenericUtility(RotationModuleManager manager, Actor player
     {
         // note: it assumes that effect durations are either 0's or correspond to tank LB (so lb2 > lb1 > lb3)
         return def.Define(expectedIndex).As<LBOption>("LB")
-            .AddOption(LBOption.None, "Do not use automatically")
+            .AddOption(LBOption.None, "不要自动使用")
             .AddOption(LBOption.LB3, "Use LB3 if available", 0, effectLB3, allowedTargets, defaultPriority: ActionQueue.Priority.VeryHigh)
             .AddOption(LBOption.LB2, "Use LB2/3 if available", 0, effectLB3, allowedTargets, defaultPriority: ActionQueue.Priority.VeryHigh)
             .AddOption(LBOption.LB1, "Use any LB if available", 0, effectLB3, allowedTargets, defaultPriority: ActionQueue.Priority.VeryHigh)

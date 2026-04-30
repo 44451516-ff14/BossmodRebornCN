@@ -240,7 +240,7 @@ sealed class DebugGraphics
         if (!table)
             return;
 
-        ImGui.TableSetupColumn("Name");
+        ImGui.TableSetupColumn("名称");
         ImGui.TableSetupColumn("Value");
         ImGui.TableHeadersRow();
 
@@ -352,7 +352,7 @@ sealed class DebugGraphics
         if (Camera.Instance == null || Service.ObjectTable.LocalPlayer == null)
             return;
 
-        ImGui.Checkbox("Circle", ref _overlayCircle);
+        ImGui.Checkbox("圆形", ref _overlayCircle);
         ImGui.DragFloat2("Center", ref _overlayCenter);
         ImGui.DragFloat2("Step", ref _overlayStep, 0.25f, 1, 10);
         ImGui.DragFloat2("Max offset", ref _overlayMaxOffset);

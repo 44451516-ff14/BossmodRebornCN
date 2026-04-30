@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Keys;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -167,7 +167,7 @@ internal sealed unsafe class DebugInput : IDisposable
 
         ImGui.SliderFloat("Move direction", ref _moveDir, -180, 180);
         ImGui.SameLine();
-        if (ImGui.Button(_wannaMove ? "Cancel move" : "Move!"))
+        if (ImGui.Button(_wannaMove ? "Cancel move" : "移动！"))
         {
             _wannaMove ^= true;
             //var toTarget = _navi.NaviTargetPos.Value - curPos;

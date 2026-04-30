@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassDRKUtility(RotationModuleManager manager, Actor player) : RoleTankUtility(manager, player)
 {
@@ -14,13 +14,13 @@ public sealed class ClassDRKUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: DRK", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.DRK), 100);
+        var res = new RotationModuleDefinition("Utility: DRK", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.DRK), 100);
         DefineShared(res, IDLimitBreak3, IDStanceApply, IDStanceRemove);
 
         DefineSimpleConfig(res, Track.DarkMind, "DarkMind", "DMind", 450, DRK.AID.DarkMind, 10);
 
         res.Define(Track.ShadowWall).As<WallOption>("ShadowWall", "Wall", 550)
-            .AddOption(WallOption.None, "Do not use automatically")
+            .AddOption(WallOption.None, "不要自动使用")
             .AddOption(WallOption.ShadowWall, "Use Shadow Wall", 120, 15, ActionTargets.Self, 38, 91)
             .AddOption(WallOption.ShadowedVigil, "Use Shadowed Vigil", 120, 15, ActionTargets.Self, 92)
             .AddAssociatedActions(DRK.AID.ShadowWall, DRK.AID.ShadowedVigil);
@@ -28,21 +28,21 @@ public sealed class ClassDRKUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.LivingDead, "LivingDead", "LD", 400, DRK.AID.LivingDead, 10);
 
         res.Define(Track.TheBlackestNight).As<TBNStrategy>("TheBlackestNight", "TBN", 550)
-            .AddOption(TBNStrategy.None, "Do not use automatically")
+            .AddOption(TBNStrategy.None, "不要自动使用")
             .AddOption(TBNStrategy.Force, "Use The Blackest Night", 15, 7, ActionTargets.Self | ActionTargets.Party, 70)
             .AddAssociatedActions(DRK.AID.TheBlackestNight);
 
         res.Define(Track.Oblation).As<OblationStrategy>("Oblation", "", 550)
-            .AddOption(OblationStrategy.None, "Do not use automatically")
+            .AddOption(OblationStrategy.None, "不要自动使用")
             .AddOption(OblationStrategy.Force, "Use Oblation", 60, 10, ActionTargets.Self | ActionTargets.Party, 82)
             .AddAssociatedActions(DRK.AID.Oblation);
 
         DefineSimpleConfig(res, Track.DarkMissionary, "DarkMissionary", "Mission", 220, DRK.AID.DarkMissionary, 15);
 
-        res.Define(Track.Shadowstride).As<DashStrategy>("Shadowstride", "Dash", 20)
-            .AddOption(DashStrategy.None, "No use")
-            .AddOption(DashStrategy.GapClose, "Use as gapcloser if outside melee range", 30, 0, ActionTargets.Hostile, 56)
-            .AddOption(DashStrategy.GapCloseHold1, "Use as gapcloser if outside melee range; conserves 1 charge for manual usage", 60, 0, ActionTargets.Hostile, 84)
+        res.Define(Track.Shadowstride).As<DashStrategy>("Shadowstride", "冲刺", 20)
+            .AddOption(DashStrategy.None, "不使用")
+            .AddOption(DashStrategy.GapClose, "超出近战距离时作为突进使用", 30, 0, ActionTargets.Hostile, 56)
+            .AddOption(DashStrategy.GapCloseHold1, "超出近战距离时作为突进使用；保留 1 层供手动使用", 60, 0, ActionTargets.Hostile, 84)
             .AddAssociatedActions(DRK.AID.Shadowstride);
 
         return res;

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassSAMUtility(RotationModuleManager manager, Actor player) : RoleMeleeUtility(manager, player)
 {
@@ -9,11 +9,11 @@ public sealed class ClassSAMUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: SAM", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "xan, Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.SAM), 100);
+        var res = new RotationModuleDefinition("Utility: SAM", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "xan, Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.SAM), 100);
         DefineShared(res, IDLimitBreak3);
 
         res.Define(Track.ThirdEye).As<EyeOption>("ThirdEye", "Eye", 600)
-            .AddOption(EyeOption.None, "Do not use automatically")
+            .AddOption(EyeOption.None, "不要自动使用")
             .AddOption(EyeOption.ThirdEye, "Use Third Eye", 15, 4, ActionTargets.Self, 6, 81)
             .AddOption(EyeOption.Tengentsu, "Use Tengentsu", 15, 4, ActionTargets.Self, 82)
             .AddAssociatedActions(SAM.AID.ThirdEye, SAM.AID.Tengentsu);

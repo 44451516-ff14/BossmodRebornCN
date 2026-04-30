@@ -1,4 +1,4 @@
-﻿using BossMod.WHM;
+using BossMod.WHM;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -27,22 +27,22 @@ public sealed class WHM(RotationModuleManager manager, Actor player) : Castxan<A
         HitSomething,
         [Option("Use if it would hit all targets")]
         HitEverything,
-        [Option("Don't use")]
+        [Option("不要使用")]
         None
     }
     public enum MiseryStrategy
     {
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         ASAP,
         [Option("Only use during raid buffs", Targets = ActionTargets.Hostile)]
         BuffedOnly,
-        [Option("Don't use")]
+        [Option("不要使用")]
         Delay
     }
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan WHM", "White Mage", "Standard rotation (xan)|Healers", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.WHM, Class.CNJ), 100)
+        return new RotationModuleDefinition("xan WHM", "White Mage", "标准循环 (xan)|治疗", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.WHM, Class.CNJ), 100)
             .WithStrategies<Strategy>();
     }
 

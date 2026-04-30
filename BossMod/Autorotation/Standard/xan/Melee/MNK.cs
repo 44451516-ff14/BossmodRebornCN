@@ -1,4 +1,4 @@
-﻿using BossMod.MNK;
+using BossMod.MNK;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -47,7 +47,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         // other
         [Track("Thunderclap", MinLevel = 35, UiPriority = 69, Action = AID.Thunderclap)]
         public Track<TCStrategy> TC;
-        [Track("Potion", UiPriority = 59, Item = 1045995)]
+        [Track("爆发药", UiPriority = 59, Item = 1045995)]
         public Track<PotionStrategy> Pot;
         [Track(UiPriority = 49)]
         public Track<EngageStrategy> Engage;
@@ -64,7 +64,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         Manual,
         [Option("Use ~4 GCDs before next buff window")]
         PreBuffs,
-        [Option("Use ASAP")]
+        [Option("尽快使用")]
         Now
     }
     public enum MeditationStrategy
@@ -73,9 +73,9 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         Safe,
         [Option("Use out of combat, or if no enemies are in melee range")]
         Greedy,
-        [Option("Use ASAP")]
+        [Option("尽快使用")]
         Force,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
     public enum FRStrategy
@@ -84,16 +84,16 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         Automatic,
         [Option("Hold until a ranged attack is needed", Targets = ActionTargets.Hostile)]
         Ranged,
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         Force,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
     public enum WRStrategy
     {
         [Option("Hold until a ranged attack is needed", Targets = ActionTargets.Hostile)]
         Automatic,
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         Force,
         [Option("Ensure usage at least 2 GCDs before next downtime", Targets = ActionTargets.Hostile)]
         PreDowntime
@@ -115,7 +115,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         Force,
         [Option("Use ASAP (late weave)")]
         ForceMidWeave,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay,
     }
     public enum PBStrategy
@@ -124,9 +124,9 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         Automatic,
         [Option("Use after next Opo GCD", MinLevel = 50)]
         ForceOpo,
-        [Option("Use ASAP", MinLevel = 50)]
+        [Option("尽快使用", MinLevel = 50)]
         Force,
-        [Option("Do not use", MinLevel = 50)]
+        [Option("不使用", MinLevel = 50)]
         Delay,
         [Option("Downtime prep: Solar", MinLevel = 60, Effect = 39)]
         DowntimeSolar,
@@ -135,14 +135,14 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
     }
     public enum TCStrategy
     {
-        [Option("Do not use")]
+        [Option("不使用")]
         None,
         [Option("Use when outside melee range", Targets = ActionTargets.Party | ActionTargets.Hostile)]
         GapClose
     }
     public enum BlitzStrategy
     {
-        [Option("Use ASAP")]
+        [Option("尽快使用")]
         Automatic,
         [Option("Hold until Riddle of Fire is active")]
         RoF,
@@ -150,7 +150,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
         Multi,
         [Option("Hold until RoF and multiple targets")]
         MultiRoF,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
     public enum EngageStrategy
@@ -167,7 +167,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan MNK", "Monk", "Standard rotation (xan)|Melee", "xan", RotationModuleQuality.Good, BitMask.Build(Class.MNK, Class.PGL), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan MNK", "Monk", "标准循环 (xan)|近战", "xan", RotationModuleQuality.Good, BitMask.Build(Class.MNK, Class.PGL), 100).WithStrategies<Strategy>();
     }
 
     public enum Form { None, OpoOpo, Raptor, Coeurl }

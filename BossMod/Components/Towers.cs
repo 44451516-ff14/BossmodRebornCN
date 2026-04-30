@@ -87,7 +87,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
 
         if (gtfoFromTower)
         {
-            hints.Add("GTFO from tower!");
+            hints.Add("离开塔！");
         }
         else // Find index of a tower that is not forbidden and the actor is inside
         {
@@ -117,7 +117,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
                 }
                 else
                 {
-                    hints.Add("Soak the tower!", false);
+                    hints.Add("踩塔！", false);
                 }
             }
             else // Check if any tower has insufficient soakers
@@ -134,7 +134,7 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
                 }
                 if (insufficientSoakers)
                 {
-                    hints.Add("Soak the tower!");
+                    hints.Add("踩塔！");
                 }
             }
         }
@@ -442,7 +442,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
 
         if (gtfoFromTower)
         {
-            hints.Add("GTFO from tower!");
+            hints.Add("离开塔！");
         }
         else // Find index of a tower that is not forbidden and the actor is inside
         {
@@ -471,7 +471,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
                 }
                 else
                 {
-                    hints.Add("Soak the tower!", false);
+                    hints.Add("踩塔！", false);
                 }
             }
             else // Check if any tower has insufficient soakers
@@ -488,7 +488,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
                 }
                 if (insufficientSoakers)
                 {
-                    hints.Add("Soak the tower!");
+                    hints.Add("踩塔！");
                 }
             }
         }

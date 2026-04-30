@@ -1,10 +1,10 @@
-﻿namespace BossMod.Autorotation.xan;
+namespace BossMod.Autorotation.xan;
 
 public sealed class MeleeAI(RotationModuleManager manager, Actor player) : AIBase<MeleeAI.Strategy>(manager, player)
 {
     public struct Strategy
     {
-        [Track("Second Wind", InternalName = "Second Wind")]
+        [Track("内丹", InternalName = "内丹")]
         public Track<EnabledByDefault> SecondWind;
         public Track<EnabledByDefault> Bloodbath;
         public Track<EnabledByDefault> Stun;

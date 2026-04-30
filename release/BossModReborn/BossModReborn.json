@@ -3,7 +3,7 @@
   "Name": "Bossmod Reborn",
   "InternalName": "BossModReborn",
   "AssemblyVersion": "7.5.0.15",
-  "Description": "A bunch of utilities to simplify bosses.",
+  "Description": "一组用于简化首领战处理的工具。",
   "ApplicableVersion": "any",
   "RepoUrl": "https://github.com/FFXIV-CombatReborn/BossmodReborn",
   "DalamudApiLevel": 15,
@@ -17,6 +17,6 @@
     "https://raw.githubusercontent.com/awgil/ffxiv_bossmod/master/Data/image3.png"
   ],
   "IconUrl": "https://raw.githubusercontent.com/FFXIV-CombatReborn/RebornAssets/main/IconAssets/BMR_Icon.png",
-  "Punchline": "Don't fail at raid mechanics anymore",
+  "Punchline": "不再被副本机制坑倒",
   "AcceptsFeedback": true
 }

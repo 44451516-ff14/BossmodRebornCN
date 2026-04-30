@@ -1,4 +1,4 @@
-﻿using BossMod.SCH;
+using BossMod.SCH;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -33,7 +33,7 @@ public sealed class SCH(RotationModuleManager manager, Actor player) : Castxan<A
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan SCH", "Scholar", "Standard rotation (xan)|Healers", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SCH), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan SCH", "Scholar", "标准循环 (xan)|治疗", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SCH), 100).WithStrategies<Strategy>();
     }
 
     public int Aetherflow;

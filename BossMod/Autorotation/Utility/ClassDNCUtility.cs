@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassDNCUtility(RotationModuleManager manager, Actor player) : RoleRangedUtility(manager, player)
 {
@@ -9,13 +9,13 @@ public sealed class ClassDNCUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: DNC", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "xan", RotationModuleQuality.Excellent, BitMask.Build((int)Class.DNC), 100);
+        var res = new RotationModuleDefinition("Utility: DNC", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "xan", RotationModuleQuality.Excellent, BitMask.Build((int)Class.DNC), 100);
         DefineShared(res, IDLimitBreak3);
 
         DefineSimpleConfig(res, Track.CuringWaltz, "CuringWaltz", "C.Waltz", 400, DNC.AID.CuringWaltz);
 
         res.Define(Track.ShieldSamba).As<SambaOption>("Shield Samba", "S.Samba", 500)
-            .AddOption(SambaOption.None, "Do not use automatically")
+            .AddOption(SambaOption.None, "不要自动使用")
             .AddOption(SambaOption.Use87, "Use Shield Samba (120s CD), regardless if equivalent ranged buff is already active", 120, 15, ActionTargets.Self, 56, 87)
             .AddOption(SambaOption.Use87IfNotActive, "Use Shield Samba  (120s CD), unless equivalent ranged buff is already active", 90, 15, ActionTargets.Self, 56, 87)
             .AddOption(SambaOption.Use88, "Use Shield Samba  (90s CD), regardless if equivalent ranged buff is already active", 90, 15, ActionTargets.Self, 88)

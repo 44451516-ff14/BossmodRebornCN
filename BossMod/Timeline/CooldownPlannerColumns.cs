@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using BossMod.ReplayVisualization;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
@@ -43,7 +43,7 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
 
     public void DrawCommonControls()
     {
-        if (ImGui.Button("Modules"))
+        if (ImGui.Button("模块"))
             ImGui.OpenPopup("modules");
         ImGui.SameLine();
         if (ImGui.Button("Column visibility"))
@@ -56,7 +56,7 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
             ImportFromClipboard();
         ImGui.SameLine();
         ImGui.SetNextItemWidth(150);
-        Modified |= ImGui.InputText("Name", ref Plan.Name, 255);
+        Modified |= ImGui.InputText("名称", ref Plan.Name, 255);
 
         using (var popup = ImRaii.Popup("modules"))
         {

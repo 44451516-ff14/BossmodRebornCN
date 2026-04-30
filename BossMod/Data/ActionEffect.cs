@@ -1,4 +1,4 @@
-﻿namespace BossMod;
+namespace BossMod;
 
 public enum ActionEffectType : byte
 {
@@ -285,10 +285,10 @@ public static class ActionEffectParser
             case ActionEffectType.FailMissingStatus: // e.g. deployment tactics or bane when target doesn't have required status
             case ActionEffectType.Interrupt:
                 // so far never seen any non-zero params
-                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default || eff.Value != default ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default || eff.Value != default ? "非零参数" : "";
             case ActionEffectType.NoEffectText: // e.g. taunt immune
                 // so far never seen any non-zero params, except for 'source' flag
-                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default || eff.Value != default ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default || eff.Value != default ? "非零参数" : "";
             case ActionEffectType.Damage:
             case ActionEffectType.BlockedDamage:
             case ActionEffectType.ParriedDamage:
@@ -312,7 +312,7 @@ public static class ActionEffectParser
             case ActionEffectType.FullResistStatus:
             case ActionEffectType.SetHP:
                 // so far only seen 'source' flag and non-zero values
-                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default ? "非零参数" : "";
             case ActionEffectType.ApplyStatusEffectTarget:
             case ActionEffectType.ApplyStatusEffectSource:
                 if (eff.Param3 != default || (eff.Param4 & ~0xA0) != default)
@@ -324,7 +324,7 @@ public static class ActionEffectParser
             case ActionEffectType.LoseStatusEffectSource:
             case ActionEffectType.StatusNoEffect:
                 if (eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || (eff.Param4 & ~0x80) != default)
-                    return "non-zero params";
+                    return "非零参数";
                 else if (eff.Param0 != default)
                     return $"param0={eff.Param0}"; // this has some meaning, TODO investigate
                 else
@@ -332,26 +332,26 @@ public static class ActionEffectParser
             case ActionEffectType.ThreatPosition:
             case ActionEffectType.EnmityAmountUp:
                 if (eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default)
-                    return "non-zero params";
+                    return "非零参数";
                 else
                     return $"value={eff.Value}"; // this has some meaning, TODO investigate
             case ActionEffectType.Retaliation:
                 if (eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default)
-                    return "non-zero params";
+                    return "非零参数";
                 else
                     return $"param0={eff.Param0}, value={eff.Value}"; // this has some meaning, TODO investigate
             case ActionEffectType.Knockback:
-                return eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "";
+                return eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "非零参数" : "";
             case ActionEffectType.Attract1:
             case ActionEffectType.Attract2:
-                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "";
+                return eff.Param0 != default || eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "非零参数" : "";
             case ActionEffectType.AttractCustom1:
             case ActionEffectType.AttractCustom2:
             case ActionEffectType.AttractCustom3:
-                return eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "";
+                return eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "非零参数" : "";
             case ActionEffectType.Mount:
                 if (eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default)
-                    return "non-zero params";
+                    return "非零参数";
                 else
                     return $"param0={eff.Param0}"; // 0 or 1, TODO investigate
             case ActionEffectType.ReviveLB:
@@ -359,7 +359,7 @@ public static class ActionEffectParser
             case ActionEffectType.Resource:
                 return (ActionResourceType)eff.Value switch
                 {
-                    ActionResourceType.WARGauge => eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "non-zero params" : "",
+                    ActionResourceType.WARGauge => eff.Param1 != default || eff.Param2 != default || eff.Param3 != default || eff.Param4 != default ? "非零参数" : "",
                     _ => $"unknown value {eff.Value}",
                 };
             default:

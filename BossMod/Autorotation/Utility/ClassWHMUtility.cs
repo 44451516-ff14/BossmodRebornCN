@@ -11,21 +11,21 @@ public sealed class ClassWHMUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: WHM", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "TrueP", RotationModuleQuality.WIP, BitMask.Build((int)Class.WHM), 100);
+        var res = new RotationModuleDefinition("Utility: WHM", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "TrueP", RotationModuleQuality.WIP, BitMask.Build((int)Class.WHM), 100);
         DefineShared(res, IDLimitBreak3);
 
         DefineSimpleConfig(res, Track.PresenceOfMind, "PresenceOfMind", "PoM", 220, WHM.AID.PresenceOfMind, 15);
         DefineSimpleConfig(res, Track.Regen, "Regen", "", 110, WHM.AID.Regen, 18);
 
         res.Define(Track.Cure).As<CureOption>("Cure", "", 100)
-            .AddOption(CureOption.None, "Do not use automatically")
+            .AddOption(CureOption.None, "不要自动使用")
             .AddOption(CureOption.Cure, "Use Cure", 2.5f, 0, ActionTargets.Self | ActionTargets.Party | ActionTargets.Alliance | ActionTargets.Friendly, 2)
             .AddOption(CureOption.CureII, "Use Cure II", 2.5f, 0, ActionTargets.Self | ActionTargets.Party | ActionTargets.Alliance | ActionTargets.Friendly, 30)
             .AddOption(CureOption.CureIII, "Use Cure III", 2.5f, 0, ActionTargets.Self | ActionTargets.Party, 40)
             .AddAssociatedActions(WHM.AID.Cure, WHM.AID.CureII, WHM.AID.CureIII);
 
         res.Define(Track.Medica).As<MedicaOption>("Medica", "", 130)
-            .AddOption(MedicaOption.None, "Do not use automatically")
+            .AddOption(MedicaOption.None, "不要自动使用")
             .AddOption(MedicaOption.MedicaII, "Use Medica II", 2.5f, 15, ActionTargets.Self, 50, 95)
             .AddOption(MedicaOption.MedicaIII, "Use Medica III", 2.5f, 15, ActionTargets.Self, 96)
             .AddAssociatedActions(WHM.AID.MedicaII, WHM.AID.MedicaIII);
@@ -35,7 +35,7 @@ public sealed class ClassWHMUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Benediction, "Benediction", "Bene", 300, WHM.AID.Benediction);
 
         res.Define(Track.Asylum).As<SimpleOption>("Asylum", "", 230)
-            .AddOption(SimpleOption.None, "Do not use automatically")
+            .AddOption(SimpleOption.None, "不要自动使用")
             .AddOption(SimpleOption.Use, "Use Asylum", 90, 24, ActionTargets.Area, 52)
             .AddAssociatedActions(WHM.AID.Asylum);
 
@@ -47,13 +47,13 @@ public sealed class ClassWHMUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Aquaveil, "Aquaveil", "", 170, WHM.AID.Aquaveil, 8);
 
         res.Define(Track.LiturgyOfTheBell).As<LiturgyOption>("LiturgyOfTheBell", "Liturgy", 310)
-            .AddOption(LiturgyOption.None, "Do not use automatically")
+            .AddOption(LiturgyOption.None, "不要自动使用")
             .AddOption(LiturgyOption.Use, "Use Liturgy of the Bell", 180, 20, ActionTargets.Area, 90)
             .AddOption(LiturgyOption.End, "Use Liturgy of the Bell End", 0, 1, ActionTargets.Self, 90)
             .AddAssociatedActions(WHM.AID.LiturgyOfTheBell, WHM.AID.LiturgyOfTheBellEnd);
 
         DefineSimpleConfig(res, Track.DivineCaress, "DivineCaress", "Caress", 280, WHM.AID.DivineCaress, 10);
-        DefineSimpleConfig(res, Track.AetherialShift, "AetherialShift", "Dash", 20, WHM.AID.AetherialShift);
+        DefineSimpleConfig(res, Track.AetherialShift, "AetherialShift", "冲刺", 20, WHM.AID.AetherialShift);
 
         return res;
     }

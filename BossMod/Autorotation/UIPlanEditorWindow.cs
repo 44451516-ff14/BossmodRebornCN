@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 
 namespace BossMod.Autorotation;
 
@@ -29,10 +29,10 @@ public class UIPlanEditorWindow : UIWindow
 
     public override void Draw()
     {
-        if (UIMisc.Button("Save", !_planner.Modified, "No changes"))
+        if (UIMisc.Button("保存", !_planner.Modified, "No changes"))
             Save();
         ImGui.SameLine();
-        if (UIMisc.Button("Delete", !ImGui.GetIO().KeyShift, "Hold shift to delete"))
+        if (UIMisc.Button("删除", !ImGui.GetIO().KeyShift, "Hold shift to delete"))
             Delete();
         ImGui.SameLine();
         _planner.DrawCommonControls();

@@ -1,4 +1,4 @@
-﻿using BossMod.Components;
+using BossMod.Components;
 using Dalamud.Bindings.ImGui;
 using System.Globalization;
 
@@ -553,7 +553,7 @@ sealed class AbilityInfo : CommonEnumInfo
 
     public void DrawContextMenu()
     {
-        if (ImGui.MenuItem("Generate enum for boss module"))
+        if (ImGui.MenuItem("为 Boss 模块生成枚举"))
         {
             var sb = new StringBuilder("public enum AID : uint\n{\n");
             foreach (var (key, value) in Utils.DedupKeys(_data.Select(d => EnumMemberString(d.Key, d.Value))))
@@ -562,7 +562,7 @@ sealed class AbilityInfo : CommonEnumInfo
             ImGui.SetClipboardText(sb.ToString());
         }
 
-        if (ImGui.MenuItem("Generate missing enum values for boss module"))
+        if (ImGui.MenuItem("为 Boss 模块生成缺失的枚举值"))
         {
             var sb = new StringBuilder();
             foreach (var (key, value) in Utils.DedupKeys(_data.Where(kv => kv.Key.Type != ActionType.Spell || _aidType?.GetEnumName(kv.Key.ID) == null).Select(d => EnumMemberString(d.Key, d.Value))))

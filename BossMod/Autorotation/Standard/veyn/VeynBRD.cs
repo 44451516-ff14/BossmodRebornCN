@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
+using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 
 namespace BossMod.Autorotation;
 
@@ -42,17 +42,17 @@ public sealed class VeynBRD(RotationModuleManager manager, Actor player) : Rotat
             .AddAssociatedActions(BRD.AID.WanderersMinuet, BRD.AID.MagesBallad, BRD.AID.ArmysPaeon, BRD.AID.PitchPerfect);
 
         res.Define(Track.Buffs).As<BuffsStrategy>("Buffs", uiPriority: 95)
-            .AddOption(BuffsStrategy.Automatic, "Use normally")
-            .AddOption(BuffsStrategy.Delay, "Delay")
+            .AddOption(BuffsStrategy.Automatic, "正常使用")
+            .AddOption(BuffsStrategy.Delay, "延迟")
             .AddOption(BuffsStrategy.ForceRF, "Force use Radiant Finale ASAP")
             .AddOption(BuffsStrategy.ForceBV, "Force use Battle Voice ASAP")
             .AddOption(BuffsStrategy.ForceRS, "Force use Raging Strikes ASAP")
             .AddAssociatedActions(BRD.AID.RagingStrikes, BRD.AID.BattleVoice, BRD.AID.RadiantFinale);
 
-        res.Define(Track.Potion).As<PotionStrategy>("Potion", uiPriority: 90)
-            .AddOption(PotionStrategy.Manual, "Do not use automatically")
+        res.Define(Track.Potion).As<PotionStrategy>("爆发药", uiPriority: 90)
+            .AddOption(PotionStrategy.Manual, "不要自动使用")
             .AddOption(PotionStrategy.Burst, "Use right before burst", 270, 30)
-            .AddOption(PotionStrategy.Force, "Use ASAP", 270, 30)
+            .AddOption(PotionStrategy.Force, "尽快使用", 270, 30)
             .AddAssociatedAction(ActionDefinitions.IDPotionDex);
 
         // TODO: consider multidotting - should it be a separate track (default is primary only, think about interactions with ij etc)? for now user can just do it via planner where it matters
@@ -68,28 +68,28 @@ public sealed class VeynBRD(RotationModuleManager manager, Actor player) : Rotat
 
         res.Define(Track.ApexArrow).As<ApexArrowStrategy>("Apex", uiPriority: 70)
             .AddOption(ApexArrowStrategy.Automatic, "Use at 80+ if buffs are about to run off, use at 100 asap unless raid buffs are imminent", supportedTargets: ActionTargets.Hostile)
-            .AddOption(ApexArrowStrategy.Delay, "Delay")
+            .AddOption(ApexArrowStrategy.Delay, "延迟")
             .AddOption(ApexArrowStrategy.ForceAnyGauge, "Force at any gauge (even if it means no BA)", supportedTargets: ActionTargets.Hostile)
             .AddOption(ApexArrowStrategy.ForceHighGauge, "Force at 80+ gauge", supportedTargets: ActionTargets.Hostile)
             .AddOption(ApexArrowStrategy.ForceCapGauge, "Force at 100 gauge (don't delay until raidbuffs)", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(BRD.AID.ApexArrow);
 
         res.Define(Track.BlastArrow).As<OffensiveStrategy>("Blast", uiPriority: -10)
-            .AddOption(OffensiveStrategy.Automatic, "Use normally", supportedTargets: ActionTargets.Hostile)
-            .AddOption(OffensiveStrategy.Delay, "Delay")
-            .AddOption(OffensiveStrategy.Force, "Force use ASAP", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Automatic, "正常使用", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Delay, "延迟")
+            .AddOption(OffensiveStrategy.Force, "强制尽快使用", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(BRD.AID.BlastArrow);
 
         res.Define(Track.ResonantArrow).As<OffensiveStrategy>("Reso", uiPriority: -20)
-            .AddOption(OffensiveStrategy.Automatic, "Use normally", supportedTargets: ActionTargets.Hostile)
-            .AddOption(OffensiveStrategy.Delay, "Delay")
-            .AddOption(OffensiveStrategy.Force, "Force use ASAP", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Automatic, "正常使用", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Delay, "延迟")
+            .AddOption(OffensiveStrategy.Force, "强制尽快使用", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(BRD.AID.ResonantArrow);
 
         res.Define(Track.RadiantEncore).As<OffensiveStrategy>("Encore", uiPriority: -30)
-            .AddOption(OffensiveStrategy.Automatic, "Use normally", supportedTargets: ActionTargets.Hostile)
-            .AddOption(OffensiveStrategy.Delay, "Delay")
-            .AddOption(OffensiveStrategy.Force, "Force use ASAP", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Automatic, "正常使用", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Delay, "延迟")
+            .AddOption(OffensiveStrategy.Force, "强制尽快使用", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(BRD.AID.RadiantEncore);
 
         res.Define(Track.Bloodletter).As<BloodletterStrategy>("BL", uiPriority: 40)
@@ -101,21 +101,21 @@ public sealed class VeynBRD(RotationModuleManager manager, Actor player) : Rotat
             .AddAssociatedActions(BRD.AID.Bloodletter, BRD.AID.RainOfDeath);
 
         res.Define(Track.EmpyrealArrow).As<OffensiveStrategy>("EA", uiPriority: 30)
-            .AddOption(OffensiveStrategy.Automatic, "Use normally", supportedTargets: ActionTargets.Hostile)
-            .AddOption(OffensiveStrategy.Delay, "Delay")
-            .AddOption(OffensiveStrategy.Force, "Force use ASAP", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Automatic, "正常使用", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Delay, "延迟")
+            .AddOption(OffensiveStrategy.Force, "强制尽快使用", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(BRD.AID.EmpyrealArrow);
 
         res.Define(Track.Barrage).As<OffensiveStrategy>("Barrage", uiPriority: 20)
-            .AddOption(OffensiveStrategy.Automatic, "Use normally")
-            .AddOption(OffensiveStrategy.Delay, "Delay")
-            .AddOption(OffensiveStrategy.Force, "Force use ASAP")
+            .AddOption(OffensiveStrategy.Automatic, "正常使用")
+            .AddOption(OffensiveStrategy.Delay, "延迟")
+            .AddOption(OffensiveStrategy.Force, "强制尽快使用")
             .AddAssociatedActions(BRD.AID.Barrage);
 
         res.Define(Track.Sidewinder).As<OffensiveStrategy>("SW", uiPriority: 10)
-            .AddOption(OffensiveStrategy.Automatic, "Use normally", supportedTargets: ActionTargets.Hostile)
-            .AddOption(OffensiveStrategy.Delay, "Delay")
-            .AddOption(OffensiveStrategy.Force, "Force use ASAP", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Automatic, "正常使用", supportedTargets: ActionTargets.Hostile)
+            .AddOption(OffensiveStrategy.Delay, "延迟")
+            .AddOption(OffensiveStrategy.Force, "强制尽快使用", supportedTargets: ActionTargets.Hostile)
             .AddAssociatedActions(BRD.AID.Sidewinder);
 
         res.Define(Track.GCDDelay).As<GCDDelayStrategy>("GCDDelay", "GCD", uiPriority: 5)

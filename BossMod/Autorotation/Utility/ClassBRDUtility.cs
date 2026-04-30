@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassBRDUtility(RotationModuleManager manager, Actor player) : RoleRangedUtility(manager, player)
 {
@@ -9,13 +9,13 @@ public sealed class ClassBRDUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: BRD", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "veyn", RotationModuleQuality.Excellent, BitMask.Build((int)Class.BRD), 100);
+        var res = new RotationModuleDefinition("Utility: BRD", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "veyn", RotationModuleQuality.Excellent, BitMask.Build((int)Class.BRD), 100);
         DefineShared(res, IDLimitBreak3);
 
         DefineSimpleConfig(res, Track.WardensPaean, "WardensPaean", "Dispel", -10, BRD.AID.WardensPaean, 30);
 
         res.Define(Track.Troubadour).As<TroubOption>("Troubadour", "Troub", 500)
-            .AddOption(TroubOption.None, "Do not use automatically")
+            .AddOption(TroubOption.None, "不要自动使用")
             .AddOption(TroubOption.Use87, "Use Troubadour (120s CD), regardless if equivalent ranged buff is already active", 120, 15, ActionTargets.Self, 62, 87)
             .AddOption(TroubOption.Use87IfNotActive, "Use Troubadour (120s CD), unless equivalent ranged buff is already active", 90, 15, ActionTargets.Self, 62, 87)
             .AddOption(TroubOption.Use88, "Use Troubadour (90s CD), regardless if equivalent ranged buff is already active", 90, 15, ActionTargets.Self, 88)

@@ -1,4 +1,4 @@
-﻿using BossMod.SAM;
+using BossMod.SAM;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -42,7 +42,7 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
     {
         [Option("Use if Enhanced Enpi is active", Targets = ActionTargets.Hostile)]
         Enhanced,
-        [Option("Do not use")]
+        [Option("不使用")]
         None,
         [Option("Use when out of range", Targets = ActionTargets.Hostile)]
         Ranged
@@ -52,7 +52,7 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
     {
         [Option("Use every minute or so")]
         Auto,
-        [Option("Don't use")]
+        [Option("不要使用")]
         Delay,
         [Option("Use ASAP, unless already active")]
         Force,
@@ -74,7 +74,7 @@ public sealed class SAM(RotationModuleManager manager, Actor player) : Attackxan
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan SAM", "Samurai", "Standard rotation (xan)|Melee", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SAM), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan SAM", "Samurai", "标准循环 (xan)|近战", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.SAM), 100).WithStrategies<Strategy>();
     }
 
     public enum IaiRepeat

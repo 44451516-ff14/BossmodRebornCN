@@ -1,4 +1,4 @@
-﻿using BossMod.SCH;
+using BossMod.SCH;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -13,13 +13,13 @@ public sealed class AkechiSCH(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi SCH", "Standard Rotation Module", "Standard rotation (Akechi)|Healer", "Akechi", RotationModuleQuality.Ok, BitMask.Build((int)Class.SCH), 100);
+        var res = new RotationModuleDefinition("Akechi SCH", "标准循环模块", "Standard rotation (Akechi)|Healer", "Akechi", RotationModuleQuality.Ok, BitMask.Build((int)Class.SCH), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionMnd);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.Auto, "Automatically use best actions based on targets nearby - Broil if stationary, Ruin if moving, Art of War if enough targets")
             .AddOption(AOEStrategy.AutoNoRuin, "Automatically use best actions based on targets nearby - does not use Ruin")
             .AddOption(AOEStrategy.ForceST, "Force single-target actions, regardless of targets nearby - Broil if stationary, Ruin if moving")

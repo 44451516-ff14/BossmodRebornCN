@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
 
@@ -36,7 +36,7 @@ sealed class ReplayTimelineWindow : UIWindow
 
     public override void Draw()
     {
-        if (ImGui.Button("Config"))
+        if (ImGui.Button("配置"))
         {
             ImGui.OpenPopup("config");
         }

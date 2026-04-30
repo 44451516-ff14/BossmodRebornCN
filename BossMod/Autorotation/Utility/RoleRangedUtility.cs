@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 // base class that simplifies implementation of physical ranged dps utility modules, contains shared track definitions
 public abstract class RoleRangedUtility(RotationModuleManager manager, Actor player) : GenericUtility(manager, player)
@@ -7,7 +7,7 @@ public abstract class RoleRangedUtility(RotationModuleManager manager, Actor pla
 
     protected static void DefineShared(RotationModuleDefinition def, ActionID lb3)
     {
-        DefineSimpleConfig(def, SharedTrack.Sprint, "Sprint", "", 100, ClassShared.AID.Sprint, 10);
+        DefineSimpleConfig(def, SharedTrack.Sprint, "冲刺", "", 100, ClassShared.AID.Sprint, 10);
 
         DefineLimitBreak(def, SharedTrack.LB, ActionTargets.Hostile)
             .AddAssociatedActions(ClassShared.AID.BigShot, ClassShared.AID.Desperado)

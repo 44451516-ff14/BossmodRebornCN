@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using System.Globalization;
 
@@ -270,7 +270,7 @@ sealed class AIManagementWindow : UIWindow
     public void UpdateTitle()
     {
         var masterSlot = _manager?.MasterSlot ?? -1;
-        var masterName = _manager?.Autorot?.WorldState?.Party[masterSlot]?.Name ?? "unknown";
+        var masterName = _manager?.Autorot?.WorldState?.Party[masterSlot]?.Name ?? "未知";
         var masterSlotNumber = masterSlot != -1 ? (masterSlot + 1).ToString() : "N/A";
 
         WindowName = $"AI: {(_manager?.Beh != null ? "on" : "off")}, master={masterName}[{masterSlotNumber}]{_windowID}";

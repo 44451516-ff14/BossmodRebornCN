@@ -1,4 +1,4 @@
-﻿using BossMod.AST;
+using BossMod.AST;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 namespace BossMod.Autorotation.xan;
@@ -18,7 +18,7 @@ public sealed class AST(RotationModuleManager manager, Actor player) : Castxan<A
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan AST", "Astrologian", "Standard rotation (xan)|Healers", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.AST), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan AST", "Astrologian", "标准循环 (xan)|治疗", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.AST), 100).WithStrategies<Strategy>();
     }
 
     public AstrologianCard[] Cards = [];

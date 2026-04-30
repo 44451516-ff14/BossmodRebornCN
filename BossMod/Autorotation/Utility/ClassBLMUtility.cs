@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassBLMUtility(RotationModuleManager manager, Actor player) : RoleCasterUtility(manager, player)
 {
@@ -9,14 +9,14 @@ public sealed class ClassBLMUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: BLM", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.BLM), 100);
+        var res = new RotationModuleDefinition("Utility: BLM", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.BLM), 100);
         DefineShared(res, IDLimitBreak3);
 
         DefineSimpleConfig(res, Track.Manaward, "Manaward", "", 600, BLM.AID.Manaward, 20);
 
-        res.Define(Track.AetherialManipulation).As<DashStrategy>("Dash", "", 20)
+        res.Define(Track.AetherialManipulation).As<DashStrategy>("冲刺", "", 20)
             .AddOption(DashStrategy.None, "No use.")
-            .AddOption(DashStrategy.Force, "Use ASAP", 10, 0, ActionTargets.Party, 50)
+            .AddOption(DashStrategy.Force, "尽快使用", 10, 0, ActionTargets.Party, 50)
             .AddAssociatedActions(BLM.AID.AetherialManipulation);
 
         return res;

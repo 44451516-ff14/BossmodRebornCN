@@ -343,8 +343,8 @@ sealed class ClassDefinitions
         if (ImGui.MenuItem("Generate AID enum"))
         {
             var writer = new AIDWriter(ns);
-            writer.Add("None", 0);
-            writer.Add("Sprint", ActionDefinitions.IDSprint.ID);
+            writer.Add("无", 0);
+            writer.Add("冲刺", ActionDefinitions.IDSprint.ID);
             for (var c = ClassCategory.Tank; c <= ClassCategory.Limited; ++c)
                 writer.Group(c.ToString(), _byCategory.GetOrAdd($"Category: {c}"), false);
             writer.Group(GroupRoleActions, _byCategory.GetOrAdd(GroupRoleActions), true);
@@ -429,8 +429,8 @@ sealed class ClassDefinitions
     private string GenerateClassAID(ClassData cd)
     {
         var writer = new AIDWriter(cd.ID.ToString());
-        writer.Add("None", 0);
-        writer.Add("Sprint", "ClassShared.AID.Sprint");
+        writer.Add("无", 0);
+        writer.Add("冲刺", "ClassShared.AID.Sprint");
         writer.Group("", cd.Actions.Where(a => a.OwningClasses.NumSetBits() == 1), false);
         writer.Group("Shared", cd.Actions.Where(a => a.OwningClasses.NumSetBits() > 1), false, true);
         return writer.Result();
@@ -439,7 +439,7 @@ sealed class ClassDefinitions
     private string GenerateClassTraitID(ClassData cd)
     {
         var writer = new EnumWriter("TraitID");
-        writer.Add("None", 0);
+        writer.Add("无", 0);
         foreach (var trait in cd.Traits)
             writer.Add(TraitIDName(cd.ID.ToString(), trait), trait.RowId, $"L{trait.Level}");
         return writer.Result();
@@ -448,7 +448,7 @@ sealed class ClassDefinitions
     private string GenerateClassSID(ClassData cd)
     {
         var writer = new EnumWriter("SID");
-        writer.Add("None", 0);
+        writer.Add("无", 0);
         foreach (var (sid, data) in cd.Statuses)
             writer.Add(StatusIDName(cd.ID.ToString(), sid), sid, $"applied by {data.AppliedByString()} to {data.AppliedToString()}");
         return writer.Result();

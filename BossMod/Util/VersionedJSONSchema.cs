@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -23,7 +23,7 @@ public sealed class VersionedJSONSchema
             throw new ArgumentException($"Config file {file.FullName} version {version} is older than supported {MinSupportedVersion}");
         if (version > CurrentVersion)
             throw new ArgumentException($"Config file {file.FullName} version {version} is newer than supported {CurrentVersion}");
-        if (!json.RootElement.TryGetProperty("payload", out var jpayload) && !json.RootElement.TryGetProperty("Payload", out jpayload))
+        if (!json.RootElement.TryGetProperty("载荷", out var jpayload) && !json.RootElement.TryGetProperty("Payload", out jpayload))
             throw new ArgumentException($"Config file {file.FullName} does not contain a payload");
 
         // fast path: if file is of correct version, we're done
@@ -50,7 +50,7 @@ public sealed class VersionedJSONSchema
 
         // and now read again...
         json = Serialization.ReadJson(original.FullName);
-        return (json, json.RootElement.GetProperty("payload"));
+        return (json, json.RootElement.GetProperty("载荷"));
     }
 
     public void Save(FileInfo file, Action<Utf8JsonWriter> writePayload)
@@ -59,7 +59,7 @@ public sealed class VersionedJSONSchema
         using var jwriter = Serialization.WriteJson(fstream);
         jwriter.WriteStartObject();
         jwriter.WriteNumber("version", CurrentVersion);
-        jwriter.WritePropertyName("payload");
+        jwriter.WritePropertyName("载荷");
         writePayload(jwriter);
         jwriter.WriteEndObject();
     }

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassMCHUtility(RotationModuleManager manager, Actor player) : RoleRangedUtility(manager, player)
 {
@@ -9,11 +9,11 @@ public sealed class ClassMCHUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: MCH", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Aimsucks", RotationModuleQuality.Excellent, BitMask.Build((int)Class.MCH), 100);
+        var res = new RotationModuleDefinition("Utility: MCH", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Aimsucks", RotationModuleQuality.Excellent, BitMask.Build((int)Class.MCH), 100);
         DefineShared(res, IDLimitBreak3);
 
         res.Define(Track.Tactician).As<TactOption>("Tactician", "Tact", 400)
-            .AddOption(TactOption.None, "Do not use automatically")
+            .AddOption(TactOption.None, "不要自动使用")
             .AddOption(TactOption.Use87, "Use Tactician (120s CD), regardless if equivalent ranged buff is already active", 120, 15, ActionTargets.Self, 56, 87)
             .AddOption(TactOption.Use87IfNotActive, "Use Tactician (120s CD), unless equivalent ranged buff is already active", 90, 15, ActionTargets.Self, 56, 87)
             .AddOption(TactOption.Use88, "Use Tactician (90s CD), regardless if equivalent ranged buff is already active", 90, 15, ActionTargets.Self, 88)

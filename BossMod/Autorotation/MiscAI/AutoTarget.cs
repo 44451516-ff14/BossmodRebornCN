@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation.xan;
+using BossMod.Autorotation.xan;
 
 namespace BossMod.Autorotation.MiscAI;
 
@@ -15,7 +15,7 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
 
         res.Define(Track.General).As<GeneralStrategy>("General")
             .AddOption(GeneralStrategy.Aggressive, "Automatically prioritize targets", supportedTargets: ActionTargets.Hostile)
-            .AddOption(GeneralStrategy.Passive, "Do nothing");
+            .AddOption(GeneralStrategy.Passive, "什么都不做");
 
         res.Define(Track.Retarget).As<RetargetStrategy>("Retarget")
             .AddOption(RetargetStrategy.NoTarget, "Only switch target if player has no target")

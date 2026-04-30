@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassPCTUtility(RotationModuleManager manager, Actor player) : RoleCasterUtility(manager, player)
 {
@@ -9,11 +9,11 @@ public sealed class ClassPCTUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: PCT", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.PCT), 100);
+        var res = new RotationModuleDefinition("Utility: PCT", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.PCT), 100);
         DefineShared(res, IDLimitBreak3);
 
         res.Define(Track.TemperaCoat).As<TemperaCoatOption>("Tempera Coat", "T.Coat", 600)
-            .AddOption(TemperaCoatOption.None, "Do not use automatically")
+            .AddOption(TemperaCoatOption.None, "不要自动使用")
             .AddOption(TemperaCoatOption.CoatOnly, "Use Tempera Coat only; ignores Tempera Grassa (if available)", 60, 10, ActionTargets.Self, 10)
             .AddOption(TemperaCoatOption.CoatGrassaASAP, "Use Tempera Coat + Tempera Grassa ASAP, regardless of casting & weaving", 90, 10, ActionTargets.Self, 88)
             .AddOption(TemperaCoatOption.CoatGrassaWhenever, "Use Tempera Coat + Tempera Grassa when weaving or not casting", 90, 10, ActionTargets.Self, 88)

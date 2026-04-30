@@ -1,4 +1,4 @@
-﻿using BossMod.MCH;
+using BossMod.MCH;
 using static BossMod.AIHints;
 
 namespace BossMod.Autorotation.akechi;
@@ -16,13 +16,13 @@ public sealed class AkechiMCHPvP(RotationModuleManager manager, Actor player) : 
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi MCH (PvP)", "PvP Rotation Module", "PvP", "Akechi", RotationModuleQuality.Basic, BitMask.Build((int)Class.MCH), 100, 30);
-        res.Define(Track.Targeting).As<TargetingStrategy>("Targeting", "", 300)
-            .AddOption(TargetingStrategy.Auto, "Automatically select best target")
-            .AddOption(TargetingStrategy.Manual, "Manually select target");
+        var res = new RotationModuleDefinition("Akechi MCH (PvP)", "PvP 循环模块", "PvP", "Akechi", RotationModuleQuality.Basic, BitMask.Build((int)Class.MCH), 100, 30);
+        res.Define(Track.Targeting).As<TargetingStrategy>("目标选择", "", 300)
+            .AddOption(TargetingStrategy.Auto, "自动选择最佳目标")
+            .AddOption(TargetingStrategy.Manual, "手动选择目标");
 
-        res.Define(Track.RoleActions).As<RoleActionStrategy>("Role Actions", "", 300)
-            .AddOption(RoleActionStrategy.Forbid, "Do not use any role actions")
+        res.Define(Track.RoleActions).As<RoleActionStrategy>("职能技能", "", 300)
+            .AddOption(RoleActionStrategy.Forbid, "不要使用任何职能技能")
             .AddOption(RoleActionStrategy.Dervish, "Use Dervish when available")
             .AddOption(RoleActionStrategy.Bravery, "Use Bravery when available")
             .AddOption(RoleActionStrategy.EagleEyeShot, "Use Eagle Eye Shot when available")

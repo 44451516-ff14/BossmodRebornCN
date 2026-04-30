@@ -1,4 +1,4 @@
-﻿using BossMod.PLD;
+using BossMod.PLD;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -13,7 +13,7 @@ public sealed class PLD(RotationModuleManager manager, Actor player) : Attackxan
         [Track("Fight or Flight", Action = AID.FightOrFlight)]
         public Track<OffensiveStrategy> Buffs;
 
-        [Track("Dash", MinLevel = 66, Action = AID.Intervene)]
+        [Track("冲刺", MinLevel = 66, Action = AID.Intervene)]
         public Track<DashStrategy> Intervene;
 
         [Track("Holy Spirit", InternalName = "HS", MinLevel = 64, Action = AID.HolySpirit)]
@@ -34,20 +34,20 @@ public sealed class PLD(RotationModuleManager manager, Actor player) : Attackxan
         Standard,
         [Option("Use ASAP during next Divine Might, regardless of range", Targets = ActionTargets.Hostile)]
         ForceDM,
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         Force,
         [Option("Always use when out of melee range", Targets = ActionTargets.Hostile)]
         Ranged,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
     public enum AtonementStrategy
     {
         [Option("Standard usage: in burst, or to prevent overwriting buff", Targets = ActionTargets.Hostile)]
         Automatic,
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         Force,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
     public enum DashStrategy
@@ -58,7 +58,7 @@ public sealed class PLD(RotationModuleManager manager, Actor player) : Attackxan
         HoldOne,
         [Option("Only use when out of melee range", Targets = ActionTargets.Hostile)]
         GapCloser,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
     public enum ComboStrategy
@@ -73,7 +73,7 @@ public sealed class PLD(RotationModuleManager manager, Actor player) : Attackxan
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan PLD", "Paladin", "Standard rotation (xan)|Tanks", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.PLD, Class.GLA), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan PLD", "Paladin", "标准循环 (xan)|坦克", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.PLD, Class.GLA), 100).WithStrategies<Strategy>();
     }
 
     public float FightOrFlight; // max 20

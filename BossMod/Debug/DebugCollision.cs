@@ -871,14 +871,14 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private void DrawSettings()
     {
-        using var n = _tree.Node2("Settings");
+        using var n = _tree.Node2("设置");
         if (!n.Opened)
             return;
 
         ImGui.Checkbox("Show objects with zero layer", ref _showZeroLayer);
         {
             var shownLayers = _availableLayers & _shownLayers;
-            using var layers = ImRaii.Combo("Shown layers", shownLayers == _availableLayers ? "All" : shownLayers.None() ? "None" : string.Join(", ", shownLayers.SetBits()));
+            using var layers = ImRaii.Combo("Shown layers", shownLayers == _availableLayers ? "全部" : shownLayers.None() ? "无" : string.Join(", ", shownLayers.SetBits()));
             if (layers)
             {
                 foreach (var i in _availableLayers.SetBits())
@@ -892,7 +892,7 @@ public sealed unsafe class DebugCollision() : IDisposable
 
         {
             var matMask = _materialMask & _availableMaterials;
-            using var materials = ImRaii.Combo("Material mask", matMask.None() ? "None" : matMask.Raw.ToString("X"));
+            using var materials = ImRaii.Combo("Material mask", matMask.None() ? "无" : matMask.Raw.ToString("X"));
             if (materials)
             {
                 foreach (var i in _availableMaterials.SetBits())
@@ -906,7 +906,7 @@ public sealed unsafe class DebugCollision() : IDisposable
 
         {
             var matId = _materialId & _availableMaterials;
-            using var materials = ImRaii.Combo("Material id", matId.None() ? "None" : matId.Raw.ToString("X"));
+            using var materials = ImRaii.Combo("Material id", matId.None() ? "无" : matId.Raw.ToString("X"));
             if (materials)
             {
                 foreach (var i in _availableMaterials.SetBits())
@@ -1153,7 +1153,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var rotation = cast->Rotation;
                     _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
-                    DrawMat4x3("World", ref cast->World);
+                    DrawMat4x3("世界", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
                 }
                 break;
@@ -1165,7 +1165,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
                     _tree.LeafNode2($"Radius: {cast->Radius:f3}");
-                    DrawMat4x3("World", ref cast->World);
+                    DrawMat4x3("世界", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
                 }
                 break;
@@ -1176,7 +1176,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var rotation = cast->Rotation;
                     _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
-                    DrawMat4x3("World", ref cast->World);
+                    DrawMat4x3("世界", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
                 }
                 break;
@@ -1189,7 +1189,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var rotation = cast->Rotation;
                     _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref cast->World)}°)");
                     _tree.LeafNode2($"Scale: {Vec3Str(cast->Scale)}");
-                    DrawMat4x3("World", ref cast->World);
+                    DrawMat4x3("世界", ref cast->World);
                     DrawMat4x3("InvWorld", ref cast->InvWorld);
                 }
                 break;
@@ -1203,7 +1203,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         var rotation = coll->Rotation;
         _tree.LeafNode2($"Rotation: {Vec3Str(rotation)} (Yaw: {HeadingDegFromWorld(ref coll->World)}°)");
         _tree.LeafNode2($"Scale: {Vec3Str(coll->Scale)}");
-        DrawMat4x3("World", ref coll->World);
+        DrawMat4x3("世界", ref coll->World);
         DrawMat4x3("InvWorld", ref coll->InvWorld);
         if (_tree.LeafNode2($"Bounding sphere: {SphereStr(coll->BoundingSphere)}").SelectedOrHovered)
             VisualizeSphere(coll->BoundingSphere, Colors.CollisionColor1);

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Components;
+namespace BossMod.Components;
 
 // component for mechanics that either require players to move or stay still
 // priorities can be used to simplify implementation when e.g. status changes at different stages of the mechanic (eg if prep status is replaced with pyretic, we want to allow them to happen in any sequence)
@@ -36,7 +36,7 @@ public class StayMove(BossModule module, double maxTimeToShowHint = 1e3d) : Boss
             case Requirement.Move:
                 if (state.Activation <= WorldState.FutureTime(MaxTimeToShowHint))
                 {
-                    hints.Add("Move!", actor.PrevPosition == actor.PrevPosition);
+                    hints.Add("移动！", actor.PrevPosition == actor.PrevPosition);
                 }
                 break;
 

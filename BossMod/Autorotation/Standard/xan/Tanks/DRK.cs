@@ -1,4 +1,4 @@
-﻿using BossMod.DRK;
+using BossMod.DRK;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -26,9 +26,9 @@ public sealed class DRK(RotationModuleManager manager, Actor player) : Attackxan
         Automatic,
         [Option("Automatic usage, but save 3000 MP for TBN", MinLevel = 70, Targets = ActionTargets.Hostile)]
         AutomaticTBN,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay,
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         Force,
         [Option("Use ASAP, but save 3000 MP for TBN", MinLevel = 70, Targets = ActionTargets.Hostile)]
         ForceTBN
@@ -36,7 +36,7 @@ public sealed class DRK(RotationModuleManager manager, Actor player) : Attackxan
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan DRK", "Dark Knight", "Standard rotation (xan)|Tanks", "xan", RotationModuleQuality.WIP, BitMask.Build(Class.DRK), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan DRK", "Dark Knight", "标准循环 (xan)|坦克", "xan", RotationModuleQuality.WIP, BitMask.Build(Class.DRK), 100).WithStrategies<Strategy>();
     }
 
     public int BloodWeapon;

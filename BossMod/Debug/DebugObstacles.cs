@@ -45,7 +45,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
                 ++ZoomLevel;
             }
 
-            if (ImGui.Button("Save"))
+            if (ImGui.Button("保存"))
             {
                 Bitmap.Save(owner.Obstacles.RootPath + e.Filename);
             }
@@ -218,7 +218,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
                 CreateRegion();
             ImGui.SameLine();
             using (ImRaii.Disabled(!_dbModified))
-                if (ImGui.Button("Save"))
+                if (ImGui.Button("保存"))
                     SaveDatabase();
             ImGui.SameLine();
             if (ImGui.Button(_dbModified ? "Revert" : "Reload"))
@@ -252,7 +252,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
                 if (ImGui.Button("Move down"))
                     modifications += () => (entries[index], entries[index + 1]) = (entries[index + 1], entries[index]);
             ImGui.SameLine();
-            if (ImGui.Button("Delete"))
+            if (ImGui.Button("删除"))
                 modifications += () => DeleteMap(entries, index);
             ImGui.SameLine();
             if (ImGui.Button("Edit"))

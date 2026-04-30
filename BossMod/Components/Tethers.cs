@@ -1,4 +1,4 @@
-﻿namespace BossMod.Components;
+namespace BossMod.Components;
 
 // generic component for tankbuster at tethered targets; tanks are supposed to intercept tethers and gtfo from the raid
 [SkipLocalsInit]
@@ -49,7 +49,7 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
         {
             if (!_tetheredPlayers[slot])
             {
-                hints.Add("Grab the tether!");
+                hints.Add("接线！");
                 return;
             }
             var party = Raid.WithoutSlot();
@@ -69,7 +69,7 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
                     var enemyPos = t.Enemy.Position;
                     if (Shape.Check(playerPos, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos)))
                     {
-                        hints.Add("GTFO from raid!");
+                        hints.Add("远离队伍！");
                         return;
                     }
                 }
@@ -253,7 +253,7 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
             return;
         if (!_tetheredPlayers[slot])
         {
-            hints.Add("Grab the tether!");
+            hints.Add("接线！");
             return;
         }
         var party = Raid.WithoutSlot();
@@ -265,7 +265,7 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
                 continue;
             if (p.Position.InCircle(actor.Position, Radius))
             {
-                hints.Add("GTFO from raid!");
+                hints.Add("远离队伍！");
                 break;
             }
         }
@@ -363,7 +363,7 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
     public readonly uint[]? ExcludedAllies = excludedAllies;
     protected readonly List<(Actor Player, Actor Enemy)> _tethers = [];
     protected BitMask _tetheredPlayers;
-    protected const string hint = "Grab the tether!";
+    protected const string hint = "接线！";
     public bool Active => _tethers.Count != 0;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
@@ -703,7 +703,7 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
             return;
         if (!_tetheredPlayers[slot] && !_hasStatus[slot])
         {
-            hints.Add("Grab the tether!");
+            hints.Add("接线！");
             return;
         }
         var party = Raid.WithoutSlot();
@@ -715,7 +715,7 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
                 continue;
             if (p.Position.InCircle(actor.Position, Radius))
             {
-                hints.Add("GTFO from raid!");
+                hints.Add("远离队伍！");
                 break;
             }
         }

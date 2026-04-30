@@ -1,4 +1,4 @@
-﻿using BossMod.GNB;
+using BossMod.GNB;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -42,13 +42,13 @@ public sealed class AkechiGNB(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi GNB", "Standard Rotation Module", "Standard rotation (Akechi)|Tank", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.GNB), 100);
+        var res = new RotationModuleDefinition("Akechi GNB", "标准循环模块", "标准循环 (Akechi)|坦克", "Akechi", RotationModuleQuality.Excellent, BitMask.Build((int)Class.GNB), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionStr);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.AutoFinishWithOvercap, "Automatically select best rotation based on targets nearby - finishes current combo (1-2-3, GF, or Reign) if possible & protects cartridges from overcapping")
             .AddOption(AOEStrategy.AutoFinishWithoutOvercap, "Automatically select best rotation based on targets nearby - finishes current combo (1-2-3, GF, or Reign) if possible, but does not protect cartridges from overcapping")
             .AddOption(AOEStrategy.ForceSTFinishWithOvercap, "Force Single-Target rotation, regardless of targets nearby - finishes current combo (1-2-3, GF, or Reign) if possible & protects cartridges from overcapping")

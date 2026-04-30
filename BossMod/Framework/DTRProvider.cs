@@ -1,4 +1,4 @@
-﻿using BossMod.AI;
+using BossMod.AI;
 using BossMod.Autorotation;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Gui.Dtr;
@@ -48,7 +48,7 @@ internal sealed class DTRProvider : IDisposable
         _autorotationEntry.Shown = show;
         if (show)
         {
-            var (icon, name) = _mgr.Preset == null ? (BitmapFontIcon.SwordSheathed, "Idle") : _mgr.Preset == RotationModuleManager.ForceDisable ? (BitmapFontIcon.SwordSheathed, "Disabled") : (BitmapFontIcon.SwordUnsheathed, _mgr.Preset.Name);
+            var (icon, name) = _mgr.Preset == null ? (BitmapFontIcon.SwordSheathed, "Idle") : _mgr.Preset == RotationModuleManager.ForceDisable ? (BitmapFontIcon.SwordSheathed, "禁用") : (BitmapFontIcon.SwordUnsheathed, _mgr.Preset.Name);
             Payload prefix = RotationModuleManager.Config.ShowDTR == AutorotationConfig.DtrStatus.TextOnly ? new TextPayload("bmr: ") : new IconPayload(icon);
             _autorotationEntry.Text = new SeString(prefix, new TextPayload(name));
         }

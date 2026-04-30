@@ -1,4 +1,4 @@
-﻿using Dalamud.Interface;
+using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
@@ -40,7 +40,7 @@ public static class UIMisc
     public static bool Button(string label, bool disabled, string reason, float width = default) => Button(label, width, (disabled, reason));
 
     // button that is disabled unless shift is held, useful for 'dangerous' operations like deletion
-    public static bool DangerousButton(string label, float width = default) => Button(label, !ImGui.IsKeyDown(ImGuiKey.ModShift), "Hold shift", width);
+    public static bool DangerousButton(string label, float width = default) => Button(label, !ImGui.IsKeyDown(ImGuiKey.ModShift), "按住 Shift", width);
 
     public static void TextUnderlined(Vector4 colour, string text)
     {

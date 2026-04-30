@@ -1,4 +1,4 @@
-﻿using BossMod.Data;
+using BossMod.Data;
 
 namespace BossMod.Autorotation.xan;
 
@@ -45,7 +45,7 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
 
     public enum RaiseStrategy
     {
-        [Option("Disabled")]
+        [Option("禁用")]
         Never,
         [Option("Out of combat")]
         OutOfCombat,
@@ -63,7 +63,7 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
         AutoSuperGreedy,
         [Option("Use Blessing (heal)")]
         HealOnly,
-        [Option("Don't use")]
+        [Option("不要使用")]
         Disabled
     }
 

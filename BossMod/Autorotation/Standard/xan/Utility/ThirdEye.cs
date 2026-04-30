@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation.xan;
+using BossMod.Autorotation.xan;
 using BossMod.SAM;
 
 namespace BossMod.Autorotation.Standard.xan.Utility;
@@ -17,7 +17,7 @@ public class ThirdEye(RotationModuleManager manager, Actor player) : Attackxan<A
         Automatic,
         [Option("Use 4s before predicted damage", Cooldown = 15, Effect = 4)]
         AutoMax,
-        [Option("Don't use")]
+        [Option("不要使用")]
         Delay
     }
 

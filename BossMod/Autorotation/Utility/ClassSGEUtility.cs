@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassSGEUtility(RotationModuleManager manager, Actor player) : RoleHealerUtility(manager, player)
 {
@@ -14,17 +14,17 @@ public sealed class ClassSGEUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: SGE", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Ok, BitMask.Build((int)Class.SGE), 100); //How we're planning our skills listed below
+        var res = new RotationModuleDefinition("Utility: SGE", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Ok, BitMask.Build((int)Class.SGE), 100); //How we're planning our skills listed below
         DefineShared(res, IDLimitBreak3); //Shared Healer actions
 
         res.Define(Track.Kardia).As<KardiaOption>("Kardia", "", 200) //Kardia & Soteria
-            .AddOption(KardiaOption.None, "Do not use automatically")
+            .AddOption(KardiaOption.None, "不要自动使用")
             .AddOption(KardiaOption.Kardia, "Use Kardia", 5, 0, ActionTargets.Self | ActionTargets.Party, 4)
             .AddOption(KardiaOption.Soteria, "Use Soteria", 60, 15, ActionTargets.Self, 35)
             .AddAssociatedActions(SGE.AID.Kardia, SGE.AID.Soteria);
 
         res.Define(Track.Physis).As<PhysisOption>("Physis", "", 200) //Physis
-            .AddOption(PhysisOption.None, "Do not use automatically")
+            .AddOption(PhysisOption.None, "不要自动使用")
             .AddOption(PhysisOption.Use, "Use Physis", 60, 15, ActionTargets.Self, 20, 59)
             .AddOption(PhysisOption.UseEx, "Use Physis II", 60, 15, ActionTargets.Self, 60)
             .AddAssociatedActions(SGE.AID.Physis, SGE.AID.PhysisII);
@@ -32,13 +32,13 @@ public sealed class ClassSGEUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Eukrasia, "Eukrasia", "", 110, SGE.AID.Eukrasia); //Eukrasia (spell only)
 
         res.Define(Track.Diagnosis).As<DiagnosisOption>("Diagnosis", "Diag", 200) //Diagnosis & EukrasianDiagnosis
-            .AddOption(DiagnosisOption.None, "Do not use automatically")
+            .AddOption(DiagnosisOption.None, "不要自动使用")
             .AddOption(DiagnosisOption.Use, "Use normal Diagnosis", 0, 0, ActionTargets.Self | ActionTargets.Party, 2)
             .AddOption(DiagnosisOption.UseED, "Use Eukrasian Diagnosis", 0, 30, ActionTargets.Self | ActionTargets.Party, 30)
             .AddAssociatedActions(SGE.AID.Diagnosis, SGE.AID.EukrasianDiagnosis);
 
         res.Define(Track.Prognosis).As<PrognosisOption>("Prognosis", "Prog", 200) //Prognosis & EukrasianPrognosis
-            .AddOption(PrognosisOption.None, "Do not use automatically")
+            .AddOption(PrognosisOption.None, "不要自动使用")
             .AddOption(PrognosisOption.Use, "Use normal Prognosis", 0, 0, ActionTargets.Self, 2)
             .AddOption(PrognosisOption.UseEP, "Use Eukrasian Prognosis", 0, 30, ActionTargets.Self, 30, 95)
             .AddOption(PrognosisOption.UseEPEx, "Use Eukrasian Prognosis II", 0, 30, ActionTargets.Self, 96)
@@ -49,7 +49,7 @@ public sealed class ClassSGEUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Ixochole, "Ixochole", "Ixo", 190, SGE.AID.Ixochole); //Ixochole
 
         res.Define(Track.Zoe).As<ZoeOption>("Zoe", "", 200) //Zoe
-            .AddOption(ZoeOption.None, "Do not use automatically")
+            .AddOption(ZoeOption.None, "不要自动使用")
             .AddOption(ZoeOption.Use, "Use Zoe", 120, 30, ActionTargets.Self, 56, 87)
             .AddOption(ZoeOption.UseEx, "Use Enhanced Zoe", 90, 30, ActionTargets.Self, 88)
             .AddAssociatedActions(SGE.AID.Zoe);
@@ -65,8 +65,8 @@ public sealed class ClassSGEUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Philosophia, "Philosophia", "Philo", 260, SGE.AID.Philosophia, 20); //Philosophia
 
         res.Define(Track.Icarus).As<DashStrategy>("Icarus", "", 20)
-            .AddOption(DashStrategy.None, "No use")
-            .AddOption(DashStrategy.GapClose, "Use as gapcloser if outside melee range", 45, 0, ActionTargets.Party | ActionTargets.Hostile, 45)
+            .AddOption(DashStrategy.None, "不使用")
+            .AddOption(DashStrategy.GapClose, "超出近战距离时作为突进使用", 45, 0, ActionTargets.Party | ActionTargets.Hostile, 45)
             .AddAssociatedActions(SGE.AID.Icarus);
 
         return res;

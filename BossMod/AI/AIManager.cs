@@ -212,7 +212,7 @@ sealed class AIManager : IDisposable
                 {
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print("Specify an AI autorotation preset name.");
+                        Service.ChatGui.Print("请指定一个 AI 自动循环预设名称。");
                     }
                     return;
                 }
@@ -226,7 +226,7 @@ sealed class AIManager : IDisposable
             default:
                 if (_config.EchoToChat)
                 {
-                    Service.ChatGui.Print($"[BMRAI] Unknown command: {messageData[0]}");
+                    Service.ChatGui.Print($"[BMRAI] 未知命令：{messageData[0]}");
                 }
                 return;
         }
@@ -274,14 +274,14 @@ sealed class AIManager : IDisposable
                 default:
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print($"[BMRAI] Unknown obstacle map command: {messageData[1]}");
+                        Service.ChatGui.Print($"[BMRAI] 未知障碍地图命令：{messageData[1]}");
                     }
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Obstacle maps are now {(_config.DisableObstacleMaps ? "disabled" : "enabled")}");
+            Service.ChatGui.Print($"[BMRAI] 障碍地图现在已{(_config.DisableObstacleMaps ? "禁用" : "启用")}");
         }
     }
 
@@ -302,14 +302,14 @@ sealed class AIManager : IDisposable
                 default:
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print($"[BMRAI] Unknown idle while mounted command: {messageData[1]}");
+                        Service.ChatGui.Print($"[BMRAI] 未知骑乘待机命令：{messageData[1]}");
                     }
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Idle while mounted is now {(_config.ForbidAIMovementMounted ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] 骑乘时待机现在已{(_config.ForbidAIMovementMounted ? "启用" : "禁用")}");
         }
     }
 
@@ -317,7 +317,7 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing follow target.");
+            Service.ChatGui.Print("[BMRAI] 缺少跟随目标。");
             return;
         }
 
@@ -338,7 +338,7 @@ sealed class AIManager : IDisposable
             else
                     if (_config.EchoToChat)
             {
-                Service.ChatGui.Print($"[BMRAI] Unknown party member: {string.Join(" ", messageData.Skip(1))}");
+                Service.ChatGui.Print($"[BMRAI] 未知队员：{string.Join(" ", messageData.Skip(1))}");
             }
         }
     }
@@ -348,7 +348,7 @@ sealed class AIManager : IDisposable
         _config.DrawUI = !_config.DrawUI;
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] AI menu is now {(_config.DrawUI ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] AI 菜单现在已{(_config.DrawUI ? "启用" : "禁用")}");
         }
         return true;
     }
@@ -370,14 +370,14 @@ sealed class AIManager : IDisposable
                 default:
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print($"[BMRAI] Unknown forbid actions command: {messageData[1]}");
+                        Service.ChatGui.Print($"[BMRAI] 未知禁止动作命令：{messageData[1]}");
                     }
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Forbid actions is now {(_config.ForbidActions ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] 禁止动作现在已{(_config.ForbidActions ? "启用" : "禁用")}");
         }
     }
 
@@ -398,14 +398,14 @@ sealed class AIManager : IDisposable
                 default:
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print($"[BMRAI] Unknown forbid movement command: {messageData[1]}");
+                        Service.ChatGui.Print($"[BMRAI] 未知禁止移动命令：{messageData[1]}");
                     }
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Forbid movement is now {(_config.ForbidMovement ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] 禁止移动现在已{(_config.ForbidMovement ? "启用" : "禁用")}");
         }
     }
 
@@ -426,14 +426,14 @@ sealed class AIManager : IDisposable
                 default:
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print($"[BMRAI] Unknown follow out of combat command: {messageData[1]}");
+                        Service.ChatGui.Print($"[BMRAI] 未知脱战跟随命令：{messageData[1]}");
                     }
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Follow out of combat is now {(_config.FollowOutOfCombat ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] 脱战跟随现在已{(_config.FollowOutOfCombat ? "启用" : "禁用")}");
         }
     }
 
@@ -461,14 +461,14 @@ sealed class AIManager : IDisposable
                     _config.FollowDuringActiveBossModule = false;
                     break;
                 default:
-                    Service.ChatGui.Print($"[BMRAI] Unknown follow during combat command: {messageData[1]}");
+                    Service.ChatGui.Print($"[BMRAI] 未知战斗中跟随命令：{messageData[1]}");
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Follow during combat is now {(_config.FollowDuringCombat ? "enabled" : "disabled")}");
-            Service.ChatGui.Print($"[BMRAI] Follow during active boss module is now {(_config.FollowDuringActiveBossModule ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] 战斗中跟随现在已{(_config.FollowDuringCombat ? "启用" : "禁用")}");
+            Service.ChatGui.Print($"[BMRAI] Boss 模块激活时跟随现在已{(_config.FollowDuringActiveBossModule ? "启用" : "禁用")}");
         }
     }
 
@@ -492,14 +492,14 @@ sealed class AIManager : IDisposable
                     _config.FollowDuringActiveBossModule = false;
                     break;
                 default:
-                    Service.ChatGui.Print($"[BMRAI] Unknown follow during active boss module command: {messageData[1]}");
+                    Service.ChatGui.Print($"[BMRAI] 未知 Boss 模块激活时跟随命令：{messageData[1]}");
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Follow during active boss module is now {(_config.FollowDuringActiveBossModule ? "enabled" : "disabled")}");
-            Service.ChatGui.Print($"[BMRAI] Follow during combat is now {(_config.FollowDuringCombat ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] Boss 模块激活时跟随现在已{(_config.FollowDuringActiveBossModule ? "启用" : "禁用")}");
+            Service.ChatGui.Print($"[BMRAI] 战斗中跟随现在已{(_config.FollowDuringCombat ? "启用" : "禁用")}");
         }
     }
 
@@ -520,14 +520,14 @@ sealed class AIManager : IDisposable
                 default:
                     if (_config.EchoToChat)
                     {
-                        Service.ChatGui.Print($"[BMRAI] Unknown follow target command: {messageData[1]}");
+                        Service.ChatGui.Print($"[BMRAI] 未知跟随目标命令：{messageData[1]}");
                     }
                     return;
             }
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Following targets is now {(_config.FollowTarget ? "enabled" : "disabled")}");
+            Service.ChatGui.Print($"[BMRAI] 跟随目标现在已{(_config.FollowTarget ? "启用" : "禁用")}");
         }
     }
 
@@ -535,7 +535,7 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing positional type.");
+            Service.ChatGui.Print("[BMRAI] 缺少身位类型。");
             return;
         }
 
@@ -557,13 +557,13 @@ sealed class AIManager : IDisposable
             default:
                 if (_config.EchoToChat)
                 {
-                    Service.ChatGui.Print($"[BMRAI] Unknown positional: {msg}");
+                    Service.ChatGui.Print($"[BMRAI] 未知身位：{msg}");
                 }
                 return;
         }
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Desired positional set to {_config.DesiredPositional}");
+            Service.ChatGui.Print($"[BMRAI] 期望身位已设为 {_config.DesiredPositional}");
         }
     }
 
@@ -571,20 +571,20 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing distance value.");
+            Service.ChatGui.Print("[BMRAI] 缺少距离数值。");
             return;
         }
 
         if (!float.TryParse(messageData[1].Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var distance) && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Invalid distance value.");
+            Service.ChatGui.Print("[BMRAI] 无效的距离数值。");
             return;
         }
 
         _config.MaxDistanceToTarget = distance;
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Max distance to target set to {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}y");
+            Service.ChatGui.Print($"[BMRAI] 到目标的最大距离已设为 {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}y");
         }
     }
 
@@ -592,20 +592,20 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing distance value.");
+            Service.ChatGui.Print("[BMRAI] 缺少距离数值。");
             return;
         }
 
         if (!float.TryParse(messageData[1].Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var distance) && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Invalid distance value.");
+            Service.ChatGui.Print("[BMRAI] 无效的距离数值。");
             return;
         }
 
         _config.MaxDistanceToSlot = distance;
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Max distance to slot set to {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}y");
+            Service.ChatGui.Print($"[BMRAI] 到队伍槽位的最大距离已设为 {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}y");
         }
     }
 
@@ -613,20 +613,20 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing distance value.");
+            Service.ChatGui.Print("[BMRAI] 缺少距离数值。");
             return;
         }
 
         if (!float.TryParse(messageData[1].Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var distance) && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Invalid distance value.");
+            Service.ChatGui.Print("[BMRAI] 无效的距离数值。");
             return;
         }
 
         _config.MinDistance = distance;
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Min distance to slot set to {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}y");
+            Service.ChatGui.Print($"[BMRAI] 到队伍槽位的最小距离已设为 {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}y");
         }
     }
 
@@ -634,20 +634,20 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing distance value.");
+            Service.ChatGui.Print("[BMRAI] 缺少距离数值。");
             return;
         }
 
         if (!float.TryParse(messageData[1].Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var distance) && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Invalid distance value.");
+            Service.ChatGui.Print("[BMRAI] 无效的距离数值。");
             return;
         }
 
         _config.PreferredDistance = distance;
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Preferred distance to slot set to {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            Service.ChatGui.Print($"[BMRAI] 到队伍槽位的偏好距离已设为 {distance.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         }
     }
 
@@ -655,20 +655,20 @@ sealed class AIManager : IDisposable
     {
         if (messageData.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Missing delay value.");
+            Service.ChatGui.Print("[BMRAI] 缺少延迟数值。");
             return;
         }
 
         if (!float.TryParse(messageData[1].Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var delay) && _config.EchoToChat)
         {
-            Service.ChatGui.Print("[BMRAI] Invalid delay value.");
+            Service.ChatGui.Print("[BMRAI] 无效的延迟数值。");
             return;
         }
 
         _config.MoveDelay = delay;
         if (_config.EchoToChat)
         {
-            Service.ChatGui.Print($"[BMRAI] Max distance to target set to {delay.ToString(System.Globalization.CultureInfo.InvariantCulture)}s");
+            Service.ChatGui.Print($"[BMRAI] 移动延迟已设为 {delay.ToString(System.Globalization.CultureInfo.InvariantCulture)}s");
         }
     }
 
@@ -687,7 +687,7 @@ sealed class AIManager : IDisposable
     {
         if (presetName.Length < 2 && _config.EchoToChat)
         {
-            Service.ChatGui.Print("No valid preset name provided.");
+            Service.ChatGui.Print("未提供有效的预设名称。");
             return;
         }
 
@@ -698,7 +698,7 @@ sealed class AIManager : IDisposable
             Autorot.Preset = null;
             if (_config.EchoToChat)
             {
-                Service.ChatGui.Print("Disabled AI autorotation preset.");
+                Service.ChatGui.Print("已禁用 AI 自动循环预设。");
             }
             return;
         }
@@ -712,13 +712,13 @@ sealed class AIManager : IDisposable
         {
             if (_config.EchoToChat)
             {
-                Service.ChatGui.Print($"Changed preset from '{Beh?.AIPreset?.Name ?? "<n/a>"}' to '{preset?.Name ?? "<n/a>"}'");
+                Service.ChatGui.Print($"预设已从 '{Beh?.AIPreset?.Name ?? "<n/a>"}' 切换为 '{preset?.Name ?? "<n/a>"}'");
             }
             SetAIPreset(preset);
         }
         else if (_config.EchoToChat)
         {
-            Service.ChatGui.PrintError($"Failed to find preset '{userInput}'");
+            Service.ChatGui.PrintError($"找不到预设 '{userInput}'");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Text.Json;
 
 namespace BossMod.Autorotation;
@@ -55,7 +55,7 @@ public sealed class PlanDatabase
             {
                 using var json = Serialization.ReadJson(_manifestPath.FullName);
                 var version = json.RootElement.GetProperty("version").GetInt32();
-                var payload = json.RootElement.GetProperty("payload");
+                var payload = json.RootElement.GetProperty("载荷");
                 foreach (var enc in payload.EnumerateObject())
                 {
                     var encType = Type.GetType(enc.Name);
@@ -126,7 +126,7 @@ public sealed class PlanDatabase
             using var jwriter = Serialization.WriteJson(fstream);
             jwriter.WriteStartObject();
             jwriter.WriteNumber("version", 0);
-            jwriter.WriteStartObject("payload");
+            jwriter.WriteStartObject("载荷");
             foreach (var (enc, encData) in Plans)
             {
                 if (encData.All(kv => kv.Value.Plans.Count == 0))

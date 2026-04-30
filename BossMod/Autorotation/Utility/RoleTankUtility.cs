@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 // base class that simplifies implementation of tank utility modules, contains shared track definitions
 public abstract class RoleTankUtility(RotationModuleManager manager, Actor player) : GenericUtility(manager, player)
@@ -9,7 +9,7 @@ public abstract class RoleTankUtility(RotationModuleManager manager, Actor playe
 
     protected static void DefineShared(RotationModuleDefinition def, ActionID lb3, ActionID stanceApply, ActionID stanceRemove)
     {
-        DefineSimpleConfig(def, SharedTrack.Sprint, "Sprint", "", 100, ClassShared.AID.Sprint, 10);
+        DefineSimpleConfig(def, SharedTrack.Sprint, "冲刺", "", 100, ClassShared.AID.Sprint, 10);
 
         DefineLimitBreak(def, SharedTrack.LB, ActionTargets.Self, 10, 15, 8)
             .AddAssociatedActions(ClassShared.AID.ShieldWall, ClassShared.AID.Stronghold)
@@ -23,7 +23,7 @@ public abstract class RoleTankUtility(RotationModuleManager manager, Actor playe
         // TODO: combine standard/ex options
         // TODO: add 'if-not-active' strategy with configurable min-time-left
         def.Define(SharedTrack.Reprisal).As<ReprisalOption>("Reprisal", "", 250)
-            .AddOption(ReprisalOption.None, "Do not use automatically")
+            .AddOption(ReprisalOption.None, "不要自动使用")
             .AddOption(ReprisalOption.Use, "Use Reprisal (10s)", 60, 10, ActionTargets.Self, 22, 97)
             .AddOption(ReprisalOption.UseEx, "Use Reprisal (15s)", 60, 15, ActionTargets.Self, 98)
             .AddAssociatedActions(ClassShared.AID.Reprisal);

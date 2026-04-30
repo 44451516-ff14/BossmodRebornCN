@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassPLDUtility(RotationModuleManager manager, Actor player) : RoleTankUtility(manager, player)
 {
@@ -13,19 +13,19 @@ public sealed class ClassPLDUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: PLD", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "veyn, Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.PLD), 100);
+        var res = new RotationModuleDefinition("Utility: PLD", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "veyn, Akechi", RotationModuleQuality.Good, BitMask.Build((int)Class.PLD), 100);
 
         DefineShared(res, IDLimitBreak3, IDStanceApply, IDStanceRemove);
 
         res.Define(Track.Sheltron).As<ShelOption>("Sheltron", "Shel", 350) //Sheltron definitions
-            .AddOption(ShelOption.None, "Do not use automatically")
+            .AddOption(ShelOption.None, "不要自动使用")
             .AddOption(ShelOption.Sheltron, "Use Sheltron", 0, 4, ActionTargets.Self, 35, 81) //5s CD, 6s duration, -50 OathGauge cost
             .AddOption(ShelOption.HolySheltron, "Use Holy Sheltron", 0, 4, ActionTargets.Self, 82) //5s CD, 8s duration (similar to GNB/WAR we only really care about the first 4s of the mit), -50 OathGauge cost
             .AddOption(ShelOption.Intervention, "Use Intervention", 0, 4, ActionTargets.Party, 62) //10s CD, 8s duration (similar to GNB/WAR we only really care about the first 4s of the buddy mit), -50 OathGauge cost
             .AddAssociatedActions(PLD.AID.Sheltron, PLD.AID.HolySheltron, PLD.AID.Intervention);
 
         res.Define(Track.Sentinel).As<SentOption>("Sentinel", "Sent", 550) //Sentinel definition for CD plans
-            .AddOption(SentOption.None, "Do not use automatically")
+            .AddOption(SentOption.None, "不要自动使用")
             .AddOption(SentOption.Sentinel, "Use Sentinel", 120, 15, ActionTargets.Self, 38, 91) //120s CD, 15s duration
             .AddOption(SentOption.Guardian, "Use Guardian", 120, 15, ActionTargets.Self, 92) //120s CD, 15s duration
             .AddAssociatedActions(PLD.AID.Sentinel, PLD.AID.Guardian);
@@ -35,7 +35,7 @@ public sealed class ClassPLDUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.DivineVeil, "DivineVeil", "Veil", 220, PLD.AID.DivineVeil, 30); //90s CD, 30s duration
 
         res.Define(Track.PassageOfArms).As<ArmsDirection>("PassageOfArms", "PoA", 400) //PassageOfArms definition for CD plans
-            .AddOption(ArmsDirection.None, "Do not use automatically")
+            .AddOption(ArmsDirection.None, "不要自动使用")
             .AddOption(ArmsDirection.CharacterForward, "Faces the Forward direction relative to the Character", 120, 18, ActionTargets.Self, 70)
             .AddOption(ArmsDirection.CharacterBackward, "Faces the Backward direction relative to the Character", 120, 18, ActionTargets.Self, 70)
             .AddOption(ArmsDirection.CameraForward, "Faces the Forward direction relative to the Camera", 120, 18, ActionTargets.Self, 70)

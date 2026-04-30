@@ -1,4 +1,4 @@
-﻿using BossMod.Data;
+using BossMod.Data;
 
 namespace BossMod.Autorotation;
 
@@ -20,7 +20,7 @@ public class PhantomUtility(RotationModuleManager manager, Actor player) : Gener
 
     public static RotationModuleDefinition Definition()
     {
-        var def = new RotationModuleDefinition("Utility: Phantom Jobs", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "xan", RotationModuleQuality.Ok, new BitMask(~0ul), 100);
+        var def = new RotationModuleDefinition("Utility: Phantom Jobs", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "xan", RotationModuleQuality.Ok, new BitMask(~0ul), 100);
 
         DefineSimpleConfig(def, Track.Guard, "PGuard", "Phantom Guard", -10, PhantomID.PhantomGuard, 10);
         DefineSimpleConfig(def, Track.Pledge, "Pledge", "Pledge", -10, PhantomID.Pledge, 10);

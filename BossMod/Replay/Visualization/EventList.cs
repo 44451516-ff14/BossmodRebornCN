@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Bindings.ImGui;
 
 namespace BossMod.ReplayVisualization;
@@ -112,7 +112,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
             DrawStatuses(statuses.Where(statusIsCrap), tp, sidType);
         }
 
-        foreach (var n in _tree.Node("Tethers", !tethers.Any()))
+        foreach (var n in _tree.Node("连线", !tethers.Any()))
         {
             _tree.LeafNodes(tethers, t => $"{tp(t.Time.Start)} + {t.Time}: {t.ID} ({tidType?.GetEnumName(t.ID)}) @ {ReplayUtils.ParticipantString(t.Source, t.Time.Start)} -> {ReplayUtils.ParticipantString(t.Target, t.Time.Start)}");
         }
@@ -126,7 +126,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         {
             if (mapEffects.Any())
             {
-                foreach (var n2 in _tree.Node("All"))
+                foreach (var n2 in _tree.Node("全部"))
                 {
                     _tree.LeafNodes(mapEffects, ec => $"{tp(ec.Timestamp)}: {ec.Index:X2} = {ec.State:X8}");
                 }
@@ -140,7 +140,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
         foreach (var n in _tree.Node("Director updates", !dirus.Any()))
         {
             if (dirus.Any())
-                foreach (var n2 in _tree.Node("All"))
+                foreach (var n2 in _tree.Node("全部"))
                     _tree.LeafNodes(dirus, d => $"{tp(d.Timestamp)}: {d.UpdateID:X8} [0x{d.Param1:X}, 0x{d.Param2:X}, 0x{d.Param3:X}, 0x{d.Param4:X}]");
 
             foreach (var ix in _tree.Nodes(new SortedSet<uint>(dirus.Select(d => d.UpdateID)), index => new($"ID {index:X4}")))
@@ -162,7 +162,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
             {
                 DrawCasts(p.Casts, reference, aidType);
             }
-            foreach (var an in _tree.Node("Actions", !p.HasAnyActions))
+            foreach (var an in _tree.Node("动作", !p.HasAnyActions))
             {
                 DrawActions(actions.Where(a => a.Source == p), tp, aidType);
             }
@@ -170,7 +170,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
             {
                 DrawActions(actions.Where(a => a.Targets.Any(t => t.Target == p)), tp, aidType);
             }
-            foreach (var an in _tree.Node("Statuses", !p.HasAnyStatuses))
+            foreach (var an in _tree.Node("状态", !p.HasAnyStatuses))
             {
                 DrawStatuses(statuses.Where(s => s.Target == p), tp, sidType);
             }
@@ -278,7 +278,7 @@ sealed class EventList(Replay r, Action<DateTime> scrollTo, PlanDatabase planDB,
                 OpenTimeline(enc, new(1u << i));
             ImGui.SameLine();
         }
-        if (ImGui.Button("All"))
+        if (ImGui.Button("全部"))
             OpenTimeline(enc, new((1u << enc.PartyMembers.Count) - 1));
     }
 

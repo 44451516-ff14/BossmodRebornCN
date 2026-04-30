@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public abstract class RoleCasterUtility(RotationModuleManager manager, Actor player) : GenericUtility(manager, player)
 {
@@ -8,7 +8,7 @@ public abstract class RoleCasterUtility(RotationModuleManager manager, Actor pla
 
     protected static void DefineShared(RotationModuleDefinition def, ActionID lb3)
     {
-        DefineSimpleConfig(def, SharedTrack.Sprint, "Sprint", "", 10, ClassShared.AID.Sprint, 10);
+        DefineSimpleConfig(def, SharedTrack.Sprint, "冲刺", "", 10, ClassShared.AID.Sprint, 10);
 
         DefineLimitBreak(def, SharedTrack.LB, ActionTargets.Self, 8)
             .AddAssociatedActions(ClassShared.AID.Skyshard, ClassShared.AID.Starstorm)
@@ -17,7 +17,7 @@ public abstract class RoleCasterUtility(RotationModuleManager manager, Actor pla
         // TODO: combine standard/ex options
         // TODO: add 'if-not-active' strategy with configurable min-time-left
         def.Define(SharedTrack.Addle).As<AddleOption>("Addle", "", 250)
-            .AddOption(AddleOption.None, "Do not use automatically")
+            .AddOption(AddleOption.None, "不要自动使用")
             .AddOption(AddleOption.Use, "Use Addle (10s)", 90, 10, ActionTargets.Hostile, 22, 97)
             .AddOption(AddleOption.UseEx, "Use Addle (15s)", 90, 15, ActionTargets.Hostile, 98)
             .AddAssociatedActions(ClassShared.AID.Addle);
@@ -26,8 +26,8 @@ public abstract class RoleCasterUtility(RotationModuleManager manager, Actor pla
         DefineSimpleConfig(def, SharedTrack.LucidDreaming, "LucidDreaming", "Lucid D.", 30, ClassShared.AID.LucidDreaming, 21);
 
         // TODO: combine standard/ex options
-        def.Define(SharedTrack.Swiftcast).As<SwiftcastOption>("Swiftcast", "Swiftcast", 20)
-            .AddOption(SwiftcastOption.None, "Do not use automatically")
+        def.Define(SharedTrack.Swiftcast).As<SwiftcastOption>("即刻咏唱", "即刻咏唱", 20)
+            .AddOption(SwiftcastOption.None, "不要自动使用")
             .AddOption(SwiftcastOption.Use, "Use Swiftcast (10s)", 60, 10, ActionTargets.Self, 22, 93)
             .AddOption(SwiftcastOption.UseEx, "Use Swiftcast (15s)", 40, 10, ActionTargets.Self, 94)
             .AddAssociatedActions(ClassShared.AID.Swiftcast);

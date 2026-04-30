@@ -1,4 +1,4 @@
-﻿using BossMod.RDM;
+using BossMod.RDM;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -32,7 +32,7 @@ public sealed class RDM(RotationModuleManager manager, Actor player) : Castxan<A
     {
         [PropertyDisplay("Use at full mana, if needed for movement, or during burst")]
         Automatic,
-        [PropertyDisplay("Do not use")]
+        [PropertyDisplay("不使用")]
         Delay,
         [PropertyDisplay("Use ASAP, break combos if necessary")]
         Force
@@ -50,7 +50,7 @@ public sealed class RDM(RotationModuleManager manager, Actor player) : Castxan<A
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan RDM", "Red Mage", "Standard rotation (xan)|Casters", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.RDM), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan RDM", "Red Mage", "标准循环 (xan)|法系", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.RDM), 100).WithStrategies<Strategy>();
     }
 
     public uint BlackMana;

@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using System.IO;
 
 namespace BossMod.ReplayVisualization;
@@ -49,7 +49,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
 
     public void Draw(UITree tree, DateTime reference)
     {
-        //foreach (var n in _tree.Node("Settings"))
+        //foreach (var n in _tree.Node("设置"))
         //{
         //    DrawSettings();
         //}

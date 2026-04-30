@@ -1,4 +1,4 @@
-﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 
@@ -60,7 +60,7 @@ public static class UIStrategyValue
         return modified;
     }
 
-    public static bool DrawEditorTrackOption(StrategyValueTrack value, StrategyConfigTrack cfg, int? level, string label = "Option")
+    public static bool DrawEditorTrackOption(StrategyValueTrack value, StrategyConfigTrack cfg, int? level, string label = "选项")
     {
         var modified = false;
         using (var combo = ImRaii.Combo(label, cfg.Options[value.Option].UIName))
@@ -149,7 +149,7 @@ public static class UIStrategyValue
     public static bool DrawEditorTarget(StrategyValueTrack value, ActionTargets supportedTargets, BossModuleRegistry.Info? moduleInfo)
     {
         var modified = false;
-        using (var combo = ImRaii.Combo("Target", value.Target.ToString()))
+        using (var combo = ImRaii.Combo("目标", value.Target.ToString()))
         {
             if (combo)
             {

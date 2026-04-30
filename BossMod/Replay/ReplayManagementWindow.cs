@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Utility.Raii;
@@ -384,7 +384,7 @@ public sealed class ReplayManagementWindow : UIWindow
             prefix = Service.LuminaRow<ContentFinderCondition>(_ws.CurrentCFCID)?.Name.ToString();
         if (_ws.CurrentZone != default)
             prefix ??= Service.LuminaRow<TerritoryType>(_ws.CurrentZone)?.PlaceName.ValueNullable?.NameNoArticle.ToString();
-        prefix ??= "World";
+        prefix ??= "世界";
         prefix = Utils.StringToIdentifier(prefix);
 
         var player = _ws.Party.Player();

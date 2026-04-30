@@ -295,7 +295,7 @@ public sealed class ConfigUI : IDisposable
         node.DrawCustom(tree, ws);
     }
 
-    private static string GenerateNodeName(Type t) => t.Name.EndsWith("Config", StringComparison.Ordinal) ? t.Name[..^"Config".Length] : t.Name;
+    private static string GenerateNodeName(Type t) => t.Name.EndsWith("配置", StringComparison.Ordinal) ? t.Name[..^"配置".Length] : t.Name;
 
     private static void SortByOrder(List<UINode> nodes)
     {
@@ -543,7 +543,7 @@ public sealed class ConfigUI : IDisposable
             foreach (var n in group.Names)
                 ImGui.TableSetupColumn(n);
             ImGui.TableSetupColumn("----");
-            ImGui.TableSetupColumn("Name");
+            ImGui.TableSetupColumn("名称");
             ImGui.TableHeadersRow();
 
             var assignments = root.Get<PartyRolesConfig>().SlotsPerAssignment(ws.Party);

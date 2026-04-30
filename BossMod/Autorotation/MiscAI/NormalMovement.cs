@@ -1,4 +1,4 @@
-﻿using BossMod.Pathfinding;
+using BossMod.Pathfinding;
 
 namespace BossMod.Autorotation.MiscAI;
 
@@ -36,7 +36,7 @@ public sealed class NormalMovement : RotationModule
             .AddOption(DestinationStrategy.Explicit, "Move to specific point", supportedTargets: ActionTargets.Area);
 
         // note that these options used to be melee-specific - internal names are kept unchanged for convenience
-        res.Define(Track.Range).As<RangeStrategy>("Range", "Range", 20)
+        res.Define(Track.Range).As<RangeStrategy>("距离", "距离", 20)
             .AddOption(RangeStrategy.Any, "Go directly to destination")
             .AddOption(RangeStrategy.MaxRange, "Stay within maximum effective range of target closest to destination", supportedTargets: ActionTargets.Hostile)
             .AddOption(RangeStrategy.GreedGCDExplicit, "Stay within effective range until last GCD; ensure destination is reached by the plan entry end", supportedTargets: ActionTargets.Hostile)
@@ -44,7 +44,7 @@ public sealed class NormalMovement : RotationModule
             .AddOption(RangeStrategy.GreedAutomatic, "Stay within effective range as long as possible; try to ensure safety is reached before mechanic resolves", supportedTargets: ActionTargets.Hostile)
             /*.AddOption(RangeStrategy.Drag, "Drag", "Drag the target to specified spot, but maintain gcd uptime", supportedTargets: ActionTargets.Hostile)*/; // TODO
 
-        res.Define(Track.Cast).As<CastStrategy>("Cast", "Cast", 10)
+        res.Define(Track.Cast).As<CastStrategy>("咏唱", "咏唱", 10)
             .AddOption(CastStrategy.Leeway, "Continue slidecasting as long as there is enough time to get to safety")
             .AddOption(CastStrategy.Explicit, "Continue slidecasting as long as there is enough time to reach destination by the plan entry end")
             .AddOption(CastStrategy.Greedy, "Don't stop casting, even when it risks getting clipped by aoes")

@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassASTUtility(RotationModuleManager manager, Actor player) : RoleHealerUtility(manager, player)
 {
@@ -12,7 +12,7 @@ public sealed class ClassASTUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: AST", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "Akechi", RotationModuleQuality.Ok, BitMask.Build((int)Class.AST), 100);
+        var res = new RotationModuleDefinition("Utility: AST", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "Akechi", RotationModuleQuality.Ok, BitMask.Build((int)Class.AST), 100);
         DefineShared(res, IDLimitBreak3);
 
         DefineSimpleConfig(res, Track.Helios, "Helios", "", 140, AST.AID.Helios);
@@ -22,7 +22,7 @@ public sealed class ClassASTUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.AspectedBenefic, "AspectedBenefic", "A.Benefic", 100, AST.AID.AspectedBenefic, 15); //ST GCD regen, 15s effect duration
 
         res.Define(Track.AspectedHelios).As<HeliosOption>("AspectedHelios", "A.Helios", 130) //AoE 15s GCD heal/regen, 15s effect duration
-            .AddOption(HeliosOption.None, "Do not use automatically")
+            .AddOption(HeliosOption.None, "不要自动使用")
             .AddOption(HeliosOption.Use, "Use Aspected Helios", 1, 15, ActionTargets.Self, 40, 95)
             .AddOption(HeliosOption.UseEx, "Use Helios Conjunction", 1, 15, ActionTargets.Self, 96)
             .AddAssociatedActions(AST.AID.AspectedHelios, AST.AID.HeliosConjunction);
@@ -32,7 +32,7 @@ public sealed class ClassASTUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.CelestialOpposition, "CelestialOpposition", "C.Oppo", 100, AST.AID.CelestialOpposition, 15); //AoE oGCD heal/regen, 60s CD, 15s effect duration
 
         res.Define(Track.EarthlyStar).As<StarOption>("EarthlyStar", "E.Star", 200) //AoE GCD heal, 60s CD, 10s + 10s effect duration
-            .AddOption(StarOption.None, "Do not use automatically")
+            .AddOption(StarOption.None, "不要自动使用")
             .AddOption(StarOption.Use, "Use Earthly Star", 60, 20, ActionTargets.Area, 62)
             .AddOption(StarOption.End, "Use Stellar Detonation", 0, 1, ActionTargets.Self, 62)
             .AddAssociatedActions(AST.AID.EarthlyStar, AST.AID.StellarDetonation);
@@ -40,7 +40,7 @@ public sealed class ClassASTUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.CelestialIntersection, "CelestialIntersection", "C.Inter", 100, AST.AID.CelestialIntersection, 30); //ST oGCD heal/shield, 30s CD (60s Total), 2 charges
 
         res.Define(Track.Horoscope).As<HoroscopeOption>("Horoscope", "Horo", 130) //Conditional AoE heal, 60s CD, 30s effect duration
-            .AddOption(HoroscopeOption.None, "Do not use automatically")
+            .AddOption(HoroscopeOption.None, "不要自动使用")
             .AddOption(HoroscopeOption.Use, "Use Horoscope", 60, 10, ActionTargets.Self, 76)
             .AddOption(HoroscopeOption.End, "Use Enhanced Horoscope", 0, 1, ActionTargets.Self, 76)
             .AddAssociatedActions(AST.AID.Horoscope, AST.AID.HoroscopeEnd);
@@ -49,7 +49,7 @@ public sealed class ClassASTUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Exaltation, "Exaltation", "Exalt", 100, AST.AID.Exaltation, 8); //ST oGCD mit, 60s CD, 8s effect duration
 
         res.Define(Track.Macrocosmos).As<MacrocosmosOption>("Macrocosmos", "Macro", 300) //AoE GCD heal (after damage taken), 180s CD, 15s effect duration
-            .AddOption(MacrocosmosOption.None, "Do not use automatically")
+            .AddOption(MacrocosmosOption.None, "不要自动使用")
             .AddOption(MacrocosmosOption.Use, "Use Macrocosmos", 180, 15, ActionTargets.Self, 90, defaultPriority: ActionQueue.Priority.ManualGCD - 1)
             .AddOption(MacrocosmosOption.End, "Use Microcosmos", 0, 1, ActionTargets.Self, 90)
             .AddAssociatedActions(AST.AID.Macrocosmos, AST.AID.MicrocosmosEnd);

@@ -1,4 +1,4 @@
-﻿using BossMod.MCH;
+using BossMod.MCH;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -45,7 +45,7 @@ public sealed class MCH(RotationModuleManager manager, Actor player) : Attackxan
     {
         [Option("Use ASAP; delay in opener until tools are used", Targets = ActionTargets.Hostile)]
         ASAP,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay,
         [Option("Delay until Hypercharge window", Targets = ActionTargets.Hostile)]
         Hypercharge
@@ -53,15 +53,15 @@ public sealed class MCH(RotationModuleManager manager, Actor player) : Attackxan
 
     public enum ToolStrategy
     {
-        [Option("Use ASAP", Targets = ActionTargets.Hostile)]
+        [Option("尽快使用", Targets = ActionTargets.Hostile)]
         Automatic,
-        [Option("Do not use")]
+        [Option("不使用")]
         Delay
     }
 
     public static RotationModuleDefinition Definition()
     {
-        return new RotationModuleDefinition("xan MCH", "Machinist", "Standard rotation (xan)|Ranged", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.MCH), 100).WithStrategies<Strategy>();
+        return new RotationModuleDefinition("xan MCH", "Machinist", "标准循环 (xan)|远敏", "xan", RotationModuleQuality.Basic, BitMask.Build(Class.MCH), 100).WithStrategies<Strategy>();
     }
 
     public int Heat; // max 100

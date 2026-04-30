@@ -1,4 +1,4 @@
-﻿using BossMod.DRG;
+using BossMod.DRG;
 using FFXIVClientStructs.FFXIV.Client.Game.Gauge;
 using static BossMod.AIHints;
 
@@ -19,13 +19,13 @@ public sealed class AkechiDRG(RotationModuleManager manager, Actor player) : Ake
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Akechi DRG", "Standard Rotation Module", "Standard rotation (Akechi)|DPS", "Akechi", RotationModuleQuality.Good, BitMask.Build(Class.LNC, Class.DRG), 100);
+        var res = new RotationModuleDefinition("Akechi DRG", "标准循环模块", "Standard rotation (Akechi)|DPS", "Akechi", RotationModuleQuality.Good, BitMask.Build(Class.LNC, Class.DRG), 100);
 
         res.DefineTargeting();
         res.DefineHold();
         res.DefinePotion(ActionDefinitions.IDPotionStr);
 
-        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "Single-Target & AoE Rotations", 300)
+        res.Define(Track.AOE).As<AOEStrategy>("ST/AOE", "单体与 AOE 循环", 300)
             .AddOption(AOEStrategy.AutoFinish, "Automatically use best rotation based on targets nearby - finishes current combo loop if possible")
             .AddOption(AOEStrategy.ForceSTFinish, "Force full single-target combo loop focusing on player's Power Surge buff or target's Chaotic Spring debuff, regardless of targets nearby - finishes current combo loop if possible")
             .AddOption(AOEStrategy.ForceSTFinishPS, "Force full single-target combo loop focusing on player's Power Surge buff, regardless of targets nearby - finishes current combo loop if possible")
@@ -153,7 +153,7 @@ public sealed class AkechiDRG(RotationModuleManager manager, Actor player) : Ake
             .AddOption(CommonStrategy.Delay, "Delay Stardiver", 0, 0, ActionTargets.None, 80)
             .AddAssociatedActions(AID.Stardiver);
 
-        res.Define(Track.Jump).As<CommonStrategy>("Jump", uiPriority: 193)
+        res.Define(Track.Jump).As<CommonStrategy>("跳跃", uiPriority: 193)
             .AddOption(CommonStrategy.Automatic, "Automatically use Jump")
             .AddOption(CommonStrategy.HasLC, "Automatically use Jump if Lance Charge buff is currently active", 30, 0, ActionTargets.Hostile)
             .AddOption(CommonStrategy.HasBL, "Automatically use Jump if Battle Litany buff is currently active", 30, 0, ActionTargets.Hostile)

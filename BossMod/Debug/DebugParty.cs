@@ -1,4 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Group;
+using FFXIVClientStructs.FFXIV.Client.Game.Group;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Dalamud.Bindings.ImGui;
@@ -16,12 +16,12 @@ sealed class DebugParty
         ImGui.TextUnformatted($"Num members: {gm->MemberCount}, alliance={(!gm->IsAlliance ? "no" : gm->IsSmallGroupAlliance ? "small-group" : "yes")}, has-helpers={ui->Buddy.DutyHelperInfo.HasHelpers}");
 
         ImGui.BeginTable("party-custom", 7, ImGuiTableFlags.Resizable);
-        ImGui.TableSetupColumn("Index");
+        ImGui.TableSetupColumn("索引");
         ImGui.TableSetupColumn("ContentId");
         ImGui.TableSetupColumn("EntityId");
-        ImGui.TableSetupColumn("Name");
+        ImGui.TableSetupColumn("名称");
         ImGui.TableSetupColumn("Zone");
-        ImGui.TableSetupColumn("World");
+        ImGui.TableSetupColumn("世界");
         ImGui.TableSetupColumn("Position");
         ImGui.TableHeadersRow();
         for (var i = 0; i < gm->MemberCount; ++i)

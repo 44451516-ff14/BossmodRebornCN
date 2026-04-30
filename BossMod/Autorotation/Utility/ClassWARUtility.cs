@@ -1,4 +1,4 @@
-﻿namespace BossMod.Autorotation;
+namespace BossMod.Autorotation;
 
 public sealed class ClassWARUtility(RotationModuleManager manager, Actor player) : RoleTankUtility(manager, player)
 {
@@ -12,13 +12,13 @@ public sealed class ClassWARUtility(RotationModuleManager manager, Actor player)
 
     public static RotationModuleDefinition Definition()
     {
-        var res = new RotationModuleDefinition("Utility: WAR", "Cooldown Planner support for Utility Actions.\nNOTE: This is NOT a rotation preset! All Utility modules are STRICTLY for cooldown-planning usage.", "Utility for planner", "veyn", RotationModuleQuality.Good, BitMask.Build((int)Class.WAR), 100);
+        var res = new RotationModuleDefinition("Utility: WAR", "为工具技能提供冷却规划支持。\n注意：这不是循环预设！所有工具模块仅用于冷却规划。", "规划器工具", "veyn", RotationModuleQuality.Good, BitMask.Build((int)Class.WAR), 100);
         DefineShared(res, IDLimitBreak3, IDStanceApply, IDStanceRemove);
 
         DefineSimpleConfig(res, Track.Thrill, "ThrillOfBattle", "Thrill", 450, WAR.AID.ThrillOfBattle, 10);
 
         res.Define(Track.Vengeance).As<VengOption>("Vengeance", "Veng", 550)
-            .AddOption(VengOption.None, "Do not use automatically")
+            .AddOption(VengOption.None, "不要自动使用")
             .AddOption(VengOption.Vengeance, "Use Vengeance", 120, 15, ActionTargets.Self, 38, 91)
             .AddOption(VengOption.Damnation, "Use Damnation", 120, 15, ActionTargets.Self, 92)
             .AddAssociatedActions(WAR.AID.Vengeance, WAR.AID.Damnation);
@@ -26,7 +26,7 @@ public sealed class ClassWARUtility(RotationModuleManager manager, Actor player)
         DefineSimpleConfig(res, Track.Holmgang, "Holmgang", "", 400, WAR.AID.Holmgang, 10);
 
         res.Define(Track.Bloodwhetting).As<BWOption>("BW", uiPriority: 350)
-            .AddOption(BWOption.None, "Do not use automatically")
+            .AddOption(BWOption.None, "不要自动使用")
             .AddOption(BWOption.Bloodwhetting, "Use Bloodwhetting", 25, 4, ActionTargets.Self, 82) // note: secondary effect duration 8
             .AddOption(BWOption.RawIntuition, "Use Raw Intuition", 25, 6, ActionTargets.Self, 56, 81)
             .AddOption(BWOption.NascentFlash, "Use Nascent Flash", 25, 4, ActionTargets.Party, 76) // note: secondary effect duration 8

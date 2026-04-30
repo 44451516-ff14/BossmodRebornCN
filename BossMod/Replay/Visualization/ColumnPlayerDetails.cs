@@ -1,4 +1,4 @@
-﻿using BossMod.Autorotation;
+using BossMod.Autorotation;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
 
@@ -64,9 +64,9 @@ public sealed class ColumnPlayerDetails : Timeline.ColumnGroup
     public void DrawConfig(UITree tree)
     {
         DrawConfigPlanner(tree);
-        foreach (var _1 in tree.Node("Actions"))
+        foreach (var _1 in tree.Node("动作"))
             _actions.DrawConfig(tree);
-        foreach (var _1 in tree.Node("Statuses"))
+        foreach (var _1 in tree.Node("状态"))
             _statuses.DrawConfig(tree);
 
         foreach (var _1 in tree.Node("Resources"))
@@ -131,13 +131,13 @@ public sealed class ColumnPlayerDetails : Timeline.ColumnGroup
 
         var isDefault = selection == list.SelectedIndex;
         ImGui.SameLine();
-        if (ImGui.Checkbox("Default", ref isDefault))
+        if (ImGui.Checkbox("默认", ref isDefault))
         {
             list.SelectedIndex = isDefault ? selection : -1;
             _planDatabase.ModifyManifest(moduleType, _playerClass);
         }
         ImGui.SameLine();
-        if (UIMisc.Button("Save", _planner == null || !_planner.Modified, "Current plan was not modified"))
+        if (UIMisc.Button("保存", _planner == null || !_planner.Modified, "Current plan was not modified"))
             SaveChanges();
         ImGui.SameLine();
         if (UIMisc.Button("Copy", _planner == null, "No plan selected") && _planner != null && _moduleInfo != null)
@@ -158,7 +158,7 @@ public sealed class ColumnPlayerDetails : Timeline.ColumnGroup
             _planner.Modified = false;
         }
         ImGui.SameLine();
-        if (UIMisc.Button("New", _planner != null && _planner.Modified, "Current preset is modified, save or discard changes") && _moduleInfo != null)
+        if (UIMisc.Button("新建", _planner != null && _planner.Modified, "当前预设已修改，请保存或放弃更改") && _moduleInfo != null)
         {
             var plans = _planDatabase.GetPlans(_moduleInfo.ModuleType, _playerClass);
             var plan = new Plan($"New {plans.Plans.Count + 1}", _moduleInfo.ModuleType) { Guid = Guid.NewGuid().ToString(), Class = _playerClass, Level = _moduleInfo.PlanLevel };
@@ -166,7 +166,7 @@ public sealed class ColumnPlayerDetails : Timeline.ColumnGroup
             selection = plans.Plans.Count - 1;
         }
         ImGui.SameLine();
-        if (UIMisc.Button("Delete", 0, (!ImGui.GetIO().KeyShift, "Hold shift to delete"), (_planner == null, "No preset is selected")) && _moduleInfo != null && _selectedPlan >= 0)
+        if (UIMisc.Button("删除", 0, (!ImGui.GetIO().KeyShift, "Hold shift to delete"), (_planner == null, "未选择预设")) && _moduleInfo != null && _selectedPlan >= 0)
         {
             var plans = _planDatabase.GetPlans(_moduleInfo.ModuleType, _playerClass);
             _planDatabase.ModifyPlan(plans.Plans[_selectedPlan], null);
