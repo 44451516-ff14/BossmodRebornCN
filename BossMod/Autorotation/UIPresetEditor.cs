@@ -97,7 +97,7 @@ public sealed class UIPresetEditor
         if (!table)
             return;
         ImGui.TableSetupColumn("模块", ImGuiTableColumnFlags.WidthFixed, 200 * ImGuiHelpers.GlobalScale);
-        ImGui.TableSetupColumn("Strategies");
+        ImGui.TableSetupColumn("策略");
         ImGui.TableNextColumn();
         DrawModulesList();
         ImGui.TableNextColumn();
@@ -168,10 +168,10 @@ public sealed class UIPresetEditor
 
         using var d = ImRaii.Disabled(_sourcePresetDefault);
 
-        if (ImGui.Button("Add##module", width))
+        if (ImGui.Button("添加##module", width))
             ImGui.OpenPopup("add_module");
 
-        if (UIMisc.Button("Remove##module", width.X, (_selectedModuleIndex < 0, "Select any module to remove"), (!ImGui.GetIO().KeyShift, "按住 Shift")))
+        if (UIMisc.Button("移除##module", width.X, (_selectedModuleIndex < 0, "请选择要移除的模块"), (!ImGui.GetIO().KeyShift, "按住 Shift")))
         {
             var m = Preset.Modules[_selectedModuleIndex];
             AddAvailableModule(m.Type, m.Definition, m.Builder, _availableModules);
@@ -221,7 +221,7 @@ public sealed class UIPresetEditor
     {
         if (_selectedModuleIndex < 0)
         {
-            ImGui.TextUnformatted("Add or select rotation module to configure its strategies");
+            ImGui.TextUnformatted("添加或选择循环模块以配置策略");
             return;
         }
 
@@ -230,7 +230,7 @@ public sealed class UIPresetEditor
         var width = new Vector2(ImGui.GetContentRegionAvail().X, 0);
         var ms = Preset.Modules[_selectedModuleIndex];
 
-        ImGui.Checkbox("Show hidden tracks", ref _showHiddenTracks);
+        ImGui.Checkbox("显示隐藏轨道", ref _showHiddenTracks);
 
         using var _ = ImRaii.PushStyle(ImGuiStyleVar.CellPadding, new Vector2(5, 5));
         using var table = ImRaii.Table("preset_options", 2, ImGuiTableFlags.BordersInnerH);
@@ -278,11 +278,11 @@ public sealed class UIPresetEditor
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
         ImGui.Dummy(new(1, 27));
-        ImGui.Text("Hotkey overrides");
+        ImGui.Text("热键覆盖");
         ImGui.TableNextColumn();
         ImGui.Dummy(new(1, 24));
         ImGui.SetNextItemWidth(200 * ImGuiHelpers.GlobalScale);
-        using (var combo = ImRaii.Combo("###selectover", "Add new..."))
+        using (var combo = ImRaii.Combo("###selectover", "新增..."))
         {
             if (combo)
             {
@@ -312,7 +312,7 @@ public sealed class UIPresetEditor
             ImGui.SameLine();
             Modified |= DrawModifier(ref val.Mod, Preset.Modifier.Alt, "Alt");
             ImGui.SameLine();
-            if (ImGui.Button("Delete override"))
+            if (ImGui.Button("删除覆盖"))
                 ms.SerializedSettings.RemoveAt(i);
         }
     }
@@ -323,10 +323,10 @@ public sealed class UIPresetEditor
         {
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-            ImGui.TextUnformatted("Auto-heal/auto-raise");
+            ImGui.TextUnformatted("自动治疗/自动复活");
             ImGui.TableNextColumn();
-            ImGui.TextUnformatted("Not part of the standard rotation. Use the Healer AI module instead.");
-            if (ImGui.Button("Add Healer AI"))
+            ImGui.TextUnformatted("这不属于标准循环。请改用治疗 AI 模块。");
+            if (ImGui.Button("添加治疗 AI"))
             {
                 var rot = RotationModuleRegistry.Modules[THealerAI];
                 var index = Preset.AddModule(THealerAI, rot.Definition, rot.Builder);
@@ -336,7 +336,7 @@ public sealed class UIPresetEditor
                 return true;
             }
             ImGui.SameLine();
-            if (ImGui.Button("Don't show this suggestion again"))
+            if (ImGui.Button("不再显示此建议"))
             {
                 _autorotConfig.SuggestHealerAI = false;
                 _autorotConfig.Modified.Fire();

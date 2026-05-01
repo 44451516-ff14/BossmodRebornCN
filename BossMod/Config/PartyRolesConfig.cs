@@ -112,7 +112,7 @@ public class PartyRolesConfig : ConfigNode
         else
         {
             using var color = ImRaii.PushColor(ImGuiCol.Text, Colors.TextColor4);
-            ImGui.TextUnformatted("All good!");
+            ImGui.TextUnformatted("分配有效！");
         }
     }
 }

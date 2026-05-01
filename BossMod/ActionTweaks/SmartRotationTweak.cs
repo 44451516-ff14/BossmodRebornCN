@@ -1,15 +1,15 @@
 ﻿namespace BossMod;
 
-[ConfigDisplay(Name = "Smart character orientation", Parent = typeof(ActionTweaksConfig), Order = -20)]
+[ConfigDisplay(Name = "智能角色朝向", Parent = typeof(ActionTweaksConfig), Order = -20)]
 class SmartRotationConfig : ConfigNode
 {
-    [PropertyDisplay("Enable the feature", tooltip: "Replace in-game 'auto face target' option with a smarter alternative.\nWhen using an action, changes direction only if target is not in frontal cone.\nDuring cast, keep character facing the target.")]
+    [PropertyDisplay("启用功能", tooltip: "用更智能的替代方案替换游戏内“自动面向目标”选项。\n使用动作时，只有目标不在正面扇区内才会改变朝向。\n咏唱期间会保持角色面向目标。")]
     public bool Enabled = false;
 
-    [PropertyDisplay("Automatically avoid gazes")]
+    [PropertyDisplay("自动规避视线判定")]
     public bool AvoidGazes = true;
 
-    [PropertyDisplay("Time before gaze activation to start avoiding")]
+    [PropertyDisplay("视线判定生效前提前开始规避的时间")]
     [PropertySlider(0, 10, Speed = 0.01f)]
     public float MinTimeToAvoid = 0.5f;
 }

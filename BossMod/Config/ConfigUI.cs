@@ -40,9 +40,9 @@ public sealed class ConfigUI : IDisposable
         _presets = rotationDB != null ? new(rotationDB) : null;
 
         _tabs.Add("设置", DrawSettings);
-        _tabs.Add("支持的 Bosses", () => _mv.Draw(_tree, _ws));
+        _tabs.Add("支持的 Boss 模块", () => _mv.Draw(_tree, _ws));
         _tabs.Add("自动输出预设", () => _presets?.Draw());
-        _tabs.Add("Slash commands", DrawAvailableCommands);
+        _tabs.Add("斜杠命令", DrawAvailableCommands);
         _tabs.Add("说明", _about.Draw);
 
         Dictionary<Type, UINode> nodes = [];
@@ -95,12 +95,12 @@ public sealed class ConfigUI : IDisposable
     private void DrawSettings()
     {
         ImGui.SetNextItemWidth(300);
-        if (ImGui.InputTextEx("", "Search for a setting...", ref _searchText))
+        if (ImGui.InputTextEx("", "搜索设置...", ref _searchText))
             FilterNodes();
 
         ImGui.SameLine();
         using (ImRaii.Disabled(_searchText.Length == 0))
-            if (ImGui.Button("Clear"))
+            if (ImGui.Button("清除"))
             {
                 _searchText = "";
                 FilterNodes();
@@ -166,7 +166,7 @@ public sealed class ConfigUI : IDisposable
 
     private static void DrawAvailableCommands()
     {
-        ImGui.Text("Available Commands:");
+        ImGui.Text("可用命令：");
         ImGui.Separator();
         ImGui.Text("AI:");
         ImGui.Separator();
@@ -176,7 +176,7 @@ public sealed class ConfigUI : IDisposable
             ImGui.Text($"/bmrai {text.Item1}: {text.Item2}");
         }
         ImGui.Separator();
-        ImGui.Text("Autorotation commands:");
+        ImGui.Text("自动循环命令：");
         ImGui.Separator();
         for (var i = 0; i < 6; ++i)
         {
@@ -184,7 +184,7 @@ public sealed class ConfigUI : IDisposable
             ImGui.Text($"/bmr {text.Item1}: {text.Item2}");
         }
         ImGui.Separator();
-        ImGui.Text("Other commands:");
+        ImGui.Text("其他命令：");
         ImGui.Separator();
         for (var i = 0; i < 7; ++i)
         {
@@ -500,7 +500,7 @@ public sealed class ConfigUI : IDisposable
         ImGui.AlignTextToFramePadding();
         UIMisc.IconText(Dalamud.Interface.FontAwesomeIcon.ListUl);
         if (ImGui.IsItemHovered())
-            ImGui.SetTooltip("This configuration option includes presets. Right click on the dropdown to select a preset.");
+            ImGui.SetTooltip("此配置项包含预设。右键点击下拉框可选择预设。");
         ImGui.SameLine();
     }
 

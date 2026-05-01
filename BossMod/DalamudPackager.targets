@@ -62,5 +62,12 @@
     <Copy SourceFiles="@(_LocalPackageFiles)" DestinationFolder="$(LocalPackageDir)" SkipUnchangedFiles="false" />
 
     <Exec Command="powershell -NoLogo -NoProfile -Command &quot;$ErrorActionPreference = 'Stop'; Compress-Archive -LiteralPath @('$(LocalPackageDir)$(AssemblyName).dll','$(LocalPackageDir)$(AssemblyName).deps.json','$(LocalPackageDir)$(AssemblyName).json','$(LocalPackageDir)DefaultRotationPresets.json') -DestinationPath '$(LocalPackageZip)' -Force&quot;" />
+
+    <ItemGroup>
+      <_LocalPackageLooseFilesToDelete Include="$(LocalPackageDir)$(AssemblyName).dll" />
+      <_LocalPackageLooseFilesToDelete Include="$(LocalPackageDir)$(AssemblyName).deps.json" />
+    </ItemGroup>
+
+    <Delete Files="@(_LocalPackageLooseFilesToDelete)" ContinueOnError="true" />
   </Target>
 </Project>

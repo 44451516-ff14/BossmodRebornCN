@@ -11,7 +11,7 @@ public sealed class UIRotationWindow : UIWindow
     private readonly AutorotationConfig _config = Service.Config.Get<AutorotationConfig>();
     private readonly EventSubscriptions _subscriptions;
 
-    public UIRotationWindow(RotationModuleManager mgr, ActionManagerEx amex, Action openConfig) : base("Autorotation", false, new(400, 400), ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoFocusOnAppearing)
+    public UIRotationWindow(RotationModuleManager mgr, ActionManagerEx amex, Action openConfig) : base("自动循环", false, new(400, 400), ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoFocusOnAppearing)
     {
         _mgr = mgr;
         _amex = amex;
@@ -56,7 +56,7 @@ public sealed class UIRotationWindow : UIWindow
         var activeModule = _mgr.Bossmods.ActiveModule;
         if (activeModule != null)
         {
-            ImGui.TextUnformatted($"CD Plan:");
+            ImGui.TextUnformatted($"CD 计划：");
 
             if (activeModule.Info?.PlanLevel > 0)
             {
@@ -70,11 +70,11 @@ public sealed class UIRotationWindow : UIWindow
                 }
 
                 ImGui.SameLine();
-                if (ImGui.Button(plans.SelectedIndex >= 0 ? "Edit" : "新建"))
+                if (ImGui.Button(plans.SelectedIndex >= 0 ? "编辑" : "新建"))
                 {
                     if (plans.SelectedIndex < 0)
                     {
-                        var plan = new Plan($"New {plans.Plans.Count + 1}", activeModule.GetType()) { Guid = Guid.NewGuid().ToString(), Class = player.Class, Level = activeModule.Info.PlanLevel };
+                        var plan = new Plan($"新建 {plans.Plans.Count + 1}", activeModule.GetType()) { Guid = Guid.NewGuid().ToString(), Class = player.Class, Level = activeModule.Info.PlanLevel };
                         plans.SelectedIndex = plans.Plans.Count;
                         _mgr.Database.Plans.ModifyPlan(null, plan);
                     }
@@ -85,13 +85,13 @@ public sealed class UIRotationWindow : UIWindow
                 {
                     ImGui.SameLine();
                     using var style = ImRaii.PushColor(ImGuiCol.Text, Colors.TextColor2);
-                    UIMisc.HelpMarker(() => "You have a preset activated, which fully overrides the CD plan!", FontAwesomeIcon.ExclamationTriangle);
+                    UIMisc.HelpMarker(() => "当前已激活预设，会完全覆盖 CD 计划！", FontAwesomeIcon.ExclamationTriangle);
                 }
             }
         }
 
         // TODO: more fancy action history/queue...
-        ImGui.TextUnformatted($"Modules: {_mgr}");
+        ImGui.TextUnformatted($"模块：{_mgr}");
         if (_mgr.Preset?.Modules.Any(m => m.TransientSettings.Count > 0) ?? false)
         {
             ImGui.SameLine();
@@ -100,7 +100,7 @@ public sealed class UIRotationWindow : UIWindow
             if (ImGui.IsItemHovered())
             {
                 using var tooltip = ImRaii.Tooltip();
-                ImGui.TextUnformatted("Transient strategies:");
+                ImGui.TextUnformatted("临时策略：");
                 foreach (var m in _mgr.Preset.Modules.Where(m => m.TransientSettings.Count > 0))
                 {
                     ImGui.TextUnformatted($"> {m.Type.FullName}");
@@ -117,7 +117,7 @@ public sealed class UIRotationWindow : UIWindow
         ImGui.TextUnformatted($"GCD={_mgr.WorldState.Client.Cooldowns[ActionDefinitions.GCDGroup].Remaining:f3}, AnimLock={_amex.EffectiveAnimationLock:f3}+{_amex.AnimationLockDelayEstimate:f3}, Combo={_amex.ComboTimeLeft:f3}, RBIn={_mgr.Bossmods.RaidCooldowns.NextDamageBuffIn():f3}");
         foreach (var a in _mgr.Hints.ActionsToExecute.Entries)
         {
-            ImGui.TextUnformatted($"> {a.Action} ({a.Priority:f2}) @ ({a.Target?.Name ?? "<none>"})");
+            ImGui.TextUnformatted($"> {a.Action} ({a.Priority:f2}) @ ({a.Target?.Name ?? "<无>"})");
         }
     }
 
@@ -129,7 +129,7 @@ public sealed class UIRotationWindow : UIWindow
         if (mgr.Player == null)
             return modified;
 
-        ImGui.TextUnformatted("Presets:");
+        ImGui.TextUnformatted("预设：");
 
         ImGui.SameLine();
 

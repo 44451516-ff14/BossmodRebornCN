@@ -10,12 +10,12 @@ public sealed class BossModuleConfigWindow : UIWindow
     private readonly UITree _tree = new();
     private readonly UITabs _tabs = new();
 
-    public BossModuleConfigWindow(BossModuleRegistry.Info info, WorldState ws) : base($"{info.ModuleType.Name} config", true, new(1200, 800))
+    public BossModuleConfigWindow(BossModuleRegistry.Info info, WorldState ws) : base($"{info.ModuleType.Name} 配置", true, new(1200, 800))
     {
         _node = info.ConfigType != null ? Service.Config.Get<ConfigNode>(info.ConfigType) : null;
         _ws = ws;
-        _tabs.Add("Encounter-specific config", DrawEncounterTab);
-        _tabs.Add("Party roles assignment", DrawPartyRolesAssignmentsTab);
+        _tabs.Add("副本专属配置", DrawEncounterTab);
+        _tabs.Add("队伍职责分配", DrawPartyRolesAssignmentsTab);
     }
 
     public override void Draw() => _tabs.Draw();
@@ -25,7 +25,7 @@ public sealed class BossModuleConfigWindow : UIWindow
         if (_node != null)
             ConfigUI.DrawNode(_node, Service.Config, _tree, _ws);
         else
-            ImGui.TextUnformatted("This module does not expose any configuration");
+            ImGui.TextUnformatted("此模块没有可用配置");
     }
 
     private void DrawPartyRolesAssignmentsTab()

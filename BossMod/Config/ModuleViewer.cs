@@ -171,14 +171,14 @@ public sealed class ModuleViewer : IDisposable
         ImGui.TableNextColumn();
         ImGui.TableNextColumn(); //spacing with only one seemed to be a bit small on certain window sizes
         ImGui.AlignTextToFramePadding();
-        ImGui.Text("Search:");
+        ImGui.Text("搜索：");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(-1);
         DrawSearchBar();
         ImGui.TableNextColumn();
 
         ImGui.TableNextColumn();
-        ImGui.TableHeader("Expansion");
+        ImGui.TableHeader("资料片");
         ImGui.TableNextRow(ImGuiTableRowFlags.None);
         ImGui.TableNextColumn();
         DrawExpansionFilters();
@@ -186,7 +186,7 @@ public sealed class ModuleViewer : IDisposable
         ImGui.TableNextRow();
 
         ImGui.TableNextColumn();
-        ImGui.TableHeader("Content");
+        ImGui.TableHeader("内容");
         ImGui.TableNextRow(ImGuiTableRowFlags.None);
         ImGui.TableNextColumn();
         DrawContentTypeFilters();
@@ -194,12 +194,12 @@ public sealed class ModuleViewer : IDisposable
 
     private void DrawSearchBar()
     {
-        ImGui.InputTextWithHint("##search", "e.g. \"Ultimate\"", ref _searchText, 100, ImGuiInputTextFlags.CallbackCompletion);
+        ImGui.InputTextWithHint("##search", "例如：\"绝\"", ref _searchText, 100, ImGuiInputTextFlags.CallbackCompletion);
 
         if (ImGui.IsItemHovered() && !ImGui.IsItemFocused())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Type here to search for any specific instance by its respective title.");
+            ImGui.Text("在此输入副本标题来搜索指定内容。");
             ImGui.EndTooltip();
         }
     }
@@ -326,21 +326,21 @@ public sealed class ModuleViewer : IDisposable
                 groupId |= module.GroupID;
                 var mcRow = Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value;
                 var mcSort = uint.Parse(mcRow.ShortCode.ToString().AsSpan(3), CultureInfo.InvariantCulture); // 'aozNNN'
-                var mcName = $"Stage {mcSort}: {FixCase(mcRow.Name)}";
+                var mcName = $"第 {mcSort} 关：{FixCase(mcRow.Name)}";
                 return (new(mcName, groupId, mcSort), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.RemovedUnreal:
-                return (new("Removed Content", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new("已移除内容", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.BaldesionArsenal:
-                return (new("Baldesion Arsenal", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new("巴尔德西昂兵武塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.CastrumLacusLitore:
-                return (new("Castrum Lacus Litore", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new("南方博兹雅战线攻城战", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.TheDalriada:
-                return (new("The Dalriada", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new("旗舰达尔里阿达攻略战", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.TheForkedTowerBlood:
-                return (new("The Forked Tower: Blood", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new("蜃景幻界：血之塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.ForayFATE:
                 var fateRowBozjaSkirmish = Service.LuminaRow<Fate>(module.NameID)!.Value;
-                var skirmishName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} FATE";
+                var skirmishName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 临危受命";
                 return (new(skirmishName, groupId, groupId), new(module, $"{fateRowBozjaSkirmish.Name}", module.SortOrder));
             case BossModuleInfo.GroupType.Quest:
                 var questRow = Service.LuminaRow<Quest>(module.GroupID)!.Value;
@@ -349,35 +349,35 @@ public sealed class ModuleViewer : IDisposable
                 return (new(questCategoryName, groupId, groupId), new(module, $"{questRow.Name}: {BNpcName(module.NameID)}", module.SortOrder));
             case BossModuleInfo.GroupType.Fate:
                 var fateRow = Service.LuminaRow<Fate>(module.GroupID)!.Value;
-                return (new($"{module.Expansion.ShortName()} FATE", groupId, groupId, _iconFATE), new(module, $"{fateRow.Name}: {BNpcName(module.NameID)}", module.SortOrder));
+                return (new($"{module.Expansion.ShortName()} 临危受命", groupId, groupId, _iconFATE), new(module, $"{fateRow.Name}: {BNpcName(module.NameID)}", module.SortOrder));
             case BossModuleInfo.GroupType.Hunt:
                 groupId |= module.GroupID;
-                return (new($"{module.Expansion.ShortName()} Hunt {(BossModuleInfo.HuntRank)module.GroupID}", groupId, groupId, _iconHunt), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new($"{module.Expansion.ShortName()} 狩猎 {(BossModuleInfo.HuntRank)module.GroupID}", groupId, groupId, _iconHunt), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.CriticalEngagement:
                 groupId |= module.GroupID;
-                var ceName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} CE";
+                var ceName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 关键遭遇战";
                 return (new(ceName, groupId, groupId), new(module, Service.LuminaRow<DynamicEvent>(module.NameID)!.Value.Name.ToString(), module.SortOrder));
             case BossModuleInfo.GroupType.BozjaDuel:
                 groupId |= module.GroupID;
-                var duelName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} Duel";
+                var duelName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 单挑";
                 return (new(duelName, groupId, groupId), new(module, Service.LuminaRow<DynamicEvent>(module.NameID)!.Value.Name.ToString(), module.SortOrder));
             case BossModuleInfo.GroupType.EurekaNM:
                 groupId |= module.GroupID;
                 var nmName = FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name);
                 return (new(nmName, groupId, groupId), new(module, Service.LuminaRow<Fate>(module.NameID)!.Value.Name.ToString(), module.SortOrder));
             case BossModuleInfo.GroupType.GoldSaucer:
-                return (new("Gold saucer", groupId, groupId), new(module, $"{Service.LuminaRow<GoldSaucerTextData>(module.GroupID)?.Text}: {BNpcName(module.NameID)}", module.SortOrder));
+                return (new("金碟游乐场", groupId, groupId), new(module, $"{Service.LuminaRow<GoldSaucerTextData>(module.GroupID)?.Text}: {BNpcName(module.NameID)}", module.SortOrder));
             default:
-                return (new("Ungrouped", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+                return (new("未分组", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
         }
     }
 
     private string ModuleHelpText(ModuleInfo info)
     {
         var sb = new StringBuilder();
-        sb.AppendLine(CultureInfo.CurrentCulture, $"Cooldown planning: {(info.Info.PlanLevel > 0 ? $"L{info.Info.PlanLevel}" : "not supported")}");
+        sb.AppendLine(CultureInfo.CurrentCulture, $"冷却规划：{(info.Info.PlanLevel > 0 ? $"L{info.Info.PlanLevel}" : "不支持")}");
         if (info.Info.Contributors.Length > 0)
-            sb.AppendLine(CultureInfo.CurrentCulture, $"Contributors: {info.Info.Contributors}");
+            sb.AppendLine(CultureInfo.CurrentCulture, $"贡献者：{info.Info.Contributors}");
         return sb.ToString();
     }
 
@@ -391,7 +391,7 @@ public sealed class ModuleViewer : IDisposable
         {
             foreach (var plan in plans.Plans)
             {
-                if (ImGui.Selectable($"Edit {cls} '{plan.Name}' ({plan.Guid})"))
+                if (ImGui.Selectable($"编辑 {cls} '{plan.Name}' ({plan.Guid})"))
                 {
                     UIPlanDatabaseEditor.StartPlanEditor(_planDB, plan);
                 }
@@ -401,10 +401,10 @@ public sealed class ModuleViewer : IDisposable
         var player = _ws.Party.Player();
         if (player != null)
         {
-            if (ImGui.Selectable($"New plan for {player.Class}..."))
+            if (ImGui.Selectable($"为 {player.Class} 新建计划..."))
             {
                 var plans = mplans.GetOrAdd(player.Class);
-                var plan = new Plan($"New {plans.Plans.Count + 1}", info.ModuleType) { Guid = Guid.NewGuid().ToString(), Class = player.Class, Level = info.PlanLevel };
+                var plan = new Plan($"新建 {plans.Plans.Count + 1}", info.ModuleType) { Guid = Guid.NewGuid().ToString(), Class = player.Class, Level = info.PlanLevel };
                 _planDB.ModifyPlan(null, plan);
                 UIPlanDatabaseEditor.StartPlanEditor(_planDB, plan);
             }

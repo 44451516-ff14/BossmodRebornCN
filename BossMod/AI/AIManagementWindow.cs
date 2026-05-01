@@ -9,7 +9,7 @@ sealed class AIManagementWindow : UIWindow
     private static readonly AIConfig _config = Service.Config.Get<AIConfig>();
     private readonly AIManager _manager;
     private readonly EventSubscriptions _subscriptions;
-    private const string _title = $"AI: off{_windowID}";
+    private const string _title = $"AI：关闭{_windowID}";
     private const string _windowID = "###AI debug window";
     private static readonly string[] positionals = Enum.GetNames<Positional>();
 
@@ -43,19 +43,19 @@ sealed class AIManagementWindow : UIWindow
     {
         var configModified = false;
 
-        ImGui.TextUnformatted($"Navi={_manager.Controller.NaviTargetPos}");
+        ImGui.TextUnformatted($"导航目标={_manager.Controller.NaviTargetPos}");
 
         configModified |= ImGui.Checkbox("禁用技能", ref _config.ForbidActions);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("禁用技能", ref _config.ForbidMovement);
+        configModified |= ImGui.Checkbox("禁用移动", ref _config.ForbidMovement);
         ImGui.SameLine();
-        configModified |= ImGui.Checkbox("禁用技能", ref _config.ForbidAIMovementMounted);
+        configModified |= ImGui.Checkbox("骑乘时禁用AI移动", ref _config.ForbidAIMovementMounted);
         ImGui.SameLine();
         configModified |= ImGui.Checkbox("战斗中跟随", ref _config.FollowDuringCombat);
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Must be enabled for follow target.");
+            ImGui.Text("需要启用此项才能跟随目标。");
             ImGui.EndTooltip();
         }
         ImGui.Spacing();
@@ -63,7 +63,7 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Must be enabled for following targets during active boss modules.");
+            ImGui.Text("需要启用此项，才能在 Boss 模块激活时跟随目标。");
             ImGui.EndTooltip();
         }
         ImGui.SameLine();
@@ -73,15 +73,15 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Follow the target with your distance settings.\nFollow during combat and follow during active boss module need to be activated.");
+            ImGui.Text("按下方距离设置跟随目标。\n需要同时启用“战斗中跟随”和“BOSS模块激活时跟随”。");
             ImGui.EndTooltip();
         }
         ImGui.Spacing();
-        configModified |= ImGui.Checkbox("跟随目标", ref _config.ManualTarget);
+        configModified |= ImGui.Checkbox("允许手动选目标", ref _config.ManualTarget);
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Allows manual targeting with an active AI autorotation.");
+            ImGui.Text("AI 自动循环启用时允许手动选择目标。");
             ImGui.EndTooltip();
         }
         ImGui.SameLine();
@@ -91,9 +91,9 @@ sealed class AIManagementWindow : UIWindow
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250);
         ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50f));
-        if (ImRaii.Combo("##Leader", _manager.Beh == null ? "<idle>" : _manager.WorldState.Party[_manager.MasterSlot]?.Name ?? "<unknown>"))
+        if (ImRaii.Combo("##Leader", _manager.Beh == null ? "<待机>" : _manager.WorldState.Party[_manager.MasterSlot]?.Name ?? "<未知>"))
         {
-            if (ImGui.Selectable("<idle>", _manager.Beh == null))
+            if (ImGui.Selectable("<待机>", _manager.Beh == null))
             {
                 _manager.SwitchToIdle();
             }
@@ -115,11 +115,11 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Select player to follow to enable AI. Usually you select yourself for this.");
+            ImGui.Text("选择要跟随的玩家以启用 AI。通常选择自己。");
             ImGui.EndTooltip();
         }
         ImGui.Separator();
-        ImGui.Text("SetNextItemWidth");
+        ImGui.Text("攻击身位");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var positionalIndex = (int)_config.DesiredPositional;
@@ -145,11 +145,11 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Maximum distance in yalms to keep away from targets.");
+            ImGui.Text("与目标保持的最大距离，单位为星码。");
             ImGui.EndTooltip();
         }
         ImGui.SameLine();
-        ImGui.Text("- to slots");
+        ImGui.Text("- 至队友");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var maxDistanceSlotStr = _config.MaxDistanceToSlot.ToString(CultureInfo.InvariantCulture);
@@ -165,10 +165,10 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Maximum distance in yalms to keep away from followed allies.");
+            ImGui.Text("与被跟随队友保持的最大距离，单位为星码。");
             ImGui.EndTooltip();
         }
-        ImGui.Text("Minimum distance");
+        ImGui.Text("最小距离");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var minDistanceStr = _config.MinDistance.ToString(CultureInfo.InvariantCulture);
@@ -184,11 +184,11 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Distance in yalms to keep away from target hitbox.");
+            ImGui.Text("与目标碰撞箱保持的距离，单位为星码。");
             ImGui.EndTooltip();
         }
         ImGui.SameLine();
-        ImGui.Text("Pref distance to forbidden zones");
+        ImGui.Text("与危险区的偏好距离");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var prefDistanceStr = _config.PreferredDistance.ToString(CultureInfo.InvariantCulture);
@@ -204,10 +204,10 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Distance in yalms to keep away from forbidden zones.");
+            ImGui.Text("与危险区域保持的距离，单位为星码。");
             ImGui.EndTooltip();
         }
-        ImGui.Text("Movement decision delay");
+        ImGui.Text("移动决策延迟");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(100f);
         var movementDelayStr = _config.MoveDelay.ToString(CultureInfo.InvariantCulture);
@@ -223,11 +223,11 @@ sealed class AIManagementWindow : UIWindow
         if (ImGui.IsItemHovered())
         {
             ImGui.BeginTooltip();
-            ImGui.Text("Minimum time to start moving after movement decision has been made.\nAvoid setting this too high depending on the content.");
+            ImGui.Text("做出移动决策后开始移动前的最短等待时间。\n不同副本需求不同，避免设置过高。");
             ImGui.EndTooltip();
         }
         ImGui.SameLine();
-        ImGui.Text("Autorotation AI preset");
+        ImGui.Text("自动循环 AI 预设");
         ImGui.SameLine();
         ImGui.SetNextItemWidth(250f);
         ImGui.SetNextWindowSizeConstraints(default, new Vector2(float.MaxValue, ImGui.GetTextLineHeightWithSpacing() * 50f));
@@ -242,7 +242,7 @@ sealed class AIManagementWindow : UIWindow
         }
 
         if (aipreset != null)
-            presetNames.Add("Deactivate");
+            presetNames.Add("停用");
         var countnames = presetNames.Count;
         var selectedIndex = presetNames.IndexOf(aipreset ?? "");
 
@@ -273,6 +273,6 @@ sealed class AIManagementWindow : UIWindow
         var masterName = _manager?.Autorot?.WorldState?.Party[masterSlot]?.Name ?? "未知";
         var masterSlotNumber = masterSlot != -1 ? (masterSlot + 1).ToString() : "N/A";
 
-        WindowName = $"AI: {(_manager?.Beh != null ? "on" : "off")}, master={masterName}[{masterSlotNumber}]{_windowID}";
+        WindowName = $"AI：{(_manager?.Beh != null ? "开启" : "关闭")}，领袖={masterName}[{masterSlotNumber}]{_windowID}";
     }
 }
