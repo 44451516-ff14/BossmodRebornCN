@@ -43,7 +43,7 @@ jobs:
         run: Compress-Archive -Path .\build\* -DestinationPath .\build\latest.zip
 
       - name: Publish Plugin
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: ./build/latest.zip
           token: ${{ secrets.GITHUB_TOKEN }}
