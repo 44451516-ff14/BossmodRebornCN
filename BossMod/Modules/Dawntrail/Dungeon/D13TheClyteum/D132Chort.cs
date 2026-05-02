@@ -1,4 +1,4 @@
-namespace BossMod.Dawntrail.Dungeon.D13Clyteum.D132Chort;
+namespace BossMod.Dawntrail.Dungeon.D13TheClyteum.D132Chort;
 
 public enum OID : uint
 {
@@ -43,12 +43,21 @@ public enum IconID : uint
 }
 
 sealed class MortifyingFlesh(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh, new AOEShapeRect(40f, 4f));
-sealed class MortifyingFlesh1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh1, new AOEShapeRect(40f, 7f));
+sealed class MortifyingFlesh1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh1, new AOEShapeRect(40f, 8f));
 
-sealed class MortifyingFlesh2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh2, new AOEShapeRect(40f, 7f));
+sealed class MortifyingFlesh2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh2, new AOEShapeRect(40f, 8f));
 
 //TODO Would prefer if it moves automatically to where it needs to be. Shows indicator, doesn't seem to move.
-sealed class BodyWeightExorcism1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodyweightExorcism1, 11, true);
+sealed class BodyWeightExorcism1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodyweightExorcism1, 11)
+{
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        foreach (var src in ActiveKnockbacks(slot, actor))
+            if (!IsImmune(slot, src.Activation))
+                hints.AddForbiddenZone(new AOEShapeCircle(7f, true), Arena.Center);
+
+    }
+}
 
 sealed class BasicVomit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BasicVomit, new AOEShapeCone(50f, 60f.Degrees()));
 
@@ -76,7 +85,7 @@ sealed class D132ChortStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
+[ModuleInfo(BossModuleInfo.Maturity.WIP,
     StatesType = typeof(D132ChortStates),
     ConfigType = null, // replace null with typeof(ChortConfig) if applicable
     ObjectIDType = typeof(OID),
