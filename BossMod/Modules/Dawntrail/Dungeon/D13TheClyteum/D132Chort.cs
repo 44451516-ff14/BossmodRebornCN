@@ -47,15 +47,19 @@ sealed class MortifyingFlesh1(BossModule module) : Components.SimpleAOEs(module,
 
 sealed class MortifyingFlesh2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh2, new AOEShapeRect(40f, 8f));
 
-//TODO Would prefer if it moves automatically to where it needs to be. Shows indicator, doesn't seem to move.
-sealed class BodyWeightExorcism1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodyweightExorcism1, 11)
+sealed class BodyWeightExorcism1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodyweightExorcism1, 8)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        foreach (var src in ActiveKnockbacks(slot, actor))
-            if (!IsImmune(slot, src.Activation))
-                hints.AddForbiddenZone(new AOEShapeCircle(7f, true), Arena.Center);
-
+        if (Casters.Count != 0)
+        {
+            ref readonly var kb = ref Casters.Ref(0);
+            var act = kb.Activation;
+            if (!IsImmune(slot, act))
+            {
+                hints.AddForbiddenZone(new SDInvertedCircle(kb.Origin, 7f), act);
+            }
+        }
     }
 }
 
@@ -103,4 +107,4 @@ sealed class D132ChortStates : StateMachineBuilder
     SortOrder = 1,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class Chort(WorldState ws, Actor primary) : BossModule(ws, primary, new(660f, -142f), new ArenaBoundsCircle(16f));
+public sealed class Chort(WorldState ws, Actor primary) : BossModule(ws, primary, new(660f, -141f), new ArenaBoundsCircle(15f));
