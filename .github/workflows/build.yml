@@ -1,5 +1,8 @@
 name: Build
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -20,10 +23,25 @@ jobs:
       - name: Download Dalamud Latest
         run: |
           Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
-          Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncher\addon\Hooks\dev"
+          Expand-Archive -Force latest.zip -DestinationPath "$env:AppData\XIVLauncherCN\addon\Hooks\dev"
 
       - name: Restore NuGet Packages
         run: dotnet restore     BossMod/BossModReborn.csproj
 
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release BossMod/BossModReborn.csproj
+        run: dotnet build --no-restore -c Release BossMod/BossModReborn.csproj --output .\build
+
+      - name: Cleanup Build Output
+        run: Get-ChildItem .\build\* -Exclude BossModReborn.*,DefaultRotationPresets.json,PInvoke.User32.dll | Remove-Item -Force -Recurse
+
+      - name: Zip Plugin
+        run: |
+          New-Item -ItemType Directory -Force -Path .\artifacts
+          Compress-Archive -Path .\build\* -DestinationPath ".\artifacts\BossModReborn-${{ github.run_number }}-${{ github.sha }}.zip"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BossModReborn-${{ github.run_number }}-${{ github.sha }}
+          path: .\artifacts\BossModReborn-${{ github.run_number }}-${{ github.sha }}.zip
+          if-no-files-found: error
