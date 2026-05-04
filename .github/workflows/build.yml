@@ -29,7 +29,7 @@ jobs:
         run: dotnet restore     BossMod/BossModReborn.csproj
 
       - name: Build Plugin
-        run: dotnet build --no-restore -c Release BossMod/BossModReborn.csproj --output .\build
+        run: dotnet build --no-restore -c Release BossMod/BossModReborn.csproj --output .\build\
 
       - name: Cleanup Build Output
         run: Get-ChildItem .\build\* -Exclude BossModReborn.*,DefaultRotationPresets.json,PInvoke.User32.dll | Remove-Item -Force -Recurse
