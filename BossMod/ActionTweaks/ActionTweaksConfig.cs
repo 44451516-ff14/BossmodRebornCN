@@ -56,7 +56,7 @@ public sealed class ActionTweaksConfig : ConfigNode
     public bool PreferMouseover = false;
 
     [PropertyDisplay("智能技能目标选择", tooltip: "如果常规（鼠标悬停/主要）目标对动作无效，则自动选择下一个最佳目标（例如给副坦使用舍命）")]
-    public bool SmartTargets = false;
+    public bool SmartTargeting = false;
 
     [PropertyDisplay("对手动按下的动作使用自定义队列", tooltip: "此设置允许与自动循环更好地集成，并在自动循环进行时按下治疗技能时防止三连编织或GCD漂移")]
     public bool UseManualQueue = false;
