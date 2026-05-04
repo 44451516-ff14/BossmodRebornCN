@@ -8,6 +8,8 @@ on:
       - main
 jobs:
   Build:
+    permissions:
+      contents: write
     runs-on: windows-latest
     steps:
       - name: Checkout Repository
@@ -19,6 +21,15 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
+
+      - name: Get Plugin Version
+        run: |
+          [xml]$project = Get-Content -Raw -Encoding UTF8 BossMod\BossModReborn.csproj
+          $version = $project.SelectSingleNode('//Version').InnerText
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw 'Version not found in BossMod\BossModReborn.csproj'
+          }
+          "plugin_version=$version" | Out-File -Append -Encoding utf8 -FilePath $env:GITHUB_ENV
 
       - name: Download Dalamud Latest
         run: |
@@ -37,11 +48,30 @@ jobs:
       - name: Zip Plugin
         run: |
           New-Item -ItemType Directory -Force -Path .\artifacts
-          Compress-Archive -Path .\build\* -DestinationPath ".\artifacts\BossModReborn-${{ github.run_number }}-${{ github.sha }}.zip"
+          Compress-Archive -Path .\build\* -DestinationPath ".\artifacts\BossModReborn-${{ env.plugin_version }}.zip"
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BossModReborn-${{ github.run_number }}-${{ github.sha }}
-          path: .\artifacts\BossModReborn-${{ github.run_number }}-${{ github.sha }}.zip
+          name: BossModReborn-${{ env.plugin_version }}-${{ github.run_number }}-${{ github.sha }}
+          path: .\artifacts\BossModReborn-${{ env.plugin_version }}.zip
           if-no-files-found: error
+
+      - name: Update Version Release Tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git tag -f $env:plugin_version ${{ github.sha }}
+          git push origin $env:plugin_version --force
+
+      - name: Publish Version Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.plugin_version }}
+          name: ${{ env.plugin_version }}
+          body: Automated build from the main branch for BossModReborn ${{ env.plugin_version }}.
+          files: ./artifacts/BossModReborn-${{ env.plugin_version }}.zip
+          prerelease: false
+          make_latest: true
+          overwrite_files: true
+          token: ${{ secrets.GITHUB_TOKEN }}
