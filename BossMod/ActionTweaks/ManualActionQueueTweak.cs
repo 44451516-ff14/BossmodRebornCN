@@ -226,8 +226,10 @@ public sealed class ManualActionQueueTweak(WorldState ws, AIHints hints)
             return false; // target is valid, but not found in world, bail... (TODO this shouldn't be happening really)
 
         // custom smart-targeting
-        if (allowSmartTarget && _config.SmartTargets && !IsRSREnabled() && def.SmartTarget != null)
-            target = def.SmartTarget(ws, player, target, hints);
+        if (allowSmartTarget && _config.SmartTargeting && !IsRSREnabled() && def.SmartTarget != null)
+        {
+            target = ws.Actors.Find(targetNearest());
+        }
 
         // fallback: if requested, use native "target nearest" function to try to find a valid hostile target
         // this conditional ensures we don't get a false positive for holmgang (can target self or hostile) or phantom oracle invuln (can target ally, but not self)

@@ -70,7 +70,6 @@ public sealed class Plugin : IDalamudPlugin
         Service.WindowSystem = new("bmr");
         //Service.Device = pluginInterface.UiBuilder.Device;
         Service.Condition.ConditionChange += OnConditionChanged;
-        Service.IconFont = UiBuilder.IconFont;
         MultiboxUnlock.Exec();
         Camera.Instance = new();
 
