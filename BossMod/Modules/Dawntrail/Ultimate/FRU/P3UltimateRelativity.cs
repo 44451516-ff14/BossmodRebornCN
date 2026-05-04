@@ -227,8 +227,10 @@ sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(mo
             var eastSlot = eastFlex[isSupport ? 0 : 1].slot;
             bool? preferEast = eastSlot >= 0 ? eastSlot == i : null;
             var dir = player.Class.IsSupport() ? SupportDir(state.FireOrder, preferEast) : DDDir(state.FireOrder, preferEast);
-            if (dir != null)
-                state.AssignedDir = (northDir + dir.Value).ToDirection();
+            //if (dir != null)
+            //    state.AssignedDir = (northDir + dir.Value).ToDirection();
+            // Fixing support fire 10 assignment not drawing - Topas 2026/05/03
+            state.AssignedDir = dir != null ? (northDir + dir.Value).ToDirection() : northDir.ToDirection();
         }
     }
 

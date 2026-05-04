@@ -42,6 +42,10 @@ sealed class OrbitalOmen : Components.SimpleAOEs
         MaxDangerColor = 2;
     }
 }
+sealed class AtomicImpactVoidZones(BossModule module) :
+    Components.Voidzone(module, 5f, module => module.Enemies((uint)OID.AtomicImpactVoidZones).Where(z => z.EventState != 7));
+sealed class DanceOfDomination(BossModule module) : Components.RaidwideCastsDelay(module, [(uint)AID.DanceOfDominationTrophy], [(uint)AID.DanceOfDomination, (uint)AID.DanceOfDomination1, (uint)AID.DanceOfDomination2, (uint)AID.DanceOfDomination3], 6f, "Multi-hit Raidwide");
+sealed class Charybdistopia(BossModule module) : Components.CastHint(module, (uint)AID.Charybdistopia, "Set hp to 1");
 sealed class MassiveMeteor(BossModule module) : Components.StackWithIcon(module, (uint)IconID.MassiveMeteorIcon, (uint)AID.MassiveMeteorHit, 6f, 5, 4, 4, 5);
 sealed class MaelstromVoidZones(BossModule module) : Components.GenericAOEs(module)
 {
@@ -119,7 +123,253 @@ sealed class MaelstromGustCones(BossModule module) : Components.GenericAOEs(modu
         return CollectionsMarshal.AsSpan(_aoes);
     }
 }
-sealed class AtomicImpactVoidZones(BossModule module) :
-    Components.Voidzone(module, 5f, module => module.Enemies((uint)OID.AtomicImpactVoidZones).Where(z => z.EventState != 7));
-sealed class DanceOfDomination(BossModule module) : Components.RaidwideCastsDelay(module, [(uint)AID.DanceOfDominationTrophy], [(uint)AID.DanceOfDomination, (uint)AID.DanceOfDomination1, (uint)AID.DanceOfDomination2, (uint)AID.DanceOfDomination3], 6f, "Multi-hit Raidwide");
-sealed class Charybdistopia(BossModule module) : Components.CastHint(module, (uint)AID.Charybdistopia, "Set hp to 1");
+
+sealed class MaelstromBaitSafeSpots(BossModule module) : BossComponent(module)
+{
+    private readonly PartyRolesConfig _roles = Service.Config.Get<PartyRolesConfig>();
+    private MaelstromGustCones? _cones;
+
+    private const float Distance = 6.5f;
+    private const float Radius = 1f;
+
+    public override void Update()
+    {
+        _cones ??= Module.FindComponent<MaelstromGustCones>();
+    }
+
+    public override void DrawArenaForeground(int slot, Actor pc)
+    {
+        if (pc == null || _cones == null || _cones._resolved)
+            return;
+
+        var assignments = _roles.AssignmentsPerSlot(WorldState.Party);
+        if (assignments.Length == 0 || (uint)slot >= (uint)assignments.Length)
+            return;
+
+        var role = assignments[slot];
+
+        var count = 0;
+        foreach (var a in WorldState.Actors)
+            if ((OID)a.OID == OID.Maelstrom)
+                ++count;
+
+        if (count < 4)
+            return;
+
+        foreach (var a in WorldState.Actors)
+        {
+            if ((OID)a.OID != OID.Maelstrom)
+                continue;
+
+            var pos = a.Position;
+            var delta = pos - Module.Center;
+
+            var dx = delta.X;
+            var dy = delta.Z;
+
+            WPos spot = default;
+
+            // WEST
+            if (MathF.Abs(dx) > MathF.Abs(dy) && dx < 0)
+            {
+                if (role == PartyRolesConfig.Assignment.H1)
+                    spot = Offset(pos, (-135).Degrees());
+                else if (role == PartyRolesConfig.Assignment.M1)
+                    spot = Offset(pos, (-45).Degrees());
+            }
+            // EAST
+            else if (MathF.Abs(dx) > MathF.Abs(dy) && dx > 0)
+            {
+                if (role == PartyRolesConfig.Assignment.R2)
+                    spot = Offset(pos, 135.Degrees());
+                else if (role == PartyRolesConfig.Assignment.H2)
+                    spot = Offset(pos, 45.Degrees());
+            }
+            // NORTH
+            else if (dy < 0)
+            {
+                if (role == PartyRolesConfig.Assignment.R1)
+                    spot = Offset(pos, (-135).Degrees());
+                else if (role == PartyRolesConfig.Assignment.MT)
+                    spot = Offset(pos, 135.Degrees());
+            }
+            // SOUTH
+            else
+            {
+                if (role == PartyRolesConfig.Assignment.M2)
+                    spot = Offset(pos, 45.Degrees());
+                else if (role == PartyRolesConfig.Assignment.OT)
+                    spot = Offset(pos, (-45).Degrees());
+            }
+
+            if (spot != default)
+            {
+                Arena.AddCircle(spot, Radius, Colors.Safe);
+                Arena.AddLine(pc.Position, spot, Colors.Safe);
+                return;
+            }
+        }
+    }
+
+    private static WPos Offset(WPos origin, Angle angle)
+        => origin + Distance * angle.ToDirection();
+}
+
+sealed class AtomicImpactBaitPath(BossModule module) : BossComponent(module)
+{
+    private int _baitSlot1 = -1;
+    private int _baitSlot2 = -1;
+
+    private int _baitCount1;
+    private int _baitCount2;
+
+    private bool _northIsWest = true;
+    private bool _quadrantLocked;
+
+    private readonly MammothMeteor? _meteors = module.FindComponent<MammothMeteor>();
+
+    private static readonly WPos[] NorthPathWest =
+    [
+        new(93f, 81f),
+        new(97f, 81f),
+        new(103f, 81f),
+        new(107f, 81f),
+        new(102f, 88f),
+        new(98f, 88f)
+    ];
+
+    private static readonly WPos[] NorthPathEast =
+    [
+        new(111f, 81f),
+        new(107f, 81f),
+        new(101f, 81f),
+        new(97f, 81f),
+        new(102f, 88f),
+        new(106f, 88f)
+    ];
+
+    private static readonly WPos[] SouthPathWest =
+    [
+        new(93f, 119f),
+        new(97f, 119f),
+        new(103f, 119f),
+        new(107f, 119f),
+        new(102f, 112f),
+        new(98f, 112f)
+    ];
+
+    private static readonly WPos[] SouthPathEast =
+    [
+        new(111f, 119f),
+        new(107f, 119f),
+        new(101f, 119f),
+        new(97f, 119f),
+        new(102f, 112f),
+        new(106f, 112f)
+    ];
+
+    public override void Update()
+    {
+        TryLockQuadrant();
+    }
+
+    private void TryLockQuadrant()
+    {
+        if (_quadrantLocked || _meteors == null)
+            return;
+
+        var aoes = _meteors.ActiveCasters;
+        if (aoes.Length < 2)
+            return;
+
+        bool nw = false;
+
+        for (var i = 0; i < aoes.Length; ++i)
+        {
+            ref readonly var aoe = ref aoes[i];
+
+            if (aoe.Origin.Z < 100f && aoe.Origin.X < 100f)
+            {
+                nw = true;
+                break;
+            }
+        }
+
+        _northIsWest = !nw;
+        _quadrantLocked = true;
+    }
+
+    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
+    {
+        if (iconID != (uint)IconID.AtomicImpactIcon)
+            return;
+
+        var slot = Raid.FindSlot(actor.InstanceID);
+        if (slot < 0)
+            return;
+
+        if (slot == _baitSlot1 || slot == _baitSlot2)
+            return;
+
+        if (_baitSlot1 < 0)
+            _baitSlot1 = slot;
+        else
+            _baitSlot2 = slot;
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID != (uint)AID.AtomicImpact)
+            return;
+
+        var slot = Raid.FindSlot(spell.MainTargetID);
+
+        if (slot == _baitSlot1)
+            ++_baitCount1;
+        else if (slot == _baitSlot2)
+            ++_baitCount2;
+    }
+
+    private WPos NextTarget(int slot, Actor actor)
+    {
+        var north = actor.Position.Z < 100f;
+        var west = _northIsWest;
+
+        var index = slot == _baitSlot1 ? _baitCount1 : _baitCount2;
+
+        if (index >= 6)
+            return Module.Arena.Center;
+
+        if (north)
+            return west ? NorthPathWest[index] : NorthPathEast[index];
+        else
+            return west ? SouthPathWest[index] : SouthPathEast[index];
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (slot != _baitSlot1 && slot != _baitSlot2)
+            return;
+
+        var target = NextTarget(slot, actor);
+        hints.GoalZones.Add(AIHints.GoalProximity(target, 1f, 1000f));
+    }
+
+    public override void AddMovementHints(int slot, Actor actor, MovementHints hints)
+    {
+        if (slot != _baitSlot1 && slot != _baitSlot2)
+            return;
+
+        var target = NextTarget(slot, actor);
+        hints.Add(actor.Position, target, Colors.Safe);
+    }
+
+    public override void DrawArenaForeground(int slot, Actor actor)
+    {
+        if (slot != _baitSlot1 && slot != _baitSlot2)
+            return;
+
+        var target = NextTarget(slot, actor);
+        Module.Arena.AddCircle(target, 1.2f, Colors.Safe);
+    }
+}

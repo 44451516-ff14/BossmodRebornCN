@@ -115,7 +115,7 @@ sealed class TripleTyrannhilation(BossModule module)
             return default;
 
         var comets = Module.Enemies((uint)OID.Comet);
-        int count = comets.Count;
+        var count = comets.Count;
         if (count == 0)
             return default;
 
@@ -313,7 +313,7 @@ internal class TyrantFireballLines : Components.GenericBaitStack
 
         CurrentBaits.Clear();
 
-        int count = 0;
+        var count = 0;
         foreach (var target in Raid.WithoutSlot(false, true, true)
                                    .SortedByRange(boss.Position))
         {
@@ -498,5 +498,211 @@ sealed class MeteorMechanicHints(BossModule module) : BossComponent(module)
                 return true;
 
         return false;
+    }
+    public WPos? GetFinalSafeSpot(Actor pc)
+    {
+        DeterminePlatformSafeSides(out var leftPlatformLeftSafe, out var rightPlatformLeftSafe);
+
+        var onLeftPlatform = pc.Position.X < 100f;
+        var leftSafe = onLeftPlatform ? leftPlatformLeftSafe : rightPlatformLeftSafe;
+
+        var tetherSource = GetTetherSourceOn(pc);
+
+        if (tetherSource != null)
+            return ChooseTetherSpot(tetherSource, leftPlatformLeftSafe, rightPlatformLeftSafe);
+
+        if (HasFireIcon(pc))
+        {
+            var spots = GetFireSpots(onLeftPlatform, leftSafe);
+            if (spots.Length > 0)
+                return spots[0];
+        }
+
+        return null;
+    }
+}
+
+sealed class ExplosionTowerHints(BossModule module) : BossComponent(module)
+{
+    private readonly ExplosionTowers? _towers = module.FindComponent<ExplosionTowers>();
+    private readonly MeteorMechanicHints? _meteorHints = module.FindComponent<MeteorMechanicHints>();
+    private readonly Tether1? _t1 = module.FindComponent<Tether1>();
+    private readonly Tether2? _t2 = module.FindComponent<Tether2>();
+    private readonly FireBreath? _fire = module.FindComponent<FireBreath>();
+
+    private readonly PartyRolesConfig _roles = Service.Config.Get<PartyRolesConfig>();
+
+    private readonly bool[] _wentNorth = new bool[PartyState.MaxPartySize];
+    private readonly bool[] _directionKnown = new bool[PartyState.MaxPartySize];
+
+    private bool _tethersActive;
+    private bool _fireActive;
+
+    private bool _towersActive;
+    private int _towerSet;
+
+    private bool _avalancheKnown;
+    private bool _safePlatformWest;
+
+    public override void Update()
+    {
+        // detect tether resolution
+        if (_t1 != null && _t2 != null)
+        {
+            var active = _t1.CurrentBaits.Count > 0 || _t2.CurrentBaits.Count > 0;
+
+            if (_tethersActive && !active)
+                CaptureQuadrants();
+
+            _tethersActive = active;
+        }
+
+        // detect fire resolution
+        if (_fire != null)
+        {
+            var active = _fire.CurrentBaits.Count > 0;
+
+            if (_fireActive && !active)
+                CaptureQuadrants();
+
+            _fireActive = active;
+        }
+
+        // detect tower phase start
+        if (_towers != null)
+        {
+            var active = _towers.Towers.Count > 0;
+
+            if (!_towersActive && active)
+                ++_towerSet;
+
+            if (_towersActive && !active)
+                _avalancheKnown = false;
+
+            _towersActive = active;
+        }
+    }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (_towerSet != 3)
+            return;
+
+        switch ((AID)spell.Action.ID)
+        {
+            case AID.ArcadionAvalanche_Pick1:
+            case AID.ArcadionAvalanche_Pick2:
+                _safePlatformWest = false;
+                _avalancheKnown = true;
+                break;
+
+            case AID.ArcadionAvalanche_Pick3:
+            case AID.ArcadionAvalanche_Pick4:
+                _safePlatformWest = true;
+                _avalancheKnown = true;
+                break;
+        }
+    }
+
+    private void CaptureQuadrants()
+    {
+        for (var i = 0; i < PartyState.MaxPartySize; ++i)
+        {
+            var actor = Raid[i];
+            if (actor == null)
+                continue;
+
+            _wentNorth[i] = actor.Position.Z < 100f;
+            _directionKnown[i] = true;
+        }
+    }
+
+    public override void DrawArenaForeground(int slot, Actor pc)
+    {
+        if (_towers == null)
+            return;
+
+        var towers = _towers.Towers;
+        if (towers.Count == 0)
+            return;
+
+        var member = Module.WorldState.Party.Members[slot];
+        var assignment = _roles[member.ContentId];
+
+        if (assignment == PartyRolesConfig.Assignment.Unassigned)
+            return;
+
+        var roleNorth =
+            assignment is PartyRolesConfig.Assignment.MT or
+            PartyRolesConfig.Assignment.OT or
+            PartyRolesConfig.Assignment.R1 or
+            PartyRolesConfig.Assignment.R2;
+
+        bool north;
+
+        if (_towerSet == 1)
+        {
+            north = roleNorth;
+        }
+        else
+        {
+            if (!_directionKnown[slot])
+                return;
+
+            north = _wentNorth[slot];
+        }
+
+        var west = pc.Position.X < 100f;
+
+        var tower = default(WPos);
+
+        var span = CollectionsMarshal.AsSpan(towers);
+        for (var i = 0; i < span.Length; ++i)
+        {
+            var pos = span[i].Position;
+
+            if ((pos.X < 100f) != west)
+                continue;
+
+            if ((pos.Z < 100f) != north)
+                continue;
+
+            tower = pos;
+            break;
+        }
+
+        if (tower == default)
+            return;
+
+        var stand = tower;
+
+        if (_towerSet == 3)
+        {
+            if (_avalancheKnown)
+            {
+                var towerWest = tower.X < 100f;
+
+                if (towerWest != _safePlatformWest)
+                    stand = new WPos(stand.X + (towerWest ? 1.5f : -1.5f), stand.Z);
+                else
+                    stand = new WPos(stand.X, stand.Z + (north ? 1.5f : -1.5f));
+            }
+            else
+            {
+                stand = new WPos(stand.X, stand.Z + (north ? 1.5f : -1.5f));
+            }
+        }
+        else
+        {
+            var safe = _meteorHints?.GetFinalSafeSpot(pc);
+            var crossPlatform = safe != null && (safe.Value.X < 100f) != west;
+
+            if (crossPlatform)
+                stand = new WPos(stand.X + (west ? 1.5f : -1.5f), stand.Z);
+            else
+                stand = new WPos(stand.X, stand.Z + (north ? 1.5f : -1.5f));
+        }
+
+        Arena.AddCircle(stand, 1f, Colors.Safe);
     }
 }

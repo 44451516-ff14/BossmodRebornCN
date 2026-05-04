@@ -336,6 +336,9 @@ sealed class AssaultFloorPredictor(BossModule module) : GenericAOEs(module)
 sealed class AssaultEvolvedSword(BossModule module) : GenericAOEs(module)
 {
     private bool _active;
+    internal bool Active => _active;
+    private WPos _origin;
+    internal WPos Origin => _origin;
     private readonly List<Actor> _healers = [];
     private readonly List<AOEInstance> _aoes = [];
 
@@ -345,7 +348,7 @@ sealed class AssaultEvolvedSword(BossModule module) : GenericAOEs(module)
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if ((AID)spell.Action.ID == AID.AssaultEvolved_SwordDash)
-            Arm();
+            Arm(spell.TargetXZ);
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo cast)
@@ -358,13 +361,14 @@ sealed class AssaultEvolvedSword(BossModule module) : GenericAOEs(module)
         }
     }
 
-    private void Arm()
+    private void Arm(WPos origin)
     {
         _active = true;
+        _origin = origin;
         _aoes.Clear();
         _healers.Clear();
 
-        // Cache healers for cones
+        // Cache healers for stacks
         foreach (var p in WorldState.Party.WithoutSlot())
         {
             if (!p.IsDead && p.Role == Role.Healer)
@@ -384,15 +388,13 @@ sealed class AssaultEvolvedSword(BossModule module) : GenericAOEs(module)
         if (!_active)
             return default;
 
-        // Rebuild healer cones dynamically so they track healer movement
-        var bossPos = Module.PrimaryActor.Position;
-
-        _aoes.RemoveAll(a => a.Shape == Line);
+        var origin = _origin;
+        _aoes.Clear();
 
         foreach (var h in _healers)
         {
-            var dir = Angle.FromDirection(h.Position - bossPos);
-            _aoes.Add(new AOEInstance(Line, bossPos, dir));
+            var dir = Angle.FromDirection(h.Position - origin);
+            _aoes.Add(new AOEInstance(Line, origin, dir));
         }
 
         return CollectionsMarshal.AsSpan(_aoes);
@@ -410,6 +412,9 @@ sealed class AssaultEvolvedSword(BossModule module) : GenericAOEs(module)
 sealed class AssaultEvolvedAxeStack(BossModule module) : BossComponent(module)
 {
     private Actor? _target;
+    internal Actor? Target => _target;
+    private WPos _origin;
+    internal WPos Origin => _origin;
     private const float Radius = 6f;
     public int NumCasts;
 
@@ -419,6 +424,7 @@ sealed class AssaultEvolvedAxeStack(BossModule module) : BossComponent(module)
         {
             case AID.AssaultEvolved_AxeDash:
                 SelectHealer();
+                _origin = spell.TargetXZ;
                 break;
 
             case AID.AssaultEvolved_HeavyWeight:
@@ -461,6 +467,9 @@ sealed class AssaultEvolvedAxeStack(BossModule module) : BossComponent(module)
 sealed class AssaultEvolvedScythe(BossModule module) : GenericAOEs(module)
 {
     private bool _active;
+    internal bool Active => _active;
+    private WPos _origin;
+    internal WPos Origin => _origin;
     private readonly List<Actor> _players = [];
     private readonly List<AOEInstance> _aoes = [];
 
@@ -484,9 +493,10 @@ sealed class AssaultEvolvedScythe(BossModule module) : GenericAOEs(module)
         }
     }
 
-    private void Arm(WPos dashPos)
+    private void Arm(WPos origin)
     {
         _active = true;
+        _origin = origin;
         _aoes.Clear();
         _players.Clear();
 
@@ -510,16 +520,14 @@ sealed class AssaultEvolvedScythe(BossModule module) : GenericAOEs(module)
         if (!_active)
             return default;
 
-        var bossPos = Module.PrimaryActor.Position;
-
-        // Remove previously generated cones (keep donut)
-        _aoes.RemoveAll(a => a.Shape == PlayerCone);
+        var origin = _origin;
+        _aoes.Clear();
 
         // Rebuild cones dynamically so they track player movement
         foreach (var p in _players)
         {
-            var dir = Angle.FromDirection(p.Position - bossPos);
-            _aoes.Add(new AOEInstance(PlayerCone, bossPos, dir));
+            var dir = Angle.FromDirection(p.Position - origin);
+            _aoes.Add(new AOEInstance(PlayerCone, origin, dir));
         }
 
         return CollectionsMarshal.AsSpan(_aoes);
@@ -531,5 +539,155 @@ sealed class AssaultEvolvedScythe(BossModule module) : GenericAOEs(module)
             return;
 
         hints.Add("Spread cones, stay in donut");
+    }
+}
+
+sealed class AssaultWeaponSafeSpots(BossModule module) : BossComponent(module)
+{
+    private AssaultWeaponTimeline? _timeline;
+    private AssaultEvolvedSword? _sword;
+    private AssaultEvolvedAxeStack? _axe;
+    private AssaultEvolvedScythe? _scythe;
+
+    private readonly PartyRolesConfig _roles = Service.Config.Get<PartyRolesConfig>();
+
+    private int _activeIndex = -1;
+    private bool _waitingForResolve;
+    private bool _initialized;
+
+    private const float Radius = 1f;
+    private const float SwordDistance = 8f;
+    private const float ScytheDistance = 3.5f;
+    private const float AxeDistance = 9f;
+
+    public override void Update()
+    {
+        _timeline ??= Module.FindComponent<AssaultWeaponTimeline>();
+        _sword ??= Module.FindComponent<AssaultEvolvedSword>();
+        _axe ??= Module.FindComponent<AssaultEvolvedAxeStack>();
+        _scythe ??= Module.FindComponent<AssaultEvolvedScythe>();
+
+        if (_timeline == null || _sword == null || _axe == null || _scythe == null)
+            return;
+
+        if (!_timeline.Executing)
+        {
+            _activeIndex = -1;
+            _waitingForResolve = false;
+            _initialized = false;
+            return;
+        }
+
+        var seq = _timeline.Sequence;
+        var len = seq.Length;
+
+        if (!_initialized && len > 0)
+        {
+            _activeIndex = 0;
+            _initialized = true;
+        }
+
+        if (!_initialized || (uint)_activeIndex >= (uint)len)
+            return;
+
+        var entry = seq[_activeIndex];
+
+        var mechanicActive = entry.Type switch
+        {
+            AssaultWeaponTimeline.WeaponType.Sword => _sword.Active,
+            AssaultWeaponTimeline.WeaponType.Axe => _axe.Target != null,
+            AssaultWeaponTimeline.WeaponType.Scythe => _scythe.Active,
+            _ => false
+        };
+
+        if (mechanicActive)
+            _waitingForResolve = true;
+
+        // advance once mechanic finishes so next preview appears instantly
+        if (_waitingForResolve && !mechanicActive)
+        {
+            _activeIndex++;
+            _waitingForResolve = false;
+        }
+    }
+
+    public override void DrawArenaForeground(int slot, Actor pc)
+    {
+        if (!_initialized || pc == null || _timeline == null)
+            return;
+
+        var seq = _timeline.Sequence;
+        if ((uint)_activeIndex >= (uint)seq.Length)
+            return;
+
+        var assignments = _roles.AssignmentsPerSlot(WorldState.Party);
+        if (assignments.Length == 0 || (uint)slot >= (uint)assignments.Length)
+            return;
+
+        var entry = seq[_activeIndex];
+        var actor = entry.Actor;
+        if (actor == null)
+            return;
+
+        var role = assignments[slot];
+
+        var pos = actor.Position;
+        var rot = actor.Rotation;
+
+        var spot = entry.Type switch
+        {
+            AssaultWeaponTimeline.WeaponType.Sword => SwordSpot(role, pos, rot),
+            AssaultWeaponTimeline.WeaponType.Axe => AxeSpot(pos),
+            AssaultWeaponTimeline.WeaponType.Scythe => ScytheSpot(role, pos, rot),
+            _ => default
+        };
+
+        if (spot == default)
+            return;
+
+        Arena.AddCircle(spot, Radius, Colors.Safe);
+        Arena.AddLine(pc.Position, spot, Colors.Safe);
+    }
+
+    private static WPos SwordSpot(PartyRolesConfig.Assignment role, WPos pos, Angle rot)
+    {
+        var offset = role switch
+        {
+            PartyRolesConfig.Assignment.MT or
+            PartyRolesConfig.Assignment.H1 or
+            PartyRolesConfig.Assignment.M1 or
+            PartyRolesConfig.Assignment.R1 => 135.Degrees(),
+            PartyRolesConfig.Assignment.OT or
+            PartyRolesConfig.Assignment.H2 or
+            PartyRolesConfig.Assignment.M2 or
+            PartyRolesConfig.Assignment.R2 => (-135).Degrees(),
+            _ => default
+        };
+
+        return pos + SwordDistance * (rot + offset).ToDirection();
+    }
+
+    private WPos AxeSpot(WPos pos)
+    {
+        var dir = Angle.FromDirection(Module.Center - pos);
+        return pos + AxeDistance * dir.ToDirection();
+    }
+
+    private static WPos ScytheSpot(PartyRolesConfig.Assignment role, WPos pos, Angle rot)
+    {
+        var offset = role switch
+        {
+            PartyRolesConfig.Assignment.MT => 180.Degrees(),
+            PartyRolesConfig.Assignment.OT => 0.Degrees(),
+            PartyRolesConfig.Assignment.H2 => (-90).Degrees(),
+            PartyRolesConfig.Assignment.H1 => 90.Degrees(),
+            PartyRolesConfig.Assignment.R2 => (-45).Degrees(),
+            PartyRolesConfig.Assignment.R1 => 45.Degrees(),
+            PartyRolesConfig.Assignment.M2 => (-135).Degrees(),
+            PartyRolesConfig.Assignment.M1 => 135.Degrees(),
+            _ => default
+        };
+
+        return pos + ScytheDistance * (rot + offset).ToDirection();
     }
 }
