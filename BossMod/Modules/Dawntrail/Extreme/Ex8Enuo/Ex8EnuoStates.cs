@@ -6,7 +6,8 @@ sealed class Ex8EnuoStates : StateMachineBuilder
 {
     public Ex8EnuoStates(Ex8Enuo module) : base(module)
     {
-        SimplePhase(default, Phase1, "P1");
+        SimplePhase(default, Phase1, "P1")
+            .Raw.Update = () => Module.PrimaryActor.IsDeadOrDestroyed;
     }
 
     private void Phase1(uint id)
@@ -27,13 +28,15 @@ sealed class Ex8EnuoStates : StateMachineBuilder
     private void Meteorain(uint id, float delay)
     {
         Cast(id, (uint)AID.Meteorain, delay, 5f, "Meteorain")
-            .ActivateOnEnter<Meteorain>();
+            .ActivateOnEnter<Meteorain>()
+            .ActivateOnEnter<NaughtGrowsWildCharge>()
+            .ActivateOnEnter<NaughtGrowsDonut>()
+            .ActivateOnEnter<NaughtGrowsCircle>();
     }
 
     private void NaughtGrowsSingle(uint id, float delay)
     {
-        Cast(id, (uint)AID.NaughtGrows, delay, 7f, "Naught Grows (Single)")
-            .ActivateOnEnter<NaughtGrowsWildCharge>();
+        Cast(id, (uint)AID.NaughtGrows, delay, 7f, "Naught Grows (Single)");
     }
 
     private void NaughtWakesSimple(uint id, float delay)

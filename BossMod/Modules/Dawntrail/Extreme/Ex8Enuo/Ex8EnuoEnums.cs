@@ -29,7 +29,7 @@ public enum AID : uint
     Meteorain = 50049, // 4DC1->self, 5.0s cast, range 40 circle
     UnknownAbility = 49927, // 4DC1->location, no cast, single-target
     NaughtGrows = 49975, // 4DC1->self, 7.0+1.0s cast, single-target
-    NaughtGrows1 = 49978, // 4DC2->self, 8.0s cast, range 20-60 donut
+    NaughtGrowsDonut = 49978, // 4DC2->self, 8.0s cast, range 20-60 donut
     GreatReturnToNothing = 49984, // 4BFA->location, no cast, width 6 rect charge
     NaughtWakes = 49973, // 4DC1->self, 2.0+1.0s cast, single-target
     UnknownWeaponskill = 49974, // 4DC2->location, no cast, single-target
@@ -38,7 +38,7 @@ public enum AID : uint
     Meltdown2 = 50042, // 233C->player, 5.5s cast, range 5 circle
     AiryEmptiness = 50032, // 4DC1->self, 4.0+1.0s cast, single-target
     AiryEmptiness1 = 50034, // 233C->self, no cast, range 60 ?-degree cone
-    NaughtGrows2 = 49977, // 4DC2->self, 8.0s cast, range 40 circle
+    NaughtGrowsCircle = 49977, // 4DC2->self, 8.0s cast, range 40 circle
     ReturnToNothing = 49983, // 4BF7->location, no cast, width 6 rect charge
     GazeOfTheVoid = 50002, // 4DC1->self, 6.0+1.0s cast, single-target
     GazeOfTheVoid1 = 50004, // 233C->self, 7.0s cast, single-target
