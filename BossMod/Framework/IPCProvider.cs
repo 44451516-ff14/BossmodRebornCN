@@ -1,4 +1,4 @@
-﻿using BossMod.AI;
+using BossMod.AI;
 using BossMod.Autorotation;
 using BossMod.Pathfinding;
 using System.IO;
@@ -135,6 +135,28 @@ sealed class IPCProvider : IDisposable
             var predicted = hints.PredictedDamage;
             return predicted.Count == 0 ? 0 : (int)predicted[0].Type;
         });
+
+        // --- Custom OmniDuty Endpoints ---
+        Register("Hints.MaxCastTime", () => hints.MaxCastTime);
+        Register("Hints.ForceCancelCast", () => hints.ForceCancelCast);
+        Register("Hints.ForbiddenZonesCount", () => hints.ForbiddenZones.Count);
+        Register("Hints.ForbiddenZonesNextActivation", () => hints.ForbiddenZones.Count == 0 ? float.MaxValue : (float)(hints.ForbiddenZones[0].activation - DateTime.Now).TotalSeconds);
+        Register("Hints.ArenaCenter", () => new System.Numerics.Vector2(hints.PathfindMapCenter.X, hints.PathfindMapCenter.Z));
+        Register("Hints.ArenaRadius", () => hints.PathfindMapBounds.Radius);
+        Register("Hints.PredictedDamagePlayers", () => hints.PredictedDamage.Count == 0 ? 0ul : hints.PredictedDamage[0].Players.Raw);
+        Register("Hints.ForbiddenDirectionsCount", () => hints.ForbiddenDirections.Count);
+        Register("Hints.ShouldCleansePlayers", () => hints.ShouldCleanse.Raw);
+        Register("Hints.InteractWithTargetOID", () => hints.InteractWithTarget?.InstanceID ?? 0ul);
+        Register("Hints.RecommendedPositional", () => (int)hints.RecommendedPositional.Pos);
+        Register("AI.PauseMovement", (bool pause) => Service.Config.Get<AI.AIConfig>().ForbidMovement = pause);
+        Register("AI.NaviTargetPos", () =>
+        {
+            var pos = ai.Controller.NaviTargetPos;
+            return pos.HasValue ? new System.Numerics.Vector3(pos.Value.X, 0, pos.Value.Z) : (System.Numerics.Vector3?)null;
+        });
+        Register("AI.IsNavigating", () => ai.Controller.NaviTargetPos != null);
+        Register("AI.PlayerSpeed", () => ai.WorldState.Client.MoveSpeed);
+        // ---------------------------------
 
         // Type-specific damage prediction endpoints — search ALL entries for the first matching type
         Register("Hints.NextRaidwideDamageIn", () =>
