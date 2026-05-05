@@ -1,4 +1,5 @@
 ﻿#pragma warning disable CA1707 // Identifiers should not contain underscores
+
 namespace BossMod.Dawntrail.Alliance.A31Shantotto;
 
 public enum OID : uint
@@ -37,10 +38,10 @@ public enum AID : uint
     _Spell_ = 50183, // Boss->location, no cast, range 30 circle
     _Ability_1 = 50648, // Boss->location, no cast, single-target
     _Spell_Shockwave = 50187, // Helper->self, 10.5s cast, range 48 width 60 rect
-    _Ability_FallingRubble = 50191, // Helper->self, 4.5s cast, range 35 width 10 rect
+    _Ability_FallingRubble3 = 50188, // Helper->self, 4.5s cast, range 8 circle
     _Ability_FallingRubble1 = 50189, // Helper->self, 4.5s cast, range 12 circle
     _Ability_FallingRubble2 = 50190, // Helper->self, 4.5s cast, range 25 width 6 rect
-    _Ability_FallingRubble3 = 50188, // Helper->self, 4.5s cast, range 8 circle
+    _Ability_FallingRubble = 50191, // Helper->self, 4.5s cast, range 35 width 10 rect
     _Spell_AeroDynamics = 50198, // Boss->self, 3.0s cast, single-target
     _Spell_AeroDynamics1 = 50199, // Helper->self, no cast, range 48 width 60 rect
     _Spell_1 = 50382, // Helper->self, no cast, range 48 width 60 rect
@@ -108,29 +109,207 @@ class SuperiorStoneArena(BossModule module) : Components.CastCounter(module, AID
     }
 }
 
+class DiagrammaticDoorway(BossModule module) : Components.GenericAOEs(module)
+{
+    readonly List<AOEInstance> _predicted = [];
+
+    public override IEnumerable<AOEInstance> ActiveAOEs(int slot, Actor actor) => _predicted.Take(1);
+
+    public override void OnTethered(Actor source, ActorTetherInfo tether)
+    {
+        switch ((TetherID)tether.ID)
+        {
+            case TetherID._Gen_Tether_chn_d1088_c1v:
+                if (_predicted.Count == 0)
+                    _predicted.Add(new(new AOEShapeDonut(6, 70), source.Position, default, WorldState.FutureTime(10.1f)));
+                _predicted.Add(new(new AOEShapeDonut(6, 70), WorldState.Actors.Find(tether.Target)!.Position, default, _predicted[^1].Activation.AddSeconds(3.1f)));
+                break;
+            case TetherID._Gen_Tether_chn_d1088_c0v:
+                _predicted.Add(new(new AOEShapeDonut(6, 70), WorldState.Actors.Find(tether.Target)!.Position, default, _predicted[^1].Activation.AddSeconds(3.1f)));
+                break;
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if ((AID)spell.Action.ID is AID._Spell_CircumscribedFire or AID._Spell_CircumscribedFire1)
+        {
+            NumCasts++;
+            if (_predicted.Count > 0)
+                _predicted.RemoveAt(0);
+        }
+    }
+}
+
+class LocalizedBlizzard(BossModule module) : Components.StandardAOEs(module, AID._Spell_LocalizedBlizzard, 10);
+class ThunderAndError(BossModule module) : Components.SpreadFromCastTargets(module, AID._Spell_ThunderAndError, 5);
+class SmallSpecimen(BossModule module) : Components.StandardAOEs(module, AID._Spell_SmallSpecimen, 6);
+class LargeSpecimen(BossModule module) : Components.ProximityAOEs(module, AID._Spell_LargeSpecimen, 15);
+class StardustSpecimen(BossModule module) : Components.StackWithCastTargets(module, AID._Spell_StardustSpecimen, 6);
+
+class Shockwave(BossModule module) : Components.RaidwideCast(module, AID._Spell_Shockwave);
+
+class FallingRubble1(BossModule module) : Components.StandardAOEs(module, AID._Ability_FallingRubble3, 8);
+class FallingRubble2(BossModule module) : Components.StandardAOEs(module, AID._Ability_FallingRubble1, 12);
+class FallingRubble3(BossModule module) : Components.StandardAOEs(module, AID._Ability_FallingRubble2, new AOEShapeRect(25, 3));
+class FallingRubble4(BossModule module) : Components.StandardAOEs(module, AID._Ability_FallingRubble, new AOEShapeRect(35, 5));
+
+class Winds : Components.Knockback
+{
+    record struct Wind(WDir Direction, DateTime Activation);
+    readonly Wind[] _directions = new Wind[PartyState.MaxAllianceSize];
+
+    readonly List<(WDir WindDir, WPos Center, float HalfWidth)> _safeWalls = [];
+
+    public Winds(BossModule module) : base(module, AID._Spell_AeroDynamics1)
+    {
+        CalcWalls();
+    }
+
+    public override IEnumerable<Source> Sources(int slot, Actor actor)
+    {
+        var dir = _directions.BoundSafeAt(slot);
+        if (dir.Activation > WorldState.CurrentTime)
+        {
+            var dist = 50f;
+            if (HitsWall(_safeWalls, dir.Direction, actor.Position))
+                dist = Arena.Bounds.IntersectRay(actor.Position - Arena.Center, dir.Direction);
+
+            yield return new(actor.Position, dist - 0.1f, dir.Activation, null, dir.Direction.ToAngle(), Kind.DirForward);
+        }
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        foreach (var src in Sources(slot, actor))
+            if (!IsImmune(slot, src.Activation))
+            {
+                var d = _directions[slot].Direction;
+                var walls = _safeWalls.ToList();
+                hints.AddForbiddenZone(p => !HitsWall(walls, d, p), src.Activation);
+            }
+    }
+
+    static bool HitsWall(List<(WDir WindDir, WPos Center, float HalfWidth)> walls, WDir windDir, WPos pos)
+    {
+        return walls.Any(w => w.WindDir == windDir && pos.InRect(w.Center, w.WindDir * -50, w.HalfWidth));
+    }
+
+    public override void OnStatusGain(Actor actor, ActorStatus status)
+    {
+        WDir d;
+        if ((SID)status.ID == SID._Gen_EasterlyWinds)
+            d = new WDir(-1, 0);
+        else if ((SID)status.ID == SID._Gen_WesterlyWinds)
+            d = new WDir(1, 0);
+        else
+            return;
+
+        if (Raid.TryFindSlot(actor, out var slot) && slot < _directions.Length)
+            _directions[slot] = new(d, status.ExpireAt);
+    }
+
+    public override void OnMapEffect(byte index, uint state)
+    {
+        if (index is 0x41 or 0x42)
+            CalcWalls();
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if ((AID)spell.Action.ID is AID._Spell_AeroDynamics1 or AID._Spell_1)
+        {
+            NumCasts++;
+            Array.Fill(_directions, default);
+        }
+    }
+
+    void CalcWalls()
+    {
+        _safeWalls.Clear();
+        if (Arena.Bounds is not ArenaBoundsCustom poly)
+            return;
+
+        foreach (var (a, b) in PolygonUtil.EnumerateEdges(poly.Poly.Parts[0].Vertices))
+        {
+            var dir = (b - a).OrthoR().Normalized();
+            if (MathF.Abs(dir.Z) < 0.1f)
+            {
+                var clamped = new WDir(dir.X, 0);
+                // line segment is on arena edge, no wall
+                if (a.X is < -23 or > 23)
+                    continue;
+
+                var mid = (a + b) * 0.5f;
+                var len = (b - a).Length() * 0.5f;
+
+                _safeWalls.Add((-clamped, mid + Arena.Center, len));
+            }
+        }
+    }
+}
+
+class FinalExam(BossModule module) : Components.UniformStackSpread(module, 6, 0)
+{
+    public int NumCasts { get; private set; }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if ((AID)spell.Action.ID == AID._Spell_FinalExam1)
+            AddStack(WorldState.Actors.Find(spell.TargetID)!);
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if ((AID)spell.Action.ID is AID._Spell_FinalExam1 or AID._Spell_FinalExam2)
+        {
+            NumCasts++;
+            if (NumCasts >= 3)
+                Stacks.Clear();
+        }
+    }
+}
+
 class A31ShantottoTheDemonStates : StateMachineBuilder
 {
     public A31ShantottoTheDemonStates(BossModule module) : base(module)
     {
-        DeathPhase(0, P1);
+        DeathPhase(0, P1)
+            .ActivateOnEnter<SuperiorStoneArena>()
+            .ActivateOnEnter<SmallSpecimen>()
+            .ActivateOnEnter<LargeSpecimen>()
+            .ActivateOnEnter<FallingRubble1>()
+            .ActivateOnEnter<FallingRubble2>()
+            .ActivateOnEnter<FallingRubble3>()
+            .ActivateOnEnter<FallingRubble4>()
+            .ActivateOnEnter<Winds>();
     }
 
     void P1(uint id)
     {
         FlarePlay(id, 8.2f);
+        Vidohunir(id + 0x100, 4.3f);
+        EmpiricalResearch(id + 0x200, 4);
+        SuperiorStone1(id + 0x10000, 4.9f);
+        EmpiricalResearch(id + 0x11000, 3.3f);
+        DiagrammaticDoorway(id + 0x20000, 4.5f, 4);
+        MeteoricRhyme(id + 0x30000, 5.2f);
+        Shockwave(id + 0x40000, 12.1f);
+        SuperiorStone2(id + 0x50000, 17.5f);
+        EmpiricalResearch(id + 0x51000, 3.3f);
+        DiagrammaticDoorway(id + 0x60000, 5.4f, 6);
+        FlarePlay(id + 0x70000, 9.3f);
+        FinalExam(id + 0x71000, 5.2f);
+        EmpiricalResearch(id + 0x72000, 1.9f);
+        Vidohunir(id + 0x73000, 5.6f);
 
-        Vidohunir(id + 0x10, 4.3f);
-
-        Cast(id + 0x100, AID._Spell_EmpiricalResearch, 4, 3)
-            .ActivateOnEnter<EmpiricalResearch>();
-        ComponentCondition<EmpiricalResearch>(id + 0x102, 0.8f, r => r.NumCasts > 0, "Laser")
-            .DeactivateOnExit<EmpiricalResearch>();
-
-        Timeout(id + 0xFF0000, 10000, "???")
+        Timeout(id + 0xFF0000, 10000, "Repeat mechanics until death")
             .ActivateOnEnter<SuperiorStoneIIRaidwide>()
             .ActivateOnEnter<SuperiorStoneIIRect>()
-            .ActivateOnEnter<SuperiorStoneArena>()
-            .ActivateOnEnter<GroundbreakingQuake>();
+            .ActivateOnEnter<GroundbreakingQuake>()
+            .ActivateOnEnter<DiagrammaticDoorway>()
+            .ActivateOnEnter<LocalizedBlizzard>()
+            .ActivateOnEnter<ThunderAndError>();
     }
 
     void FlarePlay(uint id, float delay)
@@ -146,6 +325,99 @@ class A31ShantottoTheDemonStates : StateMachineBuilder
             .ActivateOnEnter<Vidohunir>();
         ComponentCondition<Vidohunir>(id + 2, 1, v => v.NumCasts > 0, "Shared tankbuster")
             .DeactivateOnExit<Vidohunir>();
+    }
+
+    void EmpiricalResearch(uint id, float delay)
+    {
+        Cast(id, AID._Spell_EmpiricalResearch, delay, 3)
+            .ActivateOnEnter<EmpiricalResearch>();
+        ComponentCondition<EmpiricalResearch>(id + 2, 0.8f, r => r.NumCasts > 0, "Laser")
+            .DeactivateOnExit<EmpiricalResearch>();
+    }
+
+    void SuperiorStone1(uint id, float delay)
+    {
+        Cast(id, AID._Spell_SuperiorStoneII, delay, 4, "Raidwide")
+            .ActivateOnEnter<SuperiorStoneIIRaidwide>()
+            .ActivateOnEnter<SuperiorStoneIIRect>()
+            .DeactivateOnExit<SuperiorStoneIIRaidwide>();
+
+        ComponentCondition<SuperiorStoneIIRect>(id + 0x10, 0.8f, r => r.NumCasts > 0, "Walls")
+            .DeactivateOnExit<SuperiorStoneIIRect>();
+
+        Cast(id + 0x100, AID._Spell_GroundbreakingQuake, 3.4f, 8)
+            .ActivateOnEnter<GroundbreakingQuake>();
+        ComponentCondition<GroundbreakingQuake>(id + 0x110, 1, q => q.NumCasts > 0, "Safe rect")
+            .DeactivateOnExit<GroundbreakingQuake>();
+    }
+
+    void SuperiorStone2(uint id, float delay)
+    {
+        Cast(id, AID._Spell_SuperiorStoneII, delay, 4, "Raidwide")
+            .ActivateOnEnter<SuperiorStoneIIRaidwide>()
+            .ActivateOnEnter<SuperiorStoneIIRect>()
+            .DeactivateOnExit<SuperiorStoneIIRaidwide>();
+
+        ComponentCondition<SuperiorStoneIIRect>(id + 0x10, 0.8f, r => r.NumCasts > 0, "Walls")
+            .DeactivateOnExit<SuperiorStoneIIRect>();
+
+        Cast(id + 0x100, AID._Spell_AeroDynamics, 1.3f, 3);
+
+        ComponentCondition<Winds>(id + 0x200, 11, w => w.NumCasts > 0, "Knockback")
+            .ActivateOnEnter<GroundbreakingQuake>();
+
+        Cast(id + 0x300, AID._Spell_GroundbreakingQuake, 0.3f, 8);
+        ComponentCondition<GroundbreakingQuake>(id + 0x310, 1, q => q.NumCasts > 0, "Safe rect")
+            .DeactivateOnExit<GroundbreakingQuake>();
+    }
+
+    void DiagrammaticDoorway(uint id, float delay, int count)
+    {
+        Cast(id, AID._Spell_DiagrammaticDoorway, delay, 3)
+            .ActivateOnEnter<DiagrammaticDoorway>();
+
+        ComponentCondition<DiagrammaticDoorway>(id + 0x10, 12f + count * 0.8f, d => d.NumCasts > 0, "Donut 1");
+        ComponentCondition<DiagrammaticDoorway>(id + 0x20, 3.2f * (count - 1), d => d.NumCasts >= count, $"Donut {count}")
+            .DeactivateOnExit<DiagrammaticDoorway>();
+
+        Cast(id + 0x100, AID._Spell_LocalizedBlizzard, 1.1f, 2.2f, "Out")
+            .ActivateOnEnter<LocalizedBlizzard>()
+            .ActivateOnEnter<ThunderAndError>()
+            .DeactivateOnExit<LocalizedBlizzard>();
+
+        ComponentCondition<ThunderAndError>(id + 0x110, 4.3f, t => t.NumFinishedSpreads > 0, "Spreads")
+            .DeactivateOnExit<ThunderAndError>();
+    }
+
+    void MeteoricRhyme(uint id, float delay)
+    {
+        Cast(id, AID._Spell_MeteoricRhyme, delay, 3)
+            .ActivateOnEnter<StardustSpecimen>();
+
+        ComponentCondition<SmallSpecimen>(id + 0x10, 7.1f, s => s.NumCasts > 0, "Puddles start");
+
+        ComponentCondition<StardustSpecimen>(id + 0x20, 21.7f, s => s.NumFinishedStacks > 0, "Stack")
+            .DeactivateOnExit<StardustSpecimen>();
+    }
+
+    void Shockwave(uint id, float delay)
+    {
+        // cast by helper
+        ComponentCondition<Shockwave>(id, delay, s => s.Active)
+            .ActivateOnEnter<Shockwave>();
+        Targetable(id + 1, false, 1.7f, "Boss disappears");
+        ComponentCondition<Shockwave>(id + 0x10, 8.7f, s => s.NumCasts > 0, "Raidwide")
+            .DeactivateOnExit<Shockwave>();
+        Targetable(id + 0x20, true, 2.4f, "Boss reappears");
+    }
+
+    void FinalExam(uint id, float delay)
+    {
+        Cast(id, AID._Spell_FinalExam, delay, 4.2f)
+            .ActivateOnEnter<FinalExam>();
+        ComponentCondition<FinalExam>(id + 0x10, 0.8f, f => f.NumCasts > 0, "Stack 1");
+        ComponentCondition<FinalExam>(id + 0x20, 2.8f, f => f.NumCasts >= 3, "Stack 3")
+            .DeactivateOnExit<FinalExam>();
     }
 }
 
