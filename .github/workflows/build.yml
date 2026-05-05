@@ -75,3 +75,33 @@ jobs:
           make_latest: true
           overwrite_files: true
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout DalamudPlugins
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/checkout@v6
+        with:
+          repository: 44451516-ff14/DalamudPlugins
+          ref: master
+          path: DalamudPlugins
+          token: ${{ secrets.DALAMUD_PLUGINS_TOKEN }}
+
+      - name: Sync DalamudPlugins Release Asset
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: DalamudPlugins
+        env:
+          GITHUB_TOKEN: ${{ secrets.DALAMUD_PLUGINS_TOKEN }}
+        run: python sync_release_plugins.py
+
+      - name: Commit DalamudPlugins Sync
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: DalamudPlugins
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add plugins/BossModReborn/latest.zip
+          if (git diff --cached --quiet) {
+            Write-Host "No DalamudPlugins changes to commit."
+            exit 0
+          }
+          git commit -m "Sync BossModReborn $env:plugin_version"
+          git push
