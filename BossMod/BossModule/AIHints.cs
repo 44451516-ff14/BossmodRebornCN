@@ -130,7 +130,8 @@ public sealed class AIHints
     public readonly List<(Angle center, Angle halfWidth, DateTime activation)> ForbiddenDirections = [];
 
     // closest special movement/targeting/action mode, if any
-    public (SpecialMode mode, DateTime activation) ImminentSpecialMode;
+    // activation = when the restriction starts (e.g. bomb detonation), finish = when the restriction ends (e.g. pyretic expires)
+    public (SpecialMode mode, DateTime activation, DateTime finish) ImminentSpecialMode;
 
     // for misdirection: if forced movement is set, make real direction be within this angle
     public Angle MisdirectionThreshold;
@@ -265,10 +266,10 @@ public sealed class AIHints
 
     public void AddPredictedDamage(BitMask players, DateTime activation, PredictedDamageType type = PredictedDamageType.Raidwide) => PredictedDamage.Add(new(players, activation, type));
 
-    public void AddSpecialMode(SpecialMode mode, DateTime activation)
+    public void AddSpecialMode(SpecialMode mode, DateTime activation, DateTime finish = default)
     {
         if (ImminentSpecialMode == default || ImminentSpecialMode.activation > activation)
-            ImminentSpecialMode = (mode, activation);
+            ImminentSpecialMode = (mode, activation, finish);
     }
 
     public void AddForbiddenDirections(ArcList list, DateTime activation)

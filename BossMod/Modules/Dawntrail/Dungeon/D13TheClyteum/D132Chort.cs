@@ -43,9 +43,7 @@ public enum IconID : uint
 }
 
 sealed class MortifyingFlesh(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh, new AOEShapeRect(40f, 4f));
-sealed class MortifyingFlesh1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh1, new AOEShapeRect(40f, 8f));
-
-sealed class MortifyingFlesh2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MortifyingFlesh2, new AOEShapeRect(40f, 8f));
+sealed class MortifyingFleshAOEs(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MortifyingFlesh1, (uint)AID.MortifyingFlesh2], new AOEShapeRect(40f, 8f));
 
 sealed class BodyWeightExorcism1(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.BodyweightExorcism1, 8)
 {
@@ -65,12 +63,28 @@ sealed class BodyWeightExorcism1(BossModule module) : Components.SimpleKnockback
 
 sealed class BasicVomit(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BasicVomit, new AOEShapeCone(50f, 60f.Degrees()));
 
-//Naive implementation.  Just runs to nearest tower instead of stacking with group.  Seems to live fine.
-sealed class BodyweightTower(BossModule module) : Components.CastTowers(module, (uint)AID.BodyweightExorcismTower, 4f, 4, 4);
+sealed class BodyweightTower(BossModule module) : Components.CastTowers(module, (uint)AID.BodyweightExorcismTower, 4f, 4, 4)
+{
+    public override ReadOnlySpan<Tower> ActiveTowers(int slot, Actor actor)
+    {
+        var towers = CollectionsMarshal.AsSpan(Towers);
+        var len = towers.Length;
+        if (len <= 1)
+            return towers;
+        // Only expose the next tower (earliest activation) so the AI soaks in sequence rather than rushing to the closest one.
+        var nextIdx = 0;
+        for (var i = 1; i < len; ++i)
+        {
+            if (towers[i].Activation < towers[nextIdx].Activation)
+                nextIdx = i;
+        }
+        return towers.Slice(nextIdx, 1);
+    }
+}
 
 sealed class EvilEmission(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.EvilEmissionSpread, (uint)AID.EvilEmission1, 4, 5);
 
-sealed class ProfanePressure(BossModule module) : Components.StackWithIcon(module, (uint)IconID.ProfanePressureIcon, (uint)AID.ProfanePressure, 4, 0);
+sealed class ProfanePressure(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ProfanePressure1, 6f, 4);
 
 [SkipLocalsInit]
 sealed class D132ChortStates : StateMachineBuilder
@@ -79,8 +93,7 @@ sealed class D132ChortStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<MortifyingFlesh>()
-            .ActivateOnEnter<MortifyingFlesh1>()
-            .ActivateOnEnter<MortifyingFlesh2>()
+            .ActivateOnEnter<MortifyingFleshAOEs>()
             .ActivateOnEnter<BodyWeightExorcism1>()
             .ActivateOnEnter<BasicVomit>()
             .ActivateOnEnter<BodyweightTower>()
@@ -89,7 +102,7 @@ sealed class D132ChortStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
     StatesType = typeof(D132ChortStates),
     ConfigType = null, // replace null with typeof(ChortConfig) if applicable
     ObjectIDType = typeof(OID),

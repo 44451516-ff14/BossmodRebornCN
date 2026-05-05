@@ -6,10 +6,11 @@ namespace BossMod.Components;
 public class StayMove(BossModule module, double maxTimeToShowHint = 1e3d) : BossComponent(module)
 {
     public enum Requirement { None, Stay, Stay2, Move }
-    public readonly struct PlayerState(Requirement requirement, DateTime activation, int priority = 0)
+    public readonly struct PlayerState(Requirement requirement, DateTime activation, int priority = 0, DateTime finish = default)
     {
         public readonly Requirement Requirement = requirement;
         public readonly DateTime Activation = activation;
+        public readonly DateTime Finish = finish;
         public readonly int Priority = priority;
     }
 
@@ -57,13 +58,13 @@ public class StayMove(BossModule module, double maxTimeToShowHint = 1e3d) : Boss
         switch (state.Requirement)
         {
             case Requirement.Stay:
-                hints.AddSpecialMode(AIHints.SpecialMode.Pyretic, state.Activation);
+                hints.AddSpecialMode(AIHints.SpecialMode.Pyretic, state.Activation, state.Finish);
                 break;
             case Requirement.Stay2:
-                hints.AddSpecialMode(AIHints.SpecialMode.NoMovement, state.Activation);
+                hints.AddSpecialMode(AIHints.SpecialMode.NoMovement, state.Activation, state.Finish);
                 break;
             case Requirement.Move:
-                hints.AddSpecialMode(AIHints.SpecialMode.Freezing, state.Activation);
+                hints.AddSpecialMode(AIHints.SpecialMode.Freezing, state.Activation, state.Finish);
                 break;
         }
     }

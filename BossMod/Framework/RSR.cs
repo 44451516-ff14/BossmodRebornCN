@@ -5,6 +5,7 @@ namespace BossMod;
 public sealed class RotationSolverRebornModule(IDalamudPluginInterface pluginInterface)
 {
     private readonly ICallGateSubscriber<SpecialCommandType, object> _changeOperationMode = pluginInterface.GetIpcSubscriber<SpecialCommandType, object>("RotationSolverReborn.TriggerSpecialState");
+    private readonly ICallGateSubscriber<SpecialCommandType, float, object> _triggerSpecialStateWithDuration = pluginInterface.GetIpcSubscriber<SpecialCommandType, float, object>("RotationSolverReborn.TriggerSpecialStateWithDuration");
     private const string rsr = "Rotation Solver Reborn";
 
     public bool IsInstalled
@@ -31,6 +32,11 @@ public sealed class RotationSolverRebornModule(IDalamudPluginInterface pluginInt
     public void UnPauseRSR()
     {
         _changeOperationMode.InvokeAction(SpecialCommandType.EndSpecial);
+    }
+
+    public void TriggerSpecialStateWithDuration(SpecialCommandType specialCommand, float duration)
+    {
+        _triggerSpecialStateWithDuration.InvokeAction(specialCommand, duration);
     }
 
     public enum SpecialCommandType : byte

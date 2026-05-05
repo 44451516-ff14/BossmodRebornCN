@@ -17,7 +17,6 @@ public sealed class AIHintsBuilder : IDisposable
     private readonly Dictionary<ulong, (Actor Caster, Actor? Target, AOEShape Shape)> _activeGazes = [];
     private readonly List<Actor> _invincible = [];
     private ArenaBoundsCircle? _activeFateBounds;
-    private bool isRSRpaused;
 
     private static readonly uint[] invincibleStatuses =
     [
@@ -29,7 +28,8 @@ public sealed class AIHintsBuilder : IDisposable
         4410u, 4175u
     ];
     private static readonly HashSet<uint> ignore = [27503u, 33626u]; // action IDs that the AI should ignore
-    private static readonly PartyRolesConfig _config = Service.Config.Get<PartyRolesConfig>();
+    private static readonly PartyRolesConfig _partyConfig = Service.Config.Get<PartyRolesConfig>();
+    private static readonly ActionTweaksConfig _config = Service.Config.Get<ActionTweaksConfig>();
     private static readonly Dictionary<uint, (byte, byte, byte, uint, string, string, string, int, bool, uint)> _spellCache = [];
 
     public AIHintsBuilder(WorldState ws, BossModuleManager bmm, ZoneModuleManager zmm, RotationSolverRebornModule? rsr)
@@ -64,7 +64,7 @@ public sealed class AIHintsBuilder : IDisposable
             hints.MaxCastTime = 0;
         if (player != null)
         {
-            var playerAssignment = _config[_ws.Party.Members[playerSlot].ContentId];
+            var playerAssignment = _partyConfig[_ws.Party.Members[playerSlot].ContentId];
             var activeModule = _bmm.ActiveModule?.StateMachine.ActivePhase != null ? _bmm.ActiveModule : null;
             var outOfCombatPriority = activeModule?.ShouldPrioritizeAllEnemies == true ? 0 : AIHints.Enemy.PriorityUndesirable;
             FillEnemies(hints, playerAssignment == PartyRolesConfig.Assignment.MT || playerAssignment == PartyRolesConfig.Assignment.OT && !_ws.Party.WithoutSlot(false, false, true).Any(p => p != player && p.Role == Role.Tank), outOfCombatPriority);
@@ -81,22 +81,21 @@ public sealed class AIHintsBuilder : IDisposable
         hints.Normalize();
         if (_rsr != null)
         {
-            var soon = _ws.CurrentTime.AddSeconds(0.75d);
+            var now = _ws.CurrentTime;
+            var soon = now.AddSeconds(0.75d);
             var hasForbiddenDirection = hints.ForbiddenDirections.Count > 0;
+            var forbiddenDirActivation = hasForbiddenDirection ? hints.ForbiddenDirections.Ref(0).activation : DateTime.MaxValue;
+            var isPyretic = hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic;
+            var finish = hints.ImminentSpecialMode.finish;
+            var pyreticActivation = isPyretic ? hints.ImminentSpecialMode.activation : DateTime.MaxValue;
 
-            if (!isRSRpaused && (hasForbiddenDirection && hints.ForbiddenDirections.Ref(0).activation < soon || hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < soon) && _rsr.IsInstalled)
+            if (_rsr.IsInstalled && (hasForbiddenDirection && forbiddenDirActivation < soon || isPyretic && pyreticActivation < soon))
             {
-                _rsr.PauseRSR();
-                isRSRpaused = true;
-                if (hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic)
-                {
+                var activationTime = hasForbiddenDirection && forbiddenDirActivation < soon ? forbiddenDirActivation : pyreticActivation;
+                var duration = Math.Max(0f, (float)(activationTime - now).TotalSeconds);
+                _rsr.TriggerSpecialStateWithDuration(RotationSolverRebornModule.SpecialCommandType.NoCasting, finish != default ? (float)(finish - now).TotalSeconds : _config.PyreticThreshold);
+                if (isPyretic)
                     hints.ForceCancelCast = true;
-                }
-            }
-            else if (isRSRpaused && (!hasForbiddenDirection || hints.ForbiddenDirections.Ref(0).activation > soon) && (hints.ImminentSpecialMode.mode != AIHints.SpecialMode.Pyretic || hints.ImminentSpecialMode.activation > soon) && _rsr.IsInstalled)
-            {
-                _rsr.UnPauseRSR();
-                isRSRpaused = false;
             }
         }
     }

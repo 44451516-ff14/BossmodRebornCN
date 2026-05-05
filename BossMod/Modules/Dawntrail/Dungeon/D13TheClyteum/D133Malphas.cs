@@ -1,6 +1,4 @@
-﻿using TerraFX.Interop.Windows;
-
-namespace BossMod.Modules.Dawntrail.Dungeon.D13TheClyteum;
+﻿namespace BossMod.Modules.Dawntrail.Dungeon.D13TheClyteum;
 
 public enum OID : uint
 {
@@ -38,7 +36,6 @@ public enum AID : uint
 }
 
 [SkipLocalsInit]
-
 sealed class RubbishDisposal(BossModule module) : Components.RaidwideCast(module, (uint)AID.RubbishDisposal);
 
 sealed class VoidDark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.VoidDark, new AOEShapeCone(30f, 90f.Degrees()));
@@ -98,7 +95,7 @@ sealed class D133MalphasStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed,
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
 StatesType = typeof(D133MalphasStates),
 ConfigType = null, // replace null with typeof(MalphasConfig) if applicable
 ObjectIDType = typeof(OID),

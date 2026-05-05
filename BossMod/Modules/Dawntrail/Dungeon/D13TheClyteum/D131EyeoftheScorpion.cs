@@ -1,15 +1,10 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using TerraFX.Interop.Windows;
-
-namespace BossMod.Dawntrail.Dungeon.D13TheClyteum.D131EyeOfTheScorpion;
+﻿namespace BossMod.Dawntrail.Dungeon.D13TheClyteum.D131EyeOfTheScorpion;
 
 public enum OID : uint
 {
     EyeOfTheScorpion = 0x4C2C,
-    Helper = 0x233C,
-    Actor1e8f2f = 0x1E8F2F, // R0.500, x1, EventObj type
-    Actor1e8fb8 = 0x1E8FB8, // R2.000, x2, EventObj type
     MotionScanner = 0x4C2D, // R1.000, x2
+    Helper = 0x233C
 }
 
 public enum AID : uint
@@ -30,16 +25,15 @@ public enum AID : uint
     Launch = 48895, // Helper->player, no cast, single-target
     AntiPersonnelMissile = 48899, // Helper->player, 5.0s cast, range 6 circle
 }
+
 public enum SID : uint
 {
-    DirectionalDisregard = 3808, // none->EyeOfTheScorpion, extra=0x0
     MotionTracker = 5191, // none->41EF/41F0/41F1/player, extra=0x0
-    VulnerabilityUp = 1789, // Helper->player, extra=0x1/0x2
 }
 
 [SkipLocalsInit]
 
-sealed class PetrifyingBeam(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PetrifyingBeam, (uint)AID.PetrifyingBeam2], new AOEShapeCone(70f, 50f.Degrees()));
+sealed class PetrifyingBeam(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PetrifyingBeam, (uint)AID.PetrifyingBeam2], new AOEShapeCone(70f, 50f.Degrees()), maxCasts: 2);
 
 sealed class EyesOnMe(BossModule module) : Components.RaidwideCast(module, (uint)AID.EyesOnMe);
 
@@ -70,13 +64,16 @@ sealed class MotionTracker(BossModule module) : Components.StayMove(module)
 
     public override void OnActorRenderflagsChange(Actor actor, int renderflags)
     {
-        if (renderflags == 0 && actor.OID == (uint)OID.MotionScanner)
+        if (actor.OID == (uint)OID.MotionScanner)
         {
-            TrackingBeam = actor;
-        }
-        if (renderflags == 16384 && actor.OID == (uint)OID.MotionScanner)
-        {
-            TrackingBeam = null;
+            if (renderflags == 0)
+            {
+                TrackingBeam = actor;
+            }
+            else if (renderflags == 16384)
+            {
+                TrackingBeam = null;
+            }
         }
     }
 
@@ -86,7 +83,7 @@ sealed class MotionTracker(BossModule module) : Components.StayMove(module)
         {
             var _rect = new AOEShapeRect(9f, 20f, 9f);
             _rect.Draw(Arena, TrackingBeam.Position, TrackingBeam.Rotation);
-            if (pc.Position.InRect(TrackingBeam.Position, TrackingBeam.Rotation, 9f, 9f, 20f))
+            if (pc.Position.InRect(TrackingBeam.Position, TrackingBeam.Rotation, 10f, 10f, 20f))
             {
                 PlayerStates[pcSlot] = new(Requirement.Stay, WorldState.CurrentTime);
             }
@@ -119,7 +116,7 @@ sealed class D131EyeOfTheScorpionStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
 StatesType = typeof(D131EyeOfTheScorpionStates),
 ConfigType = null, // replace null with typeof(EyeOfTheScorpionConfig) if applicable
 ObjectIDType = typeof(OID),

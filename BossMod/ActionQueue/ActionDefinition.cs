@@ -333,7 +333,7 @@ public sealed class ActionDefinitions : IDisposable
         }
 
         // TODO: check against action's animation lock duration instead of constant 0.8?
-        var (mode, deadline) = hints.ImminentSpecialMode;
+        var (mode, deadline, _) = hints.ImminentSpecialMode;
         if (mode is AIHints.SpecialMode.Pyretic or AIHints.SpecialMode.NoMovement && deadline <= ws.FutureTime(0.8d))
             return true;
 
