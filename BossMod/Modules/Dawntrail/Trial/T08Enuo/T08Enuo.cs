@@ -7,8 +7,8 @@ public enum OID : uint
     Helper = 0x233C,
     _Gen_ = 0x4DB8, // R5.000, x2
     _Gen_Actor1e8536 = 0x1E8536, // R2.000, x1, EventObj type
-    _Gen_Void = 0x4EB4, // R0.850, x0 (spawn during fight), Helper type : Endless chase caster
-    _Gen_Void1 = 0x4DBB, // R0.850, x0 (spawn during fight), Helper type : Endless Chase caster
+    NaughtHuntChaser = 0x4EB4, // R0.850, x0 (spawn during fight), Helper type : Endless chase caster
+    _Gen_Void1 = 0x4DBB, // R0.850, x0 (spawn during fight), Helper type :
     BeaconInTheDark = 0x4DBE,
     UncastShadow = 0x4DBD, // R5.000, x0 (spawn during fight)
     LoomingShadow = 0x4DBC, // R12.500, x0 (spawn during fight)
@@ -122,10 +122,75 @@ sealed class GazeOfTheVoidCones(BossModule module) : Components.SimpleAOEGroups(
 sealed class DeepFreeze(BossModule module) : Components.BaitAwayCast(module, (uint)AID.DeepFreeze, new AOEShapeCircle(8), true, true);
 
 //Naughthunts
-//TODO: Should update Chaser.target on Haunts Another
-// They will need to be getting line drawn to them and old targets not highlighted.
-// For now only does the first 12 chase AOE.
-sealed class EndlessChase(BossModule module) : Components.StandardChasingAOEs(module, 7f, (uint)AID.EndlessChaseFirst, (uint)AID.EndlessChaseRest, 2.9f, 1.5d, 12, true, (uint)IconID.EndlessChaseIcon);
+/** The solution credit here goes to @Endings.  Any mistakes in implementation from
+ * here belong to @wen.
+*/
+sealed class NaughtHunts(BossModule module) : Components.StandardChasingAOEs(module, new AOEShapeCircle(6f), (uint)AID.EndlessChaseRest, (uint)AID.EndlessChaseRest, 2.9f, 0.7d, 13, icon: (uint)IconID.EndlessChaseIcon, activationDelay: 6d)
+{
+    private int _tethercount = 0;
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
+    {
+        if (tether.ID == (uint)TetherID.NaughtHuntsTether)
+        {
+            var p = WorldState.Actors.Find(tether.Target);
+            if (_tethercount == 2)
+            {
+                Chasers.Clear();
+            }
+            if (p != null)
+            {
+                Chasers.Add(new(Shape, p, source.Position, 0, MaxCasts, WorldState.FutureTime(ActivationDelay), SecondsBetweenActivations));
+                ++_tethercount;
+            }
+            if (_tethercount == 4)
+            {
+                _tethercount = 0;
+            }
+        }
+    }
+
+    public override void OnActorDestroyed(Actor actor)
+    {
+        if (actor.OID == (uint)OID.NaughtHuntChaser)
+        {
+            Chasers.Clear(); // This'll happen twice per cycle but who cares?
+        }
+    }
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == ActionFirst)
+        {
+            var pos = spell.LocXZ;
+            var minDistance = float.MaxValue;
+
+            var count = Targets.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var t = Targets[i];
+                var distanceSq = (t.Position - pos).LengthSq();
+                if (distanceSq < minDistance)
+                {
+                    minDistance = distanceSq;
+                }
+            }
+            // Overriding to remove the 'add' behaviour here.
+        }
+    }
+    public override void OnEventCast(Actor caster, ActorCastEvent spell) // Don't count the first action so that we can have the same count between the two.
+    {
+        if (spell.Action.ID is var id && id == ActionRest)
+        {
+            var pos = spell.MainTargetID == caster.InstanceID ? caster.Position.Quantized() : WorldState.Actors.Find(spell.MainTargetID)?.Position ?? spell.TargetXZ;
+            Advance(pos, MoveDistance, WorldState.CurrentTime);
+            if (Chasers.Count == 0 && ResetTargets)
+            {
+                Targets.Clear();
+                NumCasts = 0;
+            }
+        }
+    }
+}
 
 //enshrouded holy - stack marker
 sealed class ShroudedHoly(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ShroudedHolyStack, 7, 4);
@@ -204,7 +269,7 @@ sealed class EnuoStates : StateMachineBuilder
             .ActivateOnEnter<NaughtGrowsAOE>()
             .ActivateOnEnter<GazeOfTheVoidCones>()
             .ActivateOnEnter<DeepFreeze>()
-            .ActivateOnEnter<EndlessChase>()
+            .ActivateOnEnter<NaughtHunts>()
             .ActivateOnEnter<ShroudedHoly>()
             .ActivateOnEnter<MeltdownSpread>()
             .ActivateOnEnter<MeltdownAOE>()
@@ -235,7 +300,7 @@ sealed class EnuoStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(EnuoStates),
 ConfigType = null, // replace null with typeof(EnuoConfig) if applicable
 ObjectIDType = typeof(OID),

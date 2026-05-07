@@ -24,6 +24,7 @@ sealed class Ex8EnuoStates : StateMachineBuilder
             .ActivateOnEnter<WeightofNothing>()
             .ActivateOnEnter<CurseoftheFlesh>()
             .ActivateOnEnter<BeaconAdd>()
+            .ActivateOnEnter<Nothingness>()
             .Raw.Update = () => Module.PrimaryActor.IsDeadOrDestroyed || (Module.PrimaryActor.CastInfo?.IsSpell(AID.LightlessWorldCastbar) ?? false);
         SimplePhase(3u, Phase2, "P2")
             .ActivateOnEnter<ArenaChanges>()
@@ -75,6 +76,12 @@ sealed class Ex8EnuoStates : StateMachineBuilder
         DimensionZero(id + 0x17, 5.2f);
         Almagest(id + 0x17, 10.1f);
         DoubleNaughtGrows(id + 0x18, 5.7f);
+        NaughtWakesActive(id + 0x19, 7.2f);
+        DeepFreeze(id + 0x20, 19.4f);
+        DoubleNaughtGrows(id + 0x21, 7f); //? Timing unknown
+        DimensionZero(id + 0x22, 7f); //? timing unknown
+        Meteorain(id + 0x23, 7f); //? timing unknown
+        Meteorain(id + 0x24, 7f); //? timing unknown
 
     }
 
