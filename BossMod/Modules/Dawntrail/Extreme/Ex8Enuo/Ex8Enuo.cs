@@ -2,6 +2,8 @@
 
 sealed class Meteorain(BossModule module) : Components.RaidwideCast(module, (uint)AID.Meteorain);
 
+sealed class Almagest(BossModule module) : Components.RaidwideCast(module, (uint)AID.Almagest);
+
 sealed class VacuumAOE(BossModule module) : Components.Voidzone(module, 7f, FindVacuums)
 {
     private static Actor[] FindVacuums(BossModule module)
@@ -66,6 +68,38 @@ sealed class DeepFreeze(BossModule module) : Components.StayMove(module)
 
 sealed class LightlessWorld(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightlessWorldCastbar);
 
+sealed class PassageOfNaught(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.PassageOfNaught, (uint)AID.PassageOfNaught2, (uint)AID.PassageOfNaught1], new AOEShapeRect(80f, 8f));
+
+sealed class ShroudedHoly(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.ShroudedHolyTargets, 6f, 4, 4);
+
+sealed class DimensionZero(BossModule module) : Components.GenericBaitStack(module, (uint)AID.DimensionZeroHits)
+{
+    private int hits = 0;
+    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
+    {
+        if (iconID == (uint)IconID.DimensionZeroTarget)
+        {
+            var p = WorldState.Actors.Find(targetID);
+            if (p != null)
+            {
+                hits = 0; //reset your counter, dummy.
+                CurrentBaits.Add(new(Module.PrimaryActor, p, new AOEShapeRect(60f, 4f)));
+            }
+        }
+    }
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.DimensionZeroHits)
+        {
+            hits++;
+            if (hits >= 3)
+            {
+                CurrentBaits.Clear();
+            }
+        }
+    }
+}
+
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -84,7 +118,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(Ex8EnuoStates),
 ConfigType = null, // replace null with typeof(EnuoConfig) if applicable
 ObjectIDType = typeof(OID),

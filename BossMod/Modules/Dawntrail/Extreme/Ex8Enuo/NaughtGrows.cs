@@ -68,3 +68,7 @@ sealed class NaughtGrowsWildCharge(BossModule module) : Components.InverseWildCh
 sealed class NaughtGrowsDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NaughtGrowsDonut, new AOEShapeDonut(40f, 60f));
 
 sealed class NaughtGrowsCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NaughtGrowsCircle, new AOEShapeCircle(40f));
+
+sealed class NaughtGrowsBossDonut(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NaughtGrowsBossDonut, new AOEShapeDonut(6f, 20f));
+
+sealed class NaughtGrowsBossCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NaughtGrowsBossCircle, new AOEShapeCircle(12f));
