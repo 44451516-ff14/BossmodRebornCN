@@ -24,7 +24,6 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     private readonly DebugAutorotation _debugAutorot = new(autorot);
     private readonly DebugAddon _debugAddon = new();
     private readonly DebugTiming _debugTiming = new();
-    private readonly DebugTeleport _debugTeleport = new();
     private readonly DebugCollision _debugCollision = new();
     private readonly DebugQuests _debugQuests = new();
 
@@ -190,10 +189,6 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         if (ImGui.CollapsingHeader("Quests"))
         {
             _debugQuests.Draw();
-        }
-        if (ImGui.CollapsingHeader("Teleport"))
-        {
-            _debugTeleport.Draw();
         }
         if (ImGui.CollapsingHeader("Rotation Solver Reborn"))
         {

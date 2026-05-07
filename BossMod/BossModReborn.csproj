@@ -42,7 +42,7 @@
 
   <PropertyGroup>
     <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>10.0.26100.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
@@ -51,11 +51,15 @@
 
   <ItemGroup>
     <PackageReference Include="DalamudPackager" Version="15.0.0" />
-    <PackageReference Include="PInvoke.User32" Version="0.7.124" />
-    <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100" />
-    <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj">
+    <PackageReference Include="TerraFX.Interop.Windows" Version="10.0.26100.6" />
+    <Reference Include="FFXIVClientStructs">
+      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>false</Private>
-    </ProjectReference>
+    </Reference>
+    <Reference Include="InteropGenerator.Runtime">
+      <HintPath>$(DalamudLibPath)InteropGenerator.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
 
     <Reference Include="Dalamud">
       <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>

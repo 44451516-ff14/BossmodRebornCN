@@ -1,4 +1,4 @@
-﻿using BossMod.AI;
+using BossMod.AI;
 using BossMod.Autorotation;
 using BossMod.Pathfinding;
 using System.IO;
@@ -136,6 +136,28 @@ sealed class IPCProvider : IDisposable
             return predicted.Count == 0 ? 0 : (int)predicted[0].Type;
         });
 
+        // --- Custom OmniDuty Endpoints ---
+        Register("Hints.MaxCastTime", () => hints.MaxCastTime);
+        Register("Hints.ForceCancelCast", () => hints.ForceCancelCast);
+        Register("Hints.ForbiddenZonesCount", () => hints.ForbiddenZones.Count);
+        Register("Hints.ForbiddenZonesNextActivation", () => hints.ForbiddenZones.Count == 0 ? float.MaxValue : (float)(hints.ForbiddenZones[0].activation - DateTime.Now).TotalSeconds);
+        Register("Hints.ArenaCenter", () => new Vector2(hints.PathfindMapCenter.X, hints.PathfindMapCenter.Z));
+        Register("Hints.ArenaRadius", () => hints.PathfindMapBounds.Radius);
+        Register("Hints.PredictedDamagePlayers", () => hints.PredictedDamage.Count == 0 ? 0ul : hints.PredictedDamage[0].Players.Raw);
+        Register("Hints.ForbiddenDirectionsCount", () => hints.ForbiddenDirections.Count);
+        Register("Hints.ShouldCleansePlayers", () => hints.ShouldCleanse.Raw);
+        Register("Hints.InteractWithTargetOID", () => hints.InteractWithTarget?.InstanceID ?? 0ul);
+        Register("Hints.RecommendedPositional", () => (int)hints.RecommendedPositional.Pos);
+        Register("AI.PauseMovement", (bool pause) => Service.Config.Get<AIConfig>().ForbidMovement = pause);
+        Register("AI.NaviTargetPos", () =>
+        {
+            var pos = ai.Controller.NaviTargetPos;
+            return pos.HasValue ? new Vector3(pos.Value.X, 0, pos.Value.Z) : (Vector3?)null;
+        });
+        Register("AI.IsNavigating", () => ai.Controller.NaviTargetPos != null);
+        Register("AI.PlayerSpeed", () => ai.WorldState.Client.MoveSpeed);
+        // ---------------------------------
+
         // Type-specific damage prediction endpoints — search ALL entries for the first matching type
         Register("Hints.NextRaidwideDamageIn", () =>
         {
@@ -172,6 +194,43 @@ sealed class IPCProvider : IDisposable
         {
             return hints.ImminentSpecialMode == default ? 0 : (int)hints.ImminentSpecialMode.mode;
         });
+
+        // Returns true if the destination position is safe (within arena bounds, not in a forbidden zone or temporary obstacle).
+        // 'from' is the player's current world position (XZ used); 'to' is the intended destination (XZ used).
+        // Use this to validate movement-ability targets before executing them.
+        Register("Hints.IsPositionSafe", (Vector3 to) =>
+        {
+            var player = bossmod.WorldState.Party.Player();
+            return player != null && !ActionDefinitions.IsDashDangerous(player.Position, new WPos(to.X, to.Z), hints);
+        });
+
+        // Same as Hints.IsPositionSafe but with an explicit source position, useful when the dash origin differs from the player's current position.
+        Register("Hints.IsDashSafe", (Vector3 from, Vector3 to) =>
+            !ActionDefinitions.IsDashDangerous(new WPos(from.X, from.Z), new WPos(to.X, to.Z), hints));
+
+        // Returns true if dashing forward (or backward) by 'range' yalms from the player's current position/rotation is safe.
+        // Mirrors DashFixedDistanceCheck: dest = playerPos + playerRotation * range (negated when backwards=true).
+        Register("Hints.IsFixedDashSafe", (float range, bool backwards) =>
+        {
+            var player = bossmod.WorldState.Party.Player();
+            if (player == null)
+                return false;
+            var dest = player.Position + player.Rotation.ToDirection() * range * (backwards ? -1f : 1f);
+            return !ActionDefinitions.IsDashDangerous(player.Position, dest, hints);
+        });
+
+        // Returns true if backdashing 'range' yalms directly away from 'enemyPos' is safe.
+        // Mirrors BackdashCheck: dir = normalize(playerPos - enemyPos), dest = playerPos + dir * range.
+        Register("Hints.IsBackdashSafe", (Vector3 enemyPos, float range) =>
+        {
+            var player = bossmod.WorldState.Party.Player();
+            if (player == null)
+                return false;
+            var dir = (player.Position - new WPos(enemyPos.X, enemyPos.Z)).Normalized();
+            var dest = player.Position + dir * range;
+            return !ActionDefinitions.IsDashDangerous(player.Position, dest, hints);
+        });
+
         Register("Configuration", (List<string> args, bool save) => Service.Config.ConsoleCommand(args.AsSpan(), save));
 
         var lastModified = DateTime.Now;
