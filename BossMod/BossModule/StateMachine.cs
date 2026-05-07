@@ -70,20 +70,19 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
     public float TimeSinceTransitionClamped => Math.Min(TimeSinceTransition, ActiveState?.Duration ?? 0);
 
     public int ActivePhaseIndex = -1;
-    public Phase? ActivePhase => Phases.ElementAtOrDefault(ActivePhaseIndex);
+    public Phase? ActivePhase => ActivePhaseIndex >= 0 && ActivePhaseIndex < Phases.Count ? Phases[ActivePhaseIndex] : null;
     public State? ActiveState;
 
     public void Start(DateTime now)
     {
         _activation = _curTime = now;
         if (Phases.Count != 0)
+        {
             TransitionToPhase(0);
+        }
     }
 
-    public void Reset()
-    {
-        TransitionToPhase(-1);
-    }
+    public void Reset() => TransitionToPhase(-1);
 
     public void Update(DateTime now)
     {
@@ -92,7 +91,10 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         {
             var transition = ActivePhase.Update?.Invoke() ?? false;
             if (!transition)
+            {
                 break;
+            }
+
             Service.Log($"[StateMachine] Phase transition from {ActivePhaseIndex} '{ActivePhase.Name}', time={TimeSincePhaseEnter:f2}");
             TransitionToPhase(ActivePhaseIndex + 1);
         }
@@ -101,7 +103,10 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
             var transition = ActiveState.Update?.Invoke(TimeSinceTransition) ?? -1;
             var nextState = ActiveState.NextStates != null && transition >= 0 && transition < ActiveState.NextStates.Length ? ActiveState.NextStates[transition] : null;
             if (nextState == null)
+            {
                 break;
+            }
+
             Service.Log($"[StateMachine] State transition from {ActiveState.ID:X} '{ActiveState.Name}' to {nextState.ID:X} '{nextState.Name}', overdue={TimeSinceTransition:f2}-{ActiveState.Duration:f2}={TimeSinceTransition - ActiveState.Duration:f2}");
             TransitionToState(nextState);
         }
@@ -133,7 +138,10 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
             if (name.Length > 0)
             {
                 if (res.Length > 0)
+                {
                     res.Append(sep);
+                }
+
                 res.Append(name);
                 ++count;
             }
@@ -150,7 +158,10 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         {
             time = time.AddSeconds(next.Duration);
             if (next.EndHint.HasFlag(flag))
+            {
                 return time;
+            }
+
             next = next.NextStates?.Length == 1 ? next.NextStates[0] : null;
         }
         return DateTime.MaxValue;
@@ -173,7 +184,10 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
             if (start.Name.Length > 0)
             {
                 if (res.Length > 0)
+                {
                     res.Append(" + ");
+                }
+
                 res.Append(start.Name);
 
                 if (writeTime && timeLeft > 0)
@@ -187,7 +201,10 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         if (writeTime && timeLeft > 0)
         {
             if (res.Length == 0)
+            {
                 res.Append("???");
+            }
+
             res.Append($" in {timeLeft:f1}s");
         }
 
@@ -197,7 +214,9 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
     private void TransitionToPhase(int nextIndex)
     {
         if (ActivePhase != null)
+        {
             TransitionToState(null);
+        }
 
         ActivePhase?.Exit?.Invoke();
         ActivePhaseIndex = nextIndex;
@@ -205,7 +224,9 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
         ActivePhase?.Enter?.Invoke();
 
         if (ActivePhase != null)
+        {
             TransitionToState(ActivePhase.InitialState);
+        }
     }
 
     private void TransitionToState(State? nextState)

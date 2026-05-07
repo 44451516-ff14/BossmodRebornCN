@@ -67,7 +67,9 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
 
                 _edit = new(toEdit, Math.Abs(lclickPos.Y - Timeline.TimeToScreenCoord(toEdit.Window.TimeSinceGlobalStart(Tree) + toEdit.Window.Duration)) < 5);
                 if (_edit.EditingEnd)
+                {
                     toEdit.WindowLength = toEdit.Window.Duration; // if we're starting edit of the window-end, ensure it's matching visual value (clamped to phase duration)
+                }
             }
 
             // continue editing
@@ -91,9 +93,14 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
                 // finish editing
                 var minTime = _edit.Element.Window.AttachNode.PhaseID == 0 && _edit.Element.Window.AttachNode.Predecessor == null ? Timeline.MinTime : 0;
                 if (_edit.EditingEnd)
+                {
                     _edit.Element.WindowLength = Math.Max(MathF.Round(_edit.Element.WindowLength, 1), 0.1f);
+                }
                 else
+                {
                     _edit.Element.Window.Delay = Math.Max(MathF.Round(_edit.Element.Window.Delay, 1), minTime);
+                }
+
                 UpdateElement(_edit.Element);
                 _edit = null;
                 NotifyModified();
@@ -104,7 +111,9 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
         {
             _popupElement = Elements.Find(e => ScreenPosInElement(lclickPos, e));
             if (_popupElement != null)
+            {
                 ImGui.OpenPopup(popupName);
+            }
         }
 
         var rclickPos = ImGui.GetIO().MouseClickedPos[1];
@@ -138,8 +147,14 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
             var mousePos = ImGui.GetMousePos();
             if (ScreenPosInTrack(mousePos))
             {
-                foreach (var e in Elements.Where(e => ScreenPosInElement(mousePos, e)))
+                for (var ei = 0; ei < Elements.Count; ++ei)
                 {
+                    var e = Elements[ei];
+                    if (!ScreenPosInElement(mousePos, e))
+                    {
+                        continue;
+                    }
+
                     HoverElement(e);
                 }
             }
@@ -162,13 +177,25 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
         var e = Elements[index];
         Entries.Remove(e.Window);
         if (e.Effect != null)
+        {
             Entries.Remove(e.Effect);
+        }
+
         if (e.Cooldown != null)
+        {
             Entries.Remove(e.Cooldown);
+        }
+
         if (_edit?.Element == e)
+        {
             _edit = null;
+        }
+
         if (_popupElement == e)
+        {
             _popupElement = null;
+        }
+
         Elements.RemoveAt(index);
         NotifyModified();
     }
@@ -176,7 +203,9 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
     public void UpdateAllElements()
     {
         foreach (var e in Elements)
+        {
             UpdateElement(e);
+        }
     }
 
     protected abstract StrategyValueTrack GetDefaultValue();
@@ -186,7 +215,7 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
 
     protected bool EditElementWindow(Element e)
     {
-        bool modified = false;
+        var modified = false;
 
         var startGlobal = e.Window.TimeSinceGlobalStart(Tree);
         if (ImGui.InputFloat("Press at (relative to pull)", ref startGlobal))
@@ -210,7 +239,10 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
     protected bool ScreenPosInElement(Vector2 pos, Element e)
     {
         if (!IsEntryVisible(e.Window))
+        {
             return false;
+        }
+
         var tStart = e.Window.TimeSinceGlobalStart(Tree);
         var yMin = Timeline.TimeToScreenCoord(tStart);
         var yMax = Timeline.TimeToScreenCoord(tStart + e.TotalVisualLength);
@@ -277,13 +309,20 @@ public abstract class ColumnPlannerTrack(Timeline timeline, StateMachineTree tre
         var tooltip = DescribeElement(element);
         tooltip.Add($"Press at: {tStart:f1}s ({element.Window.TimeSincePhaseStart():f1}s since phase start, {element.Window.Delay:f1}s after state start)");
         if (element.Window.AttachNode.Predecessor != null)
+        {
             tooltip.Add($"Attached: {element.Window.Delay:f1}s after {element.Window.AttachNode.Predecessor.State.ID:X} '{element.Window.AttachNode.Predecessor.State.Name}' ({element.Window.AttachNode.Predecessor.State.Comment})");
+        }
         else
+        {
             tooltip.Add($"Attached: {element.Window.Delay:f1}s after pull");
+        }
+
         tooltip.Add($"Next state: {element.Window.AttachNode.State.Duration - element.Window.Delay:f1}s before {element.Window.AttachNode.State.ID:X} '{element.Window.AttachNode.State.Name}' ({element.Window.AttachNode.State.Comment})");
         tooltip.Add($"Window: {element.WindowLength:f1}s");
         if (element.Disabled)
+        {
             tooltip.Add("*** DISABLED *** (right-click to reenable, shift-right-click to delete)");
+        }
 
         Timeline.AddTooltip(tooltip);
         Timeline.HighlightTime(tStart);

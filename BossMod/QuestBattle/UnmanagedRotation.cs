@@ -31,7 +31,10 @@ public abstract class UnmanagedRotation(WorldState ws, float effectiveRange)
                 var target = Hints.PotentialTargets[i];
                 var priority = target.Priority;
                 if (priority < 0)
+                {
                     continue;
+                }
+
                 var distanceSq = (target.Actor.Position - player.Position).LengthSq();
                 if (priority > maxPriority || priority == maxPriority && distanceSq < minDistanceSq)
                 {
@@ -55,7 +58,10 @@ public abstract class UnmanagedRotation(WorldState ws, float effectiveRange)
     {
         var def = ActionDefinitions.Instance[action];
         if (def == null)
+        {
             return;
+        }
+
         Hints.ActionsToExecute.Push(action, target, ActionQueue.Priority.High + additionalPriority, castTime: def.CastTime - 0.5f, targetPos: targetPos, facingAngle: facingAngle);
     }
 

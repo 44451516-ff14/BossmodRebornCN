@@ -31,7 +31,9 @@ public sealed class ColumnEnemyDetails : Timeline.ColumnGroup
             DrawColumnToggle(_casts, "Casts");
             DrawColumnToggle(_hp, "HP");
             foreach (var _1 in tree.Node("Statuses"))
+            {
                 _statuses.DrawConfig(tree);
+            }
         }
         _separator.Width = AnyVisible ? 1 : 0;
     }

@@ -46,7 +46,10 @@ public class GenericChasingAOEs(BossModule module, float moveDistance, uint aid 
     {
         var count = Chasers.Count;
         if (count == 0)
+        {
             return [];
+        }
+
         var aoes = new AOEInstance[count];
         for (var i = 0; i < count; ++i)
         {

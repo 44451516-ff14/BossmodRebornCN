@@ -34,9 +34,13 @@ public struct BitMatrix(ulong raw = 0)
             if ((uint)row < 8 && (uint)col < 8)
             {
                 if (value)
+                {
                     Raw |= 1ul << (8 * row + col);
+                }
                 else
+                {
                     Raw &= ~(1ul << (8 * row + col));
+                }
             }
         }
     }

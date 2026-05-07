@@ -157,16 +157,10 @@ public sealed class SDPolygonWithHoles(SDPolygonWithHolesBase core) : ShapeDista
     private readonly SDPolygonWithHolesBase _core = core;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override float Distance(in WPos p)
-    {
-        return _core.Distance(p);
-    }
+    public override float Distance(in WPos p) => _core.Distance(p);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Contains(in WPos p)
-    {
-        return _core.Contains(p);
-    }
+    public override bool Contains(in WPos p) => _core.Contains(p);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
@@ -178,16 +172,10 @@ public sealed class SDInvertedPolygonWithHoles(SDPolygonWithHolesBase core) : Sh
     private readonly SDPolygonWithHolesBase _core = core;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override float Distance(in WPos p)
-    {
-        return _core.DistanceInverted(p);
-    }
+    public override float Distance(in WPos p) => _core.DistanceInverted(p);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Contains(in WPos p)
-    {
-        return !_core.Contains(p);
-    }
+    public override bool Contains(in WPos p) => !_core.Contains(p);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;

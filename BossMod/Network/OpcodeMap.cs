@@ -32,14 +32,20 @@ public sealed class OpcodeMap
         {
             var bodyAddr = imagebase + jumptable[i];
             if (bodyAddr == defaultAddr)
+            {
                 continue;
+            }
 
             var opcode = minCase + i;
             var index = ReadIndexForCaseBody(bodyAddr);
             if (index < 0)
+            {
                 Service.Log($"[OpcodeMap] Unexpected body for opcode {opcode}");
+            }
             else
+            {
                 AddMapping(opcode, index);
+            }
         }
     }
 
@@ -54,8 +60,13 @@ public sealed class OpcodeMap
     {
         var len = BodyPrefix.Length;
         for (var i = 0; i < len; ++i)
+        {
             if (bodyAddr[i] != BodyPrefix[i])
+            {
                 return -1;
+            }
+        }
+
         var vtoff = bodyAddr[len] switch
         {
             0x60 => *(bodyAddr + len + 1),
@@ -63,24 +74,41 @@ public sealed class OpcodeMap
             _ => -1
         };
         if (vtoff < 0x10 || (vtoff & 7) != 0)
+        {
             return -1; // first two vfs are dtor and exec, vtable contains qwords
+        }
+
         return (vtoff >> 3) - 2;
     }
 
     private void AddMapping(int opcode, int id)
     {
         if (!AddEntry(OpcodeToID, opcode, id))
+        {
             Service.Log($"[OpcodeMap] Trying to define several mappings for opcode {opcode} ({ID(opcode)} and ({(ServerIPC.PacketID)id})");
+        }
+
         if (!AddEntry(IDToOpcode, id, opcode))
+        {
             Service.Log($"[OpcodeMap] Trying to map multiple opcodes to same index {(ServerIPC.PacketID)id} ({IDToOpcode[id]} and {opcode})");
+        }
     }
 
     private static bool AddEntry(List<int> list, int index, int value)
     {
         if (list.Count <= index)
-            list.AddRange(Enumerable.Repeat(-1, index + 1 - list.Count));
+        {
+            var needed = index + 1 - list.Count;
+            for (var k = 0; k < needed; ++k)
+            {
+                list.Add(-1);
+            }
+        }
         if (list[index] != -1)
+        {
             return false;
+        }
+
         list[index] = value;
         return true;
     }

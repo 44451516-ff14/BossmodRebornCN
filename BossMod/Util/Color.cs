@@ -42,10 +42,7 @@ public class JsonColorConverter : JsonConverter<Color>
         return str?.Length > 0 ? Color.FromRGBA(uint.Parse(str[1..], System.Globalization.NumberStyles.HexNumber)) : default;
     }
 
-    public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
-    {
-        writer.WriteStringValue($"#{value.ToRGBA():X8}");
-    }
+    public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) => writer.WriteStringValue($"#{value.ToRGBA():X8}");
 }
 
 [SkipLocalsInit]

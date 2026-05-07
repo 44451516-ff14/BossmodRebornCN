@@ -91,14 +91,18 @@ public sealed class ArcList(WPos center, float radius)
             var minAdj = min + cushion;
             var maxAdj = max - cushion;
             if (minAdj.Rad < maxAdj.Rad)
+            {
                 yield return (minAdj, maxAdj);
+            }
         }
     }
 
     public (Angle min, Angle max) NextAllowed(Angle dir, bool ccw)
     {
         if (Forbidden.Count == 0)
+        {
             return (dir - 180f.Degrees(), dir + 180f.Degrees()); // everything is allowed
+        }
 
         (Angle, Angle) boundsBefore(int index)
         {
@@ -151,12 +155,18 @@ public sealed class ArcList(WPos center, float radius)
 
         var last = Forbidden.Segments[^1];
         if (Forbidden.Segments[0].Min > -MathF.PI)
+        {
             yield return (last.Max.Radians() - 360f.Degrees(), Forbidden.Segments[0].Min.Radians());
+        }
 
         for (var i = 1; i < Forbidden.Segments.Count; ++i)
+        {
             yield return (Forbidden.Segments[i - 1].Max.Radians(), Forbidden.Segments[i].Min.Radians());
+        }
 
         if (last.Max < MathF.PI)
+        {
             yield return (last.Max.Radians(), Forbidden.Segments[0].Min.Radians() + 360f.Degrees());
+        }
     }
 }

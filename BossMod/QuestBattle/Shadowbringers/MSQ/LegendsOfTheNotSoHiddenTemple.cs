@@ -21,7 +21,9 @@ public class LegendsOfTheNotSoHiddenTemple(WorldState ws) : QuestBattle(ws)
                 obj.Update += () =>
                 {
                     if (obj.Completed || World.CurrentTime < waitForWorthlessNPCs)
+                    {
                         return;
+                    }
 
                     var executioners = World.Actors.Where(x => x.OID == 0x2954 && !x.IsDead);
                     obj.CompleteIf(executioners.Any(ex => inRoom1SafeLane(ex.Position)));
@@ -113,7 +115,11 @@ public class LegendsOfTheNotSoHiddenTemple(WorldState ws) : QuestBattle(ws)
     public override void AddQuestAIHints(Actor player, AIHints hints)
     {
         foreach (var h in hints.PotentialTargets)
+        {
             if (h.Actor.OID == 0x2955)
+            {
                 h.Priority = AIHints.Enemy.PriorityForbidden;
+            }
+        }
     }
 }

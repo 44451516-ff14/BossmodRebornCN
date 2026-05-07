@@ -96,11 +96,20 @@ public static class ClassRole
         var class1 = actor1.Class.GetClassCategory();
         var class2 = actor2.Class.GetClassCategory();
         if (class1 == ClassCategory.Tank && class2 == ClassCategory.Tank)
+        {
             return true;
+        }
+
         if (class1 == ClassCategory.Healer && class2 == ClassCategory.Healer)
+        {
             return true;
+        }
+
         if (actor1.Class.IsDD() && actor2.Class.IsDD())
+        {
             return true;
+        }
+
         return false;
     }
 

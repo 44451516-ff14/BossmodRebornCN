@@ -57,7 +57,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
         CommandManager = commandManager;
 
         if (!dalamud.ConfigDirectory.Exists)
+        {
             dalamud.ConfigDirectory.Create();
+        }
 
         var dalamudRoot = dalamud.GetType().Assembly.
                 GetType("Dalamud.Service`1", true)!.MakeGenericType(dalamud.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).
@@ -186,7 +188,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
             case "CFG":
                 var output = Service.Config.ConsoleCommand(new ArraySegment<string>(split, 1, split.Length - 1));
                 foreach (var msg in output)
+                {
                     Service.ChatGui.Print(msg);
+                }
+
                 break;
             case "GC":
                 GarbageCollection();
@@ -212,7 +217,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private bool HandleReplayCommand(string[] messageData)
     {
         if (messageData.Length == 1)
+        {
             _wndReplay.SetVisible(!_wndReplay.IsOpen);
+        }
         else
         {
             switch (messageData[1].ToUpperInvariant())
@@ -242,7 +249,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
             ref var field = ref fields[i];
             var value = field.GetValue(defaultConfig);
             if (value is Color or Color[])
+            {
                 field.SetValue(currentConfig, value);
+            }
         }
 
         currentConfig.Modified.Fire();
@@ -357,7 +366,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private unsafe void SetTarget(Actor? target, FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject** targetPtr)
     {
         if (target == null || !target.IsTargetable)
+        {
             return;
+        }
 
         var obj = GetActorObject(target);
 
@@ -367,7 +378,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
         {
             var distSq = (player.PosRot.XYZ() - target.PosRot.XYZ()).LengthSquared();
             if (distSq < 2500f)
+            {
                 *targetPtr = obj;
+            }
         }
     }
 
@@ -376,7 +389,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
         var playerObj = GetActorObject(player);
         var targetObj = GetActorObject(target);
         if (playerObj == null || targetObj == null)
+        {
             return false;
+        }
 
         // treasure chests have no client-side interact range check at all; just assume they use the standard "small" range, seems to be accurate from testing
         return targetObj->ObjectKind is FFXIVClientStructs.FFXIV.Client.Game.Object.ObjectKind.Treasure
@@ -389,7 +404,9 @@ public sealed class Plugin : IAsyncDalamudPlugin
         var fm = FateManager.Instance();
         var fate = fm->CurrentFate;
         if (fate == null)
+        {
             return;
+        }
 
         var shouldDoSomething = _hints.WantFateSync switch
         {
@@ -408,14 +425,20 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private unsafe FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject* GetActorObject(Actor? actor)
     {
         if (actor == null)
+        {
             return null;
+        }
 
         var obj = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObjectManager.Instance()->Objects.IndexSorted[actor.SpawnIndex].Value;
         if (obj == null)
+        {
             return null;
+        }
 
         if (obj->EntityId != actor.InstanceID)
+        {
             Service.Log($"[ExecHints] Unexpected actor: expected {actor.InstanceID:X} at #{actor.SpawnIndex}, but found {obj->EntityId:X}");
+        }
 
         return obj;
     }
@@ -434,9 +457,14 @@ public sealed class Plugin : IAsyncDalamudPlugin
                 break;
             case "SET":
                 if (cmd.Length <= 2)
+                {
                     Service.Log("Specify an autorotation preset name.");
+                }
                 else
+                {
                     ParseAutorotationSetCommand(cmd[1..], false);
+                }
+
                 break;
             case "TOGGLE":
                 ParseAutorotationSetCommand(cmd.Length > 2 ? cmd[1..] : [""], true);

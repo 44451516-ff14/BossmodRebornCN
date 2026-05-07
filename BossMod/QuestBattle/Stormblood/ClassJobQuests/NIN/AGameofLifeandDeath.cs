@@ -19,9 +19,7 @@ internal class AGameOfLifeAndDeath(WorldState ws) : QuestBattle(ws)
             .With(obj => {
                 obj.Update += () => {
                     var yuki = World.Actors.FirstOrDefault(x => x.OID == 0x1E62);
-                    if (yuki == null)
-                        return;
-                    obj.CompleteIf(yuki.Position.AlmostEqual(new(659.82f, 56.63f), 3));
+                    if (yuki == null) { return; } obj.CompleteIf(yuki.Position.AlmostEqual(new(659.82f, 56.63f), 3));
                 };
             }),
 

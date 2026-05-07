@@ -18,11 +18,16 @@ public sealed class ReplayPlayer(Replay r)
     public bool TickForward()
     {
         if (_nextOp == Replay.Ops.Count)
+        {
             return false;
+        }
 
         var ts = Replay.Ops[_nextOp].Timestamp;
         while (_nextOp < Replay.Ops.Count && Replay.Ops[_nextOp].Timestamp == ts)
+        {
             WorldState.Execute(Replay.Ops[_nextOp++]);
+        }
+
         return true;
     }
 
@@ -43,8 +48,13 @@ public sealed class ReplayPlayer(Replay r)
     {
         var curr = CurrTimestamp();
         for (var i = _nextOp - 1; i >= 0; --i)
+        {
             if (Replay.Ops[i].Timestamp < curr)
+            {
                 return Replay.Ops[i].Timestamp;
+            }
+        }
+
         return default;
     }
 }

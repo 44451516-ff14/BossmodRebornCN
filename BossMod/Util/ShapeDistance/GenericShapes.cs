@@ -371,10 +371,7 @@ public sealed class SDCone : ShapeDistance
 
     // rotated grid row: p(s) = rowStart + s*dx, s∈[s0,s1]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default)
-    {
-        return SegmentIntersectsCone(rowStart, rowStart + width * dx, cushion);
-    }
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => SegmentIntersectsCone(rowStart, rowStart + width * dx, cushion);
 
     public bool SegmentIntersectsCone(WPos a, WPos b, float cushion = default)
     {
@@ -1169,10 +1166,7 @@ public sealed class SDRect : ShapeDistance
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default)
-    {
-        return SegmentIntersectsRect(rowStart, rowStart + width * dx, cushion);
-    }
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => SegmentIntersectsRect(rowStart, rowStart + width * dx, cushion);
 
     private bool SegmentIntersectsRect(WPos a, WPos b, float cushion)
     {
@@ -1333,10 +1327,7 @@ public sealed class SDInvertedRect : ShapeDistance
         return maxParr > maxOrtho ? -maxParr : -maxOrtho;
     }
 
-    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default)
-    {
-        return !SegmentFullyInsideOriginalRect(rowStart, rowStart + width * dx, cushion);
-    }
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => !SegmentFullyInsideOriginalRect(rowStart, rowStart + width * dx, cushion);
 
     private bool SegmentFullyInsideOriginalRect(WPos a, WPos b, float cushion)
     {

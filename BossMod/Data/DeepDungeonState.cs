@@ -44,10 +44,14 @@ public sealed class DeepDungeonState
         get
         {
             if (Progress.Floor % 10 == 0)
+            {
                 return true;
+            }
 
             if (DungeonId is DungeonType.EO or DungeonType.PT && Progress.Floor == 99)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -86,9 +90,7 @@ public sealed class DeepDungeonState
             ws.DeepDungeon.Progress = Value;
             ws.DeepDungeon.ProgressChanged.Fire(this);
         }
-        public override void Write(ReplayRecorder.Output output)
-        {
-            output.EmitFourCC("DDPG"u8)
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("DDPG"u8)
                 .Emit((byte)DungeonID)
                 .Emit(Value.Floor)
                 .Emit(Value.Tileset)
@@ -99,7 +101,6 @@ public sealed class DeepDungeonState
                 .Emit(Value.ReturnProgress)
                 .Emit(Value.PassageProgress)
                 .Emit(Value.HoardCurrentFloor);
-        }
     }
 
     public Event<OpMapDataChange> MapDataChanged = new();
@@ -201,9 +202,6 @@ public sealed class DeepDungeonState
             ws.DeepDungeon.MagiciteChanged.Fire(this);
         }
 
-        public override void Write(ReplayRecorder.Output output)
-        {
-            output.EmitFourCC("DDMG"u8).Emit(Value);
-        }
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("DDMG"u8).Emit(Value);
     }
 }

@@ -66,11 +66,20 @@ public sealed class WorldState
         List<Operation> ops = new(RSVEntries.Count + waymarks.Count + actors.Count + party.Count + client.Count + deepdungeon.Count + 2); // todo add network back
 
         if (CurrentTime != default)
+        {
             ops.Add(new OpFrameStart(Frame, default, Client.GaugePayload, Client.CameraAzimuth));
+        }
+
         if (CurrentZone != default || CurrentCFCID != default)
+        {
             ops.Add(new OpZoneChange(CurrentZone, CurrentCFCID));
+        }
+
         foreach (var (k, v) in RSVEntries)
+        {
             ops.Add(new OpRSVData(k, v));
+        }
+
         ops.AddRange(waymarks);
         ops.AddRange(actors);
         ops.AddRange(party);

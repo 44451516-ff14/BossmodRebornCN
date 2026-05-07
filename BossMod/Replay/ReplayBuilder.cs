@@ -67,7 +67,10 @@ public sealed class ReplayBuilder : IDisposable
     {
         // note: it's not really necessary here, since we ultimately only remove internal subscriptions
         foreach (var m in _modules.Values)
+        {
             m.Dispose();
+        }
+
         _subscribers.Dispose();
         _mgr.Dispose();
     }
@@ -81,7 +84,10 @@ public sealed class ReplayBuilder : IDisposable
     public void AddOp(WorldState.Operation op)
     {
         if (op is WorldState.OpFrameStart && _res.Ops.Count > 0)
+        {
             FinishFrame();
+        }
+
         _ws.Execute(op);
         _res.Ops.Add(op);
     }
@@ -131,9 +137,15 @@ public sealed class ReplayBuilder : IDisposable
                     m.Encounter.FirstDirectorUpdate = _res.DirectorUpdates.Count;
                     m.Encounter.FirstEnvControl = _res.MapEffects.Count;
                     foreach (var p in _participants.Values.Where(p => p.WorldExistence.Count > 0 && p.WorldExistence[^1].End == default)) // include only live actors
+                    {
                         m.Encounter.ParticipantsByOID.GetOrAdd(p.OID).Add(p);
+                    }
+
                     foreach (var p in _ws.Party.WithoutSlot(true))
+                    {
                         m.Encounter.PartyMembers.Add((_participants[p.InstanceID], p.Class, p.Level));
+                    }
+
                     _res.Encounters.Add(m.Encounter);
                 }
                 else
@@ -153,30 +165,47 @@ public sealed class ReplayBuilder : IDisposable
     private void FinalizeParticipant(Replay.Participant p)
     {
         if (p.EffectiveExistence.End > _ws.CurrentTime)
+        {
             p.EffectiveExistence.End = _ws.CurrentTime; // note that this would be extended by any new references
+        }
+
         if (p.WorldExistence.Count > 0 && p.WorldExistence[^1].End == default)
+        {
             p.WorldExistence.Ref(p.WorldExistence.Count - 1).End = _ws.CurrentTime;
+        }
 
         if (p.Casts.Count > 0 && p.Casts[^1].Time.End == default)
+        {
             p.Casts[^1].Time.End = _ws.CurrentTime;
+        }
 
         if (p.TargetableHistory.LastOrDefault().Value)
         {
             if (p.TargetableHistory.Keys[^1] < _ws.CurrentTime)
+            {
                 p.TargetableHistory.Add(_ws.CurrentTime, false);
+            }
             else
+            {
                 p.TargetableHistory.RemoveAt(p.TargetableHistory.Count - 1);
+            }
         }
     }
 
     private Replay.Participant GetOrCreateParticipant(ulong instanceID, bool extendEffectiveExistence = true)
     {
         if (instanceID is 0 or 0xE0000000)
+        {
             throw new ArgumentException("Unexpected invalid instance-id");
+        }
+
         if (_participants.TryGetValue(instanceID, out var p))
         {
             if (extendEffectiveExistence && p.EffectiveExistence.End < _ws.CurrentTime)
+            {
                 p.EffectiveExistence.End = _ws.CurrentTime;
+            }
+
             return p;
         }
         // new participant
@@ -205,7 +234,9 @@ public sealed class ReplayBuilder : IDisposable
         {
             // recreate after destruction
             if (p.WorldExistence[^1].End == default)
+            {
                 throw new InvalidOperationException($"Actor add after actor add: {actor}");
+            }
         }
         else
         {
@@ -219,11 +250,20 @@ public sealed class ReplayBuilder : IDisposable
         p.EffectiveExistence.End = DateTime.MaxValue; // until it is destroyed
         p.WorldExistence.Add(new(_ws.CurrentTime));
         if (p.NameHistory.Count == 0 ? (actor.Name.Length > 0 || actor.NameID != 0) : p.NameHistory.Values[^1] != (actor.Name, actor.NameID))
+        {
             p.NameHistory[_ws.CurrentTime] = (actor.Name, actor.NameID);
+        }
+
         if (actor.IsTargetable)
+        {
             p.TargetableHistory[_ws.CurrentTime] = true;
+        }
+
         if (actor.IsAlly)
+        {
             p.AllyHistory[_ws.CurrentTime] = true;
+        }
+
         p.PosRotHistory[_ws.CurrentTime] = actor.PosRot;
         p.HPMPHistory[_ws.CurrentTime] = actor.HPMP;
         p.MinRadius = Math.Min(p.MinRadius, actor.HitboxRadius);
@@ -233,40 +273,23 @@ public sealed class ReplayBuilder : IDisposable
         {
             var encParticipants = e.Encounter.ParticipantsByOID.GetOrAdd(actor.OID);
             if (!encParticipants.Contains(p))
+            {
                 encParticipants.Add(p);
+            }
         }
     }
 
-    private void ActorRemoved(Actor actor)
-    {
-        FinalizeParticipant(_participants[actor.InstanceID]);
-        // keep participant entry in case it is recreated later
-    }
+    private void ActorRemoved(Actor actor) => FinalizeParticipant(_participants[actor.InstanceID]);// keep participant entry in case it is recreated later
 
-    private void ActorRenamed(Actor actor)
-    {
-        _participants[actor.InstanceID].NameHistory[_ws.CurrentTime] = (actor.Name, actor.NameID);
-    }
+    private void ActorRenamed(Actor actor) => _participants[actor.InstanceID].NameHistory[_ws.CurrentTime] = (actor.Name, actor.NameID);
 
-    private void ActorTargetable(Actor actor)
-    {
-        _participants[actor.InstanceID].TargetableHistory[_ws.CurrentTime] = actor.IsTargetable;
-    }
+    private void ActorTargetable(Actor actor) => _participants[actor.InstanceID].TargetableHistory[_ws.CurrentTime] = actor.IsTargetable;
 
-    private void ActorDead(Actor actor)
-    {
-        _participants[actor.InstanceID].DeadHistory[_ws.CurrentTime] = actor.IsDead;
-    }
+    private void ActorDead(Actor actor) => _participants[actor.InstanceID].DeadHistory[_ws.CurrentTime] = actor.IsDead;
 
-    private void ActorAlly(Actor actor)
-    {
-        _participants[actor.InstanceID].AllyHistory[_ws.CurrentTime] = actor.IsAlly;
-    }
+    private void ActorAlly(Actor actor) => _participants[actor.InstanceID].AllyHistory[_ws.CurrentTime] = actor.IsAlly;
 
-    private void ActorMoved(Actor actor)
-    {
-        _participants[actor.InstanceID].PosRotHistory[_ws.CurrentTime] = actor.PosRot;
-    }
+    private void ActorMoved(Actor actor) => _participants[actor.InstanceID].PosRotHistory[_ws.CurrentTime] = actor.PosRot;
 
     private void ActorSize(Actor actor)
     {
@@ -275,10 +298,7 @@ public sealed class ReplayBuilder : IDisposable
         p.MaxRadius = Math.Max(p.MaxRadius, actor.HitboxRadius);
     }
 
-    private void ActorHPMP(Actor actor)
-    {
-        _participants[actor.InstanceID].HPMPHistory[_ws.CurrentTime] = actor.HPMP;
-    }
+    private void ActorHPMP(Actor actor) => _participants[actor.InstanceID].HPMPHistory[_ws.CurrentTime] = actor.HPMP;
 
     private void CastStart(Actor actor)
     {
@@ -299,7 +319,9 @@ public sealed class ReplayBuilder : IDisposable
         var cast = _participants[actor.InstanceID].Casts[^1];
         cast.Time.End = _ws.CurrentTime;
         if (actor == _ws.Party.Player() && _pendingClientActions.FindIndex(a => a.Cast == cast) is var index && index >= 0)
+        {
             _pendingClientActions.RemoveAt(index);
+        }
     }
 
     private void TetherAdd(Actor actor)
@@ -333,15 +355,15 @@ public sealed class ReplayBuilder : IDisposable
     {
         var r = _statuses.GetValueOrDefault((actor.InstanceID, index));
         if (r == null)
+        {
             return;
+        }
+
         r.Time.End = _ws.CurrentTime;
         _statuses.Remove((actor.InstanceID, index));
     }
 
-    private void EventIcon(Actor actor, uint iconID, ulong targetId)
-    {
-        _res.Icons.Add(new(iconID, GetOrCreateParticipant(actor.InstanceID), targetId != 0 ? GetOrCreateParticipant(targetId) : null, _ws.CurrentTime));
-    }
+    private void EventIcon(Actor actor, uint iconID, ulong targetId) => _res.Icons.Add(new(iconID, GetOrCreateParticipant(actor.InstanceID), targetId != 0 ? GetOrCreateParticipant(targetId) : null, _ws.CurrentTime));
 
     private void EventCast(Actor actor, ActorCastEvent cast)
     {
@@ -386,16 +408,24 @@ public sealed class ReplayBuilder : IDisposable
         if (forSource)
         {
             if (t.ConfirmationSource == default)
+            {
                 t.ConfirmationSource = _ws.CurrentTime;
+            }
             else
+            {
                 Service.Log($"Double confirmation ${seq}/{targetIndex} for {source.InstanceID:X} (source)");
+            }
         }
         if (forTarget)
         {
             if (t.ConfirmationTarget == default)
+            {
                 t.ConfirmationTarget = _ws.CurrentTime;
+            }
             else
+            {
                 Service.Log($"Double confirmation ${seq}/{targetIndex} for {source.InstanceID:X} (target)");
+            }
         }
         if (!forSource && !forTarget)
         {
@@ -403,43 +433,29 @@ public sealed class ReplayBuilder : IDisposable
         }
     }
 
-    private void EventObjectAnimation(Actor actor, ushort param1, ushort param2)
-    {
-        _participants[actor.InstanceID].EventObjectAnimation[_ws.CurrentTime] = ((uint)param1 << 16) | param2;
-    }
+    private void EventObjectAnimation(Actor actor, ushort param1, ushort param2) => _participants[actor.InstanceID].EventObjectAnimation[_ws.CurrentTime] = ((uint)param1 << 16) | param2;
 
-    private void EventState(Actor actor)
-    {
-        _participants[actor.InstanceID].EventState[_ws.CurrentTime] = actor.EventState;
-    }
+    private void EventState(Actor actor) => _participants[actor.InstanceID].EventState[_ws.CurrentTime] = actor.EventState;
 
-    private void PlayActionTimeline(Actor actor, ushort id)
-    {
-        _participants[actor.InstanceID].ActionTimeline[_ws.CurrentTime] = id;
-    }
+    private void PlayActionTimeline(Actor actor, ushort id) => _participants[actor.InstanceID].ActionTimeline[_ws.CurrentTime] = id;
 
-    private void EventUserMarker(WorldState.OpUserMarker op)
-    {
-        _res.UserMarkers.TryAdd(_ws.CurrentTime, op.Text);
-    }
+    private void EventUserMarker(WorldState.OpUserMarker op) => _res.UserMarkers.TryAdd(_ws.CurrentTime, op.Text);
 
     private void EventZoneChange(WorldState.OpZoneChange op)
     {
         // heuristic: assume any new actors after zone change are actually new, if they reuse same instance id
         foreach (var (k, v) in _participants)
+        {
             if (v.EffectiveExistence.End < _ws.CurrentTime)
+            {
                 _participants.Remove(k);
+            }
+        }
     }
 
-    private void EventDirectorUpdate(WorldState.OpDirectorUpdate op)
-    {
-        _res.DirectorUpdates.Add(new(op.DirectorID, op.UpdateID, op.Param1, op.Param2, op.Param3, op.Param4, _ws.CurrentTime));
-    }
+    private void EventDirectorUpdate(WorldState.OpDirectorUpdate op) => _res.DirectorUpdates.Add(new(op.DirectorID, op.UpdateID, op.Param1, op.Param2, op.Param3, op.Param4, _ws.CurrentTime));
 
-    private void EventMapEffect(WorldState.OpMapEffect op)
-    {
-        _res.MapEffects.Add(new(op.Index, op.State, _ws.CurrentTime));
-    }
+    private void EventMapEffect(WorldState.OpMapEffect op) => _res.MapEffects.Add(new(op.Index, op.State, _ws.CurrentTime));
 
     private void ClientActionRequested(ClientState.OpActionRequest op)
     {
@@ -461,17 +477,20 @@ public sealed class ReplayBuilder : IDisposable
         }
     }
 
-    private void ModuleLoaded(BossModule module)
-    {
-        _modules.TryAdd(module.PrimaryActor.InstanceID, new(module, new(module.PrimaryActor.InstanceID, module.PrimaryActor.OID, _ws.CurrentZone)));
-    }
+    private void ModuleLoaded(BossModule module) => _modules.TryAdd(module.PrimaryActor.InstanceID, new(module, new(module.PrimaryActor.InstanceID, module.PrimaryActor.OID, _ws.CurrentZone)));
 
     private void ModuleUnloaded(BossModule module)
     {
         if (!_modules.Remove(module.PrimaryActor.InstanceID, out var data))
+        {
             Service.Log($"Module not found for {module.PrimaryActor.InstanceID}");
+        }
+
         if (data == null)
+        {
             return;
+        }
+
         if (data.ActiveState != null)
         {
             data.Encounter.Phases.Add(new(data.ActivePhaseIndex, data.ActiveState.ID, _ws.CurrentTime));

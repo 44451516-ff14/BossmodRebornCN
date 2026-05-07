@@ -92,9 +92,14 @@ public sealed class UIPlot
         var minTick = (VisMin - TickOrigin) / TickAdvance;
         var maxTick = (VisMax - TickOrigin) / TickAdvance;
         for (float x = MathF.Ceiling(minTick.X), xmax = MathF.Floor(maxTick.X); x <= xmax; ++x)
+        {
             DrawTickX(dl, TickOrigin.X + x * TickAdvance.X);
+        }
+
         for (float y = MathF.Ceiling(minTick.Y), ymax = MathF.Floor(maxTick.Y); y <= ymax; ++y)
+        {
             DrawTickY(dl, TickOrigin.Y + y * TickAdvance.Y);
+        }
 
         _tooltips.Clear();
     }
@@ -105,7 +110,10 @@ public sealed class UIPlot
         {
             ImGui.BeginTooltip();
             foreach (var s in _tooltips)
+            {
                 ImGui.TextUnformatted(s);
+            }
+
             ImGui.EndTooltip();
         }
     }
@@ -113,12 +121,16 @@ public sealed class UIPlot
     public void Point(Vector2 p, uint color, Func<string> tooltip)
     {
         if (p.X < VisMin.X || p.Y < VisMin.Y || p.X > VisMax.X || p.Y > VisMax.Y)
+        {
             return;
+        }
 
         var screen = ToScreen(p);
         ImGui.GetWindowDrawList().AddCircleFilled(screen, PointRadius, color);
         if (ImGui.IsMouseHoveringRect(screen - new Vector2(PointRadius), screen + new Vector2(PointRadius)))
+        {
             _tooltips.Add($"[{p.X:f3}, {p.Y:f3}]: {tooltip()}");
+        }
     }
 
     private Vector2 ToScreen(Vector2 p)

@@ -9,10 +9,7 @@ public sealed class SDKnockbackInComplexPolygonAwayFromOrigin(WPos Center, WPos 
     private readonly RelSimplifiedComplexPolygon polygon = Polygon;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Contains(in WPos p)
-    {
-        return !polygon.Contains(p - center + distance * (p - origin).Normalized());
-    }
+    public override bool Contains(in WPos p) => !polygon.Contains(p - center + distance * (p - origin).Normalized());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;

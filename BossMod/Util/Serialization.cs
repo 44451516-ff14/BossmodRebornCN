@@ -42,6 +42,8 @@ public static class Serialization
     public static unsafe void WriteStruct<T>(this Stream stream, in T value) where T : unmanaged
     {
         fixed (T* ptr = &value)
+        {
             stream.Write(new(ptr, sizeof(T)));
+        }
     }
 }

@@ -109,7 +109,9 @@ public sealed unsafe class MovementOverride : IDisposable
     public bool FollowPathActive()
     {
         if (_navmeshPathIsRunning == null && _dalamud.TryGetData<bool[]>("vnav.PathIsRunning", out var data))
+        {
             _navmeshPathIsRunning = data;
+        }
 
         return _navmeshPathIsRunning != null && _navmeshPathIsRunning[0];
     }
@@ -117,7 +119,9 @@ public sealed unsafe class MovementOverride : IDisposable
     private void RMIWalkDetour(MoveControllerSubMemberForMine* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk)
     {
         if (bAdditiveUnk == 0)
+        {
             _forcedControlState = null;
+        }
 
         _rmiWalkHook.Original(self, sumLeft, sumForward, sumTurnLeft, haveBackwardOrStrafe, a6, bAdditiveUnk);
 
@@ -193,7 +197,9 @@ public sealed unsafe class MovementOverride : IDisposable
 
         // do nothing while followpath is running
         if (FollowPathActive())
+        {
             return;
+        }
 
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
         if (result->Forward == 0 && result->Left == 0 && result->Up == 0 && DirectionToDestination(true) is var relDir && relDir != null)
@@ -205,19 +211,20 @@ public sealed unsafe class MovementOverride : IDisposable
         }
     }
 
-    private byte MCIsInputActiveDetour(void* self, byte inputSourceFlags)
-    {
-        return _forcedControlState != null ? (byte)(_forcedControlState.Value ? 1 : 0) : _mcIsInputActiveHook.Original(self, inputSourceFlags);
-    }
+    private byte MCIsInputActiveDetour(void* self, byte inputSourceFlags) => _forcedControlState != null ? (byte)(_forcedControlState.Value ? 1 : 0) : _mcIsInputActiveHook.Original(self, inputSourceFlags);
 
     private (Angle h, Angle v)? DirectionToDestination(bool allowVertical)
     {
         if (DesiredDirection == null || DesiredDirection.Value == default)
+        {
             return null;
+        }
 
         var player = GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
         if (player == null)
+        {
             return null;
+        }
 
         var dxz = new WDir(DesiredDirection.Value.X, DesiredDirection.Value.Z);
         var dirH = Angle.FromDirection(dxz);
@@ -232,10 +239,18 @@ public sealed unsafe class MovementOverride : IDisposable
         var player = (Character*)GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
         var sm = player != null && player->IsCharacter() ? player->GetStatusManager() : null;
         if (sm == null)
+        {
             return false;
+        }
+
         for (var i = 0; i < sm->NumValidStatuses; ++i)
+        {
             if (sm->Status[i].StatusId is 1422 or 2936 or 3694 or 3909)
+            {
                 return true;
+            }
+        }
+
         return false;
     }
 

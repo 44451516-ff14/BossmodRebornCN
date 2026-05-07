@@ -49,7 +49,9 @@ public abstract class ColumnPlayerGauge : Timeline.ColumnGroup, IToggleableColum
     {
         var minTime = MinTime();
         foreach (var frame in Replay.Ops.SkipWhile(op => op.Timestamp < minTime).TakeWhile(op => op.Timestamp <= Encounter.Time.End).OfType<WorldState.OpFrameStart>())
+        {
             yield return (frame.Timestamp, ClientState.GetGauge<T>(frame.GaugePayload));
+        }
     }
 }
 #endregion
@@ -374,11 +376,19 @@ public sealed class ColumnPlayerGaugeSAM : ColumnPlayerGauge
     {
         var senCount = 0;
         if (sen.HasFlag(SenFlags.Setsu))
+        {
             ++senCount;
+        }
+
         if (sen.HasFlag(SenFlags.Getsu))
+        {
             ++senCount;
+        }
+
         if (sen.HasFlag(SenFlags.Ka))
+        {
             ++senCount;
+        }
 
         return senCount;
     }

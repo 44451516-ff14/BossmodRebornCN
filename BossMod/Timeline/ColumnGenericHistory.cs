@@ -63,22 +63,40 @@ public class ColumnGenericHistory : Timeline.Column
         var trackMax = Timeline.ColumnCoordsToScreenCoords(Width / 2 + _trackHalfWidth, Timeline.MaxVisibleTime);
         drawlist.AddRectFilled(trackMin, trackMax, GetBackgroundColor().ABGR);
 
-        foreach (var e in Entries.Where(e => e.EntryType == Entry.Type.Range && IsEntryVisible(e)))
+        for (var ei = 0; ei < Entries.Count; ++ei)
         {
+            var e = Entries[ei];
+            if (e.EntryType != Entry.Type.Range || !IsEntryVisible(e))
+            {
+                continue;
+            }
+
             var eStart = e.TimeSinceGlobalStart(Tree);
             var yStart = Timeline.TimeToScreenCoord(eStart);
             var yEnd = Timeline.TimeToScreenCoord(eStart + e.Duration);
             drawlist.AddRectFilled(new(trackMin.X, yStart), new(Utils.Lerp(trackMin.X, trackMax.X, e.WidthRel), yEnd), e.Color.ABGR);
         }
 
-        foreach (var e in Entries.Where(e => e.EntryType == Entry.Type.Line && IsEntryVisible(e)))
+        for (var ei = 0; ei < Entries.Count; ++ei)
         {
+            var e = Entries[ei];
+            if (e.EntryType != Entry.Type.Line || !IsEntryVisible(e))
+            {
+                continue;
+            }
+
             var y = Timeline.TimeToScreenCoord(e.TimeSinceGlobalStart(Tree));
             drawlist.AddLine(new(trackMin.X, y), new(Utils.Lerp(trackMin.X, trackMax.X, e.WidthRel), y), e.Color.ABGR);
         }
 
-        foreach (var e in Entries.Where(e => e.EntryType == Entry.Type.Dot && IsEntryVisible(e)))
+        for (var ei = 0; ei < Entries.Count; ++ei)
         {
+            var e = Entries[ei];
+            if (e.EntryType != Entry.Type.Dot || !IsEntryVisible(e))
+            {
+                continue;
+            }
+
             var y = Timeline.TimeToScreenCoord(e.TimeSinceGlobalStart(Tree));
             drawlist.AddCircleFilled(new(Utils.Lerp(trackMin.X, trackMax.X, e.WidthRel * 0.5f), y), _eventRadius, e.Color.ABGR);
         }
@@ -88,12 +106,20 @@ public class ColumnGenericHistory : Timeline.Column
     {
         var mousePos = ImGui.GetMousePos();
         if (!ScreenPosInTrack(mousePos))
+        {
             return;
+        }
 
         var cursor = Timeline.ScreenCoordToTime(mousePos.Y);
         Timeline.HighlightTime(cursor, 0x80808080);
-        foreach (var e in Entries.Where(e => (e.Name.Length > 0 || e.TooltipExtra != null) && ScreenPosInEntry(mousePos, e)))
+        for (var ei = 0; ei < Entries.Count; ++ei)
         {
+            var e = Entries[ei];
+            if (!((e.Name.Length > 0 || e.TooltipExtra != null) && ScreenPosInEntry(mousePos, e)))
+            {
+                continue;
+            }
+
             Timeline.AddTooltip(EntryTooltip(e, cursor));
             HighlightEntry(e);
         }
@@ -110,16 +136,25 @@ public class ColumnGenericHistory : Timeline.Column
     {
         var ox = Timeline.ScreenCoordToColumnOffset(pos.X) - Width / 2; // distance from column center
         if (ox < -_trackHalfWidth || ox >= _trackHalfWidth)
+        {
             return false;
+        }
+
         if (pos.Y < Timeline.ScreenClientTL.Y || pos.Y > Timeline.ScreenClientTL.Y + Timeline.Height)
+        {
             return false;
+        }
+
         return true;
     }
 
     protected bool ScreenPosInEntry(Vector2 pos, Entry e)
     {
         if (!IsEntryVisible(e))
+        {
             return false;
+        }
+
         var tStart = e.TimeSinceGlobalStart(Tree);
         var yMin = Timeline.TimeToScreenCoord(tStart);
         var yMax = Timeline.TimeToScreenCoord(tStart + e.Duration);

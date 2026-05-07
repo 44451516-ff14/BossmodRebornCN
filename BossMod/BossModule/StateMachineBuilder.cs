@@ -19,14 +19,20 @@ public class StateMachineBuilder(BossModule module)
         public Phase OnEnter(Action action, bool condition = true)
         {
             if (condition)
+            {
                 Raw.Enter += action;
+            }
+
             return this;
         }
 
         public Phase OnExit(Action action, bool condition = true)
         {
             if (condition)
+            {
                 Raw.Exit += action;
+            }
+
             return this;
         }
 
@@ -38,7 +44,10 @@ public class StateMachineBuilder(BossModule module)
         public Phase SetHint(StateMachine.PhaseHint h, bool condition = true)
         {
             if (condition)
+            {
                 Raw.Hint |= h;
+            }
+
             return this;
         }
     }
@@ -51,14 +60,20 @@ public class StateMachineBuilder(BossModule module)
         public State OnEnter(Action action, bool condition = true)
         {
             if (condition)
+            {
                 Raw.Enter += action;
+            }
+
             return this;
         }
 
         public State OnExit(Action action, bool condition = true)
         {
             if (condition)
+            {
                 Raw.Exit += action;
+            }
+
             return this;
         }
 
@@ -77,14 +92,20 @@ public class StateMachineBuilder(BossModule module)
         public State SetHint(StateMachine.StateHint h, bool condition = true)
         {
             if (condition)
+            {
                 Raw.EndHint |= h;
+            }
+
             return this;
         }
 
         public State ClearHint(StateMachine.StateHint h, bool condition = true)
         {
             if (condition)
+            {
                 Raw.EndHint &= ~h;
+            }
+
             return this;
         }
 
@@ -92,9 +113,13 @@ public class StateMachineBuilder(BossModule module)
         {
             var c = module.FindComponent<C>();
             if (c != null)
+            {
                 fn(c);
+            }
             else
+            {
                 module.ReportError(null, $"Component {typeof(C)} needed for state {Raw.ID:X} was not found");
+            }
         };
     }
 
@@ -111,10 +136,16 @@ public class StateMachineBuilder(BossModule module)
     public Phase SimplePhase(uint seqID, Action<uint> buildState, string name, float dur = -1f)
     {
         if (_curInitial != null)
+        {
             throw new InvalidOperationException($"Trying to create phase '{name}' while inside another phase");
+        }
+
         buildState(seqID << 24);
         if (_curInitial == null)
+        {
             throw new InvalidOperationException($"Phase '{name}' has no states");
+        }
+
         var phase = new StateMachine.Phase(_curInitial, name, dur);
         phase.Exit += () => Module.ClearComponents(comp => !comp.KeepOnPhaseChange);
         _phases.Add(phase);
@@ -146,11 +177,15 @@ public class StateMachineBuilder(BossModule module)
         if (_lastState != null)
         {
             if (_lastState.NextStates != null)
+            {
                 throw new InvalidOperationException($"Previous state {_lastState.ID} is already linked while adding new state {id}");
+            }
 
             _lastState.NextStates = [state];
             if ((_lastState.ID & 0xFFFF0000) == (id & 0xFFFF0000))
+            {
                 _lastState.EndHint |= StateMachine.StateHint.GroupWithNext;
+            }
         }
         else
         {
@@ -178,13 +213,19 @@ public class StateMachineBuilder(BossModule module)
         state.Raw.Update = timeSinceTransition =>
         {
             if (timeSinceTransition < checkDelay)
+            {
                 return -1; // too early to check for condition
+            }
 
             if (condition())
+            {
                 return 0;
+            }
 
             if (timeSinceTransition < expected + maxOverdue)
+            {
                 return -1;
+            }
 
             Module.ReportError(null, $"State {id:X}: transition triggered because of overdue");
             return 0;
@@ -204,23 +245,31 @@ public class StateMachineBuilder(BossModule module)
         state.Raw.Update = _ =>
         {
             if (!condition())
+            {
                 return -1;
+            }
 
             var key = select();
             var fork = stateDispatch.GetValueOrDefault(key, -1);
             if (fork < 0)
+            {
                 Module.ReportError(null, $"State {id:X}: unexpected fork condition result: got {key}");
+            }
+
             return fork;
         };
 
-        int nextIndex = 0;
+        var nextIndex = 0;
         var prevInit = _curInitial;
         foreach (var (key, action) in dispatch)
         {
             _lastState = _curInitial = null;
             action.buildState(action.seqID << 24);
             if (_curInitial == null)
+            {
                 throw new InvalidOperationException($"Fork #{nextIndex} didn't create any states");
+            }
+
             state.Raw.NextStates[nextIndex] = _curInitial;
             stateDispatch[key] = nextIndex++;
         }
@@ -238,7 +287,9 @@ public class StateMachineBuilder(BossModule module)
         state.Raw.Update = (timeSinceTransition) =>
         {
             if (timeSinceTransition < checkDelay)
+            {
                 return -1; // too early to check for condition
+            }
 
             var comp = Module.FindComponent<T>();
             if (comp == null)
@@ -248,10 +299,14 @@ public class StateMachineBuilder(BossModule module)
             }
 
             if (condition(comp))
+            {
                 return 0;
+            }
 
             if (timeSinceTransition < expected + maxOverdue)
+            {
                 return -1;
+            }
 
             Module.ReportError(null, $"State {id:X}: transition triggered because of overdue");
             return 0;
@@ -286,9 +341,15 @@ public class StateMachineBuilder(BossModule module)
         {
             var castInfo = actorAcc()?.CastInfo;
             if (castInfo == null)
+            {
                 return -1;
+            }
+
             if (castInfo.Action.ID != aid)
+            {
                 Module.ReportError(null, $"State {id:X}: unexpected cast start: got {castInfo.Action}, expected {aid}");
+            }
+
             return 0;
         };
         return state;
@@ -307,9 +368,21 @@ public class StateMachineBuilder(BossModule module)
         {
             var castInfo = actorAcc()?.CastInfo;
             if (castInfo == null)
+            {
                 return -1;
-            if (!aids.Any(aid => aid == castInfo.Action.ID))
+            }
+
+            var matchedAid = false;
+            for (var ai = 0; ai < aids.Length; ++ai)
+            {
+                if (aids[ai] == castInfo.Action.ID) { matchedAid = true; break; }
+            }
+
+            if (!matchedAid)
+            {
                 Module.ReportError(null, $"State {id:X}: unexpected cast start: got {castInfo.Action}");
+            }
+
             return 0;
         };
         return state;

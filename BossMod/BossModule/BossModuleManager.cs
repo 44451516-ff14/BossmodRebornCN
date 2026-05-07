@@ -43,14 +43,19 @@ public sealed class BossModuleManager : IDisposable
         );
 
         foreach (var a in WorldState.Actors)
+        {
             ActorAdded(a);
+        }
     }
 
     public void Dispose()
     {
         _activeModule = null;
         foreach (var m in LoadedModules)
+        {
             m.Dispose();
+        }
+
         LoadedModules.Clear();
 
         _subsciptions.Dispose();
@@ -126,7 +131,9 @@ public sealed class BossModuleManager : IDisposable
 
                 // if module was activated or deactivated, notify listeners
                 if (isActive != wasActive)
+                {
                     (isActive ? ModuleActivated : ModuleDeactivated).Fire(m);
+                }
 
                 var actor = m.PrimaryActor;
                 // unload module because it is not active and player is out of desired range
@@ -153,7 +160,10 @@ public sealed class BossModuleManager : IDisposable
                     ModuleDeactivated.Fire(m);
                     UnloadModule(i--);
                     if (!actor.IsDestroyed)
+                    {
                         ActorAdded(actor);
+                    }
+
                     continue;
                 }
 
@@ -215,13 +225,25 @@ public sealed class BossModuleManager : IDisposable
     private static int ModuleDisplayPriority(BossModule? m)
     {
         if (m == null)
+        {
             return 0;
+        }
+
         if (m.StateMachine.ActiveState != null)
+        {
             return 4;
+        }
+
         if (m.PrimaryActor.InstanceID == default)
+        {
             return 2; // demo module
+        }
+
         if (!m.PrimaryActor.IsDestroyed && !m.PrimaryActor.IsDead && m.PrimaryActor.IsTargetable)
+        {
             return 3;
+        }
+
         return 1;
     }
 
@@ -256,8 +278,12 @@ public sealed class BossModuleManager : IDisposable
     {
         var demoIndex = LoadedModules.FindIndex(m => m is DemoModule);
         if (Config.ShowDemo && demoIndex < 0)
+        {
             LoadModule(CreateDemoModule());
+        }
         else if (!Config.ShowDemo && demoIndex >= 0)
+        {
             UnloadModule(demoIndex);
+        }
     }
 }

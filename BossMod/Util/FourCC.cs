@@ -19,8 +19,13 @@ public readonly record struct FourCC(uint Value)
     private static unsafe uint Cast(ReadOnlySpan<byte> span)
     {
         if (span.Length != 4)
+        {
             throw new ArgumentException("FourCC should be 4 characters long");
+        }
+
         fixed (byte* mem = &span[0])
+        {
             return *(uint*)mem;
+        }
     }
 }

@@ -4,10 +4,7 @@ public sealed class ColumnStateMachineTree(Timeline timeline, StateMachineTree t
 {
     public StateMachine? ControlledSM = controlledSM;
 
-    public override void Update()
-    {
-        Width = Tree.TotalBranches * PixelsPerBranch;
-    }
+    public override void Update() => Width = Tree.TotalBranches * PixelsPerBranch;
 
     public override void Draw()
     {

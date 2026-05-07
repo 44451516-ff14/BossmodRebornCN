@@ -4,28 +4,16 @@ namespace BossMod;
 public static class SortHelpers
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortAOEsByActorID(List<Components.GenericAOEs.AOEInstance> list)
-    {
-        RefSort.Sort(CollectionsMarshal.AsSpan(list), new AOEActorIDComparer());
-    }
+    public static void SortAOEsByActorID(List<Components.GenericAOEs.AOEInstance> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new AOEActorIDComparer());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortActorsByID(List<Actor> list)
-    {
-        RefSort.SortRefType(CollectionsMarshal.AsSpan(list), new ActorIDComparer());
-    }
+    public static void SortActorsByID(List<Actor> list) => RefSort.SortRefType(CollectionsMarshal.AsSpan(list), new ActorIDComparer());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortAOEsByActorIDDescending(List<Components.GenericAOEs.AOEInstance> list)
-    {
-        RefSort.Sort(CollectionsMarshal.AsSpan(list), new ReverseComparer<AOEActorIDComparer, Components.GenericAOEs.AOEInstance>(new AOEActorIDComparer()));
-    }
+    public static void SortAOEsByActorIDDescending(List<Components.GenericAOEs.AOEInstance> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new ReverseComparer<AOEActorIDComparer, Components.GenericAOEs.AOEInstance>(new AOEActorIDComparer()));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortActorsByIDDescending(List<Actor> list)
-    {
-        RefSort.SortRefType(CollectionsMarshal.AsSpan(list), new ReverseRefComparer<Actor>(new ActorIDComparer()));
-    }
+    public static void SortActorsByIDDescending(List<Actor> list) => RefSort.SortRefType(CollectionsMarshal.AsSpan(list), new ReverseRefComparer<Actor>(new ActorIDComparer()));
 
     sealed class ActorIDComparer : IComparer<Actor>
     {
@@ -34,22 +22,13 @@ public static class SortHelpers
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortAOEByActivation(List<Components.GenericAOEs.AOEInstance> list)
-    {
-        RefSort.Sort(CollectionsMarshal.AsSpan(list), new AOEActivationComparer());
-    }
+    public static void SortAOEByActivation(List<Components.GenericAOEs.AOEInstance> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new AOEActivationComparer());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortForbiddenZonesByActivation(List<(ShapeDistance, DateTime, ulong)> list)
-    {
-        RefSort.Sort(CollectionsMarshal.AsSpan(list), new ForbiddenZonesActivationComparer());
-    }
+    public static void SortForbiddenZonesByActivation(List<(ShapeDistance, DateTime, ulong)> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new ForbiddenZonesActivationComparer());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortForbiddenDirectionsByActivation(List<(Angle, Angle, DateTime)> list)
-    {
-        RefSort.Sort(CollectionsMarshal.AsSpan(list), new ForbiddenDirectionActivationComparer());
-    }
+    public static void SortForbiddenDirectionsByActivation(List<(Angle, Angle, DateTime)> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new ForbiddenDirectionActivationComparer());
 
     private readonly struct AOEActorIDComparer : IRefComparer<Components.GenericAOEs.AOEInstance>
     {
@@ -104,10 +83,7 @@ public sealed class ReverseRefComparer<T>(IComparer<T> comparer) : IComparer<T> 
 public static class RefSort
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sort<T, TComparer>(Span<T> span, TComparer comparer) where TComparer : struct, IRefComparer<T>
-    {
-        QuickSort(span, 0, span.Length - 1, comparer);
-    }
+    public static void Sort<T, TComparer>(Span<T> span, TComparer comparer) where TComparer : struct, IRefComparer<T> => QuickSort(span, 0, span.Length - 1, comparer);
 
     private static void QuickSort<T, TComparer>(Span<T> span, int left, int right, TComparer comparer) where TComparer : struct, IRefComparer<T>
     {
@@ -149,22 +125,16 @@ public static class RefSort
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Swap<T>(ref T a, ref T b)
-    {
-        (b, a) = (a, b);
-    }
+    private static void Swap<T>(ref T a, ref T b) => (b, a) = (a, b);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void SortRefType<T>(Span<T> span, IComparer<T> comparer) where T : class
-    {
-        QuickSortRef(span, 0, span.Length - 1, comparer);
-    }
+    public static void SortRefType<T>(Span<T> span, IComparer<T> comparer) where T : class => QuickSortRef(span, 0, span.Length - 1, comparer);
 
     private static void QuickSortRef<T>(Span<T> span, int left, int right, IComparer<T> comparer) where T : class
     {
         while (left < right)
         {
-            int pivot = PartitionRef(span, left, right, comparer);
+            var pivot = PartitionRef(span, left, right, comparer);
             if (pivot - left < right - pivot)
             {
                 QuickSortRef(span, left, pivot - 1, comparer);

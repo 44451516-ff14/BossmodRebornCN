@@ -135,7 +135,9 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
             var actor = actors[i];
             var id = actor.InstanceID;
             if (id != bait.Target.InstanceID && bait.Shape.Check(actor.Position, BaitOrigin(ref bait), bait.Rotation))
+            {
                 result.Add(actor);
+            }
         }
 
         return result;
@@ -144,11 +146,17 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!EnableHints)
+        {
             return;
+        }
+
         var baits = CollectionsMarshal.AsSpan(ActiveBaits);
         var count = baits.Length;
         if (count == 0)
+        {
             return;
+        }
+
         if (ForbiddenPlayers[slot])
         {
             if (IsBaitTarget(actor))
@@ -163,7 +171,10 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
             {
                 ref var bait = ref baits[i];
                 if (bait.Target.InstanceID != id)
+                {
                     continue;
+                }
+
                 var clippedPlayers = PlayersClippedBy(ref bait);
                 if (clippedPlayers.Count != 0)
                 {
@@ -180,7 +191,10 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
             {
                 ref var bait = ref baits[i];
                 if (bait.Target.InstanceID == id)
+                {
                     continue;
+                }
+
                 if (IsClippedBy(actor, ref bait))
                 {
                     hints.Add("GTFO from baited aoe!");
@@ -260,7 +274,9 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (OnlyShowOutlines || IgnoreOtherBaits)
+        {
             return;
+        }
 
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         var len = baits.Length;
@@ -293,7 +309,9 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (tankbuster && CurrentBaits.Count != 0)
+        {
             hints.Add("Tankbuster cleave");
+        }
     }
 }
 
@@ -391,11 +409,15 @@ public class BaitAwayTethers(BossModule module, AOEShape shape, uint tetherID, u
     public (Actor? player, Actor? enemy) DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TID)
+        {
             return (null, null);
+        }
 
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
+        {
             return (null, null);
+        }
 
         var (player, enemy) = source.Type is ActorType.Player or ActorType.Buddy ? (source, target) : (target, source);
         if (player.Type is not ActorType.Player and not ActorType.Buddy || enemy.Type is ActorType.Player or ActorType.Buddy)
@@ -561,7 +583,10 @@ public class BaitAwayChargeCast(BossModule module, uint aid, float halfWidth) : 
     {
         var count = CurrentBaits.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         for (var i = 0; i < count; ++i)
         {
@@ -589,7 +614,10 @@ public class BaitAwayChargeTether(BossModule module, float halfWidth, double act
         base.Update();
         var count = CurrentBaits.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var baits = CollectionsMarshal.AsSpan(CurrentBaits);
         for (var i = 0; i < count; ++i)
         {
@@ -625,7 +653,10 @@ public class BaitAwayChargeTether(BossModule module, float halfWidth, double act
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (ActiveBaits.Count == 0)
+        {
             return;
+        }
+
         base.AddHints(slot, actor, hints);
         var count = CurrentBaits.Count;
         var id = actor.InstanceID;
@@ -700,10 +731,14 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
                 {
                     var caster = Module.Enemies(casterId);
                     if (caster.Count == 0)
+                    {
                         continue;
+                    }
 
                     if (caster[0].IsDeadOrDestroyed)
+                    {
                         continue;
+                    }
                 }
 
                 var targets = GetTargets(bait);
@@ -764,14 +799,18 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
         var len = baits.Length;
 
         if (len == 0)
+        {
             return;
+        }
 
         for (var i = 0; i < len; i++)
         {
             ref var b = ref baits[i];
             var baiter = IsBaitTarget(ref b, actor) ? actor : default;
             if (baiter == default)
+            {
                 continue;
+            }
 
             var clippedPlayers = PlayersClippedBy(ref b, baiter);
             var clippedCount = clippedPlayers.Count;
@@ -848,7 +887,9 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (OnlyShowOutlines || IgnoreOtherBaits)
+        {
             return;
+        }
 
         BitMask targetted = default;
         var baits = CollectionsMarshal.AsSpan(ActiveBaits);
@@ -905,7 +946,9 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
         // just show everyone if there are active baits
         // maybe write so it only shows players that are baiting or getting clipped by bait?
         if (!IsActive)
+        {
             return PlayerPriority.Irrelevant;
+        }
 
         var baits = CollectionsMarshal.AsSpan(ActiveBaits);
         var len = baits.Length;
@@ -962,7 +1005,9 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
             for (var j = i + 1; j < roleLen; ++j)
             {
                 if (isNearest && distances[j].distSq < distances[selIdx].distSq || !isNearest && distances[j].distSq > distances[selIdx].distSq)
+                {
                     selIdx = j;
+                }
             }
 
             if (selIdx != i)

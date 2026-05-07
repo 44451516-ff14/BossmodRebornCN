@@ -139,10 +139,7 @@ sealed class ClientActions
         }
     }
 
-    public void Draw(UITree tree)
-    {
-        tree.LeafNodes(_warnings, w => $"{w.r.Path} {w.ts:O}: {w.warning}");
-    }
+    public void Draw(UITree tree) => tree.LeafNodes(_warnings, w => $"{w.r.Path} {w.ts:O}: {w.warning}");
 
     private string StrEvt(ActorCastEvent e) => $"#{e.SourceSequence} {e.Action} @ {e.MainTargetID:X8}";
     private string StrCast(ActorCastInfo e) => $"{e.Action} @ {e.TargetID:X8}";

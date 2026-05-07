@@ -49,7 +49,9 @@ public static class BossModuleRegistry
             if (primaryOID == default && oidType != null)
             {
                 if (Enum.TryParse(oidType, "Boss", out var oid))
+                {
                     primaryOID = (uint)oid!;
+                }
             }
 
             var splitNamespace = module.Namespace?.Split('.') ?? []; // expected to be 'BossMod.expansion.category.rest'

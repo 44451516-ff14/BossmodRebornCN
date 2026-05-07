@@ -47,10 +47,7 @@ public sealed class SDKnockbackInAABBSquareAwayFromOrigin(WPos Center, WPos Orig
     private readonly float distance = Distance;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Contains(in WPos p)
-    {
-        return !(p + distance * (p - origin).Normalized()).InSquare(center, halfWidth);
-    }
+    public override bool Contains(in WPos p) => !(p + distance * (p - origin).Normalized()).InSquare(center, halfWidth);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
@@ -117,10 +114,7 @@ public sealed class SDKnockbackInAABBSquareFixedDirection(WPos Center, WDir Dire
     private readonly float halfWidth = HalfWidth;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Contains(in WPos p)
-    {
-        return !(p + direction).InSquare(center, halfWidth);
-    }
+    public override bool Contains(in WPos p) => !(p + direction).InSquare(center, halfWidth);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;

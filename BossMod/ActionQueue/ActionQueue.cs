@@ -62,7 +62,9 @@ public sealed class ActionQueue
         {
             ref var candidate = ref entries[i];
             if (candidate.Priority < Priority.Minimal)
+            {
                 break; // this and further actions are something we don't really want to execute (prio < minimal)
+            }
 
             var def = ActionDefinitions.Instance[candidate.Action];
             if (def == null)
@@ -71,17 +73,23 @@ public sealed class ActionQueue
                 continue;
             }
             if (!def.IsUnlocked(ws, player))
+            {
                 continue;
+            }
 
             if (candidate.CastTime > hints.MaxCastTime)
+            {
                 continue; // this cast can't be finished in time, look for something else
+            }
 
             var startDelay = Math.Max(Math.Max(candidate.Delay, animationLock), def.ReadyIn(cooldowns, ws.Client.DutyActions));
 
             // TODO: adjusted cast time!
             var duration = def.CastTime > 0 ? def.CastTime + def.CastAnimLock : def.InstantAnimLock + instantAnimLockDelay;
             if (startDelay + duration > deadline)
+            {
                 continue; // this action can't be done in time for higher-priority action, skip
+            }
 
             // we can use this action before deadline it seems
             if (startDelay > 0.05f)
@@ -101,7 +109,9 @@ public sealed class ActionQueue
 
         // double check that best candidate can be executed before we return it; it may have been promoted to best if a better action was interrupted for example
         if (CanExecute(ref best, ActionDefinitions.Instance[best.Action], ws, player, hints, allowDismount))
+        {
             return best;
+        }
 
         return default;
     }
@@ -109,25 +119,35 @@ public sealed class ActionQueue
     private bool CanExecute(ref Entry entry, ActionDefinition? def, WorldState ws, Actor player, AIHints hints, bool allowDismount)
     {
         if (entry.Priority >= Priority.ManualEmergency || def == null)
+        {
             return true; // don't make any assumptions
+        }
 
         if (!allowDismount && AutoDismountTweak.IsMountPreventingAction(ws, def.ID))
+        {
             return false;
+        }
 
         if (def.ID.Type == ActionType.Item && ws.Client.GetInventoryItemQuantity(def.ID.ID) == 0)
+        {
             return false;
+        }
 
         var range = def.Range;
         if (range > 0)
         {
             if ((RDM.AID)def.ID.ID is RDM.AID.Riposte or RDM.AID.Zwerchhau or RDM.AID.Redoublement or RDM.AID.EnchantedRiposte or RDM.AID.EnchantedZwerchhau or RDM.AID.EnchantedRedoublement && player.FindStatus(RDM.SID.Manafication) != null)
+            {
                 range = 25;
+            }
 
             var to = entry.Target?.Position ?? new(entry.TargetPos.XZ());
             var distSq = (to - player.Position).LengthSq();
             var effRange = range + player.HitboxRadius + (entry.Target?.HitboxRadius ?? default);
             if (distSq > effRange * effRange)
+            {
                 return false;
+            }
         }
 
         return def.ForbidExecute == null || !def.ForbidExecute.Invoke(ws, player, entry, hints);

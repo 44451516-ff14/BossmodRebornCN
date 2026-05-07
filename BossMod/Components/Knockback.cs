@@ -37,7 +37,7 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
         public readonly Angle Direction = direction;
         public readonly Kind Kind = kind;
         public readonly float MinDistance = minDistance;
-        public readonly SafeWall[] SafeWalls = safeWalls?.ToArray() ?? [];
+        public readonly SafeWall[] SafeWalls = safeWalls != null ? [.. safeWalls] : [];
         public readonly ulong ActorID = actorID;
         public readonly bool IgnoreImmunes = ignoreImmunes;
     }
@@ -180,7 +180,10 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
     public List<(WPos from, WPos to)> CalculateMovements(int slot, Actor actor)
     {
         if (MaxCasts <= 0)
+        {
             return [];
+        }
+
         var movements = new List<(WPos, WPos)>();
         var from = actor.Position;
         var count = 0;
@@ -209,11 +212,16 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
                 _ => default
             };
             if (dir == default)
+            {
                 continue; // couldn't determine direction for some reason
+            }
 
             var distance = s.Distance;
             if (s.Kind == Kind.TowardsOrigin)
+            {
                 distance = Math.Min(distance, (s.Origin - from).Length() - s.MinDistance);
+            }
+
             if (s.Kind == Kind.DirBackward)
             {
                 var perpendicularDir = s.Direction.ToDirection().OrthoL();
@@ -222,10 +230,15 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
             }
 
             if (distance <= 0f)
+            {
                 continue; // this could happen if attract starts from < min distance
+            }
 
             if (StopAtWall)
+            {
                 distance = Math.Min(distance, Arena.IntersectRayBounds(from, dir) - Math.Clamp(actor.HitboxRadius - approxHitBoxRadius, maxIntersectionError, actor.HitboxRadius - approxHitBoxRadius)); // hitbox radius can be != 0.5 if player is transformed/mounted, but normal arenas with walls should account for walkable arena in their shape already
+            }
+
             if (StopAfterWall)
             {
                 distance = Math.Min(distance, Arena.IntersectRayBounds(from, dir) + maxIntersectionError);

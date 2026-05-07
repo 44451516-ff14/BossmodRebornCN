@@ -1,5 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod.Pathfinding;
 
@@ -42,7 +42,9 @@ public sealed class MapVisualizer
     {
         using var table = ImRaii.Table("table", 2);
         if (!table)
+        {
             return;
+        }
 
         var size = new Vector2(Map.Width, Map.Height) * ScreenPixelSize;
         ImGui.TableSetupColumn("Map", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, size.X);
@@ -133,7 +135,9 @@ public sealed class MapVisualizer
 
         // shapes
         foreach (var c in Sectors)
+        {
             DrawSector(dl, tl, c.center, c.ir, c.or, c.dir, c.halfWidth);
+        }
 
         foreach (var r in Rects)
         {
@@ -219,38 +223,62 @@ public sealed class MapVisualizer
 
         // pathfinding controls
         if (ImGui.Button("Reset pf"))
+        {
             ExecTimed(() => _pathfind = BuildPathfind());
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Step pf"))
+        {
             ExecTimed(() => _pathfind.ExecuteStep());
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Run pf"))
+        {
             ExecTimed(() => _pathfind.Execute());
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Step back") && _pathfind.NumSteps > 0)
+        {
             ExecTimed(() =>
             {
                 var s = _pathfind.NumSteps - 1;
                 _pathfind = BuildPathfind();
                 while (_pathfind.NumSteps < s && _pathfind.ExecuteStep())
+                {
                     ;
+                }
             });
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Run until reopen"))
+        {
             ExecTimed(() =>
             {
                 var startR = _pathfind.NumReopens;
                 while (_pathfind.ExecuteStep() && _pathfind.NumReopens == startR)
+                {
                     ;
+                }
             });
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Step x100"))
+        {
             ExecTimed(() =>
             {
                 var cntr = 0;
                 while (_pathfind.ExecuteStep() && ++cntr < 100)
+                {
                     ;
+                }
             });
+        }
+
         ImGui.SameLine();
         ImGui.TextUnformatted($"Last op: {_lastExecTime:f3}s, num steps: {_pathfind.NumSteps}, num reopens: {_pathfind.NumReopens}");
 
@@ -309,14 +337,18 @@ public sealed class MapVisualizer
     private void DrawSector(ImDrawListPtr dl, Vector2 tl, WPos center, float ir, float or, Angle dir, Angle halfWidth)
     {
         if (halfWidth.Rad <= 0 || or <= 0 || ir >= or)
+        {
             return;
+        }
 
         var sCenter = tl + Map.WorldToGridFrac(center) * ScreenPixelSize;
         if (halfWidth.Rad >= MathF.PI)
         {
             dl.AddCircle(sCenter, or / Map.Resolution * ScreenPixelSize, Colors.PathfindingColor3);
             if (ir > 0)
+            {
                 dl.AddCircle(sCenter, ir / Map.Resolution * ScreenPixelSize, Colors.PathfindingColor3);
+            }
         }
         else
         {
@@ -330,11 +362,15 @@ public sealed class MapVisualizer
     private void DrawPath(ImDrawListPtr dl, Vector2 tl, int startingIndex)
     {
         if (startingIndex < 0)
+        {
             return;
+        }
 
         ref var startingNode = ref _pathfind.NodeByIndex(startingIndex);
         if (startingNode.OpenHeapIndex == 0)
+        {
             return;
+        }
 
         var color = 0xffffff00;
         var nextIndex = startingNode.ParentIndex;

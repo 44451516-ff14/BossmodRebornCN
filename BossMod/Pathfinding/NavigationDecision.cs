@@ -1,5 +1,5 @@
-using System.Threading;
 using System.Buffers;
+using System.Threading;
 
 namespace BossMod.Pathfinding;
 

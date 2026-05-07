@@ -9,7 +9,10 @@ public class Dispel(BossModule module, uint statusID, uint action = default) : C
     {
         var count = Targets.Count;
         if (count == 0)
+        {
             return;
+        }
+
         for (var i = 0; i < count; ++i)
         {
             var enemy = hints.FindEnemy(Targets[i]);
@@ -20,23 +23,26 @@ public class Dispel(BossModule module, uint statusID, uint action = default) : C
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (Targets.Count != 0)
+        {
             hints.Add($"Dispel {Targets[0].Name}!");
+        }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == statusID)
+        {
             Targets.Add(actor);
+        }
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == statusID)
+        {
             Targets.Remove(actor);
+        }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc)
-    {
-        Arena.Actors(Targets, Colors.Other1);
-    }
+    public override void DrawArenaForeground(int pcSlot, Actor pc) => Arena.Actors(Targets, Colors.Other1);
 }

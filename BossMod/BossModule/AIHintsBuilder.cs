@@ -61,13 +61,31 @@ public sealed class AIHintsBuilder : IDisposable
 
         hints.Clear();
         if (moveImminent || player?.PendingKnockbacks.Count > 0)
+        {
             hints.MaxCastTime = 0;
+        }
+
         if (player != null)
         {
             var playerAssignment = _partyConfig[_ws.Party.Members[playerSlot].ContentId];
             var activeModule = _bmm.ActiveModule?.StateMachine.ActivePhase != null ? _bmm.ActiveModule : null;
             var outOfCombatPriority = activeModule?.ShouldPrioritizeAllEnemies == true ? 0 : AIHints.Enemy.PriorityUndesirable;
-            FillEnemies(hints, playerAssignment == PartyRolesConfig.Assignment.MT || playerAssignment == PartyRolesConfig.Assignment.OT && !_ws.Party.WithoutSlot(false, false, true).Any(p => p != player && p.Role == Role.Tank), outOfCombatPriority);
+            var isTank = playerAssignment == PartyRolesConfig.Assignment.MT;
+            if (!isTank && playerAssignment == PartyRolesConfig.Assignment.OT)
+            {
+                var anyOtherTank = false;
+                foreach (var p in _ws.Party.WithoutSlot(false, false, true))
+                {
+                    if (p != player && p.Role == Role.Tank)
+                    {
+                        anyOtherTank = true;
+                        break;
+                    }
+                }
+
+                isTank = !anyOtherTank;
+            }
+            FillEnemies(hints, isTank, outOfCombatPriority);
             if (activeModule != null)
             {
                 activeModule.CalculateAIHints(playerSlot, player, playerAssignment, hints);
@@ -92,10 +110,12 @@ public sealed class AIHintsBuilder : IDisposable
             if (_rsr.IsInstalled && (hasForbiddenDirection && forbiddenDirActivation < soon || isPyretic && pyreticActivation < soon))
             {
                 var activationTime = hasForbiddenDirection && forbiddenDirActivation < soon ? forbiddenDirActivation : pyreticActivation;
-                var duration = Math.Max(0f, (float)(activationTime - now).TotalSeconds);
+                _ = Math.Max(0f, (float)(activationTime - now).TotalSeconds);
                 _rsr.TriggerSpecialStateWithDuration(RotationSolverRebornModule.SpecialCommandType.NoCasting, finish != default ? (float)(finish - now).TotalSeconds : _config.PyreticThreshold);
                 if (isPyretic)
+                {
                     hints.ForceCancelCast = true;
+                }
             }
         }
     }
@@ -108,33 +128,52 @@ public sealed class AIHintsBuilder : IDisposable
         foreach (var actor in _ws.Actors.Actors.Values)
         {
             if (!actor.IsTargetable || actor.IsAlly || actor.IsDead)
+            {
                 continue;
+            }
+
             var index = actor.CharacterSpawnIndex;
             if (index is < 0 or >= AIHints.NumEnemies)
+            {
                 continue;
+            }
 
             int priority;
             if (actor.FateID != default)
             {
                 if (actor.FateID != allowedFateID)
+                {
                     priority = AIHints.Enemy.PriorityInvincible;  // fate mob in fate we are NOT a part of can't be damaged at all
+                }
                 else
+                {
                     priority = 0; // Relevant fate mob
+                }
             }
             else if (actor.PendingDead)
+            {
                 priority = AIHints.Enemy.PriorityPointless; // Mob is about to die
+            }
             else if (actor.AggroPlayer)
+            {
                 priority = 0; // Aggroed player
+            }
             else if (actor.InCombat && _ws.Party.FindSlot(actor.TargetID) >= 0)
+            {
                 priority = 0; // Assisting party members
+            }
             else
+            {
                 priority = priorityPassive; // Default undesirable
+            }
 
             var enemy = hints.Enemies[index] = new(actor, priority, playerIsDefaultTank);
 
             // maybe unnecessary?
             if (actor.FateID > 0u && actor.FateID == allowedFateID && !Utils.IsBossFate(actor.FateID))
+            {
                 enemy.ForbidDOTs = true;
+            }
 
             hints.PotentialTargets.Add(enemy);
         }
@@ -198,13 +237,23 @@ public sealed class AIHintsBuilder : IDisposable
             var pathfindMapCenterX = hints.PathfindMapCenter.X;
             var pathfindMapCenterZ = hints.PathfindMapCenter.Z;
             if (playerOffetX < -1.25f)
+            {
                 pathfindMapCenterX -= 2.5f;
+            }
             else if (playerOffetX > 1.25f)
+            {
                 pathfindMapCenterX += 2.5f;
+            }
+
             if (playerOffsetZ < -1.25f)
+            {
                 pathfindMapCenterZ -= 2.5f;
+            }
             else if (playerOffsetZ > 1.25f)
+            {
                 pathfindMapCenterZ += 2.5f;
+            }
+
             hints.PathfindMapCenter = new(pathfindMapCenterX, pathfindMapCenterZ);
             // keep default bounds
         }
@@ -216,9 +265,13 @@ public sealed class AIHintsBuilder : IDisposable
             var rot = caster.Rotation;
             var finishAt = _ws.FutureTime(caster.NPCRemainingTime);
             if (aoe.IsCharge)
+            {
                 hints.AddForbiddenZone(new SDRect(aoe.Caster.Position.Quantized(), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
+            }
             else
+            {
                 hints.AddForbiddenZone(aoe.Shape, target, rot, finishAt);
+            }
         }
 
         foreach (var gaze in _activeGazes.Values)
@@ -227,7 +280,9 @@ public sealed class AIHintsBuilder : IDisposable
             var rot = gaze.Caster.CastInfo!.Rotation;
             var finishAt = _ws.FutureTime(gaze.Caster.CastInfo.NPCRemainingTime);
             if (gaze.Shape.Check(player.Position, target, rot))
+            {
                 hints.ForbiddenDirections.Add((Angle.FromDirection(target - player.Position), 45f.Degrees(), finishAt));
+            }
         }
 
         var count = _invincible.Count;
@@ -240,13 +295,21 @@ public sealed class AIHintsBuilder : IDisposable
     private void OnCastStarted(Actor actor)
     {
         if (_bmm.ActiveModule?.StateMachine.ActivePhase != null) // no need to do all of this if it won't be used anyway
+        {
             return;
+        }
+
         if (actor.Type is not ActorType.Enemy and not ActorType.Helper || actor.IsAlly)
+        {
             return;
+        }
+
         var castInfo = actor.CastInfo!;
         var actionID = castInfo.Action.ID;
         if (ignore.Contains(actionID))
+        {
             return;
+        }
 
         var data = GetSpellData(actionID);
 
@@ -254,14 +317,23 @@ public sealed class AIHintsBuilder : IDisposable
         if (data.VFX == 25u)
         {
             if (GuessShape(ref data, ref actor) is AOEShape sh)
+            {
                 _activeGazes[actor.InstanceID] = (actor, _ws.Actors.Find(castInfo.TargetID), sh);
+            }
+
             return;
         }
 
         if (!castInfo.IsSpell() || data.CastType == 1)
+        {
             return;
+        }
+
         if (data.CastType is 2 or 5 && data.EffectRange >= RaidwideSize)
+        {
             return;
+        }
+
         if (GuessShape(ref data, ref actor) is not AOEShape shape)
         {
             Service.Log($"[AutoHints] Unknown cast type {data.CastType} for {castInfo.Action}");
@@ -339,7 +411,10 @@ public sealed class AIHintsBuilder : IDisposable
     private static (byte CastType, byte EffectRange, byte XAxisModifier, uint RowId, string Name, string PathAlly, string path, int pos, bool Omen, uint VFX) GetSpellData(uint actionID)
     {
         if (_spellCache.TryGetValue(actionID, out var actionRow))
+        {
             return actionRow;
+        }
+
         var row = Service.LuminaRow<Lumina.Excel.Sheets.Action>(actionID);
         (byte, byte, byte, uint, string, string, string, int, bool, uint)? data;
         var omenPath = row!.Value.Omen.Value.Path.ToString();

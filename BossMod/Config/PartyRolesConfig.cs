@@ -21,9 +21,15 @@ public class PartyRolesConfig : ConfigNode
         {
             var r = this[party.Members[i].ContentId];
             if (r == Assignment.Unassigned)
+            {
                 return [];
+            }
+
             if (counts[(int)r]++ > 0)
+            {
                 return [];
+            }
+
             res[i] = r;
         }
         return res;
@@ -37,9 +43,15 @@ public class PartyRolesConfig : ConfigNode
         {
             var r = this[party.Members[i].ContentId];
             if (r == Assignment.Unassigned)
+            {
                 return [];
+            }
+
             if (res[(int)r] != PartyState.MaxPartySize)
+            {
                 return [];
+            }
+
             res[(int)r] = i;
         }
         return res;
@@ -70,7 +82,10 @@ public class PartyRolesConfig : ConfigNode
             if (table)
             {
                 foreach (var r in typeof(Assignment).GetEnumValues())
+                {
                     ImGui.TableSetupColumn(r.ToString(), ImGuiTableColumnFlags.None, 25);
+                }
+
                 ImGui.TableSetupColumn("Name");
                 ImGui.TableHeadersRow();
 
@@ -79,22 +94,29 @@ public class PartyRolesConfig : ConfigNode
                 {
                     ref var m = ref ws.Party.Members[i];
                     if (m.IsValid())
+                    {
                         party.Add((m.ContentId, m.Name, ws.Party[i]?.Role.ToString()[0] ?? '?', this[m.ContentId]));
+                    }
                 }
 
                 party.Sort(static (a, b) => a.role.CompareTo(b.role));
                 foreach (var (contentID, name, classRole, assignment) in party)
                 {
                     ImGui.TableNextRow();
-                    foreach (var r in typeof(Assignment).GetEnumValues().Cast<Assignment>())
+                    foreach (var r in (Assignment[])typeof(Assignment).GetEnumValues())
                     {
                         ImGui.TableNextColumn();
                         if (ImGui.RadioButton($"###{contentID:X}:{r}", assignment == r))
                         {
                             if (r != Assignment.Unassigned)
+                            {
                                 Assignments[contentID] = r;
+                            }
                             else
+                            {
                                 Assignments.Remove(contentID);
+                            }
+
                             Modified.Fire();
                         }
                     }

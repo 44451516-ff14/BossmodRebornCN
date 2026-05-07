@@ -3,9 +3,7 @@
 [ZoneModuleInfo(BossModuleInfo.Maturity.Contributed, 998)]
 public class TheProtectorAndTheDestroyer(WorldState ws) : QuestBattle(ws)
 {
-    public override unsafe List<QuestObjective> DefineObjectives(WorldState ws)
-    {
-        return [
+    public override unsafe List<QuestObjective> DefineObjectives(WorldState ws) => [
         new QuestObjective(ws)
             .WithConnection(new Waypoint(new(-0.57f, -6.05f, 209.93f), false))
             .WithConnection(new Waypoint(new(0.01f, 0.00f, 114.44f), false))
@@ -17,9 +15,7 @@ public class TheProtectorAndTheDestroyer(WorldState ws) : QuestBattle(ws)
                     if (diru.UpdateID == 0x80000000)
                     {
                         var localID = diru.Param1;
-                        if (diru.Param2 == 0xF119)
-                            sadCitizens.Add(diru.Param1);
-                        else
+                        if (diru.Param2 == 0xF119) { sadCitizens.Add(diru.Param1); } else
                         {
                             sadCitizens.Remove(diru.Param1);
                             obj.CompleteIf(sadCitizens.Count == 0);
@@ -28,10 +24,9 @@ public class TheProtectorAndTheDestroyer(WorldState ws) : QuestBattle(ws)
                 };
 
                 obj.AddAIHints += (player, hints) => {
-                    if (!player.InCombat)
+                    if (!player.InCombat) {
                         // TODO make this work in uidev - layoutid is the only piece of information we get about these actors and they change per run
-                        hints.InteractWithTarget = Service.ObjectTable != null ? World.Actors.FirstOrDefault(x => sadCitizens.Contains(Utils.GameObjectInternal(Service.ObjectTable[x.SpawnIndex])->LayoutId) && x.IsTargetable) : null;
-                };
+                        hints.InteractWithTarget = Service.ObjectTable != null ? World.Actors.FirstOrDefault(x => sadCitizens.Contains(Utils.GameObjectInternal(Service.ObjectTable[x.SpawnIndex])->LayoutId) && x.IsTargetable) : null; } };
             }),
 
         // wait for wall to disappear
@@ -47,5 +42,4 @@ public class TheProtectorAndTheDestroyer(WorldState ws) : QuestBattle(ws)
             .WithConnection(new Vector3(115.72f, 0.00f, 0.36f))
             .CompleteOnState7(0x1EBAE1)
     ];
-    }
 }

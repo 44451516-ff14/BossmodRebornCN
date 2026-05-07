@@ -20,7 +20,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
 
         var count = _tethers.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var party = Raid.WithSlot();
         var len = party.Length;
         for (var i = 0; i < len; ++i)
@@ -30,12 +33,17 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
             {
                 var t = _tethers[j];
                 if (t.Player == p.Item2)
+                {
                     continue;
+                }
+
                 var playerPos = p.Item2.Position;
                 var tetherPos = t.Player.Position;
                 var enemyPos = t.Enemy.Position;
                 if (Shape.Check(playerPos, centerAtTarget ? tetherPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(tetherPos - enemyPos)))
+                {
                     _inAnyAOE[p.Item1] = true;
+                }
             }
         }
     }
@@ -43,7 +51,9 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!Active)
+        {
             return;
+        }
 
         if (actor.Role == Role.Tank)
         {
@@ -58,13 +68,19 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
             {
                 var p = party[i];
                 if (p == actor)
+                {
                     continue;
+                }
+
                 var count = _tethers.Count;
                 for (var j = 0; j < count; ++j)
                 {
                     var t = _tethers[j];
                     if (t.Player == actor)
+                    {
                         continue;
+                    }
+
                     var playerPos = p.Position;
                     var enemyPos = t.Enemy.Position;
                     if (Shape.Check(playerPos, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos)))
@@ -91,11 +107,15 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
     {
         if (_tetheredPlayers[playerSlot])
+        {
             return PlayerPriority.Danger;
+        }
 
         // for tanks, other players are interesting, since tank should not clip them
         if (pc.Role == Role.Tank)
+        {
             return _inAnyAOE[playerSlot] ? PlayerPriority.Interesting : PlayerPriority.Normal;
+        }
 
         // for non-tanks, other players are irrelevant
         return PlayerPriority.Irrelevant;
@@ -112,7 +132,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
             var enemyPos = side.Enemy.Position;
             Arena.AddLine(enemyPos, playerPos, side.Player.Role == Role.Tank ? Colors.Safe : default);
             if (side.Player != pc)
+            {
                 continue;
+            }
+
             Shape.Outline(Arena, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos));
         }
     }
@@ -125,7 +148,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
         {
             var side = _tethers[i];
             if (side.Player == pc)
+            {
                 continue;
+            }
+
             var playerPos = side.Player.Position;
             var enemyPos = side.Enemy.Position;
             Shape.Draw(Arena, centerAtTarget ? playerPos : enemyPos, centerAtTarget ? default : Angle.FromDirection(playerPos - enemyPos));
@@ -140,7 +166,9 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
             _tethers.Add((side.Player, side.Enemy));
             _tetheredPlayers[side.PlayerSlot] = true;
             if (activation == default)
+            {
                 activation = WorldState.FutureTime(activationDelay);
+            }
         }
     }
 
@@ -158,18 +186,24 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
     {
         base.OnEventCast(caster, spell);
         if (spell.Action.ID == WatchedAction)
+        {
             activation = default;
+        }
     }
 
     // we support both player->enemy and enemy->player tethers
     private (int PlayerSlot, Actor Player, Actor Enemy)? DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TID)
+        {
             return null;
+        }
 
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
+        {
             return null;
+        }
 
         var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
         var playerSlot = Raid.FindSlot(player.InstanceID);
@@ -179,7 +213,10 @@ public class TankbusterTether(BossModule module, uint aid, uint tetherID, AOESha
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (_tetheredPlayers == default)
+        {
             return;
+        }
+
         var count = _tethers.Count;
         var party = Raid.WithoutSlot();
         var len = party.Length;
@@ -243,14 +280,19 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         {
             var target = Raid[slot];
             if (target != null)
+            {
                 _inAnyAOE |= Raid.WithSlot().InRadiusExcluding(target, Radius).Mask();
+            }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!Active)
+        {
             return;
+        }
+
         if (!_tetheredPlayers[slot])
         {
             hints.Add("Grab the tether!");
@@ -262,7 +304,10 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         {
             var p = party[i];
             if (p == actor)
+            {
                 continue;
+            }
+
             if (p.Position.InCircle(actor.Position, Radius))
             {
                 hints.Add("GTFO from raid!");
@@ -284,20 +329,29 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
     {
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var raid = Raid.WithoutSlot();
         for (var i = 0; i < count; ++i)
         {
             var tether = Tethers[i];
             if (tether.Player != actor)
+            {
                 hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation);
+            }
             else
+            {
                 for (var j = 0; j < raid.Length; ++j)
                 {
                     ref var member = ref raid[i];
                     if (member != actor)
+                    {
                         hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation);
+                    }
                 }
+            }
         }
     }
 
@@ -306,17 +360,37 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
         // show tethered targets with circles
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var len = ExcludedAllies?.Length;
         var exclude = new List<Actor>(len ?? 0);
         if (ExcludedAllies != null)
+        {
             for (var i = 0; i < len; ++i)
+            {
                 exclude.AddRange(Module.Enemies(ExcludedAllies[i]));
+            }
+        }
+
         for (var i = 0; i < count; ++i)
         {
             var side = Tethers[i];
-            Arena.AddLine(side.Enemy.Position, side.Player.Position, Raid.WithoutSlot().Exclude(exclude).Contains(side.Player) ? Colors.Safe : default);
-            Arena.AddCircle(side.Player.Position, Radius);
+            foreach (var a in Raid.WithoutSlot().Exclude(exclude))
+            {
+                if (a == side.Player)
+                {
+                    break;
+                }
+            }
+            var inParty = false;
+            foreach (var a in Raid.WithoutSlot())
+            {
+                if (a == side.Player && !exclude.Contains(a)) { inParty = true; break; }
+            }
+
+            Arena.AddLine(side.Enemy.Position, side.Player.Position, inParty ? Colors.Safe : default);
         }
     }
 
@@ -344,10 +418,16 @@ public class InterceptTetherAOE(BossModule module, uint aid, uint tetherID, floa
     private (int PlayerSlot, Actor Player, Actor Enemy)? DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TID)
+        {
             return null;
+        }
+
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
+        {
             return null;
+        }
+
         var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
         var playerSlot = Raid.FindSlot(player.InstanceID);
         return (playerSlot, player, enemy);
@@ -369,7 +449,10 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!Active)
+        {
             return;
+        }
+
         if (!_tetheredPlayers[slot])
         {
             hints.Add(hint);
@@ -379,17 +462,31 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         if (!Active)
+        {
             return;
+        }
+
         var len = ExcludedAllies?.Length;
         var exclude = new List<Actor>(len ?? 0);
         if (ExcludedAllies != null)
+        {
             for (var i = 0; i < len; ++i)
+            {
                 exclude.AddRange(Module.Enemies(ExcludedAllies[i]));
+            }
+        }
+
         var count = _tethers.Count;
         for (var i = 0; i < count; ++i)
         {
             var side = _tethers[i];
-            Arena.AddLine(side.Enemy.Position, side.Player.Position, Raid.WithoutSlot().Exclude(exclude).Contains(side.Player) ? Colors.Safe : default);
+            var inParty2 = false;
+            foreach (var a in Raid.WithoutSlot())
+            {
+                if (a == side.Player && !exclude.Contains(a)) { inParty2 = true; break; }
+            }
+
+            Arena.AddLine(side.Enemy.Position, side.Player.Position, inParty2 ? Colors.Safe : default);
         }
     }
 
@@ -416,11 +513,15 @@ public class InterceptTether(BossModule module, uint aid, uint tetherIDBad = 84u
     public virtual (int PlayerSlot, Actor Player, Actor Enemy)? DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TIDGood && tether.ID != TIDBad)
+        {
             return null;
+        }
 
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
+        {
             return null;
+        }
 
         var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
         var playerSlot = Raid.FindSlot(player.InstanceID);
@@ -465,6 +566,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
     {
         var slot = Raid.FindSlot(actor.InstanceID);
         if (slot >= 0)
+        {
             switch (status.ID)
             {
                 case 3054u: //Guard in PVP
@@ -480,12 +582,14 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
                     PlayerImmunes[slot].DutyBuffExpire = status.ExpireAt;
                     break;
             }
+        }
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var slot = Raid.FindSlot(actor.InstanceID);
         if (slot >= 0)
+        {
             switch (status.ID)
             {
                 case 3054u: //Guard in PVP
@@ -501,6 +605,7 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
                     PlayerImmunes[slot].DutyBuffExpire = default;
                     break;
             }
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -509,14 +614,20 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
         var baits = ActiveBaitsOn(pc);
 
         if (baits.Count == 0)
+        {
             return;
+        }
 
         if (!IsImmune(pcSlot, baits.Ref(0).Activation))
         {
             if (IsTether(pc, TIDBad))
+            {
                 DrawTetherLines(pc);
+            }
             else if (IsTether(pc, TIDGood))
+            {
                 DrawTetherLines(pc, Colors.Safe);
+            }
         }
     }
 
@@ -541,9 +652,24 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
         var (player, enemy) = DetermineTetherSides(source, tether);
         if (player != null && enemy != null && (enemyOID == default || _enemies.Contains(source)))
         {
-            if (!ActivationDelayOnActor.Any(x => x.Item1 == player))
+            var hasPlayer = false;
+            for (var ai = 0; ai < ActivationDelayOnActor.Count; ++ai)
+            {
+                if (ActivationDelayOnActor[ai].Item1 == player) { hasPlayer = true; break; }
+            }
+
+            if (!hasPlayer)
+            {
                 ActivationDelayOnActor.Add((player, WorldState.FutureTime(ActivationDelay)));
-            CurrentBaits.Add(new(enemy, player, Shape ?? new AOEShapeCircle(default), ActivationDelayOnActor.FirstOrDefault(x => x.Item1 == player).Item2));
+            }
+
+            DateTime playerActivation = default;
+            for (var ai = 0; ai < ActivationDelayOnActor.Count; ++ai)
+            {
+                if (ActivationDelayOnActor[ai].Item1 == player) { playerActivation = ActivationDelayOnActor[ai].Item2; break; }
+            }
+
+            CurrentBaits.Add(new(enemy, player, Shape ?? new AOEShapeCircle(default), playerActivation));
             TetherOnActor.Add((player, tether.ID));
         }
     }
@@ -602,11 +728,15 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
     public (Actor? player, Actor? enemy) DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TIDGood && tether.ID != TIDBad)
+        {
             return (null, null);
+        }
 
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
+        {
             return (null, null);
+        }
 
         var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
         return (player, enemy);
@@ -615,20 +745,46 @@ public class StretchTetherDuo(BossModule module, float minimumDistance, double a
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (ActiveBaits.Count == 0)
+        {
             return;
-        var immunity = IsImmune(slot, ActiveBaits.FirstOrDefault(x => x.Target == actor).Activation);
+        }
+
+        DateTime actorBaitActivation = default;
+        for (var bi = 0; bi < ActiveBaits.Count; ++bi)
+        {
+            if (ActiveBaits[bi].Target == actor) { actorBaitActivation = ActiveBaits[bi].Activation; break; }
+        }
+
+        var immunity = IsImmune(slot, actorBaitActivation);
         var isImmune = immunity && KnockbackImmunity;
         var couldBeImmune = !immunity && KnockbackImmunity;
-        if (couldBeImmune && ActivationDelayOnActor.Any(x => x.Item1 == actor && x.Item2.AddSeconds(-6d) <= WorldState.CurrentTime))
+        var actorHasTimedBait = false;
+        for (var ai = 0; ai < ActivationDelayOnActor.Count; ++ai)
+        {
+            if (ActivationDelayOnActor[ai].Item1 == actor && ActivationDelayOnActor[ai].Item2.AddSeconds(-6d) <= WorldState.CurrentTime) { actorHasTimedBait = true; break; }
+        }
+
+        if (couldBeImmune && actorHasTimedBait)
         {
             hints.ActionsToExecute.Push(ActionDefinitions.Armslength, actor, ActionQueue.Priority.High);
             hints.ActionsToExecute.Push(ActionDefinitions.Surecast, actor, ActionQueue.Priority.High);
         }
         if (Shape != null)
+        {
             base.AddAIHints(slot, actor, assignment, hints);
-        if (ActiveBaits.Any(x => x.Target == actor) && !isImmune)
-            foreach (var b in ActiveBaits.Where(x => x.Target == actor))
-                hints.AddForbiddenZone(new SDCircle(b.Source.Position, MinimumDistance), b.Activation);
+        }
+
+        if (!isImmune)
+        {
+            for (var bi = 0; bi < ActiveBaits.Count; ++bi)
+            {
+                var b = ActiveBaits[bi];
+                if (b.Target == actor)
+                {
+                    hints.AddForbiddenZone(new SDCircle(b.Source.Position, MinimumDistance), b.Activation);
+                }
+            }
+        }
     }
 }
 
@@ -693,14 +849,19 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
         {
             var target = Raid[slot];
             if (target != null)
+            {
                 _inAnyAOE |= Raid.WithSlot().InRadiusExcluding(target, Radius).Mask();
+            }
         }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (!Active)
+        {
             return;
+        }
+
         if (!_tetheredPlayers[slot] && !_hasStatus[slot])
         {
             hints.Add("Grab the tether!");
@@ -712,7 +873,10 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
         {
             var p = party[i];
             if (p == actor)
+            {
                 continue;
+            }
+
             if (p.Position.InCircle(actor.Position, Radius))
             {
                 hints.Add("GTFO from raid!");
@@ -740,20 +904,29 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
     {
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var raid = Raid.WithoutSlot();
         for (var i = 0; i < count; ++i)
         {
             var tether = Tethers[i];
             if (tether.Player != actor)
+            {
                 hints.AddForbiddenZone(new SDCircle(tether.Player.Position, Radius), Activation);
+            }
             else
+            {
                 for (var j = 0; j < raid.Length; ++j)
                 {
                     ref var member = ref raid[i];
                     if (member != actor)
+                    {
                         hints.AddForbiddenZone(new SDCircle(member.Position, Radius), Activation);
+                    }
                 }
+            }
         }
     }
 
@@ -762,12 +935,20 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
         // show tethered targets with circles
         var count = Tethers.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var len = ExcludedAllies?.Length;
         var exclude = new List<Actor>(len ?? 0);
         if (ExcludedAllies != null)
+        {
             for (var i = 0; i < len; ++i)
+            {
                 exclude.AddRange(Module.Enemies(ExcludedAllies[i]));
+            }
+        }
+
         for (var i = 0; i < count; ++i)
         {
             var side = Tethers[i];
@@ -816,10 +997,16 @@ public class InterceptTetherStatus(BossModule module, uint aid, uint tetherID, u
     private (int PlayerSlot, Actor Player, Actor Enemy)? DetermineTetherSides(Actor source, ActorTetherInfo tether)
     {
         if (tether.ID != TID)
+        {
             return null;
+        }
+
         var target = WorldState.Actors.Find(tether.Target);
         if (target == null)
+        {
             return null;
+        }
+
         var (player, enemy) = Raid.WithoutSlot().Contains(source) ? (source, target) : (target, source);
         var playerSlot = Raid.FindSlot(player.InstanceID);
         return (playerSlot, player, enemy);

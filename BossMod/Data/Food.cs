@@ -19,7 +19,9 @@ public static class Food
     public static PotionType GetPotionType(ushort statusParam)
     {
         if (statusParam >= 10000) // hq
+        {
             statusParam -= 10000;
+        }
 
         return PotionTypesByFoodId.BoundSafeAt(statusParam);
     }
@@ -40,7 +42,9 @@ public static class Food
         {
             var primaryBaseParam = itemFoodSheet[(uint)i].Params[0].BaseParam.RowId;
             if (primaryBaseParam is 1 or 2 or 4 or 5)
+            {
                 types[i] = (PotionType)primaryBaseParam;
+            }
         }
 
         return types;

@@ -42,7 +42,10 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
         var aoes = ActiveAOEs(slot, actor);
         var len = aoes.Length;
         if (len == 0)
+        {
             return;
+        }
+
         for (var i = 0; i < len; ++i)
         {
             ref readonly var c = ref aoes[i];
@@ -128,7 +131,10 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
         {
             var count = Casters.Count;
             if (count == 0)
+            {
                 return null;
+            }
+
             Actor? activeCaster = null;
             var minRemainingTime = double.MaxValue;
             for (var i = 0; i < count; ++i)
@@ -144,10 +150,7 @@ public abstract class CastLineOfSightAOE : GenericLineOfSightAOE
         }
     }
 
-    protected CastLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox)
-    {
-        Refresh();
-    }
+    protected CastLineOfSightAOE(BossModule module, uint aid, float maxRange, bool blockersImpassable = false, bool rect = false, bool safeInsideHitbox = true) : base(module, aid, maxRange, blockersImpassable, rect, safeInsideHitbox) => Refresh();
 
     public abstract ReadOnlySpan<Actor> BlockerActors();
 

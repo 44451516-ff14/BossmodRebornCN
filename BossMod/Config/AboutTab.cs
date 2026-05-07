@@ -1,5 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 using System.Diagnostics;
 using System.IO;
 
@@ -65,17 +65,30 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         ImGui.Spacing();
 
         using (ImRaii.PushColor(ImGuiCol.Button, DiscordColor.ABGR))
+        {
             if (ImGui.Button("Combat Reborn Discord", new(220, 0)))
+            {
                 _lastErrorMessage = OpenLink("https://discord.gg/p54TZMPnC9");
+            }
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("BossModReborn GitHub", new(220, 0)))
+        {
             _lastErrorMessage = OpenLink("https://github.com/FFXIV-CombatReborn/BossmodReborn");
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("BossMod Wiki", new(130, 0)))
+        {
             _lastErrorMessage = OpenLink("https://github.com/awgil/ffxiv_bossmod/wiki");
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Open replay folder", new(180, 0)) && replayDir != null)
+        {
             _lastErrorMessage = OpenDirectory(replayDir);
+        }
 
         if (_lastErrorMessage.Length > 0)
         {
@@ -92,10 +105,14 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         using var section = ImRaii.Child(title, new(0, height), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysUseWindowPadding);
 
         if (!section)
+        {
             return;
+        }
 
         using (ImRaii.PushColor(ImGuiCol.Text, TitleColor.ABGR))
+        {
             ImGui.TextUnformatted(title);
+        }
 
         ImGui.Separator();
         ImGui.PushTextWrapPos();
@@ -125,7 +142,9 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
     private static string OpenDirectory(DirectoryInfo dir)
     {
         if (!dir.Exists)
+        {
             return $"Directory '{dir}' not found.";
+        }
 
         try
         {

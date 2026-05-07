@@ -26,7 +26,9 @@ public sealed class ColumnActorStatuses : Timeline.ColumnGroup
         _target = actor;
         _sep = Add(new ColumnSeparator(timeline, width: 0));
         foreach (var s in replay.EncounterStatuses(enc).Where(s => s.Target == actor && !_columns.Any(c => c.sid == s.ID && c.source == s.Source)))
+        {
             _columns.Add((s.ID, s.Source, null));
+        }
     }
 
     public void DrawConfig(UITree tree)
@@ -59,7 +61,10 @@ public sealed class ColumnActorStatuses : Timeline.ColumnGroup
                 res.Add($"- final duration: {s.InitialDuration - s.Time.Duration:f3}");
             };
             if (s.Time.Start == prevEnd)
+            {
                 res.AddHistoryEntryLine(_enc.Time.Start, prevEnd, "", Colors.TextColor1);
+            }
+
             prevEnd = s.Time.End;
         }
         foreach (var a in _replay.EncounterActions(_enc))

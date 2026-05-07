@@ -11,14 +11,44 @@ sealed class IPCList(Replay replay, Replay.Encounter? enc, IEnumerable<WorldStat
         protected override string DecodeActor(ulong instanceID)
         {
             // note that actors can be created with a few frames delay after packets arrive
-            var p = replay.Participants.Where(p => p.InstanceID == instanceID).MinBy(p => p.EffectiveExistence.Distance(Now));
+            var now = Now;
+            Replay.Participant? best = null;
+            var bestDist = TimeSpan.MaxValue;
+            var parts = replay.Participants;
+            for (var i = 0; i < parts.Count; ++i)
+            {
+                var part = parts[i];
+                if (part.InstanceID != instanceID)
+                {
+                    continue;
+                }
+
+                var dist = part.EffectiveExistence.Distance(now);
+                if (best == null || dist < bestDist) { best = part; bestDist = dist; }
+            }
+            var p = best;
             var adjNow = p == null ? Now : Now < p.EffectiveExistence.Start ? p.EffectiveExistence.Start : Now > p.EffectiveExistence.End ? p.EffectiveExistence.End : Now;
             return p != null || instanceID == 0 ? ReplayUtils.ParticipantPosRotString(p, adjNow) : $"<unknown> {instanceID:X}";
         }
 
         protected override NetworkState.IDScrambleFields GetScramble()
         {
-            return replay.Ops.OfType<NetworkState.OpIDScramble>().TakeWhile(p => p.Timestamp <= Now).LastOrDefault()?.Fields ?? default;
+            NetworkState.OpIDScramble? lastScramble = null;
+            var now = Now;
+            var ops = replay.Ops;
+            for (var i = 0; i < ops.Count; ++i)
+            {
+                if (ops[i].Timestamp > now)
+                {
+                    break;
+                }
+
+                if (ops[i] is NetworkState.OpIDScramble s)
+                {
+                    lastScramble = s;
+                }
+            }
+            return lastScramble?.Fields ?? default;
         }
     }
 
@@ -49,12 +79,24 @@ sealed class IPCList(Replay replay, Replay.Encounter? enc, IEnumerable<WorldStat
 
     public void Draw(UITree tree, DateTime reference)
     {
-        var index = 0;
-        _nodes ??= [.. ops.OfType<NetworkState.OpServerIPC>().Where(FilterOp).Select(op => (++index, op, _decoder.Decode(op.Packet, op.Timestamp)))];
-
+        if (_nodes == null)
+        {
+            _nodes = [];
+            var idx = 0;
+            foreach (var op in ops)
+            {
+                ++idx;
+                if (op is NetworkState.OpServerIPC ipc && FilterOp(ipc))
+                {
+                    _nodes.Add((idx, ipc, _decoder.Decode(ipc.Packet, ipc.Timestamp)));
+                }
+            }
+        }
         var timeRef = ImGui.GetIO().KeyShift && _relativeTS != default ? _relativeTS : reference;
         foreach (var n in tree.Nodes(_nodes, n => new($"{(n.op.Timestamp - timeRef).TotalSeconds:f3}: {n.data.Text}###{n.index}", n.data.Children == null), n => ContextMenu(n.op), n => scrollTo(n.op.Timestamp), n => _relativeTS = n.op.Timestamp))
+        {
             DrawNodes(tree, n.data.Children);
+        }
     }
 
     public void ClearFilters()
@@ -67,9 +109,14 @@ sealed class IPCList(Replay replay, Replay.Encounter? enc, IEnumerable<WorldStat
     private void DrawNodes(UITree tree, List<PacketDecoder.TextNode>? nodes)
     {
         if (nodes == null)
+        {
             return;
+        }
+
         foreach (var n in tree.Nodes(nodes, n => new(n.Text, n.Children == null)))
+        {
             DrawNodes(tree, n.Children);
+        }
     }
 
     private bool FilterOp(NetworkState.OpServerIPC op) => _filterInvert ? _filteredPackets.Contains(op.Packet.ID) : !_filteredPackets.Contains(op.Packet.ID);

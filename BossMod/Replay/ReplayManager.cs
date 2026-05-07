@@ -79,10 +79,7 @@ public sealed class ReplayManager : IDisposable
     private string _logDirectory;
     private readonly RotationDatabase _rotationDB;
 
-    public void SetLogDirectory(string logDirectory)
-    {
-        _logDirectory = logDirectory;
-    }
+    public void SetLogDirectory(string logDirectory) => _logDirectory = logDirectory;
 
     public ReplayManager(RotationDatabase rotationDB, string logDirectory)
     {
@@ -95,9 +92,14 @@ public sealed class ReplayManager : IDisposable
     {
         SaveHistory();
         foreach (var e in _analysisEntries)
+        {
             e.Dispose();
+        }
+
         foreach (var e in _replayEntries)
+        {
             e.Dispose();
+        }
     }
 
     public void Update()
@@ -151,7 +153,10 @@ public sealed class ReplayManager : IDisposable
         using var table = ImRaii.Table("entries", 3);
 
         if (!table)
+        {
             return;
+        }
+
         var dispose = false;
         ImGui.TableSetupColumn("op", ImGuiTableColumnFlags.WidthFixed, 100f);
         ImGui.TableSetupColumn("unload", ImGuiTableColumnFlags.WidthFixed, 70f);
@@ -172,7 +177,10 @@ public sealed class ReplayManager : IDisposable
             else
             {
                 if (ImGui.Button("Actions...", new(100f, default)))
+                {
                     ImGui.OpenPopup("ctx");
+                }
+
                 using var popup = ImRaii.Popup("ctx");
                 if (popup)
                 {
@@ -182,13 +190,24 @@ public sealed class ReplayManager : IDisposable
                         SaveHistory();
                     }
                     if (ImGui.MenuItem("Convert to verbose"))
+                    {
                         ConvertLog(e.Replay.Result, ReplayLogFormat.TextVerbose);
+                    }
+
                     if (ImGui.MenuItem("Convert to short text"))
+                    {
                         ConvertLog(e.Replay.Result, ReplayLogFormat.TextCondensed);
+                    }
+
                     if (ImGui.MenuItem("Convert to uncompressed binary"))
+                    {
                         ConvertLog(e.Replay.Result, ReplayLogFormat.BinaryUncompressed);
+                    }
+
                     if (ImGui.MenuItem("Convert to compressed binary"))
+                    {
                         ConvertLog(e.Replay.Result, ReplayLogFormat.BinaryCompressed);
+                    }
                 }
             }
 
@@ -197,7 +216,10 @@ public sealed class ReplayManager : IDisposable
             {
                 e.Dispose();
                 foreach (var a in _analysisEntries.Where(a => !a.Disposed && a.Replays.Contains(e)))
+                {
                     a.Dispose();
+                }
+
                 SaveHistory();
                 dispose = true;
             }
@@ -206,20 +228,27 @@ public sealed class ReplayManager : IDisposable
             ImGui.Checkbox($"{e.Path}", ref e.Selected);
         }
         if (dispose) //  replays somehow don't get cleaned up correctly without this?
+        {
             Plugin.GarbageCollection();
+        }
     }
 
     private void DrawEntriesOperations()
     {
         if (_replayEntries.Count == 0)
+        {
             return;
+        }
+
         var dispose = false;
         var numSelected = _replayEntries.Count(e => e.Selected);
         var shouldSelectAll = _replayEntries.Count == 0 || numSelected < _replayEntries.Count;
         if (ImGui.Button(shouldSelectAll ? "Select all" : "Unselect all"))
         {
             foreach (var e in _replayEntries)
+            {
                 e.Selected = shouldSelectAll;
+            }
         }
         using (ImRaii.Disabled(numSelected == 0))
         {
@@ -232,9 +261,15 @@ public sealed class ReplayManager : IDisposable
             if (ImGui.Button("Unload selected"))
             {
                 foreach (var e in _replayEntries.Where(e => e.Selected))
+                {
                     e.Dispose();
+                }
+
                 foreach (var e in _analysisEntries.Where(e => e.Replays.Any(r => r.Selected)))
+                {
                     e.Dispose();
+                }
+
                 SaveHistory();
             }
         }
@@ -242,14 +277,22 @@ public sealed class ReplayManager : IDisposable
         if (ImGui.Button("Unload all"))
         {
             foreach (var e in _replayEntries)
+            {
                 e.Dispose();
+            }
+
             foreach (var e in _analysisEntries)
+            {
                 e.Dispose();
+            }
+
             SaveHistory();
             dispose = true;
         }
         if (dispose) //  replays somehow don't get cleaned up correctly without this?
+        {
             Plugin.GarbageCollection();
+        }
     }
 
     private void DrawNewEntry()
@@ -282,7 +325,9 @@ public sealed class ReplayManager : IDisposable
                 CleanPath();
                 var replays = LoadAll(_path);
                 if (replays.Count > 0)
+                {
                     _analysisEntries.Add(new(_path, replays));
+                }
             }
         }
         ImGui.SameLine();
@@ -300,7 +345,9 @@ public sealed class ReplayManager : IDisposable
     private void CleanPath()
     {
         if (_path.StartsWith('"') && _path.EndsWith('"'))
+        {
             _path = _path[1..^1];
+        }
     }
 
     private List<ReplayEntry> LoadAll(string path)
@@ -337,7 +384,9 @@ public sealed class ReplayManager : IDisposable
     private void ConvertLog(Replay r, ReplayLogFormat format)
     {
         if (r.Ops.Count == 0)
+        {
             return;
+        }
 
         var player = new ReplayPlayer(r);
         player.WorldState.Frame.Timestamp = r.Ops[0].Timestamp; // so that we get correct name etc.
@@ -348,7 +397,10 @@ public sealed class ReplayManager : IDisposable
     private void SaveHistory()
     {
         if (!RememberReplays)
+        {
             return;
+        }
+
         _config.ReplayHistory = [.. _replayEntries.Where(r => !r.Disposing).Select(r => new ReplayMemory(r.Path, r.Window?.IsOpen ?? false, r.Window?.CurrentTime ?? default))];
         _config.Modified.Fire();
     }
@@ -356,9 +408,14 @@ public sealed class ReplayManager : IDisposable
     private void RestoreHistory()
     {
         if (!RememberReplays)
+        {
             return;
+        }
+
         foreach (var memory in _config.ReplayHistory)
+        {
             _replayEntries.Add(new(memory.Path, memory.IsOpen, _config.RememberReplayTimes ? memory.PlaybackPosition : null));
+        }
     }
 
     private bool RememberReplays => Service.SigScanner == null && _config.RememberReplays;

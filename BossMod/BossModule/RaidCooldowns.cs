@@ -19,10 +19,7 @@ public sealed class RaidCooldowns : IDisposable
         );
     }
 
-    public void Dispose()
-    {
-        _subscriptions.Dispose();
-    }
+    public void Dispose() => _subscriptions.Dispose();
 
     public float NextDamageBuffIn()
     {
@@ -34,7 +31,15 @@ public sealed class RaidCooldowns : IDisposable
             return 0;
         }
         // find first ability coming off CD and return time until it happens
-        var firstAvailable = _damageCooldowns.Min(e => e.AvailableAt);
+        var firstAvailable = _damageCooldowns[0].AvailableAt;
+        for (var i = 1; i < _damageCooldowns.Count; ++i)
+        {
+            if (_damageCooldowns[i].AvailableAt < firstAvailable)
+            {
+                firstAvailable = _damageCooldowns[i].AvailableAt;
+            }
+        }
+
         return Math.Max(0, (float)(firstAvailable - _ws.CurrentTime).TotalSeconds);
     }
 
@@ -42,9 +47,19 @@ public sealed class RaidCooldowns : IDisposable
     public float? NextDamageBuffIn2()
     {
         if (_damageCooldowns.Count == 0)
+        {
             return null;
+        }
 
-        var firstAvailable = _damageCooldowns.Min(e => e.AvailableAt);
+        var firstAvailable = _damageCooldowns[0].AvailableAt;
+        for (var i = 1; i < _damageCooldowns.Count; ++i)
+        {
+            if (_damageCooldowns[i].AvailableAt < firstAvailable)
+            {
+                firstAvailable = _damageCooldowns[i].AvailableAt;
+            }
+        }
+
         return Math.Min(float.MaxValue, (float)(firstAvailable - _ws.CurrentTime).TotalSeconds);
     }
 
@@ -57,28 +72,39 @@ public sealed class RaidCooldowns : IDisposable
 
     public float DamageBuffLeft(Actor player, Actor? target)
     {
-        DateTime expireMax = _ws.CurrentTime;
-        foreach (var status in player.Statuses.Where(s => IsDamageBuff(s.ID)))
-            if (status.ExpireAt > expireMax)
+        var expireMax = _ws.CurrentTime;
+        foreach (var status in player.Statuses)
+        {
+            if (IsDamageBuff(status.ID) && status.ExpireAt > expireMax)
+            {
                 expireMax = status.ExpireAt;
+            }
+        }
+
         if (target is { } t)
-            foreach (var status in t.Statuses.Where(s => IsDamageDebuff(s.ID)))
-                if (status.ExpireAt > expireMax)
+        {
+            foreach (var status in t.Statuses)
+            {
+                if (IsDamageDebuff(status.ID) && status.ExpireAt > expireMax)
+                {
                     expireMax = status.ExpireAt;
+                }
+            }
+        }
+
         return (float)(expireMax - _ws.CurrentTime).TotalSeconds;
     }
 
     public float InterruptAvailableIn(int slot, DateTime now) => Math.Max(0, (float)(_interruptCooldowns[slot] - now).TotalSeconds);
 
-    private void HandlePartyUpdate(PartyState.OpModify op)
-    {
-        _damageCooldowns.RemoveAll(e => e.Slot == op.Slot);
-    }
+    private void HandlePartyUpdate(PartyState.OpModify op) => _damageCooldowns.RemoveAll(e => e.Slot == op.Slot);
 
     private void HandleCast(Actor actor, ActorCastEvent cast)
     {
         if (!cast.IsSpell())
+        {
             return;
+        }
         // see https://i.redd.it/xrtgpras94881.png
         // TODO: AST card buffs?, all non-damage buffs
         _ = cast.Action.ID switch
@@ -104,7 +130,9 @@ public sealed class RaidCooldowns : IDisposable
     {
         var slot = _ws.Party.FindSlot(casterID);
         if (slot is < 0 or >= PartyState.MaxPartySize) // ignore cooldowns from other alliance parties
+        {
             return false;
+        }
 
         var availableAt = _ws.CurrentTime.AddSeconds(120);
         var index = _damageCooldowns.FindIndex(e => e.Slot == slot && e.Action == action);
@@ -124,7 +152,10 @@ public sealed class RaidCooldowns : IDisposable
     {
         var slot = _ws.Party.FindSlot(casterID);
         if (slot is < 0 or >= PartyState.MaxPartySize) // ignore cooldowns from other alliance parties
+        {
             return false;
+        }
+
         _interruptCooldowns[slot] = _ws.CurrentTime.AddSeconds(cooldown);
         Service.Log($"[RaidCooldowns] Updating interrupt cooldown: {action} by {_ws.Party[slot]?.Name} will next be available in {cooldown:f1}s");
         return true;

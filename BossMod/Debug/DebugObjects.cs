@@ -25,9 +25,14 @@ public sealed class DebugObjects
         {
             var obj = Service.ObjectTable[i];
             if (obj == null)
+            {
                 continue;
+            }
+
             if (!_showCrap && obj.ObjectKind is Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Pc or Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Companion or Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Mount)
+            {
                 continue;
+            }
 
             var internalObj = Utils.GameObjectInternal(obj);
             var localID = internalObj->LayoutId;
@@ -53,10 +58,15 @@ public sealed class DebugObjects
                 {
                     _tree.LeafNode($"Primary: {internalObj->EventId.Id:X}");
                     if (internalObj->EventHandler != null)
+                    {
                         _tree.LeafNode($"EH: {internalObj->EventHandler->Info.EventId.Id:X}");
+                    }
+
                     var numHandlers = internalObj->GetEventHandlersImpl((FFXIVClientStructs.FFXIV.Client.Game.Event.EventHandler**)handlers.GetPointer(0));
-                    for (int iH = 0; iH < numHandlers; iH++)
+                    for (var iH = 0; iH < numHandlers; iH++)
+                    {
                         _tree.LeafNode($"[{iH}]: {((FFXIVClientStructs.FFXIV.Client.Game.Event.EventHandler*)handlers[iH])->Info.EventId.Id:X}");
+                    }
                 }
                 if (character != null)
                 {
@@ -74,7 +84,10 @@ public sealed class DebugObjects
                         {
                             var s = battleChara.StatusList[j];
                             if (s == null || s.StatusId == 0)
+                            {
                                 continue;
+                            }
+
                             _tree.LeafNode($"#{j}: {Utils.StatusString(s.StatusId)} ({s.Param:X}) from {Utils.ObjectString(s.SourceId)}, {s.RemainingTime:f3}s left");
                         }
                     }
@@ -88,7 +101,9 @@ public sealed class DebugObjects
             }
 
             if (uniqueID == _selectedID)
+            {
                 selected = obj;
+            }
         }
 
         if (selected != null)
@@ -123,7 +138,10 @@ public sealed class DebugObjects
             ImGui.TextUnformatted($"{i}: {(ulong)o:X}");
             ImGui.TableNextColumn();
             if (o != null)
+            {
                 ImGui.TextUnformatted($"{o->BaseId:X} '{o->NameString}' <{o->EntityId:X}>");
+            }
+
             ImGui.TableNextColumn();
             ImGui.TextUnformatted($"{module->ObjectInfos[i].NamePlateObjectKind}");
         }

@@ -30,7 +30,10 @@ sealed class StatusInfo : CommonEnumInfo
                 {
                     var data = _data.GetOrAdd(status.ID);
                     if (status.Source != null)
+                    {
                         data.SourceOIDs.Add(status.Source.OID);
+                    }
+
                     data.TargetOIDs.Add(status.Target.OID);
                     data.Extras.Add(status.StartingExtra);
                     data.Instances.Add(new(replay, status));
@@ -64,7 +67,10 @@ sealed class StatusInfo : CommonEnumInfo
         {
             var sb = new StringBuilder("public enum SID : uint\n{\n");
             foreach (var (sid, data) in _data)
+            {
                 sb.Append($"    {EnumMemberString(sid, data)}\n");
+            }
+
             sb.Append("\n}\n");
             ImGui.SetClipboardText(sb.ToString());
         }
@@ -73,7 +79,10 @@ sealed class StatusInfo : CommonEnumInfo
         {
             var sb = new StringBuilder();
             foreach (var (sid, data) in _data.Where(kv => _sidType?.GetEnumName(kv.Key) == null))
+            {
                 sb.AppendLine(EnumMemberString(sid, data));
+            }
+
             ImGui.SetClipboardText(sb.ToString());
         }
     }

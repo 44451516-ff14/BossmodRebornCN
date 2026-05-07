@@ -5,7 +5,9 @@ class AutoThancred(WorldState ws) : UnmanagedRotation(ws, 3f)
     protected override void Exec(Actor? primaryTarget)
     {
         if (primaryTarget is not { IsAlly: false })
+        {
             return;
+        }
 
         if (Player.FindStatus(2957u) != null)
         {
@@ -36,12 +38,20 @@ internal class AFrostyReception(WorldState ws) : QuestBattle(ws)
     public override void AddQuestAIHints(Actor player, AIHints hints)
     {
         if (player.FindStatus(Roleplay.SID.RolePlaying) == null)
+        {
             return;
+        }
 
         foreach (var h in hints.PotentialTargets.Where(p => p.Actor.Position.InCircle(player.Position, 30f)))
+        {
             if (!h.Actor.InCombat)
+            {
                 if (player.FindStatus(Roleplay.SID.SwiftDeception) == null || h.Actor.OID == 0x362Au)
+                {
                     hints.AddForbiddenZone(GetSightCone(h.Actor));
+                }
+            }
+        }
 
         _ai.Execute(player, hints);
     }
@@ -62,7 +72,10 @@ internal class AFrostyReception(WorldState ws) : QuestBattle(ws)
             if (tar is AIHints.Enemy t)
             {
                 if (!player.InCombat)
+                {
                     hints.ActionsToExecute.Push(ActionID.MakeSpell(Roleplay.AID.SwiftDeception), player, ActionQueue.Priority.High);
+                }
+
                 t.Priority = 1;
             }
         })
@@ -93,9 +106,7 @@ internal class AFrostyReception(WorldState ws) : QuestBattle(ws)
             .Named("Wall")
             .With(obj => {
                 obj.AddAIHints += (player, hints) => {
-                    if (World.Actors.Find(player.TargetID)?.OID == 0x384Cu)
-                        hints.ForcedTarget = player;
-                };
+                    if (World.Actors.Find(player.TargetID)?.OID == 0x384Cu) { hints.ForcedTarget = player; } };
                 obj.OnMapEffect += (env) => obj.CompleteIf(env.Index == 14 && env.State == 0x80002u);
             }),
 
@@ -133,10 +144,7 @@ internal class AFrostyReception(WorldState ws) : QuestBattle(ws)
         new QuestObjective(ws)
             .With(obj => {
                 obj.Update = () => {
-                    if (World.Party.Player()?.InCombat ?? false)
-                        return;
-
-                    var cd = ActionDefinitions.Instance[ActionID.MakeSpell(Roleplay.AID.SwiftDeception)];
+                    if (World.Party.Player()?.InCombat ?? false) { return; } var cd = ActionDefinitions.Instance[ActionID.MakeSpell(Roleplay.AID.SwiftDeception)];
                     obj.CompleteIf(cd?.ReadyIn(World.Client.Cooldowns, World.Client.DutyActions) < 0.5f);
                 };
             }),

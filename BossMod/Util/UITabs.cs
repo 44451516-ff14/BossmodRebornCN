@@ -1,5 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod;
 
@@ -11,8 +11,19 @@ public sealed class UITabs
 
     public void Add(string name, Action tab)
     {
-        if (name.Length == 0 || _tabs.Any(t => t.Name == name))
+        if (name.Length == 0)
+        {
             throw new ArgumentException($"Tab '{name}' has empty or duplicate name");
+        }
+
+        for (var ti = 0; ti < _tabs.Count; ++ti)
+        {
+            if (_tabs[ti].Name == name)
+            {
+                throw new ArgumentException($"Tab '{name}' has empty or duplicate name");
+            }
+        }
+
         _tabs.Add((name, tab));
     }
 
@@ -22,14 +33,19 @@ public sealed class UITabs
     {
         using var tabs = ImRaii.TabBar("Tabs");
         if (!tabs)
+        {
             return;
+        }
+
         var count = _tabs.Count;
         for (var i = 0; i < count; ++i)
         {
             var t = _tabs[i];
             using var tab = ImRaii.TabItem(t.Name, t.Name == _forceSelect ? ImGuiTabItemFlags.SetSelected : ImGuiTabItemFlags.None);
             if (tab)
+            {
                 t.Tab();
+            }
         }
         _forceSelect = "";
     }

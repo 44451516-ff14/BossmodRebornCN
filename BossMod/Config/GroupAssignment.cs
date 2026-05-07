@@ -50,8 +50,13 @@ public class GroupAssignment
     {
         BitMask mask = default;
         foreach (var (slot, g) in Resolve(party, actorAssignments))
+        {
             if (g == group)
+            {
                 mask.Set(slot);
+            }
+        }
+
         return mask;
     }
 
@@ -74,8 +79,13 @@ public class GroupAssignmentLightParties : GroupAssignment
     public override bool Validate()
     {
         for (var i = 0; i < (int)PartyRolesConfig.Assignment.Unassigned; i += 2)
+        {
             if (Assignments[i] < 0 || Assignments[i] >= 2 || Assignments[i + 1] < 0 || Assignments[i + 1] >= 2 || Assignments[i] == Assignments[i + 1])
+            {
                 return false;
+            }
+        }
+
         return true;
     }
 }
@@ -109,12 +119,20 @@ public class GroupAssignmentDDSupportPairs : GroupAssignment
         void addToMask(int group, int offset)
         {
             if (group is >= 0 and < 4)
+            {
                 mask.Set(group + offset);
+            }
         }
         for (var i = 0; i < 4; ++i)
+        {
             addToMask(Assignments[i], 0);
+        }
+
         for (var i = 4; i < 8; ++i)
+        {
             addToMask(Assignments[i], 4);
+        }
+
         return mask.Raw == 0xff;
     }
 }
@@ -154,7 +172,10 @@ public class GroupAssignmentUnique : GroupAssignment
     {
         BitMask mask = default;
         for (var i = 0; i < 8; ++i)
+        {
             mask.Set(Assignments[i]);
+        }
+
         return mask.Raw == 0xff;
     }
 }

@@ -59,7 +59,10 @@ sealed class IconInfo : CommonEnumInfo
         {
             var sb = new StringBuilder("public enum IconID : uint\n{\n");
             foreach (var (iid, data) in _data)
+            {
                 sb.Append($"    {EnumMemberString(iid, data)}\n");
+            }
+
             sb.Append("}\n");
             ImGui.SetClipboardText(sb.ToString());
         }
@@ -68,7 +71,10 @@ sealed class IconInfo : CommonEnumInfo
         {
             var sb = new StringBuilder();
             foreach (var (iid, data) in _data.Where(kv => _iidType?.GetEnumName(kv.Key) == null))
+            {
                 sb.AppendLine(EnumMemberString(iid, data));
+            }
+
             ImGui.SetClipboardText(sb.ToString());
         }
     }

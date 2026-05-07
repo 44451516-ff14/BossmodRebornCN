@@ -49,7 +49,9 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         var instanceDirector = eventFwk != null ? eventFwk->GetInstanceContentDirector() : null;
         ImGui.TextUnformatted($"Content time left: {(instanceDirector != null ? $"{instanceDirector->ContentDirector.ContentTimeLeft:f1}" : "n/a")}");
         if (instanceDirector != null)
+        {
             ImGui.TextUnformatted($"Director address: 0x{(nint)instanceDirector:X}");
+        }
 
         if (ImGui.Button("Perform full dump"))
         {
@@ -108,7 +110,9 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         if (ImGui.CollapsingHeader("Solo duty module"))
         {
             if (zmm.ActiveModule is QuestBattle.QuestBattle qb)
+            {
                 qb.DrawDebugInfo();
+            }
         }
         if (ImGui.CollapsingHeader("Graphics scene"))
         {
@@ -200,20 +204,35 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     {
         ImGui.TextUnformatted($"RSR installed: {rsr.IsInstalled}");
         if (!rsr.IsInstalled)
+        {
             return;
+        }
+
         if (ImGui.Button("Pause (NoCasting)"))
+        {
             rsr.PauseRSR();
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Unpause (EndSpecial)"))
+        {
             rsr.UnPauseRSR();
+        }
+
         ImGui.Separator();
         ImGui.TextUnformatted("TriggerSpecialStateWithDuration:");
         foreach (var cmd in Enum.GetValues<RotationSolverRebornModule.SpecialCommandType>())
         {
             if (cmd == RotationSolverRebornModule.SpecialCommandType.EndSpecial)
+            {
                 continue;
+            }
+
             if (ImGui.Button($"{cmd}##rsr"))
+            {
                 rsr.TriggerSpecialStateWithDuration(cmd, 7f);
+            }
+
             ImGui.SameLine();
         }
         ImGui.NewLine();
@@ -223,21 +242,33 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     {
         var player = (Character*)GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
         if (player == null)
+        {
             return;
+        }
 
         ImGui.TextUnformatted($"Forced movement direction: {MovementOverride.ForcedMovementDirection->Radians()}");
         ImGui.SameLine();
         if (ImGui.Button("Add misdirection"))
+        {
             player->GetStatusManager()->SetStatus(20, 3909, 20.0f, 100, (GameObjectId)0xE0000000, true);
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Add thin ice"))
+        {
             player->GetStatusManager()->SetStatus(20, 911, 20.0f, 50, (GameObjectId)0xE0000000, true); // param = distance * 10
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Add spinning"))
+        {
             player->GetStatusManager()->SetStatus(20, 2973, 20.0f, 7, (GameObjectId)0xE0000000, true);
+        }
 
         if (ImGui.Button("Clear temp status"))
+        {
             player->GetStatusManager()->RemoveStatus(20);
+        }
 
         ImGui.SameLine();
         ImGui.TextUnformatted($"Forced movement direction: {ws.Client.ForcedMovementDirection}");
@@ -276,7 +307,9 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         foreach (var elem in ws.Actors)
         {
             if (elem.CastInfo == null || elem.IsAlly)
+            {
                 continue;
+            }
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -301,7 +334,9 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     {
         var player = Service.ObjectTable.LocalPlayer;
         if (player == null)
+        {
             return;
+        }
 
         ImGui.BeginTable("items", 3, ImGuiTableFlags.Resizable | ImGuiTableFlags.RowBg);
         ImGui.TableSetupColumn("ID", ImGuiTableColumnFlags.WidthFixed, 30);
@@ -327,11 +362,15 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     {
         var player = Service.ObjectTable.LocalPlayer;
         if (player == null)
+        {
             return;
+        }
 
         var aeh = ((BattleChara*)player.Address)->GetActionEffectHandler();
         if (aeh == null)
+        {
             return;
+        }
 
         ImGui.TextUnformatted($"Effecthandler address: {(nint)aeh:X}");
 
@@ -346,7 +385,9 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         foreach (var entry in aeh->IncomingEffects)
         {
             if (entry.ActionId == 0)
+            {
                 continue;
+            }
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
@@ -363,7 +404,9 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
             foreach (var eff in entry.Effects.Effects)
             {
                 if (eff.Type > 0)
+                {
                     ImGui.TextUnformatted($"{(ActionEffectType)eff.Type} {eff.Param0:X2} {eff.Param1:X2} {eff.Param2:X2} {eff.Param3:X2} {eff.Param4:X2} {eff.Value}");
+                }
             }
         }
         ImGui.EndTable();
@@ -418,16 +461,31 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
 
         if (ImGui.Button("Target closest enemy"))
         {
-            var closest = Service.ObjectTable.Where(o => o.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc && o.SubKind == 5).MinBy(o => (o.Position - selfPos).LengthSquared());
+            IGameObject? closest = null;
+            var closestDist = float.MaxValue;
+            foreach (var o in Service.ObjectTable)
+            {
+                if (o.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc || o.SubKind != 5)
+                {
+                    continue;
+                }
+
+                var d = (o.Position - selfPos).LengthSquared();
+                if (d < closestDist) { closestDist = d; closest = o; }
+            }
             if (closest != null)
+            {
                 Service.TargetManager.Target = closest;
+            }
         }
     }
 
     private unsafe void DrawTarget(string kind, GameObject* obj, Vector3 selfPos, Angle refAngle)
     {
         if (obj == null)
+        {
             return;
+        }
 
         var selfToObj = (Vector3)obj->Position - selfPos;
         var dist = selfToObj.Length();

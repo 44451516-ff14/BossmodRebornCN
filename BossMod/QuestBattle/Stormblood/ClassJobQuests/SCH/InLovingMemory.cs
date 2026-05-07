@@ -25,14 +25,7 @@ internal class InLovingMemory(WorldState ws) : QuestBattle(ws)
         new QuestObjective(ws)
             .WithConnection(new Vector3(199.60f, 44.00f, -153.20f))
             .Hints((player, hints) => {
-                if (player.InCombat)
-                    foreach (var p in World.Party.WithoutSlot(false, true, false).Exclude(player))
-                        hints.AddForbiddenZone(new SDCircle(p.Position, 6), World.FutureTime(1));
-
-                foreach(var e in World.Actors)
-                    if (e.OID == 0x1E43)
-                        hints.AddForbiddenZone(new SDCircle(e.Position, 6));
-            })
+                if (player.InCombat) { foreach (var p in World.Party.WithoutSlot(false, true, false).Exclude(player)) { hints.AddForbiddenZone(new SDCircle(p.Position, 6), World.FutureTime(1)); } } foreach(var e in World.Actors) { if (e.OID == 0x1E43) { hints.AddForbiddenZone(new SDCircle(e.Position, 6)); } } })
             .WithInteract(0x1EA732)
     ];
 }

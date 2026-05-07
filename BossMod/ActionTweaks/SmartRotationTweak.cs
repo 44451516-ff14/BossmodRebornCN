@@ -30,9 +30,14 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
     {
         var data = Service.LuminaRow<Lumina.Excel.Sheets.Action>(spellId);
         if (data == null || !data.Value.NeedToFaceTarget || data.Value.Range == 0) // does not require facing
+        {
             return null;
+        }
+
         if (data.Value.TargetArea)
+        {
             return Angle.FromDirection(targetLoc - playerPos);
+        }
         // see ActionManager.ResolveTarget
         targetIsSelf |= ActionDefinitions.Instance.SpellAllowedTargets(data.Value) == ActionTargets.Self;
         return targetIsSelf || targetPos == null ? null : Angle.FromDirection(targetPos.Value - playerPos); // self-targeted don't have ideal orientation
@@ -42,7 +47,9 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
     {
         var aiEnabled = AI.AIManager.Instance?.Beh != null;
         if (!_config.Enabled && !aiEnabled)
+        {
             return null;
+        }
 
         var midpoint = preferredDirection ?? default; // center angles in forbidden list around this midpoint, to simplify preferred check later
         var currentOffset = (currentDirection - midpoint).Normalized();
@@ -51,8 +58,13 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
         if (_config.AvoidGazes || aiEnabled)
         {
             var deadline = ws.FutureTime(_config.MinTimeToAvoid);
-            foreach (var d in hints.ForbiddenDirections.Where(d => d.activation <= deadline))
+            foreach (var d in hints.ForbiddenDirections)
             {
+                if (d.activation > deadline)
+                {
+                    continue;
+                }
+
                 var center = (d.center - midpoint).Normalized();
                 var min = center - d.halfWidth;
                 if (min.Rad < -MathF.PI)
@@ -75,13 +87,17 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
             // current direction is bad, we want to rotate to preferred, if possible
             // note that midpoint is equal to preferred, and corresponds to 0 in forbidden list
             if (!_forbidden.Contains(0))
+            {
                 return midpoint;
+            }
         }
         else
         {
             // current direction is ok, do nothing if it's safe
             if (!_forbidden.Contains(currentOffset.Rad))
+            {
                 return null;
+            }
         }
 
         // ok, we need to rotate to safety
@@ -103,23 +119,33 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
             var coneMax = +preferredHalfWidth.Rad;
             var intersection = _forbidden.Intersect(coneMin, coneMax);
             if (intersection.count == 0)
+            {
                 return midpoint; // entire frontal cone is safe, rotate to preferred
+            }
 
             // find widest safe range in a cone around preferred direction
             var best = initBest(coneMin, Math.Max(_forbidden[intersection.first].Min, coneMin));
             for (var i = 1; i < intersection.count; ++i)
+            {
                 updateBest(ref best, _forbidden[intersection.first + i - 1].Max, _forbidden[intersection.first + i].Min);
+            }
+
             updateBest(ref best, Math.Min(_forbidden[intersection.first + intersection.count - 1].Max, coneMax), coneMax);
 
             if (best.width >= _minWindow.Rad)
+            {
                 return midpoint + best.mid.Radians();
+            }
         }
 
         // find widest safe range in the whole circle
         {
             var best = initBest(_forbidden[^1].Max, _forbidden[0].Min + Angle.DoublePI);
             for (var i = 1; i < _forbidden.Count; ++i)
+            {
                 updateBest(ref best, _forbidden[i - 1].Max, _forbidden[i].Min);
+            }
+
             return midpoint + best.mid.Radians();
         }
     }

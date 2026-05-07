@@ -52,10 +52,14 @@ public sealed class QuestObjective(WorldState ws)
         get
         {
             if (Name.Length > 0)
+            {
                 return Name;
+            }
 
             if (Connections.Count > 0)
+            {
                 return Utils.Vec3String(Connections.Last().Position);
+            }
 
             return "<none>";
         }
@@ -155,7 +159,9 @@ public sealed class QuestObjective(WorldState ws)
         OnActorKilled += (act) =>
         {
             if (act.OID == oid && ++killed >= required)
+            {
                 Completed = true;
+            }
         };
         return this;
     }
@@ -194,7 +200,9 @@ public sealed class QuestObjective(WorldState ws)
         AddAIHints += (player, hints) =>
         {
             if (!player.InCombat || allowInCombat)
+            {
                 hints.InteractWithOID(World, targetOid);
+            }
         };
         return this;
     }
@@ -219,7 +227,7 @@ public sealed class QuestObjective(WorldState ws)
 
     public override string ToString() => $"{Name}{(Connections.Count == 0 ? "" : Utils.Vec3String(Connections.Last().Position))}";
 
-    public void CompleteIf(bool c) { Completed |= c; }
+    public void CompleteIf(bool c) => Completed |= c;
 }
 
 public abstract class QuestBattle : ZoneModule
@@ -275,7 +283,9 @@ public abstract class QuestBattle : ZoneModule
             ws.Actors.IsDeadChanged.Subscribe(act =>
             {
                 if (act.IsDead)
+                {
                     CurrentObjective?.OnActorKilled?.Invoke(act);
+                }
             }),
             ws.Actors.EventObjectStateChange.Subscribe((act, u) => CurrentObjective?.OnEventObjectStateChanged?.Invoke(act, u)),
             ws.Actors.EventObjectAnimation.Subscribe((act, p1, p2) => CurrentObjective?.OnEventObjectAnimation?.Invoke(act, p1, p2)),
@@ -320,7 +330,9 @@ public abstract class QuestBattle : ZoneModule
     public override void Update()
     {
         if (!_config.EnableQuestBattles)
+        {
             return;
+        }
 
         if (!_playerLoaded)
         {
@@ -329,7 +341,9 @@ public abstract class QuestBattle : ZoneModule
             {
                 _playerLoaded = true;
                 if (CurrentObjective != null)
+                {
                     TryPathfind(player.PosRot.XYZ(), CurrentObjective.Connections);
+                }
             }
         }
 
@@ -343,7 +357,10 @@ public abstract class QuestBattle : ZoneModule
     public override void CalculateAIHints(int playerSlot, Actor player, AIHints hints)
     {
         if (AI.AIManager.Instance?.Beh == null && Autorotation.MiscAI.NormalMovement.Instance == null || !_config.EnableQuestBattles)
+        {
             return;
+        }
+
         var restartPathfind = false;
 
         // update combat flag (TODO: the name is not great...)
@@ -401,7 +418,10 @@ public abstract class QuestBattle : ZoneModule
     public void DrawDebugInfo()
     {
         if (UIMisc.Button("Leave duty", !ImGui.GetIO().KeyShift, "Hold shift to leave"))
+        {
             _abandonDuty?.Invoke(false);
+        }
+
         ImGui.SameLine();
         UIMisc.HelpMarker("Attempt to leave duty by directly sending the \"abandon duty\" packet, which may be able to bypass the out-of-combat restriction. Only works in some duties.");
 
@@ -446,13 +466,19 @@ public abstract class QuestBattle : ZoneModule
             ImGui.Spacing();
 
             if (ImGui.Button("Record position"))
+            {
                 _debugWaymarks.Add(player.Position);
+            }
 
             if (ImGui.Button("Copy all"))
+            {
                 ImGui.SetClipboardText(string.Join(", ", _debugWaymarks.Select(w => $"new({w.X:F2}f, {w.Z:F2}f)")));
+            }
 
             foreach (var w in _debugWaymarks)
+            {
                 ImGui.TextUnformatted($"{w}");
+            }
         }
     }
 
@@ -479,7 +505,9 @@ public abstract class QuestBattle : ZoneModule
         //CurrentConnections = connections;
 
         if (connections.Count == 0)
+        {
             return;
+        }
 
         if (Service.PluginInterface == null)
         {
@@ -532,17 +560,24 @@ public abstract class QuestBattle : ZoneModule
         }
 
         if (points.Count > 2)
+        {
             thesePoints.AddRange(await TryPathfind(connectionPoints.Skip(1)).ConfigureAwait(true));
+        }
+
         return thesePoints;
     }
 
     private void MoveNext(Actor player, QuestObjective objective, AIHints hints)
     {
         if (CurrentWaypoints.Count == 0)
+        {
             return;
+        }
 
         if (_config.ShowWaypoints)
+        {
             DrawWaypoints(player.PosRot.XYZ());
+        }
 
         var nextwp = CurrentWaypoints[0];
         var playerPos = player.PosRot.XYZ();
@@ -550,11 +585,16 @@ public abstract class QuestBattle : ZoneModule
         if (direction.XZ().Length() < Tolerance)
         {
             if (nextwp.SpecifiedInPath)
+            {
                 ++CurrentObjectiveNavigationProgress;
+            }
 
             CurrentWaypoints.RemoveAt(0);
             if (CurrentWaypoints.Count == 0)
+            {
                 objective.OnNavigationComplete?.Invoke();
+            }
+
             MoveNext(player, objective, hints);
         }
         else
@@ -573,7 +613,9 @@ public abstract class QuestBattle : ZoneModule
     private void Dash(Actor player, Vector3 direction, AIHints hints)
     {
         if (!_config.UseDash || player.MountId > 0 || player.Statuses.Any(s => (ActionsProhibitedStatus)s.ID is ActionsProhibitedStatus.OutOfTheAction or ActionsProhibitedStatus.InEvent || Autorotation.RotationModuleManager.IsTransformStatus(s)))
+        {
             return;
+        }
 
         var moveDistance = direction.Length();
         var moveAngle = Angle.FromDirection(new WDir(direction.XZ()));
@@ -606,7 +648,9 @@ public abstract class QuestBattle : ZoneModule
                 break;
             case Class.NIN:
                 if (player.FindStatus(NIN.SID.Hidden) != null)
+                {
                     return;
+                }
 
                 if (moveDistance > 20)
                 {
@@ -617,7 +661,9 @@ public abstract class QuestBattle : ZoneModule
         }
 
         if (moveDistance > dashDistance)
+        {
             hints.ActionsToExecute.Push(dashAction, null, ActionQueue.Priority.Low, facingAngle: moveAngle);
+        }
     }
 
     public void OnConditionChange(ConditionFlag flag, bool value) => CurrentObjective?.OnConditionChange?.Invoke(flag, value); // TODO: this should be redesigned
@@ -637,15 +683,22 @@ public abstract class QuestBattle : ZoneModule
     private void DrawObjectives()
     {
         if (ImGui.Button(Paused ? "Resume" : "Pause"))
+        {
             Paused ^= true;
+        }
 
         ImGui.SameLine();
 
         if (ImGui.Button("Skip current step"))
+        {
             ++CurrentObjectiveIndex;
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Restart from step 1"))
+        {
             CurrentObjectiveIndex = 0;
+        }
 
         ImGui.Spacing();
         ImGui.Separator();
@@ -675,13 +728,17 @@ public abstract class QuestBattle : ZoneModule
     private void DrawGenerateModule()
     {
         if (World.CurrentCFCID == 0)
+        {
             return;
+        }
 
         if (ImGui.Button("Generate module stub"))
         {
             var cfc = Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(World.CurrentCFCID);
             if (cfc == null)
+            {
                 return;
+            }
 
             string name;
             if (cfc.Value.ContentLinkType == 5)

@@ -5,7 +5,9 @@ class AutoEstinien(WorldState ws) : UnmanagedRotation(ws, 10f)
     protected override void Exec(Actor? primaryTarget)
     {
         if (primaryTarget == null)
+        {
             return;
+        }
 
         var gcd = ComboAction switch
         {
@@ -17,7 +19,9 @@ class AutoEstinien(WorldState ws) : UnmanagedRotation(ws, 10f)
         UseAction(gcd, primaryTarget);
         var hpmp = Player.HPMP;
         if (hpmp.CurHP * 2u < hpmp.MaxHP)
+        {
             UseAction(Roleplay.AID.AquaVitae, Player, -10f);
+        }
 
         UseAction(Roleplay.AID.SkydragonDive, primaryTarget, -10f);
     }

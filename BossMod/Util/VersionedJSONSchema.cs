@@ -20,15 +20,25 @@ public sealed class VersionedJSONSchema
         var json = Serialization.ReadJson(file.FullName);
         var version = json.RootElement.TryGetProperty("version", out var jver) || json.RootElement.TryGetProperty("Version", out jver) ? jver.GetInt32() : 0;
         if (version < MinSupportedVersion)
+        {
             throw new ArgumentException($"Config file {file.FullName} version {version} is older than supported {MinSupportedVersion}");
+        }
+
         if (version > CurrentVersion)
+        {
             throw new ArgumentException($"Config file {file.FullName} version {version} is newer than supported {CurrentVersion}");
+        }
+
         if (!json.RootElement.TryGetProperty("payload", out var jpayload) && !json.RootElement.TryGetProperty("Payload", out jpayload))
+        {
             throw new ArgumentException($"Config file {file.FullName} does not contain a payload");
+        }
 
         // fast path: if file is of correct version, we're done
         if (version == CurrentVersion)
+        {
             return (json, jpayload);
+        }
 
         // execute the conversion
         JsonNode converted = jpayload.ValueKind switch
@@ -37,14 +47,19 @@ public sealed class VersionedJSONSchema
             JsonValueKind.Array => JsonArray.Create(jpayload)!,
             _ => throw new ArgumentException($"Config file {file.FullName} has unsupported payload type {jpayload.ValueKind}")
         };
-        for (int i = version - MinSupportedVersion; i < Converters.Count; ++i)
+        for (var i = version - MinSupportedVersion; i < Converters.Count; ++i)
+        {
             converted = Converters[i](converted, version, file);
+        }
 
         // backup the old version and write out new one
         var original = new FileInfo(file.FullName);
         var backup = new FileInfo(file.FullName + $".v{version}");
         if (!backup.Exists)
+        {
             file.MoveTo(backup.FullName);
+        }
+
         Save(original, jwriter => converted.WriteTo(jwriter));
         json.Dispose();
 

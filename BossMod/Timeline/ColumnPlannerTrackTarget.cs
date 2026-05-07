@@ -7,18 +7,12 @@ public sealed class ColumnPlannerTrackTarget(Timeline timeline, StateMachineTree
 {
     protected override StrategyValueTrack GetDefaultValue() => new();
 
-    protected override void RefreshElement(Element e)
-    {
-        e.Window.Color = Timeline.Colors.PlannerWindow[0];
-    }
+    protected override void RefreshElement(Element e) => e.Window.Color = Timeline.Colors.PlannerWindow[0];
 
-    protected override List<string> DescribeElement(Element e)
-    {
-        return [
+    protected override List<string> DescribeElement(Element e) => [
             $"Comment: {e.Value.Comment}",
             $"Target: {UIStrategyValue.PreviewTarget((StrategyValueTrack)e.Value, moduleInfo)}"
         ];
-    }
 
     protected override bool EditElement(Element e)
     {

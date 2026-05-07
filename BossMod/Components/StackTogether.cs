@@ -17,7 +17,9 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
             {
                 Targets.Add(actor);
                 if (Activation == default)
+                {
                     Activation = WorldState.FutureTime(activationDelay);
+                }
             }
         }
     }
@@ -36,7 +38,10 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
     {
         var count = Targets.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var actorFound = false;
         var foundTarget = false;
 
@@ -45,22 +50,34 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
             var target = Targets[i];
 
             if (target == actor)
+            {
                 actorFound = true;
+            }
             else if (target.Position.InCircle(actor.Position, Radius))
+            {
                 foundTarget = true;
+            }
+
             if (actorFound && foundTarget)
+            {
                 break;
+            }
         }
 
         if (actorFound)
+        {
             hints.Add("Stack with other targets!", !foundTarget);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         var count = Targets.Count;
         if (count == 0)
+        {
             return;
+        }
+
         var actorFound = false;
 
         var positions = new List<WPos>(count);
@@ -69,12 +86,18 @@ public class StackTogether(BossModule module, uint iconId, float activationDelay
             var target = Targets[i];
 
             if (target == pc)
+            {
                 actorFound = true;
+            }
             else
+            {
                 positions.Add(target.Position);
+            }
         }
         if (!actorFound)
+        {
             return;
+        }
 
         var countPos = positions.Count;
         for (var i = 0; i < countPos; ++i)
