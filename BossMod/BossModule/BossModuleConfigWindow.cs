@@ -23,14 +23,20 @@ public sealed class BossModuleConfigWindow : UIWindow
     private void DrawEncounterTab()
     {
         if (_node != null)
+        {
             ConfigUI.DrawNode(_node, Service.Config, _tree, _ws);
+        }
         else
+        {
             ImGui.TextUnformatted("This module does not expose any configuration");
+        }
     }
 
     private void DrawPartyRolesAssignmentsTab()
     {
         if (_ws.Party.Player() != null)
+        {
             ConfigUI.DrawNode(_prc, Service.Config, _tree, _ws);
+        }
     }
 }

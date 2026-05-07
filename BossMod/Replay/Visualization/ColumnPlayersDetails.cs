@@ -39,9 +39,13 @@ public sealed class ColumnPlayersDetails : Timeline.ColumnGroup
             {
                 var col = _columns[i];
                 if (col != null)
+                {
                     col.DrawConfig(tree);
+                }
                 else if (ImGui.Button("Show details..."))
+                {
                     _columns[i] = Add(new ColumnPlayerDetails(Timeline, _tree, _phaseBranches, _replay, _encounter, p, c, _planDB));
+                }
             }
         }
     }
@@ -49,6 +53,8 @@ public sealed class ColumnPlayersDetails : Timeline.ColumnGroup
     public void SaveAll()
     {
         foreach (var c in _columns)
+        {
             c?.SaveChanges();
+        }
     }
 }

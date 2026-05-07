@@ -20,8 +20,13 @@ public static class ZoneModuleRegistry
 
     static ZoneModuleRegistry()
     {
-        foreach (var t in Utils.GetDerivedTypes<ZoneModule>(Assembly.GetExecutingAssembly()).Where(t => !t.IsAbstract))
+        foreach (var t in Utils.GetDerivedTypes<ZoneModule>(Assembly.GetExecutingAssembly()))
         {
+            if (t.IsAbstract)
+            {
+                continue;
+            }
+
             var attr = t.GetCustomAttribute<ZoneModuleInfoAttribute>();
             if (attr == null)
             {
@@ -37,8 +42,5 @@ public static class ZoneModuleRegistry
         }
     }
 
-    public static ZoneModule? CreateModule(WorldState ws, uint cfcId, BossModuleInfo.Maturity minMaturity)
-    {
-        return cfcId != 0 && _modulesByCFC.TryGetValue(cfcId, out var info) && info.Desc.Maturity >= minMaturity ? info.Factory(ws) : null;
-    }
+    public static ZoneModule? CreateModule(WorldState ws, uint cfcId, BossModuleInfo.Maturity minMaturity) => cfcId != 0 && _modulesByCFC.TryGetValue(cfcId, out var info) && info.Desc.Maturity >= minMaturity ? info.Factory(ws) : null;
 }

@@ -25,9 +25,15 @@ public sealed class UITree
         public void Dispose()
         {
             if (_disposed)
+            {
                 return;
+            }
+
             if (_realOpened)
+            {
                 ImGui.TreePop();
+            }
+
             ImGui.PopID();
             _disposed = true;
         }
@@ -63,7 +69,10 @@ public sealed class UITree
     public void LeafNode(string text, uint color = default, Action? contextMenu = null, Action? doubleClick = null, Action? select = null)
     {
         if (RawNode(text, true, color == default ? Colors.TextColor1 : color, contextMenu, doubleClick, select))
+        {
             ImGui.TreePop();
+        }
+
         ImGui.PopID();
     }
 
@@ -73,7 +82,10 @@ public sealed class UITree
         foreach (var t in collection)
         {
             if (RawNode(map(t), true, Colors.TextColor1, contextMenu != null ? () => contextMenu(t) : null, doubleClick != null ? () => doubleClick(t) : null, select != null ? () => select(t) : null))
+            {
                 ImGui.TreePop();
+            }
+
             ImGui.PopID();
         }
     }
@@ -86,7 +98,10 @@ public sealed class UITree
         {
             var t = col[i];
             if (RawNode(map(t), true, Colors.TextColor1, contextMenu != null ? () => contextMenu(t) : null, doubleClick != null ? () => doubleClick(t) : null, select != null ? () => select(t) : null))
+            {
                 ImGui.TreePop();
+            }
+
             ImGui.PopID();
         }
     }
@@ -97,9 +112,14 @@ public sealed class UITree
         var id = ImGui.GetID(text);
         var flags = ImGuiTreeNodeFlags.None;
         if (id == _selectedId)
+        {
             flags |= ImGuiTreeNodeFlags.Selected;
+        }
+
         if (leaf)
+        {
             flags |= ImGuiTreeNodeFlags.Leaf;
+        }
 
         ImGui.PushID((int)id);
         ImGui.PushStyleColor(ImGuiCol.Text, color);
@@ -111,7 +131,10 @@ public sealed class UITree
             select?.Invoke();
         }
         if (doubleClick != null && ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+        {
             doubleClick();
+        }
+
         if (contextMenu != null && ImGui.BeginPopupContextItem($"###{text}popup"))
         {
             contextMenu();
@@ -125,18 +148,29 @@ public sealed class UITree
         var id = ImGui.GetID(text);
         var flags = ImGuiTreeNodeFlags.None;
         if (id == _selectedId)
+        {
             flags |= ImGuiTreeNodeFlags.Selected;
+        }
+
         if (leaf)
+        {
             flags |= ImGuiTreeNodeFlags.Leaf;
+        }
 
         ImGui.PushID((int)id);
         ImGui.PushStyleColor(ImGuiCol.Text, color == default ? Colors.TextColor1 : color);
-        bool open = ImGui.TreeNodeEx(text, flags);
+        var open = ImGui.TreeNodeEx(text, flags);
         ImGui.PopStyleColor();
         if (ImGui.IsItemClicked(ImGuiMouseButton.Left))
+        {
             _selectedId = id;
+        }
+
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+        {
             ImGui.SetClipboardText(text);
+        }
+
         return new(id == _selectedId, open && !leaf, ImGui.IsItemHovered(), open);
     }
 

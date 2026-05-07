@@ -9,10 +9,7 @@ public sealed class SDKnockbackInSquareFixedDirection(WPos Center, WDir Directio
     private readonly WDir directionSquare = Rotation.ToDirection();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override bool Contains(in WPos p)
-    {
-        return !(p + direction).InSquare(center, halfWidth, directionSquare);
-    }
+    public override bool Contains(in WPos p) => !(p + direction).InSquare(center, halfWidth, directionSquare);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;

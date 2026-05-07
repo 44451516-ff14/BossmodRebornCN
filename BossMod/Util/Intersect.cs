@@ -13,7 +13,10 @@ public static class Intersect
         var halfB = rayOriginOffset.Dot(rayDir);
         var halfDSq = halfB * halfB - rayOriginOffset.LengthSq() + circleRadius * circleRadius;
         if (halfDSq < 0f)
+        {
             return float.MaxValue; // never intersects
+        }
+
         var t = -halfB + MathF.Sqrt(halfDSq);
         return t >= 0f ? t : float.MaxValue;
     }
@@ -89,7 +92,10 @@ public static class Intersect
         var ddn = rayDir.Dot(n);
         var odn = rayOriginOffset.Dot(n);
         if (ddn == 0)
+        {
             return odn == 0 ? 0 : float.MaxValue; // ray parallel to line
+        }
+
         var t = -odn / ddn;
         return t >= 0 ? t : float.MaxValue;
     }
@@ -102,7 +108,9 @@ public static class Intersect
         var lineDir = ob - oa;
         var t = RayLine(rayOriginOffset - oa, rayDir, lineDir);
         if (t == float.MaxValue)
+        {
             return float.MaxValue;
+        }
 
         // check that intersection point is inside segment
         var p = rayOriginOffset + t * rayDir;
@@ -115,7 +123,9 @@ public static class Intersect
         var lineDir = vertexB - vertexA;
         var t = RayLine(rayOrigin - vertexA, rayDir, lineDir);
         if (t == float.MaxValue)
+        {
             return float.MaxValue;
+        }
 
         var p = rayOrigin + t * rayDir;
         var u = lineDir.Dot(p - vertexA);
@@ -146,12 +156,20 @@ public static class Intersect
         var lsq = circleOffset.LengthSq();
         var rsq = circleRadius * circleRadius;
         if (lsq <= rsq)
+        {
             return true; // circle contains cone origin
+        }
+
         var rsum = circleRadius + coneRadius;
         if (lsq > rsum * rsum)
+        {
             return false; // circle can't intersect the cone, no matter the half-angle
+        }
+
         if (halfAngle.Rad >= MathF.PI)
+        {
             return true; // it's actually a circle-circle intersection
+        }
 
         var correctSide = circleOffset.Dot(coneDir) > 0;
         var normal = coneDir.OrthoL();
@@ -164,22 +182,34 @@ public static class Intersect
             _ => correctSide,
         };
         if (originInCone)
+        {
             return true; // circle origin is within cone sides
+        }
 
         // ensure normal points to the half-plane that contains circle origin
         if (distFromAxis < 0)
+        {
             normal = -normal;
+        }
 
         // see whether circle intersects side
         var side = coneDir * halfAngle.Cos() + normal * sin;
         var distFromSide = Math.Abs(circleOffset.Cross(side));
         if (distFromSide > circleRadius)
+        {
             return false; // too far
+        }
+
         var distAlongSide = circleOffset.Dot(side);
         if (distAlongSide < 0)
+        {
             return false; // behind origin; note that we don't need to test intersection with origin
+        }
+
         if (distAlongSide <= coneRadius)
+        {
             return true; // circle-side intersection
+        }
 
         // finally, we need to check far corner
         var corner = side * coneRadius;
@@ -193,9 +223,15 @@ public static class Intersect
         circleOffset = circleOffset.Abs(); // symmetrical along X/Z, consider only positive quadrant
         var cornerOffset = circleOffset - new WDir(halfExtentX, halfExtentZ); // relative to corner
         if (cornerOffset.X > circleRadius || cornerOffset.Z > circleRadius)
+        {
             return false; // circle is too far from one of the edges, so can't intersect
+        }
+
         if (cornerOffset.X <= 0 || cornerOffset.Z <= 0)
+        {
             return true; // circle center is inside/on the edge, or close enough to one of the edges to intersect
+        }
+
         return cornerOffset.LengthSq() <= circleRadius * circleRadius; // check whether circle touches the corner
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,10 +248,14 @@ public static class Intersect
         var minR = Math.Max(0, innerRadius - circleRadius);
 
         if (distSq > maxR * maxR || distSq < minR * minR)
+        {
             return false;
+        }
 
         if (halfAngle.Rad >= MathF.PI)
+        {
             return true;
+        }
 
         // Ensure sectorDir is normalized
         sectorDir = sectorDir.Normalized();
@@ -223,7 +263,9 @@ public static class Intersect
         // angle to center
         var angleToCenter = Angle.Acos(Math.Clamp(circleOffset.Normalized().Dot(sectorDir), -1f, 1f));
         if (angleToCenter <= halfAngle)
+        {
             return true;
+        }
 
         // sample side arcs: left/right boundary rays of sector
         var sideDirL = sectorDir.Rotate(halfAngle);
@@ -241,7 +283,9 @@ public static class Intersect
 
         if (projL >= 0 && projL <= outerRadius && dL <= circleRadius ||
             projR >= 0 && projR <= outerRadius && dR <= circleRadius)
+        {
             return true;
+        }
 
         // check corners
         var cornerL = sideDirL * outerRadius;

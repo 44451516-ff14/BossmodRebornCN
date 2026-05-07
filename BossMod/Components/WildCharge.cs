@@ -23,7 +23,9 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (Source == null)
+        {
             return;
+        }
 
         switch (PlayerRoles[slot])
         {
@@ -31,34 +33,68 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
             case PlayerRole.Target: // TODO: consider hints for target?..
                 break; // nothing to advise
             case PlayerRole.TargetNotFirst:
-                if (EnumerateAOEs(slot).Any(aoe => InAOE(aoe, actor)))
+                var inOtherCharge = false;
+                foreach (var aoe in EnumerateAOEs(slot))
+                {
+                    if (InAOE(aoe, actor)) { inOtherCharge = true; break; }
+                }
+
+                if (inOtherCharge)
+                {
                     hints.Add("GTFO from other charges!");
+                }
                 else if (!AnyRoleCloser(GetAOEForTarget(Source.Position, actor.Position), PlayerRole.Share, PlayerRole.Share, (actor.Position - Source.Position).LengthSq()))
+                {
                     hints.Add("Hide behind tank!");
+                }
+
                 break;
             case PlayerRole.Share:
             case PlayerRole.ShareNotFirst:
                 var badShare = false;
                 var numShares = 0;
-                foreach (var aoe in EnumerateAOEs().Where(aoe => InAOE(aoe, actor)))
+                foreach (var aoe in EnumerateAOEs())
                 {
+                    if (!InAOE(aoe, actor))
+                    {
+                        continue;
+                    }
+
                     if (++numShares > 1)
+                    {
                         break;
+                    }
 
                     badShare = PlayerRoles[slot] == PlayerRole.Share
                         ? AnyRoleCloser(aoe, PlayerRole.ShareNotFirst, PlayerRole.TargetNotFirst, (actor.Position - Source.Position).LengthSq())
                         : !AnyRoleCloser(aoe, PlayerRole.Share, PlayerRole.Target, (actor.Position - Source.Position).LengthSq());
                 }
                 if (numShares == 0)
+                {
                     hints.Add("Stay inside charge!");
+                }
                 else if (numShares > 1)
+                {
                     hints.Add("Stay in single charge!");
+                }
                 else if (badShare)
+                {
                     hints.Add(PlayerRoles[slot] == PlayerRole.Share ? "Move closer to charge source!" : "Hide behind tank!");
+                }
+
                 break;
             case PlayerRole.Avoid:
-                if (EnumerateAOEs().Any(aoe => InAOE(aoe, actor)))
+                var inCharge = false;
+                foreach (var aoe in EnumerateAOEs())
+                {
+                    if (InAOE(aoe, actor)) { inCharge = true; break; }
+                }
+
+                if (inCharge)
+                {
                     hints.Add("GTFO from charge!");
+                }
+
                 break;
         }
     }
@@ -66,7 +102,10 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Source == null)
+        {
             return;
+        }
+
         var forbiddenInverted = new List<ShapeDistance>();
         var forbidden = new List<ShapeDistance>();
         switch (PlayerRoles[slot])
@@ -89,17 +128,34 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
             case PlayerRole.Share: // TODO: some hint to be first in line...
             case PlayerRole.ShareNotFirst:
                 foreach (var aoe in EnumerateAOEs())
+                {
                     forbiddenInverted.Add(new SDInvertedRect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth));
+                }
+
                 break;
             case PlayerRole.Avoid:
                 foreach (var aoe in EnumerateAOEs())
+                {
                     forbiddenInverted.Add(new SDRect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth));
+                }
+
                 break;
         }
 
         foreach (var aoe in EnumerateAOEs())
+        {
             // TODO add separate "tankbuster" hint for PlayerRole.Share if there are any ShareNotFirsts in the party
-            hints.AddPredictedDamage(Raid.WithSlot().Where(p => InAOE(aoe, p.Item2)).Mask(), Activation);
+            var mask = new BitMask();
+            foreach (var (pi, pa) in Raid.WithSlot())
+            {
+                if (InAOE(aoe, pa))
+                {
+                    mask.Set(pi);
+                }
+            }
+
+            hints.AddPredictedDamage(mask, Activation);
+        }
 
         if (forbiddenInverted.Count != 0)
         {
@@ -114,7 +170,9 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (Source == null || PlayerRoles[pcSlot] == PlayerRole.Ignore)
+        {
             return;
+        }
 
         foreach (var aoe in EnumerateAOEs())
         {
@@ -136,13 +194,28 @@ public class GenericWildCharge(BossModule module, float halfWidth, uint aid = de
     protected IEnumerable<(WPos origin, WDir dir, float length)> EnumerateAOEs(int targetSlotToSkip = -1)
     {
         if (Source == null)
+        {
             yield break;
+        }
+
         foreach (var (i, p) in Module.Raid.WithSlot().WhereSlot(i => i != targetSlotToSkip && PlayerRoles[i] is PlayerRole.Target or PlayerRole.TargetNotFirst))
+        {
             yield return GetAOEForTarget(Source.Position, p.Position);
+        }
     }
 
     private bool AnyRoleCloser((WPos origin, WDir dir, float length) aoe, PlayerRole role1, PlayerRole role2, float thresholdSq)
-        => Raid.WithSlot().Any(ia => (PlayerRoles[ia.Item1] == role1 || PlayerRoles[ia.Item1] == role2) && InAOE(aoe, ia.Item2) && (ia.Item2.Position - aoe.origin).LengthSq() < thresholdSq);
+    {
+        foreach (var ia in Raid.WithSlot())
+        {
+            if ((PlayerRoles[ia.Item1] == role1 || PlayerRoles[ia.Item1] == role2) && InAOE(aoe, ia.Item2) && (ia.Item2.Position - aoe.origin).LengthSq() < thresholdSq)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 //Variation on Generic Wild Charge, but where the origin is 'behind' the target, and the charge 'toward' the Source.
@@ -167,7 +240,9 @@ public class InverseWildCharge(BossModule module, float halfWidth, float distanc
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (Source == null)
+        {
             return;
+        }
 
         switch (PlayerRoles[slot])
         {
@@ -175,34 +250,68 @@ public class InverseWildCharge(BossModule module, float halfWidth, float distanc
             case PlayerRole.Target: // TODO: consider hints for target?..
                 break; // nothing to advise
             case PlayerRole.TargetNotFirst:
-                if (EnumerateAOEs(slot).Any(aoe => InAOE(aoe, actor)))
+                var inOtherChargeInv = false;
+                foreach (var aoe in EnumerateAOEs(slot))
+                {
+                    if (InAOE(aoe, actor)) { inOtherChargeInv = true; break; }
+                }
+
+                if (inOtherChargeInv)
+                {
                     hints.Add("GTFO from other charges!");
+                }
                 else if (!AnyRoleCloser(GetAOEForTarget(Source.Position, actor.Position, distancebehind), PlayerRole.Share, PlayerRole.Share, (actor.Position - Source.Position).LengthSq()))
+                {
                     hints.Add("Hide behind tank!");
+                }
+
                 break;
             case PlayerRole.Share:
             case PlayerRole.ShareNotFirst:
-                var badShare = false;
-                var numShares = 0;
-                foreach (var aoe in EnumerateAOEs().Where(aoe => InAOE(aoe, actor)))
+                var badShareInv = false;
+                var numSharesInv = 0;
+                foreach (var aoe in EnumerateAOEs())
                 {
-                    if (++numShares > 1)
-                        break;
+                    if (!InAOE(aoe, actor))
+                    {
+                        continue;
+                    }
 
-                    badShare = PlayerRoles[slot] == PlayerRole.Share
+                    if (++numSharesInv > 1)
+                    {
+                        break;
+                    }
+
+                    badShareInv = PlayerRoles[slot] == PlayerRole.Share
                         ? AnyRoleCloser(aoe, PlayerRole.ShareNotFirst, PlayerRole.TargetNotFirst, (actor.Position - Source.Position).LengthSq())
                         : !AnyRoleCloser(aoe, PlayerRole.Share, PlayerRole.Target, (actor.Position - Source.Position).LengthSq());
                 }
-                if (numShares == 0)
+                if (numSharesInv == 0)
+                {
                     hints.Add("Stay inside charge!");
-                else if (numShares > 1)
+                }
+                else if (numSharesInv > 1)
+                {
                     hints.Add("Stay in single charge!");
-                else if (badShare)
+                }
+                else if (badShareInv)
+                {
                     hints.Add(PlayerRoles[slot] == PlayerRole.Share ? "Move closer to charge source!" : "Hide behind tank!");
+                }
+
                 break;
             case PlayerRole.Avoid:
-                if (EnumerateAOEs().Any(aoe => InAOE(aoe, actor)))
+                var inChargeInv = false;
+                foreach (var aoe in EnumerateAOEs())
+                {
+                    if (InAOE(aoe, actor)) { inChargeInv = true; break; }
+                }
+
+                if (inChargeInv)
+                {
                     hints.Add("GTFO from charge!");
+                }
+
                 break;
         }
     }
@@ -210,7 +319,10 @@ public class InverseWildCharge(BossModule module, float halfWidth, float distanc
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Source == null)
+        {
             return;
+        }
+
         var forbiddenInverted = new List<ShapeDistance>();
         var forbidden = new List<ShapeDistance>();
         switch (PlayerRoles[slot])
@@ -233,17 +345,34 @@ public class InverseWildCharge(BossModule module, float halfWidth, float distanc
             case PlayerRole.Share: // TODO: some hint to be first in line...
             case PlayerRole.ShareNotFirst:
                 foreach (var aoe in EnumerateAOEs())
+                {
                     forbiddenInverted.Add(new SDInvertedRect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth));
+                }
+
                 break;
             case PlayerRole.Avoid:
                 foreach (var aoe in EnumerateAOEs())
+                {
                     forbiddenInverted.Add(new SDRect(aoe.origin, aoe.dir, aoe.length, 0, HalfWidth));
+                }
+
                 break;
         }
 
         foreach (var aoe in EnumerateAOEs())
+        {
             // TODO add separate "tankbuster" hint for PlayerRole.Share if there are any ShareNotFirsts in the party
-            hints.AddPredictedDamage(Raid.WithSlot().Where(p => InAOE(aoe, p.Item2)).Mask(), Activation);
+            var maskInv = new BitMask();
+            foreach (var (pi, pa) in Raid.WithSlot())
+            {
+                if (InAOE(aoe, pa))
+                {
+                    maskInv.Set(pi);
+                }
+            }
+
+            hints.AddPredictedDamage(maskInv, Activation);
+        }
 
         if (forbiddenInverted.Count != 0)
         {
@@ -258,7 +387,9 @@ public class InverseWildCharge(BossModule module, float halfWidth, float distanc
     public override void DrawArenaBackground(int pcSlot, Actor pc)
     {
         if (Source == null || PlayerRoles[pcSlot] == PlayerRole.Ignore)
+        {
             return;
+        }
 
         foreach (var aoe in EnumerateAOEs())
         {
@@ -284,11 +415,26 @@ public class InverseWildCharge(BossModule module, float halfWidth, float distanc
     protected IEnumerable<(WPos origin, WDir dir, float length)> EnumerateAOEs(int targetSlotToSkip = -1)
     {
         if (Source == null)
+        {
             yield break;
+        }
+
         foreach (var (i, p) in Module.Raid.WithSlot().WhereSlot(i => i != targetSlotToSkip && PlayerRoles[i] is PlayerRole.Target or PlayerRole.TargetNotFirst))
+        {
             yield return GetAOEForTarget(Source.Position, p.Position, distancebehind);
+        }
     }
     // Invert this too so that tanks don't get bad directions.  Just swap the '<' for a '>'
     private bool AnyRoleCloser((WPos origin, WDir dir, float length) aoe, PlayerRole role1, PlayerRole role2, float thresholdSq)
-        => Raid.WithSlot().Any(ia => (PlayerRoles[ia.Item1] == role1 || PlayerRoles[ia.Item1] == role2) && InAOE(aoe, ia.Item2) && (ia.Item2.Position - aoe.origin).LengthSq() > thresholdSq);
+    {
+        foreach (var ia in Raid.WithSlot())
+        {
+            if ((PlayerRoles[ia.Item1] == role1 || PlayerRoles[ia.Item1] == role2) && InAOE(aoe, ia.Item2) && (ia.Item2.Position - aoe.origin).LengthSq() > thresholdSq)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

@@ -23,9 +23,7 @@ internal class TheHuntForOmega(WorldState ws) : QuestBattle(ws)
                     if (checker.Actor.InCombat)
                     {
                         checker.Priority = -1;
-                        if (player.TargetID == checker.Actor.InstanceID)
-                            hints.ForcedTarget = player;
-                    }
+                        if (player.TargetID == checker.Actor.InstanceID) { hints.ForcedTarget = player; } }
                     else
                     {
                         checker.Priority = 1; } } })
@@ -39,9 +37,7 @@ internal class TheHuntForOmega(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Hints((player, hints) => {
-                foreach(var h in hints.PotentialTargets)
-                    h.Priority = h.Actor.OID == 0x1E3E ? -1 : 1;
-            })
+                foreach(var h in hints.PotentialTargets) { h.Priority = h.Actor.OID == 0x1E3E ? -1 : 1; } })
             .WithInteract(0x1E84B0)
             .With(obj => {
                 obj.OnConditionChange += (flag, value) => obj.CompleteIf(flag == ConditionFlag.Jumping61 && !value);
@@ -49,8 +45,6 @@ internal class TheHuntForOmega(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Hints((player, hints) => {
-                foreach(var h in hints.PotentialTargets)
-                    h.Priority = h.Actor.OID is 0x1E3D or 0x1E3E ? -1 : 1;
-            })
+                foreach(var h in hints.PotentialTargets) { h.Priority = h.Actor.OID is 0x1E3D or 0x1E3E ? -1 : 1; } })
     ];
 }

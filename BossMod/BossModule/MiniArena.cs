@@ -92,10 +92,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
 
     // if you are 100% sure your primitive does not need clipping, you can use drawlist api directly
     // this helper allows converting world-space coords to screen-space ones
-    public Vector2 WorldPositionToScreenPosition(WPos p)
-    {
-        return ScreenCenter + WorldOffsetToScreenOffset(p - Center);
-    }
+    public Vector2 WorldPositionToScreenPosition(WPos p) => ScreenCenter + WorldOffsetToScreenOffset(p - Center);
 
     // this is useful for drawing on margins (TODO better api)
     public Vector2 RotatedCoords(Vector2 coords)
@@ -107,17 +104,17 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         return new(x, y);
     }
 
-    private Vector2 WorldOffsetToScreenOffset(WDir worldOffset)
-    {
-        return ScreenHalfSize * RotatedCoords(new(worldOffset.X, worldOffset.Z)) / _bounds.Radius;
-    }
+    private Vector2 WorldOffsetToScreenOffset(WDir worldOffset) => ScreenHalfSize * RotatedCoords(new(worldOffset.X, worldOffset.Z)) / _bounds.Radius;
 
     // unclipped primitive rendering that accept world-space positions; thin convenience wrappers around drawlist api
     public void AddLine(WPos a, WPos b, uint color = default, float thickness = 1f)
     {
         thickness *= Config.ThicknessScale;
         if (Config.ShowOutlinesAndShadows)
+        {
             ImGui.GetWindowDrawList().AddLine(WorldPositionToScreenPosition(a), WorldPositionToScreenPosition(b), Colors.Shadows, thickness + 1f);
+        }
+
         ImGui.GetWindowDrawList().AddLine(WorldPositionToScreenPosition(a), WorldPositionToScreenPosition(b), color != default ? color : Colors.Danger, thickness);
     }
 
@@ -127,10 +124,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         ImGui.GetWindowDrawList().AddTriangle(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddTriangleFilled(WPos p1, WPos p2, WPos p3, uint color = default)
-    {
-        ImGui.GetWindowDrawList().AddTriangleFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != default ? color : Colors.Danger);
-    }
+    public void AddTriangleFilled(WPos p1, WPos p2, WPos p3, uint color = default) => ImGui.GetWindowDrawList().AddTriangleFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), color != default ? color : Colors.Danger);
 
     public void AddQuad(WPos p1, WPos p2, WPos p3, WPos p4, uint color = default, float thickness = 1f)
     {
@@ -138,10 +132,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         ImGui.GetWindowDrawList().AddQuad(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != default ? color : Colors.Danger, thickness);
     }
 
-    public void AddQuadFilled(WPos p1, WPos p2, WPos p3, WPos p4, uint color = default)
-    {
-        ImGui.GetWindowDrawList().AddQuadFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != default ? color : Colors.Danger);
-    }
+    public void AddQuadFilled(WPos p1, WPos p2, WPos p3, WPos p4, uint color = default) => ImGui.GetWindowDrawList().AddQuadFilled(WorldPositionToScreenPosition(p1), WorldPositionToScreenPosition(p2), WorldPositionToScreenPosition(p3), WorldPositionToScreenPosition(p4), color != default ? color : Colors.Danger);
 
     public void AddRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, uint color, float thickness = 1f)
     {
@@ -157,14 +148,14 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var radiusscreenhalfsize = radius / _bounds.Radius * ScreenHalfSize;
         thickness *= Config.ThicknessScale;
         if (Config.ShowOutlinesAndShadows)
+        {
             ImGui.GetWindowDrawList().AddCircle(WorldPositionToScreenPosition(center), radiusscreenhalfsize, Colors.Shadows, default, thickness + 1f);
+        }
+
         ImGui.GetWindowDrawList().AddCircle(WorldPositionToScreenPosition(center), radiusscreenhalfsize, color != default ? color : Colors.Danger, default, thickness);
     }
 
-    public void AddCircleFilled(WPos center, float radius, uint color = default)
-    {
-        ImGui.GetWindowDrawList().AddCircleFilled(WorldPositionToScreenPosition(center), radius / _bounds.Radius * ScreenHalfSize, color != default ? color : Colors.Danger);
-    }
+    public void AddCircleFilled(WPos center, float radius, uint color = default) => ImGui.GetWindowDrawList().AddCircleFilled(WorldPositionToScreenPosition(center), radius / _bounds.Radius * ScreenHalfSize, color != default ? color : Colors.Danger);
 
     public void AddCone(WPos center, float radius, Angle centerDirection, Angle halfAngle, uint color = default, float thickness = 1f)
     {
@@ -284,7 +275,10 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         thickness *= Config.ThicknessScale;
         var len = vertices.Length;
         for (var i = 0; i < len; ++i)
+        {
             PathLineTo(vertices[i]);
+        }
+
         PathStroke(true, color != default ? color : Colors.Danger, thickness);
     }
 
@@ -330,16 +324,10 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     }
 
     // path api: add new point to path; this adds new edge from last added point, or defines first vertex if path is empty
-    public void PathLineTo(WPos p)
-    {
-        ImGui.GetWindowDrawList().PathLineToMergeDuplicate(WorldPositionToScreenPosition(p));
-    }
+    public void PathLineTo(WPos p) => ImGui.GetWindowDrawList().PathLineToMergeDuplicate(WorldPositionToScreenPosition(p));
 
     // adds a bunch of points corresponding to arc - if path is non empty, this adds an edge from last point to first arc point
-    public void PathArcTo(WPos center, float radius, float amin, float amax)
-    {
-        ImGui.GetWindowDrawList().PathArcTo(WorldPositionToScreenPosition(center), radius / _bounds.Radius * ScreenHalfSize, Angle.HalfPi - amin + _cameraAzimuth.Rad, Angle.HalfPi - amax + _cameraAzimuth.Rad);
-    }
+    public void PathArcTo(WPos center, float radius, float amin, float amax) => ImGui.GetWindowDrawList().PathArcTo(WorldPositionToScreenPosition(center), radius / _bounds.Radius * ScreenHalfSize, Angle.HalfPi - amin + _cameraAzimuth.Rad, Angle.HalfPi - amax + _cameraAzimuth.Rad);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void PathStroke(bool closed, uint color = default, float thickness = 1f)
@@ -348,10 +336,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         ImGui.GetWindowDrawList().PathStroke(color != default ? color : Colors.Danger, closed ? ImDrawFlags.Closed : ImDrawFlags.None, thickness);
     }
 
-    public static void PathFillConvex(uint color = default)
-    {
-        ImGui.GetWindowDrawList().PathFillConvex(color != default ? color : Colors.Danger);
-    }
+    public static void PathFillConvex(uint color = default) => ImGui.GetWindowDrawList().PathFillConvex(color != default ? color : Colors.Danger);
 
     // draw clipped & triangulated zone
     public void Zone(List<RelTriangle> triangulation, uint color = default)
@@ -502,10 +487,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void TextWorld(WPos center, string text, uint color, float fontSize = 17f)
-    {
-        TextScreen(WorldPositionToScreenPosition(center), text, color, fontSize);
-    }
+    public void TextWorld(WPos center, string text, uint color, float fontSize = 17f) => TextScreen(WorldPositionToScreenPosition(center), text, color, fontSize);
 
     public void IconScreen(Vector2 center, FontAwesomeIcon icon, uint color, float fontSize = 17)
     {
@@ -514,10 +496,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         ImGui.GetWindowDrawList().AddText(Service.IconFont, fontSize, center - size / 2, color, icon.ToIconString());
     }
 
-    public void IconWorld(WPos center, FontAwesomeIcon icon, uint color, float fontSize = 17)
-    {
-        IconScreen(WorldPositionToScreenPosition(center), icon, color, fontSize);
-    }
+    public void IconWorld(WPos center, FontAwesomeIcon icon, uint color, float fontSize = 17) => IconScreen(WorldPositionToScreenPosition(center), icon, color, fontSize);
 
     // high level utilities
     // draw arena border
@@ -593,7 +572,10 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var positionscale035pscale0433 = positionscale035 + scale0433;
         var positionscale035mscale0433 = positionscale035 - scale0433;
         if (Config.ShowOutlinesAndShadows)
+        {
             AddTriangle(positionscale07, positionscale035pscale0433, positionscale035mscale0433, Colors.Shadows, 2f);
+        }
+
         AddTriangleFilled(positionscale07, positionscale035pscale0433, positionscale035mscale0433, color);
     }
 
@@ -621,7 +603,9 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         var l = dir.Length();
 
         if (l == default)
+        {
             return; // can't determine projection direction
+        }
 
         dir /= l;
         var t = IntersectRayBounds(from, dir);
@@ -634,21 +618,29 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     public void Actor(WPos position, Angle rotation, uint color)
     {
         if (InBounds(position))
+        {
             ActorInsideBounds(position, rotation, color);
+        }
         else
+        {
             ActorOutsideBounds(ClampToBounds(position), rotation, color);
+        }
     }
 
     public void Actor(Actor? actor, uint color = default, bool allowDeadAndUntargetable = false)
     {
         if (actor != null && !actor.IsDestroyed && (allowDeadAndUntargetable || actor.IsTargetable && !actor.IsDead))
+        {
             Actor(actor.Position, actor.Rotation, color == default ? Colors.Enemy : color);
+        }
     }
 
     public void Actors(IEnumerable<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false)
     {
         foreach (var a in actors)
+        {
             Actor(a, color == default ? Colors.Enemy : color, allowDeadAndUntargetable);
+        }
     }
 
     public void Actors(List<Actor> actors, uint color = default, bool allowDeadAndUntargetable = false)
@@ -702,8 +694,5 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
         }
     }
 
-    public static void End()
-    {
-        ImGui.GetWindowDrawList().PopClipRect();
-    }
+    public static void End() => ImGui.GetWindowDrawList().PopClipRect();
 }

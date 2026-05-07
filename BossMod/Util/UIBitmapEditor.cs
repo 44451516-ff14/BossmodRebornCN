@@ -1,5 +1,5 @@
-﻿using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod;
 
@@ -39,7 +39,9 @@ public class UIBitmapEditor
     {
         using var table = ImRaii.Table("table", 2);
         if (!table)
+        {
             return;
+        }
 
         ImGui.TableSetupColumn("Map", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoClip, ScreenSize.X);
         ImGui.TableSetupColumn("Control");
@@ -68,7 +70,10 @@ public class UIBitmapEditor
     protected void CheckpointNoClone(Bitmap newState)
     {
         if (_curUndoPos < _bitmaps.Count - 1)
+        {
             _bitmaps.RemoveRange(_curUndoPos + 1, _bitmaps.Count - _curUndoPos - 1);
+        }
+
         _bitmaps.Add(newState);
         ++_curUndoPos;
     }
@@ -91,12 +96,15 @@ public class UIBitmapEditor
 
     protected void DrawModeButtons()
     {
-        for (int i = 0; i < _modeNames.Count; ++i)
+        for (var i = 0; i < _modeNames.Count; ++i)
         {
             var active = CurrentMode == i + 1;
             using var color = ImRaii.PushColor(ImGuiCol.Button, 0xff008080, active);
             if (ImGui.Button(_modeNames[i]))
+            {
                 CurrentMode = active ? 0 : i + 1;
+            }
+
             ImGui.SameLine();
         }
         ImGui.NewLine();
@@ -105,12 +113,21 @@ public class UIBitmapEditor
     protected void DrawUndoRedoButtons()
     {
         using (ImRaii.Disabled(!CanUndo()))
+        {
             if (ImGui.Button("Undo"))
+            {
                 Undo();
+            }
+        }
+
         ImGui.SameLine();
         using (ImRaii.Disabled(!CanRedo()))
+        {
             if (ImGui.Button("Redo"))
+            {
                 Redo();
+            }
+        }
     }
 
     private void DrawGrid()
@@ -122,12 +139,18 @@ public class UIBitmapEditor
 
         ImGui.InvisibleButton("###grid", ScreenSize);
         if (ImGui.IsItemActive() && ImGui.IsMouseDragging(ImGuiMouseButton.Left, 0))
+        {
             HandleDrag(mouseOffset, ImGui.GetIO().MouseDelta);
+        }
         else
+        {
             _paintInProgress = false;
+        }
 
         if (ImGui.IsItemHovered() && ImGui.GetIO().MouseWheel is var wheel && wheel != 0)
+        {
             HandleWheel(wheel, mouseOffset);
+        }
 
         ImGui.PushClipRect(tl, br, false);
 
@@ -152,15 +175,17 @@ public class UIBitmapEditor
             var x = (int)MathF.Floor(c.X);
             var y = (int)MathF.Floor(c.Y);
             if (x >= 0 && y >= 0 && x < Bitmap.Width && y < Bitmap.Height)
+            {
                 HoveredPixel = (x, y);
+            }
         }
 
         var c0 = Bitmap.Color0.ToFloat4();
         var c1 = Bitmap.Color1.ToFloat4();
-        for (int y = y0; y < y1; y += numBitmapPixelsPerScreenPixel)
+        for (var y = y0; y < y1; y += numBitmapPixelsPerScreenPixel)
         {
             var corner = tl + new Vector2(screenX0, screenY0);
-            for (int x = x0; x < x1; x += numBitmapPixelsPerScreenPixel)
+            for (var x = x0; x < x1; x += numBitmapPixelsPerScreenPixel)
             {
                 var cornerEnd = corner + new Vector2(numScreenPixelsPerBitmapPixel);
                 var cellTL = Vector2.Max(tl, corner);
@@ -170,10 +195,17 @@ public class UIBitmapEditor
                     float opacity = 0;
                     var subXMax = Math.Min(x1, x + numBitmapPixelsPerScreenPixel);
                     var subYMax = Math.Min(y1, y + numBitmapPixelsPerScreenPixel);
-                    for (int sy = y; sy < subYMax; ++sy)
-                        for (int sx = x; sx < subXMax; ++sx)
+                    for (var sy = y; sy < subYMax; ++sy)
+                    {
+                        for (var sx = x; sx < subXMax; ++sx)
+                        {
                             if (Bitmap[sx, sy])
+                            {
                                 opacity += pixelWeight;
+                            }
+                        }
+                    }
+
                     var color = Vector4.Lerp(c0, c1, opacity);
                     dl.AddRectFilled(cellTL, cellBR, Color.FromFloat4(color).ABGR);
                 }
@@ -185,7 +217,10 @@ public class UIBitmapEditor
         void drawLine(Vector2 a, Vector2 b, uint color, int thickness)
         {
             if (a.X < tl.X && b.X < tl.X || a.Y < tl.Y && b.Y < tl.Y || a.X > br.X && b.X > br.X || a.Y > br.Y && b.Y > br.Y)
+            {
                 return;
+            }
+
             a.X = Math.Clamp(a.X, tl.X, br.X);
             a.Y = Math.Clamp(a.Y, tl.Y, br.Y);
             b.X = Math.Clamp(b.X, tl.X, br.X);
@@ -206,12 +241,12 @@ public class UIBitmapEditor
         // grid
         if (ZoomLevel > 1)
         {
-            for (int x = x0 + 1; x < x1; ++x)
+            for (var x = x0 + 1; x < x1; ++x)
             {
                 var off = new Vector2(x * numScreenPixelsPerBitmapPixel, 0);
                 drawLine(borderA + off, borderD + off, Colors.Border, 1);
             }
-            for (int y = y0 + 1; y < y1; ++y)
+            for (var y = y0 + 1; y < y1; ++y)
             {
                 var off = new Vector2(0, y * numScreenPixelsPerBitmapPixel);
                 drawLine(borderA + off, borderB + off, Colors.Border, 1);
@@ -278,13 +313,22 @@ public class UIBitmapEditor
             bool intersectBrushRectPixel(int x, int y)
             {
                 if (RangesDisjoint(brushProjX, (x, x + 1)) || RangesDisjoint(brushProjY, (y, y + 1)))
+                {
                     return false; // either X or Y is a separating axis
+                }
+
                 var offD = Vector2.Dot(d, new(x, y));
                 if (RangesDisjoint(brushProjD, (unitProjD.min + offD, unitProjD.max + offD)))
+                {
                     return false; // d is a separating axis
+                }
+
                 var offN = Vector2.Dot(n, new(x, y));
                 if (RangesDisjoint(brushProjN, (unitProjN.min + offN, unitProjN.max + offN)))
+                {
                     return false; // n is a separating axis
+                }
+
                 return true; // no separating axis found
             }
 
@@ -293,10 +337,16 @@ public class UIBitmapEditor
             var y0 = Math.Max(0, (int)(Math.Min(p1.Y, p2.Y) - BrushRadius));
             var y1 = Math.Min(Bitmap.Height, (int)(Math.Max(p1.Y, p2.Y) + BrushRadius) + 1);
             var value = CurrentMode == BrushModeId;
-            for (int y = y0; y < y1; ++y)
-                for (int x = x0; x < x1; ++x)
+            for (var y = y0; y < y1; ++y)
+            {
+                for (var x = x0; x < x1; ++x)
+                {
                     if (intersectBrushRectPixel(x, y) || IntersectCirclePixel(p1, BrushRadius, x, y) || IntersectCirclePixel(p2, BrushRadius, x, y))
+                    {
                         Bitmap[x, y] = value;
+                    }
+                }
+            }
         }
     }
 

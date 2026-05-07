@@ -546,9 +546,21 @@ public abstract class UniformStackSpread(BossModule module, float stackRadius, f
     public int MaxStackSize = maxStackSize;
 
     public void AddStack(Actor target, DateTime activation = default, BitMask forbiddenPlayers = default) => Stacks.Add(new(target, StackRadius, MinStackSize, MaxStackSize, activation, forbiddenPlayers));
-    public void AddStacks(IEnumerable<Actor> targets, DateTime activation = default) => Stacks.AddRange(targets.Select(target => new Stack(target, StackRadius, MinStackSize, MaxStackSize, activation)));
+    public void AddStacks(IEnumerable<Actor> targets, DateTime activation = default)
+    {
+        foreach (var target in targets)
+        {
+            Stacks.Add(new(target, StackRadius, MinStackSize, MaxStackSize, activation));
+        }
+    }
     public void AddSpread(Actor target, DateTime activation = default) => Spreads.Add(new(target, SpreadRadius, activation));
-    public void AddSpreads(IEnumerable<Actor> targets, DateTime activation = default) => Spreads.AddRange(targets.Select(target => new Spread(target, SpreadRadius, activation)));
+    public void AddSpreads(IEnumerable<Actor> targets, DateTime activation = default)
+    {
+        foreach (var target in targets)
+        {
+            Spreads.Add(new(target, SpreadRadius, activation));
+        }
+    }
 }
 
 // spread/stack mechanic that selects targets by casts

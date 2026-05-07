@@ -48,16 +48,25 @@ public abstract class AIRotationModule(RotationModuleManager manager, Actor play
     {
         var dir = desired - target.Position;
         if (dir.LengthSq() < 0.01f)
+        {
             return ClosestInRange(Player.Position, target.Position, target.HitboxRadius + targetMeleeRange - 0.1f);
+        }
+
         dir = dir.Normalized();
         var ideal = desired + dir * (target.HitboxRadius + targetMeleeRange); // if we just stay here, boss should go to the desired position
         var targetMoveDir = (ideal - target.Position).Normalized();
         var playerDotTargetMove = targetMoveDir.Dot(ideal - Player.Position);
         if (playerDotTargetMove < 0)
+        {
             ideal -= playerDotTargetMove * targetMoveDir; // don't move towards boss, though
+        }
+
         var targetRemaining = (ideal - target.Position).Length() - target.HitboxRadius - targetMeleeRange - (target.Position - target.PrevPosition).Length() / World.Frame.Duration * nextAction - Speed() * nextAction;
         if (targetRemaining > 0)
+        {
             ideal += targetRemaining * (target.Position - ideal).Normalized();
+        }
+
         return ideal;
     }
 }

@@ -81,7 +81,10 @@ public sealed class ReplayRecorder : IDisposable
         {
             _dest.Write('|');
             foreach (var b in v)
+            {
                 _dest.Write($"{b:X2}");
+            }
+
             return this;
         }
         public override Output Emit(ActionID v) => WriteEntry(v.ToString());
@@ -89,8 +92,11 @@ public sealed class ReplayRecorder : IDisposable
         public override Output Emit(ActorStatus v) => WriteEntry(Utils.StatusString(v.ID)).WriteEntry(v.Extra.ToString("X4")).WriteEntry(Utils.StatusTimeString(v.ExpireAt, _curEntry)).EmitActor(v.SourceID);
         public override Output Emit(in ActionEffects v)
         {
-            for (int i = 0; i < ActionEffects.MaxCount; ++i)
+            for (var i = 0; i < ActionEffects.MaxCount; ++i)
+            {
                 Emit(v[i], "X16");
+            }
+
             return this;
         }
         public override Output Emit(List<ActorCastEvent.Target> v)
@@ -99,8 +105,12 @@ public sealed class ReplayRecorder : IDisposable
             {
                 EmitActor(t.ID);
                 for (var i = 0; i < ActionEffects.MaxCount; ++i)
+                {
                     if (t.Effects[i] != 0)
+                    {
                         _dest.Write($"!{t.Effects[i]:X16}");
+                    }
+                }
             }
             return this;
         }
@@ -238,7 +248,10 @@ public sealed class ReplayRecorder : IDisposable
         public override Output Emit(in ActionEffects v)
         {
             for (var i = 0; i < ActionEffects.MaxCount; ++i)
+            {
                 _dest.Write(v[i]);
+            }
+
             return this;
         }
         public override Output Emit(List<ActorCastEvent.Target> v)
@@ -248,7 +261,9 @@ public sealed class ReplayRecorder : IDisposable
             {
                 _dest.Write(t.ID);
                 for (var i = 0; i < ActionEffects.MaxCount; ++i)
+                {
                     _dest.Write(t.Effects[i]);
+                }
             }
             return this;
         }
@@ -302,7 +317,10 @@ public sealed class ReplayRecorder : IDisposable
         _logger.StartEntry(_ws.CurrentTime);
         _logger.EmitFourCC("VER "u8).Emit(Version).Emit(_ws.QPF).Emit(_ws.GameVersion);
         if (_logger is BinaryOutput)
+        {
             _logger.Emit(_ws.CurrentTime.Ticks);
+        }
+
         _logger.EndEntry();
         if (logInitialState)
         {

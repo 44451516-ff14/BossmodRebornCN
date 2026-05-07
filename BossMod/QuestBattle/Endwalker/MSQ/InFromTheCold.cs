@@ -17,13 +17,19 @@ class ImperialAI(WorldState ws) : UnmanagedRotation(ws, 3f)
         }
 
         if (Player.HPMP.CurHP < Player.HPMP.MaxHP * 0.75f && World.Client.DutyActions[0].CurCharges > 0)
+        {
             UseAction(Roleplay.AID.MedicalKit, Player, -50f);
+        }
 
         if (primaryTarget is not { IsAlly: false })
+        {
             return;
+        }
 
         if (Player.InCombat)
+        {
             UseAction(Roleplay.AID.RampartIFTC, Player, -50f);
+        }
 
         switch (ComboAction)
         {
@@ -49,8 +55,12 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
     public override void AddQuestAIHints(Actor player, AIHints hints)
     {
         foreach (var h in hints.PotentialTargets.Where(p => p.Actor.Position.InCircle(player.Position, 40f)))
+        {
             if (!h.Actor.InCombat && !h.Actor.Position.AlmostEqual(new(111f, -317f), 10f))
+            {
                 hints.AddForbiddenZone(new SDCone(h.Actor.Position, 8.5f + h.Actor.HitboxRadius, h.Actor.Rotation, 45f.Degrees()));
+            }
+        }
 
         _ai.Execute(player, hints);
     }
@@ -83,9 +93,7 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
             .Named("Wounded Imperial")
             .Hints((player, hints) => {
                 hints.GoalZones.Add(AIHints.GoalSingleTarget(new WPos(105, -259), 3));
-                if (player.Position.AlmostEqual(new WPos(111.218f, -257.802f), 2))
-                    hints.WantJump = true;
-            })
+                if (player.Position.AlmostEqual(new WPos(111.218f, -257.802f), 2)) { hints.WantJump = true; } })
             .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76E0u)),
 
         new QuestObjective(ws)
@@ -97,18 +105,14 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
             .Named("Fuel")
             .WithInteract(0x1EB69Eu)
             .Hints((player, hints) => {
-                if (player.Position.AlmostEqual(new WPos(109, -257.263f), 2f))
-                    hints.WantJump = true;
-            })
+                if (player.Position.AlmostEqual(new WPos(109, -257.263f), 2f)) { hints.WantJump = true; } })
             .With(obj => obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == default && st.ID == 404u)),
 
         new QuestObjective(ws)
             .Named("Refuel")
             .Hints((player, hints) => {
                 hints.InteractWithOID(World, 0x1EB56Fu);
-                if (hints.InteractWithTarget == null)
-                    hints.InteractWithOID(World, 0x1EB4F1u);
-            })
+                if (hints.InteractWithTarget == null) { hints.InteractWithOID(World, 0x1EB4F1u); } })
             .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76C1u)),
 
         new QuestObjective(ws)

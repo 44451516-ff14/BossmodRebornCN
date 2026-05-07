@@ -23,7 +23,9 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
             {
                 var twister = Twisters[i];
                 if (twister.EventState != 7)
+                {
                     result[index++] = twister;
+                }
             }
             return result.AsSpan(0, index);
         }
@@ -34,7 +36,11 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
     public void AddPredicted(float activationDelay)
     {
         PredictedPositions.Clear();
-        PredictedPositions.AddRange(Raid.WithoutSlot().Select(a => a.Position));
+        foreach (var a in Raid.WithoutSlot())
+        {
+            PredictedPositions.Add(a.Position);
+        }
+
         PredictedActivation = WorldState.FutureTime(activationDelay);
     }
 
@@ -47,15 +53,22 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
 
         var count = countPredictedPositions + lenActiveTwisters;
         if (count == 0)
+        {
             return [];
+        }
 
         var aoes = new AOEInstance[count];
         var index = 0;
 
         for (var i = 0; i < countPredictedPositions; ++i)
+        {
             aoes[index++] = new AOEInstance(_shape, predictedSpan[i], default, PredictedActivation);
+        }
+
         for (var i = 0; i < lenActiveTwisters; ++i)
+        {
             aoes[index++] = new AOEInstance(_shape, active[i].Position);
+        }
 
         return aoes;
     }
@@ -63,7 +76,9 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID == _twisterOID)
+        {
             PredictedPositions.Clear();
+        }
     }
 }
 
@@ -71,10 +86,7 @@ public class GenericTwister(BossModule module, float radius, uint oid, uint aid 
 [SkipLocalsInit]
 public class ImmediateTwister : GenericTwister
 {
-    public ImmediateTwister(BossModule module, float radius, uint oid, float activationDelay) : base(module, radius, oid)
-    {
-        AddPredicted(activationDelay);
-    }
+    public ImmediateTwister(BossModule module, float radius, uint oid, float activationDelay) : base(module, radius, oid) => AddPredicted(activationDelay);
 }
 
 // twister that activates on cast end, or slightly before

@@ -1,7 +1,6 @@
-﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+﻿using Dalamud.Bindings.ImGui;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.Interop;
-using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -23,9 +22,14 @@ public sealed unsafe class DebugAddon : IDisposable
     public void Dispose()
     {
         foreach (var h in _rcvAddonHooks.Values)
+        {
             h.Dispose();
+        }
+
         foreach (var h in _rcvAgentHooks.Values)
+        {
             h.Dispose();
+        }
     }
 
     public void Draw()
@@ -35,7 +39,9 @@ public sealed unsafe class DebugAddon : IDisposable
         {
             var hook = _rcvAddonHooks[v];
             if (ImGui.Button($"{(hook.Enabled ? "Disable" : "Enable")} {k} ({v:X})"))
+            {
                 hook.Enabled ^= true;
+            }
         }
 
         ImGui.TextUnformatted("Agents:");
@@ -43,7 +49,9 @@ public sealed unsafe class DebugAddon : IDisposable
         {
             var hook = _rcvAgentHooks[v];
             if (ImGui.Button($"{(hook.Enabled ? "Disable" : "Enable")} {k} ({v:X})"))
+            {
                 hook.Enabled ^= true;
+            }
         }
 
         ImGui.InputText("Addon name / agent id", ref _newHook, 256);
@@ -92,7 +100,10 @@ public sealed unsafe class DebugAddon : IDisposable
         for (var i = 0; i < count; ++i)
         {
             if (i > 0)
+            {
                 res += ", ";
+            }
+
             res += values[i].Type switch
             {
                 FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Int => $"int {values[i].Int}",

@@ -108,16 +108,12 @@ public static class CurveApprox
     }
 
     // return polygon points for rectangle - it's not really a curve, but whatever...
-    public static WDir[] Rect(WDir dx, WDir dz)
-    {
-        return
-        [
+    public static WDir[] Rect(WDir dx, WDir dz) => [
             dx - dz,
             dx + dz,
             -dx + dz,
             -dx - dz
         ];
-    }
 
     public static WDir[] Rect(WDir dirZ, float halfWidth, float halfHeight)
     {

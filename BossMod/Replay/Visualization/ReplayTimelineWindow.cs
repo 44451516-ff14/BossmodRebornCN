@@ -1,6 +1,6 @@
 ﻿using BossMod.Autorotation;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod.ReplayVisualization;
 
@@ -50,22 +50,34 @@ sealed class ReplayTimelineWindow : UIWindow
         _timeline.CurrentTime = t;
         _timeline.Draw();
         if (_timeline.CurrentTime != t)
+        {
             _timelineSync.CurrentTime = _encounter.Time.Start.AddSeconds(_timeline.CurrentTime.Value);
+        }
 
         using var config = ImRaii.Popup("config");
         if (config)
+        {
             DrawConfig();
+        }
     }
 
     private void DrawConfig()
     {
         UICombo.Enum("State text", ref _colStates.TextDisplay);
         foreach (var _ in _configTree.Node("Enemy casts columns"))
+        {
             _colCastEvents.DrawConfig(_configTree);
+        }
+
         foreach (var n in _configTree.Node("Enemy details"))
+        {
             _colEnemies.DrawConfig(_configTree);
+        }
+
         foreach (var n in _configTree.Node("Player details"))
+        {
             _colPlayers.DrawConfig(_configTree);
+        }
     }
 
     private (StateMachineTree, List<int>) BuildStateData(Replay.Encounter enc)
@@ -74,7 +86,9 @@ sealed class ReplayTimelineWindow : UIWindow
         var m = BossModuleRegistry.CreateModuleForTimeline(enc.OID) ?? throw new ArgumentException($"Encounter module not available");
         Dictionary<uint, (StateMachine.State state, StateMachine.State? pred)> stateLookup = [];
         foreach (var p in m.StateMachine.Phases)
+        {
             GatherStates(stateLookup, p.InitialState, null);
+        }
 
         // update state durations to match replay data; we don't touch unvisited states, however we set 'skipped' state durations to 0
         var stateEnter = enc.Time.Start;
@@ -93,9 +107,17 @@ sealed class ReplayTimelineWindow : UIWindow
         }
 
         var tree = new StateMachineTree(m.StateMachine);
-        var phaseBranches = Enumerable.Repeat(0, m.StateMachine.Phases.Count).ToList();
+        var phaseBranches = new List<int>(m.StateMachine.Phases.Count);
+        for (var i = 0; i < m.StateMachine.Phases.Count; ++i)
+        {
+            phaseBranches.Add(0);
+        }
+
         List<float> phaseTimings = [];
-        phaseTimings.AddRange(Enumerable.Repeat(0.0f, m.StateMachine.Phases.Count));
+        for (var i = 0; i < m.StateMachine.Phases.Count; ++i)
+        {
+            phaseTimings.Add(0.0f);
+        }
 
         var phaseEnter = enc.Time.Start;
         foreach (var p in enc.Phases)
@@ -113,7 +135,11 @@ sealed class ReplayTimelineWindow : UIWindow
     {
         res[start.ID] = (start, pred);
         if (start.NextStates != null)
+        {
             foreach (var succ in start.NextStates)
+            {
                 GatherStates(res, succ, start);
+            }
+        }
     }
 }

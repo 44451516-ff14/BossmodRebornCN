@@ -53,7 +53,9 @@ public sealed class ObstacleMapDatabase
             foreach (var (key, entries) in Entries)
             {
                 if (entries.Count == 0)
+                {
                     continue; // no entries, skip
+                }
 
                 var zone = key >> 16;
                 var cfc = key & 0xFFFF;

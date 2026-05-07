@@ -1,7 +1,6 @@
 ﻿using BossMod.Autorotation;
 using Dalamud.Game.Chat;
 using Dalamud.Game.Text;
-using Dalamud.Game.Text.SeStringHandling;
 
 namespace BossMod;
 
@@ -17,10 +16,7 @@ internal sealed class MultiboxManager : IDisposable
         Service.ChatGui.ChatMessage += OnChatMessage;
     }
 
-    public void Dispose()
-    {
-        Service.ChatGui.ChatMessage -= OnChatMessage;
-    }
+    public void Dispose() => Service.ChatGui.ChatMessage -= OnChatMessage;
 
     private void OnChatMessage(IHandleableChatMessage chatMessage)
     {
@@ -31,7 +27,8 @@ internal sealed class MultiboxManager : IDisposable
             foreach (var p in _rotations.Database.Presets.AllPresets)
             {
 #if DEBUG
-                var md = p.Modules.FirstOrDefault(m => m.Type == typeof(Autorotation.MiscAI.Multibox));
+                Preset.ModuleSettings? md = null;
+                foreach (var m in p.Modules) if (m.Type == typeof(Autorotation.MiscAI.Multibox)) { md = m; break; }
                 if (md != null)
                     md.TransientSettings.Add(new Preset.ModuleSetting(default, 0, new StrategyValueInt() { Value = (long)leaderId }));
                 else

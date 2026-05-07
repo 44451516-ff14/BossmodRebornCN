@@ -292,8 +292,12 @@ public sealed class Definitions : IDisposable
 
         #region Phantom actions
         foreach (var action in typeof(PhantomID).GetEnumValues())
+        {
             if ((uint)action > 0)
+            {
                 d.RegisterSpell((PhantomID)action);
+            }
+        }
         #endregion
 
         Customize(d);
@@ -304,7 +308,7 @@ public sealed class Definitions : IDisposable
     private void Customize(ActionDefinitions d)
     {
         d.Spell(AID.Interject)!.ForbidExecute = (_, _, act, _) => !(act.Target?.CastInfo?.Interruptible ?? false); // don't use interject if target is not casting interruptible spell
-        d.Spell(AID.Reprisal)!.ForbidExecute = (_, player, _, hints) => !hints.PotentialTargets.Any(e => e.Actor.Position.InCircle(player.Position, 5 + e.Actor.HitboxRadius)); // don't use reprisal if no one would be hit; TODO: consider checking only target?..
+        d.Spell(AID.Reprisal)!.ForbidExecute = (_, player, _, hints) => { foreach (var e in hints.PotentialTargets) { if (e.Actor.Position.InCircle(player.Position, 5 + e.Actor.HitboxRadius)) { return false; } } return true; }; // don't use reprisal if no one would be hit; TODO: consider checking only target?
         d.Spell(AID.Shirk)!.SmartTarget = ActionDefinitions.SmartTargetCoTank;
 
         //d.Spell(AID.Repose)!.EffectDuration = 30;
@@ -330,10 +334,14 @@ public sealed class Definitions : IDisposable
             var cfg = Service.Config.Get<ActionTweaksConfig>();
             var target = action.Target;
             if (target == null || !cfg.DashSafety)
+            {
                 return false;
+            }
 
             if (player.PendingKnockbacks.Count > 0)
+            {
                 return true;
+            }
 
             var dir = player.DirectionTo(target).Normalized() * 15;
             return ActionDefinitions.IsDashDangerous(player.Position, player.Position + dir, hints);

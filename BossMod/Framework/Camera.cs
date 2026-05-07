@@ -27,7 +27,9 @@ sealed class Camera
         var controlCamera = CameraManager.Instance()->GetActiveCamera();
         var renderCamera = controlCamera != null ? controlCamera->SceneCamera.RenderCamera : null;
         if (renderCamera == null)
+        {
             return;
+        }
 
         Origin = renderCamera->Origin;
         View = renderCamera->ViewMatrix;
@@ -51,11 +53,16 @@ sealed class Camera
     public void DrawWorldPrimitives()
     {
         if (_worldDrawLines.Count == 0)
+        {
             return;
+        }
 
         var dl = ImGui.GetBackgroundDrawList();
         foreach (var l in _worldDrawLines)
+        {
             dl.AddLine(l.From, l.To, l.Color, l.Thickness);
+        }
+
         _worldDrawLines.Clear();
     }
 
@@ -64,7 +71,9 @@ sealed class Camera
         var p1w = start;
         var p2w = end;
         if (!ClipLineToNearPlane(ref p1w, ref p2w))
+        {
             return;
+        }
 
         var p1p = Vector4.Transform(p1w, ViewProj);
         var p2p = Vector4.Transform(p2w, ViewProj);
@@ -77,7 +86,7 @@ sealed class Camera
 
     public void DrawWorldCone(Vector3 center, float radius, Angle direction, Angle halfWidth, uint color, float thickness = 1)
     {
-        int numSegments = CurveApprox.CalculateCircleSegments(radius, halfWidth, maxerror);
+        var numSegments = CurveApprox.CalculateCircleSegments(radius, halfWidth, maxerror);
         var delta = halfWidth / numSegments;
 
         var prev = center + radius * (direction - delta * numSegments).ToDirection().ToVec3();
@@ -93,7 +102,7 @@ sealed class Camera
 
     public void DrawWorldCircle(Vector3 center, float radius, uint color, float thickness = 1)
     {
-        int numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), maxerror);
+        var numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), maxerror);
         var prev = center + new Vector3(0, 0, radius);
         for (var i = 1; i <= numSegments; ++i)
         {
@@ -105,7 +114,7 @@ sealed class Camera
 
     public void DrawWorldSphere(Vector3 center, float radius, uint color, float thickness = 1)
     {
-        int numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), maxerror);
+        var numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), maxerror);
         var prev1 = center + new Vector3(0, 0, radius);
         var prev2 = center + new Vector3(0, radius, 0);
         var prev3 = center + new Vector3(radius, 0, 0);
@@ -129,7 +138,9 @@ sealed class Camera
         var an = Vector4.Dot(new(a, 1), NearPlane);
         var bn = Vector4.Dot(new(b, 1), NearPlane);
         if (an >= 0 && bn >= 0)
+        {
             return false; // line fully behind near plane
+        }
 
         if (an > 0 || bn > 0)
         {
@@ -138,9 +149,13 @@ sealed class Camera
             var t = -an / abn;
             var p = a + t * ab;
             if (an > 0)
+            {
                 a = p;
+            }
             else
+            {
                 b = p;
+            }
         }
         return true;
     }

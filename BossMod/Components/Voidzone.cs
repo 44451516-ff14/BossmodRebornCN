@@ -24,8 +24,13 @@ public class Voidzone(BossModule module, float radius, Func<BossModule, IEnumera
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (!Sources(Module).Any())
+        var hasSources = false;
+        foreach (var _ in Sources(Module)) { hasSources = true; break; }
+        if (!hasSources)
+        {
             return;
+        }
+
         if (MovementHintLength == 0)
         {
             foreach (var s in Sources(Module))
@@ -84,7 +89,9 @@ public class VoidzoneAtCastTarget(BossModule module, float radius, uint aid, Fun
             _aoes.Add(new(Shape, p.pos, default, p.time));
         }
         foreach (var z in Sources(Module))
+        {
             _aoes.Add(new(Shape, z.Position.Quantized()));
+        }
 
         return CollectionsMarshal.AsSpan(_aoes);
     }
@@ -205,11 +212,20 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        var inVoidzone = Sources(Module).Any(s => Shape.Check(actor.Position, s));
+        var inVoidzone = false;
+        foreach (var s in Sources(Module))
+        {
+            if (Shape.Check(actor.Position, s)) { inVoidzone = true; break; }
+        }
+
         if (Inverted)
+        {
             hints.Add(inVoidzone ? "Stay in voidzone" : "Go to voidzone!", !inVoidzone);
+        }
         else if (inVoidzone)
+        {
             hints.Add("GTFO from voidzone!");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -222,7 +238,9 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
             shapes.Add(shape);
         }
         if (shapes.Count == 0)
+        {
             return;
+        }
 
         hints.AddForbiddenZone(Inverted ? new SDInvertedUnion([.. shapes]) : new SDUnion([.. shapes]), InvertResolveAt);
     }
@@ -232,7 +250,9 @@ public class PersistentInvertibleVoidzone(BossModule module, float radius, Func<
     {
         var color = Inverted ? Colors.SafeFromAOE : default;
         foreach (var s in Sources(Module))
+        {
             Shape.Draw(Arena, s.Position, s.Rotation, color);
+        }
     }
 }
 
@@ -243,12 +263,16 @@ public class PersistentInvertibleVoidzoneByCast(BossModule module, float radius,
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             InvertResolveAt = Module.CastFinishAt(spell);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             InvertResolveAt = default;
+        }
     }
 }

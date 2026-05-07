@@ -1,5 +1,5 @@
-﻿using Dalamud.Interface.Utility;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility;
 
 namespace BossMod;
 
@@ -56,10 +56,14 @@ public sealed class Timeline
             }
             else
             {
-                foreach (var c in Columns.Where(c => c.Width > 0))
+                for (var ci = 0; ci < Columns.Count; ++ci)
                 {
-                    c.DrawHeader(topLeft);
-                    topLeft.X += c.Width;
+                    var c = Columns[ci];
+                    if (c.Width > 0)
+                    {
+                        c.DrawHeader(topLeft);
+                        topLeft.X += c.Width;
+                    }
                 }
             }
         }
@@ -67,8 +71,14 @@ public sealed class Timeline
         public override void DrawAdvance(ref float x)
         {
             Draw(); // in case someone overrides this...
-            foreach (var c in Columns.Where(c => c.Width > 0))
-                c.DrawAdvance(ref x);
+            for (var ci = 0; ci < Columns.Count; ++ci)
+            {
+                var c = Columns[ci];
+                if (c.Width > 0)
+                {
+                    c.DrawAdvance(ref x);
+                }
+            }
         }
 
         public T Add<T>(T col) where T : Column
@@ -113,10 +123,7 @@ public sealed class Timeline
     public float Height;
     public Vector2 ScreenClientTL => _screenClientTL;
 
-    public Timeline()
-    {
-        Columns = new(this);
-    }
+    public Timeline() => Columns = new(this);
 
     public void Draw()
     {
@@ -140,7 +147,10 @@ public sealed class Timeline
 
         // cursor lines
         foreach (var h in _highlightTime)
+        {
             ImGui.GetWindowDrawList().AddLine(CanvasCoordsToScreenCoords(0, h.t), CanvasCoordsToScreenCoords(Columns.Width, h.t), h.color);
+        }
+
         _highlightTime.Clear();
 
         ImGui.PopClipRect();
@@ -152,10 +162,15 @@ public sealed class Timeline
             foreach (var strings in _tooltip)
             {
                 if (!first)
+                {
                     ImGui.Separator();
+                }
+
                 first = false;
                 foreach (var s in strings)
+                {
                     ImGui.TextUnformatted(s);
+                }
             }
             ImGui.EndTooltip();
             _tooltip.Clear();
@@ -190,11 +205,19 @@ public sealed class Timeline
 
                 _tickFrequency = 5;
                 while (_tickFrequency < 60 && PixelsPerSecond * _tickFrequency < 30)
+                {
                     _tickFrequency *= 2;
+                }
+
                 while (_tickFrequency > 1 && PixelsPerSecond * _tickFrequency > 55)
+                {
                     _tickFrequency = MathF.Floor(_tickFrequency * 0.5f);
+                }
+
                 while (_tickFrequency > 0.1f && PixelsPerSecond * _tickFrequency > 55)
+                {
                     _tickFrequency = MathF.Floor(_tickFrequency * 5) * 0.1f;
+                }
             }
             else
             {

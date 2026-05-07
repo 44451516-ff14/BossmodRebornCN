@@ -22,20 +22,32 @@ sealed class EffectResultReorder
                         if (eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage)
                         {
                             if (t.Target == a.Source)
+                            {
                                 damageSource = damageTarget = true;
+                            }
                             else if (eff.AtSource)
+                            {
                                 damageSource = true;
+                            }
                             else
+                            {
                                 damageTarget = true;
+                            }
                         }
                         else if (eff.Type is ActionEffectType.Heal)
                         {
                             if (t.Target == a.Source)
+                            {
                                 healSource = healTarget = true;
+                            }
                             else if (eff.AtSource)
+                            {
                                 healSource = true;
+                            }
                             else
+                            {
                                 healTarget = true;
+                            }
                         }
                     }
 
@@ -43,7 +55,10 @@ sealed class EffectResultReorder
                     {
                         var lastConfirm = _lastConfirms.GetValueOrDefault(a.Source.InstanceID);
                         if (lastConfirm.Item2 > t.ConfirmationSource)
+                        {
                             _reordered.Add((r, a.Source, lastConfirm.Item1, a, lastConfirm.Item3, healSource));
+                        }
+
                         _lastConfirms[a.Source.InstanceID] = (a, t.ConfirmationSource, healSource);
                     }
 
@@ -51,7 +66,10 @@ sealed class EffectResultReorder
                     {
                         var lastConfirm = _lastConfirms.GetValueOrDefault(t.Target.InstanceID);
                         if (lastConfirm.Item2 > t.ConfirmationTarget)
+                        {
                             _reordered.Add((r, t.Target, lastConfirm.Item1, a, lastConfirm.Item3, healTarget));
+                        }
+
                         _lastConfirms[t.Target.InstanceID] = (a, t.ConfirmationTarget, healTarget);
                     }
                 }

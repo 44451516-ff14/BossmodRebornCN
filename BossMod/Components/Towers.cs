@@ -51,7 +51,9 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
             {
                 ref var indexActor = ref party[i];
                 if (!ForbiddenSoakers[indexActor.Item1] && Shape.Check(indexActor.Item2.Position, Position, Rotation))
+                {
                     ++count;
+                }
             }
             return count;
         }
@@ -181,14 +183,8 @@ public class GenericTowers(BossModule module, uint aid = default, bool prioritiz
     }
 
     // default tower styling
-    public static void DrawTower(MiniArena arena, ref Tower tower, bool safe)
-    {
-        tower.Shape.Outline(arena, tower.Position, tower.Rotation, safe ? Colors.Safe : default, 2f);
-    }
-    public static void DrawTower(MiniArena arena, WPos pos, float radius, bool safe)
-    {
-        arena.AddCircle(pos, radius, safe ? Colors.Safe : default, 2f);
-    }
+    public static void DrawTower(MiniArena arena, ref Tower tower, bool safe) => tower.Shape.Outline(arena, tower.Position, tower.Rotation, safe ? Colors.Safe : default, 2f);
+    public static void DrawTower(MiniArena arena, WPos pos, float radius, bool safe) => arena.AddCircle(pos, radius, safe ? Colors.Safe : default, 2f);
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -367,7 +363,9 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
             foreach (var a in allowedSoakers)
             {
                 if (a.Position.InCircle(Position, Radius))
+                {
                     ++count;
+                }
             }
             return count;
         }
@@ -375,10 +373,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
         public bool CorrectAmountInside(BossModule module) => NumInside(module) is var count && count >= MinSoakers && count <= MaxSoakers;
         public bool InsufficientAmountInside(BossModule module) => NumInside(module) is var count && count < MaxSoakers;
 
-        public void InitializeAllowedSoakers(BossModule module)
-        {
-            AllowedSoakers ??= Soakers(module);
-        }
+        public void InitializeAllowedSoakers(BossModule module) => AllowedSoakers ??= Soakers(module);
     }
 
     protected static HashSet<Actor> Soakers(BossModule module)
@@ -415,10 +410,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
     public readonly bool PrioritizeEmpty = prioritizeEmpty; // give priority to towers with 0 soakers
 
     // default tower styling
-    public static void DrawTower(MiniArena arena, WPos pos, float radius, bool safe)
-    {
-        arena.AddCircle(pos, radius, safe ? Colors.Safe : default, 2f);
-    }
+    public static void DrawTower(MiniArena arena, WPos pos, float radius, bool safe) => arena.AddCircle(pos, radius, safe ? Colors.Safe : default, 2f);
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {

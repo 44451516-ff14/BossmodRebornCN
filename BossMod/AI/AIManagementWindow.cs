@@ -242,7 +242,10 @@ sealed class AIManagementWindow : UIWindow
         }
 
         if (aipreset != null)
+        {
             presetNames.Add("Deactivate");
+        }
+
         var countnames = presetNames.Count;
         var selectedIndex = presetNames.IndexOf(aipreset ?? "");
 
@@ -262,7 +265,9 @@ sealed class AIManagementWindow : UIWindow
             }
         }
         if (configModified)
+        {
             _config.Modified.Fire();
+        }
     }
 
     public override void OnClose() => SetVisible(false);

@@ -32,13 +32,20 @@ public sealed class RestoreRotationTweak
     {
         //Service.Log($"[RRT] Restore rotation: {current.Rad}: {_modified.Rad}->{_original.Rad}");
         if (!_pending)
+        {
             return null; // we don't have any pending rotation to restore
+        }
 
         if (_modified.AlmostEqual(current, 0.01f))
+        {
             return _original; // we still have the 'post' rotation, try restoring
+        }
 
         if (--_numRetries == 0)
+        {
             _pending = false; // we have unexpected rotation and we're out of retries, stop trying
+        }
+
         return null;
     }
 }

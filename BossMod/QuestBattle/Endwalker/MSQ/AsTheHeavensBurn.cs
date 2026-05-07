@@ -17,12 +17,16 @@ sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
 
         var refugee = World.Party.WithoutSlot(false, true, true).FirstOrDefault(x => x.OID == 0x35F1 && x.HPMP.CurHP < x.HPMP.MaxHP && x.IsTargetable);
         if (refugee is Actor r)
+        {
             UseAction(RID.Diagnosis, r);
+        }
 
         AutoHeal();
 
         if (primaryTarget is not { IsAlly: false })
+        {
             return;
+        }
 
         UseAction(RID.DosisIII, primaryTarget);
         UseAction(RID.LeveilleurToxikon, primaryTarget, -50);
@@ -31,18 +35,28 @@ sealed class AlphinaudAI(WorldState ws) : UnmanagedRotation(ws, 25)
     private void AutoHeal()
     {
         foreach (var h in Hints.PredictedDamage.Where(pd => pd.Players.NumSetBits() == 1))
+        {
             foreach (var (_, player) in World.Party.WithSlot(false, true, false).IncludedInMask(h.Players))
+            {
                 if (StatusDetails(player, 2844, Player.InstanceID).Left == 0)
+                {
                     UseAction(RID.LeveilleurDiagnosis, player);
+                }
+            }
+        }
 
         if (PartyHealth.PredictShouldHealInArea(Player.Position, 15, 0.6f))
+        {
             UseAction(RID.Prognosis, Player);
+        }
 
         if (PartyHealth.BestSTHealTarget is (Actor a, var st))
         {
             UseAction(RID.LeveilleurDruochole, a);
             if (st.PredictedHPRatio <= 0.5f)
+            {
                 UseAction(RID.Diagnosis, a);
+            }
         }
     }
 }
@@ -52,12 +66,16 @@ sealed class AlisaieAI(WorldState ws) : UnmanagedRotation(ws, 25)
     protected override void Exec(Actor? primaryTarget)
     {
         if (primaryTarget == null)
+        {
             return;
+        }
 
         if (World.Party.LimitBreakCur == 10000)
+        {
             UseAction(RID.VermilionPledge, primaryTarget, 100);
+        }
 
-        bool melee = false;
+        var melee = false;
 
         switch (ComboAction)
         {
@@ -102,7 +120,9 @@ sealed class AlisaieAI(WorldState ws) : UnmanagedRotation(ws, 25)
         }
 
         if (melee)
+        {
             Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, 3));
+        }
 
         UseAction(RID.EWEmbolden, Player, -50);
         UseAction(RID.EWContreSixte, primaryTarget, -50);
@@ -125,10 +145,7 @@ internal sealed class AsTheHeavensBurn(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Hints((player, hints) => {
-                if (!player.InCombat)
-                    hints.PrioritizeAll();
-
-                _alisaie.Execute(player, hints);
+                if (!player.InCombat) { hints.PrioritizeAll(); } _alisaie.Execute(player, hints);
             })
             .CompleteOnCreated(0x35EE)
     ];

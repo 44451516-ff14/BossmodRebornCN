@@ -24,10 +24,15 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module == null)
+            {
                 return "No active module";
+            }
+
             var sm = module.StateMachine;
             if (sm.ActiveState == null)
+            {
                 return "ActiveState is null";
+            }
 
             var sb = new StringBuilder();
             sb.Append($"Phase={sm.ActivePhaseIndex} State={sm.ActiveState.ID:X}({sm.ActiveState.Name}) Dur={sm.ActiveState.Duration:F1}s Hint={sm.ActiveState.EndHint}");
@@ -51,13 +56,25 @@ sealed class IPCProvider : IDisposable
                 count++;
             }
             if (!foundRW)
+            {
                 sb.Append(" | RW=NONE");
+            }
+
             if (!foundTB)
+            {
                 sb.Append(" | TB=NONE");
+            }
+
             if (next == null && count < 20)
+            {
                 sb.Append($" | Chain ended at {count} states");
+            }
+
             if (count >= 20)
+            {
                 sb.Append(" | Walked 20+ states");
+            }
+
             return sb.ToString();
         });
 
@@ -65,7 +82,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.Raidwide);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -74,7 +94,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.Tankbuster);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -83,7 +106,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.Knockback);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -92,7 +118,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.DowntimeStart);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -101,7 +130,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.DowntimeEnd);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -110,7 +142,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.VulnerableStart);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -119,7 +154,10 @@ sealed class IPCProvider : IDisposable
         {
             var module = bossmod.ActiveModule;
             if (module?.StateMachine.ActiveState == null)
+            {
                 return float.MaxValue;
+            }
+
             var next = module.StateMachine.NextTransitionWithFlag(StateMachine.StateHint.VulnerableEnd);
             return next == DateTime.MaxValue ? float.MaxValue : (float)(next - DateTime.Now).TotalSeconds;
         });
@@ -166,7 +204,9 @@ sealed class IPCProvider : IDisposable
             for (var i = 0; i < predicted.Count; ++i)
             {
                 if (predicted[i].Type == AIHints.PredictedDamageType.Raidwide)
+                {
                     return (float)(predicted[i].Activation - now).TotalSeconds;
+                }
             }
             return float.MaxValue;
         });
@@ -178,7 +218,9 @@ sealed class IPCProvider : IDisposable
             for (var i = 0; i < predicted.Count; ++i)
             {
                 if (predicted[i].Type == AIHints.PredictedDamageType.Tankbuster)
+                {
                     return (float)(predicted[i].Activation - now).TotalSeconds;
+                }
             }
             return float.MaxValue;
         });
@@ -214,7 +256,10 @@ sealed class IPCProvider : IDisposable
         {
             var player = bossmod.WorldState.Party.Player();
             if (player == null)
+            {
                 return false;
+            }
+
             var dest = player.Position + player.Rotation.ToDirection() * range * (backwards ? -1f : 1f);
             return !ActionDefinitions.IsDashDangerous(player.Position, dest, hints);
         });
@@ -225,7 +270,10 @@ sealed class IPCProvider : IDisposable
         {
             var player = bossmod.WorldState.Party.Player();
             if (player == null)
+            {
                 return false;
+            }
+
             var dir = (player.Position - new WPos(enemyPos.X, enemyPos.Z)).Normalized();
             var dest = player.Position + dir * range;
             return !ActionDefinitions.IsDashDangerous(player.Position, dest, hints);
@@ -261,7 +309,9 @@ sealed class IPCProvider : IDisposable
         {
             var node = JsonNode.Parse(presetSerialized, documentOptions: new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
             if (node == null)
+            {
                 return false;
+            }
 
             // preset converter operates on array of presets; plan converter doesn't but expects an `Encounter` key in the object
             node = new JsonArray(node);
@@ -270,14 +320,22 @@ sealed class IPCProvider : IDisposable
             var finfo = new FileInfo("<in-memory preset>");
 
             foreach (var conv in PlanPresetConverter.PresetSchema.Converters)
+            {
                 node = conv(node, version, finfo);
+            }
 
             var p = node.AsArray()[0].Deserialize<Preset>(Serialization.BuildSerializationOptions());
             if (p == null)
+            {
                 return false;
+            }
+
             var index = autorotation.Database.Presets.UserPresets.FindIndex(x => x.Name == p.Name);
             if (index >= 0 && !overwrite)
+            {
                 return false;
+            }
+
             autorotation.Database.Presets.Modify(index, p);
             return true;
         });
@@ -285,7 +343,10 @@ sealed class IPCProvider : IDisposable
         {
             var index = autorotation.Database.Presets.UserPresets.FindIndex(x => x.Name == name);
             if (index < 0)
+            {
                 return false;
+            }
+
             autorotation.Database.Presets.Modify(index, null);
             return true;
         });
@@ -295,14 +356,20 @@ sealed class IPCProvider : IDisposable
         {
             var preset = autorotation.Database.Presets.FindPresetByName(name);
             if (preset == null)
+            {
                 return false;
+            }
+
             autorotation.Preset = preset;
             return true;
         });
         Register("Presets.ClearActive", () =>
         {
             if (autorotation.Preset == null)
+            {
                 return false;
+            }
+
             autorotation.Preset = null;
             return true;
         });
@@ -310,7 +377,10 @@ sealed class IPCProvider : IDisposable
         Register("Presets.SetForceDisabled", () =>
         {
             if (autorotation.Preset == RotationModuleManager.ForceDisable)
+            {
                 return false;
+            }
+
             autorotation.Preset = RotationModuleManager.ForceDisable;
             return true;
         });
@@ -319,10 +389,15 @@ sealed class IPCProvider : IDisposable
         {
             var mt = Type.GetType(moduleTypeName);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
+            {
                 return false;
+            }
+
             var iTrack = md.Definition.Configs.FindIndex(td => td.InternalName == trackName);
             if (iTrack < 0)
+            {
                 return false;
+            }
 
             StrategyValue tempValue;
 
@@ -331,7 +406,10 @@ sealed class IPCProvider : IDisposable
                 case StrategyConfigTrack tr:
                     var iOpt = tr.Options.FindIndex(od => od.InternalName == value);
                     if (iOpt < 0)
+                    {
                         return false;
+                    }
+
                     tempValue = new StrategyValueTrack() { Option = iOpt, Target = target, TargetParam = targetParam };
                     break;
                 case StrategyConfigFloat sc:
@@ -346,13 +424,21 @@ sealed class IPCProvider : IDisposable
 
             var ms = autorotation.Database.Presets.FindPresetByName(presetName)?.Modules.Find(m => m.Type == mt);
             if (ms == null)
+            {
                 return false;
+            }
+
             var setting = new Preset.ModuleSetting(default, iTrack, tempValue);
             var index = ms.TransientSettings.FindIndex(s => s.Track == iTrack);
             if (index < 0)
+            {
                 ms.TransientSettings.Add(setting);
+            }
             else
+            {
                 ms.TransientSettings[index] = setting;
+            }
+
             return true;
         }
         Register("Presets.AddTransientStrategy", (string presetName, string moduleTypeName, string trackName, string value) => addTransientStrategy(presetName, moduleTypeName, trackName, value));
@@ -362,16 +448,28 @@ sealed class IPCProvider : IDisposable
         {
             var mt = Type.GetType(moduleTypeName);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
+            {
                 return false;
+            }
+
             var iTrack = md.Definition.Configs.FindIndex(td => td.InternalName == trackName);
             if (iTrack < 0)
+            {
                 return false;
+            }
+
             var ms = autorotation.Database.Presets.FindPresetByName(presetName)?.Modules.Find(m => m.Type == mt);
             if (ms == null)
+            {
                 return false;
+            }
+
             var index = ms.TransientSettings.FindIndex(s => s.Track == iTrack);
             if (index < 0)
+            {
                 return false;
+            }
+
             ms.TransientSettings.RemoveAt(index);
             return true;
         });
@@ -379,10 +477,16 @@ sealed class IPCProvider : IDisposable
         {
             var mt = Type.GetType(moduleTypeName);
             if (mt == null || !RotationModuleRegistry.Modules.TryGetValue(mt, out var md))
+            {
                 return false;
+            }
+
             var ms = autorotation.Database.Presets.FindPresetByName(presetName)?.Modules.Find(m => m.Type == mt);
             if (ms == null)
+            {
                 return false;
+            }
+
             ms.TransientSettings.Clear();
             return true;
         });
@@ -390,13 +494,28 @@ sealed class IPCProvider : IDisposable
         {
             var preset = autorotation.Database.Presets.FindPresetByName(presetName);
             if (preset == null)
+            {
                 return false;
+            }
+
             foreach (var ms in preset.Modules)
+            {
                 ms.TransientSettings.Clear();
+            }
+
             return true;
         });
 
-        Register("AI.SetPreset", (string name) => ai.SetAIPreset(autorotation.Database.Presets.AllPresets.FirstOrDefault(x => x.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase))));
+        Register("AI.SetPreset", (string name) =>
+        {
+            Preset? found = null;
+            foreach (var p in autorotation.Database.Presets.AllPresets)
+            {
+                if (p.Name.Trim().Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)) { found = p; break; }
+            }
+
+            ai.SetAIPreset(found);
+        });
         Register("AI.GetPreset", () => ai.GetAIPreset);
 
         Register("ObstacleMap.Generate", (Vector3 centerWorld, float radius, bool writeToFile) => obstacles.GenerateMap(centerWorld, radius, writeToFile));

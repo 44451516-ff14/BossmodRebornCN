@@ -45,7 +45,9 @@ public static partial class MultiboxUnlock
                 {
                     var handles = (PROCESS_HANDLE_TABLE_ENTRY_INFO*)(psnap + 1);
                     for (ulong i = 0; i < psnap->NumberOfHandles; ++i)
+                    {
                         ret.Add(handles[i].HandleValue);
+                    }
                 }
                 break;
             }
@@ -66,7 +68,9 @@ public static partial class MultiboxUnlock
             {
                 var name = (UNICODE_STRING*)pbuf;
                 if (name->Buffer != null)
+                {
                     return Encoding.Unicode.GetString(name->Buffer, name->Length);
+                }
             }
         }
         return "";

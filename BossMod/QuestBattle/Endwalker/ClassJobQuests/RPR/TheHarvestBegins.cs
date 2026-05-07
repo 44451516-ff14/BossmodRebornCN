@@ -18,9 +18,7 @@ internal class TheHarvestBegins(WorldState ws) : QuestBattle(ws)
                 obj.AddAIHints += (player, hints) => {
                     hints.PrioritizeAll();
 
-                    if (!guillotine && player.FindStatus(BossMod.RPR.SID.SoulReaver) != null && World.Actors.Find(player.TargetID) is Actor tar)
-                        hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.RPR.AID.Guillotine), tar, ActionQueue.Priority.VeryHigh);
-                };
+                    if (!guillotine && player.FindStatus(BossMod.RPR.SID.SoulReaver) != null && World.Actors.Find(player.TargetID) is Actor tar) { hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.RPR.AID.Guillotine), tar, ActionQueue.Priority.VeryHigh); } };
 
                 obj.OnDirectorUpdate += (diru) => guillotine |= diru.UpdateID == 0x80000016 && diru.Param1 == 4;
             })

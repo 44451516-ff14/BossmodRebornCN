@@ -96,7 +96,10 @@ public readonly struct ActionID(uint raw)
     private static (float ExtraCastTime, string Name) GetSpellData(uint actionID)
     {
         if (_spellCache.TryGetValue(actionID, out var actionRow))
+        {
             return actionRow;
+        }
+
         var row = Service.LuminaRow<Lumina.Excel.Sheets.Action>(actionID);
         (float, string)? data;
 

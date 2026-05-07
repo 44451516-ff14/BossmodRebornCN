@@ -28,21 +28,28 @@ public sealed class OutOfCombatActionsTweak : IDisposable
         );
     }
 
-    public void Dispose()
-    {
-        _subscriptions.Dispose();
-    }
+    public void Dispose() => _subscriptions.Dispose();
 
     public void FillActions(Actor player, AIHints hints)
     {
-        if (!_config.Enabled || player.InCombat || _ws.Client.CountdownRemaining != null || player.MountId != 0 || player.Statuses.Any(s => s.ID is 418u or 2648u)) // note: in overworld content, you leave combat on death...
+        var transcendent2 = false;
+        foreach (var s in player.Statuses)
+        {
+            if (s.ID is 418u or 2648u) { transcendent2 = true; break; }
+        }
+
+        if (!_config.Enabled || player.InCombat || _ws.Client.CountdownRemaining != null || player.MountId != 0 || transcendent2) // note: in overworld content, you leave combat on death...
+        {
             return;
+        }
 
         if (_config.AutoPeloton && player.ClassCategory == ClassCategory.PhysRanged && _ws.CurrentTime >= _nextAutoPeloton)
         {
             var movementThreshold = 5f * _ws.Frame.Duration;
             if (player.LastFrameMovement.LengthSq() >= movementThreshold * movementThreshold)
+            {
                 hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Peloton), player, ActionQueue.Priority.VeryLow);
+            }
         }
 
         // TODO: other things
@@ -51,7 +58,9 @@ public sealed class OutOfCombatActionsTweak : IDisposable
     private void OnStatusGain(Actor actor, int index)
     {
         if (actor != _ws.Party.Player())
+        {
             return;
+        }
 
         switch (actor.Statuses[index].ID)
         {
@@ -64,13 +73,18 @@ public sealed class OutOfCombatActionsTweak : IDisposable
     private void OnStatusLose(Actor actor, int index)
     {
         if (actor != _ws.Party.Player())
+        {
             return;
+        }
 
         switch (actor.Statuses[index].ID)
         {
             case (uint)BRD.SID.Peloton:
                 if (_ws.CurrentTime < _nextAutoPeloton)
+                {
                     _nextAutoPeloton = _ws.FutureTime(1); // if peloton expired earlier than expected, don't recast immediately - this could've been caused by entering combat, status is lost few frames before combat flag is set
+                }
+
                 break;
         }
     }

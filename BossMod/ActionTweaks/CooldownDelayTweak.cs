@@ -18,11 +18,15 @@ public sealed class CooldownDelayTweak
     private float CalculateAdjustment(float prevAnimLock, float prevRemainingCooldown, float dt)
     {
         if (!_config.RemoveCooldownDelay)
+        {
             return 0; // tweak is disabled, so no adjustment
+        }
 
         var maxDelay = Math.Max(prevAnimLock, prevRemainingCooldown);
         if (maxDelay <= 0)
+        {
             return 0; // nothing prevented us from executing the action on previous frame, so no adjustment
+        }
 
         var overflow = dt - maxDelay; // both cooldown and animation lock should expire this much before current frame start
         return Math.Clamp(overflow, 0, 0.1f); // use upper limit for time adjustment (if you have dogshit fps, adjusting too much could be suspicious)

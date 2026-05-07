@@ -1,7 +1,7 @@
-﻿using Dalamud.Interface;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -58,9 +58,13 @@ public static class UIMisc
     {
         var wrap = icon?.GetWrapOrDefault();
         if (wrap != null)
+        {
             ImGui.Image(wrap.Handle, size);
+        }
         else
+        {
             ImGui.Dummy(size);
+        }
     }
 
     public static bool ImageToggleButton(ISharedImmediateTexture? icon, Vector2 size, bool state, string text)

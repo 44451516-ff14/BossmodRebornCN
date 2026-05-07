@@ -53,7 +53,9 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
     {
         // TODO: think of a better way to do that (analytical clipping?)
         if (innerRadius >= outerRadius || innerRadius < 0f || halfAngle.Rad <= 0f)
+        {
             return [];
+        }
 
         var fullCircle = halfAngle.Rad >= MathF.PI;
         var donut = innerRadius != 0;

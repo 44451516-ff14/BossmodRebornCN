@@ -53,11 +53,19 @@ public abstract class ColumnStateMachine(Timeline timeline, StateMachineTree tre
 
             var connNormal = new Vector2(connDir.Y, -connDir.X);
             if (node.BossIsCasting)
+            {
                 drawlist.AddLine(connScreenBeg + 3 * connNormal, connScreenEnd + 3 * connNormal, Colors.TextColor4);
+            }
+
             if (node.IsDowntime)
+            {
                 drawlist.AddLine(connScreenBeg + 6 * connNormal, connScreenEnd + 6 * connNormal, Colors.TextColor14);
+            }
+
             if (node.IsPositioning)
+            {
                 drawlist.AddLine(connScreenBeg - 3 * connNormal, connScreenEnd - 3 * connNormal, Colors.TextColor3);
+            }
 
             if (progress != null)
             {
@@ -85,7 +93,9 @@ public abstract class ColumnStateMachine(Timeline timeline, StateMachineTree tre
                 _ => ""
             };
             if (nodeText.Length > 0)
+            {
                 drawlist.AddText(nodeScreenPos + new Vector2(7, -10), Colors.TextColor1, nodeText);
+            }
 
             if (progress != null)
             {

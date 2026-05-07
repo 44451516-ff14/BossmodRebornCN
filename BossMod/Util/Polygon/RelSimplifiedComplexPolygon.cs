@@ -108,7 +108,9 @@ public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
             var holes = part.Holes;
             var len = holes.Length;
             for (var j = 0; j < len; ++j)
+            {
                 allPaths.Add(ToPath64(part.Interior(holes[j])));
+            }
         }
 
         var solution = new Paths64();

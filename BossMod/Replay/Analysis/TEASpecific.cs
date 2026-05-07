@@ -99,7 +99,9 @@ sealed class TEASpecific
                 var adjTS = action.Timestamp.AddSeconds(-2);
                 var s = replay.Statuses.Find(s => s.Target == t1 && s.Time.Contains(adjTS) && (SID)s.ID is SID.HouseArrest or SID.RestrainingOrder);
                 if (s == null)
+                {
                     continue;
+                }
 
                 var list = (SID)s.ID == SID.HouseArrest ? _suretyResolvesClose : _suretyResolvesFar;
                 var p1 = new WPos(t1.PosRotAt(action.Timestamp).XZ());
@@ -115,35 +117,50 @@ sealed class TEASpecific
         {
             _plotHandBaits.Begin();
             foreach (var i in _handBaits)
+            {
                 _plotHandBaits.Point(new Vector2(i.Distance, i.IsPrayer ? 2 : 1), i.IsPrayer ? Colors.TextColor2 : Colors.PlayerGeneric, () => $"{(i.IsPrayer ? "prayer" : "parting")} {i.Replay.Path} @ {i.Timestamp:O}");
+            }
+
             _plotHandBaits.End();
         }
         foreach (var _ in tree.Node("Hand of Parting: resolves damage"))
         {
             _plotHandResolvesParting.Begin();
             foreach (var i in _handResolvesParting)
+            {
                 _plotHandResolvesParting.Point(new Vector2(i.Distance, i.Damage), Colors.TextColor2, () => $"{i.Replay.Path} @ {i.Timestamp:O}");
+            }
+
             _plotHandResolvesParting.End();
         }
         foreach (var _ in tree.Node("Hand of Prayer: resolves damage"))
         {
             _plotHandResolvesPrayer.Begin();
             foreach (var i in _handResolvesPrayer)
+            {
                 _plotHandResolvesPrayer.Point(new Vector2(i.Distance, i.Damage), Colors.TextColor2, () => $"{i.Replay.Path} @ {i.Timestamp:O}");
+            }
+
             _plotHandResolvesPrayer.End();
         }
         foreach (var _ in tree.Node("Plaint of Surety: damage on close"))
         {
             _plotSuretyResolvesClose.Begin();
             foreach (var i in _suretyResolvesClose)
+            {
                 _plotSuretyResolvesClose.Point(new Vector2(i.Distance, i.Damage), Colors.TextColor2, () => $"{i.Replay.Path} @ {i.Timestamp:O}");
+            }
+
             _plotSuretyResolvesClose.End();
         }
         foreach (var _ in tree.Node("Plaint of Surety: damage on far"))
         {
             _plotSuretyResolvesFar.Begin();
             foreach (var i in _suretyResolvesFar)
+            {
                 _plotSuretyResolvesFar.Point(new Vector2(i.Distance, i.Damage), Colors.TextColor2, () => $"{i.Replay.Path} @ {i.Timestamp:O}");
+            }
+
             _plotSuretyResolvesFar.End();
         }
     }

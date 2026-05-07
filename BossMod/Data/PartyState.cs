@@ -54,7 +54,9 @@ public sealed class PartyState
         {
             var slot = FindSlot(instanceID);
             if (slot >= 0)
+            {
                 _actors[slot] = actor;
+            }
         }
         actorState.Added.Subscribe(actor => assign(actor.InstanceID, actor));
         actorState.Removed.Subscribe(actor => assign(actor.InstanceID, null));

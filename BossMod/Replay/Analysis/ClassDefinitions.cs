@@ -79,7 +79,9 @@ sealed class ClassDefinitions
             var row = classSheet.GetRow(i)!;
             var curClass = (Class)i;
             if (curClass is Class.ACN or Class.ROG)
+            {
                 continue;
+            }
 
             _classPerCategory[(int)curClass.GetClassCategory()].Set((int)i);
             var baseClass = curClass == Class.SCH ? Class.SCH : (Class)row.ClassJobParent.RowId; // both SCH and SMN are based on ACN, but SMN is closer
@@ -87,7 +89,10 @@ sealed class ClassDefinitions
 
             bool actionIsInteresting(Lumina.Excel.Sheets.Action a) => !a.IsPvP && ((int)a.ClassJob.RowId != -1 || a.IsRoleAction) && a.ClassJobLevel > 0 && cjcSheet.GetRow(a.ClassJobCategory.RowId).ReadBoolColumn((int)i + 1);
             foreach (var a in actionSheet.Where(actionIsInteresting))
+            {
                 RegisterAction(new ActionID(ActionType.Spell, a.RowId), a, classData, out _);
+            }
+
             RegisterLimitBreak(row.LimitBreak1.RowId, classData, 1);
             RegisterLimitBreak(row.LimitBreak2.RowId, classData, 2);
             RegisterLimitBreak(row.LimitBreak3.RowId, classData, 3);
@@ -100,8 +105,12 @@ sealed class ClassDefinitions
 
         // add any actions from definitions that weren't found yet
         foreach (var def in ActionDefinitions.Instance.Definitions)
+        {
             if (RegisterAction(def.ID, def.ID.Type == ActionType.Spell ? actionSheet?.GetRow(def.ID.ID) : null, nullOwner, out var data))
+            {
                 data.PotentiallyRemoved = true;
+            }
+        }
 
         // add any actions observed in replays
         foreach (var r in replays)
@@ -112,7 +121,9 @@ sealed class ClassDefinitions
                 _byLock.GetOrAdd(alock).GetOrAdd(a.ID).Add(new(r, a));
 
                 if (RegisterAction(a.ID, a.ID.Type == ActionType.Spell ? actionSheet?.GetRow(a.ID.ID) : null, nullOwner, out var data))
+                {
                     data.ReplayOnly = true;
+                }
 
                 var cast = a.Source.Casts.Find(c => c.ID == a.ID && c.Time.Contains(a.Timestamp));
                 if (cast != null)
@@ -144,11 +155,17 @@ sealed class ClassDefinitions
 
             // mark bozja holster actions
             for (var i = BozjaHolsterID.None + 1; i < BozjaHolsterID.Count; ++i)
+            {
                 _actionData[BozjaActionID.GetNormal(i)].IsBozjaHolster = true;
+            }
 
             foreach (var id in typeof(PhantomID).GetEnumValues())
+            {
                 if ((uint)id > 0)
+                {
                     _actionData[ActionID.MakeSpell((PhantomID)id)].IsPhantomAction = true;
+                }
+            }
 
             // split actions by categories
             foreach (var (aid, data) in _actionData)
@@ -156,7 +173,9 @@ sealed class ClassDefinitions
                 data.OwningClasses.Clear(0); // that's pointless
                 var shared = data.OwningClasses.NumSetBits() > 1 ? Array.IndexOf(_classPerCategory, data.OwningClasses) : -1;
                 if (shared >= 0)
+                {
                     data.SharedCategory = (ClassCategory)shared;
+                }
 
                 var category = aid.Type switch
                 {
@@ -179,7 +198,10 @@ sealed class ClassDefinitions
                 AddActionsToCDGroups(data, data.ExtraCDGroup);
             }
             foreach (var (_, list) in _byCategory)
+            {
                 list.Sort(static (a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
+            }
+
             foreach (var (_, cd) in _classData)
             {
                 cd.Actions.Sort(static (a, b) => (a.Row?.ClassJobLevel ?? 0).CompareTo(b.Row?.ClassJobLevel ?? 0));
@@ -282,10 +304,15 @@ sealed class ClassDefinitions
     private void AddActionsToCDGroups(ActionData action, int cdgroup)
     {
         if (cdgroup < 0)
+        {
             return;
+        }
+
         _byCDGroup.GetOrAdd(cdgroup).Add(action);
         foreach (var c in action.OwningClasses.SetBits())
+        {
             _classData[(Class)c].ByCDGroup.GetOrAdd(cdgroup).Add(action);
+        }
     }
 
     private void DrawActions(UITree tree, List<ActionData> actions)
@@ -346,7 +373,10 @@ sealed class ClassDefinitions
             writer.Add("None", 0);
             writer.Add("Sprint", ActionDefinitions.IDSprint.ID);
             for (var c = ClassCategory.Tank; c <= ClassCategory.Limited; ++c)
+            {
                 writer.Group(c.ToString(), _byCategory.GetOrAdd($"Category: {c}"), false);
+            }
+
             writer.Group(GroupRoleActions, _byCategory.GetOrAdd(GroupRoleActions), true);
             writer.Group(GroupLimitBreaks, _byCategory.GetOrAdd(GroupLimitBreaks), true);
             // TODO: bozja...
@@ -359,7 +389,10 @@ sealed class ClassDefinitions
             var writer = new DefinitionWriter(ns);
             writer.Add(_actionData[ActionDefinitions.IDSprint]);
             for (var c = ClassCategory.Tank; c <= ClassCategory.Limited; ++c)
+            {
                 writer.Group(c.ToString(), _byCategory.GetOrAdd($"Category: {c}"));
+            }
+
             writer.Group(GroupRoleActions, _byCategory.GetOrAdd(GroupRoleActions));
             writer.Group(GroupLimitBreaks, _byCategory.GetOrAdd(GroupLimitBreaks));
             // TODO: bozja...
@@ -441,7 +474,10 @@ sealed class ClassDefinitions
         var writer = new EnumWriter("TraitID");
         writer.Add("None", 0);
         foreach (var trait in cd.Traits)
+        {
             writer.Add(TraitIDName(cd.ID.ToString(), trait), trait.RowId, $"L{trait.Level}");
+        }
+
         return writer.Result();
     }
 
@@ -450,7 +486,10 @@ sealed class ClassDefinitions
         var writer = new EnumWriter("SID");
         writer.Add("None", 0);
         foreach (var (sid, data) in cd.Statuses)
+        {
             writer.Add(StatusIDName(cd.ID.ToString(), sid), sid, $"applied by {data.AppliedByString()} to {data.AppliedToString()}");
+        }
+
         return writer.Result();
     }
 
@@ -458,7 +497,10 @@ sealed class ClassDefinitions
     {
         var writer = new DefinitionWriter(cd.ID.ToString());
         foreach (var a in cd.Actions.Where(a => a.OwningClasses.NumSetBits() == 1))
+        {
             writer.Add(a);
+        }
+
         return writer.Result();
     }
 
@@ -493,7 +535,10 @@ sealed class ClassDefinitions
                 {
                     _sb.AppendLine();
                     if (group.Length > 0)
+                    {
                         _sb.AppendLine($"    // {group}");
+                    }
+
                     writtenHeader = true;
                 }
                 Add(a, allowClasses, shared);
@@ -554,7 +599,9 @@ sealed class ClassDefinitions
         {
             var omen = data.Omen.ValueNullable;
             if (omen == null)
+            {
                 return null;
+            }
 
             var path = omen.Value.Path.ToString();
             var pos = path.IndexOf("fan", StringComparison.Ordinal);
@@ -565,16 +612,22 @@ sealed class ClassDefinitions
         {
             var omen = data.Omen.ValueNullable;
             if (omen == null)
+            {
                 return null;
+            }
 
             var path = omen.Value.Path.ToString();
             var pos = path.IndexOf("sircle_", StringComparison.Ordinal);
             if (pos >= 0 && pos + 11 <= path.Length && int.TryParse(path.AsSpan(pos + 9, 2), out var inner))
+            {
                 return inner;
+            }
 
             pos = path.IndexOf("circle", StringComparison.Ordinal);
             if (pos >= 0 && pos + 10 <= path.Length && int.TryParse(path.AsSpan(pos + 8, 2), out inner))
+            {
                 return inner;
+            }
 
             return null;
         }
@@ -589,13 +642,22 @@ sealed class ClassDefinitions
         {
             List<string> args = [$"AID.{ActionIDName(Namespace, a.ID)}"];
             if (a.IsPhysRanged)
+            {
                 args.Add("true");
+            }
+
             var instAnimLock = AnimLock(a.InstantByAnimLock, a.ExpectedInstantAnimLock, 0.6f);
             if (instAnimLock != 0.6f)
+            {
                 args.Add($"instantAnimLock: {instAnimLock:f}f");
+            }
+
             var castAnimLock = AnimLock(a.CastByAnimLock, a.ExpectedCastAnimLock, 0.1f);
             if (castAnimLock != 0.1f)
+            {
                 args.Add($"castAnimLock: {castAnimLock:f}f");
+            }
+
             var animLockStr = AnimLockString(a);
             Add(args, animLockStr.Length > 0 ? animLockStr[2..] : "");
         }
@@ -609,7 +671,10 @@ sealed class ClassDefinitions
                 {
                     _sb.AppendLine();
                     if (group.Length > 0)
+                    {
                         _sb.AppendLine($"        // {group}");
+                    }
+
                     writtenHeader = true;
                 }
                 Add(a);
@@ -654,7 +719,10 @@ sealed class ClassDefinitions
     {
         var res = $"L{level}";
         if (link != 0)
+        {
             res += $" (unlocked by quest {link} '{Service.LuminaRow<Lumina.Excel.Sheets.Quest>(link)?.Name}')";
+        }
+
         return res;
     }
 

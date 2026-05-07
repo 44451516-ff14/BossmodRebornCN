@@ -1,5 +1,5 @@
-﻿using Dalamud.Memory;
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Memory;
 
 namespace BossMod;
 
@@ -91,7 +91,7 @@ sealed class DebugHate(WorldState ws)
         ImGui.TableHeadersRow();
         for (var i = 0; i < hater->HaterArrayLength; ++i)
         {
-            var h = ((HaterInfo*)hater->HaterArray) + i;
+            var h = (HaterInfo*)hater->HaterArray + i;
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             ImGui.TextUnformatted($"{h->ObjectId:X}");
@@ -110,8 +110,13 @@ sealed class DebugHate(WorldState ws)
         ImGui.TableSetupColumn("Name");
         ImGui.TableSetupColumn("Enmity");
         ImGui.TableHeadersRow();
-        foreach (var t in ws.Client.CurrentTargetHate.Targets.TakeWhile(t => t.InstanceID > 0))
+        foreach (var t in ws.Client.CurrentTargetHate.Targets)
         {
+            if (t.InstanceID == 0)
+            {
+                break;
+            }
+
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             ImGui.TextUnformatted($"{t.InstanceID:X}");

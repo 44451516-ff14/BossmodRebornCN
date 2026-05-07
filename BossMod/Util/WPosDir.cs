@@ -138,7 +138,10 @@ public readonly struct WPos(float x, float z)
         var len = vertices.Length;
         var rotatedVertices = new WPos[len];
         for (var i = 0; i < len; ++i)
+        {
             rotatedVertices[i] = RotateAroundOrigin(rotationAngle, center, vertices[i]);
+        }
+
         return rotatedVertices;
     }
 
@@ -153,7 +156,10 @@ public readonly struct WPos(float x, float z)
         var s = (v2.X - v1.X) * (Z - v1.Z) - (v2.Z - v1.Z) * (X - v1.X);
         var t = (v3.X - v2.X) * (Z - v2.Z) - (v3.Z - v2.Z) * (X - v2.X);
         if ((s < 0f) != (t < 0f) && s != 0f && t != 0f)
+        {
             return false;
+        }
+
         var d = (v1.X - v3.X) * (Z - v3.Z) - (v1.Z - v3.Z) * (X - v3.X);
         return d == 0f || (d < 0f) == (s + t <= 0f);
     }
@@ -165,10 +171,7 @@ public readonly struct WPos(float x, float z)
         var len = startToEnd.Length();
         return InRect(origin, startToEnd / len, len, default, halfWidth);
     }
-    public readonly bool InRect(WPos origin, WPos end, float halfWidth)
-    {
-        return InRect(origin, end - origin, halfWidth);
-    }
+    public readonly bool InRect(WPos origin, WPos end, float halfWidth) => InRect(origin, end - origin, halfWidth);
 
     public readonly bool InSquare(WPos origin, float halfWidth, Angle rotation) => (this - origin).InRect(rotation.ToDirection(), halfWidth, halfWidth, halfWidth);
     public readonly bool InSquare(WPos origin, float halfWidth, WDir rotation) => (this - origin).InRect(rotation, halfWidth, halfWidth, halfWidth);

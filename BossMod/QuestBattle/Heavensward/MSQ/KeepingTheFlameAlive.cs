@@ -33,9 +33,7 @@ public class KeepingTheFlameAlive(WorldState ws) : QuestBattle(ws)
             .WithConnection(V3(163.35f, 6.26f, -65.16f))
             .Hints((player, hints) =>
             {
-                if (player.PosRot.Y >= 6)
-                    hints.PrioritizeTargetsByOID((uint)OID.HummingAtomizer);
-            })
+                if (player.PosRot.Y >= 6) { hints.PrioritizeTargetsByOID((uint)OID.HummingAtomizer); } })
             .CompleteOnKilled((uint)OID.HummingAtomizer),
 
         new QuestObjective(ws)
@@ -67,6 +65,8 @@ public class KeepingTheFlameAlive(WorldState ws) : QuestBattle(ws)
         }
 
         if (!inCombat)
+        {
             hints.InteractWithOID(World, OID.IdentificationKey);
+        }
     }
 }

@@ -284,9 +284,11 @@ public sealed class ThetaStar
         }
 
         if (pathMinG == _startMaxG) // TODO: some small threshold? should be solved by preprocessing...
+        {
             return pathSafe
                 ? (destBetter ? Score.SemiSafeImprove : Score.SemiSafeAsStart) // note: if pix.MaxG is < _startMaxG, then PathMinG will be < too
                 : (destBetter ? Score.UnsafeImprove : Score.UnsafeAsStart);
+        }
 
         return destSafe ? Score.UltimatelySafe : destBetter ? Score.UltimatelyBetter : Score.JustBad;
     }
@@ -1196,7 +1198,9 @@ public sealed class ThetaStar
             ref var parentNodeIndex = ref openSpan[parentHeapIndex];
             ref var parent = ref _nodes[parentNodeIndex];
             if (CompareNodeScores(ref node, ref parent) >= 0)
+            {
                 break; // parent is 'less' (same/better), stop
+            }
 
             openSpan[heapIndex] = parentNodeIndex;
             parent.OpenHeapIndex = heapIndex + 1;
@@ -1218,7 +1222,9 @@ public sealed class ThetaStar
             // find 'better' child
             var childHeapIndex = (heapIndex << 1) + 1;
             if (childHeapIndex >= maxSize)
+            {
                 break; // node is already a leaf
+            }
 
             var childNodeIndex = openSpan[childHeapIndex];
             ref var child = ref _nodes[childNodeIndex];
@@ -1236,7 +1242,9 @@ public sealed class ThetaStar
             }
 
             if (CompareNodeScores(ref node, ref child) < 0)
+            {
                 break; // node is better than best child, so should remain on top
+            }
 
             openSpan[heapIndex] = childNodeIndex;
             child.OpenHeapIndex = heapIndex + 1;

@@ -178,7 +178,10 @@ sealed class StateTransitionTimings
             actions += () =>
             {
                 if (_selected == trans)
+                {
                     _selected = null;
+                }
+
                 state.Transitions.Remove(to);
             };
         }
@@ -188,6 +191,8 @@ sealed class StateTransitionTimings
             RecalculateMetrics(dest);
             state.Transitions.Remove(to);
         }
+
+        ArgumentNullException.ThrowIfNull(tree);
     }
 
     private void TransitionInstanceContextMenu(StateMetrics state, uint to, TransitionMetrics trans, TransitionMetric metric, ref Action? actions)
@@ -197,12 +202,19 @@ sealed class StateTransitionTimings
             actions += () =>
             {
                 if (_selected == metric)
+                {
                     _selected = null;
+                }
+
                 trans.Instances.Remove(metric);
                 if (trans.Instances.Count > 0)
+                {
                     RecalculateMetrics(trans);
+                }
                 else
+                {
                     state.Transitions.Remove(to);
+                }
             };
         }
     }

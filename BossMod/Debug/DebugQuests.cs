@@ -1,9 +1,9 @@
-﻿using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.Interop;
-using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 
 namespace BossMod;
@@ -49,10 +49,33 @@ sealed unsafe class DebugQuests
         {
             // TODO map Unknown11
             // quests.AllQuests.SortBy(q => (q.Unknown11 == 3, q.RowId));
-            var rankMin = (int)quests.AllQuests.Min(q => q.BeastReputationRank.RowId);
-            var rankMax = (int)quests.AllQuests.Max(q => q.BeastReputationRank.RowId);
+            var rankMin = int.MaxValue;
+            var rankMax = int.MinValue;
+            foreach (var q in quests.AllQuests)
+            {
+                var r = (int)q.BeastReputationRank.RowId;
+                if (r < rankMin)
+                {
+                    rankMin = r;
+                }
+
+                if (r > rankMax)
+                {
+                    rankMax = r;
+                }
+            }
             var rankCur = RankForQuest(quests.AllQuests[0], out var rankedUp);
-            quests.OutrankAll = quests.AllQuests.All(q => RankForQuest(q, out _) > q.BeastReputationRank.RowId);
+            var outrankAll = true;
+            foreach (var q in quests.AllQuests)
+            {
+                if (RankForQuest(q, out _) <= (int)q.BeastReputationRank.RowId)
+                {
+                    outrankAll = false;
+                    break;
+                }
+            }
+
+            quests.OutrankAll = outrankAll;
             quests.AvailableQuests = CalculateAvailable(quests.AllQuests, QuestManager.Instance()->DailyQuestSeed, quests.OutrankAll, rankCur, rankedUp);
         }
     }
@@ -77,7 +100,7 @@ sealed unsafe class DebugQuests
             {
                 foreach (var nnpc in _tree.Node($"NPC {baseId:X}: tribe={entry.TribeId} '{Service.LuminaRow<BeastTribe>(entry.TribeId)?.Name}', ranks={entry.RankRequirementMin}-{entry.RankRequirementMax}, dirty={entry.Dirty}###{baseId}"))
                 {
-                    int i = 0;
+                    var i = 0;
                     foreach (var e in entry.HandlersNormal)
                     {
                         _tree.LeafNode($"[Gx {i++}] {e.Value->QuestId} '{Service.LuminaRow<Quest>(0x10000u | e.Value->QuestId)?.Name}'");
@@ -98,7 +121,7 @@ sealed unsafe class DebugQuests
             {
                 foreach (var nnpc in _tree.Node($"NPC {baseId:X}, outrank={quests.OutrankAll}"))
                 {
-                    int i = 0;
+                    var i = 0;
                     foreach (var q in quests.AllQuests)
                     {
                         // TODO map Unknown11
@@ -110,8 +133,12 @@ sealed unsafe class DebugQuests
 
         var target = TargetSystem.Instance()->GetTargetObject();
         using (ImRaii.Disabled(target == null))
+        {
             if (ImGui.Button("Compare..."))
+            {
                 CompareLogic(target->BaseId);
+            }
+        }
     }
 
     private int RankForQuest(Quest q, out bool rankedUp)
@@ -136,10 +163,20 @@ sealed unsafe class DebugQuests
 
     private List<Quest> CalculateAvailable(List<Quest> potential, byte seed, bool outrankAll, int playerRank, bool rankedUp)
     {
-        List<Quest> eligible = [.. potential.Where(q => IsEligible(q, playerRank, rankedUp))];
+        List<Quest> eligible = [];
+        foreach (var q in potential)
+        {
+            if (IsEligible(q, playerRank, rankedUp))
+            {
+                eligible.Add(q);
+            }
+        }
+
         List<Quest> available = [];
         if (eligible.Count == 0)
+        {
             return available;
+        }
 
         var rng = new Rng(seed);
         if (outrankAll)
@@ -148,7 +185,10 @@ sealed unsafe class DebugQuests
             {
                 var index = rng.Next(eligible.Count);
                 while (available.Contains(eligible[index]))
+                {
                     index = (index + 1) % eligible.Count;
+                }
+
                 available.Add(eligible[index]);
             }
         }
@@ -157,15 +197,22 @@ sealed unsafe class DebugQuests
             // TODO map Unknown11
             var firstExclusive = -1; //  eligible.FindIndex(q => q.Unknown11 == 3);
             if (firstExclusive >= 0)
+            {
                 available.Add(eligible[firstExclusive + rng.Next(eligible.Count - firstExclusive)]);
+            }
             else
+            {
                 firstExclusive = eligible.Count;
+            }
 
             for (int i = available.Count, cnt = Math.Min(firstExclusive, 3); i < cnt; ++i)
             {
                 var index = rng.Next(firstExclusive);
                 while (available.Contains(eligible[index]))
+                {
                     index = (index + 1) % firstExclusive;
+                }
+
                 available.Add(eligible[index]);
             }
         }
@@ -188,13 +235,46 @@ sealed unsafe class DebugQuests
                 {
                     foreach (var exactMatch in bools)
                     {
-                        for (int seed = 0; seed < 256; ++seed)
+                        for (var seed = 0; seed < 256; ++seed)
                         {
                             var numAvail = (int)fwk->DailyQuests.CalculateAvailableQuests(null, loc.Bound, (byte)seed, rankInRange, (byte)rank, exactMatch, avail);
                             var ourAvail = CalculateAvailable(_dailyQuests[npcId].AllQuests, (byte)seed, !rankInRange, rank, exactMatch);
-                            if (ourAvail.Count != numAvail || Enumerable.Range(0, numAvail).Any(i => ((uint)avail[i]->QuestId | 0x10000) != ourAvail[i].RowId))
+                            var mismatch = ourAvail.Count != numAvail;
+                            if (!mismatch)
                             {
-                                Service.Log($"Mismatch: s={seed},rank={rank}/{rankInRange}/{exactMatch}: game={string.Join('/', Enumerable.Range(0, numAvail).Select(i => (uint)avail[i]->QuestId | 0x10000))}, our={string.Join('/', ourAvail.Select(q => q.RowId))}");
+                                for (var i = 0; i < numAvail; ++i)
+                                {
+                                    if (((uint)avail[i]->QuestId | 0x10000) != ourAvail[i].RowId)
+                                    {
+                                        mismatch = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (mismatch)
+                            {
+                                var gb = new StringBuilder();
+                                var ob = new StringBuilder();
+                                for (var i = 0; i < numAvail; ++i)
+                                {
+                                    if (i > 0)
+                                    {
+                                        gb.Append('/');
+                                    }
+
+                                    gb.Append((uint)avail[i]->QuestId | 0x10000);
+                                }
+                                foreach (var q in ourAvail)
+                                {
+                                    if (ob.Length > 0)
+                                    {
+                                        ob.Append('/');
+                                    }
+
+                                    ob.Append(q.RowId);
+                                }
+                                Service.Log($"Mismatch: s={seed},rank={rank}/{rankInRange}/{exactMatch}: game={gb}, our={ob}");
                             }
                         }
                     }

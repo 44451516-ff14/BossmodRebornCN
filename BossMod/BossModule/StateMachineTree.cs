@@ -64,7 +64,9 @@ public sealed class StateMachineTree
         public IEnumerable<Node> BranchNodes(int branchOffset)
         {
             if (branchOffset < 0 || branchOffset >= StartingNode.NumBranches)
+            {
                 yield break;
+            }
 
             yield return StartingNode;
             var n = StartingNode;
@@ -72,7 +74,10 @@ public sealed class StateMachineTree
             {
                 var nextIndex = n.Successors.FindIndex(n => n.BranchID > StartingNode.BranchID + branchOffset);
                 if (nextIndex == -1)
+                {
                     nextIndex = n.Successors.Count;
+                }
+
                 n = n.Successors[nextIndex - 1];
                 yield return n;
             }
@@ -84,7 +89,10 @@ public sealed class StateMachineTree
             foreach (var n in BranchNodes(branchOffset))
             {
                 if (n.Time >= t)
+                {
                     return n;
+                }
+
                 last = n;
             }
             return last!;
@@ -112,14 +120,23 @@ public sealed class StateMachineTree
     public void ApplyTimings(List<float>? phaseDurations)
     {
         if (Phases.Count == 0)
+        {
             return;
+        }
 
         if (phaseDurations != null)
-            foreach (var (p, t) in Phases.Zip(phaseDurations))
-                p.Duration = Math.Min(t, p.MaxTime);
+        {
+            var phasesCount = Phases.Count < phaseDurations.Count ? Phases.Count : phaseDurations.Count;
+            for (var pi = 0; pi < phasesCount; ++pi)
+            {
+                Phases[pi].Duration = Math.Min(phaseDurations[pi], Phases[pi].MaxTime);
+            }
+        }
 
         for (var i = 1; i < Phases.Count; ++i)
+        {
             Phases[i].StartTime = Phases[i - 1].StartTime + Phases[i - 1].Duration;
+        }
 
         var lastPhase = Phases[^1];
         TotalMaxTime = lastPhase.StartTime + lastPhase.Duration;

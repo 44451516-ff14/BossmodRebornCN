@@ -13,7 +13,9 @@ public sealed class AutoDismountTweak(WorldState ws)
     {
         var player = ws.Party.Player();
         if (player == null || player.MountId == 0)
+        {
             return false;
+        }
 
         var canUseWhileMounted = action.Type switch
         {

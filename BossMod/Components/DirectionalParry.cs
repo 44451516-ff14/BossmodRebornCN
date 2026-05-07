@@ -38,7 +38,10 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (ActorStates.Count == 0)
+        {
             return;
+        }
+
         var actors = ActiveActors;
         Actor? target = null;
         var count = ActiveActors.Count;
@@ -53,7 +56,9 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
         }
 
         if (target == null || !ActorStates.TryGetValue(actor.TargetID, out var targetState))
+        {
             return;
+        }
 
         var active = (Side)(targetState & 0xF);
         var imminent = (Side)((targetState >> 4) & 0xF);
@@ -69,7 +74,9 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
             (attackDir.Dot(facing.OrthoL()) > 0f ? Side.Left : Side.Right);
 
         if ((forbiddenSides & attackSide) != default)
+        {
             hints.Add("Attack target from unshielded side!");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -78,7 +85,9 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
         {
             var target = WorldState.Actors.Find(id);
             if (target == null)
+            {
                 continue;
+            }
 
             void forbidDirection(Angle offset)
                 => hints.AddForbiddenZone(new SDCone(target.Position, 100f, target.Rotation + offset, 45f.Degrees()), DateTime.MaxValue);
@@ -100,18 +109,31 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
             if ((forbiddenSides & attackSide) != default)
             {
                 if (active != default)
+                {
                     hints.SetPriority(target, ForbiddenPriority);
+                }
 
                 if (actor.TargetID == id)
                 {
                     if ((forbiddenSides & Side.Front) != default)
+                    {
                         forbidDirection(default);
+                    }
+
                     if ((forbiddenSides & Side.Left) != default)
+                    {
                         forbidDirection(90f.Degrees());
+                    }
+
                     if ((forbiddenSides & Side.Back) != default)
+                    {
                         forbidDirection(180f.Degrees());
+                    }
+
                     if ((forbiddenSides & Side.Right) != default)
+                    {
                         forbidDirection(270f.Degrees());
+                    }
                 }
             }
         }
@@ -152,17 +174,18 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
         }
     }
 
-    public void PredictParrySide(ulong instanceID, Side sides)
-    {
-        UpdateState(instanceID, ((int)sides << 4) | ActorState(instanceID) & 0xF);
-    }
+    public void PredictParrySide(ulong instanceID, Side sides) => UpdateState(instanceID, ((int)sides << 4) | ActorState(instanceID) & 0xF);
 
     private void DrawParry(Actor actor, Angle offset, Side active, Side imminent, Side check)
     {
         if ((active & check) != default)
+        {
             DrawParry(actor, offset, Colors.Enemy);
+        }
         else if ((imminent & check) != default)
+        {
             DrawParry(actor, offset);
+        }
     }
 
     private void DrawParry(Actor actor, Angle offset, uint color = default)
@@ -177,9 +200,13 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
     public void UpdateState(ulong instanceID, int state)
     {
         if (state == 0)
+        {
             ActorStates.Remove(instanceID);
+        }
         else
+        {
             ActorStates[instanceID] = state;
+        }
     }
 
     private static Side ActiveSides(int state) => (Side)(state & (int)Side.All);

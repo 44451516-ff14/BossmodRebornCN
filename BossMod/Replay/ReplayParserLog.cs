@@ -62,15 +62,21 @@ public sealed class ReplayParserLog : IDisposable
             while (_input.ReadLine() is var line && line != null)
             {
                 if (line.Length == 0 || line[0] == '#')
+                {
                     continue; // empty line or comment
+                }
 
                 _line = line.Split("|");
                 if (_line.Length < 2)
+                {
                     continue; // invalid string
+                }
 
                 var tag = _line[1];
                 if (tag.Length != 4)
+                {
                     continue; // invalid tag
+                }
 
                 Timestamp = DateTime.Parse(_line[0]);
                 _nextPayload = 2;
@@ -105,7 +111,10 @@ public sealed class ReplayParserLog : IDisposable
             var str = ReadString();
             var res = new byte[str.Length >> 1];
             for (var i = 0; i < res.Length; ++i)
+            {
                 res[i] = byte.Parse(str.AsSpan()[(2 * i)..(2 * i + 2)], NumberStyles.HexNumber);
+            }
+
             return res;
         }
         public override ActionID ReadAction()
@@ -125,8 +134,11 @@ public sealed class ReplayParserLog : IDisposable
         public override ActionEffects ReadActionEffects()
         {
             var effects = new ActionEffects();
-            for (int i = 0; i < ActionEffects.MaxCount; ++i)
+            for (var i = 0; i < ActionEffects.MaxCount; ++i)
+            {
                 effects[i] = ReadULong(true);
+            }
+
             return effects;
         }
         public override void ReadTargets(List<ActorCastEvent.Target> list)
@@ -136,7 +148,10 @@ public sealed class ReplayParserLog : IDisposable
                 var parts = ReadString().Split('!');
                 var effects = new ActionEffects();
                 for (var j = 1; j < parts.Length; ++j)
+                {
                     effects[j - 1] = ulong.Parse(parts[j], NumberStyles.HexNumber);
+                }
+
                 list.Add(new(ParseActorID(parts[0]), effects));
             }
         }
@@ -304,15 +319,20 @@ public sealed class ReplayParserLog : IDisposable
         {
             var effects = new ActionEffects();
             for (var i = 0; i < ActionEffects.MaxCount; ++i)
+            {
                 effects[i] = ReadULong(true);
+            }
+
             return effects;
         }
         public override void ReadTargets(List<ActorCastEvent.Target> list)
         {
             var count = _input.ReadInt32();
             list.Capacity = count;
-            for (int i = 0; i < count; ++i)
+            for (var i = 0; i < count; ++i)
+            {
                 list.Add(new(_input.ReadUInt64(), ReadActionEffects()));
+            }
         }
         public override (float, float) ReadFloatPair() => (_input.ReadSingle(), _input.ReadSingle());
         public override (DateTime, float) ReadTimePair() => (new(_input.ReadInt64()), _input.ReadSingle());
@@ -355,7 +375,9 @@ public sealed class ReplayParserLog : IDisposable
                 {
                     progress = rawStream.Position * streamInvLength;
                     if (cancel.IsCancellationRequested)
+                    {
                         break;
+                    }
                 }
             }
             return cancel.IsCancellationRequested ? new() : builder.Finish();
@@ -483,7 +505,9 @@ public sealed class ReplayParserLog : IDisposable
     {
         var tag = _input.NextEntry();
         if (tag == default)
+        {
             return false; // end of replay
+        }
 
         if (_version is > 0 and < 5 && _input is TextInput ti && _legacyPrevTS < ti.Timestamp)
         {
@@ -492,11 +516,15 @@ public sealed class ReplayParserLog : IDisposable
         }
 
         if (!_dispatch.TryGetValue(tag, out var parse))
+        {
             throw new InvalidOperationException($"Replay contains unsupported tag {tag}");
+        }
 
         var op = parse();
         if (op != null)
+        {
             _builder.AddOp(op);
+        }
 
         return true;
     }
@@ -505,7 +533,10 @@ public sealed class ReplayParserLog : IDisposable
     {
         _version = _input.ReadInt();
         if (_version < 2)
+        {
             throw new InvalidOperationException($"Version {_version} is too old and is no longer supported, sorry");
+        }
+
         var qpf = _version >= 10 ? _input.ReadULong(false) : TimeSpan.TicksPerSecond; // newer windows versions have 10mhz qpc frequency
         var gameVersion = _version >= 11 ? _input.ReadString() : "old";
         _tsStart = _input is TextInput ti ? ti.Timestamp : new(_input.ReadLong());
@@ -591,7 +622,10 @@ public sealed class ReplayParserLog : IDisposable
     {
         // director id field is removed in v11
         if (_version < 11)
+        {
             _input.ReadUInt(true);
+        }
+
         return new(_input.ReadByte(true), _input.ReadUInt(true));
     }
 
@@ -603,7 +637,10 @@ public sealed class ReplayParserLog : IDisposable
         var argCount = _input.ReadInt();
         var args = new int[argCount];
         for (var i = 0; i < argCount; ++i)
+        {
             args[i] = _input.ReadInt();
+        }
+
         return new(id, args);
     }
 
@@ -615,7 +652,10 @@ public sealed class ReplayParserLog : IDisposable
         var targets = new ClientState.Hate[32];
         var haterCount = _input.ReadInt();
         for (var i = 0; i < haterCount; ++i)
+        {
             targets[i] = new(_input.ReadActorID(), _input.ReadInt());
+        }
+
         return new(primary, targets);
     }
 
@@ -796,7 +836,10 @@ public sealed class ReplayParserLog : IDisposable
         var count = _input.ReadInt();
         List<(ulong, ushort)> actions = [];
         for (var i = 0; i < count; i++)
+        {
             actions.Add((_input.ReadActorID(), _input.ReadUShort(true)));
+        }
+
         return new(owner, actions);
     }
     private ActorState.OpEventNpcYell ParseActorEventNpcYell() => new(_input.ReadActorID(), _input.ReadUShort(false));
@@ -839,10 +882,18 @@ public sealed class ReplayParserLog : IDisposable
         List<(int, Cooldown)> cooldowns = [];
         cooldowns.Capacity = _input.ReadByte(false);
         for (var i = 0; i < cooldowns.Capacity; ++i)
+        {
             cooldowns.Add((_input.ReadByte(false), new(_input.ReadFloat(), _input.ReadFloat())));
+        }
+
         if (_version < 19)
+        {
             foreach (ref var cd in cooldowns.AsSpan())
+            {
                 cd.Item2.Elapsed = cd.Item2.Total - cd.Item2.Elapsed; // there was a mistake before v19 where remaining was saved instead of elapsed
+            }
+        }
+
         return new(reset, cooldowns);
     }
 
@@ -858,7 +909,9 @@ public sealed class ReplayParserLog : IDisposable
         var count = _input.ReadByte(false);
         var actions = new ClientState.DutyAction[count];
         for (var i = 0; i < count; ++i)
+        {
             actions[i] = new ClientState.DutyAction(_input.ReadAction(), _input.ReadByte(false), _input.ReadByte(false));
+        }
 
         return new(actions);
     }
@@ -868,7 +921,10 @@ public sealed class ReplayParserLog : IDisposable
         List<(BozjaHolsterID, byte)> contents = [];
         contents.Capacity = _input.ReadByte(false);
         for (var i = 0; i < contents.Capacity; ++i)
+        {
             contents.Add(((BozjaHolsterID)_input.ReadByte(false), _input.ReadByte(false)));
+        }
+
         return new(contents);
     }
 
@@ -877,7 +933,10 @@ public sealed class ReplayParserLog : IDisposable
         var contents = new uint[ClientState.NumBlueMageSpells];
         var count = _input.ReadByte(false);
         for (var i = 0; i < count; ++i)
+        {
             contents[i] = _input.ReadUInt(false);
+        }
+
         return new(contents);
     }
 
@@ -885,7 +944,10 @@ public sealed class ReplayParserLog : IDisposable
     {
         var contents = new short[_input.ReadByte(false)];
         for (var i = 0; i < contents.Length; ++i)
+        {
             contents[i] = _input.ReadShort();
+        }
+
         return new(contents);
     }
 
@@ -926,21 +988,30 @@ public sealed class ReplayParserLog : IDisposable
     {
         var pt = new DeepDungeonState.PartyMember[DeepDungeonState.NumPartyMembers];
         for (var i = 0; i < pt.Length; ++i)
+        {
             pt[i] = new(_input.ReadActorID(), _input.ReadByte(false));
+        }
+
         return new(pt);
     }
     private DeepDungeonState.OpPomandersChange ParseDeepDungeonPomanders()
     {
         var it = new DeepDungeonState.PomanderState[DeepDungeonState.NumPomanderSlots];
         for (var i = 0; i < it.Length; ++i)
+        {
             it[i] = new(_input.ReadByte(false), _input.ReadByte(true));
+        }
+
         return new(it);
     }
     private DeepDungeonState.OpChestsChange ParseDeepDungeonChests()
     {
         var ct = new DeepDungeonState.Chest[DeepDungeonState.NumChests];
         for (var i = 0; i < ct.Length; ++i)
+        {
             ct[i] = new(_input.ReadByte(false), _input.ReadByte(false));
+        }
+
         return new(ct);
     }
     private DeepDungeonState.OpMagiciteChange ParseDeepDungeonMagicite() => new(_input.ReadBytes());
