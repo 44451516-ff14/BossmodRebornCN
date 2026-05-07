@@ -15,8 +15,8 @@ sealed class FellSpark(BossModule module) : Components.InterceptTetherStatus(mod
 sealed class CurseOfCompanionshipSolitude(BossModule module) : Components.StatusStackSpread(module, (uint)SID.CurseOfCompanionship, (uint)SID.CurseOfSolitude, 15f, 15f);
 
 sealed class SpurningFlames(BossModule module) : Components.RaidwideCast(module, (uint)AID.SpurningFlames);
-sealed class ImpassionedSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ImpassionedSparks3, new AOEShapeCircle(8f));
-sealed class BurningPillar(BossModule module) : Components.SimpleAOEs(module,(uint)AID.BurningPillar, new AOEShapeCircle(10f));
+sealed class ImpassionedSpark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ImpassionedSparks3, 8f);
+sealed class BurningPillar(BossModule module) : Components.SimpleAOEs(module,(uint)AID.BurningPillar, 10f);
 sealed class SparkPuddle(BossModule module) : Components.Voidzone(module, 10f, GetPuddles)
 {
     private static Actor[] GetPuddles(BossModule module)
@@ -33,8 +33,7 @@ sealed class SparkPuddle(BossModule module) : Components.Voidzone(module, 10f, G
                 puddles[index++] = z;
             }
         }
-        return puddles;
-
+        return puddles[..index];
     }
 }
 
