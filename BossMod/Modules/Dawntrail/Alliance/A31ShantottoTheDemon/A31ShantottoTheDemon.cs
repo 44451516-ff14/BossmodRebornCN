@@ -52,15 +52,10 @@ public enum AID : uint
 
 public enum SID : uint
 {
-    _Gen_VulnerabilityUp = 1789, // Helper/Boss->player, extra=0x1/0x2/0x3/0x4
-    _Gen_Weakness = 43, // none->player, extra=0x0
-    _Gen_Transcendent = 418, // none->player, extra=0x0
     _Gen_ = 2552, // Boss->Boss/4DDC, extra=0x475
     _Gen_EasterlyWinds = 5398, // none->player/4D66, extra=0x0
     _Gen_WesterlyWinds = 5399, // none->player, extra=0x0
     _Gen_1 = 2160, // none->4D66, extra=0x3931
-    _Gen_BrinkOfDeath = 44, // none->player, extra=0x0
-    _Gen_DownForTheCount = 3908, // Helper->player, extra=0xEC7
 }
 
 public enum IconID : uint
@@ -209,18 +204,18 @@ class Winds : Components.Knockback
             _directions[slot] = new(d, status.ExpireAt);
     }
 
-    public override void OnMapEffect(byte index, uint state)
-    {
-        if (index is 0x41 or 0x42)
-            CalcWalls();
-    }
-
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID._Spell_AeroDynamics1 or AID._Spell_1)
+        switch ((AID)spell.Action.ID)
         {
-            NumCasts++;
-            Array.Fill(_directions, default);
+            case AID._Spell_AeroDynamics1:
+            case AID._Spell_1:
+                NumCasts++;
+                Array.Fill(_directions, default);
+                break;
+            case AID._Spell_SuperiorStoneII1:
+                CalcWalls();
+                break;
         }
     }
 
