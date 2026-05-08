@@ -68,3 +68,51 @@ sealed class NaughtHunts(BossModule module) : Components.StandardChasingAOEs(mod
         }
     }
 }
+
+// If we don't need to try to track who it's hopping to for the purposes of the actual mechanic, why don't we just...
+
+sealed class NaughtHuntsJumps(BossModule module) : BossComponent(module)
+{
+    private readonly List<Actor> _targets = [];
+    private readonly List<Actor> _sources = [];
+
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
+    {
+        if (tether.ID == (uint)TetherID.NaughtHuntJump)
+        {
+            var p = WorldState.Actors.Find(tether.Target);
+            if (p != null)
+            {
+                _targets.Add(p);
+                _sources.Add(source);
+            }
+        }
+    }
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
+    {
+        if (tether.ID == (uint)TetherID.NaughtHuntJump)
+        {
+            var p = WorldState.Actors.Find(tether.Target);
+            if (p != null)
+            {
+                for (var i = 0; i < _targets.Count; i++)
+                {
+                    _targets.Clear();
+                    _sources.Clear();
+                }
+            }
+        }
+    }
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (_targets.Count() > 0 && _sources.Count > 0)
+        {
+            for (var i = 0; i < _targets.Count; i++)
+            {
+                var s = _sources[i];
+                var t = _targets[i];
+                Arena.AddLine(s.Position, t.Position);
+            }
+        }
+    }
+}
