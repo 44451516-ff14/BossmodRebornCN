@@ -1,12 +1,11 @@
+using Clipper2Lib;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.LayoutEngine;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision.Math;
-using Dalamud.Bindings.ImGui;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
-using Clipper2Lib;
 
 namespace BossMod;
 
@@ -70,7 +69,7 @@ public static unsafe class CollisionOutlinesExtractor
         var yLUT = new Dictionary<Point64, float>(1 << 15);
         var edges = new List<EdgeY>(1 << 17);
 
-        int n = streamed->Header->NumMeshes;
+        var n = streamed->Header->NumMeshes;
         for (var i = 0; i < n; ++i)
         {
             var elem = streamed->Elements + i;
@@ -134,8 +133,8 @@ public static unsafe class CollisionOutlinesExtractor
     {
         var mesh = (MeshPCB*)coll->Mesh;
         var world = coll->World;
-        ulong objMask = coll->Collider.ObjectMaterialMask;
-        ulong objId = coll->Collider.ObjectMaterialValue & objMask;
+        var objMask = coll->Collider.ObjectMaterialMask;
+        var objId = coll->Collider.ObjectMaterialValue & objMask;
 
         CollectNode(mesh->RootNode, ref world, objId, objMask, wantedId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
     }
@@ -153,7 +152,7 @@ public static unsafe class CollisionOutlinesExtractor
             return;
         }
 
-        int nv = node->NumVertsRaw + node->NumVertsCompressed;
+        var nv = node->NumVertsRaw + node->NumVertsCompressed;
         int np = node->NumPrims;
 
         if (nv > 0 && np > 0)
@@ -441,10 +440,7 @@ public static unsafe class CollisionOutlinesExtractor
 
     private static Point64 ToP64(in Vector3 v, long s) => new((long)Math.Round(v.X * s), (long)Math.Round(v.Z * s));
 
-    private static void AccumY(Dictionary<Point64, float> lut, Point64 p, float y)
-    {
-        lut[p] = lut.TryGetValue(p, out var cur) ? (cur + y) * 0.5f : y;
-    }
+    private static void AccumY(Dictionary<Point64, float> lut, Point64 p, float y) => lut[p] = lut.TryGetValue(p, out var cur) ? (cur + y) * 0.5f : y;
 
     private readonly struct EdgeY
     {
@@ -810,7 +806,9 @@ public sealed unsafe class DebugCollision() : IDisposable
                         {
                             var m = cast->Elements[i].Mesh;
                             if (m != null)
+                            {
                                 _streamedMeshes.Add((nint)m);
+                            }
                         }
                     }
                 }
@@ -863,7 +861,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         // for simple/primitive colliders, compare the object's material to the UI selection
         // keep the ones whose (objectMaterial ^ wantedId) has no differences inside the active mask bits
         var wantedId = _materialId.Raw;
-        ulong objValue = coll->ObjectMaterialValue; // primitives only have object-level material
+        var objValue = coll->ObjectMaterialValue; // primitives only have object-level material
         return ((objValue ^ wantedId) & maskActiveBits) == 0UL;
     }
 
@@ -873,7 +871,9 @@ public sealed unsafe class DebugCollision() : IDisposable
     {
         using var n = _tree.Node2("设置");
         if (!n.Opened)
+        {
             return;
+        }
 
         ImGui.Checkbox("Show objects with zero layer", ref _showZeroLayer);
         {
@@ -885,7 +885,9 @@ public sealed unsafe class DebugCollision() : IDisposable
                 {
                     var shown = _shownLayers[i];
                     if (ImGui.Checkbox($"Layer {i}", ref shown))
+                    {
                         _shownLayers[i] = shown;
+                    }
                 }
             }
         }
@@ -899,7 +901,9 @@ public sealed unsafe class DebugCollision() : IDisposable
                 {
                     var filter = _materialMask[i];
                     if (ImGui.Checkbox($"Material {1u << i:X16}", ref filter))
+                    {
                         _materialMask[i] = filter;
+                    }
                 }
             }
         }
@@ -913,7 +917,9 @@ public sealed unsafe class DebugCollision() : IDisposable
                 {
                     var filter = _materialId[i];
                     if (ImGui.Checkbox($"Material {1u << i:X16}", ref filter))
+                    {
                         _materialId[i] = filter;
+                    }
                 }
             }
         }
@@ -998,10 +1004,16 @@ public sealed unsafe class DebugCollision() : IDisposable
 
             ImGui.BeginDisabled(!okList || meshIds.Count == 0);
             if (ImGui.Button("Copy polygons (WPos, mesh-id list)"))
+            {
                 ExportPolysByMeshIdList(meshIds, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector2XZ);
+            }
+
             ImGui.SameLine();
             if (ImGui.Button("Copy polygons (Vector3, mesh-id list)"))
+            {
                 ExportPolysByMeshIdList(meshIds, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector3XYZ);
+            }
+
             ImGui.EndDisabled();
         }
     }
@@ -1010,34 +1022,51 @@ public sealed unsafe class DebugCollision() : IDisposable
     {
         using var n = _tree.Node2($"Scene {index}: {s->NumColliders} colliders, {s->NumLoading} loading, streaming={SphereStr(s->StreamingSphere)}###scene_{index}");
         if (n.SelectedOrHovered)
+        {
             foreach (var coll in s->Colliders)
+            {
                 if (FilterCollider(coll))
+                {
                     VisualizeCollider(coll, _materialId, _materialMask);
+                }
+            }
+        }
+
         if (n.Opened)
+        {
             foreach (var coll in s->Colliders)
+            {
                 DrawCollider(coll);
+            }
+        }
     }
 
     private void DrawSceneQuadtree(Quadtree* tree, int index)
     {
         using var n = _tree.Node2($"Quadtree {index}: {tree->NumLevels} levels ([{tree->MinX}, {tree->MaxX}]x[{tree->MinZ}, {tree->MaxZ}], leaf {tree->LeafSizeX}x{tree->LeafSizeZ}), {tree->NumNodes} nodes###tree_{index}");
         if (!n.Opened)
+        {
             return;
+        }
 
-        for (int level = 0; level < tree->NumLevels; ++level)
+        for (var level = 0; level < tree->NumLevels; ++level)
         {
             var cellSizeX = (tree->MaxX - tree->MinX + 1) / (1 << level);
             var cellSizeZ = (tree->MaxZ - tree->MinZ + 1) / (1 << level);
             using var ln = _tree.Node2($"Level {level}, {cellSizeX}x{cellSizeZ} cells ({Quadtree.NumNodesAtLevel(level)} nodes starting at {Quadtree.StartingNodeForLevel(level)})");
             if (!ln.Opened)
+            {
                 continue;
+            }
 
             var nodes = tree->NodesAtLevel(level);
-            for (int i = 0; i < nodes.Length; ++i)
+            for (var i = 0; i < nodes.Length; ++i)
             {
                 ref var node = ref nodes[i];
                 if (node.Node.NodeLink.Next == null)
+                {
                     continue;
+                }
 
                 var coord = Quadtree.CellCoords((uint)i);
                 var cellX = tree->MinX + coord.x * cellSizeX;
@@ -1045,14 +1074,20 @@ public sealed unsafe class DebugCollision() : IDisposable
                 using var cn = _tree.Node2($"[{coord.x}, {coord.z}] ([{cellX}x{cellZ}]-[{cellX + cellSizeX}x{cellZ + cellSizeZ}])###node_{level}_{i}", node.Node.NodeLink.Next == null);
 
                 if (cn.Opened)
+                {
                     foreach (var coll in node.Colliders)
+                    {
                         DrawCollider(coll);
+                    }
+                }
 
                 if (cn.SelectedOrHovered)
                 {
                     // TODO: visualize cell bounds?
                     foreach (var coll in node.Colliders)
+                    {
                         VisualizeCollider(coll, _materialId, _materialMask);
+                    }
                 }
             }
         }
@@ -1061,7 +1096,9 @@ public sealed unsafe class DebugCollision() : IDisposable
     private void DrawCollider(Collider* coll)
     {
         if (!FilterCollider(coll))
+        {
             return;
+        }
 
         var raycastFlag = (coll->VisibilityFlags & 1) != 0;
         var globalVisitFlag = (coll->VisibilityFlags & 2) != 0;
@@ -1073,9 +1110,13 @@ public sealed unsafe class DebugCollision() : IDisposable
         {
             var collMesh = (ColliderMesh*)coll;
             if (_streamedMeshes.Contains((nint)coll))
+            {
                 color = Colors.TextColor4;
+            }
             else if (collMesh->MeshIsSimple)
+            {
                 color = Colors.TextColor3;
+            }
         }
         using var n = _tree.Node2($"{type} {(nint)coll:X}, layers={coll->LayerMask:X8}, layout-id={coll->LayoutObjectId:X16}, refs={coll->NumRefs}, material={coll->ObjectMaterialValue:X}/{coll->ObjectMaterialMask:X}, flags={flagsText}###{(nint)coll:X}", false, color);
         if (_selectionMode && type == ColliderType.Mesh)
@@ -1084,11 +1125,18 @@ public sealed unsafe class DebugCollision() : IDisposable
             if (cm->Mesh != null && !cm->MeshIsSimple)
             {
                 var ptr = (ulong)(nuint)cm;
-                bool sel = _meshSelection.Contains(ptr);
+                var sel = _meshSelection.Contains(ptr);
                 ImGui.SameLine();
                 if (ImGui.Checkbox($"##sel_mesh_{(nint)coll:X}", ref sel))
                 {
-                    if (sel) _meshSelection.Add(ptr); else _meshSelection.Remove(ptr);
+                    if (sel)
+                    {
+                        _meshSelection.Add(ptr);
+                    }
+                    else
+                    {
+                        _meshSelection.Remove(ptr);
+                    }
                 }
                 ImGui.SameLine(); ImGui.TextDisabled("pick");
             }
@@ -1102,16 +1150,26 @@ public sealed unsafe class DebugCollision() : IDisposable
                 var cm = (ColliderMesh*)coll;
                 var ptr = (ulong)(nuint)cm;
                 if (ImGui.MenuItem("Copy mesh id (hex)"))
+                {
                     ImGui.SetClipboardText(FormatHexU64(ptr));
+                }
+
                 if (ImGui.MenuItem("Append mesh id to list"))
+                {
                     AppendIdToList(ref _exportMeshIdListHex, ptr.ToString("X16"));
+                }
             }
             ImGui.EndPopup();
         }
         if (n.SelectedOrHovered)
+        {
             VisualizeCollider(coll, _materialId, _materialMask);
+        }
+
         if (!n.Opened)
+        {
             return;
+        }
 
         _tree.LeafNode2($"Raw flags: {coll->VisibilityFlags:X}");
         switch (type)
@@ -1136,9 +1194,14 @@ public sealed unsafe class DebugCollision() : IDisposable
                             using var mn = _tree.Node2($"Mesh {i}: file=tr{entry->MeshId:d4}.pcb, bounds={AABBStr(entry->Bounds)} == {(nint)elem->Mesh:X}###mesh_{i}", elem->Mesh == null);
 
                             if (mn.SelectedOrHovered && elem->Mesh != null)
+                            {
                                 VisualizeCollider(&elem->Mesh->Collider, _materialId, _materialMask);
+                            }
+
                             if (mn.Opened)
+                            {
                                 DrawColliderMesh(elem->Mesh);
+                            }
                         }
                     }
                 }
@@ -1206,13 +1269,21 @@ public sealed unsafe class DebugCollision() : IDisposable
         DrawMat4x3("世界", ref coll->World);
         DrawMat4x3("InvWorld", ref coll->InvWorld);
         if (_tree.LeafNode2($"Bounding sphere: {SphereStr(coll->BoundingSphere)}").SelectedOrHovered)
+        {
             VisualizeSphere(coll->BoundingSphere, Colors.CollisionColor1);
+        }
+
         if (_tree.LeafNode2($"Bounding box: {AABBStr(coll->WorldBoundingBox)}").SelectedOrHovered)
+        {
             VisualizeOBB(ref coll->WorldBoundingBox, ref Matrix4x3.Identity, Colors.CollisionColor1);
+        }
+
         _tree.LeafNode2($"Total size: {coll->TotalPrimitives} prims, {coll->TotalChildren} nodes");
         _tree.LeafNode2($"Mesh type: {(coll->MeshIsSimple ? "simple" : coll->MemoryData != null ? "PCB in-memory" : "PCB from file")} {(coll->Loaded ? "" : "(loading)")}");
         if (coll->Mesh == null || coll->MeshIsSimple)
+        {
             return;
+        }
 
         var mesh = (MeshPCB*)coll->Mesh;
         DrawColliderMeshPCBNode("Root", mesh->RootNode, ref coll->World, coll->Collider.ObjectMaterialValue & coll->Collider.ObjectMaterialMask, ~coll->Collider.ObjectMaterialMask, coll);
@@ -1221,25 +1292,34 @@ public sealed unsafe class DebugCollision() : IDisposable
     private void DrawColliderMeshPCBNode(string tag, MeshPCB.FileNode* node, ref Matrix4x3 world, ulong objMatId, ulong objMatInvMask, ColliderMesh* coll)
     {
         if (node == null)
+        {
             return;
+        }
 
         using var n = _tree.Node2(tag);
         if (n.SelectedOrHovered)
+        {
             VisualizeColliderMeshPCBNode(node, ref world, Colors.CollisionColor1, objMatId, objMatId, _materialId, _materialMask);
+        }
+
         if (!n.Opened)
+        {
             return;
+        }
 
         _tree.LeafNode2($"Header: {node->Header:X16}");
 
         if (_tree.LeafNode2($"AABB: {AABBStr(node->LocalBounds)}").SelectedOrHovered)
+        {
             VisualizeOBB(ref node->LocalBounds, ref world, Colors.CollisionColor1);
+        }
 
         using var nv = _tree.Node2($"Vertices: {node->NumVertsRaw}+{node->NumVertsCompressed}", node->NumVertsRaw + node->NumVertsCompressed == 0);
         if (nv.Opened)
         {
             // Collect all vertices
-            Vector3 translation = coll->Translation;
-            Vector3 rotation = coll->Rotation;
+            var translation = coll->Translation;
+            var rotation = coll->Rotation;
 
             List<(Vector3 vertex, int index, char type)> vertices = [];
 
@@ -1290,8 +1370,12 @@ public sealed unsafe class DebugCollision() : IDisposable
             {
                 var i = 0;
                 foreach (ref var prim in node->Primitives)
+                {
                     if (_tree.LeafNode2($"[{++i}]: {prim.V1}x{prim.V2}x{prim.V3}, material={prim.Material:X8}").SelectedOrHovered)
+                    {
                         VisualizeTriangle(node, ref prim, ref world, Colors.CollisionColor2);
+                    }
+                }
             }
         }
         DrawColliderMeshPCBNode($"Child 1 (+{node->Child1Offset})", node->Child1, ref world, objMatId, objMatId, coll);
@@ -1319,7 +1403,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var cast = (ColliderStreamed*)coll;
                     if (cast->Header != null && cast->Elements != null)
                     {
-                        for (int i = 0; i < cast->Header->NumMeshes; ++i)
+                        for (var i = 0; i < cast->Header->NumMeshes; ++i)
                         {
                             var elem = cast->Elements + i;
                             VisualizeColliderMesh(elem->Mesh, Colors.CollisionColor1, _materialId, _materialMask);
@@ -1335,10 +1419,14 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var cast = (ColliderBox*)coll;
                     Span<Vector3> corners = stackalloc Vector3[8];
                     for (var i = 0; i < 8; ++i)
+                    {
                         corners[i] = cast->World.TransformCoordinate(_boxCorners[i]);
+                    }
 
                     foreach (var (start, end) in _boxEdges)
+                    {
                         Camera.Instance?.DrawWorldLine(corners[start], corners[end], Colors.CollisionColor3);
+                    }
                 }
                 break;
             case ColliderType.Cylinder:
@@ -1382,7 +1470,9 @@ public sealed unsafe class DebugCollision() : IDisposable
     private void VisualizeColliderMeshPCBNode(MeshPCB.FileNode* node, ref Matrix4x3 world, uint color, ulong objMatId, ulong objMatInvMask, BitMask filterId, BitMask filterMask)
     {
         if (node == null)
+        {
             return;
+        }
 
         if (node->NumVertsRaw + node->NumVertsCompressed != 0)
         {
@@ -1469,9 +1559,15 @@ public sealed unsafe class DebugCollision() : IDisposable
     private void GatherMeshNodeMaterials(MeshPCB.FileNode* node, BitMask invMask)
     {
         if (node == null)
+        {
             return;
+        }
+
         foreach (ref var prim in node->Primitives)
+        {
             _availableMaterials |= invMask & new BitMask(prim.Material);
+        }
+
         GatherMeshNodeMaterials(node->Child1, invMask);
         GatherMeshNodeMaterials(node->Child2, invMask);
     }
@@ -1503,10 +1599,15 @@ public sealed unsafe class DebugCollision() : IDisposable
 
         var raycast = (coll->VisibilityFlags & 1) != 0;
         if (ImGui.Checkbox("Flag: raycast", ref raycast))
+        {
             coll->VisibilityFlags ^= 1;
+        }
+
         var globalVisit = (coll->VisibilityFlags & 2) != 0;
         if (ImGui.Checkbox("Flag: global visit", ref globalVisit))
+        {
             coll->VisibilityFlags ^= 2;
+        }
 
         // export (Clipper2 union) using settings
         if (coll->GetColliderType() == ColliderType.Mesh)
@@ -1618,7 +1719,9 @@ public sealed unsafe class DebugCollision() : IDisposable
     {
         HashSet<ulong> set = [];
         if (string.IsNullOrWhiteSpace(s))
+        {
             return (true, set);
+        }
 
         var span = s.AsSpan();
         int i = 0, n = span.Length;
@@ -1697,7 +1800,9 @@ public sealed unsafe class DebugCollision() : IDisposable
                             {
                                 var addr = (ulong)(nuint)cm;
                                 if (ids.Contains(addr))
+                                {
                                     meshPtrs.Add((nint)cm);
+                                }
                             }
                             break;
                         }

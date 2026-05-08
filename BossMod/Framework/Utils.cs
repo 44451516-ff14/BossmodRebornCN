@@ -1,7 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Objects.Types;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BossMod;
@@ -29,7 +28,10 @@ public static partial class Utils
         foreach (var f in typeof(T).GetFields())
         {
             if (!first)
+            {
                 sb.Append(',');
+            }
+
             var v = f.GetValue(obj);
             sb.Append($" {f.Name} = {v}");
             first = false;
@@ -71,7 +73,9 @@ public static partial class Utils
     public static bool IsPlayerSyncedToFate(WorldState world)
     {
         if (world.Client.ActiveFate.ID == 0)
+        {
             return false;
+        }
 
         var fate = GetFateData(world.Client.ActiveFate.ID);
         return fate.EurekaFate == 1
@@ -87,7 +91,10 @@ public static partial class Utils
     private static (byte ClassJobLevelMax, byte EurekaFate) GetFateData(uint fateID)
     {
         if (_fateCache.TryGetValue(fateID, out var fateRow))
+        {
             return fateRow;
+        }
+
         var row = Service.LuminaRow<Lumina.Excel.Sheets.Fate>(fateID);
         (byte, byte)? data;
         data = (row!.Value.ClassJobLevelMax, row.Value.EurekaFate);
@@ -97,9 +104,14 @@ public static partial class Utils
     // lumina extensions
     public static int FindIndex<T>(this Lumina.Excel.Collection<T> collection, Func<T, bool> predicate) where T : struct
     {
-        for (int i = 0; i < collection.Count; ++i)
+        for (var i = 0; i < collection.Count; ++i)
+        {
             if (predicate(collection[i]))
+            {
                 return i;
+            }
+        }
+
         return -1;
     }
 
@@ -108,7 +120,9 @@ public static partial class Utils
     {
         using var e = source.GetEnumerator();
         if (!e.MoveNext())
+        {
             return default;
+        }
 
         var res = e.Current;
         var score = keySelector(res);
@@ -129,7 +143,9 @@ public static partial class Utils
     {
         using var e = source.GetEnumerator();
         if (!e.MoveNext())
+        {
             return default;
+        }
 
         var res = e.Current;
         var score = keySelector(res);
@@ -161,8 +177,13 @@ public static partial class Utils
     public static T MaxAll<T>(T first, params T[] rest) where T : IComparable
     {
         foreach (var v in rest)
+        {
             if (v.CompareTo(first) > 0)
+            {
                 first = v;
+            }
+        }
+
         return first;
     }
 
@@ -170,7 +191,10 @@ public static partial class Utils
     public static bool AddIfNonNull<T>(this List<T> list, T? value)
     {
         if (value == null)
+        {
             return false;
+        }
+
         list.Add(value);
         return true;
     }
@@ -238,12 +262,16 @@ public static partial class Utils
             {
                 ++last;
                 if (i != last)
+                {
                     span[last] = span[i];
+                }
             }
         }
         ++last;
         if (last < list.Count)
+        {
             list.RemoveRange(last, list.Count - last);
+        }
     }
 
     // linear interpolation
@@ -261,7 +289,10 @@ public static partial class Utils
     {
         var res = new T[count];
         for (var i = 0; i < count; i++)
+        {
             res[i] = gen();
+        }
+
         return res;
     }
 
@@ -288,7 +319,13 @@ public static partial class Utils
     public static IEnumerable<Type> GetDerivedTypes<Base>(Assembly asm)
     {
         var b = typeof(Base);
-        return GetAllTypes(asm).Where(t => t?.IsSubclassOf(b) ?? false).Select(t => t!);
+        foreach (var t in GetAllTypes(asm))
+        {
+            if (t?.IsSubclassOf(b) ?? false)
+            {
+                yield return t!;
+            }
+        }
     }
 
     // generate valid identifier name from human-readable string
@@ -313,7 +350,9 @@ public static partial class Utils
             var i = 0;
             var key = k;
             while (!keys.Add(key))
+            {
                 key = $"{k}{++i}";
+            }
 
             yield return (key, v);
         }
@@ -325,7 +364,9 @@ public static partial class Utils
         return input =>
         {
             if (cache.TryGetValue(input, out var cached))
+            {
                 return cached;
+            }
 
             return cache[input] = func(input);
         };

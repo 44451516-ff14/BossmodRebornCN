@@ -36,20 +36,14 @@ public sealed class NetworkState
 
     public IDScrambleFields IDScramble;
 
-    public List<WorldState.Operation> CompareToInitial()
-    {
-        return IDScramble != default ? [new OpIDScramble(IDScramble)] : [];
-    }
+    public List<WorldState.Operation> CompareToInitial() => IDScramble != default ? [new OpIDScramble(IDScramble)] : [];
 
     public Event<OpLegacyIDScramble> LegacyIDScrambleChanged = new();
     public sealed class OpLegacyIDScramble(uint value) : WorldState.Operation
     {
         public readonly uint Value = value;
 
-        protected override void Exec(WorldState ws)
-        {
-            ws.Network.LegacyIDScrambleChanged.Fire(this);
-        }
+        protected override void Exec(WorldState ws) => ws.Network.LegacyIDScrambleChanged.Fire(this);
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("IPCI"u8).Emit(Value);
     }
 

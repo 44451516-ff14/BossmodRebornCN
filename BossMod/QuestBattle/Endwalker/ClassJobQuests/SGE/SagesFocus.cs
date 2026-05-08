@@ -16,18 +16,8 @@ internal class SagesFocus(WorldState ws) : QuestBattle(ws)
             .WithConnection(new Vector3(47.85f, 3.00f, 108.20f))
             .Hints((player, hints) => {
                 var lalah = World.Actors.FirstOrDefault(x => x.OID == 0x3589 && x.IsTargetable);
-                if (lalah == null)
-                    return;
-
-                if (lalah.FindStatus(BossMod.SGE.SID.EukrasianDiagnosis) != null)
-                    return;
-
-                var gauge = World.Client.GetGauge<SageGauge>();
-                if (gauge.Eukrasia > 0)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.SGE.AID.EukrasianDiagnosis), lalah, ActionQueue.Priority.High);
-                else
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.SGE.AID.Eukrasia), player, ActionQueue.Priority.High);
-            })
+                if (lalah == null) { return; } if (lalah.FindStatus(BossMod.SGE.SID.EukrasianDiagnosis) != null) { return; } var gauge = World.Client.GetGauge<SageGauge>();
+                if (gauge.Eukrasia > 0) { hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.SGE.AID.EukrasianDiagnosis), lalah, ActionQueue.Priority.High); } else { hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.SGE.AID.Eukrasia), player, ActionQueue.Priority.High); } })
             .CompleteOnKilled(0x358B),
 
         new QuestObjective(ws)

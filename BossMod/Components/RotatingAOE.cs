@@ -78,7 +78,9 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
         ++NumCasts;
 
         if (index < 0 || index >= Sequences.Count)
+        {
             return;
+        }
 
         ref var s = ref Sequences.Ref(index);
         if (--s.NumRemainingCasts <= 0 && removeWhenFinished)

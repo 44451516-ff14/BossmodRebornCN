@@ -8,90 +8,111 @@ public static class ActorEnumeration
     {
         BitMask mask = default;
         foreach ((var i, _) in range)
+        {
             mask.Set(i);
+        }
+
         return mask;
     }
 
     // convert slot+actor range into actor range
-    public static IEnumerable<Actor> Actors(this IEnumerable<(int, Actor)> range) => range.Select(indexActor => indexActor.Item2);
+    public static IEnumerable<Actor> Actors(this IEnumerable<(int, Actor)> range)
+    {
+        foreach (var (_, actor) in range)
+        {
+            yield return actor;
+        }
+    }
 
     // filter range with slot+actor by slot or by actor
     public static IEnumerable<(int, Actor)> WhereSlot(this IEnumerable<(int, Actor)> range, Func<int, bool> predicate)
     {
-        return range.Where(indexActor => predicate(indexActor.Item1));
+        foreach (var item in range)
+        {
+            if (predicate(item.Item1))
+            {
+                yield return item;
+            }
+        }
     }
 
     public static IEnumerable<(int, Actor)> WhereActor(this IEnumerable<(int, Actor)> range, Func<Actor, bool> predicate)
     {
-        return range.Where(indexActor => predicate(indexActor.Item2));
+        foreach (var item in range)
+        {
+            if (predicate(item.Item2))
+            {
+                yield return item;
+            }
+        }
     }
 
     // exclude specified actor from enumeration
     public static IEnumerable<Actor> Exclude(this IEnumerable<Actor> range, Actor? actor)
     {
-        return range.Where(x => x != actor);
+        foreach (var x in range)
+        {
+            if (x != actor)
+            {
+                yield return x;
+            }
+        }
     }
 
-    public static IEnumerable<(int, Actor)> Exclude(this IEnumerable<(int, Actor)> range, Actor? actor)
-    {
-        return range.WhereActor(x => x != actor);
-    }
+    public static IEnumerable<(int, Actor)> Exclude(this IEnumerable<(int, Actor)> range, Actor? actor) => range.WhereActor(x => x != actor);
 
-    public static IEnumerable<(int, Actor)> Exclude(this IEnumerable<(int, Actor)> range, int slot)
-    {
-        return range.WhereSlot(i => i != slot);
-    }
+    public static IEnumerable<(int, Actor)> Exclude(this IEnumerable<(int, Actor)> range, int slot) => range.WhereSlot(i => i != slot);
 
     public static IEnumerable<Actor> Exclude(this IEnumerable<Actor> range, IEnumerable<Actor> actors)
     {
         var actorSet = new HashSet<Actor>(actors);
-        return range.Where(x => !actorSet.Contains(x));
+        foreach (var x in range)
+        {
+            if (!actorSet.Contains(x))
+            {
+                yield return x;
+            }
+        }
     }
 
     // select actors that have their corresponding bit in mask set
-    public static IEnumerable<(int, Actor)> IncludedInMask(this IEnumerable<(int, Actor)> range, BitMask mask)
-    {
-        return range.WhereSlot(i => mask[i]);
-    }
+    public static IEnumerable<(int, Actor)> IncludedInMask(this IEnumerable<(int, Actor)> range, BitMask mask) => range.WhereSlot(i => mask[i]);
 
     // select actors that have their corresponding bit in mask cleared
-    public static IEnumerable<(int, Actor)> ExcludedFromMask(this IEnumerable<(int, Actor)> range, BitMask mask)
-    {
-        return range.WhereSlot(i => !mask[i]);
-    }
+    public static IEnumerable<(int, Actor)> ExcludedFromMask(this IEnumerable<(int, Actor)> range, BitMask mask) => range.WhereSlot(i => !mask[i]);
 
     // select actors in specified radius from specified point
     public static IEnumerable<Actor> InRadius(this IEnumerable<Actor> range, WPos origin, float radius)
     {
-        return range.Where(actor => actor.Position.InCircle(origin, radius));
+        foreach (var actor in range)
+        {
+            if (actor.Position.InCircle(origin, radius))
+            {
+                yield return actor;
+            }
+        }
     }
 
-    public static IEnumerable<(int, Actor)> InRadius(this IEnumerable<(int, Actor)> range, WPos origin, float radius)
-    {
-        return range.WhereActor(actor => actor.Position.InCircle(origin, radius));
-    }
+    public static IEnumerable<(int, Actor)> InRadius(this IEnumerable<(int, Actor)> range, WPos origin, float radius) => range.WhereActor(actor => actor.Position.InCircle(origin, radius));
 
     // select actors outside specified radius from specified point
     public static IEnumerable<Actor> OutOfRadius(this IEnumerable<Actor> range, WPos origin, float radius)
     {
-        return range.Where(actor => !actor.Position.InCircle(origin, radius));
+        foreach (var actor in range)
+        {
+            if (!actor.Position.InCircle(origin, radius))
+            {
+                yield return actor;
+            }
+        }
     }
 
-    public static IEnumerable<(int, Actor)> OutOfRadius(this IEnumerable<(int, Actor)> range, WPos origin, float radius)
-    {
-        return range.WhereActor(actor => !actor.Position.InCircle(origin, radius));
-    }
+    public static IEnumerable<(int, Actor)> OutOfRadius(this IEnumerable<(int, Actor)> range, WPos origin, float radius) => range.WhereActor(actor => !actor.Position.InCircle(origin, radius));
 
     // select actors in specified radius from specified actor, excluding actor itself
-    public static IEnumerable<Actor> InRadiusExcluding(this IEnumerable<Actor> range, Actor origin, float radius)
-    {
-        return range.Exclude(origin).InRadius(origin.Position, radius);
-    }
+    public static IEnumerable<Actor> InRadiusExcluding(this IEnumerable<Actor> range, Actor origin, float radius) => range.Exclude(origin).InRadius(origin.Position, radius);
 
-    public static IEnumerable<(int, Actor)> InRadiusExcluding(this IEnumerable<(int, Actor)> range, Actor origin, float radius)
-    {
-        return range.Exclude(origin).InRadius(origin.Position, radius);
-    }
+    public static IEnumerable<(int, Actor)> InRadiusExcluding(this IEnumerable<(int, Actor)> range, Actor origin, float radius) => range.Exclude(origin).InRadius(origin.Position, radius);
 
     // select actors in specified shape
     public static List<Actor> InShape(this IEnumerable<Actor> range, AOEShape shape, Actor origin)
@@ -143,7 +164,13 @@ public static class ActorEnumeration
     public static IEnumerable<Actor> Tethered<ID>(this IEnumerable<Actor> range, ID id) where ID : Enum
     {
         var castID = (uint)(object)id;
-        return range.Where(actor => actor.Tether.ID == castID);
+        foreach (var actor in range)
+        {
+            if (actor.Tether.ID == castID)
+            {
+                yield return actor;
+            }
+        }
     }
 
     public static IEnumerable<(int, Actor)> Tethered<ID>(this IEnumerable<(int, Actor)> range, ID id) where ID : Enum
@@ -251,9 +278,13 @@ public static class ActorEnumeration
         foreach (var a in range)
         {
             if (condition(a))
+            {
                 ++match;
+            }
             else
+            {
                 ++mismatch;
+            }
         }
         return (match, mismatch);
     }
@@ -261,27 +292,76 @@ public static class ActorEnumeration
     public static IEnumerable<(int, Actor)> ClockOrder(this IEnumerable<(int, Actor)> range, Actor starting, WPos center, bool counterclockwise = false)
     {
         var startingAngle = (starting.Position - center).ToAngle();
-
-        return counterclockwise
-            ? range.OrderBy(r =>
+        var list = new List<((int, Actor) item, float angle)>();
+        foreach (var r in range)
+        {
+            var thisAngle = (r.Item2.Position - center).ToAngle().Rad;
+            if (counterclockwise)
             {
-                var (slot, actor) = r;
-                var thisAngle = (actor.Position - center).ToAngle().Rad;
-                if (actor != starting && thisAngle < startingAngle.Rad)
+                if (r.Item2 != starting && thisAngle < startingAngle.Rad)
+                {
                     thisAngle += Angle.DoublePI;
-
-                return thisAngle;
-            })
-            : range.OrderByDescending(r =>
+                }
+            }
+            else
             {
-                var (slot, actor) = r;
-                var thisAngle = (actor.Position - center).ToAngle().Rad;
-                if (actor != starting && thisAngle > startingAngle.Rad)
+                if (r.Item2 != starting && thisAngle > startingAngle.Rad)
+                {
                     thisAngle -= Angle.DoublePI;
+                }
+            }
+            list.Add((r, thisAngle));
+        }
+        if (counterclockwise)
+        {
+            list.Sort(static (a, b) => a.angle.CompareTo(b.angle));
+        }
+        else
+        {
+            list.Sort(static (a, b) => b.angle.CompareTo(a.angle));
+        }
 
-                return thisAngle;
-            });
+        foreach (var (item, _) in list)
+        {
+            yield return item;
+        }
     }
 
-    public static IEnumerable<Actor> ClockOrder(this IEnumerable<Actor> range, Actor starting, WPos center, bool counterclockwise = false) => range.Select(r => (0, r)).ClockOrder(starting, center, counterclockwise).Select(r => r.Item2);
+    public static IEnumerable<Actor> ClockOrder(this IEnumerable<Actor> range, Actor starting, WPos center, bool counterclockwise = false)
+    {
+        var list = new List<(Actor actor, float angle)>();
+        var startingAngle = (starting.Position - center).ToAngle();
+        foreach (var r in range)
+        {
+            var thisAngle = (r.Position - center).ToAngle().Rad;
+            if (counterclockwise)
+            {
+                if (r != starting && thisAngle < startingAngle.Rad)
+                {
+                    thisAngle += Angle.DoublePI;
+                }
+            }
+            else
+            {
+                if (r != starting && thisAngle > startingAngle.Rad)
+                {
+                    thisAngle -= Angle.DoublePI;
+                }
+            }
+            list.Add((r, thisAngle));
+        }
+        if (counterclockwise)
+        {
+            list.Sort(static (a, b) => a.angle.CompareTo(b.angle));
+        }
+        else
+        {
+            list.Sort(static (a, b) => b.angle.CompareTo(a.angle));
+        }
+
+        foreach (var (actor, _) in list)
+        {
+            yield return actor;
+        }
+    }
 }

@@ -8,7 +8,9 @@ public class RaidwideCast(BossModule module, uint aid, string hint = "全屏伤�
     {
         var count = Casters.Count;
         for (var i = 0; i < count; ++i)
+        {
             hints.AddPredictedDamage(Raid.WithSlot().Mask(), Module.CastFinishAt(Casters[i].CastInfo));
+        }
     }
 }
 

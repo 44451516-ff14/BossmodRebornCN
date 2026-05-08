@@ -13,9 +13,13 @@ public struct BitMask(ulong raw)
         set
         {
             if (value)
+            {
                 Set(index);
+            }
             else
+            {
                 Clear(index);
+            }
         }
     }
 
@@ -47,7 +51,10 @@ public struct BitMask(ulong raw)
     {
         BitMask res = default;
         foreach (var bit in bits)
+        {
             res.Raw |= MaskForBit((byte)(object)bit);
+        }
+
         return res;
     }
 
@@ -55,7 +62,10 @@ public struct BitMask(ulong raw)
     {
         BitMask res = default;
         foreach (var bit in bits)
+        {
             res.Raw |= MaskForBit(bit);
+        }
+
         return res;
     }
 
@@ -64,7 +74,9 @@ public struct BitMask(ulong raw)
         var v = Raw;
         var count = BitOperations.PopCount(v);
         if (count == 0)
+        {
             return [];
+        }
 
         var indices = new int[count];
         var index = 0;

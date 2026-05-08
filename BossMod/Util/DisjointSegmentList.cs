@@ -43,15 +43,22 @@ public sealed class DisjointSegmentList
     {
         var index = Segments.FindIndex(s => s.Max >= min);
         if (index < 0)
+        {
             return (Segments.Count, 0); // greater than any existing segments
+        }
 
         if (max < Segments[index].Min)
+        {
             return (index, 0); // first or middle non-intersecting
+        }
 
         // count intersections
         var last = index + 1;
         while (last < Segments.Count && Segments[last].Min <= max)
+        {
             ++last;
+        }
+
         return (index, last - index);
     }
 }

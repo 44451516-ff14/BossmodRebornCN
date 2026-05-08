@@ -53,6 +53,5 @@ sealed class unk_48028(BossModule module) : Components.RaidwideCast(module, (uin
 public sealed class M12SLindwurm(WorldState ws, Actor primary) : BossModule(ws, primary, arenaCenter, DefaultBounds)
 {
     private static readonly WPos arenaCenter = new(100f, 100f);
-    public static readonly ArenaBoundsRect DefaultBounds = new ArenaBoundsRect(20f, 15f);
+    public static readonly ArenaBoundsRect DefaultBounds = new(20f, 15f);
 }
-

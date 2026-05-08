@@ -31,10 +31,20 @@ public sealed class ColumnPlannerTrackStrategy(Timeline timeline, StateMachineTr
 
         var mousePos = ImGui.GetMousePos();
         if (!ScreenPosInTrack(mousePos))
+        {
             return;
+        }
 
-        if (Entries.Any(e => e.EntryType == Entry.Type.Range && ScreenPosInEntry(mousePos, e)))
+        var hasRangeAtMouse = false;
+        for (var ei = 0; ei < Entries.Count; ++ei)
+        {
+            var e = Entries[ei];
+            if (e.EntryType == Entry.Type.Range && ScreenPosInEntry(mousePos, e)) { hasRangeAtMouse = true; break; }
+        }
+        if (hasRangeAtMouse)
+        {
             return;
+        }
 
         if (DefaultOverride != default)
         {
@@ -77,12 +87,16 @@ public sealed class ColumnPlannerTrackStrategy(Timeline timeline, StateMachineTr
                 }
                 ImGui.Separator();
                 if (ImGui.Selectable("Hide column"))
+                {
                     Width = 0;
+                }
             }
         }
 
         if (ImGui.IsItemClicked())
+        {
             ImGui.OpenPopup("settings");
+        }
 
         ImGui.SetCursorPos(cursor);
     }

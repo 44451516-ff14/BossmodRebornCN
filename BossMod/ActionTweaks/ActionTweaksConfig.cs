@@ -95,8 +95,12 @@ public sealed class ActionTweaksConfig : ConfigNode
         {
             const string rsrName = "Rotation Solver Reborn";
             foreach (var p in Service.PluginInterface.InstalledPlugins)
+            {
                 if ((p.Name.Equals(rsrName, StringComparison.OrdinalIgnoreCase) || p.InternalName.Equals(rsrName, StringComparison.OrdinalIgnoreCase)) && p.IsLoaded)
+                {
                     return true;
+                }
+            }
         }
         catch { }
         return false;
@@ -110,6 +114,8 @@ public sealed class ActionTweaksConfig : ConfigNode
         var rsrEnabled = IsRSREnabled();
         using var color = ImRaii.PushColor(ImGuiCol.Text, 0xFF0000FFu, rsrEnabled);
         if (ImGui.Checkbox("Smart ability targeting (Do not use with RSR)", ref SmartTargeting))
+        {
             Modified.Fire();
+        }
     }
 }

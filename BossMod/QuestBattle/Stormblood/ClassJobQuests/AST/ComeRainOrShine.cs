@@ -8,7 +8,9 @@ internal class ComeRainOrShrine(WorldState ws) : QuestBattle(ws)
         obj.AddAIHints += (player, hints) =>
         {
             if (World.Actors.FirstOrDefault(x => x.OID == 0x1ADA && x.IsTargetable && x.FindStatus(835) == null) is Actor t)
+            {
                 hints.ActionsToExecute.Push(ActionID.MakeSpell(BossMod.AST.AID.AspectedBenefic), t, ActionQueue.Priority.High);
+            }
         };
         obj.OnStatusGain += (act, stat) => obj.CompleteIf(act.OID == 0x1ADA && stat.ID == 835);
     }

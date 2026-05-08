@@ -43,9 +43,13 @@ public sealed class ColumnActorHP : Timeline.ColumnGroup, IToggleableColumn
                     if (effTarget == actor)
                     {
                         if (e.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage)
+                        {
                             damage += e.DamageHealValue;
+                        }
                         else if (e.Type == ActionEffectType.Heal)
+                        {
                             heal += e.DamageHealValue;
+                        }
                     }
                 }
             }
@@ -62,7 +66,9 @@ public sealed class ColumnActorHP : Timeline.ColumnGroup, IToggleableColumn
     private void AddRange(DateTime encStart, DateTime rangeStart, DateTime rangeEnd, uint initialMax, ActorHPMP hpmp)
     {
         if (hpmp.CurHP == 0)
+        {
             return;
+        }
 
         var pctFromInitial = (float)hpmp.CurHP / initialMax;
         var text = $"{hpmp.CurHP}+{hpmp.Shield}/{hpmp.MaxHP} ({pctFromInitial * 100:f2}%)";

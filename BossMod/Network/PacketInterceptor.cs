@@ -43,9 +43,13 @@ internal sealed class PacketInterceptor : IDisposable
         set
         {
             if (_fetchHook == null)
+            {
                 Service.Log($"[NPI] Recv hook not found!");
+            }
             else
+            {
                 _fetchHook.Enabled = value;
+            }
         }
     }
 
@@ -55,9 +59,13 @@ internal sealed class PacketInterceptor : IDisposable
         set
         {
             if (_sendHook == null)
+            {
                 Service.Log($"[NPI] Send hook not found!");
+            }
             else
+            {
                 _sendHook.Enabled = value;
+            }
         }
     }
 
@@ -70,7 +78,9 @@ internal sealed class PacketInterceptor : IDisposable
             || Service.SigScanner.TryScanText("E8 ?? ?? ?? ?? 84 C0 0F 85 ?? ?? ?? ?? 44 0F B6 64 24", out fetchAddress);
         Service.Log($"[NPI] FetchReceivedPacket address = 0x{fetchAddress:X}");
         if (foundFetchAddress)
+        {
             _fetchHook = new(fetchAddress, FetchReceivedPacketDetour, false);
+        }
 
         _sendHook = new("48 89 5C 24 ?? 48 89 74 24 ?? 4C 89 64 24 ?? 55 41 56 41 57 48 8B EC 48 83 EC 70", SendPacketDetour, false);
 

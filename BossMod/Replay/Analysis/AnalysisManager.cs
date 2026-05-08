@@ -26,28 +26,44 @@ sealed class AnalysisManager : IDisposable
         public void Draw(UITree tree)
         {
             foreach (var n in tree.Node("Unknown action effects"))
+            {
                 _unkEffects.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Participant info", false, Colors.TextColor1, () => _participantInfo.Get().DrawContextMenu()))
+            {
                 _participantInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Ability info", false, Colors.TextColor1, () => _abilityInfo.Get().DrawContextMenu()))
+            {
                 _abilityInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Player class definitions"))
+            {
                 _classDefinitions.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Client action weirdness"))
+            {
                 _clientActions.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Effect results: missing confirmations"))
+            {
                 _effectResultMissing.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Effect results: unexpected confirmations"))
+            {
                 _effectResultUnexpected.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Effect results: reorders"))
+            {
                 _effectResultReorder.Get().Draw(tree);
+            }
         }
     }
 
@@ -77,46 +93,78 @@ sealed class AnalysisManager : IDisposable
             _directorInfo = new(() => new(replays, oid));
             _arenaBounds = new(() => new(replays, oid));
             if (oid == (uint)Shadowbringers.Ultimate.TEA.OID.BossP1)
+            {
                 _teaSpecific = new(() => new(replays, oid));
+            }
+
             if (oid == (uint)Endwalker.Ultimate.TOP.OID.Boss)
+            {
                 _topSpecific = new(() => new(replays, oid));
+            }
         }
 
         public void Draw(UITree tree)
         {
             foreach (var n in tree.Node("State transition timings"))
+            {
                 _transitionTimings.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Participant info", false, Colors.TextColor1, () => _participantInfo.Get().DrawContextMenu()))
+            {
                 _participantInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Ability info", false, Colors.TextColor1, () => _abilityInfo.Get().DrawContextMenu()))
+            {
                 _abilityInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Status info", false, Colors.TextColor1, () => _statusInfo.Get().DrawContextMenu()))
+            {
                 _statusInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Icon info", false, Colors.TextColor1, () => _iconInfo.Get().DrawContextMenu()))
+            {
                 _iconInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Tether info", false, Colors.TextColor1, () => _tetherInfo.Get().DrawContextMenu()))
+            {
                 _tetherInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Map effect info", false, Colors.TextColor1))
+            {
                 _mapEffectInfo.Get().Draw(tree);
+            }
+
             foreach (var n in tree.Node("Director update info", false, Colors.TextColor1))
+            {
                 _directorInfo.Get().Draw(tree);
+            }
 
             foreach (var n in tree.Node("Arena bounds", false, Colors.TextColor1, () => _arenaBounds.Get().DrawContextMenu()))
+            {
                 _arenaBounds.Get().Draw(tree);
+            }
 
             if (_teaSpecific != null)
+            {
                 foreach (var n in tree.Node("TEA-specific analysis"))
+                {
                     _teaSpecific.Get().Draw(tree);
+                }
+            }
 
             if (_topSpecific != null)
+            {
                 foreach (var n in tree.Node("TOP-specific analysis"))
+                {
                     _topSpecific.Get().Draw(tree);
+                }
+            }
         }
     }
 
@@ -152,8 +200,14 @@ sealed class AnalysisManager : IDisposable
     private void InitEncounters()
     {
         foreach (var replay in _replays)
+        {
             foreach (var e in replay.Encounters)
+            {
                 if (!_perEncounter.ContainsKey(e.OID))
+                {
                     _perEncounter[e.OID] = new(_replays, e.OID);
+                }
+            }
+        }
     }
 }

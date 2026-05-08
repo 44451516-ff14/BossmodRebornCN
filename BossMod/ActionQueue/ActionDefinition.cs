@@ -92,16 +92,26 @@ public sealed record class ActionDefinition(ActionID ID)
     public int MaxChargesAtCap()
     {
         foreach (ref var o in MaxChargesOverride.AsSpan())
+        {
             if (LinkUnlocked(o.UnlockLink))
+            {
                 return o.Charges;
+            }
+        }
+
         return MaxChargesBase;
     }
 
     public int MaxChargesAtLevel(int level)
     {
         foreach (ref var o in MaxChargesOverride.AsSpan())
+        {
             if (level >= o.Level && LinkUnlocked(o.UnlockLink))
+            {
                 return o.Charges;
+            }
+        }
+
         return MaxChargesBase;
     }
 
@@ -122,7 +132,10 @@ public sealed record class ActionDefinition(ActionID ID)
     public float MainReadyIn(ReadOnlySpan<Cooldown> cooldowns, ReadOnlySpan<ClientState.DutyAction> dutyActions)
     {
         if (MainCooldownGroup < 0)
+        {
             return 0;
+        }
+
         var cdg = cooldowns[ActualMainCooldownGroup(dutyActions)];
         return cdg.Total > 0f ? Math.Max(0f, cdg.Total / MaxChargesAtCap() - cdg.Elapsed) : default;
     }
@@ -134,7 +147,10 @@ public sealed record class ActionDefinition(ActionID ID)
     public float ChargeCapIn(ReadOnlySpan<Cooldown> cooldowns, ReadOnlySpan<ClientState.DutyAction> dutyActions, int level)
     {
         if (MainCooldownGroup < 0)
+        {
             return default;
+        }
+
         var cdg = cooldowns[ActualMainCooldownGroup(dutyActions)];
         return cdg.Total > 0f ? Math.Max(0f, MaxChargesAtLevel(level) * cdg.Total / MaxChargesAtCap() - cdg.Elapsed) : default;
     }
@@ -260,15 +276,27 @@ public sealed class ActionDefinitions : IDisposable
 
         // special content actions - bozja, deep dungeons, etc
         for (var i = BozjaHolsterID.None + 1; i < BozjaHolsterID.Count; ++i)
+        {
             RegisterBozja(i);
+        }
+
         for (var i = PomanderID.Safety; i < PomanderID.Count; ++i)
+        {
             RegisterDeepDungeon(new(ActionType.Pomander, (uint)i));
+        }
+
         for (var i = 1u; i <= 3; ++i)
+        {
             RegisterDeepDungeon(new(ActionType.Magicite, i));
+        }
 
         foreach (var act in typeof(EurekaActionID).GetEnumValues())
+        {
             if ((uint)act > 0)
+            {
                 RegisterSpell((EurekaActionID)act);
+            }
+        }
 
         for (var i = 1u; i <= 6u; ++i)
         {
@@ -290,30 +318,60 @@ public sealed class ActionDefinitions : IDisposable
     public void Dispose()
     {
         foreach (var c in _classDefinitions)
+        {
             c.Dispose();
+        }
     }
 
     // smart targeting utility: return target (if friendly) or null (otherwise)
     public static Actor? SmartTargetFriendly(Actor? primaryTarget) => (primaryTarget?.IsAlly ?? false) ? primaryTarget : null;
 
     // smart targeting utility: return target (if friendly) or other tank (if available) or null (otherwise)
-    public static Actor? FindCoTank(WorldState ws, Actor player) => ws.Party.WithoutSlot().Exclude(player).FirstOrDefault(a => a.Role == Role.Tank);
+    public static Actor? FindCoTank(WorldState ws, Actor player)
+    {
+        foreach (var a in ws.Party.WithoutSlot())
+        {
+            if (a != player && a.Role == Role.Tank)
+            {
+                return a;
+            }
+        }
+
+        return null;
+    }
     public static Actor? SmartTargetCoTank(WorldState ws, Actor player, Actor? primaryTarget, AIHints hints) => SmartTargetFriendly(primaryTarget) ?? FindCoTank(ws, player);
 
     // smart targeting utility: return target (if friendly) or any esunable player (if any) or self (otherwise)
-    public static Actor? FindEsunaTarget(WorldState ws) => ws.Party.WithoutSlot().FirstOrDefault(p => p.Statuses.Any(s => Utils.StatusIsRemovable(s.ID)));
+    public static Actor? FindEsunaTarget(WorldState ws)
+    {
+        foreach (var p in ws.Party.WithoutSlot())
+        {
+            foreach (var s in p.Statuses)
+            {
+                if (Utils.StatusIsRemovable(s.ID))
+                {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
     public static Actor? SmartTargetEsunable(WorldState ws, Actor player, Actor? primaryTarget, AIHints hints) => SmartTargetFriendly(primaryTarget) ?? FindEsunaTarget(ws) ?? player;
 
     public static bool DashToTargetCheck(WorldState ws, Actor player, ActionQueue.Entry action, AIHints hints)
     {
         var target = action.Target;
         if (target == null || !_config.DashSafety)
+        {
             return false;
+        }
 
         // if there are pending knockbacks, god only knows where we would be sent after using a gapcloser
         // note that once the knockback is actually active and not pending, we can probably cancel it with a dash
         if (player.PendingKnockbacks.Count > 0)
+        {
             return true;
+        }
 
         var dist = player.DistanceToHitbox(target);
         var dir = player.AngleTo(target);
@@ -334,31 +392,23 @@ public sealed class ActionDefinitions : IDisposable
 
         // TODO: check against action's animation lock duration instead of constant 0.8?
         var (mode, deadline, _) = hints.ImminentSpecialMode;
-        if (mode is AIHints.SpecialMode.Pyretic or AIHints.SpecialMode.NoMovement && deadline <= ws.FutureTime(0.8d))
-            return true;
-
-        return IsDashDangerous(src, src + dir.ToDirection() * Math.Max(0f, dist), hints);
+        return mode is AIHints.SpecialMode.Pyretic or AIHints.SpecialMode.NoMovement && deadline <= ws.FutureTime(0.8d) || IsDashDangerous(src, src + dir.ToDirection() * Math.Max(0f, dist), hints);
     }
 
-    public static bool DashToPositionCheck(WorldState _, Actor player, ActionQueue.Entry action, AIHints hints)
-    {
-        if (action.TargetPos == default || !_config.DashSafety || !_config.DashSafetyExtra)
-            return false;
-
-        if (player.PendingKnockbacks.Count > 0)
-            return true;
-
-        return IsDashDangerous(player.Position, new WPos(action.TargetPos.XZ()), hints);
-    }
+    public static bool DashToPositionCheck(WorldState _, Actor player, ActionQueue.Entry action, AIHints hints) => action.TargetPos != default && _config.DashSafety && _config.DashSafetyExtra && (player.PendingKnockbacks.Count > 0 || IsDashDangerous(player.Position, new WPos(action.TargetPos.XZ()), hints));
 
     public static ActionDefinition.ConditionDelegate DashFixedDistanceCheck(float range, bool backwards = false)
         => (ws, player, act, hints) =>
         {
             if (!_config.DashSafety || !_config.DashSafetyExtra)
+            {
                 return false;
+            }
 
             if (player.PendingKnockbacks.Count != 0)
+            {
                 return true;
+            }
 
             var dir = act.FacingAngle ?? player.Rotation;
 
@@ -371,10 +421,14 @@ public sealed class ActionDefinitions : IDisposable
          => (ws, player, act, hints) =>
         {
             if (act.Target == null || !_config.DashSafety || !_config.DashSafetyExtra)
+            {
                 return false;
+            }
 
             if (player.PendingKnockbacks.Count > 0)
+            {
                 return true;
+            }
 
             var dir = act.Target.DirectionTo(player).Normalized();
 
@@ -428,8 +482,13 @@ public sealed class ActionDefinitions : IDisposable
         BitMask res = default;
         var cjc = _cjcSheet?.GetRowOrDefault(data.ClassJobCategory.RowId);
         if (cjc != null)
+        {
             for (var i = 1; i < _cjcSheet!.Columns.Count; ++i)
+            {
                 res[i - 1] = cjc.Value.ReadBoolColumn(i);
+            }
+        }
+
         return res;
     }
     public BitMask SpellAllowedClasses(uint spellId) => SpellAllowedClasses(ActionData(spellId));
@@ -448,23 +507,50 @@ public sealed class ActionDefinitions : IDisposable
     {
         var res = ActionTargets.None;
         if (data.CanTargetSelf)
+        {
             res |= ActionTargets.Self;
+        }
+
         if (data.CanTargetParty)
+        {
             res |= ActionTargets.Party;
+        }
+
         if (data.CanTargetAlliance)
+        {
             res |= ActionTargets.Alliance;
+        }
+
         if (data.CanTargetHostile)
+        {
             res |= ActionTargets.Hostile;
+        }
+
         if (data.CanTargetAlly)
+        {
             res |= ActionTargets.Friendly;
+        }
+
         if (data.CanTargetOwnPet)
+        {
             res |= ActionTargets.OwnPet;
+        }
+
         if (data.CanTargetPartyPet)
+        {
             res |= ActionTargets.PartyPet;
+        }
+
         if (data.TargetArea)
+        {
             res |= ActionTargets.Area;
+        }
+
         if (data.DeadTargetBehaviour == 1)
+        {
             res |= ActionTargets.Dead;
+        }
+
         return res;
     }
     public ActionTargets SpellAllowedTargets(uint spellId) => SpellAllowedTargets(ActionData(spellId));
@@ -475,7 +561,10 @@ public sealed class ActionDefinitions : IDisposable
     public int SpellRange(Lumina.Excel.Sheets.Action data, bool isPhysRanged = false)
     {
         if ((SCH.AID)data.RowId is SCH.AID.PetEmbrace or SCH.AID.PetFeyUnion or SCH.AID.PetSeraphicVeil)
+        {
             return 30; // these are hardcoded
+        }
+
         var range = data.Range;
         return range >= 0 ? range : isPhysRanged ? 25 : 3;
     }
@@ -512,6 +601,7 @@ public sealed class ActionDefinitions : IDisposable
     };
 
     public ActionAspect SpellAspect(Lumina.Excel.Sheets.Action data) => BossMod.ActionAspect.None;
+
     public ActionAspect SpellAspect(uint spellId) => SpellAspect(ActionData(spellId));
     public ActionAspect ActionAspect(ActionID aid) => aid.Type switch
     {
@@ -611,13 +701,12 @@ public sealed class ActionDefinitions : IDisposable
         }
 
         if (id == BozjaHolsterID.LostSeraphStrike)
+        {
             _definitions[normalAction].ForbidExecute = DashToTargetCheck;
+        }
     }
 
-    private void RegisterDeepDungeon(ActionID id)
-    {
-        _definitions[id] = new(id) { AllowedTargets = ActionTargets.Self, InstantAnimLock = 2.1f };
-    }
+    private void RegisterDeepDungeon(ActionID id) => _definitions[id] = new(id) { AllowedTargets = ActionTargets.Self, InstantAnimLock = 2.1f };
 
     // hardcoded mechanic implementations
     public void RegisterChargeIncreaseTrait(ActionID aid, uint traitId)

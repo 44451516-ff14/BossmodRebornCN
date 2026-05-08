@@ -42,7 +42,10 @@ sealed class TetherInfo : CommonEnumInfo
         {
             _plot.Begin();
             foreach (var i in _points)
+            {
                 _plot.Point(i.startEnd, 0xff808080, i.inst.TimestampString);
+            }
+
             _plot.End();
         }
     }
@@ -108,7 +111,10 @@ sealed class TetherInfo : CommonEnumInfo
         {
             var sb = new StringBuilder("public enum TetherID : uint\n{\n");
             foreach (var (tid, data) in _data)
+            {
                 sb.Append($"    {EnumMemberString(tid, data)}\n");
+            }
+
             sb.Append("}\n");
             ImGui.SetClipboardText(sb.ToString());
         }
@@ -117,7 +123,10 @@ sealed class TetherInfo : CommonEnumInfo
         {
             var sb = new StringBuilder();
             foreach (var (tid, data) in _data.Where(kv => _tidType?.GetEnumName(kv.Key) == null))
+            {
                 sb.AppendLine(EnumMemberString(tid, data));
+            }
+
             ImGui.SetClipboardText(sb.ToString());
         }
     }

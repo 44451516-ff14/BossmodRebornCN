@@ -50,9 +50,15 @@ public readonly struct Angle(float rad)
     {
         var r = Rad;
         while (r < -MathF.PI)
+        {
             r += DoublePI;
+        }
+
         while (r > MathF.PI)
+        {
             r -= DoublePI;
+        }
+
         return new(r);
     }
 

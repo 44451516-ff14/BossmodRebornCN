@@ -10,7 +10,9 @@ class ZeroAI(WorldState ws) : UnmanagedRotation(ws, 3)
 
         var zones = Hints.GoalAOECircle(5);
         if (primaryTarget != null)
+        {
             zones = AIHints.GoalCombined(AIHints.GoalSingleTarget(primaryTarget, 3), zones, 3);
+        }
 
         Hints.GoalZones.Add(zones);
 
@@ -29,15 +31,22 @@ class ZeroAI(WorldState ws) : UnmanagedRotation(ws, 3)
                 break;
             default:
                 if (numAOETargets > 2)
+                {
                     UseAction(RID.SpinningScythe, Player);
+                }
                 else
+                {
                     UseAction(RID.Slice, primaryTarget);
+                }
+
                 break;
         }
 
         UseAction(RID.Engravement, primaryTarget, -100);
         if (Player.InCombat)
+        {
             UseAction(RID.Bloodbath, Player, -100);
+        }
     }
 }
 
@@ -52,14 +61,22 @@ internal class AnUnforeseenBargain(WorldState ws) : QuestBattle(ws)
         hints.PathfindMapBounds = new ArenaBoundsCircle(19.5f);
 
         foreach (var h in hints.PotentialTargets)
+        {
             if (h.Actor.CastInfo is { Action.ID: 33042 } ci)
+            {
                 hints.ForbiddenDirections.Add((player.AngleTo(h.Actor), 45.Degrees(), World.FutureTime(ci.NPCRemainingTime)));
+            }
+        }
 
         // walk north to engage enemies
         if (!player.InCombat)
+        {
             hints.ForcedMovement = new(0, 0, -1);
+        }
 
         if (player.FindStatus(Roleplay.SID.RolePlaying) != null)
+        {
             _zero.Execute(player, hints);
+        }
     }
 }

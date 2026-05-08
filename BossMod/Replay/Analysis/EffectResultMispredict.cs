@@ -28,11 +28,17 @@ sealed class EffectResultMispredict
                         if (eff.Type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage or ActionEffectType.Heal or ActionEffectType.ApplyStatusEffectTarget or ActionEffectType.ApplyStatusEffectSource or ActionEffectType.RecoveredFromStatusEffect)
                         {
                             if (t.Target == a.Source)
+                            {
                                 expectConfirmSource = expectConfirmTarget = true;
+                            }
                             else if (eff.AtSource)
+                            {
                                 expectConfirmSource = true;
+                            }
                             else
+                            {
                                 expectConfirmTarget = true;
+                            }
                         }
                     }
                     var haveConfirmSource = t.ConfirmationSource != default;
@@ -45,7 +51,9 @@ sealed class EffectResultMispredict
                 }
 
                 if (unexpected)
+                {
                     _unexpected.Add((r, a));
+                }
             }
         }
     }

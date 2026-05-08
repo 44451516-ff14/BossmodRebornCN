@@ -9,7 +9,9 @@ internal class TheBeastWithin(WorldState ws) : QuestBattle(ws)
         obj.OnActorCreated += (act) =>
         {
             if (act.OID == 0x5F3 && ++acc >= count)
+            {
                 obj.Completed = true;
+            }
         };
     }
     public override List<QuestObjective> DefineObjectives(WorldState ws) => [
@@ -41,8 +43,12 @@ internal class TheBeastWithin(WorldState ws) : QuestBattle(ws)
     public override void AddQuestAIHints(Actor player, AIHints hints)
     {
         foreach (var h in hints.PotentialTargets)
+        {
             if (h.Actor.OID == 0x5F3)
+            {
                 h.Priority = -1;
+            }
+        }
     }
 }
 

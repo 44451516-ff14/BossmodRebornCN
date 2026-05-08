@@ -1,5 +1,5 @@
+﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Memory;
-using Dalamud.Bindings.ImGui;
 
 namespace BossMod;
 
@@ -66,7 +66,7 @@ sealed class DebugHate(WorldState ws)
         var hate = (Hate*)((IntPtr)uistate + 0x08);
         ImGui.BeginTable("hate", 3);
         ImGui.TableSetupColumn("ObjectID");
-        ImGui.TableSetupColumn("名称");
+        ImGui.TableSetupColumn("Name");
         ImGui.TableSetupColumn("Enmity");
         ImGui.TableHeadersRow();
         foreach (var h in hate->HateSpan)
@@ -86,12 +86,12 @@ sealed class DebugHate(WorldState ws)
         var hater = (Hater*)((IntPtr)uistate + 0x110);
         ImGui.BeginTable("hater", 3);
         ImGui.TableSetupColumn("ObjectID");
-        ImGui.TableSetupColumn("名称");
+        ImGui.TableSetupColumn("Name");
         ImGui.TableSetupColumn("Enmity");
         ImGui.TableHeadersRow();
         for (var i = 0; i < hater->HaterArrayLength; ++i)
         {
-            var h = ((HaterInfo*)hater->HaterArray) + i;
+            var h = (HaterInfo*)hater->HaterArray + i;
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             ImGui.TextUnformatted($"{h->ObjectId:X}");
@@ -107,11 +107,16 @@ sealed class DebugHate(WorldState ws)
         ImGui.TextUnformatted("Haters (WorldState)");
         ImGui.BeginTable("hate", 3);
         ImGui.TableSetupColumn("ObjectID");
-        ImGui.TableSetupColumn("名称");
+        ImGui.TableSetupColumn("Name");
         ImGui.TableSetupColumn("Enmity");
         ImGui.TableHeadersRow();
-        foreach (var t in ws.Client.CurrentTargetHate.Targets.TakeWhile(t => t.InstanceID > 0))
+        foreach (var t in ws.Client.CurrentTargetHate.Targets)
         {
+            if (t.InstanceID == 0)
+            {
+                break;
+            }
+
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
             ImGui.TextUnformatted($"{t.InstanceID:X}");

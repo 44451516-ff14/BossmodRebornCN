@@ -13,16 +13,9 @@ internal class GambolingForGil(WorldState ws) : QuestBattle(ws)
                 if (player.FindStatus(DNC.SID.ClosedPosition) == null)
                 {
                     var nashmeira = World.Party.WithoutSlot(false, true, false).FirstOrDefault(x => x.OID == 0x29D1);
-                    if (nashmeira != null)
-                        hints.ActionsToExecute.Push(ActionID.MakeSpell(DNC.AID.ClosedPosition), nashmeira, ActionQueue.Priority.High);
-                }
+                    if (nashmeira != null) { hints.ActionsToExecute.Push(ActionID.MakeSpell(DNC.AID.ClosedPosition), nashmeira, ActionQueue.Priority.High); } }
 
-                if (g.DanceSteps[0] == 0)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(DNC.AID.StandardStep), player, ActionQueue.Priority.High);
-
-                if (g.StepIndex == 2)
-                    hints.ActionsToExecute.Push(ActionID.MakeSpell(DNC.AID.DoubleStandardFinish), player, ActionQueue.Priority.High);
-            })
+                if (g.DanceSteps[0] == 0) { hints.ActionsToExecute.Push(ActionID.MakeSpell(DNC.AID.StandardStep), player, ActionQueue.Priority.High); } if (g.StepIndex == 2) { hints.ActionsToExecute.Push(ActionID.MakeSpell(DNC.AID.DoubleStandardFinish), player, ActionQueue.Priority.High); } })
     ];
 }
 

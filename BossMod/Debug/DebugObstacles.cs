@@ -1,9 +1,8 @@
 using BossMod.Pathfinding;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin;
-using Dalamud.Bindings.ImGui;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace BossMod;
 
@@ -18,14 +17,25 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
             base.DrawSidebar();
 
             if (ImGui.InputFloat3("Min bounds", ref e.MinBounds))
+            {
                 owner.MarkModified();
+            }
+
             if (ImGui.InputFloat3("Max bounds", ref e.MaxBounds))
+            {
                 owner.MarkModified();
+            }
+
             ImGui.TextUnformatted($"Map area: {e.Origin} + {Bitmap.Width}x{Bitmap.Height} * {Bitmap.PixelSize}");
             if (ImGui.InputInt("Half-width in cells", ref e.ViewWidth))
+            {
                 owner.MarkModified();
+            }
+
             if (ImGui.InputInt("Half-height in cells", ref e.ViewHeight))
+            {
                 owner.MarkModified();
+            }
 
             ImGui.TextUnformatted($"Change resolution:");
             ImGui.SameLine();
@@ -199,7 +209,10 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
         ImGui.TextUnformatted("Temp map (IPC / memory)");
         var gen = Obstacles.GenerationStatus;
         if (gen is not TaskStatus.RanToCompletion)
+        {
             ImGui.TextUnformatted($"Build task: {gen}");
+        }
+
         if (Obstacles.TempMapMeta is not { } meta)
         {
             ImGui.TextDisabled("No temp map loaded.");
@@ -208,30 +221,45 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
         {
             ImGui.TextUnformatted($"{meta.Filename}  {meta.Width}x{meta.Height} cells");
             if (ImGui.Button("Open viewer##tempObstacle") && Obstacles.TryCloneTempMap(out var ent, out var bmp))
+            {
                 _ = new UISimpleWindow($"Temp obstacle map: {ent.Filename}", new TempMapViewer(this, bmp, ent).Draw, true, new(1000, 1000));
+            }
         }
 
         var curZoneEntries = Obstacles.Database.Entries.GetValueOrDefault(Obstacles.CurrentKey());
         using (ImRaii.Disabled(!Obstacles.CanEditDatabase()))
         {
             if (ImGui.Button("Create new region"))
+            {
                 CreateRegion();
+            }
+
             ImGui.SameLine();
             using (ImRaii.Disabled(!_dbModified))
                 if (ImGui.Button("保存"))
                     SaveDatabase();
+                }
+            }
+
             ImGui.SameLine();
             if (ImGui.Button(_dbModified ? "Revert" : "Reload"))
+            {
                 ReloadDatabase();
+            }
         }
 
         ImGui.DragFloat3("Map min bounds", ref _minBounds, 1, -1024, 1024);
         ImGui.DragFloat3("Map max bounds", ref _maxBounds, 1, -1024, 1024);
 
         foreach (var n in _tree.Node($"Current zone: {Obstacles.World.CurrentZone}.{Obstacles.World.CurrentCFCID}###curr", curZoneEntries == null || curZoneEntries.Count == 0))
+        {
             DrawEntries(curZoneEntries ?? []);
+        }
+
         foreach (var n in _tree.Nodes(Obstacles.Database.Entries, kv => new($"Zone {kv.Key >> 16}.{kv.Key & 0xFFFF}", kv.Value.Count == 0)))
+        {
             DrawEntries(n.Value);
+        }
     }
 
     internal void MarkModified() => _dbModified = true;
@@ -240,23 +268,38 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
     {
         Action? modifications = null;
         using var disableScope = ImRaii.Disabled(!Obstacles.CanEditDatabase());
-        for (int i = 0; i < entries.Count; ++i)
+        for (var i = 0; i < entries.Count; ++i)
         {
             using var id = ImRaii.PushId(i);
             var index = i;
             using (ImRaii.Disabled(i == 0))
+            {
                 if (ImGui.Button("Move up"))
+                {
                     modifications += () => (entries[index], entries[index - 1]) = (entries[index - 1], entries[index]);
+                }
+            }
+
             ImGui.SameLine();
             using (ImRaii.Disabled(i == entries.Count - 1))
+            {
                 if (ImGui.Button("Move down"))
+                {
                     modifications += () => (entries[index], entries[index + 1]) = (entries[index + 1], entries[index]);
+                }
+            }
+
             ImGui.SameLine();
             if (ImGui.Button("删除"))
                 modifications += () => DeleteMap(entries, index);
+            }
+
             ImGui.SameLine();
             if (ImGui.Button("Edit"))
+            {
                 OpenEditor(entries[index]);
+            }
+
             ImGui.SameLine();
             ImGui.TextUnformatted($"[{i}] {entries[i]}");
         }
@@ -298,11 +341,13 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
 
     private string GenerateMapName()
     {
-        for (int i = 1; ; ++i)
+        for (var i = 1; ; ++i)
         {
             var name = $"{Obstacles.World.CurrentZone}.{Obstacles.World.CurrentCFCID}.{i}.bmp";
             if (!new FileInfo(Obstacles.RootPath + name).Exists)
+            {
                 return name;
+            }
         }
     }
 

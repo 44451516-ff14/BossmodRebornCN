@@ -224,7 +224,10 @@ public class CastWeakpoint(BossModule module, uint aid, AOEShape shape, uint sta
     {
         var count = _casters.Count;
         if (count == 0)
+        {
             return [];
+        }
+
         Actor? caster = null;
         var minRemainingTime = float.MaxValue;
         // if there are multiple casters, take one that finishes first
@@ -242,34 +245,45 @@ public class CastWeakpoint(BossModule module, uint aid, AOEShape shape, uint sta
         }
 
         if (caster != null && _playerWeakpoints.TryGetValue(actor.InstanceID, out var angle))
+        {
             return new Eye[1] { new(caster.Position, Module.CastFinishAt(caster.CastInfo), angle, inverted: true) };
+        }
+
         return [];
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             _casters.Add(caster);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             _casters.Remove(caster);
+        }
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         var statusKind = Array.IndexOf(Statuses, status.ID);
         if (statusKind >= 0)
+        {
             _playerWeakpoints[actor.InstanceID] = statusKind * 90f.Degrees();
+        }
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         var statusKind = Array.IndexOf(Statuses, status.ID);
         if (statusKind >= 0)
+        {
             _playerWeakpoints.Remove(actor.InstanceID);
+        }
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)

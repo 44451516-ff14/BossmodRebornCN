@@ -19,7 +19,10 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (Target == null)
+        {
             return;
+        }
+
         if (Target == actor)
         {
             var otherTanksInAOE = false;
@@ -100,9 +103,13 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
         if (Source != null && Target != null && pc.Role == Role.Tank)
         {
             if (OriginAtTarget)
+            {
                 Shape.Outline(Arena, Target, Target == pc ? default : Colors.Safe);
+            }
             else
+            {
                 Shape.Outline(Arena, Source.Position, Angle.FromDirection(Target.Position - Source.Position), Target == pc ? default : Colors.Safe);
+            }
         }
     }
 
@@ -111,9 +118,13 @@ public class GenericSharedTankbuster(BossModule module, uint aid, AOEShape shape
         if (Source != null && Target != null && pc.Role != Role.Tank)
         {
             if (OriginAtTarget)
+            {
                 Shape.Draw(Arena, Target);
+            }
             else
+            {
                 Shape.Draw(Arena, Source.Position, Angle.FromDirection(Target.Position - Source.Position));
+            }
         }
     }
 
@@ -139,7 +150,9 @@ public class CastSharedTankbuster(BossModule module, uint aid, AOEShape shape, b
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (caster == Source)
+        {
             Source = Target = null;
+        }
     }
 }
 
@@ -165,6 +178,8 @@ public class IconSharedTankbuster(BossModule module, uint iconId, uint aid, AOES
     {
         base.OnEventCast(caster, spell);
         if (spell.Action.ID == WatchedAction)
+        {
             Source = Target = null;
+        }
     }
 }

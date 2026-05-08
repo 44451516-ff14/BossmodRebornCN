@@ -1,8 +1,8 @@
 using BossMod.Autorotation;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
 using System.IO;
 using System.Reflection;
-using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod;
 
@@ -78,17 +78,11 @@ public sealed class ConfigUI : IDisposable
         }
     }
 
-    public void Dispose()
-    {
-        _mv.Dispose();
-    }
+    public void Dispose() => _mv.Dispose();
 
     public void ShowTab(string name) => _tabs.Select(name);
 
-    public void Draw()
-    {
-        _tabs.Draw();
-    }
+    public void Draw() => _tabs.Draw();
 
     private string _searchText = "";
 
@@ -97,6 +91,7 @@ public sealed class ConfigUI : IDisposable
         ImGui.SetNextItemWidth(300);
         if (ImGui.InputTextEx("", "搜索设置...", ref _searchText))
             FilterNodes();
+        }
 
         ImGui.SameLine();
         using (ImRaii.Disabled(_searchText.Length == 0))
@@ -105,6 +100,7 @@ public sealed class ConfigUI : IDisposable
                 _searchText = "";
                 FilterNodes();
             }
+        }
 
         DrawNodes(_roots);
     }
@@ -198,11 +194,17 @@ public sealed class ConfigUI : IDisposable
         _filterNodes.Clear();
 
         if (_searchText.Length == 0)
+        {
             return;
+        }
 
         foreach (var r in _roots)
+        {
             foreach (var path in WalkNodes(r))
+            {
                 _filterNodes.Add(path);
+            }
+        }
     }
 
     private static readonly Dictionary<Type, List<(FieldInfo Field, PropertyDisplayAttribute Attr)>> _fieldCache = [];
@@ -243,14 +245,18 @@ public sealed class ConfigUI : IDisposable
     private static List<(FieldInfo, PropertyDisplayAttribute)> GetFieldAttributes(Type type)
     {
         if (_fieldCache.TryGetValue(type, out var cached))
+        {
             return cached;
+        }
 
         var list = new List<(FieldInfo, PropertyDisplayAttribute)>();
         foreach (var field in type.GetFields())
         {
             var attr = field.GetCustomAttribute<PropertyDisplayAttribute>();
             if (attr != null)
+            {
                 list.Add((field, attr));
+            }
         }
 
         _fieldCache[type] = list;
@@ -262,7 +268,9 @@ public sealed class ConfigUI : IDisposable
         foreach (var tag in tags)
         {
             if (Utils.TextMatch(tag, _searchText))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -274,10 +282,14 @@ public sealed class ConfigUI : IDisposable
         {
             var props = field.GetCustomAttribute<PropertyDisplayAttribute>();
             if (props == null)
+            {
                 continue;
+            }
 
             if (filter?.Invoke(props) == false)
+            {
                 continue;
+            }
 
             var value = field.GetValue(node);
             if (DrawProperty(props.Label, props.Tooltip, node, field, value, root, tree, ws))
@@ -301,12 +313,23 @@ public sealed class ConfigUI : IDisposable
     {
         nodes.Sort(static (a, b) => a.Order.CompareTo(b.Order));
         foreach (var n in nodes)
+        {
             SortByOrder(n.Children);
+        }
     }
 
     private void DrawNodes(List<UINode> nodes)
     {
-        foreach (var n in _tree.Nodes(nodes.Where(n => MatchesFilter(n.Path)), n => new(n.Name)))
+        var filteredNodes = new List<UINode>();
+        foreach (var n in nodes)
+        {
+            if (MatchesFilter(n.Path))
+            {
+                filteredNodes.Add(n);
+            }
+        }
+
+        foreach (var n in _tree.Nodes(filteredNodes, n => new(n.Name)))
         {
             DrawNode(n.Node, _root, _tree, _ws, props => MatchesFilter([.. n.Path, props.Label]));
             DrawNodes(n.Children);
@@ -316,7 +339,9 @@ public sealed class ConfigUI : IDisposable
     private bool MatchesFilter(List<string> path)
     {
         if (_filterNodes.Count == 0)
+        {
             return true;
+        }
 
         bool matchesOneFilter(List<string> filter)
         {
@@ -324,10 +349,14 @@ public sealed class ConfigUI : IDisposable
             foreach (var f in filter)
             {
                 if (f == "*" || i >= path.Count)
+                {
                     return true;
+                }
 
                 if (f != path[i])
+                {
                     return false;
+                }
 
                 ++i;
             }
@@ -335,7 +364,15 @@ public sealed class ConfigUI : IDisposable
             return true;
         }
 
-        return _filterNodes.Any(matchesOneFilter);
+        foreach (var filter in _filterNodes)
+        {
+            if (matchesOneFilter(filter))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static void DrawHelp(string tooltip)
@@ -409,7 +446,10 @@ public sealed class ConfigUI : IDisposable
         {
             var flags = ImGuiSliderFlags.None;
             if (slider.Logarithmic)
+            {
                 flags |= ImGuiSliderFlags.Logarithmic;
+            }
+
             ImGui.SetNextItemWidth(Math.Min(ImGui.GetWindowWidth() * 0.30f, 175));
             if (ImGui.DragFloat(label, ref v, slider.Speed, slider.Min, slider.Max, "%.3f", flags))
             {
@@ -436,7 +476,10 @@ public sealed class ConfigUI : IDisposable
         {
             var flags = ImGuiSliderFlags.None;
             if (slider.Logarithmic)
+            {
                 flags |= ImGuiSliderFlags.Logarithmic;
+            }
+
             ImGui.SetNextItemWidth(Math.Min(ImGui.GetWindowWidth() * 0.30f, 175));
             if (ImGui.DragInt(label, ref v, slider.Speed, (int)slider.Min, (int)slider.Max, "%d", flags))
             {
@@ -500,7 +543,14 @@ public sealed class ConfigUI : IDisposable
         ImGui.AlignTextToFramePadding();
         UIMisc.IconText(Dalamud.Interface.FontAwesomeIcon.ListUl);
         if (ImGui.IsItemHovered())
+<<<<<<< HEAD
             ImGui.SetTooltip("此配置项包含预设。右键点击下拉框可选择预设。");
+=======
+        {
+            ImGui.SetTooltip("This configuration option includes presets. Right click on the dropdown to select a preset.");
+        }
+
+>>>>>>> 833dba42d9e94f95b0ed443852e9ec5809c22047
         ImGui.SameLine();
     }
 
@@ -508,7 +558,9 @@ public sealed class ConfigUI : IDisposable
     {
         var group = member.GetCustomAttribute<GroupDetailsAttribute>();
         if (group == null)
+        {
             return false;
+        }
 
         var spaced = false;
 
@@ -520,7 +572,13 @@ public sealed class ConfigUI : IDisposable
             ImGui.SameLine();
         }
 
-        if (member.GetCustomAttributes<GroupPresetAttribute>().Any())
+        var hasPreset = false;
+        foreach (var _ in member.GetCustomAttributes<GroupPresetAttribute>())
+        {
+            hasPreset = true;
+            break;
+        }
+        if (hasPreset)
         {
             spaced = true;
             DrawGroupPresetIndicator();
@@ -529,7 +587,9 @@ public sealed class ConfigUI : IDisposable
         if (!spaced)
         {
             using (ImRaii.PushColor(ImGuiCol.Text, 0))
+            {
                 UIMisc.IconText(Dalamud.Interface.FontAwesomeIcon.InfoCircle);
+            }
         }
 
         var modified = false;
@@ -538,10 +598,15 @@ public sealed class ConfigUI : IDisposable
             using var indent = ImRaii.PushIndent();
             using var table = ImRaii.Table("table", group.Names.Length + 2, ImGuiTableFlags.SizingFixedFit);
             if (!table)
+            {
                 continue;
+            }
 
             foreach (var n in group.Names)
+            {
                 ImGui.TableSetupColumn(n);
+            }
+
             ImGui.TableSetupColumn("----");
             ImGui.TableSetupColumn("名称");
             ImGui.TableHeadersRow();
@@ -569,7 +634,10 @@ public sealed class ConfigUI : IDisposable
 
                 var name = r.ToString();
                 if (assignments.Length > 0)
+                {
                     name += $" ({ws.Party[assignments[i]]?.Name})";
+                }
+
                 ImGui.TableNextColumn();
                 ImGui.TextUnformatted(name);
             }
@@ -584,7 +652,10 @@ public sealed class ConfigUI : IDisposable
             if (ImGui.MenuItem(preset.Name))
             {
                 for (var i = 0; i < preset.Preset.Length; ++i)
+                {
                     v.Assignments[i] = preset.Preset[i];
+                }
+
                 node.Modified.Fire();
             }
         }

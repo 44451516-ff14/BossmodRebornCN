@@ -119,7 +119,10 @@ public sealed class ColumnPlayerActions : Timeline.ColumnGroup
                     }
                 }
                 if (actionDef.MainCooldownGroup == ActionDefinitions.GCDGroup)
+                {
                     effectDuration = Math.Min(effectDuration, 0.6f); // TODO: this is a hack, reconsider... the problem is that sometimes actions apply statuses that are then refreshed, that usually happens for gcds...
+                }
+
                 if (effectDuration > 0f)
                 {
                     var e = col.AddHistoryEntryRange(enc.Time.Start, effectStart, effectDuration, actionName, Colors.TextColor10);
@@ -164,19 +167,32 @@ public sealed class ColumnPlayerActions : Timeline.ColumnGroup
 
         // add unfinished cooldowns
         for (var i = 0; i < _cdGroups.Length; ++i)
+        {
             if (_cdGroups[i].ChargesOnCooldown > 0)
+            {
                 AdvanceCooldown(i, enc.Time.Start, DateTime.MaxValue, true);
+            }
+        }
     }
 
     public void DrawConfig(UITree tree)
     {
         if (ImGui.Button("Show all"))
+        {
             foreach (var col in Columns)
+            {
                 col.Width = ColumnGenericHistory.DefaultWidth;
+            }
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Hide all"))
+        {
             foreach (var col in Columns)
+            {
                 col.Width = 0;
+            }
+        }
 
         foreach (var col in Columns)
         {
@@ -246,7 +262,10 @@ public sealed class ColumnPlayerActions : Timeline.ColumnGroup
     private void AddCooldownRange(ref CooldownGroup data, DateTime encStart, DateTime rangeEnd)
     {
         if (data.Column == null)
+        {
             return;
+        }
+
         var maxCharges = data.MaxCharges;
         var chargesOnCooldown = data.ChargesOnCooldown;
         var chargeCooldown = data.ChargeCooldown;
@@ -271,7 +290,10 @@ public sealed class ColumnPlayerActions : Timeline.ColumnGroup
         {
             // next charge is fully finished
             if (addRanges)
+            {
                 AddCooldownRange(ref data, encStart, data.ChargeCooldownEnd);
+            }
+
             data.Cursor = data.ChargeCooldownEnd;
             if (--data.ChargesOnCooldown > 0)
             {
@@ -285,7 +307,9 @@ public sealed class ColumnPlayerActions : Timeline.ColumnGroup
         {
             // assertion: timestamp < data.ChargeCooldownEnd
             if (addRanges)
+            {
                 AddCooldownRange(ref data, encStart, timestamp);
+            }
         }
 
         data.Cursor = timestamp;

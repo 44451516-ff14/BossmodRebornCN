@@ -24,20 +24,11 @@ public sealed class RotationSolverRebornModule(IDalamudPluginInterface pluginInt
         }
     }
 
-    public void PauseRSR()
-    {
-        _changeOperationMode.InvokeAction(SpecialCommandType.NoCasting);
-    }
+    public void PauseRSR() => _changeOperationMode.InvokeAction(SpecialCommandType.NoCasting);
 
-    public void UnPauseRSR()
-    {
-        _changeOperationMode.InvokeAction(SpecialCommandType.EndSpecial);
-    }
+    public void UnPauseRSR() => _changeOperationMode.InvokeAction(SpecialCommandType.EndSpecial);
 
-    public void TriggerSpecialStateWithDuration(SpecialCommandType specialCommand, float duration)
-    {
-        _triggerSpecialStateWithDuration.InvokeAction(specialCommand, duration);
-    }
+    public void TriggerSpecialStateWithDuration(SpecialCommandType specialCommand, float duration) => _triggerSpecialStateWithDuration.InvokeAction(specialCommand, duration);
 
     public enum SpecialCommandType : byte
     {

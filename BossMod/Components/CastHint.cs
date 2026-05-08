@@ -14,19 +14,25 @@ public class CastHint(BossModule module, uint aid, string hint, bool showCastTim
     public override void AddGlobalHints(GlobalHints hints)
     {
         if (Active && Hint.Length > 0)
+        {
             hints.Add(ShowCastTimeLeft ? $"{Hint} {Casters[0].CastInfo?.NPCRemainingTime ?? 0:f1}s left" : Hint);
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             Casters.Add(caster);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
+        {
             Casters.Remove(caster);
+        }
     }
 }
 
@@ -39,16 +45,24 @@ public class CastHints(BossModule module, uint[] aids, string hint, bool showCas
     {
         var len = AIDs.Length;
         for (var i = 0; i < len; ++i)
+        {
             if (spell.Action.ID == AIDs[i])
+            {
                 Casters.Add(caster);
+            }
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         var len = AIDs.Length;
         for (var i = 0; i < len; ++i)
+        {
             if (spell.Action.ID == AIDs[i])
+            {
                 Casters.Remove(caster);
+            }
+        }
     }
 }
 
@@ -88,24 +102,33 @@ public class CastInterruptHint : CastHint
     {
         base.OnCastStarted(caster, spell);
         if (ShowNameInHint && spell.Action.ID == WatchedAction)
+        {
             UpdateHint();
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         base.OnCastFinished(caster, spell);
         if (ShowNameInHint && spell.Action.ID == WatchedAction)
+        {
             UpdateHint();
+        }
     }
 
     private void UpdateHint()
     {
         if (!CanBeInterrupted && !CanBeStunned)
+        {
             return;
+        }
+
         var actionStr = !CanBeStunned ? "Interrupt" : !CanBeInterrupted ? "Stun" : "Interrupt/stun";
         var nameStr = ShowNameInHint && Casters.Count == 1 ? " " + Casters[0].Name : "";
         Hint = $"{actionStr}{nameStr}!";
         if (HintExtra.Length > 0)
+        {
             Hint += $" ({HintExtra})";
+        }
     }
 }

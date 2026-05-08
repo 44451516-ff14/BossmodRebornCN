@@ -18,15 +18,23 @@ sealed class ArenaBounds
 
         foreach (var replay in replays)
         {
-            foreach (var enc in replay.Encounters.Where(enc => enc.OID == oid))
+            foreach (var enc in replay.Encounters)
             {
+                if (enc.OID != oid)
+                {
+                    continue;
+                }
+
                 foreach (var ps in enc.ParticipantsByOID.Values)
                 {
                     foreach (var p in ps)
                     {
                         var iStart = p.PosRotHistory.UpperBound(enc.Time.Start);
                         if (iStart > 0)
+                        {
                             --iStart;
+                        }
+
                         var iEnd = p.PosRotHistory.UpperBound(enc.Time.End);
                         var iNextDead = p.DeadHistory.UpperBound(enc.Time.Start);
                         for (var i = iStart; i < iEnd; ++i)
@@ -34,7 +42,10 @@ sealed class ArenaBounds
                             var t = p.PosRotHistory.Keys[i];
                             var pos = p.PosRotHistory.Values[i].XYZ();
                             if (iNextDead < p.DeadHistory.Count && p.DeadHistory.Keys[iNextDead] <= t)
+                            {
                                 ++iNextDead;
+                            }
+
                             var dead = iNextDead > 0 && p.DeadHistory.Values[iNextDead - 1];
                             var color = dead ? Colors.TextColor13 : p.Type is ActorType.Enemy ? Colors.Danger : Colors.PlayerGeneric;
                             _points.Add((replay, p, t, pos, color));
@@ -51,9 +62,13 @@ sealed class ArenaBounds
 
     public void Draw(UITree tree)
     {
+        ArgumentNullException.ThrowIfNull(tree);
         _plot.Begin();
         foreach (var (replay, participant, time, pos, color) in _points)
+        {
             _plot.Point(new(pos.X, pos.Z), color, () => $"{ReplayUtils.ParticipantString(participant, time)} {replay.Path} @ {time:O}");
+        }
+
         _plot.End();
     }
 
@@ -83,14 +98,19 @@ sealed class ArenaBounds
                 for (var i = 0; i < points.Count; ++i)
                 {
                     if (i % 5 == 0 && i != 0)
+                    {
                         sb.Append("\n  ");
+                    }
+
                     var p = points[i];
                     sb.Append($"new({p.X.ToString("F2", inv)}f, {p.Z.ToString("F2", inv)}f)");
                     if (i != points.Count - 1)
                     {
                         sb.Append(',');
                         if ((i + 1) % 5 != 0)
+                        {
                             sb.Append(' ');
+                        }
                     }
                 }
 
@@ -106,7 +126,9 @@ sealed class ArenaBounds
     {
         var count = points.Count;
         if (points == null || count < 3)
+        {
             return default;
+        }
 
         float sumX = 0, sumZ = 0;
         float area = 0;
@@ -137,18 +159,52 @@ public static class ConcaveHull
     {
         List<WPos> filteredPoints = [];
         foreach (var point in points)
-            if (filteredPoints.All(p => Distance(p, point) > epsilon))
+        {
+            var tooClose = false;
+            for (var i = 0; i < filteredPoints.Count; ++i)
+            {
+                if (Distance(filteredPoints[i], point) <= epsilon)
+                {
+                    tooClose = true;
+                    break;
+                }
+            }
+            if (!tooClose)
+            {
                 filteredPoints.Add(point);
+            }
+        }
         return filteredPoints;
     }
 
-    private static Path64 ConvertToPath64(List<WPos> points) => [.. points.Select(p => new Point64((long)(p.X * PolygonClipper.Scale), (long)(p.Z * PolygonClipper.Scale))).ToList()];
-    private static List<WPos> ConvertToPoints(Path64 path) => [.. path.Select(p => new WPos((float)(p.X * PolygonClipper.InvScale), (float)(p.Y * PolygonClipper.InvScale)))];
+    private static Path64 ConvertToPath64(List<WPos> points)
+    {
+        var path = new Path64(points.Count);
+        for (var i = 0; i < points.Count; ++i)
+        {
+            path.Add(new Point64((long)(points[i].X * PolygonClipper.Scale), (long)(points[i].Z * PolygonClipper.Scale)));
+        }
+
+        return path;
+    }
+
+    private static List<WPos> ConvertToPoints(Path64 path)
+    {
+        var result = new List<WPos>(path.Count);
+        for (var i = 0; i < path.Count; ++i)
+        {
+            result.Add(new WPos((float)(path[i].X * PolygonClipper.InvScale), (float)(path[i].Y * PolygonClipper.InvScale)));
+        }
+
+        return result;
+    }
 
     public static List<WPos> GenerateConcaveHull(List<WPos> points, float alpha, float epsilon)
     {
         if (points.Count < 3)
+        {
             return [.. points]; // Not enough points to form a polygon
+        }
 
         points = FilterClosePoints(points, epsilon);
         var inputPath = ConvertToPath64(points);
@@ -160,7 +216,9 @@ public static class ConcaveHull
         co.Execute(0.1 * PolygonClipper.Scale, solution);
 
         if (solution.Count == 0)
+        {
             return points;
+        }
 
         var mergedPolygon = MergePaths(solution);
         var hull = ConvertToPoints(mergedPolygon);
@@ -176,7 +234,18 @@ public static class ConcaveHull
         clipper.AddPaths(paths, PathType.Subject);
         Paths64 mergedSolution = [];
         clipper.Execute(ClipType.Union, FillRule.NonZero, mergedSolution);
-        return mergedSolution.OrderByDescending(Clipper.Area).First();
+        var largest = mergedSolution[0];
+        var largestArea = Math.Abs(Clipper.Area(largest));
+        for (var i = 1; i < mergedSolution.Count; ++i)
+        {
+            var area = Math.Abs(Clipper.Area(mergedSolution[i]));
+            if (area > largestArea)
+            {
+                largestArea = area;
+                largest = mergedSolution[i];
+            }
+        }
+        return largest;
     }
 
     private static List<WPos> ApplyAlphaFilter(List<WPos> hull, double alpha)
@@ -188,11 +257,16 @@ public static class ConcaveHull
             var currentPoint = hull[i];
             var lastAddedPoint = filteredHull[^1];
             if (Distance(currentPoint, lastAddedPoint) > alpha)
+            {
                 filteredHull.Add(currentPoint);
+            }
         }
 
         if (Distance(filteredHull[^1], filteredHull[0]) > alpha)
+        {
             filteredHull.Add(filteredHull[0]);
+        }
+
         return filteredHull;
     }
 
@@ -200,7 +274,9 @@ public static class ConcaveHull
     {
         var count = points.Count;
         if (count < 3)
+        {
             return points;
+        }
 
         List<WPos> filteredPoints = [];
         for (var i = 0; i < points.Count; ++i)
@@ -210,7 +286,9 @@ public static class ConcaveHull
             var next = points[(i + 1) % count];
 
             if (!AreCollinear(prev, curr, next))
+            {
                 filteredPoints.Add(curr);
+            }
         }
         return filteredPoints;
     }
@@ -224,7 +302,9 @@ public static class ConcaveHull
         var magnitudeBC = bc.Length();
 
         if (magnitudeAB == 0 || magnitudeBC == 0)
+        {
             return false;
+        }
 
         var dotProduct = ab.X * bc.X + ab.Y * bc.Y;
 

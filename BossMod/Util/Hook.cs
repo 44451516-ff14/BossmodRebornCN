@@ -17,9 +17,13 @@ public sealed class HookAddress<T> : IDisposable where T : Delegate
         set
         {
             if (value)
+            {
                 _hook.Enable();
+            }
             else
+            {
                 _hook.Disable();
+            }
         }
     }
 
@@ -30,7 +34,9 @@ public sealed class HookAddress<T> : IDisposable where T : Delegate
         Service.Log($"Hooking {typeof(T)} @ 0x{address:X}");
         _hook = Service.Hook.HookFromAddress(address, detour);
         if (autoEnable)
+        {
             _hook.Enable();
+        }
     }
 
     public void Dispose() => _hook.Dispose();

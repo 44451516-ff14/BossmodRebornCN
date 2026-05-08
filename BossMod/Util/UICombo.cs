@@ -16,11 +16,19 @@ public static class UICombo
     public static bool Enum<T>(string label, ref T v, Func<T, string>? print = null, Func<T, bool>? filter = null) where T : Enum
     {
         var et = v.GetType();
-        var values = System.Enum.GetValues(et).Cast<T>().ToArray();
+        var rawValues = System.Enum.GetValues(et);
+        var values = new T[rawValues.Length];
+        for (var i = 0; i < rawValues.Length; i++)
+        {
+            values[i] = (T)rawValues.GetValue(i)!;
+        }
+
         var idxCur = Array.IndexOf(values, v);
 
         if (idxCur < 0)
+        {
             idxCur = 0;
+        }
 
         print ??= p => EnumString(p);
         filter ??= _ => true;
@@ -36,8 +44,8 @@ public static class UICombo
 
     public static bool EnumIndex(string label, Type type, ref int v, Func<int, string>? print = null, Func<int, bool>? filter = null)
     {
-        var values = System.Enum.GetValues(type).Cast<Enum>().ToArray();
-        print ??= p => EnumString(values[p]);
+        var values = System.Enum.GetValues(type);
+        print ??= p => EnumString((Enum)values.GetValue(p)!);
         filter ??= _ => true;
         var res = false;
         var width = 300 * ImGuiHelpers.GlobalScale;
@@ -52,9 +60,11 @@ public static class UICombo
             showLabelPopup = false;
             for (var i = 0; i < values.Length; i++)
             {
-                var opt = values[i];
                 if (!filter(i))
+                {
                     continue;
+                }
+
                 if (ImGui.Selectable(print(i), i == v))
                 {
                     v = i;
@@ -64,7 +74,10 @@ public static class UICombo
             ImGui.EndCombo();
         }
         if (showLabelPopup && ImGui.IsItemHovered())
+        {
             ImGui.SetTooltip(labelCur);
+        }
+
         if (!label.StartsWith('#'))
         {
             ImGui.SameLine();
@@ -75,21 +88,22 @@ public static class UICombo
 
     public static bool Radio(Type type, ref int v, bool oneLine, Func<int, string>? print = null)
     {
-        var values = System.Enum.GetValues(type).Cast<Enum>().ToArray();
-        print ??= p => EnumString(values[p]);
+        var values = System.Enum.GetValues(type);
+        print ??= p => EnumString((Enum)values.GetValue(p)!);
         var orig = v;
         var res = false;
 
         for (var i = 0; i < values.Length; i++)
         {
-            var opt = values[i];
             if (ImGui.RadioButton(print(i), i == v))
             {
                 v = i;
                 res = i != orig;
             }
             if (oneLine && i + 1 < values.Length)
+            {
                 ImGui.SameLine();
+            }
         }
 
         return res;
@@ -118,7 +132,10 @@ public static class UICombo
     {
         var val = v ? 1 : 0;
         if (!Int(label, values, ref val))
+        {
             return false;
+        }
+
         v = val != 0;
         return true;
     }

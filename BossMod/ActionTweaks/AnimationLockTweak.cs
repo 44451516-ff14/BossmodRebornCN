@@ -36,9 +36,14 @@ public sealed class AnimationLockTweak
     {
         delay = _lastReqInitialAnimLock - gamePrevAnimLock;
         if (delay < 0)
+        {
             Service.Log($"[ALT] Prev anim lock {gamePrevAnimLock:f3} is larger than initial {_lastReqInitialAnimLock:f3}, something is wrong");
+        }
+
         if (_lastReqSequence != sequence && gameCurrAnimLock != gamePrevAnimLock)
+        {
             Service.Log($"[ALT] Animation lock updated by action with unexpected sequence ID #{sequence}: {gamePrevAnimLock:f3} -> {gameCurrAnimLock:f3}");
+        }
 
         float reduction = 0;
         if (_lastReqSequence == sequence && _lastReqInitialAnimLock > 0)
@@ -57,9 +62,14 @@ public sealed class AnimationLockTweak
     private void SanityCheck(float packetOriginalAnimLock, float packetModifiedAnimLock, float gameCurrAnimLock)
     {
         if (!_config.RemoveAnimationLockDelay || !_config.ActivateAnticheat)
+        {
             return; // nothing to do, tweak is already disabled
+        }
+
         if (packetOriginalAnimLock == packetModifiedAnimLock && packetOriginalAnimLock == gameCurrAnimLock && packetOriginalAnimLock % 0.01 is <= 0.0005f or >= 0.0095f)
+        {
             return; // nothing changed the packet value, and it's original value is reasonable
+        }
 
         Service.Log($"[ALT] Unexpected animation lock {packetOriginalAnimLock:f6} -> {packetModifiedAnimLock:f6} -> {gameCurrAnimLock:f6}, disabling anim lock tweak feature");
         Service.ChatGui.PrintError("[BossMod] Unexpected animation lock! Disabling animation lock reduction feature.");

@@ -52,9 +52,19 @@ public sealed class ObstacleMapManager : IDisposable
         lock (_tempMapLock)
         {
             if (_tempMap is { } temp && temp.entry.Contains(pos))
+            {
                 return temp;
+            }
         }
-        return _entries.FirstOrDefault(e => e.entry.Contains(pos));
+        foreach (var e in _entries)
+        {
+            if (e.entry.Contains(pos))
+            {
+                return e;
+            }
+        }
+
+        return default;
     }
     public bool CanEditDatabase() => _config.MapLoadFromSource;
     public uint ZoneKey(ushort zoneId, ushort cfcId) => ((uint)zoneId << 16) | cfcId;
@@ -63,7 +73,9 @@ public sealed class ObstacleMapManager : IDisposable
     public bool HasTempMap()
     {
         lock (_tempMapLock)
+        {
             return _tempMap != null;
+        }
     }
 
     public (string Filename, int Width, int Height)? TempMapMeta
@@ -71,7 +83,9 @@ public sealed class ObstacleMapManager : IDisposable
         get
         {
             lock (_tempMapLock)
+            {
                 return _tempMap is { } t ? (t.entry.Filename, t.data.Width, t.data.Height) : null;
+            }
         }
     }
 
@@ -114,7 +128,10 @@ public sealed class ObstacleMapManager : IDisposable
     public void SaveDatabase()
     {
         if (!_config.MapLoadFromSource)
+        {
             return;
+        }
+
         Database.Save(_config.MapSourcePath);
         LoadMaps(World.CurrentZone, World.CurrentCFCID);
     }
@@ -144,9 +161,14 @@ public sealed class ObstacleMapManager : IDisposable
     public bool GenerateMap(Vector3 centerWorld, float radius, bool writeToFile)
     {
         if (_generationTask is { IsCompleted: false })
+        {
             return false;
+        }
+
         if (writeToFile && !CanEditDatabase())
+        {
             return false;
+        }
 
         _generationTask = Service.Framework.RunOnTick(() =>
         {
@@ -206,7 +228,9 @@ public sealed class ObstacleMapManager : IDisposable
     private void ClearTempMap()
     {
         lock (_tempMapLock)
+        {
             _tempMap = null;
+        }
     }
 
     private string GeneratePersistentMapName()
@@ -215,7 +239,9 @@ public sealed class ObstacleMapManager : IDisposable
         {
             var name = $"{World.CurrentZone}.{World.CurrentCFCID}.auto.{i}.bmp";
             if (!new FileInfo(RootPath + name).Exists)
+            {
                 return name;
+            }
         }
     }
 

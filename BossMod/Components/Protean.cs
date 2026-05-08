@@ -11,13 +11,23 @@ public abstract class GenericProtean(BossModule module, uint aid, AOEShape shape
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (ActiveAOEs().Any(st => st.target != actor && IsPlayerClipped(st.source, st.target, actor)))
-            hints.Add("GTFO from protean!");
+        foreach (var (source, target) in ActiveAOEs())
+        {
+            if (target != actor && IsPlayerClipped(source, target, actor)) { hints.Add("GTFO from protean!"); break; }
+        }
     }
 
     public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
     {
-        var playerProteanSource = player != pc ? ActiveAOEs().FirstOrDefault(st => st.target == player).source : null;
+        Actor? playerProteanSource = null;
+        if (player != pc)
+        {
+            foreach (var (source, target) in ActiveAOEs())
+            {
+                if (target == player) { playerProteanSource = source; break; }
+            }
+        }
+
         return playerProteanSource == null ? PlayerPriority.Irrelevant : IsPlayerClipped(playerProteanSource, player, pc) ? PlayerPriority.Danger : PlayerPriority.Normal;
     }
 
@@ -25,8 +35,12 @@ public abstract class GenericProtean(BossModule module, uint aid, AOEShape shape
     {
         // draw own protean (if any) and clipping proteans (if any)
         foreach (var (source, target) in ActiveAOEs())
+        {
             if (target == pc || IsPlayerClipped(source, target, pc))
+            {
                 Shape.Draw(Arena, source.Position, Angle.FromDirection(target.Position - source.Position));
+            }
+        }
     }
 
     public bool IsPlayerClipped(Actor source, Actor target, Actor player) => Shape.Check(player.Position, source.Position, Angle.FromDirection(target.Position - source.Position));
@@ -36,5 +50,11 @@ public abstract class GenericProtean(BossModule module, uint aid, AOEShape shape
 [SkipLocalsInit]
 public class SimpleProtean(BossModule module, uint aid, AOEShape shape) : GenericProtean(module, aid, shape)
 {
-    public override IEnumerable<(Actor source, Actor target)> ActiveAOEs() => Raid.WithoutSlot().Select(p => (Module.PrimaryActor, p));
+    public override IEnumerable<(Actor source, Actor target)> ActiveAOEs()
+    {
+        foreach (var p in Raid.WithoutSlot())
+        {
+            yield return (Module.PrimaryActor, p);
+        }
+    }
 }

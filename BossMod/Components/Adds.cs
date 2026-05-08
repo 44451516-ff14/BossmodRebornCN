@@ -23,15 +23,9 @@ public class Adds(BossModule module, uint oid, int priority = 0, bool forbidDots
         }
     }
 
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        hints.PrioritizeTargetsByOIDAndForbidDOTs(oid, priority, forbidDots);
-    }
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) => hints.PrioritizeTargetsByOIDAndForbidDOTs(oid, priority, forbidDots);
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc)
-    {
-        Arena.Actors(Actors);
-    }
+    public override void DrawArenaForeground(int pcSlot, Actor pc) => Arena.Actors(Actors);
 }
 
 // component for adds that shouldn't be targeted at all, but should still be drawn
@@ -80,8 +74,5 @@ public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossC
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc)
-    {
-        Arena.Actors(Module, OIDs);
-    }
+    public override void DrawArenaForeground(int pcSlot, Actor pc) => Arena.Actors(Module, OIDs);
 }

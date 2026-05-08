@@ -37,7 +37,7 @@ sealed class DebugGraphics
         do
         {
             var nodeText = $"{SceneNodeText(o)}###{(IntPtr)o}";
-            ImGuiTreeNodeFlags nodeFlags = (o->ChildObject != null ? ImGuiTreeNodeFlags.None : ImGuiTreeNodeFlags.Leaf) | ImGuiTreeNodeFlags.OpenOnArrow;
+            var nodeFlags = (o->ChildObject != null ? ImGuiTreeNodeFlags.None : ImGuiTreeNodeFlags.Leaf) | ImGuiTreeNodeFlags.OpenOnArrow;
             var showNode = !_showGraphicsLeafCharactersOnly || o->ChildObject != null || o->GetObjectType() == ObjectType.CharacterBase;
             if (showNode && ImGui.TreeNodeEx(nodeText, nodeFlags))
             {
@@ -65,7 +65,10 @@ sealed class DebugGraphics
                 }
 
                 if (o->ChildObject != null)
+                {
                     DrawSceneNode(o->ChildObject);
+                }
+
                 ImGui.TreePop();
             }
             o = o->NextSiblingObject;
@@ -76,14 +79,23 @@ sealed class DebugGraphics
     public unsafe void DrawWatchedMods()
     {
         if (ImGui.Button("Clear watch list"))
+        {
             _watchedRenderObjects.Clear();
+        }
+
         ImGui.SameLine();
         if (ImGui.Button("Clear modifications"))
+        {
             foreach (var v in _watchedRenderObjects)
+            {
                 v.Value.Modifications.Clear();
+            }
+        }
 
         if (_watchedRenderObjects.Count == 0)
+        {
             return;
+        }
 
         foreach (var v in _watchedRenderObjects)
         {
@@ -92,14 +104,23 @@ sealed class DebugGraphics
 
         var root = FindSceneRoot();
         if (root != null)
+        {
             UpdateWatchedMods(root);
+        }
 
         List<IntPtr> del = [];
         foreach (var v in _watchedRenderObjects)
+        {
             if (!v.Value.Live)
+            {
                 del.Add(v.Key);
+            }
+        }
+
         foreach (var v in del)
+        {
             _watchedRenderObjects.Remove(v);
+        }
 
         ImGui.BeginTable("watched_graphics", 2);
         ImGui.TableSetupColumn("Ptr", ImGuiTableColumnFlags.WidthFixed, 100);
@@ -125,11 +146,16 @@ sealed class DebugGraphics
     public unsafe void WatchObject(void* o, int size)
     {
         if (_watchedRenderObjects.ContainsKey((IntPtr)o))
+        {
             return;
+        }
 
         var w = new WatchedRenderObject();
         for (var i = 0; i < size / 4; ++i)
+        {
             w.Data.Add(((uint*)o)[i]);
+        }
+
         _watchedRenderObjects.Add((IntPtr)o, w);
     }
 
@@ -140,10 +166,15 @@ sealed class DebugGraphics
         {
             var watch = _watchedRenderObjects.GetValueOrDefault((IntPtr)o);
             if (watch != null)
+            {
                 UpdateWatchedMod(o, watch);
+            }
 
             if (o->ChildObject != null)
+            {
                 UpdateWatchedMods(o->ChildObject);
+            }
+
             o = o->NextSiblingObject;
         }
         while (o != start);
@@ -168,30 +199,43 @@ sealed class DebugGraphics
 
         var endMods = CheckUnmodRange((uint*)o, w, start, w.Data.Count);
         if (endMods != null)
+        {
             w.Modifications.AddRange(endMods);
+        }
 
         for (var i = 0; i < w.Data.Count; ++i)
+        {
             w.Data[i] = ((uint*)o)[i];
+        }
     }
 
     private unsafe List<(int, int)>? CheckUnmodRange(uint* o, WatchedRenderObject w, int start, int end)
     {
         while (start < end && o[start] == w.Data[start])
+        {
             ++start;
+        }
+
         if (start == end)
+        {
             return null; // nothing changed
+        }
 
         List<(int, int)> res = [];
         while (start < end)
         {
             var m = start + 1;
             while (m < end && o[m] != w.Data[m])
+            {
                 ++m;
+            }
 
             res.Add((start, m));
             start = m;
             while (start < end && o[start] == w.Data[start])
+            {
                 ++start;
+            }
         }
         return res;
     }
@@ -216,7 +260,10 @@ sealed class DebugGraphics
         while (start < end)
         {
             if (sb.Length > 0)
+            {
                 sb.Append(' ');
+            }
+
             sb.AppendFormat("{0:X8}", w.Data[start++]);
 
             if ((start & 15) == 0)
@@ -234,11 +281,15 @@ sealed class DebugGraphics
     {
         var camera = CameraManager.Instance()->CurrentCamera;
         if (camera == null)
+        {
             return;
+        }
 
         using var table = ImRaii.Table("matrices", 2);
         if (!table)
+        {
             return;
+        }
 
         ImGui.TableSetupColumn("名称");
         ImGui.TableSetupColumn("Value");
@@ -305,13 +356,21 @@ sealed class DebugGraphics
         ImGui.TextUnformatted("Projection flags");
         ImGui.TableNextColumn();
         if (ImGui.Button(camera->RenderCamera->IsOrtho ? $"ortho ({camera->RenderCamera->OrthoHeight})" : "perspective"))
+        {
             camera->RenderCamera->IsOrtho ^= true;
+        }
+
         ImGui.SameLine();
         if (ImGui.Button(camera->RenderCamera->StandardZ ? "standard-z" : "reverse-z"))
+        {
             camera->RenderCamera->StandardZ ^= true;
+        }
+
         ImGui.SameLine();
         if (ImGui.Button(camera->RenderCamera->FiniteFarPlane ? "finite-far" : "infinite-far"))
+        {
             camera->RenderCamera->FiniteFarPlane ^= true;
+        }
 
         var view = camera->ViewMatrix;
         var lx = new Vector3(view.M11, view.M21, view.M31);
@@ -350,7 +409,9 @@ sealed class DebugGraphics
     public void DrawOverlay()
     {
         if (Camera.Instance == null || Service.ObjectTable.LocalPlayer == null)
+        {
             return;
+        }
 
         ImGui.Checkbox("圆形", ref _overlayCircle);
         ImGui.DragFloat2("Center", ref _overlayCenter);
@@ -406,11 +467,16 @@ sealed class DebugGraphics
     {
         var player = Utils.GameObjectInternal(Service.ObjectTable.LocalPlayer);
         if (player == null || player->DrawObject == null)
+        {
             return null;
+        }
 
         var obj = &player->DrawObject->Object;
         while (obj->ParentObject != null)
+        {
             obj = obj->ParentObject;
+        }
+
         return obj;
     }
 
@@ -432,7 +498,10 @@ sealed class DebugGraphics
         {
             res.Append($"\n{prefix} {SceneNodeText(o)}");
             if (o->ChildObject != null)
+            {
                 DumpSceneNode(res, o->ChildObject, prefix + "-");
+            }
+
             o = o->NextSiblingObject;
         }
         while (o != start);

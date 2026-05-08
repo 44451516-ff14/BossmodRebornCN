@@ -1,5 +1,3 @@
-using BossMod.QuestBattle;
-
 namespace BossMod.QuestBattle.ARealmReborn.ClassJobQuests.THM;
 
 [ZoneModuleInfo(BossModuleInfo.Maturity.Contributed, 324)]

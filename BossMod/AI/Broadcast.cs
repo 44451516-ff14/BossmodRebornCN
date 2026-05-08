@@ -20,7 +20,9 @@ internal sealed partial class Broadcast
     public void Update()
     {
         if (!_config.BroadcastToSlaves)
+        {
             return;
+        }
 
         for (var i = 0; i < _broadcasts.Count; ++i)
         {
@@ -41,7 +43,9 @@ internal sealed partial class Broadcast
     public static void BroadcastKeypress(VirtualKey vk)
     {
         foreach (var w in EnumerateSlaves())
+        {
             SendKeypress(w, vk);
+        }
     }
 
     private static void SendKeypress(IntPtr hwnd, VirtualKey vk)
@@ -56,11 +60,17 @@ internal sealed partial class Broadcast
         var active = GetActiveWindow();
         var name = WindowName(active);
         if (name.Length == 0)
+        {
             return res;
+        }
+
         _ = EnumWindows((hwnd, lparam) =>
         {
             if (hwnd != active && !IsIconic(hwnd) && WindowName(hwnd) == name)
+            {
                 res.Add(hwnd);
+            }
+
             return true;
         }, IntPtr.Zero);
         return res;
@@ -70,7 +80,9 @@ internal sealed partial class Broadcast
     {
         var size = GetWindowTextLengthW(hwnd);
         if (size <= 0)
+        {
             return "";
+        }
 
         var buffer = new char[size + 1];
         fixed (char* pbuf = &buffer[0])

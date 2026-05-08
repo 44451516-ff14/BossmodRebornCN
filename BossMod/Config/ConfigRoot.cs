@@ -12,15 +12,18 @@ public sealed class ConfigRoot
 
     public void Initialize()
     {
-        foreach (var t in Utils.GetDerivedTypes<ConfigNode>(Assembly.GetExecutingAssembly()).Where(static t => !t.IsAbstract))
+        foreach (var t in Utils.GetDerivedTypes<ConfigNode>(Assembly.GetExecutingAssembly()))
         {
-            if (Activator.CreateInstance(t) is not ConfigNode inst)
+            if (!t.IsAbstract)
             {
-                Service.Log($"[Config] Failed to create an instance of {t}");
-                continue;
+                if (Activator.CreateInstance(t) is not ConfigNode inst)
+                {
+                    Service.Log($"[Config] Failed to create an instance of {t}");
+                    continue;
+                }
+                inst.Modified.Subscribe(Modified.Fire);
+                _nodes[t] = inst;
             }
-            inst.Modified.Subscribe(Modified.Fire);
-            _nodes[t] = inst;
         }
     }
 
@@ -104,7 +107,9 @@ public sealed class ConfigRoot
             result.Add("Usage: /bmr cfg <config-type> <field> <value>");
             result.Add("Both config-type and field can be shortened. Valid config-types:");
             foreach (var t in _nodes.Keys)
+            {
                 result.Add($"- {t.Name}");
+            }
         }
         else
         {
@@ -128,26 +133,40 @@ public sealed class ConfigRoot
             {
                 result.Add("Config type not found. Valid types:");
                 foreach (var t in _nodes.Keys)
+                {
                     result.Add($"- {t.Name}");
+                }
             }
             else if (matchingNodes.Count > 1)
             {
                 result.Add("Ambiguous config type, pass longer pattern. Matches:");
                 foreach (var n in matchingNodes)
+                {
                     result.Add($"- {n.GetType().Name}");
+                }
             }
             else if (args.Length == 1)
             {
                 result.Add("Usage: /bmr cfg <config-type> <field> <value>");
                 result.Add($"Valid fields for {matchingNodes[0].GetType().Name}:");
-                foreach (var f in matchingNodes[0].GetType().GetFields().Where(f => f.GetCustomAttribute<PropertyDisplayAttribute>() != null))
-                    result.Add($"- {f.Name}");
+                foreach (var f in matchingNodes[0].GetType().GetFields())
+                {
+                    if (f.GetCustomAttribute<PropertyDisplayAttribute>() != null)
+                    {
+                        result.Add($"- {f.Name}");
+                    }
+                }
             }
             else
             {
                 List<FieldInfo> matchingFields = [];
-                foreach (var f in matchingNodes[0].GetType().GetFields().Where(f => f.GetCustomAttribute<PropertyDisplayAttribute>() != null))
+                foreach (var f in matchingNodes[0].GetType().GetFields())
                 {
+                    if (f.GetCustomAttribute<PropertyDisplayAttribute>() == null)
+                    {
+                        continue;
+                    }
+
                     var arg = args[1];
                     if (f.Name.Contains(arg, StringComparison.CurrentCultureIgnoreCase))
                     {
@@ -164,14 +183,21 @@ public sealed class ConfigRoot
                 if (matchingFields.Count == 0)
                 {
                     result.Add($"Field not found {args[1]}, Valid fields:");
-                    foreach (var f in matchingNodes[0].GetType().GetFields().Where(f => f.GetCustomAttribute<PropertyDisplayAttribute>() != null))
-                        result.Add($"- {f.Name}");
+                    foreach (var f in matchingNodes[0].GetType().GetFields())
+                    {
+                        if (f.GetCustomAttribute<PropertyDisplayAttribute>() != null)
+                        {
+                            result.Add($"- {f.Name}");
+                        }
+                    }
                 }
                 else if (matchingFields.Count > 1)
                 {
                     result.Add("Ambiguous field name, pass longer pattern. Matches:");
                     foreach (var f in matchingFields)
+                    {
                         result.Add($"- {f.Name}");
+                    }
                 }
                 /*else if (args.Count == 2)
                 {
@@ -183,7 +209,9 @@ public sealed class ConfigRoot
                     try
                     {
                         if (args.Length == 2)
+                        {
                             result.Add(matchingFields[0].GetValue(matchingNodes[0])?.ToString() ?? $"Failed to get value of '{args[2]}'");
+                        }
                         else
                         {
                             var val = FromConsoleString(args[2], matchingFields[0].FieldType);
@@ -195,16 +223,22 @@ public sealed class ConfigRoot
                             {
                                 matchingFields[0].SetValue(matchingNodes[0], val);
                                 if (save)
+                                {
                                     matchingNodes[0].Modified.Fire();
+                                }
                             }
                         }
                     }
                     catch (Exception e)
                     {
                         if (args.Length == 2)
+                        {
                             result.Add($"Failed to get value of {matchingNodes[0].GetType().Name}.{matchingFields[0].Name} : {e}");
+                        }
                         else
+                        {
                             result.Add($"Failed to set {matchingNodes[0].GetType().Name}.{matchingFields[0].Name} to {args[2]}: {e}");
+                        }
                     }
                 }
             }

@@ -23,7 +23,9 @@ public sealed class BossModuleConfigWindow : UIWindow
     private void DrawEncounterTab()
     {
         if (_node != null)
+        {
             ConfigUI.DrawNode(_node, Service.Config, _tree, _ws);
+        }
         else
             ImGui.TextUnformatted("此模块没有可用配置");
     }
@@ -31,6 +33,8 @@ public sealed class BossModuleConfigWindow : UIWindow
     private void DrawPartyRolesAssignmentsTab()
     {
         if (_ws.Party.Player() != null)
+        {
             ConfigUI.DrawNode(_prc, Service.Config, _tree, _ws);
+        }
     }
 }

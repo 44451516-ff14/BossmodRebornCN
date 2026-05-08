@@ -26,15 +26,9 @@ public static class ColumnUtils
         return e;
     }
 
-    public static ColumnGenericHistory.Entry AddHistoryEntryRange(this ColumnGenericHistory column, DateTime encStart, DateTime rangeStart, DateTime rangeEnd, string name, uint color, float widthRel = 1.0f)
-    {
-        return AddHistoryEntryRange(column, encStart, rangeStart, (float)(rangeEnd - rangeStart).TotalSeconds, name, color, widthRel);
-    }
+    public static ColumnGenericHistory.Entry AddHistoryEntryRange(this ColumnGenericHistory column, DateTime encStart, DateTime rangeStart, DateTime rangeEnd, string name, uint color, float widthRel = 1.0f) => AddHistoryEntryRange(column, encStart, rangeStart, (float)(rangeEnd - rangeStart).TotalSeconds, name, color, widthRel);
 
-    public static ColumnGenericHistory.Entry AddHistoryEntryRange(this ColumnGenericHistory column, DateTime encStart, Replay.TimeRange range, string name, uint color, float widthRel = 1.0f)
-    {
-        return AddHistoryEntryRange(column, encStart, range.Start, range.Duration, name, color, widthRel);
-    }
+    public static ColumnGenericHistory.Entry AddHistoryEntryRange(this ColumnGenericHistory column, DateTime encStart, Replay.TimeRange range, string name, uint color, float widthRel = 1.0f) => AddHistoryEntryRange(column, encStart, range.Start, range.Duration, name, color, widthRel);
 
     public static void AddActionTooltip(List<string> tooltip, Replay.Action action)
     {

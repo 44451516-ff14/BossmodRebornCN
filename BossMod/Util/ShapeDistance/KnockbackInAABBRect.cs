@@ -8,10 +8,7 @@ public sealed class SDKnockbackInAABBRectFixedDirection(WPos Center, WDir Direct
     private readonly float halfWidth = HalfWidth;
     private readonly float halfHeight = HalfHeight;
 
-    public override bool Contains(in WPos p)
-    {
-        return !(p + direction).InRect(center, halfWidth, halfHeight);
-    }
+    public override bool Contains(in WPos p) => !(p + direction).InRect(center, halfWidth, halfHeight);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
@@ -29,10 +26,7 @@ public sealed class SDKnockbackInAABBRectAwayFromOrigin(WPos Center, WPos Origin
     private readonly float halfHeight = HalfHeight;
     private readonly float distance = Distance;
 
-    public override bool Contains(in WPos p)
-    {
-        return !(p + distance * (p - origin).Normalized()).InRect(center, halfWidth, halfHeight);
-    }
+    public override bool Contains(in WPos p) => !(p + distance * (p - origin).Normalized()).InRect(center, halfWidth, halfHeight);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;

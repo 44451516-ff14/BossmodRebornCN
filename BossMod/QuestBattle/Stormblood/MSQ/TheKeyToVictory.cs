@@ -12,9 +12,7 @@ public sealed class TheKeyToVictory(WorldState ws) : QuestBattle(ws)
         Colossus = 0x1E7F
     }
 
-    public override List<QuestObjective> DefineObjectives(WorldState ws)
-    {
-        return [
+    public override List<QuestObjective> DefineObjectives(WorldState ws) => [
             new QuestObjective(ws)
                 .WithConnection(new Vector3(-396.38f, 4.94f, 122.21f))
                 .WithConnection(new Vector3(-285.98f, 11.18f, 223.66f))
@@ -49,5 +47,4 @@ public sealed class TheKeyToVictory(WorldState ws) : QuestBattle(ws)
                 .WithConnection(new Vector3(50.57f, 42.00f, 724.45f))
                 .WithInteract(0x1EA771)
         ];
-    }
 }
