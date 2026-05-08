@@ -67,18 +67,16 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         using (ImRaii.PushColor(ImGuiCol.Button, DiscordColor.ABGR))
             if (ImGui.Button("加入Combat Reborn Discord", new(220, 0)))
                 _lastErrorMessage = OpenLink("https://discord.gg/p54TZMPnC9");
-            }
-        }
+
 
         ImGui.SameLine();
         if (ImGui.Button("访问BossModReborn GitHub", new(220, 0)))
             _lastErrorMessage = OpenLink("https://github.com/FFXIV-CombatReborn/BossmodReborn");
-        }
+
 
         ImGui.SameLine();
         if (ImGui.Button("查看BossMod Wiki", new(130, 0)))
             _lastErrorMessage = OpenLink("https://github.com/awgil/ffxiv_bossmod/wiki");
-        }
 
         ImGui.SameLine();
         if (ImGui.Button("打开回放文件夹", new(180, 0)) && replayDir != null)
@@ -88,7 +86,7 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         {
             _lastErrorMessage = OpenLink("https://afdian.com/a/a_44451516");
         }
-        
+
         if (_lastErrorMessage.Length > 0)
         {
             using var color = ImRaii.PushColor(ImGuiCol.Text, Colors.TextColor3);
@@ -101,7 +99,8 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
         using var colorBackground = ImRaii.PushColor(ImGuiCol.ChildBg, SectionBgColor.ABGR);
         using var colorBorder = ImRaii.PushColor(ImGuiCol.Border, BorderColor.ABGR);
         var height = ImGui.GetTextLineHeightWithSpacing() * (bulletPoints.Length + 2);
-        using var section = ImRaii.Child(title, new(0, height), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysUseWindowPadding);
+        using var section = ImRaii.Child(title, new(0, height), false,
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.AlwaysUseWindowPadding);
 
         if (!section)
         {
@@ -121,6 +120,7 @@ public sealed class AboutTab(DirectoryInfo? replayDir)
             ImGui.SameLine();
             ImGui.TextUnformatted(point);
         }
+
         ImGui.PopTextWrapPos();
     }
 

@@ -90,11 +90,13 @@ public sealed class ConfigUI : IDisposable
     {
         ImGui.SetNextItemWidth(300);
         if (ImGui.InputTextEx("", "搜索设置...", ref _searchText))
+        {
             FilterNodes();
         }
 
         ImGui.SameLine();
         using (ImRaii.Disabled(_searchText.Length == 0))
+        {
             if (ImGui.Button("清除"))
             {
                 _searchText = "";
@@ -162,7 +164,7 @@ public sealed class ConfigUI : IDisposable
 
     private static void DrawAvailableCommands()
     {
-        ImGui.Text("可用命令：");
+        ImGui.Text("可用命令:");
         ImGui.Separator();
         ImGui.Text("AI:");
         ImGui.Separator();
@@ -172,7 +174,7 @@ public sealed class ConfigUI : IDisposable
             ImGui.Text($"/bmrai {text.Item1}: {text.Item2}");
         }
         ImGui.Separator();
-        ImGui.Text("自动循环命令：");
+        ImGui.Text("自动循环命令:");
         ImGui.Separator();
         for (var i = 0; i < 6; ++i)
         {
@@ -180,7 +182,7 @@ public sealed class ConfigUI : IDisposable
             ImGui.Text($"/bmr {text.Item1}: {text.Item2}");
         }
         ImGui.Separator();
-        ImGui.Text("其他命令：");
+        ImGui.Text("其他命令:");
         ImGui.Separator();
         for (var i = 0; i < 7; ++i)
         {
@@ -543,14 +545,10 @@ public sealed class ConfigUI : IDisposable
         ImGui.AlignTextToFramePadding();
         UIMisc.IconText(Dalamud.Interface.FontAwesomeIcon.ListUl);
         if (ImGui.IsItemHovered())
-<<<<<<< HEAD
-            ImGui.SetTooltip("此配置项包含预设。右键点击下拉框可选择预设。");
-=======
         {
-            ImGui.SetTooltip("This configuration option includes presets. Right click on the dropdown to select a preset.");
+            ImGui.SetTooltip("此配置项包含预设。右键点击下拉框可选择预设。");
         }
 
->>>>>>> 833dba42d9e94f95b0ed443852e9ec5809c22047
         ImGui.SameLine();
     }
 

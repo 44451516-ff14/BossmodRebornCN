@@ -16,30 +16,30 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
         {
             base.DrawSidebar();
 
-            if (ImGui.InputFloat3("Min bounds", ref e.MinBounds))
+            if (ImGui.InputFloat3("最小边界", ref e.MinBounds))
             {
                 owner.MarkModified();
             }
 
-            if (ImGui.InputFloat3("Max bounds", ref e.MaxBounds))
+            if (ImGui.InputFloat3("最大边界", ref e.MaxBounds))
             {
                 owner.MarkModified();
             }
 
-            ImGui.TextUnformatted($"Map area: {e.Origin} + {Bitmap.Width}x{Bitmap.Height} * {Bitmap.PixelSize}");
-            if (ImGui.InputInt("Half-width in cells", ref e.ViewWidth))
+            ImGui.TextUnformatted($"地图区域: {e.Origin} + {Bitmap.Width}x{Bitmap.Height} * {Bitmap.PixelSize}");
+            if (ImGui.InputInt("半宽格数", ref e.ViewWidth))
             {
                 owner.MarkModified();
             }
 
-            if (ImGui.InputInt("Half-height in cells", ref e.ViewHeight))
+            if (ImGui.InputInt("半高格数", ref e.ViewHeight))
             {
                 owner.MarkModified();
             }
 
-            ImGui.TextUnformatted($"Change resolution:");
+            ImGui.TextUnformatted("调整分辨率:");
             ImGui.SameLine();
-            if (ImGui.Button("increase"))
+            if (ImGui.Button("增加"))
             {
                 var newBitmap = new Bitmap(Bitmap.Width * 2, Bitmap.Height * 2, Bitmap.Color0, Bitmap.Color1, Bitmap.Resolution * 2);
                 Bitmap.FullRegion.UpsampleTo(newBitmap, 0, 0);
@@ -47,7 +47,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
                 --ZoomLevel;
             }
             ImGui.SameLine();
-            if (ImGui.Button("decrease"))
+            if (ImGui.Button("降低"))
             {
                 var newBitmap = new Bitmap(Bitmap.Width / 2, Bitmap.Height / 2, Bitmap.Color0, Bitmap.Color1, Bitmap.Resolution / 2);
                 Bitmap.FullRegion.DownsampleTo(newBitmap, 0, 0, true);
@@ -60,7 +60,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
                 Bitmap.Save(owner.Obstacles.RootPath + e.Filename);
             }
             ImGui.SameLine();
-            if (ImGui.Button("Reload"))
+            if (ImGui.Button("重新加载"))
             {
                 using var stream = File.OpenRead(owner.Obstacles.RootPath + e.Filename);
                 CheckpointNoClone(new(stream));
@@ -71,28 +71,28 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
             using (ImRaii.Disabled(_deltaCells == 0))
             {
                 ImGui.SameLine();
-                if (ImGui.Button("left"))
+                if (ImGui.Button("左侧"))
                 {
                     var newBitmap = new Bitmap(Bitmap.Width + _deltaCells, Bitmap.Height, Bitmap.Color0, Bitmap.Color1, Bitmap.Resolution);
                     Bitmap.FullRegion.CopyTo(newBitmap, _deltaCells, 0);
                     CheckpointNoClone(newBitmap);
                 }
                 ImGui.SameLine();
-                if (ImGui.Button("top"))
+                if (ImGui.Button("上方"))
                 {
                     var newBitmap = new Bitmap(Bitmap.Width, Bitmap.Height + _deltaCells, Bitmap.Color0, Bitmap.Color1, Bitmap.Resolution);
                     Bitmap.FullRegion.CopyTo(newBitmap, 0, _deltaCells);
                     CheckpointNoClone(newBitmap);
                 }
                 ImGui.SameLine();
-                if (ImGui.Button("right"))
+                if (ImGui.Button("右侧"))
                 {
                     var newBitmap = new Bitmap(Bitmap.Width + _deltaCells, Bitmap.Height, Bitmap.Color0, Bitmap.Color1, Bitmap.Resolution);
                     Bitmap.FullRegion.CopyTo(newBitmap, 0, 0);
                     CheckpointNoClone(newBitmap);
                 }
                 ImGui.SameLine();
-                if (ImGui.Button("bottom"))
+                if (ImGui.Button("下方"))
                 {
                     var newBitmap = new Bitmap(Bitmap.Width, Bitmap.Height + _deltaCells, Bitmap.Color0, Bitmap.Color1, Bitmap.Resolution);
                     Bitmap.FullRegion.CopyTo(newBitmap, 0, 0);
@@ -109,11 +109,11 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
                 var playerDeepInObstacle = px >= 0 && py >= 0 && px < Bitmap.Width && py < Bitmap.Height && Bitmap[px, py]
                     && (px == 0 || Bitmap[px - 1, py]) && (py == 0 || Bitmap[px, py - 1]) && (px == (Bitmap.Width - 1) || Bitmap[px + 1, py]) && (py == (Bitmap.Height - 1) || Bitmap[px, py + 1]);
                 using var color = ImRaii.PushColor(ImGuiCol.Text, Colors.TextColor3, playerDeepInObstacle);
-                ImGui.TextUnformatted($"Player cell: {px}x{py}");
+                ImGui.TextUnformatted($"玩家格子: {px}x{py}");
                 if (playerDeepInObstacle)
                 {
                     ImGui.SameLine();
-                    UIMisc.HelpMarker("Warning: player is deep in the obstacle, pathfinding won't find a good way out...");
+                    UIMisc.HelpMarker("警告：玩家深入障碍物内部，寻路可能找不到合适的离开路径...");
                 }
             }
 
@@ -155,21 +155,21 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
         protected override void DrawSidebar()
         {
             var player = _owner.Obstacles.World.Party.Player();
-            ImGui.TextUnformatted("IPC temp map");
-            ImGui.TextUnformatted($"Generation task: {_owner.Obstacles.GenerationStatus}");
-            ImGui.TextUnformatted($"Key: {_e.Filename}");
-            ImGui.TextUnformatted($"Bounds min {_e.MinBounds}  max {_e.MaxBounds}");
-            ImGui.TextUnformatted($"Origin {_e.Origin}  grid {Bitmap.Width}x{Bitmap.Height}  cell {Bitmap.PixelSize:F3} yalms");
+            ImGui.TextUnformatted("IPC 临时地图");
+            ImGui.TextUnformatted($"生成任务: {_owner.Obstacles.GenerationStatus}");
+            ImGui.TextUnformatted($"键: {_e.Filename}");
+            ImGui.TextUnformatted($"边界 最小 {_e.MinBounds}  最大 {_e.MaxBounds}");
+            ImGui.TextUnformatted($"原点 {_e.Origin}  网格 {Bitmap.Width}x{Bitmap.Height}  单元格 {Bitmap.PixelSize:F3} yalms");
 
             if (player != null)
             {
                 var playerOffset = ((player.Position - _e.Origin) / Bitmap.PixelSize).Floor();
-                ImGui.TextUnformatted($"Player cell: {playerOffset.X}x/{playerOffset.Z}z");
+                ImGui.TextUnformatted($"玩家格子: {playerOffset.X}x/{playerOffset.Z}z");
             }
 
             if (HoveredPixel.x >= 0 && HoveredPixel.y >= 0)
             {
-                ImGui.TextUnformatted($"Hovered cell: {HoveredPixel.x}x{HoveredPixel.y}");
+                ImGui.TextUnformatted($"悬停格子: {HoveredPixel.x}x{HoveredPixel.y}");
                 var y = player?.PosRot.Y ?? 0;
                 var tl = _e.Origin + new WDir(HoveredPixel.x, HoveredPixel.y) * Bitmap.PixelSize;
                 var br = tl + new WDir(Bitmap.PixelSize, Bitmap.PixelSize);
@@ -203,60 +203,62 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
 
     public void Draw()
     {
-        ImGui.TextUnformatted($"Database root: {Obstacles.RootPath}");
+        ImGui.TextUnformatted($"数据库根目录: {Obstacles.RootPath}");
 
         ImGui.Separator();
-        ImGui.TextUnformatted("Temp map (IPC / memory)");
+        ImGui.TextUnformatted("临时地图 (IPC / 内存)");
         var gen = Obstacles.GenerationStatus;
         if (gen is not TaskStatus.RanToCompletion)
         {
-            ImGui.TextUnformatted($"Build task: {gen}");
+            ImGui.TextUnformatted($"构建任务: {gen}");
         }
 
         if (Obstacles.TempMapMeta is not { } meta)
         {
-            ImGui.TextDisabled("No temp map loaded.");
+            ImGui.TextDisabled("未加载临时地图。");
         }
         else
         {
             ImGui.TextUnformatted($"{meta.Filename}  {meta.Width}x{meta.Height} cells");
-            if (ImGui.Button("Open viewer##tempObstacle") && Obstacles.TryCloneTempMap(out var ent, out var bmp))
+            if (ImGui.Button("打开查看器##tempObstacle") && Obstacles.TryCloneTempMap(out var ent, out var bmp))
             {
-                _ = new UISimpleWindow($"Temp obstacle map: {ent.Filename}", new TempMapViewer(this, bmp, ent).Draw, true, new(1000, 1000));
+                _ = new UISimpleWindow($"临时障碍物地图: {ent.Filename}", new TempMapViewer(this, bmp, ent).Draw, true, new(1000, 1000));
             }
         }
 
         var curZoneEntries = Obstacles.Database.Entries.GetValueOrDefault(Obstacles.CurrentKey());
         using (ImRaii.Disabled(!Obstacles.CanEditDatabase()))
         {
-            if (ImGui.Button("Create new region"))
+            if (ImGui.Button("创建新区块"))
             {
                 CreateRegion();
             }
 
             ImGui.SameLine();
             using (ImRaii.Disabled(!_dbModified))
+            {
                 if (ImGui.Button("保存"))
+                {
                     SaveDatabase();
                 }
             }
 
             ImGui.SameLine();
-            if (ImGui.Button(_dbModified ? "Revert" : "Reload"))
+            if (ImGui.Button(_dbModified ? "还原" : "重新加载"))
             {
                 ReloadDatabase();
             }
         }
 
-        ImGui.DragFloat3("Map min bounds", ref _minBounds, 1, -1024, 1024);
-        ImGui.DragFloat3("Map max bounds", ref _maxBounds, 1, -1024, 1024);
+        ImGui.DragFloat3("地图最小边界", ref _minBounds, 1, -1024, 1024);
+        ImGui.DragFloat3("地图最大边界", ref _maxBounds, 1, -1024, 1024);
 
-        foreach (var n in _tree.Node($"Current zone: {Obstacles.World.CurrentZone}.{Obstacles.World.CurrentCFCID}###curr", curZoneEntries == null || curZoneEntries.Count == 0))
+        foreach (var n in _tree.Node($"当前区域: {Obstacles.World.CurrentZone}.{Obstacles.World.CurrentCFCID}###curr", curZoneEntries == null || curZoneEntries.Count == 0))
         {
             DrawEntries(curZoneEntries ?? []);
         }
 
-        foreach (var n in _tree.Nodes(Obstacles.Database.Entries, kv => new($"Zone {kv.Key >> 16}.{kv.Key & 0xFFFF}", kv.Value.Count == 0)))
+        foreach (var n in _tree.Nodes(Obstacles.Database.Entries, kv => new($"区域 {kv.Key >> 16}.{kv.Key & 0xFFFF}", kv.Value.Count == 0)))
         {
             DrawEntries(n.Value);
         }
@@ -274,7 +276,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
             var index = i;
             using (ImRaii.Disabled(i == 0))
             {
-                if (ImGui.Button("Move up"))
+                if (ImGui.Button("上移"))
                 {
                     modifications += () => (entries[index], entries[index - 1]) = (entries[index - 1], entries[index]);
                 }
@@ -283,7 +285,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
             ImGui.SameLine();
             using (ImRaii.Disabled(i == entries.Count - 1))
             {
-                if (ImGui.Button("Move down"))
+                if (ImGui.Button("下移"))
                 {
                     modifications += () => (entries[index], entries[index + 1]) = (entries[index + 1], entries[index]);
                 }
@@ -291,11 +293,12 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
 
             ImGui.SameLine();
             if (ImGui.Button("删除"))
+            {
                 modifications += () => DeleteMap(entries, index);
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("Edit"))
+            if (ImGui.Button("编辑"))
             {
                 OpenEditor(entries[index]);
             }
@@ -355,6 +358,6 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
     {
         using var stream = File.OpenRead(Obstacles.RootPath + entry.Filename);
         var editor = new Editor(this, new(stream), entry);
-        _ = new UISimpleWindow($"Obstacle map {entry.Filename}", editor.Draw, true, new(1000, 1000));
+        _ = new UISimpleWindow($"障碍物地图 {entry.Filename}", editor.Draw, true, new(1000, 1000));
     }
 }
