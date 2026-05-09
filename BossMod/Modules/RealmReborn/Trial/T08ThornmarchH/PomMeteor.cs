@@ -15,7 +15,7 @@ class PomMeteor(BossModule module) : BossComponent(module)
     {
         var towerOffsets = new WDir[8];
         for (var i = 0; i < 8; ++i)
-            _towerOffsets[i] = 10f * (45f * i).Degrees().ToDirection();
+            towerOffsets[i] = 10f * (45f * i).Degrees().ToDirection();
         return towerOffsets;
     }
 
