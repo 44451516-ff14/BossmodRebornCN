@@ -169,7 +169,7 @@ sealed class Ex8EnuoStates : StateMachineBuilder
         Cast(id, (uint)AID.NaughtWakes, delay, 2f, "Naught Wakes AOEs")
             .ActivateOnEnter<PassageOfNaught>()
             .ActivateOnEnter<NaughtHunts>()
-            ;
+            .ActivateOnEnter<NaughtHuntsJumps>();
     }
 
     private void ShroudedHoly(uint id, float delay)
