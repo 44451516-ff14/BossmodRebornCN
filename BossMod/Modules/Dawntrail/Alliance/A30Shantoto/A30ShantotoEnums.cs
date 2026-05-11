@@ -51,7 +51,7 @@ public enum AID : uint
     ThunderAndError = 50204, // Helper->players, 5.0s cast, range 5 circle
     MeteoricRhyme = 50182, // ShantottoTheDemon->self, 3.0s cast, single-target
     SmallSpecimen = 50184, // Helper->location, 4.0s cast, range 6 circle
-    LargeSpecimen = 50186, // Unknown2->self, 6.0s cast, range 50 circle
+    LargeSpecimen = 50186, // Unknown2->self, 6.0s cast, range 50 circle Falloff 15f?
     StardustSpecimen = 50185, // Helper->players, 6.0s cast, range 6 circle
     UnknownSpell1 = 50183, // ShantottoTheDemon->location, no cast, range 30 circle
     UnknownAbility2 = 50648, // ShantottoTheDemon->location, no cast, single-target

@@ -11,6 +11,18 @@ sealed class A30ShantotoStates : StateMachineBuilder
             .ActivateOnEnter<SuperiorStoneIITelegraph>()
             .ActivateOnEnter<SuperiorStoneIIArena>()
             .ActivateOnEnter<GroundBreakingQuake>()
-            .ActivateOnEnter<CircumscribedFire>();
+            .ActivateOnEnter<CircumscribedFire>()
+            .ActivateOnEnter<LocalizedBlizzard>()
+            .ActivateOnEnter<ThunderAndError>()
+            .ActivateOnEnter<SmallSpecimen>()
+            .ActivateOnEnter<LargeSpecimen>()
+            .ActivateOnEnter<StardustSpecimen>()
+            .ActivateOnEnter<Shockwave>()
+            .ActivateOnEnter<FallingRubble>()
+            .ActivateOnEnter<FallingRubble2>()
+            .ActivateOnEnter<FallingRubble3>()
+            .ActivateOnEnter<AeroDynamics>()
+            .ActivateOnEnter<AeroDynamicsDangerWall>()
+            .ActivateOnEnter<FinalExam>();
     }
 }

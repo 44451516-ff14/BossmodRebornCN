@@ -57,6 +57,28 @@ sealed class GroundBreakingQuake(BossModule module) : Components.SimpleAOEs(modu
 
 sealed class CircumscribedFire(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CircumscribedFire, (uint)AID.CircumscribedFire1], new AOEShapeDonut(6f, 70f));
 
+sealed class LocalizedBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LocalizedBlizzard, new AOEShapeCircle(10f));
+
+sealed class ThunderAndError(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.ThunderAndError, 5f);
+
+sealed class SmallSpecimen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SmallSpecimen, new AOEShapeCircle(6f));
+
+sealed class LargeSpecimen(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LargeSpecimen, new AOEShapeCircle(13f));
+
+sealed class StardustSpecimen(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.StardustSpecimen, 6f);
+
+sealed class Shockwave(BossModule module) : Components.RaidwideCast(module, (uint)AID.Shockwave);
+
+sealed class FallingRubble(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRubble, new AOEShapeRect(35f, 5f));
+
+sealed class FallingRubble1(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRubble1, new AOEShapeCircle(12f));
+
+sealed class FallingRubble2(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRubble2, new AOEShapeCircle(8f));
+
+sealed class FallingRubble3(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRubble3, new AOEShapeRect(25f, 3f));
+
+sealed class FinalExam(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.FinalExam1, 6f);
+
 [ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "The Combat Reborn Team", PrimaryActorOID = (uint)OID.ShantottoTheDemon, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1117u, NameID = 14778u, Category = BossModuleInfo.Category.Alliance, Expansion = BossModuleInfo.Expansion.Dawntrail, SortOrder = 1)]
 public sealed class A30Shantoto(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsRect(24f, 30f))
 {
