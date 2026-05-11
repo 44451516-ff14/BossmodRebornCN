@@ -26,7 +26,7 @@ sealed class SuperiorStoneIIArena(BossModule module) : BossComponent(module)
         if (spell.Action.ID == (uint)AID.SuperiorStoneII1)
         {
             cutoffs.Add(new(caster.Position, caster.Rotation, caster.PosRot));
-            Service.Log($"Adding cutoff {caster.Position}, {caster.Rotation}");
+            //Service.Log($"Adding cutoff {caster.Position}, {caster.Rotation}");
         }
     }
 
@@ -39,7 +39,7 @@ sealed class SuperiorStoneIIArena(BossModule module) : BossComponent(module)
             {
                 var pos = cutoffs[i].Position + cutoffs[i].Rotation.ToDirection() * 10.5f;
                 _rects[i] = new Rectangle(pos, 6.1f, 10.5f, cutoffs[i].Rotation); //This functions but could probably be more accurate.
-                Service.Log($"Adding Rectangle {_rects[i]}");
+                //Service.Log($"Adding Rectangle {_rects[i]}");
             }
 
             var newbounds = new ArenaBoundsCustom([_basearena], _rects);

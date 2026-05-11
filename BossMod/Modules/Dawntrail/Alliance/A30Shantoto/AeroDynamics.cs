@@ -25,7 +25,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             if (p != null)
             {
                 _statuskbs.Add(new(p, Direction.West));
-                Service.Log($"Adding West: {p}");
+                //Service.Log($"Adding West: {p}");
             }
         }
         if (status.ID == (uint)SID.EasterlyWinds)
@@ -34,7 +34,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             if (p != null)
             {
                 _statuskbs.Add(new(p, Direction.East));
-                Service.Log($"Adding East: {p}");
+                //Service.Log($"Adding East: {p}");
             }
         }
     }
