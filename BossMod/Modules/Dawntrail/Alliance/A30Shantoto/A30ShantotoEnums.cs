@@ -22,18 +22,20 @@ public enum OID : uint
 
 public enum AID : uint
 {
+    // Helpful NPC action set - keeping so that we don't keep rediscovering them
     SavageBlade = 50389, // Alxaal->ShantottoTheDemon, no cast, single-target
     Attack1 = 50721, // Alxaal->ShantottoTheDemon, no cast, single-target
-    Attack2 = 872, // ShantottoTheDemon->player, no cast, single-target
     VorpalBlade = 50390, // Alxaal->ShantottoTheDemon, no cast, single-target
-    FlarePlay = 50215, // ShantottoTheDemon->self, 5.0s cast, range 78 circle
     SpiritsWithin = 50391, // Alxaal->ShantottoTheDemon, no cast, single-target
-    Vidohunir = 50213, // ShantottoTheDemon->player, 5.0+1.0s cast, single-target
     UrielBlade = 50392, // Alxaal->ShantottoTheDemon, no cast, single-target
+    Holy = 50393, // Alxaal->self, 3.0s cast, range 6 circle
+
+    Attack2 = 872, // ShantottoTheDemon->player, no cast, single-target
+    FlarePlay = 50215, // ShantottoTheDemon->self, 5.0s cast, range 78 circle
+    Vidohunir = 50213, // ShantottoTheDemon->player, 5.0+1.0s cast, single-target
     Vidohunir1 = 50214, // Helper->players, 6.0s cast, range 5 circle
     EmpiricalResearch = 50206, // ShantottoTheDemon->self, 3.0s cast, single-target
     EmpiricalResearch1 = 50208, // Helper->self, 3.8s cast, range 80 width 12 rect
-    Holy = 50393, // Alxaal->self, 3.0s cast, range 6 circle
     SuperiorStoneII = 50193, // ShantottoTheDemon->self, 4.0s cast, range 60 circle
     SuperiorStoneII1 = 50194, // Helper->self, 4.8s cast, range 21 width 13 rect
     SuperiorStoneII2 = 51025, // Helper->self, no cast, range 21 width 13 rect
@@ -61,7 +63,6 @@ public enum AID : uint
     AeroDynamics = 50198, // ShantottoTheDemon->self, 3.0s cast, single-target
     AeroDynamics1 = 50199, // Helper->self, no cast, range 48 width 60 rect
     UnknownSpell2 = 50382, // Helper->self, no cast, range 48 width 60 rect
-
     FinalExam = 50210, // ShantottoTheDemon->player, 4.2+0.8s cast, single-target
     FinalExam1 = 50211, // Helper->player, 5.0s cast, range 6 circle
 }
