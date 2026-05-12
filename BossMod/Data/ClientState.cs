@@ -801,4 +801,11 @@ public sealed class ClientState
         }
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("INVT"u8).Emit(ItemId).Emit(Quantity);
     }
+
+    public Event<OpActionFailedLoS> ActionFailedLoS = new();
+    public sealed record class OpActionFailedLoS(uint ActionId, ulong TargetId) : WorldState.Operation
+    {
+        protected override void Exec(WorldState ws) => ws.Client.ActionFailedLoS.Fire(this);
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("FLOS"u8).Emit(ActionId).EmitActor(TargetId);
+    }
 }

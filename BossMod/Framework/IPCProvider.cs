@@ -521,6 +521,8 @@ sealed class IPCProvider : IDisposable
         Register("ObstacleMap.Generate", (Vector3 centerWorld, float radius, bool writeToFile) => obstacles.GenerateMap(centerWorld, radius, writeToFile));
         Register("ObstacleMap.GetGenerationStatus", () => obstacles.GenerationStatus);
         Register("ObstacleMap.HasTempMap", obstacles.HasTempMap);
+        Register("ObstacleMap.ClearTempMap", obstacles.ClearTempMap);
+        Register("ObstacleMap.EvaluateTempMapQuality", obstacles.EvaluateTempMapQuality);
     }
 
     public void Dispose() => _disposeActions?.Invoke();

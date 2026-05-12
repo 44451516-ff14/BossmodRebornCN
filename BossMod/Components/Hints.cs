@@ -36,7 +36,7 @@ abstract class GenericInvincible(BossModule module, string hint = "Attacking inv
 }
 
 [SkipLocalsInit]
-class InvincibleStatus(BossModule module, uint statusId, string hint = "Attacking invincible target!") : GenericInvincible(module, hint)
+class InvincibleStatus(BossModule module, uint statusId, string hint = "Attacking invincible target!", int priority = AIHints.Enemy.PriorityInvincible) : GenericInvincible(module, hint, priority)
 {
     protected readonly List<Actor> _actors = [];
 

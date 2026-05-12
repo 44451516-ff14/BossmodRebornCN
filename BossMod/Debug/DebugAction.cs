@@ -1,5 +1,4 @@
 ﻿using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Gui;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -107,7 +106,7 @@ sealed unsafe class DebugAction : IDisposable
             var name = "";
             var type = FFXIVClientStructs.FFXIV.Client.Game.ActionType.None;
             uint unlockLink = 0;
-            if ((int)hover.DetailKind == 24) // action
+            if (hover.DetailKind == DetailKind.Action) // action
             {
                 var data = Service.LuminaRow<Lumina.Excel.Sheets.Action>(hover.ActionId);
                 name = data?.Name.ToString() ?? "";
@@ -132,6 +131,9 @@ sealed unsafe class DebugAction : IDisposable
             ImGui.TextUnformatted($"Unlock: {unlockLink} ({Service.LuminaRow<Lumina.Excel.Sheets.Quest>(unlockLink)?.Name}) = {FFXIVClientStructs.FFXIV.Client.Game.QuestManager.IsQuestComplete(unlockLink)}");
             if (hover.DetailKind == DetailKind.Action)
             {
+                ImGui.TextUnformatted($"Range: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange(hover.ActionId)}");
+                ImGui.TextUnformatted($"Stacks: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetMaxCharges(hover.ActionId, 0)}");
+                ImGui.TextUnformatted($"Adjusted ID: {mgr->GetAdjustedActionId(hover.ActionId)}");
                 ImGui.TextUnformatted($"Range: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange(hover.ActionId)}");
                 ImGui.TextUnformatted($"Stacks: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetMaxCharges(hover.ActionId, 0)}");
                 ImGui.TextUnformatted($"Adjusted ID: {mgr->GetAdjustedActionId(hover.ActionId)}");

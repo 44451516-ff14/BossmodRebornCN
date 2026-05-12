@@ -114,8 +114,11 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
                     if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
                     {
                         using var tooltip = ImRaii.Tooltip();
-                        ImGui.TextUnformatted("Hold shift to remove");
-                        UIRotationModule.DescribeModule(m.Type, m.Definition);
+                        if (tooltip.Alive)
+                        {
+                            ImGui.TextUnformatted("Hold shift to remove");
+                            UIRotationModule.DescribeModule(m.Type, m.Definition);
+                        }
                     }
                 }
                 ImGui.Separator();
@@ -151,7 +154,10 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
                     if (ImGui.IsItemHovered())
                     {
                         using var tooltip = ImRaii.Tooltip();
-                        UIRotationModule.DescribeModule(mt, m.Definition);
+                        if (tooltip.Alive)
+                        {
+                            UIRotationModule.DescribeModule(mt, m.Definition);
+                        }
                     }
                 }
                 post?.Invoke();
