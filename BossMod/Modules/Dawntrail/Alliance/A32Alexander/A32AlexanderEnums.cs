@@ -29,13 +29,13 @@ public enum AID : uint
     DivineArrow3 = 50126, // AlexanderResurrected->self, no cast, single-target
     DivineArrow4 = 50128, // AlexanderResurrected->self, no cast, single-target
     DivineArrow5 = 50129, // AlexanderResurrected->self, no cast, single-target
-    DivineArrow6 = 50130, // Helper->self, 1.0s cast, range 45 90.000-degree cone
+    DivineArrowCone = 50130, // Helper->self, 1.0s cast, range 45 90.000-degree cone
     DivineArrow7 = 50131, // Helper->self, no cast, range 10 circle
     DivineArrow8 = 50132, // Helper->self, no cast, range ?-23 donut
     DivineArrow9 = 50133, // Helper->self, no cast, range ?-36 donut
-    DivineArrow10 = 50134, // Helper->self, 13.5s cast, range 10 circle
-    DivineArrow11 = 50135, // Helper->self, 11.5s cast, range ?-23 donut
-    DivineArrow12 = 50136, // Helper->self, 9.5s cast, range ?-36 donut
+    DivineArrowClose = 50134, // Helper->self, 13.5s cast, range 10 circle
+    DivineArrowMid = 50135, // Helper->self, 11.5s cast, range ?-23 donut
+    DivineArrowFar = 50136, // Helper->self, 9.5s cast, range ?-36 donut
     DivineArrow13 = 50137, // Helper->self, 3.5s cast, range 60 width 10 rect
     DivineArrow14 = 50138, // Helper->self, 5.5s cast, range 60 width 10 rect
     DivineArrow15 = 50478, // Helper->self, no cast, range 45 ?-degree cone
