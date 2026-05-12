@@ -38,10 +38,10 @@ public sealed class RotationModuleManager : IDisposable
     {
         get
         {
-            var count = ActiveModules.Count;
+            var count = ActiveModules?.Count;
             for (var i = 0; i < count; ++i)
             {
-                if (ActiveModules.Module.WantsLoSFix)
+                if (ActiveModules![i].Module.WantsLoSFix)
                 {
                     return true;
                 }
@@ -57,9 +57,9 @@ public sealed class RotationModuleManager : IDisposable
     public Actor? Player => WorldState.Party[PlayerSlot];
 
     // historic data for recent events that could be interesting for modules
-    public DateTime CombatStart // default value when player is not in combat, otherwise timestamp when player entered combat
-    public (DateTime Time, ActorCastEvent? Data) LastCast
-    public LineOfSightFix? LoSFix
+    public DateTime CombatStart; // default value when player is not in combat, otherwise timestamp when player entered combat
+    public (DateTime Time, ActorCastEvent? Data) LastCast;
+    public LineOfSightFix? LoSFix;
 
     public volatile float LastRasterizeMs;
     public volatile float LastPathfindMs;
@@ -373,12 +373,7 @@ public sealed class RotationModuleManager : IDisposable
             return;
         }
 
-        var dest = FindLosDestination(Hints.PathfindMapObstacles, Hints.PathfindMapCenter, Player, target, out var debug);
-        if (Service.IsDev)
-        {
-            Service.Log($"[RMM] LoS failed for action {op.ActionId} on target {target.Name}#{op.TargetId:X}, setting LoS destination to {dest}");
-            Service.Log($"[RMM] {debug}");
-        }
+        var dest = FindLosDestination(Hints.PathfindMapObstacles, Hints.PathfindMapCenter, Player, target, out var _);
         LoSFix = dest != null ? new(op.TargetId, Player.Position, dest.Value) : null;
     }
 

@@ -2,6 +2,7 @@
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Dalamud.Game.Gui;
 
 namespace BossMod;
 

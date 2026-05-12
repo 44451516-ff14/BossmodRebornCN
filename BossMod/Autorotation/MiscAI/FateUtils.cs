@@ -69,7 +69,7 @@ public sealed class FateUtils(RotationModuleManager manager, Actor player) : Rot
             var losDir = losDist > 1e-3f ? losDelta / losDist : default;
 
             // tight spot with high reward to get out of where we're at
-            Hints.GoalZones.Add(Hints.GoalSingleTarget(los.Destination, 0.3f, 120));
+            Hints.GoalZones.Add(AIHints.GoalSingleTarget(los.Destination, 0.3f, 120));
             // add a penalty to current position to actually encourage moving out of it
             Hints.GoalZones.Add(p => p.InCircle(los.Origin, 1.0f) ? -25 : 0);
             // more encouragement for going towards the destination, but need to cap it or else it'll just keep going
@@ -79,9 +79,9 @@ public sealed class FateUtils(RotationModuleManager manager, Actor player) : Rot
                 if (progress <= 0)
                     return 0;
 
-                var cappedProgress = MathF.Min(progress, losDist);
-                var overshoot = MathF.Max(0, progress - losDist);
-                return cappedProgress * 8 - overshoot * 16;
+                var cappedProgress = Math.Min(progress, losDist);
+                var overshoot = Math.Max(0f, progress - losDist);
+                return cappedProgress * 8f - overshoot * 16f;
             });
         }
     }

@@ -448,11 +448,11 @@ sealed class ReplayDetailsWindow : UIWindow
                 }
                 foreach (ref var s in actor.PendingStatuses.AsSpan())
                 {
-                    ImGui.TextUnformatted($"[pending] {Utils.StatusString(s.StatusId)} ({s.ExtraLo}){fromString("from", s.Effect.SourceInstanceId)}");
+                    ImGui.TextUnformatted($"[pending] {Utils.StatusString(s.StatusId)} ({s.ExtraLo}){fromString("from", s.Effect.SourceInstanceID)}");
                 }
                 foreach (ref var s in actor.PendingDispels.AsSpan())
                 {
-                    ImGui.TextUnformatted($"[dispel] {Utils.StatusString(s.StatusId)}{fromString("by", s.Effect.SourceInstanceId)}");
+                    ImGui.TextUnformatted($"[dispel] {Utils.StatusString(s.StatusId)}{fromString("by", s.Effect.SourceInstanceID)}");
                 }
                 var lenE = actor.IncomingEffects.Length;
                 for (var i = 0; i < lenE; ++i)
@@ -460,7 +460,7 @@ sealed class ReplayDetailsWindow : UIWindow
                     ref var inc = ref actor.IncomingEffects[i];
                     if (inc.GlobalSequence != default)
                     {
-                        ImGui.TextUnformatted($"[incoming {i}] {inc.GlobalSequence}/{inc.TargetIndex} {inc.Action}{fromString("from", inc.SourceInstanceId)}");
+                        ImGui.TextUnformatted($"[incoming {i}] {inc.GlobalSequence}/{inc.TargetIndex} {inc.Action}{fromString("from", inc.SourceInstanceID)}");
                     }
                 }
             }
