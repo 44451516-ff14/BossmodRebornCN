@@ -22,7 +22,6 @@ sealed class A30ShantotoStates : StateMachineBuilder
             .ActivateOnEnter<FallingRubble2>()
             .ActivateOnEnter<FallingRubble3>()
             .ActivateOnEnter<AeroDynamics>()
-            .ActivateOnEnter<AeroDynamicsDangerWall>()
             .ActivateOnEnter<FinalExam>();
     }
 }

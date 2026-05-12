@@ -1,7 +1,26 @@
 ﻿namespace BossMod.Dawntrail.Alliance.A30Shantoto;
 
-sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(module, stopAtWall: true)
+sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(module, stopAtWall: false)
 {
+    private readonly List<SafeWall> _walls = [];
+
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {//Build safewalls when we see the phase start, walk 6.5f left and right from the actors, then draw it 24 towards the edge (usually over the edge) to make sure we don't leave any gaps. It's an approximation but seems good enough in practice.
+        if (spell.Action.ID == (uint)AID.SuperiorStoneII1)
+        {
+            var left = caster.Position + caster.Rotation.ToDirection() + 90.Degrees().ToDirection() * 6.5f;
+            var leftback = left + caster.Rotation.ToDirection() * 24f;
+            _walls.Add(new(left, leftback));
+            var right = caster.Position + caster.Rotation.ToDirection() - 90.Degrees().ToDirection() * 6.5f;
+            var rightback = right + caster.Rotation.ToDirection() * 24f;
+            _walls.Add(new(right, rightback));
+        }
+        if (spell.Action.ID == (uint)AID.GroundbreakingQuake)
+        {
+            _walls.Clear();
+        }
+    }
+
     private enum Direction : uint
     {
         None,
@@ -63,34 +82,33 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             var _knockbacks = new Knockback[1];
             if (kb.Direction != Direction.None)
             {
-                _knockbacks[0] = new Knockback(actor.Position, 40f, direction: ((float)kb.Direction).Degrees(), kind: Kind.DirForward);
+                _knockbacks[0] = new Knockback(actor.Position, 40f, direction: ((float)kb.Direction).Degrees(), kind: Kind.DirForward, safeWalls: _walls);
                 return _knockbacks;
             }
         }
         return [];
     }
-}
 
-sealed class AeroDynamicsDangerWall(BossModule module) : Components.GenericAOEs(module)
-{
-    private AOEInstance[] _aoe = [];
-    private readonly AOEShapeRect _rect = new(24f, 1f, 24f);
-    private readonly WPos _west = new(-24f, -720f);
-    private readonly WPos _east = new(24f, -720f);
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (spell.Action.ID == (uint)AID.AeroDynamics)
+        if (_statuskbs.Count != 0)
         {
-            _aoe = [new(_rect, _west, activation: WorldState.CurrentTime), new(_rect, _east, activation: WorldState.CurrentTime)];
-        }
-    }
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        if (spell.Action.ID == (uint)AID.AeroDynamics1)
-        {
-            _aoe = [];
+            var kb = _statuskbs[slot];
+            if (!IsImmune(slot, WorldState.CurrentTime))
+            {
+                var dir = ((float)kb.Direction).Degrees().ToDirection();
+                var walls = _walls;
+                var len = walls.Count;
+                if (len > 0)
+                {
+                    var swalls = new SafeWall[len];
+                    for (var i = 0; i < walls.Count; i++)
+                    {
+                        swalls[i] = walls[i];
+                    }
+                    hints.AddForbiddenZone(new SDKnockbackFixedDirectionAgainstSafewalls(dir, swalls, 60f, len), WorldState.CurrentTime);
+                }
+            }
         }
     }
 }
