@@ -32,6 +32,7 @@ public readonly struct WDir(float x, float z)
     public readonly WDir OrthoR() => new(-Z, X); // CW, same length
     public readonly WDir MirrorX() => new(-X, Z);
     public readonly WDir MirrorZ() => new(X, -Z);
+    public static float Dot(WDir a, WDir b) => a.X * b.X + a.Z * b.Z;
     public readonly float Dot(WDir a) => X * a.X + Z * a.Z;
     public readonly float Cross(WDir b) => X * b.Z - Z * b.X;
     public readonly WDir Rotate(WDir dir)
