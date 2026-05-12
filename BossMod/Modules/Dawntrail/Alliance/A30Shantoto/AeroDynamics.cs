@@ -88,4 +88,27 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
         }
         return [];
     }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (_statuskbs.Count != 0)
+        {
+            var kb = _statuskbs[slot];
+            if (!IsImmune(slot, WorldState.CurrentTime))
+            {
+                var dir = ((float)kb.Direction).Degrees().ToDirection();
+                var walls = _walls;
+                var len = walls.Count;
+                if (len > 0)
+                {
+                    var swalls = new SafeWall[len];
+                    for (var i = 0; i < walls.Count; i++)
+                    {
+                        swalls[i] = walls[i];
+                    }
+                    hints.AddForbiddenZone(new SDKnockbackFixedDirectionAgainstSafewalls(dir, swalls, 60f, len), WorldState.CurrentTime);
+                }
+            }
+        }
+    }
 }
