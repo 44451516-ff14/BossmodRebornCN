@@ -47,7 +47,7 @@ sealed class SuperiorStoneIIArena(BossModule module) : BossComponent(module)
         }
         if (spell.Action.ID == (uint)AID.GroundbreakingQuake1)
         {
-            Arena.Bounds = new ArenaBoundsSquare(24f);
+            Arena.Bounds = new ArenaBoundsRect(24f, 30f);
             cutoffs.Clear();
         }
     }
