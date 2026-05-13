@@ -1,6 +1,5 @@
 ﻿using BossMod.Autorotation;
 using Dalamud.Game.Chat;
-using Dalamud.Game.Chat;
 using Dalamud.Game.Text;
 
 namespace BossMod;
