@@ -41,7 +41,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
         if (status.ID == (uint)SID.WesterlyWinds)
         {
             var p = Raid.FindSlot(actor.InstanceID);
-            if (p != null)
+            if (p >= 0)
             {
                 _statuskbs.Add(new(p, Direction.West));
                 //Service.Log($"Adding West: {p}");
@@ -50,7 +50,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
         if (status.ID == (uint)SID.EasterlyWinds)
         {
             var p = Raid.FindSlot(actor.InstanceID);
-            if (p != null)
+            if (p >= 0)
             {
                 _statuskbs.Add(new(p, Direction.East));
                 //Service.Log($"Adding East: {p}");
@@ -63,7 +63,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
         if (status.ID is ((uint)SID.EasterlyWinds) or ((uint)SID.WesterlyWinds))
         {
             var p = Raid.FindSlot(actor.InstanceID);
-            if (p != null)
+            if (p >= 0)
             {
                 _statuskbs.Clear();
             }
