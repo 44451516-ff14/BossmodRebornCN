@@ -19,6 +19,14 @@ public sealed class DeveloperConfig : ConfigNode
 
 public sealed class ObstacleMapManager : IDisposable
 {
+    public readonly record struct BitmapQuality(
+        float BlockedFraction, // amount of cells blocked (higher = less navigable)
+        float LargestPassableComponentFraction, // amount of valid cells clustered in one area (higher = more navigable)
+        float TinyPassableComponentFraction, // amount of valid cells in tiny clusters (higher = more fragmented)
+        float SpeckleFraction, // amount of isolated cells with no neighbors of the same type (higher = noiser)
+        int PassableComponents // count of passable regions (higher = more fragmented)
+    );
+
     public readonly WorldState World;
     public readonly ObstacleMapDatabase Database = new();
     public string RootPath { get; private set; } = ""; // empty or ends with slash
@@ -104,6 +112,147 @@ public sealed class ObstacleMapManager : IDisposable
             bitmap = t.data.Clone();
             return true;
         }
+    }
+
+    public static BitmapQuality EvaluateBitmapQuality(Bitmap bitmap)
+    {
+        var totalCells = bitmap.Width * bitmap.Height;
+        if (totalCells <= 0)
+            return new(1, 0, 1, 0, 0);
+
+        var blockedCells = 0;
+        for (var y = 0; y < bitmap.Height; ++y)
+            for (var x = 0; x < bitmap.Width; ++x)
+                if (bitmap[x, y])
+                    ++blockedCells;
+
+        var passableCells = totalCells - blockedCells;
+        var blockedFraction = (float)blockedCells / totalCells;
+        if (passableCells <= 0)
+            return new(blockedFraction, 0, 1, 0, 0);
+
+        var visited = new bool[totalCells];
+        var queue = new Queue<int>();
+        var passableClusters = 0;
+        var largestCluster = 0;
+        var tinyPassableClusters = 0;
+        var tinyThreshold = Math.Max(8, totalCells / 500); // ~0.2% map area
+
+        int toIndex(int x, int y) => y * bitmap.Width + x;
+
+        for (var y = 0; y < bitmap.Height; ++y)
+        {
+            for (var x = 0; x < bitmap.Width; ++x)
+            {
+                if (bitmap[x, y])
+                    continue; // blocked
+
+                var start = toIndex(x, y);
+                if (visited[start])
+                    continue;
+
+                ++passableClusters;
+                visited[start] = true;
+                queue.Enqueue(start);
+                var clusterSize = 0;
+
+                while (queue.Count > 0)
+                {
+                    var idx = queue.Dequeue();
+                    var cy = idx / bitmap.Width;
+                    var cx = idx - cy * bitmap.Width;
+                    ++clusterSize;
+
+                    if (cx > 0)
+                    {
+                        var n = idx - 1;
+                        if (!visited[n] && !bitmap[cx - 1, cy])
+                        {
+                            visited[n] = true;
+                            queue.Enqueue(n);
+                        }
+                    }
+                    if (cx + 1 < bitmap.Width)
+                    {
+                        var n = idx + 1;
+                        if (!visited[n] && !bitmap[cx + 1, cy])
+                        {
+                            visited[n] = true;
+                            queue.Enqueue(n);
+                        }
+                    }
+                    if (cy > 0)
+                    {
+                        var n = idx - bitmap.Width;
+                        if (!visited[n] && !bitmap[cx, cy - 1])
+                        {
+                            visited[n] = true;
+                            queue.Enqueue(n);
+                        }
+                    }
+                    if (cy + 1 < bitmap.Height)
+                    {
+                        var n = idx + bitmap.Width;
+                        if (!visited[n] && !bitmap[cx, cy + 1])
+                        {
+                            visited[n] = true;
+                            queue.Enqueue(n);
+                        }
+                    }
+                }
+
+                largestCluster = Math.Max(largestCluster, clusterSize);
+                if (clusterSize <= tinyThreshold)
+                    tinyPassableClusters += clusterSize;
+            }
+        }
+
+        var isolatedCells = 0;
+        for (var y = 0; y < bitmap.Height; ++y)
+        {
+            for (var x = 0; x < bitmap.Width; ++x)
+            {
+                var v = bitmap[x, y];
+                var hasNeighbor = false;
+                var hasSameNeighbor = false;
+
+                if (x > 0)
+                {
+                    hasNeighbor = true;
+                    hasSameNeighbor |= bitmap[x - 1, y] == v;
+                }
+                if (x + 1 < bitmap.Width)
+                {
+                    hasNeighbor = true;
+                    hasSameNeighbor |= bitmap[x + 1, y] == v;
+                }
+                if (y > 0)
+                {
+                    hasNeighbor = true;
+                    hasSameNeighbor |= bitmap[x, y - 1] == v;
+                }
+                if (y + 1 < bitmap.Height)
+                {
+                    hasNeighbor = true;
+                    hasSameNeighbor |= bitmap[x, y + 1] == v;
+                }
+
+                if (hasNeighbor && !hasSameNeighbor)
+                    ++isolatedCells;
+            }
+        }
+
+        var largestPassableComponentFraction = (float)largestCluster / passableCells;
+        var tinyPassableComponentFraction = (float)tinyPassableClusters / passableCells;
+        var speckleFraction = (float)isolatedCells / totalCells;
+
+        return new(blockedFraction, largestPassableComponentFraction, tinyPassableComponentFraction, speckleFraction, passableClusters);
+    }
+
+    public BitmapQuality? EvaluateTempMapQuality()
+    {
+        lock (_tempMapLock)
+            return _tempMap is { } t ? EvaluateBitmapQuality(t.data) : null;
     }
 
     public void ReloadDatabase()
@@ -225,11 +374,13 @@ public sealed class ObstacleMapManager : IDisposable
         return true;
     }
 
-    private void ClearTempMap()
+    public bool ClearTempMap()
     {
         lock (_tempMapLock)
         {
+            var has = _tempMap != null;
             _tempMap = null;
+            return has;
         }
     }
 

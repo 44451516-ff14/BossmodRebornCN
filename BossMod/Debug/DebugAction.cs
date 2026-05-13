@@ -1,8 +1,8 @@
-using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Gui;
+﻿using Dalamud.Bindings.ImGui;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Dalamud.Game.Gui;
 
 namespace BossMod;
 
@@ -107,21 +107,21 @@ sealed unsafe class DebugAction : IDisposable
             var name = "";
             var type = FFXIVClientStructs.FFXIV.Client.Game.ActionType.None;
             uint unlockLink = 0;
-            if (hover.DetailKind == Dalamud.Game.Gui.DetailKind.Action) // action
+            if (hover.DetailKind == DetailKind.Action) // action
             {
                 var data = Service.LuminaRow<Lumina.Excel.Sheets.Action>(hover.ActionId);
                 name = data?.Name.ToString() ?? "";
                 type = FFXIVClientStructs.FFXIV.Client.Game.ActionType.Action;
                 unlockLink = data?.UnlockLink.RowId ?? 0;
             }
-            else if (hover.DetailKind == Dalamud.Game.Gui.DetailKind.GeneralAction)
+            else if (hover.DetailKind == DetailKind.GeneralAction)
             {
                 var data = Service.LuminaRow<Lumina.Excel.Sheets.GeneralAction>(hover.ActionId);
                 name = data?.Name.ToString() ?? "";
                 type = FFXIVClientStructs.FFXIV.Client.Game.ActionType.GeneralAction;
                 unlockLink = data?.UnlockLink ?? 0;
             }
-            else if (hover.DetailKind == Dalamud.Game.Gui.DetailKind.Trait)
+            else if (hover.DetailKind == DetailKind.Trait)
             {
                 var data = Service.LuminaRow<Lumina.Excel.Sheets.Trait>(hover.ActionId);
                 name = data?.Name.ToString() ?? "";
@@ -130,8 +130,11 @@ sealed unsafe class DebugAction : IDisposable
 
             ImGui.TextUnformatted($"Name: {name}");
             ImGui.TextUnformatted($"Unlock: {unlockLink} ({Service.LuminaRow<Lumina.Excel.Sheets.Quest>(unlockLink)?.Name}) = {FFXIVClientStructs.FFXIV.Client.Game.QuestManager.IsQuestComplete(unlockLink)}");
-            if (hover.DetailKind == Dalamud.Game.Gui.DetailKind.Action)
+            if (hover.DetailKind == DetailKind.Action)
             {
+                ImGui.TextUnformatted($"Range: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange(hover.ActionId)}");
+                ImGui.TextUnformatted($"Stacks: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetMaxCharges(hover.ActionId, 0)}");
+                ImGui.TextUnformatted($"Adjusted ID: {mgr->GetAdjustedActionId(hover.ActionId)}");
                 ImGui.TextUnformatted($"Range: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange(hover.ActionId)}");
                 ImGui.TextUnformatted($"Stacks: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetMaxCharges(hover.ActionId, 0)}");
                 ImGui.TextUnformatted($"Adjusted ID: {mgr->GetAdjustedActionId(hover.ActionId)}");
@@ -139,7 +142,7 @@ sealed unsafe class DebugAction : IDisposable
 
             if (type != FFXIVClientStructs.FFXIV.Client.Game.ActionType.None)
             {
-                //ImGui.TextUnformatted($"Cost: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionCost(type, hover.ActionId, 0, 0, 0, 0)}");
+                //ImGui.TextUnformatted($"Cost: {FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionCost(type, hover.ActionID, 0, 0, 0, 0)}");
                 var action = new ActionID((ActionType)type, hover.ActionId);
                 DrawStatus("Status RC", action, true, true);
                 DrawStatus("Status R-", action, true, false);

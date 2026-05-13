@@ -37,7 +37,7 @@ public class StayMove(BossModule module, double maxTimeToShowHint = 1e3d) : Boss
             case Requirement.Move:
                 if (state.Activation <= WorldState.FutureTime(MaxTimeToShowHint))
                 {
-                    hints.Add("移动！", actor.PrevPosition == actor.PrevPosition);
+                    hints.Add("移动!", actor.PrevPosition == actor.PrevPosition && actor.PosRot.Y == actor.PrevPosRot.Y);
                 }
                 break;
 

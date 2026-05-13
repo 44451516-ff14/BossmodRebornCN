@@ -2,6 +2,8 @@ namespace BossMod.Autorotation.MiscAI;
 
 public sealed class FateUtils(RotationModuleManager manager, Actor player) : RotationModule(manager, player)
 {
+    public override bool WantsLoSFix => true;
+
     public enum Track { Handin, Collect, Sync, Chocobo }
     public enum Flag { Enabled, Disabled }
 
@@ -41,96 +43,78 @@ public sealed class FateUtils(RotationModuleManager manager, Actor player) : Rot
         if (strategy.Option(Track.Chocobo).As<Flag>() == Flag.Enabled && World.Client.GetInventoryItemQuantity(ActionDefinitions.IDMiscItemGreens.ID) > 0 && World.Client.ActiveCompanion is { TimeLeft: < 60, Stabled: false })
             Hints.ActionsToExecute.Push(ActionDefinitions.IDMiscItemGreens, Player, ActionQueue.Priority.VeryHigh);
 
-        var fateID = World.Client.ActiveFate.ID;
-        if (primaryTarget is { FateID: > 0 } target && target.FateID == fateID)
-            AddLOSGoalForTarget(target);
+        var goal = GetGoal(strategy);
+        if (goal is CollectFateGoal.HandIn)
+        {
+            var target = World.Actors.Find(World.Client.ActiveFate.ObjectiveNpc);
+            Hints.InteractWithTarget = target;
+            // if the auto generated obstacle map is bad, it'll get stuck so force movement regardless
+            if (target != null && ShouldForceMovement(target))
+                Hints.ForcedMovement = Player.DirectionTo(target).ToVec3(Player.PosRot.Y);
+            return;
+        }
+        else if (goal is CollectFateGoal.Pickup)
+        {
+            var target = World.Actors.Where(a => a.FateID == World.Client.ActiveFate.ID && a.IsTargetable && a.Type == ActorType.EventObj).MinBy(Player.DistanceToHitbox);
+            Hints.InteractWithTarget = target;
+            if (target != null && ShouldForceMovement(target))
+                Hints.ForcedMovement = Player.DirectionTo(target).ToVec3(Player.PosRot.Y);
+            return;
+        }
 
+        if (Manager.LoSFix is { } los)
+        {
+            var losDelta = los.Destination - los.Origin;
+            var losDist = losDelta.Length();
+            var losDir = losDist > 1e-3f ? losDelta / losDist : default;
+
+            // tight spot with high reward to get out of where we're at
+            Hints.GoalZones.Add(AIHints.GoalSingleTarget(los.Destination, 0.3f, 120));
+            // add a penalty to current position to actually encourage moving out of it
+            Hints.GoalZones.Add(p => p.InCircle(los.Origin, 1.0f) ? -25 : 0);
+            // more encouragement for going towards the destination, but need to cap it or else it'll just keep going
+            Hints.GoalZones.Add(p =>
+            {
+                var progress = WDir.Dot(p - los.Origin, losDir);
+                if (progress <= 0)
+                    return 0;
+
+                var cappedProgress = Math.Min(progress, losDist);
+                var overshoot = Math.Max(0f, progress - losDist);
+                return cappedProgress * 8f - overshoot * 16f;
+            });
+        }
+    }
+
+    private CollectFateGoal GetGoal(StrategyValues strategy)
+    {
         if (strategy.Option(Track.Handin).As<Flag>() != Flag.Enabled)
-            return;
+            return CollectFateGoal.None;
 
-        var item = Utils.GetFateItem(fateID);
-        if (item == 0)
-            return;
+        if (Utils.GetFateItem(World.Client.ActiveFate.ID) is not (not 0 and var itemId))
+            return CollectFateGoal.None;
 
         // already turned in enough, fate is ending, do nothing
         if (World.Client.ActiveFate.HandInCount >= TurnInGoldReq && World.Client.ActiveFate.Progress >= 100)
-            return;
+            return CollectFateGoal.None;
 
         // until fate is completed, hand in batches of 10; if other people complete the fate, we stop doing stuff
-        if (World.Client.GetInventoryItemQuantity(item) >= TurnInGoldReq)
-        {
-            Hints.InteractWithTarget = World.Actors.Find(World.Client.ActiveFate.ObjectiveNpc);
-            return;
-        }
+        if (World.Client.GetInventoryItemQuantity(itemId) >= TurnInGoldReq)
+            return CollectFateGoal.HandIn;
 
-        // otherwise, pick up stuff
-        if (strategy.Option(Track.Collect).As<Flag>() == Flag.Enabled && !Player.InCombat)
-            Hints.InteractWithTarget = World.Actors.Where(a => a.FateID == fateID && a.IsTargetable && a.Type == ActorType.EventObj).MinBy(Player.DistanceToHitbox);
-
+        // pick up stuff
+        return strategy.Option(Track.Collect).As<Flag>() == Flag.Enabled && !Player.InCombat ? CollectFateGoal.Pickup : CollectFateGoal.None;
     }
 
-    private void AddLOSGoalForTarget(Actor target)
+    // no path = force movement anyway
+    private bool ShouldForceMovement(Actor target)
+        => Hints.PathfindMapObstacles.Bitmap != null
+            && (!Hints.PathfindMapBounds.Contains(target.Position - Hints.PathfindMapCenter) || !Hints.PathfindMapObstacles.HasObstacleMapLineOfSight(Hints.PathfindMapCenter, Player.Position, target.Position));
+
+    private enum CollectFateGoal
     {
-        if (Hints.PathfindMapObstacles.Bitmap is not { } bitmap)
-            return;
-
-        var rect = Hints.PathfindMapObstacles.Rect;
-        var mapCenter = Hints.PathfindMapCenter;
-        var targetPos = target.Position;
-        var targetRange = (Player.Role is Role.Melee or Role.Tank ? 3.5f : 24.5f) + target.HitboxRadius;
-
-        // blacklist current tile if no LoS
-        Hints.GoalZones.Add(p => HasLineOfSight(bitmap, rect, mapCenter, p, targetPos) ? 0 : -100);
-        Hints.GoalZones.Add(p =>
-        {
-            if (!HasLineOfSight(bitmap, rect, mapCenter, p, targetPos))
-                return 0;
-            return (p - targetPos).LengthSq() <= targetRange * targetRange ? 20 : 8;
-        });
-    }
-
-    private static bool HasLineOfSight(Bitmap map, Bitmap.Rect rect, WPos mapCenter, WPos from, WPos to)
-    {
-        if (!TryWorldToBitmapCell(map, rect, mapCenter, from, out var x0, out var y0) || !TryWorldToBitmapCell(map, rect, mapCenter, to, out var x1, out var y1))
-            return true; // if mapping fails, don't block movement
-
-        var dx = Math.Abs(x1 - x0);
-        var sx = x0 < x1 ? 1 : -1;
-        var dy = -Math.Abs(y1 - y0);
-        var sy = y0 < y1 ? 1 : -1;
-        var err = dx + dy;
-        var x = x0;
-        var y = y0;
-
-        while (true)
-        {
-            if ((uint)x < map.Width && (uint)y < map.Height && map[x, y])
-                return false;
-            if (x == x1 && y == y1)
-                return true;
-            var e2 = 2 * err;
-            if (e2 >= dy)
-            {
-                err += dy;
-                x += sx;
-            }
-            if (e2 <= dx)
-            {
-                err += dx;
-                y += sy;
-            }
-        }
-    }
-
-    private static bool TryWorldToBitmapCell(Bitmap map, Bitmap.Rect rect, WPos mapCenter, WPos pos, out int x, out int y)
-    {
-        var centerCellX = (rect.Left + rect.Right) * 0.5f;
-        var centerCellY = (rect.Top + rect.Bottom) * 0.5f;
-        var invRes = 1.0f / map.PixelSize;
-        var delta = (pos - mapCenter) * invRes;
-
-        x = (int)MathF.Round(centerCellX + delta.X);
-        y = (int)MathF.Round(centerCellY + delta.Z);
-        return (uint)x < map.Width && (uint)y < map.Height;
+        None,
+        HandIn,
+        Pickup,
     }
 }

@@ -434,31 +434,34 @@ sealed class ReplayDetailsWindow : UIWindow
         if (ImGui.IsItemHovered() && numRealStatuses + actor.PendingStatuses.Count + actor.PendingDispels.Count + numIncoming > 0)
         {
             using var tooltip = ImRaii.Tooltip();
-            string fromString(string prefix, ulong instanceId) => instanceId == 0 ? "" : $", {prefix} {_player.WorldState.Actors.Find(instanceId)?.ToString() ?? instanceId.ToString("X")}";
-            var lenS = actor.Statuses.Length;
-            for (var i = 0; i < lenS; ++i)
+            if (tooltip.Alive)
             {
-                ref var s = ref actor.Statuses[i];
-                if (s.ID != 0)
+                string fromString(string prefix, ulong instanceId) => instanceId == 0 ? "" : $", {prefix} {_player.WorldState.Actors.Find(instanceId)?.ToString() ?? instanceId.ToString("X")}";
+                var lenS = actor.Statuses.Length;
+                for (var i = 0; i < lenS; ++i)
                 {
-                    ImGui.TextUnformatted($"[{i}] {Utils.StatusString(s.ID)} ({s.Extra}): {Utils.StatusTimeString(s.ExpireAt, _player.WorldState.CurrentTime)}{fromString("from", s.SourceID)}");
+                    ref var s = ref actor.Statuses[i];
+                    if (s.ID != default)
+                    {
+                        ImGui.TextUnformatted($"[{i}] {Utils.StatusString(s.ID)} ({s.Extra}): {Utils.StatusTimeString(s.ExpireAt, _player.WorldState.CurrentTime)}{fromString("from", s.SourceID)}");
+                    }
                 }
-            }
-            foreach (ref var s in actor.PendingStatuses.AsSpan())
-            {
-                ImGui.TextUnformatted($"[pending] {Utils.StatusString(s.StatusId)} ({s.ExtraLo}){fromString("from", s.Effect.SourceInstanceID)}");
-            }
-            foreach (ref var s in actor.PendingDispels.AsSpan())
-            {
-                ImGui.TextUnformatted($"[dispel] {Utils.StatusString(s.StatusId)}{fromString("by", s.Effect.SourceInstanceID)}");
-            }
-            var lenE = actor.IncomingEffects.Length;
-            for (var i = 0; i < lenE; ++i)
-            {
-                ref var inc = ref actor.IncomingEffects[i];
-                if (inc.GlobalSequence != 0)
+                foreach (ref var s in actor.PendingStatuses.AsSpan())
                 {
-                    ImGui.TextUnformatted($"[incoming {i}] {inc.GlobalSequence}/{inc.TargetIndex} {inc.Action}{fromString("from", inc.SourceInstanceID)}");
+                    ImGui.TextUnformatted($"[pending] {Utils.StatusString(s.StatusId)} ({s.ExtraLo}){fromString("from", s.Effect.SourceInstanceID)}");
+                }
+                foreach (ref var s in actor.PendingDispels.AsSpan())
+                {
+                    ImGui.TextUnformatted($"[dispel] {Utils.StatusString(s.StatusId)}{fromString("by", s.Effect.SourceInstanceID)}");
+                }
+                var lenE = actor.IncomingEffects.Length;
+                for (var i = 0; i < lenE; ++i)
+                {
+                    ref var inc = ref actor.IncomingEffects[i];
+                    if (inc.GlobalSequence != default)
+                    {
+                        ImGui.TextUnformatted($"[incoming {i}] {inc.GlobalSequence}/{inc.TargetIndex} {inc.Action}{fromString("from", inc.SourceInstanceID)}");
+                    }
                 }
             }
         }

@@ -5,12 +5,12 @@ public static class BossModuleInfo
 {
     public enum Maturity
     {
+
         [PropertyDisplay("开发中；可能不完整或存在严重错误")]
         WIP,
 
         [PropertyDisplay("由第三方贡献的模块，未经过插件作者验证；可能正常运行，但也可能与其他模块存在各种不一致之处 - 效果可能因人而异")]
         Contributed,
-
 
         [PropertyDisplay("由插件作者创建的第一方模块，或者是经过彻底验证并由插件作者有效接管的第三方贡献模块。")]
         Verified,
