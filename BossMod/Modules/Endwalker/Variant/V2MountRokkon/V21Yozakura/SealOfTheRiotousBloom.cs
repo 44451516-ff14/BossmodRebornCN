@@ -80,7 +80,7 @@ sealed class SealOfRiotousBloom(BossModule module) : Components.GenericAOEs(modu
         if (_aoes.Count == 5 && eCount != 0)
         {
             var act = WorldState.FutureTime(16.3d);
-            for (var i = 0; i < eCount; ++i)
+            for (var i = eCount - 1; i >= 0; --i)
             {
                 ActivateAOE(elements[i], act);
             }
