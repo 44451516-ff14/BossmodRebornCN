@@ -82,7 +82,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             var _knockbacks = new Knockback[1];
             if (kb.Direction != Direction.None)
             {
-                _knockbacks[0] = new Knockback(actor.Position, 40f, direction: ((float)kb.Direction).Degrees(), kind: Kind.DirForward, safeWalls: _walls);
+                _knockbacks[0] = new Knockback(actor.Position, 40f, direction: ((float)kb.Direction).Degrees(), kind: Kind.DirForward, safeWalls: _walls, ignoreImmunes: false);
                 return _knockbacks;
             }
         }
