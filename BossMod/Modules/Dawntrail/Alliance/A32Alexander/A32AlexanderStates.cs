@@ -7,8 +7,21 @@ sealed class A32AlexanderStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<BanishgaIV>()
             .ActivateOnEnter<DivineArrowCone>()
-            .ActivateOnEnter<DivineArrowClose>()
-            .ActivateOnEnter<DivineArrowMid>()
-            .ActivateOnEnter<DivineArrowFar>();
+            .ActivateOnEnter<DivineArrowCircles>()
+            .ActivateOnEnter<DivineArrowLines>()
+            .ActivateOnEnter<BanishgaIVSpread>()
+            .ActivateOnEnter<HolyII>()
+            .ActivateOnEnter<ImpartialRuling>()
+            .ActivateOnEnter<RadiantSacrament>()
+            .ActivateOnEnter<DivineSpear>()
+            .ActivateOnEnter<MegaHoly>()
+            .ActivateOnEnter<Activate>()
+            .ActivateOnEnter<PerfectDefense>()
+            .ActivateOnEnter<HolyFlame>()
+            .ActivateOnEnter<Shock>()
+            .ActivateOnEnter<CircuitShock>()
+            .ActivateOnEnter<DivineJudgment>()
+            .ActivateOnEnter<Electrify>()
+            .ActivateOnEnter<DivineBolt>();
     }
 }

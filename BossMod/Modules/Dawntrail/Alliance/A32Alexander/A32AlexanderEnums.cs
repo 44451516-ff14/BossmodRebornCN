@@ -30,23 +30,23 @@ public enum AID : uint
     DivineArrow4 = 50128, // AlexanderResurrected->self, no cast, single-target
     DivineArrow5 = 50129, // AlexanderResurrected->self, no cast, single-target
     DivineArrowCone = 50130, // Helper->self, 1.0s cast, range 45 90.000-degree cone
-    DivineArrow7 = 50131, // Helper->self, no cast, range 10 circle
-    DivineArrow8 = 50132, // Helper->self, no cast, range ?-23 donut
-    DivineArrow9 = 50133, // Helper->self, no cast, range ?-36 donut
+    DivineArrowClose2 = 50131, // Helper->self, no cast, range 10 circle
+    DivineArrowMid2 = 50132, // Helper->self, no cast, range ?-23 donut
+    DivineArrowFar2 = 50133, // Helper->self, no cast, range ?-36 donut
     DivineArrowClose = 50134, // Helper->self, 13.5s cast, range 10 circle
     DivineArrowMid = 50135, // Helper->self, 11.5s cast, range ?-23 donut
     DivineArrowFar = 50136, // Helper->self, 9.5s cast, range ?-36 donut
-    DivineArrow13 = 50137, // Helper->self, 3.5s cast, range 60 width 10 rect
-    DivineArrow14 = 50138, // Helper->self, 5.5s cast, range 60 width 10 rect
-    DivineArrow15 = 50478, // Helper->self, no cast, range 45 ?-degree cone
+    DivineArrowLines = 50137, // Helper->self, 3.5s cast, range 60 width 10 rect
+    DivineArrowLines2 = 50138, // Helper->self, 5.5s cast, range 60 width 10 rect
+    DivineArrowSpamCone = 50478, // Helper->self, no cast, range 45 ?-degree cone
 
     HolyII = 50165, // Helper->location, 5.0s cast, range 6 circle
-    BanishgaIV1 = 50163, // Helper->players, 5.0s cast, range 6 circle
+    BanishgaIVSpread = 50163, // Helper->players, 5.0s cast, range 6 circle
 
     ImpartialRuling1 = 50144, // AlexanderResurrected->self, 6.3+0.7s cast, single-target
     ImpartialRuling2 = 50145, // AlexanderResurrected->self, 6.3+0.7s cast, single-target
-    ImpartialRuling3 = 50146, // Helper->self, 7.0s cast, range 50 ?-degree cone
-    ImpartialRuling4 = 50147, // Helper->self, 10.0s cast, range 50 ?-degree cone
+    ImpartialRulingShort = 50146, // Helper->self, 7.0s cast, range 50 180-degree cone
+    ImpartialRulingLong = 50147, // Helper->self, 10.0s cast, range 50 180-degree cone
 
     CanonizeCoordinates = 50139, // AlexanderResurrected->self, no cast, single-target
     RadiantSacrament = 50140, // AlexanderResurrected->self, 4.0s cast, single-target
@@ -54,8 +54,8 @@ public enum AID : uint
     DivineSpear = 50142, // AlexanderResurrected->self, 4.0+1.0s cast, single-target
     DivineSpear1 = 50143, // Helper->self, 8.0s cast, ???
     MegaHoly = 50157, // AlexanderResurrected->self, 6.5+0.5s cast, single-target
-    MegaHoly1 = 50158, // Helper->players, 7.0s cast, range 6 circle
-    MegaHoly2 = 50159, // Helper->players, no cast, range 6 circle
+    MegaHolyCast = 50158, // Helper->players, 7.0s cast, range 6 circle
+    MegaHolySpam = 50159, // Helper->players, no cast, range 6 circle
     SacredAssembly = 50148, // AlexanderResurrected->self, 3.0+1.0s cast, single-target
     Activate = 50219, // Helper->self, 5.0s cast, range 3 circle
     PerfectDefense = 50149, // AlexanderResurrected->self, 6.0s cast, single-target
@@ -83,19 +83,24 @@ public enum SID : uint
 
 public enum IconID : uint
 {
-    Icon_m1002_east01_c0g = 693, // AlexanderResurrected->self
+    DivineArrowN = 691, // AlexanderResurrected->self
+    DivineArrowS = 692, // AlexanderResurrected->self
+    DivineArrowE = 693, // AlexanderResurrected->self
+    DivineArrowW = 694, // AlexanderResurrected->self
+    //R for 'reverse!'
+    DivineArrowNR = 695, // AlexanderResurrected->self
+    DivineArrowSR = 696, // AlexanderResurrected->self
+    DivineArrowER = 697, // AlexanderResurrected->self
+    DivineArrowWR = 698, // AlexanderResurrected->self
+
     Icon_target_ae_shine_s5x = 215, // player->self
     Icon_m1002_ls_rf_c0g = 700, // AlexanderResurrected->self
-    Icon_com_share6m7s_1v = 590, // player->self
-    Icon_m1002_north01_c0g = 691, // AlexanderResurrected->self
-    Icon_tank_laser_5sec_lockon_c0a1 = 471, // player->self
-    Icon_m1002_lf_rs_c0g = 699, // AlexanderResurrected->self
-    Icon_m1002_south02_c0g = 696, // AlexanderResurrected->self
-
+    MegaHoly = 590, // player->self
+    DivineBolt = 471, // player->self
 }
 
 public enum TetherID : uint
 {
     Tether_chn_m1002_c0g = 414, // GordiusSystem->AlexanderResurrected
-    Tether_chn_m1002_inst_c0g = 428, // GordiusSystem->AlexanderResurrected
+    Electrify = 428, // GordiusSystem->AlexanderResurrected
 }
