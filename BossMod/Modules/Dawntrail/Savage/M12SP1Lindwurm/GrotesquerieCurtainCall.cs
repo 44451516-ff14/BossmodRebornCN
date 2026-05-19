@@ -4,12 +4,14 @@ namespace BossMod.Dawntrail.Savage.M12SLindwurm;
 sealed class GrotesquerieCurtainCall(BossModule module) : Components.UniformStackSpread(module, default, 6f)
 {
     private const float ChainBreakDistance = 20f;
+    private const float ChainGroupUpWindow = 4f;
 
     private readonly bool[] _hasBurstingGrotesquerie = new bool[8];
     private readonly bool[] _hasRottingFlesh = new bool[8];
     private readonly bool[] _hasBondsAlpha = new bool[8];
     private readonly bool[] _hasUnbreakableAlpha = new bool[8];
     private readonly DateTime[] _rottingFleshExpiry = new DateTime[8];
+    private DateTime _chainActivationTime;
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
@@ -30,6 +32,9 @@ sealed class GrotesquerieCurtainCall(BossModule module) : Components.UniformStac
         else if (status.ID == (uint)SID.BondsOfFleshAlpha)
         {
             _hasBondsAlpha[slot] = true;
+            // Set chain activation time when first bond is detected
+            if (_chainActivationTime == default)
+                _chainActivationTime = status.ExpireAt;
         }
         else if (status.ID == (uint)SID.UnbreakableFlesh0)
         {
@@ -56,6 +61,18 @@ sealed class GrotesquerieCurtainCall(BossModule module) : Components.UniformStac
         else if (status.ID == (uint)SID.BondsOfFleshAlpha)
         {
             _hasBondsAlpha[slot] = false;
+            // Reset chain activation time when all bonds are gone
+            var anyBondsRemaining = false;
+            for (var i = 0; i < 8; ++i)
+            {
+                if (i != slot && _hasBondsAlpha[i])
+                {
+                    anyBondsRemaining = true;
+                    break;
+                }
+            }
+            if (!anyBondsRemaining)
+                _chainActivationTime = default;
         }
         else if (status.ID == (uint)SID.UnbreakableFlesh0)
         {
@@ -66,6 +83,17 @@ sealed class GrotesquerieCurtainCall(BossModule module) : Components.UniformStac
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         base.DrawArenaForeground(pcSlot, pc);
+
+        // Draw center grouping indicator before chains activate
+        if (_chainActivationTime != default && !_hasUnbreakableAlpha[pcSlot])
+        {
+            var timeUntilChains = (_chainActivationTime - WorldState.CurrentTime).TotalSeconds;
+            if (timeUntilChains > 0 && timeUntilChains <= ChainGroupUpWindow)
+            {
+                Arena.AddCircle(Module.Center, 2f, Colors.Safe);
+            }
+        }
+
         if (_hasUnbreakableAlpha[pcSlot])
         {
             DrawChainBreakIndicator(pcSlot, pc);

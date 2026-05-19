@@ -24,7 +24,7 @@ public sealed class PresetDatabase
             for (var i = 0; i < countD; ++i)
             {
                 var def = DefaultPresets[i];
-                if (def.HiddenByDefault == _cfg.HideDefaultPreset)
+                if (def.HiddenByDefault == _cfg.HideDefaultPresets)
                 {
                     presets.Add(def);
                 }

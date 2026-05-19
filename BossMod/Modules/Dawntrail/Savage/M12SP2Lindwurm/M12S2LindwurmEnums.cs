@@ -15,10 +15,10 @@ public enum OID : uint
     ManaSpherePurpleBowtie = 0x4B08, // R0.600, x0 (spawn during fight)
     ManaSphereOrangeBowtie = 0x4B09, // R0.600, x0 (spawn during fight)
 
-    MeteorWind = 0x1EBF25,
-    MeteorDark = 0x1EBF26,
-    MeteorEarth = 0x1EBF27,
-    MeteorFire = 0x1EBF28,
+    MeteorDark = 0x1EBF26, // R0.500, x0 (spawn during fight), EventObj type
+    MeteorWind = 0x1EBF25, // R0.500, x0 (spawn during fight), EventObj type
+    MeteorFire = 0x1EBF28, // R0.500, x0 (spawn during fight), EventObj type
+    MeteorEarth = 0x1EBF27, // R0.500, x0 (spawn during fight), EventObj type
     TemporalTear = 0x4B0B, // R1.000, x0 (spawn during fight)
 }
 

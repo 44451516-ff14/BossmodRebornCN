@@ -232,6 +232,7 @@ class M12S2LindwurmStates : StateMachineBuilder
         Cast(id + 0x230, (uint)AID.TwistedVision, 3.6f, 4)
             .ExecOnEnter<IdyllicDreamArena>(p => p.Predict(8.8f))
             .ExecOnEnter<IdyllicDreamElementalMeteor>(m => m.CreateTowers())
+            .ActivateOnEnter<IdyllicDreamSharedState>()
             .ActivateOnEnter<IdyllicDreamLindwurmsDarkII>()
             .ActivateOnEnter<IdyllicDreamWindTower>()
             .ActivateOnEnter<IdyllicDreamHotBlooded>()
@@ -255,6 +256,7 @@ class M12S2LindwurmStates : StateMachineBuilder
             .DeactivateOnExit<LindwurmsPortent>()
             .DeactivateOnExit<IdyllicDreamHotBlooded>()
             .DeactivateOnExit<IdyllicDreamDoom>()
+            .DeactivateOnExit<IdyllicDreamSharedState>()
             .ExecOnExit<IdyllicDreamPowerGusherSnakingKick>(k =>
             {
                 //k.Visible = true;

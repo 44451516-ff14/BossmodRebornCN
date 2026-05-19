@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Autorotation;
 
-[ConfigDisplay(Name = "自动循环配置", Order = 5)]
+[ConfigDisplay(Name = "自动循环配置(插件暂不支持 by Combat Reborn)", Order = 5)]
 public sealed class AutorotationConfig : ConfigNode
 {
     [PropertyDisplay("显示游戏内界面")]
@@ -19,9 +19,8 @@ public sealed class AutorotationConfig : ConfigNode
     [PropertyDisplay("在服务器信息栏显示当前预设")]
     public DtrStatus ShowDTR = DtrStatus.None;
 
-    [PropertyDisplay("隐藏VBM默认预设", tooltip: "创建自定义预设后，启用此选项可隐藏内置的默认预设")]
-    public bool HideDefaultPreset = false;
-
+    [PropertyDisplay("隐藏VBM默认预设方案", tooltip: "如果你已创建自定义预设方案且不再需要内置默认预设，勾选此选项将使其不再显示在自动旋转和预设编辑窗口中。")]
+    public bool HideDefaultPresets = true;
 
     [PropertyDisplay("显示定位指引标记", tooltip: "显示定位技能提示，指示应移动至目标侧面或背面")]
     public bool SuggestHealerAI = true;

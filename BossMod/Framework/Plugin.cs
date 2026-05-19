@@ -35,6 +35,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private IPCProvider _ipc = null!;
     private DTRProvider _dtr = null!;
     private MultiboxManager _mbox = null!;
+    private PartyRolesManager _partyRoles = null!;
     private TimeSpan _prevUpdateTime;
     private DateTime _throttleJump;
     private DateTime _throttleInteract;
@@ -121,6 +122,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         _ipc = new(_bossmod, _hints, _rotation, _amex, _movementOverride, _ai, _hintsBuilder.Obstacles);
         _dtr = new(_rotation, _ai);
         _mbox = new(_rotation, _ws);
+        _partyRoles = new(_ws);
         _wndBossmod = new(_bossmod, _zonemod);
         _wndBossmodHints = new(_bossmod, _zonemod);
         _wndZone = new(_zonemod);
@@ -153,6 +155,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         _wndBossmodHints.Dispose();
         _wndBossmod.Dispose();
         _configUI.Dispose();
+        _partyRoles.Dispose();
         _mbox.Dispose();
         _dtr.Dispose();
         _ipc.Dispose();
@@ -290,6 +293,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         _dtr.Update();
         Camera.Instance?.Update();
         _wsSync.Update(_prevUpdateTime);
+        _partyRoles.Update();
         _bossmod.Update();
         _zonemod.ActiveModule?.Update();
         _hintsBuilder.Update(_hints, PartyState.PlayerSlot, moveImminent);

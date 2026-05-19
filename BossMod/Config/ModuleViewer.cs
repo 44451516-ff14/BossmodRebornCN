@@ -159,21 +159,27 @@ public sealed class ModuleViewer : IDisposable
 
     public void Draw(UITree tree, WorldState ws)
     {
-        using (var group = ImRaii.Group())
+        var availWidth = ImGui.GetContentRegionAvail().X;
+        var filterWidth = 200f; // Fixed width for filter panel
+        var moduleWidth = availWidth - filterWidth - ImGui.GetStyle().ItemSpacing.X;
+
+        using (var child = ImRaii.Child("FiltersPanel", new Vector2(filterWidth, 0), true))
         {
-            DrawFilters();
+            if (child)
+                DrawFilters();
         }
 
         ImGui.SameLine();
-        using (var group = ImRaii.Group())
+        using (var child = ImRaii.Child("ModulesPanel", new Vector2(moduleWidth, 0), true))
         {
-            DrawModules(tree, ws);
+            if (child)
+                DrawModules(tree, ws);
         }
     }
 
     private void DrawFilters()
     {
-        using var table = ImRaii.Table("Filters", 1, ImGuiTableFlags.BordersOuter | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.SizingFixedSame | ImGuiTableFlags.ScrollY);
+        using var table = ImRaii.Table("Filters", 1, ImGuiTableFlags.BordersInner | ImGuiTableFlags.NoHostExtendX | ImGuiTableFlags.SizingFixedSame);
         if (!table)
         {
             return;
@@ -253,7 +259,7 @@ public sealed class ModuleViewer : IDisposable
 
     private void DrawModules(UITree tree, WorldState ws)
     {
-        using var table = ImRaii.Table("ModulesTable", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersOuter | ImGuiTableFlags.BordersV | ImGuiTableFlags.RowBg | ImGuiTableFlags.ScrollY | ImGuiTableFlags.ScrollX | ImGuiTableFlags.NoHostExtendX);
+        using var table = ImRaii.Table("ModulesTable", 2, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInner | ImGuiTableFlags.BordersV | ImGuiTableFlags.RowBg | ImGuiTableFlags.NoHostExtendX);
         if (!table)
         {
             return;

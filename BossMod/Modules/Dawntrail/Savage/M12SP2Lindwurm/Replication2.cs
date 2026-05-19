@@ -15,11 +15,30 @@ class Replication2Staging(BossModule module)
 
         return eff.GetRole(Clockspot.GetClosest(angleAdj));
     }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        base.DrawArenaForeground(pcSlot, pc);
+
+        var p = PlayersBySlot[pcSlot];
+        if (p == null || WurmsAssigned)
+            return;
+
+        for (var i = 0; i < WurmClones.Count; ++i)
+        {
+            var w = WurmClones[i];
+            if (w.Locked || w.Target == null)
+                continue;
+
+            var correct = RoleEq(p.WantedRole, w.AssignedRole);
+
+            if (correct)
+                Arena.AddCircle(w.Actor.Position, 1.25f, Colors.Safe);
+        }
+    }
+
     protected override Replication2Role DetermineCloneRole(WurmClone w)
     {
-        if (w.Shape == CloneShape.Boss)
-            return Replication2Role.Boss;
-
         var northAngle = _config.GetReplication2().RelativeNorth.Angle;
 
         _sortedClones.Clear();
@@ -27,8 +46,7 @@ class Replication2Staging(BossModule module)
         var clones = CollectionsMarshal.AsSpan(WurmClones);
         for (var i = 0; i < clones.Length; ++i)
         {
-            if (clones[i].Shape != CloneShape.Boss)
-                _sortedClones.Add(clones[i]);
+            _sortedClones.Add(clones[i]);
         }
 
         var span = CollectionsMarshal.AsSpan(_sortedClones);
@@ -124,6 +142,7 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
     private Actor? _source;
     private WPos? _sourcePos;
     private readonly DateTime _activation;
+    private readonly Replication2Staging _staging;
 
     public BitMask Targets;
 
@@ -132,7 +151,7 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
     public Replication2ScaldingWaves(BossModule module)
         : base(module)
     {
-        var staging = module.FindComponent<Replication2Staging>()!;
+        _staging = module.FindComponent<Replication2Staging>()!;
         _activation = WorldState.FutureTime(6.2f);
 
         var party = Raid.WithSlot(true);
@@ -144,7 +163,7 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
             var slot = entry.Item1;
             var player = entry.Item2;
 
-            var clone = staging.WurmsBySlot[slot];
+            var clone = _staging.WurmsBySlot[slot];
             if (clone != null && clone.AssignedRole == Replication2Role.Boss)
             {
                 _source = player;
@@ -168,6 +187,68 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
             return;
 
         base.AddAIHints(slot, actor, assignment, hints);
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        base.DrawArenaForeground(pcSlot, pc);
+
+        var clone = _staging.WurmsBySlot[pcSlot];
+        if (clone == null || _source == null)
+            return;
+
+        var role = clone.AssignedRole;
+        if (!role.IsCone && !role.IsStack)
+            return;
+
+        // Calculate bait position behind boss tether player
+        var config = Service.Config.Get<M12S2LindwurmConfig>();
+        var eff = config.GetReplication2();
+
+        // Boss player goes to relative north for DN or relative west for BC
+        var bossCardinal = eff.RelativeNorth.Angle;
+        var bossPos = Module.Center + 18f * bossCardinal.ToDirection();
+
+        // Calculate perpendicular direction for spreading
+        var perpDir = bossCardinal.ToDirection().OrthoL(); // Left is CW side
+
+        WPos targetPos;
+        // DN order (left to right): Stack1, Cone1, Cone2, Stack2
+        // BC order (left to right): Cone2, Stack2, Stack1, Cone1
+        var isDN = eff.RelativeNorth == Clockspot.N;
+
+        if (isDN)
+        {
+            // DN positioning
+            if (role == Replication2Role.Stack1)
+                targetPos = bossPos + 6f * perpDir; // Leftmost
+            else if (role == Replication2Role.Cone1)
+                targetPos = bossPos + 2f * perpDir; // Left-center
+            else if (role == Replication2Role.Cone2)
+                targetPos = bossPos - 2f * perpDir; // Right-center
+            else if (role == Replication2Role.Stack2)
+                targetPos = bossPos - 6f * perpDir; // Rightmost
+            else
+                return; // Not a cone or stack role
+        }
+        else
+        {
+            // BC positioning
+            if (role == Replication2Role.Cone2)
+                targetPos = bossPos + 6f * perpDir; // Leftmost
+            else if (role == Replication2Role.Stack2)
+                targetPos = bossPos + 2f * perpDir; // Left-center
+            else if (role == Replication2Role.Stack1)
+                targetPos = bossPos - 2f * perpDir; // Right-center
+            else if (role == Replication2Role.Cone1)
+                targetPos = bossPos - 6f * perpDir; // Rightmost
+            else
+                return; // Not a cone or stack role
+        }
+
+        // Draw positioning hint
+        var isInPosition = pc.Position.InCircle(targetPos, 2f);
+        Arena.AddCircle(targetPos, 1f, isInPosition ? Colors.Safe : Colors.Vulnerable);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -239,11 +320,12 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
 class Replication2ManaBurst : Components.UniformStackSpread
 {
     public int NumCasts;
+    private readonly Replication2Staging _staging;
 
     public Replication2ManaBurst(BossModule module)
         : base(module, 0, 20, includeDeadTargets: true)
     {
-        var staging = module.FindComponent<Replication2Staging>()!;
+        _staging = module.FindComponent<Replication2Staging>()!;
 
         var party = Raid.WithSlot(true);
         var len = party.Length;
@@ -254,10 +336,57 @@ class Replication2ManaBurst : Components.UniformStackSpread
             var slot = entry.Item1;
             var player = entry.Item2;
 
-            var clone = staging.WurmsBySlot[slot];
+            var clone = _staging.WurmsBySlot[slot];
             if (clone == null || clone.AssignedRole.IsDefam)
                 AddSpread(player, WorldState.FutureTime(8));
         }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        base.DrawArenaForeground(pcSlot, pc);
+
+        var clone = _staging.WurmsBySlot[pcSlot];
+        if (clone == null)
+            return;
+
+        var role = clone.AssignedRole;
+
+        // Only show hints for players with no tether (Boss role) and defamation players
+        if (!role.IsDefam)
+            return;
+
+        // Calculate safe spread positions for no-tether and defamation players
+        var config = Service.Config.Get<M12S2LindwurmConfig>();
+        var eff = config.GetReplication2();
+
+        // Boss tether players go to relative north (DN) or west (BC)
+        var bossCardinal = eff.RelativeNorth.Angle;
+
+        WPos targetPos;
+
+        if (role == Replication2Role.Defam1)
+        {
+            // Defam1 at -100 degrees from boss position
+            var defamAngle = (bossCardinal - 100.Degrees()).Normalized();
+            targetPos = Module.Center + 19f * defamAngle.ToDirection();
+        }
+        else if (role == Replication2Role.Defam2)
+        {
+            // Defam2 at +100 degrees from boss position
+            var defamAngle = (bossCardinal + 100.Degrees()).Normalized();
+            targetPos = Module.Center + 19f * defamAngle.ToDirection();
+        }
+        else // None
+        {
+            // None at opposite side from boss position (180 degrees)
+            var noneAngle = (bossCardinal + 180.Degrees()).Normalized();
+            targetPos = Module.Center + 19f * noneAngle.ToDirection();
+        }
+
+        // Draw positioning hint
+        var isInPosition = pc.Position.InCircle(targetPos, 2f);
+        Arena.AddCircle(targetPos, 1f, isInPosition ? Colors.Safe : Colors.Vulnerable);
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -293,11 +422,13 @@ class Replication2ManaBurst : Components.UniformStackSpread
 class Replication2HeavySlam : Components.UniformStackSpread
 {
     public int NumCasts;
+    private readonly Replication2Staging _staging;
+    private Replication2TimelessSpite? _timelessSpite;
 
     public Replication2HeavySlam(BossModule module)
         : base(module, 5, 0, minStackSize: 3, includeDeadTargets: true)
     {
-        var staging = module.FindComponent<Replication2Staging>()!;
+        _staging = module.FindComponent<Replication2Staging>()!;
 
         var party = Raid.WithSlot(true);
         var len = party.Length;
@@ -308,9 +439,87 @@ class Replication2HeavySlam : Components.UniformStackSpread
             var slot = entry.Item1;
             var player = entry.Item2;
 
-            var clone = staging.WurmsBySlot[slot];
+            var clone = _staging.WurmsBySlot[slot];
             if (clone != null && clone.AssignedRole.IsStack)
                 AddStack(player, WorldState.FutureTime(7));
+        }
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        // Lazy-load the TimelessSpite component
+        _timelessSpite ??= Module.FindComponent<Replication2TimelessSpite>();
+
+        // Determine player's light party based on their role
+        var playerClone = _staging.WurmsBySlot[pcSlot];
+        if (playerClone == null)
+        {
+            base.DrawArenaForeground(pcSlot, pc);
+            return;
+        }
+
+        var playerRole = playerClone.AssignedRole;
+        var config = Service.Config.Get<M12S2LindwurmConfig>();
+        var eff = config.GetReplication2();
+        var isBCStrat = eff.RelativeNorth == Clockspot.W;
+
+        // For BC strat: after Netherwrath resolves, Cone/Stack players bait cones, others take stacks
+        if (isBCStrat && _timelessSpite != null && _timelessSpite.NumCasts > 0)
+        {
+            // Cone and Stack players should NOT see stack indicators after Netherwrath
+            if (playerRole.IsCone || playerRole.IsStack)
+                return;
+        }
+
+        // Determine which light party the player belongs to
+        // CW light party: Boss, Cone1, Stack1, Defam1
+        // CCW light party: None, Cone2, Stack2, Defam2
+        var playerIsCW = playerRole is Replication2Role.Boss or Replication2Role.Cone1 or Replication2Role.Stack1 or Replication2Role.Defam1;
+
+        // Show only the stack for the player's light party
+        var stacks = CollectionsMarshal.AsSpan(Stacks);
+        for (var i = 0; i < stacks.Length; ++i)
+        {
+            ref var stack = ref stacks[i];
+            var stackTarget = stack.Target;
+
+            // Find the role of the stack target
+            var stackSlot = Raid.FindSlot(stackTarget.InstanceID);
+            if (stackSlot < 0)
+                continue;
+
+            var stackClone = _staging.WurmsBySlot[stackSlot];
+            if (stackClone == null)
+                continue;
+
+            var stackRole = stackClone.AssignedRole;
+
+            // Determine which stack this is
+            var stackIsCW = stackRole == Replication2Role.Stack1;
+
+            // Only show stack if it matches the player's light party
+            if (playerIsCW == stackIsCW)
+            {
+                // Draw the stack using same logic as base class
+                bool dangerColor;
+                if (stack.ForbiddenPlayers[pcSlot])
+                {
+                    dangerColor = true;
+                }
+                else if (stackTarget == pc)
+                {
+                    dangerColor = false;
+                }
+                else
+                {
+                    var numInside = stack.NumInside(Module);
+                    var isInside = stack.IsInside(pc);
+                    var max = stack.MaxSize;
+                    dangerColor = !isInside && numInside >= max || isInside && numInside > max || IsStackTarget(pc) || IsSpreadTarget(pc);
+                }
+
+                Arena.AddCircle(stackTarget.Position.Quantized(), stack.Radius, dangerColor ? default : Colors.Safe);
+            }
         }
     }
 
@@ -831,6 +1040,8 @@ class Replication2TimelessSpite(BossModule module)
     private DateTime _activation;
     private bool _far;
     public int NumCasts;
+    private readonly Replication2Staging _staging = module.FindComponent<Replication2Staging>()!;
+    private bool _netherwrathActive;
 
     public override void Update()
     {
@@ -904,6 +1115,65 @@ class Replication2TimelessSpite(BossModule module)
             AddStack(raid[second], _activation);
     }
 
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        var clone = _staging.WurmsBySlot[pcSlot];
+        if (clone == null)
+        {
+            base.DrawArenaForeground(pcSlot, pc);
+            return;
+        }
+
+        var role = clone.AssignedRole;
+        var config = Service.Config.Get<M12S2LindwurmConfig>();
+        var eff = config.GetReplication2();
+        var isBCStrat = eff.RelativeNorth == Clockspot.W;
+
+        // For BC strat during Netherwrath phase
+        if (isBCStrat && _netherwrathActive && _activation != default)
+        {
+            // Show positioning hints based on role
+            // Use actual boss position (the boss has been pulled to the W clockspot)
+            var bossPos = Module.PrimaryActor.Position;
+            var bossCardinal = eff.RelativeNorth.Angle; // West for BC
+            var perpDir = bossCardinal.ToDirection().OrthoL(); // Perpendicular for left/right
+
+            WPos targetPos;
+
+            // BC Strat positioning for Netherwrath
+            if (role.IsCone)
+            {
+                // Cone players stand near clones to either side of boss
+                if (role == Replication2Role.Cone1)
+                    targetPos = bossPos - 7f * perpDir; // Right side near clone
+                else // Cone2
+                    targetPos = bossPos + 7f * perpDir; // Left side near clone
+
+                var isInPosition = pc.Position.InCircle(targetPos, 2f);
+                Arena.AddCircle(targetPos, 1f, isInPosition ? Colors.Safe : Colors.Vulnerable);
+                return; // Don't show stack indicators
+            }
+            else if (role.IsStack)
+            {
+                // Stack players stand between cone players and in boss hitbox
+                if (role == Replication2Role.Stack1)
+                    targetPos = bossPos - 2f * perpDir; // Between Cone1 and boss
+                else // Stack2
+                    targetPos = bossPos + 2f * perpDir; // Between Cone2 and boss
+            }
+            else
+            {
+                // All other players (Boss, None, Defam) stand west of boss (outside Nether AOE range)
+                targetPos = bossPos + 5f * 270.Degrees().ToDirection();
+            }
+
+            var inPosition = pc.Position.InCircle(targetPos, 2f);
+            Arena.AddCircle(targetPos, 1f, inPosition ? Colors.Safe : Colors.Vulnerable);
+        }
+
+        base.DrawArenaForeground(pcSlot, pc);
+    }
+
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         switch ((AID)spell.Action.ID)
@@ -911,11 +1181,13 @@ class Replication2TimelessSpite(BossModule module)
             case AID.NetherwrathNear:
                 _activation = Module.CastFinishAt(spell, 1.2f);
                 _far = false;
+                _netherwrathActive = true;
                 break;
 
             case AID.NetherwrathFar:
                 _activation = Module.CastFinishAt(spell, 1.2f);
                 _far = true;
+                _netherwrathActive = true;
                 break;
         }
     }
@@ -925,7 +1197,11 @@ class Replication2TimelessSpite(BossModule module)
         if ((AID)spell.Action.ID == AID.TimelessSpite)
         {
             ++NumCasts;
-            _activation = default;
+            if (NumCasts >= 2)
+            {
+                _activation = default;
+                _netherwrathActive = false;
+            }
         }
     }
 }

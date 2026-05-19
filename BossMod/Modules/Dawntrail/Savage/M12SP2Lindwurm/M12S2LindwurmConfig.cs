@@ -55,6 +55,12 @@ public sealed class M12S2LindwurmConfig : ConfigNode
         Replication3Role.Defam4
     ];
 
+    [PropertyDisplay("Attempt to adjust Idyllic Dream tower logic to mistakes")]
+    public bool IdyllicDreamAdjustToMistakes = true;
+
+    [PropertyDisplay("Show Lindwurm's Portent positional hints based on towers taken")]
+    public bool ShowLindwurmsPortentHints = true;
+
     // ============================================================
     // Effective Runtime Views (USED BY MODULE CODE)
     // ============================================================
@@ -232,6 +238,7 @@ public record struct ReplicatedCloneOrder(Cardinal Group, int Order)
 
 public enum Element
 {
+    None,
     Wind,
     Dark,
     Earth,
@@ -262,7 +269,7 @@ public static class WurmExtensions
 
     extension(Replication2Role r)
     {
-        public bool IsDefam => r is Replication2Role.Defam1 or Replication2Role.Defam2;
+        public bool IsDefam => r is Replication2Role.None or Replication2Role.Defam1 or Replication2Role.Defam2;
         public bool IsStack => r is Replication2Role.Stack1 or Replication2Role.Stack2;
         public bool IsCone => r is Replication2Role.Cone1 or Replication2Role.Cone2;
     }

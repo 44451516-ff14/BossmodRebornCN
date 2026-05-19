@@ -176,7 +176,7 @@ sealed class CE52TimeToBurnStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CriticalEngagement, GroupID = 778, NameID = 26)] // bnpcname=9930
-public sealed class CE52TimeToBurn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-550f, default), new ArenaBoundsSquare(29.5f))
+public sealed class CE52TimeToBurn(WorldState ws, Actor primary) : BossModule(ws, primary, new(-550f, default), new ArenaBoundsSquare(29.5f), onlyLoadIfTargetable: true)
 {
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InSquare(Arena.Center, 30f);
 }

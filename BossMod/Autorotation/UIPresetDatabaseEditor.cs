@@ -100,7 +100,7 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
         {
             if (combo)
             {
-                if (!_cfg.HideDefaultPreset)
+                if (!_cfg.HideDefaultPresets)
                     DrawPresetListElements(true);
                 DrawPresetListElements(false);
             }

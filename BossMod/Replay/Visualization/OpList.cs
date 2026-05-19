@@ -1,4 +1,4 @@
-using Dalamud.Bindings.ImGui;
+﻿using Dalamud.Bindings.ImGui;
 using System.IO;
 
 namespace BossMod.ReplayVisualization;
@@ -47,14 +47,14 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
         }
     } = false;
 
-    public void Draw(UITree tree, DateTime reference)
-    {
-        //foreach (var n in _tree.Node("设置"))
-        //{
-        //    DrawSettings();
-        //}
+    Task _filterTask = Task.CompletedTask;
 
-        if (!_nodesUpToDate)
+    void RebuildNodes()
+    {
+        if (!_filterTask.IsCompleted)
+            return;
+
+        _filterTask = Task.Run(() =>
         {
             _nodes.Clear();
             var i = 0;
@@ -67,16 +67,41 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
                 ++i;
             }
             _nodesUpToDate = true;
+        });
+    }
+
+    public void Draw(UITree tree, DateTime reference)
+    {
+        //foreach (var n in _tree.Node("Settings"))
+        //{
+        //    DrawSettings();
+        //}
+
+        if (!_nodesUpToDate)
+        {
+            RebuildNodes();
+            ImGui.Text($"Filtering...");
+            return;
         }
 
         var timeRef = ImGui.GetIO().KeyShift && _relativeTS != default ? _relativeTS : reference;
-        foreach (var node in _nodes)
+
+        var c = new ImGuiListClipper();
+        c.Begin(_nodes.Count, 21);
+
+        while (c.Step())
         {
-            foreach (var n in tree.Node($"{(node.Timestamp - timeRef).TotalSeconds:f3}: {node.Text}###{node.Index}", node.Children == null, Colors.TextColor1, node.ContextMenu, () => scrollTo(node.Timestamp), () => _relativeTS = node.Timestamp))
+            for (var i = c.DisplayStart; i < c.DisplayEnd; ++i)
             {
-                node.Children?.Invoke(tree);
+                var node = _nodes[i];
+                foreach (var n in tree.Node($"{(node.Timestamp - timeRef).TotalSeconds:f3}: {node.Text}###{node.Index}", node.Children == null, Colors.TextColor1, node.ContextMenu, () => scrollTo(node.Timestamp), () => _relativeTS = node.Timestamp))
+                {
+                    node.Children?.Invoke(tree);
+                }
             }
         }
+
+        c.End();
     }
 
     public void ClearFilters()
@@ -424,7 +449,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
 
             return string.Join("/", parts);
         }
-        var sb = new System.Text.StringBuilder();
+        var sb = new StringBuilder();
         var first = true;
         foreach (var s in FindStatuses(instanceID, index, timestamp))
         {
