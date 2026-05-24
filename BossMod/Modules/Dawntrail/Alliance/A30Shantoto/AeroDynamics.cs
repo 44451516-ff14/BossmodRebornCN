@@ -28,10 +28,11 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
         East = 270,
     }
 
-    private class StatusKB(int slot, Direction direction)
+    private class StatusKB(int slot, Direction direction, DateTime activation)
     {
         public int Slot => slot;
         public Direction Direction => direction;
+        public DateTime Activation => activation;
     }
 
     private readonly List<StatusKB> _statuskbs = [];
@@ -43,7 +44,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             var p = Raid.FindSlot(actor.InstanceID);
             if (p >= 0)
             {
-                _statuskbs.Add(new(p, Direction.West));
+                _statuskbs.Add(new(p, Direction.West, status.ExpireAt));
                 //Service.Log($"Adding West: {p}");
             }
         }
@@ -52,7 +53,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             var p = Raid.FindSlot(actor.InstanceID);
             if (p >= 0)
             {
-                _statuskbs.Add(new(p, Direction.East));
+                _statuskbs.Add(new(p, Direction.East, status.ExpireAt));
                 //Service.Log($"Adding East: {p}");
             }
         }
@@ -82,7 +83,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             var _knockbacks = new Knockback[1];
             if (kb.Direction != Direction.None)
             {
-                _knockbacks[0] = new Knockback(actor.Position, 40f, direction: ((float)kb.Direction).Degrees(), kind: Kind.DirForward, safeWalls: _walls, ignoreImmunes: false);
+                _knockbacks[0] = new Knockback(actor.Position, 40f, kb.Activation, direction: ((float)kb.Direction).Degrees(), kind: Kind.DirForward, safeWalls: _walls, ignoreImmunes: false);
                 return _knockbacks;
             }
         }

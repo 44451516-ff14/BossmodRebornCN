@@ -3,23 +3,22 @@
 public enum OID : uint
 {
     Boss = 0x213A,
-    SoftshellOfTheRed = 0x213B, // R1.6
-    SoftshellOfTheRed1 = 0x213C, // R1.6
-    SoftshellOfTheRed2 = 0x213D, // R1.6
-    Helper = 0x233C
+    SoftshellOfTheRed1 = 0x213B, // R1.6
+    SoftshellOfTheRed2 = 0x213C, // R1.6
+    SoftshellOfTheRed3 = 0x213D // R1.6
 }
 
 public enum AID : uint
 {
-    Kasaya = 8585, // SoftshellOfTheRed->self, 2.5s cast, range 6+R 120-degree cone
+    Kasaya = 8585, // SoftshellOfTheRed1->self, 2.5s cast, range 6+R 120-degree cone
     WaterIII = 5831, // Boss->location, 3.0s cast, range 8 circle
-    BlizzardIII = 1087, // Boss->location, 3.0s cast, range 5 circle
+    BlizzardIII = 1087 // Boss->location, 3.0s cast, range 5 circle
 }
 
-class Kasaya(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Kasaya, new AOEShapeCone(7.6f, 60f.Degrees()));
-class WaterIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaterIII, 8f);
+sealed class Kasaya(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Kasaya, new AOEShapeCone(7.6f, 60f.Degrees()));
+sealed class WaterIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaterIII, 8f);
 
-class BlizzardIIIIcon(BossModule module) : Components.BaitAwayIcon(module, 5f, 26u)
+sealed class BlizzardIIIIcon(BossModule module) : Components.BaitAwayIcon(module, 5f, 26u)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -33,9 +32,9 @@ class BlizzardIIIIcon(BossModule module) : Components.BaitAwayIcon(module, 5f, 2
             CurrentBaits.Clear();
     }
 }
-class BlizzardIIICast(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.BlizzardIII, m => m.Enemies(0x1E8D9C).Where(x => x.EventState != 7), 0);
+sealed class BlizzardIIICast(BossModule module) : Components.VoidzoneAtCastTarget(module, 6f, (uint)AID.BlizzardIII, m => m.Enemies(0x1E8D9Cu).Where(x => x.EventState != 7), 0);
 
-class SlickshellCaptainStates : StateMachineBuilder
+sealed class SlickshellCaptainStates : StateMachineBuilder
 {
     public SlickshellCaptainStates(BossModule module) : base(module)
     {
@@ -44,17 +43,21 @@ class SlickshellCaptainStates : StateMachineBuilder
             .ActivateOnEnter<Kasaya>()
             .ActivateOnEnter<BlizzardIIIIcon>()
             .ActivateOnEnter<BlizzardIIICast>()
-            .Raw.Update = () => Module.Raid.Player()?.IsDeadOrDestroyed ?? true;
+            .Raw.Update = () => module.WorldState.CurrentCFCID != 469u;
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68563, NameID = 6891)]
-public class SlickshellCaptain(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68563u, NameID = 6891u)]
+public sealed class SlickshellCaptain(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(464.25f, 320.19f), new(455.65f, 313.35f), new(457.72f, 308.20f), new(445.00f, 292.92f), new(468.13f, 283.56f),
+    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(464.25f, 320.19f), new(455.65f, 313.35f), new(457.72f, 308.20f), new(445f, 292.92f), new(468.13f, 283.56f),
     new(495.55f, 299.63f), new(487.19f, 313.73f)])]);
+    private static readonly uint[] opponents = [(uint)OID.Boss, (uint)OID.SoftshellOfTheRed1, (uint)OID.SoftshellOfTheRed2, (uint)OID.SoftshellOfTheRed3];
 
-    protected override void DrawEnemies(int pcSlot, Actor pc) => Arena.Actors(WorldState.Actors.Where(x => !x.IsAlly));
+    protected override void DrawEnemies(int pcSlot, Actor pc)
+    {
+        Arena.Actors(this, opponents);
+    }
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
@@ -63,8 +66,7 @@ public class SlickshellCaptain(WorldState ws, Actor primary) : BossModule(ws, pr
         for (var i = 0; i < count; ++i)
         {
             var h = hints.PotentialTargets[i];
-            h.Priority = WorldState.Actors.Find(h.Actor.TargetID)?.OID == 0x2138 ? 1 : 0;
+            h.Priority = WorldState.Actors.Find(h.Actor.TargetID)?.OID == 0x2138u ? 1 : 0;
         }
     }
 }
-

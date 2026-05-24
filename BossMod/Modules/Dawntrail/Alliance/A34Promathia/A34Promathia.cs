@@ -1,6 +1,4 @@
-﻿using BossMod.Autorotation.xan;
-
-namespace BossMod.Dawntrail.Alliance.A34Promathia;
+﻿namespace BossMod.Dawntrail.Alliance.A34Promathia;
 
 sealed class EmptySalvation(BossModule module) : Components.RaidwideCast(module, (uint)AID.EmptySalvation);
 
@@ -43,7 +41,7 @@ sealed class BastionOfTwilight(BossModule module) : Components.GenericAOEs(modul
         {
             return [];
         }
-        AOEInstance[]? _aoes = [new(new AOEShapeDonut(13f, 50f), Module.PrimaryActor.Position, default, WorldState.FutureTime(10.5d))];
+        AOEInstance[]? _aoes = [new(new AOEShapeDonut(8f, 50f), Module.PrimaryActor.Position, default, WorldState.FutureTime(10.5d))];
         return _aoes;
     }
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -64,7 +62,16 @@ sealed class BastionOfTwilight(BossModule module) : Components.GenericAOEs(modul
 
 sealed class PestilentPenance(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PestilentPenance, new AOEShapeRect(50f, 25f));
 
-sealed class Comet(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Comet, (uint)AID.Comet, 6f, 4d);
+sealed class Comet(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Comet, (uint)AID.Comet, 6f, 4d)
+{
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.Meteor1 or (uint)AID.Meteor2) // Hey guess what?  The tankbuster in meteor is actually just Comet again!
+        {
+            Spreads.Clear();
+        }
+    }
+}
 
 sealed class FalseGenesis(BossModule module) : BossComponent(module)
 {
@@ -140,16 +147,19 @@ sealed class AuroralDrape(BossModule module) : Components.SimpleAOEs(module, (ui
 sealed class WindsOfPromyvion(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private readonly AOEShapeRect _rect = new(16f, 3f);
+    private Actor? _caster;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.WindsLeft)
         {
             Sequences.Add(new(_rect, actor.Position, actor.Rotation, 30.Degrees(), WorldState.FutureTime(4.5d), 1.4d, 4));
+            _caster = actor;
         }
         if (iconID == (uint)IconID.WindsRight)
         {
             Sequences.Add(new(_rect, actor.Position, actor.Rotation, -30.Degrees(), WorldState.FutureTime(4.5d), 1.4d, 4));
+            _caster = actor;
         }
     }
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -157,6 +167,17 @@ sealed class WindsOfPromyvion(BossModule module) : Components.GenericRotatingAOE
         if (spell.Action.ID is (uint)AID.WindsOfPromyvionCast or (uint)AID.WindsOfPromyvionSpam)
         {
             AdvanceSequence(0, WorldState.CurrentTime);
+        }
+    }
+    public override void OnActorRenderflagsChange(Actor actor, int renderflags)
+    {
+        if (_caster != null)
+        {
+            if (actor.InstanceID == _caster.InstanceID && renderflags == 16384)
+            {
+                Sequences.Clear();
+                Update();
+            }
         }
     }
 }
@@ -204,21 +225,19 @@ sealed class EmptySeed(BossModule module) : Components.SimpleKnockbacks(module, 
             return;
         for (var i = 0; i < Casters.Count; i++)
         {
-            //var cone = new AOEShapeCone(3f, 22.5f.Degrees(), invertForbiddenZone: true);
-            var corners = new WPos[4];
             var source = Casters[i].Origin;
-            var firstcornerdir = PlatformOrientation(source) + 45.Degrees();
-            for (var j = 0; j < corners.Length; j++)
+            if (actor.DistanceToPoint(source) < 9f)
             {
-                var angle = firstcornerdir + j * 90f.Degrees();
+                var firstcornerdir = PlatformOrientation(source) + 45.Degrees();
+                var angle = firstcornerdir;
                 var corner = source + angle.ToDirection() * 9f;
-                corners[j] = corner;
                 hints.AddForbiddenZone(new SDInvertedCone(corner, 5f, angle + 180.Degrees(), 22.5f.Degrees()));
             }
-
         }
-    }
+
+   }
 }
+
 sealed class MalevolentBlessingCone(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MalevolentBlessingCone, new AOEShapeCone(40f, 11.5f.Degrees()));
 
 sealed class MalevolentBlessingRect(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MalevolentBlessingRect, new AOEShapeRect(50f, 25f));
@@ -229,64 +248,7 @@ sealed class InfernalDeliveranceTower(BossModule module) : Components.CastTowers
 
 sealed class InfernalDeliveranceAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.InfernalDeliveranceAOE, 8f);
 
-sealed class Meteor(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Meteor, (uint)AID.Meteor1, 6f, 5f)
-{
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        var aid = spell.Action.ID;
-        if (aid == StackAction)
-        {
-            var id = spell.MainTargetID;
-            if (MaxCasts != 1 && Stacks.Count == 1 && Stacks.Ref(0).Target.InstanceID != id) // multi hit stack target died and new target got selected
-            {
-                Stacks.Ref(0).Target = WorldState.Actors.Find(id)!;
-            }
-            if (++CastCounter == MaxCasts)
-            {
-                var count = Stacks.Count;
-                var stacks = CollectionsMarshal.AsSpan(Stacks);
-                for (var i = 0; i < count; ++i)
-                {
-                    if (stacks[i].Target.InstanceID == id)
-                    {
-                        ++NumFinishedStacks;
-                        CastCounter = 0;
-                        Stacks.RemoveAt(i);
-                        return;
-                    }
-                }
-                // stack not found, probably due to being self targeted
-                if (count != 0)
-                {
-                    ++NumFinishedStacks;
-                    CastCounter = 0;
-                    Stacks.RemoveAt(0);
-                }
-            }
-        }
-        else if (aid == SpreadAction || aid == (uint)AID.Meteor2)
-        {
-            var count = Spreads.Count;
-            var id = spell.MainTargetID;
-            var spreads = CollectionsMarshal.AsSpan(Spreads);
-            for (var i = 0; i < count; ++i)
-            {
-                if (spreads[i].Target.InstanceID == id)
-                {
-                    Spreads.RemoveAt(i);
-                    ++NumFinishedSpreads;
-                    return;
-                }
-            }
-            // spread not found, probably due to being self targeted
-            if (count != 0)
-            {
-                ++NumFinishedSpreads;
-                Spreads.RemoveAt(0);
-            }
-        }
-    }
-}
+sealed class Meteor(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Meteor, (uint)AID.Meteor2, 6f, 5f);  // this is the regular spreads only, Tankbuster is handled in Comet.
 
 sealed class DeadlyRebirth(BossModule module) : Components.RaidwideCast(module, (uint)AID.DeadlyRebirth);
 

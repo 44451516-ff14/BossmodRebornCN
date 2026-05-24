@@ -30,7 +30,7 @@ public enum AID : uint
     WheelOfImpregnabilityFire = 50323, // EmptyThinker->self, no cast, range 13 circle
     BastionOfTwilightCast = 50322, // Promathia->self, 2.0+1.0s cast, single-target
     PestilentPenanceCastbar = 50330, // Promathia->self, 6.4+0.6s cast, single-target
-    BastionOfTwilightFire = 50324, // EmptyThinker->self, no cast, range ?-50 donut
+    BastionOfTwilightFire = 50324, // EmptyThinker->self, no cast, range 8-50 donut
     PestilentPenance = 50331, // EmptyThinker->self, 7.0s cast, range 50 width 50 rect
     FleetingEternity1 = 50319, // Promathia->self, 3.5+1.0s cast, single-target
     CometCastbar = 50337, // Promathia->self, 4.5+0.5s cast, single-target
