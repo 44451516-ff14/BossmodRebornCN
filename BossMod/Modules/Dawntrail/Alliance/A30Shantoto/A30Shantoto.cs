@@ -55,7 +55,50 @@ sealed class SuperiorStoneIIArena(BossModule module) : BossComponent(module)
 
 sealed class GroundBreakingQuake(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GroundbreakingQuake1, new AOEShapeRect(30f, 6f));
 
-sealed class CircumscribedFire(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CircumscribedFire, (uint)AID.CircumscribedFire1], new AOEShapeDonut(6f, 70f));
+/*
+ * Use tethers to trace the path from one circumscribed fire to the next.
+ * It is kind of like a chasing AOE except the tether isn't attached to a pc, it leads to next AOE donut.
+ */
+sealed class DiagrammaticDoorway(BossModule module) : Components.GenericAOEs(module)
+{
+    private readonly List<AOEInstance> _predicted = [];
+
+    /*
+     * convert _predicted to ReadOnlySpan. If empty return empty span, else return only 0th index so aoe does not overlap.
+     */
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_predicted.Count() == 0 ? _predicted : _predicted[..1]);
+
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
+    {
+        switch ((uint)(TetherID)tether.ID)
+        {
+            case (uint)TetherID.Purple:
+                // First cast is a long cast, else normal short cast.
+                if (_predicted.Count == 0)
+                {
+                    _predicted.Add(new(new AOEShapeDonut(6, 70), source.Position, default, WorldState.FutureTime(10.1f)));
+                }
+                _predicted.Add(new(new AOEShapeDonut(6, 70), WorldState.Actors.Find(tether.Target)!.Position, default, _predicted[^1].Activation.AddSeconds(3.1f)));
+                break;
+            case (uint)TetherID.PurpleCircle:
+                {
+                    _predicted.Add(new(new AOEShapeDonut(7, 70), WorldState.Actors.Find(tether.Target)!.Position,
+                        default, _predicted[^1].Activation.AddSeconds(3.1f)));
+                }
+                break;
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID is (uint)AID.CircumscribedFire or (uint)AID.CircumscribedFire1)
+        {
+            NumCasts++;
+            if (_predicted.Count > 0)
+                _predicted.RemoveAt(0);
+        }
+    }
+}
 
 sealed class LocalizedBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LocalizedBlizzard, new AOEShapeCircle(10f));
 

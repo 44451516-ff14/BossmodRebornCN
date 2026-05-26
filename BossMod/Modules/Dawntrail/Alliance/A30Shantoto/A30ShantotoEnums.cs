@@ -87,8 +87,8 @@ public enum SID : uint
 
 public enum TetherID : uint
 {
-    Tether_chn_d1088_c1v = 384, // Unknown1->Unknown1
-    Tether_chn_d1088_c0v = 383, // Unknown1->Unknown1
-    Tether_chn_mto_tykdn_1v = 382, // Unknown1->Unknown1
+    Red = 382, // Unknown1->Unknown1 : Unknown1 = 0x4DDD i.e. some kind of helper creature for tethers
+    PurpleCircle = 383, // Unknown1->Unknown1 : Unknown1 = 0x4DDD
+    Purple = 384, // Unknown1->Unknown1
 }
 

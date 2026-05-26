@@ -124,6 +124,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         _mbox = new(_rotation, _ws);
         _partyRoles = new(_ws);
         _wndBossmod = new(_bossmod, _zonemod);
+        Service.BossModWindow = _wndBossmod;
         _wndBossmodHints = new(_bossmod, _zonemod);
         _wndZone = new(_zonemod);
         var config = Service.Config.Get<ReplayManagementConfig>();

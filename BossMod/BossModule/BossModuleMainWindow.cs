@@ -8,6 +8,7 @@ public sealed class BossModuleMainWindow : UIWindow
 {
     private readonly BossModuleManager _mgr;
     private readonly ZoneModuleManager _zmm;
+    private bool _shouldRecenter;
 
     private const string _windowID = "###Boss module";
 
@@ -47,6 +48,19 @@ public sealed class BossModuleMainWindow : UIWindow
     public override void OnOpen() => Service.Log($"[BMM] Opening main window; there are {_mgr.LoadedModules.Count} loaded modules, active is {_mgr.ActiveModule?.GetType().FullName ?? "<n/a>"}; zone module is {_zmm.ActiveModule?.GetType().FullName ?? "<n/a>"}");
 
     public override void OnClose() => Service.Log($"[BMM] Closing main window; there are {_mgr.LoadedModules.Count} loaded modules, active is {_mgr.ActiveModule?.GetType().FullName ?? "<n/a>"}; zone module is {_zmm.ActiveModule?.GetType().FullName ?? "<n/a>"}");
+
+    public override void PreDraw()
+    {
+        if (_shouldRecenter)
+        {
+            var viewport = ImGui.GetMainViewport();
+            var windowSize = Size ?? new Vector2(400, 400);
+            var center = viewport.Pos + viewport.Size * 0.5f;
+            var newPos = center - windowSize * 0.5f;
+            ImGui.SetNextWindowPos(newPos, ImGuiCond.Always);
+            _shouldRecenter = false;
+        }
+    }
 
     public override void PostDraw()
     {
@@ -120,6 +134,11 @@ public sealed class BossModuleMainWindow : UIWindow
         {
             _ = new BossModuleConfigWindow(_mgr.ActiveModule.Info, _mgr.WorldState);
         }
+    }
+
+    public void RecenterWindow()
+    {
+        _shouldRecenter = true;
     }
 
     private bool ShowZoneModule() => BossModuleManager.Config.ShowGlobalHints && !BossModuleManager.Config.HintsInSeparateWindow && _mgr.ActiveModule?.StateMachine.ActivePhase == null && (_zmm.ActiveModule?.WantDrawHints() ?? false);
