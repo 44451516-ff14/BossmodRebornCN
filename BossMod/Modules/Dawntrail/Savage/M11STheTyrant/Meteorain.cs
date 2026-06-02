@@ -8,7 +8,7 @@ sealed class Tether2(BossModule module) : Components.StretchTetherSingle(module,
 sealed class FireBreath(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeRect(60f, 3f), (uint)IconID.CosmicKissIcon, (uint)AID.FireBreath1);
 sealed class MajesticMeteor : Components.SimpleAOEs
 {
-    public MajesticMeteor(BossModule module) : base(module, (uint)AID.MajesticMeteorBaits, 3f, 24)
+    public MajesticMeteor(BossModule module) : base(module, (uint)AID.MajesticMeteorBaits, 6f, 24)
     {
         MaxDangerColor = 8;
     }
@@ -154,8 +154,44 @@ sealed class TripleTyrannhilation(BossModule module)
     }
 }
 
-sealed class CosmicKissTowers(BossModule module) : Components.CastTowers(module, (uint)AID.CosmicKissTower, 4f, 1, 1, AIHints.PredictedDamageType.Tankbuster);
-sealed class WeightyImpactTowers(BossModule module) : Components.CastTowers(module, (uint)AID.WeightyImpactTower, 4f, 2, 2, AIHints.PredictedDamageType.Shared);
+sealed class CosmicKissTowers(BossModule module) : Components.CastTowers(module, (uint)AID.CosmicKissTower, 4f, 1, 1, AIHints.PredictedDamageType.Tankbuster)
+{
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == WatchedAction)
+        {
+            var badsoakers = new BitMask();
+            var raid = Raid.WithoutSlot();
+            for (var i = 0; i < raid.Length; i++)
+            {
+                if (raid[i].Role != Role.Tank)
+                {
+                    badsoakers.Set(i);
+                }
+            }
+            Towers.Add(new(spell.LocXZ, Radius, MinSoakers, MaxSoakers, activation: Module.CastFinishAt(spell), actorID: caster.InstanceID, forbiddenSoakers: badsoakers));
+        }
+    }
+}
+sealed class WeightyImpactTowers(BossModule module) : Components.CastTowers(module, (uint)AID.WeightyImpactTower, 4f, 2, 2, AIHints.PredictedDamageType.Shared)
+{
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == WatchedAction)
+        {
+            var badsoakers = new BitMask();
+            var raid = Raid.WithoutSlot();
+            for (var i = 0; i < raid.Length; i++)
+            {
+                if (raid[i].Role == Role.Tank)
+                {
+                    badsoakers.Set(i);
+                }
+            }
+            Towers.Add(new(spell.LocXZ, Radius, MinSoakers, MaxSoakers, activation: Module.CastFinishAt(spell), actorID: caster.InstanceID, forbiddenSoakers: badsoakers));
+        }
+    }
+}
 sealed class HeartBreakerTower(BossModule module) : Components.GenericTowers(module)
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

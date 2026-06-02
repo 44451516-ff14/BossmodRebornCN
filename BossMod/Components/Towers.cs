@@ -362,7 +362,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
             var allowedSoakers = AllowedSoakers ??= Soakers(module);
             foreach (var a in allowedSoakers)
             {
-                if (a.Position.InCircle(Position, Radius))
+                if (a != null && a.Position.InCircle(Position, Radius)) // actors might be going null due to culling, disconnect etc
                 {
                     ++count;
                 }
