@@ -238,14 +238,14 @@ class ParisCurse(BossModule module) : Components.GenericAOEs(module) {
         AOEShapeRect cellShape = new(gridMap.cellSize / 2f, gridMap.cellSize / 2f, gridMap.cellSize / 2f);
 
         if (assignment.HasValue) {
-            aoes.Add(new AOEInstance(cellShape, gridMap.gridToWorld(assignment.Value), default, WorldState.CurrentTime, Colors.SafeFromAOE));
+            aoes.Add(new AOEInstance(cellShape, gridMap.gridToWorld(assignment.Value), default, WorldState.CurrentTime, Colors.SafeFromAOE, false));
             return CollectionsMarshal.AsSpan(aoes);
         }
 
         if (safeTiles.Count > 0) {
             foreach (var tile in safeTiles[0]) {
-                uint colour = gridMap.tiles[tile] == GridMap.tileType.B ? Color.FromRGBA(0x268BD280).ABGR : Colors.SafeFromAOE;
-                aoes.Add(new AOEInstance(cellShape, gridMap.gridToWorld(tile), default, WorldState.CurrentTime, colour));
+                uint colour = gridMap.tiles[tile] == GridMap.tileType.B ? Color.FromRGBA(0x268BD280).ABGR : Color.FromRGBA(0xC0C0C080).ABGR;
+                aoes.Add(new AOEInstance(cellShape, gridMap.gridToWorld(tile), default, WorldState.CurrentTime, colour, false));
             }
         }
         

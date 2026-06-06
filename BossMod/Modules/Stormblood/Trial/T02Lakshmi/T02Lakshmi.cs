@@ -355,7 +355,7 @@ class T02LakshmiStates : StateMachineBuilder
 }
 
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP, Contributors = "wen, Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 263, NameID = 6385)]
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "wen, Combat Reborn Team", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 263, NameID = 6385)]
 
 public class T02Lakshmi(WorldState ws, Actor primary)
     : BossModule(ws, primary, new(0, 0), new ArenaBoundsCircle(20f))

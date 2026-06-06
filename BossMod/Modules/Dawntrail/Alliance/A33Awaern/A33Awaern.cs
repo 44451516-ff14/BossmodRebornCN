@@ -43,7 +43,7 @@ class AwaernStates : StateMachineBuilder
 }
 
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(AwaernStates),
     ConfigType = null,
     ObjectIDType = typeof(OID),

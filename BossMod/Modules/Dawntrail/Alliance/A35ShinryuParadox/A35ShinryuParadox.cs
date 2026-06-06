@@ -555,7 +555,7 @@ sealed class ShinryuParadoxStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(ShinryuParadoxStates),
     ConfigType = null, // replace null with typeof(ShinryuParadoxConfig) if applicable
     ObjectIDType = typeof(OID),

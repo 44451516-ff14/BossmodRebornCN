@@ -4,13 +4,12 @@
 //  - Complete timeline - end of fight - need enrage log
 //  - Pari's Curse - Add stack/spread AOEs?
 //  - Towers add cleaves
-//  - Improve text hints on some mechanics
-//  - Change colour on WheelOfFableFlight - hard to see spreads/stacks currently
 //  - FireFlight:
 //        - find out who gets the stack
 //        - Add Enums value for left and right instead of using side number int
-//  - WheelOfFableFlight - find out who gets the stack
-//  - Fix hints for witch hunt - currently says "Stack" "Bait" etc at the same time - most likely just disable for now until priority is added
+//  - WheelOfFableFlight:
+//      - find out who gets the stack
+//      - Add initial AOE for the cleaves
 //  - Improve visual for SpurningFlames? - Really not needed, but could add indictors on the direction to go instead of showing the AOEs (assumes BD)
 //  - Pari's Curse - Mechanic works fine, just a lot of stuff for solving it - Remove gridMap if possible and find a different way to do it
 

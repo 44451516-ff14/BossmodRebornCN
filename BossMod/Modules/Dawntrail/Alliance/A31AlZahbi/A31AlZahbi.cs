@@ -126,7 +126,7 @@ class A31AlZahbiStates : StateMachineBuilder
 }
 
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(A31AlZahbiStates),
     ConfigType = null,
     ObjectIDType = typeof(OID),

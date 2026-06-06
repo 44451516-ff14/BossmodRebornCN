@@ -18,19 +18,19 @@ class WheelOfFableFlight(BossModule module) : Components.GenericAOEs(module) {
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID) {
         if (iconID is (uint)IconID.FalseFlameRight) {
-            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.Danger));
+            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.AOE));
         }
         
         if (iconID is (uint)IconID.FalseFlameLeft) {
-            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, -offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.Danger));
+            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, -offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.AOE));
         }
         
         if (iconID is (uint)IconID.FalseFlameRRight) {
-            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.Danger));
+            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.AOE));
         }
         
         if (iconID is (uint)IconID.FalseFlameRLeft) {
-            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, -offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.Danger));
+            aoes.Add(new AOEInstance(new AOEShapeRect(40, 40, 0, -offset), actor.Position, actor.Rotation - 90.Degrees(), WorldState.CurrentTime, Colors.AOE));
         }
     }
 

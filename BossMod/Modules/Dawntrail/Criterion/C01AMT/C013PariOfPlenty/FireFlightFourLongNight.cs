@@ -104,6 +104,8 @@ class WitchHuntStack(BossModule module) : Components.GenericBaitStack(module, (u
         var target = targets.ElementAt(1);
         CurrentBaits.Add(new(target, target, new AOEShapeCircle(3), NextActivation));
     }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints) { }
 }
 
 class FireFlightFourLongNight(BossModule module) : Components.GenericAOEs(module) {
@@ -163,7 +165,7 @@ class FireFlightFourLongNight(BossModule module) : Components.GenericAOEs(module
         int shown = 0;
         foreach (var rotation in rotations.Take(2)) {
             uint colour = (shown == 0) ? Colors.Danger : Colors.AOE;
-            aoes.Add(new AOEInstance(new AOEShapeCone(40, 90.Degrees()), Module.PrimaryActor.Position, rotation, default, colour));
+            aoes.Add(new AOEInstance(new AOEShapeCone(40, 90.Degrees()), Module.PrimaryActor.Position, rotation, default, colour, (shown == 0)));
             shown++;
         }
         
