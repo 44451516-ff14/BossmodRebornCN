@@ -19,7 +19,10 @@ public sealed class M12S2LindwurmConfig : ConfigNode
         CloneRelative,
 
         [PropertyDisplay("DN")]
-        DN
+        DN,
+
+        [PropertyDisplay("Static")]
+        Static
     }
 
     public readonly struct Replication1Effective(Replication1Strategy strat)
@@ -28,6 +31,8 @@ public sealed class M12S2LindwurmConfig : ConfigNode
 
         public bool IsCloneRelative => Strategy == Replication1Strategy.CloneRelative;
         public bool IsDN => Strategy == Replication1Strategy.DN;
+
+        public bool IsStatic => Strategy == Replication1Strategy.Static;
     }
 
     // ============================================================

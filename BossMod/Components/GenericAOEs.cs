@@ -46,7 +46,7 @@ public abstract class GenericAOEs(BossModule module, uint aid = default, string 
             ref readonly var c = ref aoes[i];
             if (c.Risky)
             {
-                hints.AddForbiddenZone(c.ShapeDistance ?? (c.Shape.Distance(c.Origin, c.Rotation)), c.Activation);
+                hints.AddForbiddenZone(c.ShapeDistance ?? c.Shape.Distance(c.Origin, c.Rotation), c.Activation);
             }
         }
     }

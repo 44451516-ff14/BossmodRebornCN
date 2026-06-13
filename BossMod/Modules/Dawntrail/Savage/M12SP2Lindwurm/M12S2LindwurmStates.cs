@@ -26,7 +26,7 @@ class M12S2LindwurmStates : StateMachineBuilder
 
         Cast(id + 0x100, (uint)AID.Replication, 9.5f, 3)
             .ActivateOnEnter<Replication1SecondBait>()
-            .ActivateOnEnter<Replication1CloneRelativeGuidance>()
+            .ActivateOnEnter<Replication1Guidance>()
             .ActivateOnEnter<WingedScourge>()
             .ActivateOnEnter<WingedScourgeSecond>()
             .ActivateOnEnter<MightyMagicTopTierSlamFirstBait>()
@@ -51,7 +51,7 @@ class M12S2LindwurmStates : StateMachineBuilder
         ComponentCondition<MightyMagicTopTierSlamSecondBait>(id + 0x142, 0.3f, b => b.NumDark > 0, "Dark baits")
             .DeactivateOnExit<MightyMagicTopTierSlamSecondBait>()
             .DeactivateOnExit<Replication1SecondBait>()
-            .DeactivateOnExit<Replication1CloneRelativeGuidance>()
+            .DeactivateOnExit<Replication1Guidance>()
             .DeactivateOnExit<WingedScourge>();
 
         DoubleSobat(id + 0x200, 2.4f);

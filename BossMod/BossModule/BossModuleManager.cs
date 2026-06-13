@@ -39,6 +39,8 @@ public sealed class BossModuleManager : IDisposable
         _subsciptions = new
         (
             WorldState.Actors.Added.Subscribe(ActorAdded),
+            WorldState.DirectorUpdate.Subscribe(OnDirectorUpdate),
+            WorldState.CurrentZoneChanged.Subscribe(OnZoneChange),
             Config.Modified.ExecuteAndSubscribe(ConfigChanged)
         );
 
@@ -116,10 +118,12 @@ public sealed class BossModuleManager : IDisposable
             {
                 var m = LoadedModules[i];
                 var wasActive = m.StateMachine.ActiveState != null;
+                bool allowUpdate = !_wipeInProgress && (wasActive || !LoadedModules.Any(other => other.StateMachine.ActiveState != null && other.GetType() == m.GetType()));
                 bool isActive;
                 try
                 {
-                    m.Update();
+                    if (allowUpdate)
+                        m.Update();
                     isActive = m.StateMachine.ActiveState != null;
                 }
                 catch (Exception ex)
@@ -284,6 +288,40 @@ public sealed class BossModuleManager : IDisposable
         else if (!Config.ShowDemo && demoIndex >= 0)
         {
             UnloadModule(demoIndex);
+        }
+    }
+
+    private bool _wipeInProgress;
+
+    private void OnDirectorUpdate(WorldState.OpDirectorUpdate diru)
+    {
+        if (diru.UpdateID == 0x4000_0005)
+        {
+            _wipeInProgress = true;
+            ForceUnload("wipe");
+        }
+
+        // TODO: reverse these; 0005 is referenced in Dalamud as the DutyWipe op, but there are a few different IDs that are always triggered after wipe, including 000F, 0011, 0013
+        // 0006 is Duty Recommenced, but is unsuitable here because it fires after actors are recreated (at least i think it does lol i didnt check)
+        if (diru.UpdateID == 0x4000_0011)
+            _wipeInProgress = false;
+    }
+
+    private void OnZoneChange(WorldState.OpZoneChange zc)
+    {
+        ForceUnload("ZoneInit");
+    }
+
+    public void ForceUnload(string? cause = null)
+    {
+        if (cause != null)
+            Service.Log($"[BMM] Unload requested with cause: {cause}");
+
+        for (var i = LoadedModules.Count - 1; i >= 0; i--)
+        {
+            if (LoadedModules[i].StateMachine.ActiveState != null)
+                ModuleDeactivated.Fire(LoadedModules[i]);
+            UnloadModule(i);
         }
     }
 }
