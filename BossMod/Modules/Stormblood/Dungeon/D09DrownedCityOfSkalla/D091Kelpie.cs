@@ -180,7 +180,7 @@ sealed class KelpieStates : StateMachineBuilder
 }
 
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(KelpieStates),
     ConfigType = null, // replace null with typeof(KelpieConfig) if applicable
     ObjectIDType = typeof(OID),

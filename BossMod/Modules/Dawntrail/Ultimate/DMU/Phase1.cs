@@ -965,43 +965,39 @@ class GravenImage2(BossModule module) : Components.UniformStackSpread(module, 5,
 
 class Gaze(BossModule module) : Components.GenericGaze(module) {
     private Actor? eye;
+    private DateTime activation;
     private bool inverted = false;
     private readonly List<Eye> eyeAoe = [];
 
-    public override void OnActorEAnim(Actor actor, uint state)
-    {
-        if (actor.OID == (uint)OID.StatuePurpleEye && state == (uint)Animations.EyeStart)
-        {
+    public override void OnActorEAnim(Actor actor, uint state) {
+        if (actor.OID == (uint)OID.StatuePurpleEye && state == (uint)Animations.EyeStart) {
             eye = actor;
+            activation = WorldState.FutureTime(9.9f);
             inverted = false;
         }
 
-        if (actor.OID == (uint)OID.StatueYellowEye && state == (uint)Animations.EyeStart)
-        {
+        if (actor.OID == (uint)OID.StatueYellowEye && state == (uint)Animations.EyeStart) {
             eye = actor;
+            activation = WorldState.FutureTime(9.9f);
             inverted = true;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        if (spell.Action.ID is ((uint)AID.IndolentWill) or ((uint)AID.AveMaria))
-        {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
+        if (spell.Action.ID is ((uint)AID.IndolentWill) or ((uint)AID.AveMaria)) {
             NumCasts++;
             eye = null;
         }
     }
 
-    public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
-    {
+    public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) {
         eyeAoe.Clear();
 
-        if (eye == null)
-        {
+        if (eye == null) {
             return CollectionsMarshal.AsSpan(eyeAoe);
         }
 
-        eyeAoe.Add(new Eye(eye.Position, inverted: inverted));
+        eyeAoe.Add(new Eye(eye.Position, activation, inverted: inverted));
         return CollectionsMarshal.AsSpan(eyeAoe);
     }
 }

@@ -34,7 +34,7 @@ sealed class SickSwellKB(BossModule module) : Components.SimpleKnockbacks(
     module,
     (uint)AID.SickSwell1,   // boss cast is the clean trigger
     distance: 10f,
-    kind: Components.SimpleKnockbacks.Kind.DirForward,
+    kind: Kind.DirForward,
     stopAtWall: false) // outside wall is deadly
 {
     // Conservative "treat all circles as this radius" for the PlusAOECircles helper.
@@ -81,7 +81,7 @@ sealed class SickSwellKB(BossModule module) : Components.SimpleKnockbacks(
         AddCircleOriginsFrom(Module.FindComponent<PyrotationPuddles>(), slot, actor, act, res);
         AddCircleOriginsFrom(Module.FindComponent<AlleyOopInfernoPuddles>(), slot, actor, act, res);
 
-        return res.Count > 0 ? res.ToArray() : [];
+        return res.Count > 0 ? [.. res] : [];
     }
 
     private static void AddCircleOriginsFrom(Components.GenericAOEs? comp, int slot, Actor actor, DateTime act, List<WPos> dst)
@@ -115,7 +115,7 @@ sealed class PyrotationStack(BossModule module) : Components.StackWithIcon(
     minStackSize: 2,
     maxStackSize: 8);
 
-    // Persistent puddles created when Pyrotation resolves; cleared by Divers' Dare.
+// Persistent puddles created when Pyrotation resolves; cleared by Divers' Dare.
 sealed class PyrotationPuddles(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _puddles = [];
@@ -177,7 +177,7 @@ sealed class XtremeSpectacularRaidwide(BossModule module)
 // =========================
 
 [ModuleInfo(
-    BossModuleInfo.Maturity.WIP,
+    BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(M10NDaringDevilsStates),
     ConfigType = null,
     ObjectIDType = typeof(OID),

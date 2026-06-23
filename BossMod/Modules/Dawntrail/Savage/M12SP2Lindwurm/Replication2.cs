@@ -210,7 +210,7 @@ class Replication2ScaldingWaves : Components.GenericBaitProximity
         var bossPos = Module.Center + 18f * bossCardinal.ToDirection();
 
         // Calculate perpendicular direction for spreading
-        var perpDir = bossCardinal.ToDirection().OrthoL(); // Left is CW side
+        var perpDir = bossCardinal.ToDirection().OrthoR(); // Right is CW side
 
         WPos targetPos;
         // DN order (left to right): Stack1, Cone1, Cone2, Stack2

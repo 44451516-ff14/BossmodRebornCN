@@ -609,6 +609,11 @@ sealed class Replication1Guidance : BossComponent
     readonly PartyRolesConfig.Assignment[] _assignments;
     readonly M12S2LindwurmConfig.Replication1Effective _rep1;
 
+    // Cached on first non-null hit so we don't pay FindComponent's type-lookup every frame. The two components are
+    // activated AFTER this one, so the lookup has to be lazy rather than done in the constructor.
+    WingedScourge? _wingedScourge;
+    WingedScourgeSecond? _wingedScourgeSecond;
+
     WPos Center => Module.Center;
 
     // ------------------------------------------------------------
@@ -883,7 +888,7 @@ sealed class Replication1Guidance : BossComponent
                              out var nearDark, out var farDark))
             return null;
 
-        return _rep1.IsStatic ? StaticFinalPosition(slot, actor, farDark)
+        return _rep1.IsStatic ? StaticFinalPosition(slot, actor, farDark, nearDark)
                               : CloneRelativeOrDNFinalPosition(slot, actor, nearFire, farFire, nearDark, farDark);
     }
 
@@ -1002,32 +1007,22 @@ sealed class Replication1Guidance : BossComponent
         => assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT
                       or PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2;
 
-    WPos? StaticFinalPosition(int slot, Actor actor, WPos farDark)
+    WPos? StaticFinalPosition(int slot, Actor actor, WPos farDark, WPos nearDark)
     {
         if (!BuildNewNorthBasis(farDark, out var north, out var east))
             return null;
 
-        var assign = _assignments[slot];
+        var assignment = _assignments[slot];
+        var baitsDark = BaitType(actor) == Replication1SecondBait.Assignment.Dark;
 
-        // Baits dark - does NOT have Dark Resistance Down (i.e. has Fire Resistance Down, or none yet).
-        // Use BaitType so this matches the shared logic and doesn't depend on positively reading the
-        // fire debuff - relying on the dark debuff's absence is robust to timing/detection gaps.
-        var isDark = BaitType(actor) == Replication1SecondBait.Assignment.Dark;
-
-        // Melee/tank with the FIRE debuff (baits dark): stand on the boss's edge in melee range
-        if (isDark && IsMeleeOrTank(assign))
+        // Bait-dark melee/tank hug the non-new-north dark clone, just off it on their side, in the cone's safe gap.
+        if (baitsDark && IsMeleeOrTank(assignment))
         {
-            var boss = Module.PrimaryActor;
-            var side = assign is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.M1 ? -1f : 1f;
-            // On the boss on the correct side (MT/M1 left, OT/M2 right), keeping the bait/jump clear of the other
-            // players' circles: the dark-melee stack (north), the other side melee, and the ranged waymark spots.
-            WPos ToWorld(WDir offset) => Center + offset.X * east + offset.Z * north;
-            var otherMelee = boss.Position + boss.HitboxRadius * (-side) * east;
-            Span<WPos> circles = [ToWorld(StaticMeleeFire), otherMelee, ToWorld(StaticRangedDark), ToWorld(StaticH1R1Fire), ToWorld(StaticH2R2Fire)];
-            return MeleeEdgeSpot(slot, actor, side * east, boss, circles, StaticSpreadRadius);
+            var side = assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.M1 ? -1f : 1f;
+            return MeleeBaitDarkSpot(nearDark, farDark, side, slot, actor);
         }
 
-        WDir roleBasedPosition = (assign, isDark) switch
+        var localOffset = (assignment, baitsDark) switch
         {
             // Dark baits — ranged/healers share the behind-left cardinal waymark
             (PartyRolesConfig.Assignment.H1, false) or (PartyRolesConfig.Assignment.R1, false) or
@@ -1046,37 +1041,66 @@ sealed class Replication1Guidance : BossComponent
 
         // Ranged/healers stand EXACTLY on their cardinal waymark (A/C/D rotated to new north) — never nudged
         // off it for cones: the player body doesn't trigger the cone, only their AoE circle would.
-        return Center + roleBasedPosition.X * east + roleBasedPosition.Z * north;
+        return Center + localOffset.X * east + localOffset.Z * north;
     }
 
-    // The melee's spot: ON the boss (hitbox edge) on the correct side — tight uptime, just outside the central stack.
-    // It edges outward only as far as max melee if the close ring is blocked, sweeping around the boss so
-    // its bait/jump stays clear of the other players' circles.
-    WPos MeleeEdgeSpot(int slot, Actor actor, WDir baseDir, Actor boss, ReadOnlySpan<WPos> avoidCircles, float circleRadius)
+    // Edge melee bait-dark spot: stand at nearDark, facing new north (farDark) as 0°, then head out 45° to the
+    // side — left (CCW) for MT/M1 (side -1), right (CW) for OT/M2 (side +1). If that point is inside a cone,
+    // move further out and rotate a bit further outward until it lands in the cone's safe gap.
+    WPos MeleeBaitDarkSpot(WPos nearDark, WPos farDark, float side, int slot, Actor actor)
     {
-        var baseAngle = baseDir.ToAngle();
-        var circleFields = new ShapeDistance[avoidCircles.Length];
-        for (var j = 0; j < avoidCircles.Length; ++j)
-            circleFields[j] = new AOEShapeCircle(circleRadius).Distance(avoidCircles[j], default);
+        var forwardAngle = (farDark - nearDark).ToAngle(); // 0° = facing new north
 
-        const float circleCushion = 0.25f; // just outside the others' AOEs so the jumps don't clip them
-        const float meleeReach = 3f; // may edge out to max melee = hitbox + 3 if the boss edge is blocked
-        const float maxSweep = 80f;
-        const float stepDeg = 8f;
+        const float coneCushion = 0.5f; // only the player point must be outside the cone; the bait circle may clip it
+        const float minRadius = 5f;     // hug the dark clone — only move out if the close spot is in a cone
+        const float maxRadius = 12f;
+        const float rStep = 0.5f;
+        const float angStep = 5f;
+        const int angleStepCount = 11;  // angles 0°, 5°, ..., 50° beyond the base 45°
 
-        // Prefer the closest ring (boss edge), sweeping the angle; edge outward only if nothing there is clear.
-        for (var radius = boss.HitboxRadius; radius <= boss.HitboxRadius + meleeReach + 0.01f; radius += 1f)
-            for (var off = 0f; off <= maxSweep; off += stepDeg)
-                for (var s = -1; s <= 1; s += 2)
-                {
-                    var cand = boss.Position + radius * (baseAngle + (s * off).Degrees()).ToDirection();
-                    if (circleFields.Length == 0 || IsClearOf(circleFields, cand, circleCushion))
-                        return cand;
-                    if (off == 0f)
-                        break;
-                }
+        // Precompute one direction per outward-rotation step — these depend on 'extra' only, not on 'r',
+        // so we hoist the sin/cos work out of the radius loop.
+        Span<WDir> directions = stackalloc WDir[angleStepCount];
+        for (var k = 0; k < angleStepCount; ++k)
+            directions[k] = (forwardAngle + (-side * (45f + k * angStep)).Degrees()).ToDirection();
 
-        return boss.Position + boss.HitboxRadius * baseDir; // fallback: on the boss edge, on the side
+        var coneFields = ActiveConeFields(slot, actor);
+        // No active cones - the base spot is always safe; skip the search entirely.
+        if (coneFields.Length == 0)
+            return nearDark + minRadius * directions[0];
+
+        for (var r = minRadius; r <= maxRadius; r += rStep)
+            for (var k = 0; k < angleStepCount; ++k)
+            {
+                var candidate = nearDark + r * directions[k];
+                if (IsClearOf(coneFields, candidate, coneCushion))
+                    return candidate;
+            }
+
+        return nearDark + minRadius * directions[0]; // fallback: base 45° ray at the closest radius
+    }
+
+    // Signed-distance field per active cone, gathered from both WingedScourge components. Negative = inside.
+    // Both components are activated after this one, so the lookups are lazy — '??=' keeps probing until each
+    // component exists, then sticks with the cached reference for the rest of the mechanic.
+    ShapeDistance[] ActiveConeFields(int slot, Actor actor)
+    {
+        _wingedScourge ??= Module.FindComponent<WingedScourge>();
+        _wingedScourgeSecond ??= Module.FindComponent<WingedScourgeSecond>();
+
+        var primaryCones = _wingedScourge is { } primary ? primary.ActiveAOEs(slot, actor) : default;
+        var secondaryCones = _wingedScourgeSecond is { } secondary ? secondary.ActiveAOEs(slot, actor) : default;
+        var total = primaryCones.Length + secondaryCones.Length;
+        if (total == 0)
+            return [];
+
+        var fields = new ShapeDistance[total];
+        var next = 0;
+        foreach (ref readonly var cone in primaryCones)
+            fields[next++] = cone.Shape.Distance(cone.Origin, cone.Rotation);
+        foreach (ref readonly var cone in secondaryCones)
+            fields[next++] = cone.Shape.Distance(cone.Origin, cone.Rotation);
+        return fields;
     }
 
     // True when 'point' stays at least 'cushion' units outside every shape in 'fields' (cones and/or circles),

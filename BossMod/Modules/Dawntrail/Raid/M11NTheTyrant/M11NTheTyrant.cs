@@ -354,7 +354,6 @@ sealed class ExplosionKnockUp(BossModule module) : Components.GenericKnockback(m
     }
 }
 
-
 // TODO: doesn't identify which platform will be destroyed in order to jump away.
 class ArcadionAvalanche(BossModule module) : Components.GenericAOEs(module)
 {
@@ -368,7 +367,6 @@ class ArcadionAvalanche(BossModule module) : Components.GenericAOEs(module)
 
         var aoes = CollectionsMarshal.AsSpan(_aoes);
         var color = Colors.AOE;
-
 
         for (var i = 0; i < count; ++i)
         {
@@ -421,8 +419,7 @@ sealed class GreatWallOfFire(BossModule module) : Components.IconSharedTankbuste
 // Module
 // =========================
 
-
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(M11TheTyrantStates),
     ConfigType = null, // replace null with typeof(TheTyrantConfig) if applicable
     ObjectIDType = typeof(OID),

@@ -1,6 +1,4 @@
-﻿using BossMod.Shadowbringers.Dungeon.D05MtGulg.D055ForgivenObscenity;
-
-namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
+﻿namespace BossMod.Modules.Dawntrail.Extreme.Ex8Enuo;
 
 sealed class GazeOfTheVoidAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GazeOfTheVoid2, new AOEShapeCone(40f, 22.5f.Degrees()), 7); // This is the easy part!
 
@@ -37,7 +35,6 @@ sealed class GazeOfTheVoidSoaks(BossModule module) : BossComponent(module)
             if (count != 0)
             {
                 var orbz = new ShapeDistance[count];
-                hints.ActionsToExecute.Push(ActionDefinitions.IDSprint, actor, ActionQueue.Priority.High);
                 for (var i = 0; i < count; ++i)
                 {
                     var o = orbs[i];
@@ -46,12 +43,11 @@ sealed class GazeOfTheVoidSoaks(BossModule module) : BossComponent(module)
                 hints.AddForbiddenZone(new SDIntersection(orbz), DateTime.MaxValue);
             }
         }
-        if (actor.Role == Role.Tank)
+        else
         {
             if (bigcount != 0)
             {
                 var orbz = new ShapeDistance[bigcount];
-                hints.ActionsToExecute.Push(ActionDefinitions.IDSprint, actor, ActionQueue.Priority.High);
                 for (var i = 0; i < bigcount; ++i)
                 {
                     var o = bigorbs[i];
@@ -61,34 +57,23 @@ sealed class GazeOfTheVoidSoaks(BossModule module) : BossComponent(module)
             }
         }
     }
+
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         var orbs = GetSmallOrbs(Module);
         var count = orbs.Count;
         var bigorbs = GetBigOrbs(Module);
         var bigcount = bigorbs.Count;
-        if (pc.Role != Role.Tank)
+        var isTank = pc.Role != Role.Tank;
+        var colorSmall = isTank ? Colors.Danger : Colors.Safe;
+        var colorBig = isTank ? Colors.Safe : Colors.Danger;
+        for (var i = 0; i < count; ++i)
         {
-
-            for (var i = 0; i < count; ++i)
-            {
-                Arena.AddCircle(orbs[i].Position, 1f, Colors.Safe);
-            }
-            for (var i = 0; i < bigcount; ++i)
-            {
-                Arena.AddCircle(bigorbs[i].Position, 1f, Colors.Danger);
-            }
+            Arena.AddCircle(orbs[i].Position, 1f, colorSmall);
         }
-        if (pc.Role == Role.Tank)
+        for (var i = 0; i < bigcount; ++i)
         {
-            for (var i = 0; i < bigcount; ++i)
-            {
-                Arena.AddCircle(bigorbs[i].Position, 1f, Colors.Safe);
-            }
-            for (var i = 0; i < count; ++i)
-            {
-                Arena.AddCircle(orbs[i].Position, 1f, Colors.Danger);
-            }
+            Arena.AddCircle(bigorbs[i].Position, 1f, colorBig);
         }
     }
 }

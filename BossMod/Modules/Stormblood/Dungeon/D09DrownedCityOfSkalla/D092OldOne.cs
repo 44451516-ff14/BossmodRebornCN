@@ -107,7 +107,7 @@ sealed class TheOldOneStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(TheOldOneStates),
     ConfigType = null, // replace null with typeof(TheOldOneConfig) if applicable
     ObjectIDType = typeof(OID),

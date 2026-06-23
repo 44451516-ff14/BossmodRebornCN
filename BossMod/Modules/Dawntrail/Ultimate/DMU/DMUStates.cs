@@ -249,7 +249,7 @@ sealed class DMUStates : StateMachineBuilder {
             .ActivateOnEnter<LightningSafeSpots>()
             .ActivateOnEnter<StackSpreadOrbs>();
 
-        ComponentCondition<LightningSafeSpots>(id + 0x290, 5.0f, o => o.NumCasts > 0, "Lightning + Gaze")
+        Condition(id + 0x290, 5.0f, () => Module.FindComponent<LightningSafeSpots>()!.NumCasts > 0 && Module.FindComponent<Gaze>()!.NumCasts > 0, "Lightning + Gaze")
             .DeactivateOnExit<LightningSafeSpots>()
             .DeactivateOnExit<StackSpreadOrbs>()
             .DeactivateOnExit<Gaze>();

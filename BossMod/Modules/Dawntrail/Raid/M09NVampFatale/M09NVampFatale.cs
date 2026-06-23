@@ -75,7 +75,7 @@ sealed class CoffinMaker(BossModule module) : Components.Voidzone(module, 3f, Ge
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
 StatesType = typeof(M09VampFataleStates),
 ConfigType = null, // replace null with typeof(VampFataleConfig) if applicable
 ObjectIDType = typeof(OID),
