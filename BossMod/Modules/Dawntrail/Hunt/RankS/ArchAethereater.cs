@@ -124,7 +124,7 @@ sealed class SoullessStreamFireBlizzardCombo(BossModule module) : Components.Gen
     private static readonly AOEShapeCone cone = new(40f, 90f.Degrees());
     private static readonly AOEShapeDonut donut = new(6f, 40f);
     private static readonly AOEShapeCircle circle = new(15f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

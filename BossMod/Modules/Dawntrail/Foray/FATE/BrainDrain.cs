@@ -54,7 +54,7 @@ sealed class TripleFlightCyclone(BossModule module) : Components.GenericAOEs(mod
     private static readonly AOEShapeDonut donut = new(10f, 20f);
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeRect rect = new(40f, 5f, 40f);
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

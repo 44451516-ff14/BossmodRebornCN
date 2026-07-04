@@ -33,7 +33,7 @@ sealed class Scatterscourge(BossModule module) : Components.SimpleAOEs(module, (
 
 sealed class SlipperyScatterscourge(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(20f, 5f);
     private static readonly AOEShapeDonut donut = new(10f, 40f);
 

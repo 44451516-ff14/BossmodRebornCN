@@ -39,7 +39,7 @@ class MinaSwing2000(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 
 class TerribleBladeHammer(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly WPos[] xPattern = [new(10f, -70f), new(30f, -70f), new(20f, -80f), new(10f, -90f), new(30f, -90f)];
     private static readonly WPos[] crossPattern = [new(20f, -70f), new(10f, -80f), new(30f, -80f), new(20f, -90f)];
     private static readonly AOEShapeRect rect = new(5f, 5f, 5f);

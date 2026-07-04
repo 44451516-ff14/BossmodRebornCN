@@ -38,7 +38,7 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
     private BitMask activeCells;
     private static readonly Square[] defaultSquare = [new(D083TheCurator.ArenaCenter, 19.5f)];
     public static readonly Square[] Tiles = GenerateTiles();
-    private readonly List<AOEInstance> _aoes = new(16);
+    private readonly List<AOEInstance> _aoes = [with(16)];
 
     private static Square[] GenerateTiles()
     {
@@ -150,7 +150,7 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
 class AetherochemicalMine(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(5f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

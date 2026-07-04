@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Extreme.Ex8Seiryu;
 
 sealed class CoursingRiverForceOfNature(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _kbs = new(2);
+    private readonly List<Knockback> _kbs = [with(2)];
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_kbs);
 

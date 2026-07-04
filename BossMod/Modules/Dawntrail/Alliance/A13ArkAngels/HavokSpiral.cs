@@ -4,7 +4,7 @@ sealed class HavokSpiral(BossModule module) : Components.GenericRotatingAOE(modu
 {
     private Angle _increment;
     private DateTime _activation;
-    private readonly List<Angle> _rotation = new(3);
+    private readonly List<Angle> _rotation = [with(3)];
 
     private static readonly AOEShapeCone _shape = new(30f, 15f.Degrees());
 

@@ -103,7 +103,7 @@ class GallopKB(BossModule module) : Components.GenericKnockback(module)
 {
     public static readonly float[] xPositions = [395.5f, 404.5f];
     private static readonly AOEShapeRect rect = new(4.5f, 20f);
-    private readonly List<Knockback> _sources = new(2);
+    private readonly List<Knockback> _sources = [with(2)];
     public readonly List<SafeWall> safeWalls = GenerateSafeWalls();
 
     private static List<SafeWall> GenerateSafeWalls()
@@ -111,7 +111,7 @@ class GallopKB(BossModule module) : Components.GenericKnockback(module)
         const float zStart = 89.161f;
         const int zStep = 10;
 
-        List<SafeWall> list = new(8);
+        List<SafeWall> list = [with(8)];
 
         for (var i = 0; i < 2; ++i)
         {
@@ -160,7 +160,7 @@ class GallopKBHint(BossModule module) : Components.GenericAOEs(module)
             {
                 return;
             }
-            List<RectangleSE> rects = new(count);
+            List<RectangleSE> rects = [with(count)];
             for (var i = 0; i < count; ++i)
             {
                 var safeWall = _kb.safeWalls[i].Vertex1;

@@ -4,7 +4,7 @@ sealed class BoxSpawn(BossModule module) : Components.SimpleAOEs(module, (uint)A
 
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
-    public readonly List<Square> Squares = new(4);
+    public readonly List<Square> Squares = [with(4)];
     private static readonly Square square = new(default, 4f);
     private DateTime lastUpdate;
 

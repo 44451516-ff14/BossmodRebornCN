@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M06NSugarRiot;
 
 sealed class SingleDoubleStyle(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private static readonly AOEShapeCircle circle = new(15f);
     private bool target;
 

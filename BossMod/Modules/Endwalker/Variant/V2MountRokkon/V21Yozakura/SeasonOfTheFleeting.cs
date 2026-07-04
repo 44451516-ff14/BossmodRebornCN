@@ -4,7 +4,7 @@ sealed class SeasonsOfTheFleeting(BossModule module) : Components.GenericAOEs(mo
 {
     private static readonly AOEShapeCone cone = new(70f, 22.5f.Degrees());
     private static readonly AOEShapeRect rect = new(46f, 2.5f);
-    private readonly List<AOEInstance> _aoes = new(16);
+    private readonly List<AOEInstance> _aoes = [with(16)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

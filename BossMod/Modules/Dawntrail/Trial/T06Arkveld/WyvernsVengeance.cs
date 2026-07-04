@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Trial.T06Arkveld;
 
 sealed class WyvernsVengeance(BossModule module) : Components.Exaflare(module, 6f)
 {
-    private readonly List<ulong> _casters = new();
+    private readonly List<ulong> _casters = [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -53,7 +53,7 @@ sealed class WyvernsWealAOE(BossModule module)
 sealed class WyvernsWealPulses(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect _shape = new(60f, 3f);
-    private readonly List<AOEInstance> _aoes = new();
+    private readonly List<AOEInstance> _aoes = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.AsSpan();
 

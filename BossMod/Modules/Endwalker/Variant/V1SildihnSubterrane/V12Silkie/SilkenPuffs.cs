@@ -4,7 +4,7 @@ sealed class SilkenPuff(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 3f, Length = 5f;
     private static readonly AOEShapeCapsule capsule = new(Radius, Length);
-    private readonly List<Actor> puffs = new(7);
+    private readonly List<Actor> puffs = [with(7)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

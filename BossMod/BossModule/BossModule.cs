@@ -549,7 +549,7 @@ public abstract class BossModule : IDisposable
     public static List<Actor> GetActiveActors(List<Actor> enemy)
     {
         var count = enemy.Count;
-        List<Actor> actors = new(count);
+        List<Actor> actors = [with(count)];
         for (var i = 0; i < count; ++i)
         {
             var e = enemy[i];

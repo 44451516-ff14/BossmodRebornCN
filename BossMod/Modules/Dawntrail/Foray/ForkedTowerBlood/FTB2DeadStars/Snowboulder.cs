@@ -3,8 +3,8 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB2DeadStars;
 sealed class Snowboulder(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance>[] _aoesPerPlayer = new List<AOEInstance>[PartyState.MaxPartySize];
-    private readonly List<RectangleSE> rectangles = new(6);
-    private readonly List<DateTime> activations = new(6);
+    private readonly List<RectangleSE> rectangles = [with(6)];
+    private readonly List<DateTime> activations = [with(6)];
     public BitMask Vulnerable;
     private bool isInit;
     private SDInvertedPolygonWithHoles distance;
@@ -132,7 +132,7 @@ sealed class Snowboulder(BossModule module) : Components.GenericAOEs(module)
 
 sealed class SnowBoulderKnockback(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _kbs = new(6);
+    private readonly List<Knockback> _kbs = [with(6)];
     private readonly Snowboulder _charge = module.FindComponent<Snowboulder>()!;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)

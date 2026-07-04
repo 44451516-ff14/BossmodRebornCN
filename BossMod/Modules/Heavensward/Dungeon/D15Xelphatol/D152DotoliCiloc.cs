@@ -161,7 +161,7 @@ sealed class OnHigh(BossModule module) : Components.GenericKnockback(module)
 
 sealed class OnHighHint(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<ConeHA> cones = new(4);
+    private readonly List<ConeHA> cones = [with(4)];
     private AOEInstance[] _aoe = [];
     private DateTime activation;
 

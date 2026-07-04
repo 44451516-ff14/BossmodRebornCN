@@ -116,7 +116,7 @@ sealed class UltraviolentRay(BossModule module) : Components.GenericBaitAway(mod
 sealed class GleamingBeam(BossModule module) : Components.GenericAOEs(module)
 {
     public static readonly AOEShapeRect Rect = new(31f, 4f);
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

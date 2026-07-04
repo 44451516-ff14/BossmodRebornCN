@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A13ArkAngels;
 
 sealed class Rampage(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private static readonly AOEShapeCircle _shapeLast = new(20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);

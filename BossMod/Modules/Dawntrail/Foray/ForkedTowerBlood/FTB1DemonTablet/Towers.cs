@@ -5,10 +5,10 @@ sealed class DemonographTowers(BossModule module) : Components.CastTowersOpenWor
 // this is tricky to show in a useful way on radar since there is a grounded and floating tower in each position
 sealed class GravityTowers(BossModule module) : Components.GenericTowersOpenWorld(module)
 {
-    private readonly HashSet<Actor> levitatingPlayers = new(24);
+    private readonly HashSet<Actor> levitatingPlayers = [with(24)];
     private readonly HashSet<Actor> groundedPlayers = Soakers(module);
-    private readonly List<Tower> towersGround = new(3);
-    private readonly List<Tower> towersFlying = new(3);
+    private readonly List<Tower> towersGround = [with(3)];
+    private readonly List<Tower> towersFlying = [with(3)];
     public bool Active => towersGround.Count != 0;
 
     public override ReadOnlySpan<Tower> ActiveTowers(int slot, Actor actor)
@@ -58,7 +58,7 @@ sealed class GravityTowers(BossModule module) : Components.GenericTowersOpenWorl
 
 sealed class EraseGravity(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(4);
     private readonly GravityTowers _towers = module.FindComponent<GravityTowers>()!;
 

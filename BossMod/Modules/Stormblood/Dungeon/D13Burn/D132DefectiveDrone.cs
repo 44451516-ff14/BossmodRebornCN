@@ -34,7 +34,7 @@ public enum IconID : uint
 
 class Throttle(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeRect rectSmall = new(50f, 1.5f);
     private static readonly AOEShapeRect rectBig = new(50f, 2.5f);
 

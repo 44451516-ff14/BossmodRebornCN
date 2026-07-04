@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A23HeavyArtilleryUnit;
 
 sealed class ManeuverImpactCrusherRevolvingLaser(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(8f);
     private static readonly AOEShapeDonut donut = new(12f, 60f);
 

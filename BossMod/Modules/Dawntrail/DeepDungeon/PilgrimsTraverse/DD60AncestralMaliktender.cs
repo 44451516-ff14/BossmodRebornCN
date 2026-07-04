@@ -56,7 +56,7 @@ sealed class LongRangeNeedles : Components.SimpleAOEs
 [SkipLocalsInit]
 sealed class Spineshot(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeCone cone = new(60f, 30f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -90,10 +90,10 @@ sealed class Spineshot(BossModule module) : Components.GenericAOEs(module)
 [SkipLocalsInit]
 sealed class OneTwoStoneMarch(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(8);
+    public readonly List<AOEInstance> AOEs = [with(8)];
     private readonly AOEShapeRect squareSmall = new(10f, 5f), squareBig = new(30f, 15f);
     private int distance;
-    private readonly List<Actor> casters = new(8);
+    private readonly List<Actor> casters = [with(8)];
     private bool? isCW;
     private DateTime activation;
 

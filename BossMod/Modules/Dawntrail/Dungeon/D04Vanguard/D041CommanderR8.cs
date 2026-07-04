@@ -66,7 +66,7 @@ sealed class ElectrowaveArenaChange(BossModule module) : Components.GenericAOEs(
 
 sealed class EnhancedMobility(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeRect[] rects = [new(14f, 3f), new(10f, 7f), new(20f, 7f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -121,7 +121,7 @@ sealed class RapidRotary(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Angle a60 = 60f.Degrees();
     private static readonly Angle a120 = 120f.Degrees();
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private readonly AOEShapeDonutSector donutSectorSmall = new(11f, 17f, a60);
     private readonly AOEShapeDonutSector donutSectorBig = new(17f, 28f, a60);
     private readonly AOEShapeCone cone = new(14f, a60);

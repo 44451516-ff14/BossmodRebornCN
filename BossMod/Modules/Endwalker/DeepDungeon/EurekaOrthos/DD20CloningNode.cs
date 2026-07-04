@@ -23,7 +23,7 @@ public enum AID : uint
 
 sealed class FlameBreath(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeCone cone = new(50f, 15f.Degrees());
     private const float IntercardinalDistance = 22.627417f;
 

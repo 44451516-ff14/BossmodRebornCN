@@ -2,7 +2,7 @@
 
 sealed class VirtualShiftIce(BossModule module) : Components.GenericAOEs(module, default, "GTFO from broken bridge!")
 {
-    private readonly List<AOEInstance> _unsafeBridges = new(4);
+    private readonly List<AOEInstance> _unsafeBridges = [with(4)];
     private readonly List<Rectangle> _destroyedBridges = [new(new(95f, 96f), 3f, 2f), new(new(95f, 104f), 3f, 2f), new(new(105f, 96f), 3f, 2f), new(new(95f, 104f), 3f, 2f)];
 
     private static readonly AOEShapeRect _shape = new(2, 3, 2);

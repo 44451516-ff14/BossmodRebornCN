@@ -33,7 +33,7 @@ public enum AID : uint
 
 sealed class MythicMirror(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeCircle circle = new(26f);
     private static readonly AOEShapeCone cone = new(60f, 45f.Degrees());
     private static readonly AOEShapeCross cross = new(100f, 5f);
@@ -141,7 +141,7 @@ sealed class LotsCastTB(BossModule module) : Components.BaitAwayCast(module, (ui
 
 sealed class ArcaneOrb(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(48);
+    private readonly List<AOEInstance> _aoes = [with(48)];
     private static readonly AOEShapeCircle circle = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

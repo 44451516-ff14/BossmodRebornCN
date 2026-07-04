@@ -109,13 +109,23 @@ public abstract class ConfigNode
                     continue;
                 }
 
-                var value = jfield.Value.Deserialize(field.FieldType, ser);
-                if (value != null)
+                try
                 {
-                    field.SetValue(this, value);
+                    var value = jfield.Value.Deserialize(field.FieldType, ser);
+                    if (value != null)
+                    {
+                        field.SetValue(this, value);
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    agg.Add(ex);
                 }
             }
         }
+
+        if (agg.Count > 0)
+            throw new AggregateException(agg);
     }
 
     // serialize node to json;

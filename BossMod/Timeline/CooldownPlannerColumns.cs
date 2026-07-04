@@ -86,7 +86,7 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
 
                     using (var disable = ImRaii.Disabled(i == 0 || Plan.Modules[i - 1].Definition.Order != m.Definition.Order))
                     {
-                        if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowUp, $"###up{i}"))
+                        if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowUp, $"up{i}"))
                         {
                             post += SwapModulesAction(i, false);
                         }
@@ -95,7 +95,7 @@ public sealed class CooldownPlannerColumns : Timeline.ColumnGroup
                     ImGui.SameLine();
                     using (var disable = ImRaii.Disabled(i == Plan.Modules.Count - 1 || Plan.Modules[i + 1].Definition.Order != m.Definition.Order))
                     {
-                        if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowDown, $"###down{i}"))
+                        if (UIMisc.IconButton(Dalamud.Interface.FontAwesomeIcon.ArrowDown, $"down{i}"))
                         {
                             post += SwapModulesAction(i, true);
                         }

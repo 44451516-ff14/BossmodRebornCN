@@ -6,7 +6,7 @@ sealed class Chess(BossModule module) : Components.GenericAOEs(module)
     private readonly int[] distancesPending = new int[PartyState.MaxAllianceSize];
     private static readonly AOEShapeRect square = new(5f, 5f, 5f);
     private DateTime _activation;
-    private readonly List<WPos> excludeCrosses = new(2);
+    private readonly List<WPos> excludeCrosses = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -119,7 +119,7 @@ sealed class Chess(BossModule module) : Components.GenericAOEs(module)
             var count = tiles.Count;
             var color = Colors.SafeFromAOE;
             if (AOEs[slot] == null)
-                AOEs[slot] = new(count);
+                AOEs[slot] = [with(count)];
             for (var i = 0; i < count; ++i)
             {
                 AOEs[slot].Add(new(square, tiles[i], default, _activation, color));

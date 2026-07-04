@@ -105,7 +105,7 @@ class MagitekPulsePlayer(BossModule module) : BossComponent(module)
 
 class WildSpeedHaywire(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
     private static readonly AOEShapeRect rect = new(40.5f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

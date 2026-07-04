@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.Alliance.A14Naldthal;
 
 class TippedScales(BossModule module) : Components.GenericAOEs(module, (uint)AID.TippedScalesAOE)
 {
-    private readonly List<(Actor, int weight)> weightsByActor = new(27);
+    private readonly List<(Actor, int weight)> weightsByActor = [with(27)];
     private static readonly WDir eastBoundary = new(50f, default), dir = new(1f, default);
     private static readonly AOEShapeRect rect = new(50f, 50f);
     private static readonly Angle a90 = 90f.Degrees();

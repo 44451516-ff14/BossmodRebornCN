@@ -69,7 +69,7 @@ public enum AID : uint
 
 sealed class Stonecarver(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeRect rect = new(40f, 10f);
     private Impact2? _kb;
 
@@ -142,7 +142,7 @@ sealed class Stonecarver(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Shatter(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rectCenter = new(40f, 10f), rectSides = new(45f, 11f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

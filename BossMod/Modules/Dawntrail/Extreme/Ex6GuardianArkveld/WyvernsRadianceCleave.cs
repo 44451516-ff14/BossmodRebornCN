@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Extreme.Ex6GuardianArkveld;
 
 sealed class WyvernsRadianceCleave(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeRect rect = new(80f, 14f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

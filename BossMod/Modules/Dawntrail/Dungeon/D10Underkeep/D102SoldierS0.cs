@@ -58,7 +58,7 @@ sealed class SectorBisector(BossModule module) : Components.GenericAOEs(module)
     // at higher latencies the time stamps merge together and tethers start to appear in random order in the logs...
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
     private AOEInstance[] _aoe = [];
-    private readonly List<(Actor source, Actor target)> tethers = new(8);
+    private readonly List<(Actor source, Actor target)> tethers = [with(8)];
     private int cloneCount;
     private bool direction; // false = left, true = right
     private bool active;

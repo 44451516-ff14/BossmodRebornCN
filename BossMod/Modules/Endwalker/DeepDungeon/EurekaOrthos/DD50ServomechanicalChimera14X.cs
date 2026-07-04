@@ -34,8 +34,8 @@ class RamsDragonVoice(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(8f, 40f);
     private static readonly AOEShapeCircle circle = new(9f);
-    private readonly List<AOEInstance> _aoes = new(2);
-    private readonly List<(AOEShape, DateTime)> _shapes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
+    private readonly List<(AOEShape, DateTime)> _shapes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -141,7 +141,7 @@ class ChargeTether(BossModule module) : Components.StretchTetherDuo(module, 15f,
 class Cacophony(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6);
-    private readonly List<Actor> _orbs = new(2);
+    private readonly List<Actor> _orbs = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -60,8 +60,8 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donutSmall = new(5f, 15f), donutBig = new(5f, 40f);
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(16f);
-    private readonly List<AOEInstance> _aoes = new(5);
-    private readonly List<Actor> _stars = new(8);
+    private readonly List<AOEInstance> _aoes = [with(5)];
+    private readonly List<Actor> _stars = [with(8)];
 
     private bool _tutorialFire, _tutorialIce;
 

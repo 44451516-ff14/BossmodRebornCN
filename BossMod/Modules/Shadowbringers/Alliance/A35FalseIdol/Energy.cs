@@ -4,7 +4,7 @@ sealed class Energy(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 1f, Length = 3f;
     private static readonly AOEShapeCapsule capsule = new(Radius, Length);
-    private readonly List<Actor> _energy = new(23);
+    private readonly List<Actor> _energy = [with(23)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -64,7 +64,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
 
 class Wavebreaker(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeRect rectNarrow = new(36f, 4f);
     private static readonly AOEShapeRect rectWide = new(21f, 5f);
 
@@ -91,7 +91,7 @@ class Wavebreaker(BossModule module) : Components.GenericAOEs(module)
             return CollectionsMarshal.AsSpan(_aoes);
 
         var max = count > 4 ? 4 : count;
-        List<AOEInstance> aoes = new(max);
+        List<AOEInstance> aoes = [with(max)];
         for (var i = 0; i < max; ++i)
         {
             var aoe = _aoes[i];
@@ -139,7 +139,7 @@ class Wavebreaker(BossModule module) : Components.GenericAOEs(module)
 
 class Drains(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<WPos> activeDrains = new(8), solvedDrains = new(4);
+    private readonly List<WPos> activeDrains = [with(8)], solvedDrains = [with(4)];
     private static readonly float[] xPositions = [-11f, 11f];
     private const float SideLength = 1.25f;
     private static readonly WPos[] drainPositions = GetDrains();

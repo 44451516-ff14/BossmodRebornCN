@@ -69,7 +69,7 @@ sealed class HighVoltageElectray : Components.SimpleAOEGroups
 
 sealed class PowerLine(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly AOEShapeRect rect = new(40f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

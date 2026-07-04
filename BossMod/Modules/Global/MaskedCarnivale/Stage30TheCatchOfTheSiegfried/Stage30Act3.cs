@@ -116,7 +116,7 @@ sealed class Shattersteel(BossModule module) : Components.SimpleAOEs(module, (ui
 sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(10);
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -179,7 +179,7 @@ sealed class RubberBullet(BossModule module) : Components.GenericKnockback(modul
 sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(8);
-    public readonly List<AOEInstance> AOEs = new(8);
+    public readonly List<AOEInstance> AOEs = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A24Ealdnarche;
 
 sealed class Duplicate(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     public static readonly AOEShapeRect Rect = new(16f, 8f);
     private bool phase2;
 

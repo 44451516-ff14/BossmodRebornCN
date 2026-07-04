@@ -4,7 +4,7 @@ sealed class GleamingBarrage(BossModule module) : Components.SimpleAOEs(module, 
 
 sealed class ChampionsCircuit(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private readonly AOEShapeCone cone = new(22f, 30f.Degrees());
     private readonly AOEShapeDonut donut = new(4f, 13f);
     private readonly AOEShapeDonutSector donutS = new(16f, 28f, 30f.Degrees());

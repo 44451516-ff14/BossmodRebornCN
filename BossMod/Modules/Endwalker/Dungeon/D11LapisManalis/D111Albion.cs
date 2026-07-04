@@ -49,9 +49,9 @@ sealed class WildlifeCrossing(BossModule module) : Components.GenericAOEs(module
 
     private static readonly AOEShapeRect rect = new(20f, 5f, 20f);
     private readonly Stampede[] _stampedes = [default, default];
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private int numActiveStampedes;
-    private readonly List<Actor> animals = new(40);
+    private readonly List<Actor> animals = [with(40)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

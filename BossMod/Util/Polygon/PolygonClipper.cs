@@ -24,7 +24,7 @@ public sealed class PolygonClipper
         public void AddContour(ReadOnlySpan<WDir> contour, bool isOpen = false)
         {
             var count = contour.Length;
-            Path64 path = new(count);
+            Path64 path = [with(count)];
             for (var i = 0; i < count; ++i)
             {
                 path.Add(ConvertPoint(contour[i]));

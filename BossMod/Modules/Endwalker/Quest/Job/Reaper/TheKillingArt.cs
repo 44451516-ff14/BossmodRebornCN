@@ -41,7 +41,7 @@ class CarnemLevareCross(BossModule module) : Components.SimpleAOEs(module, (uint
 
 class CarnemLevareDonut(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly Angle a90 = 90.Degrees();
     private static readonly AOEShapeDonutSector[] sectors = [new(12, 17, a90), new(2, 7, a90), new(17, 22, a90), new(7, 12, a90)];
 

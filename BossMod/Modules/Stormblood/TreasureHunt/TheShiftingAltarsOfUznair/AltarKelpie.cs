@@ -44,7 +44,7 @@ class HydroPush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Hyd
 class BloodyPuddle(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(11.2f);
-    public readonly List<AOEInstance> AOEs = new(3);
+    public readonly List<AOEInstance> AOEs = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

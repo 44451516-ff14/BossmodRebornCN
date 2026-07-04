@@ -29,7 +29,7 @@ sealed class AllaganThunder(BossModule module) : Components.SpreadFromCastTarget
 sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

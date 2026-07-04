@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A33RedGirl;
 
 sealed class ChildsPlay : Components.GenericForcedMarch
 {
-    private readonly List<Actor> targets = new(8);
+    private readonly List<Actor> targets = [with(8)];
     private Angle direction;
     private readonly Explosion _aoe;
 

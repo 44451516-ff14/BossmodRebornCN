@@ -4,7 +4,7 @@ sealed class Sandspheres(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(6);
     private static readonly AOEShapeCircle circleBig = new(12);
-    private readonly List<AOEInstance> _aoes = new(18);
+    private readonly List<AOEInstance> _aoes = [with(18)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

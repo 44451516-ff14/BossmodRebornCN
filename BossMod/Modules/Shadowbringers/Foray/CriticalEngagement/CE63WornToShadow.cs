@@ -38,7 +38,7 @@ public enum SID : uint
 
 sealed class Stormcall(BossModule module) : Components.GenericAOEs(module, (uint)AID.Explosion)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(35f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -103,7 +103,7 @@ sealed class Foreshadowing(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEShape? _bossShape;
     private readonly List<(Actor caster, AOEShape? shape)> _addAOEs = []; // shape is null if add starts cast slightly before boss
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     private static readonly AOEShapeDonut _shapePulse = new(8f, 25f);
     private static readonly AOEShapeCone _shapeStorm = new(36f, 65f.Degrees());

@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Alliance.A11Mateus;
 class Froth(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(1.4f);
-    public readonly List<AOEInstance> _aoes = new(6);
+    public readonly List<AOEInstance> _aoes = [with(6)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

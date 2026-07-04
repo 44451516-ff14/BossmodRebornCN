@@ -36,7 +36,7 @@ public enum NPCYell : ushort
 
 sealed class DoReMisery(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private AOEShape[] shapes = [];
     private static readonly AOEShapeCircle circle = new(12f);
     private static readonly AOEShapeDonut donut = new(10f, 40f);

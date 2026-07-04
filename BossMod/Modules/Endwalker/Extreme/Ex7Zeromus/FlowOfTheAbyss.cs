@@ -56,7 +56,7 @@ class FlowOfTheAbyssAkhRhai(BossModule module) : Components.GenericAOEs(module)
 
 class ChasmicNails(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     private static readonly AOEShapeCone _shape = new(60f, 20f.Degrees());
 

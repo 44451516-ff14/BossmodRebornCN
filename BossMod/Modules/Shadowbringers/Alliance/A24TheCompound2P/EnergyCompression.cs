@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A24TheCompound2P;
 
 sealed class EnergyCompression(BossModule module) : Components.GenericTowers(module)
 {
-    private readonly List<(WPos source, Actor target)> _tethers = new(4); // tether target can teleport after tether got applied (in the same frame), leading to incorrect locations if used directly in OnTethered
+    private readonly List<(WPos source, Actor target)> _tethers = [with(4)]; // tether target can teleport after tether got applied (in the same frame), leading to incorrect locations if used directly in OnTethered
     private bool first = true; // used to not draw 2nd set of towers early so we can wait for teleport
     private int movedTowers;
 

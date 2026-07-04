@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
 sealed class BlackCatCrossing(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeCone cone = new(60f, 22.5f.Degrees());
     private enum Pattern { None, Cardinals, Intercardinals }
     private Pattern _currentPattern;

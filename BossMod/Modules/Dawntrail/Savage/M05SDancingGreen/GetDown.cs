@@ -10,7 +10,7 @@ sealed class GetDownCone : Components.SimpleAOEs
 
 sealed class GetDownOutIn(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeCircle circle = new(7f);
     private readonly AOEShapeDonut donut = new(5f, 40f);
 

@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Savage.M04SWickedThunder;
 
 sealed class WideningNarrowingWitchHunt(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
 
     private static readonly AOEShapeCircle _shapeOut = new(10f);
     private static readonly AOEShapeDonut _shapeIn = new(10f, 60f);

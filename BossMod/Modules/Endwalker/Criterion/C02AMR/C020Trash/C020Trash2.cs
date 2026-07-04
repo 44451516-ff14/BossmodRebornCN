@@ -43,7 +43,7 @@ public enum AID : uint
 
 sealed class BladeOfTheTengu(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     private static readonly AOEShapeCone _shape = new(50f, 45f.Degrees()); // TODO: verify angle
 

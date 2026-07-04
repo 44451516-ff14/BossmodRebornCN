@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoePrepare = [];
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private bool prepare;
     public bool Show;
 
@@ -70,7 +70,7 @@ sealed class HolyLance(BossModule module) : Components.GenericAOEs(module)
 
 sealed class HolyIV(BossModule module) : Components.GenericStackSpread(module)
 {
-    public readonly List<(int Order, Actor Actor, DateTime expireAt, int squareIndex)> Status = new(9);
+    public readonly List<(int Order, Actor Actor, DateTime expireAt, int squareIndex)> Status = [with(9)];
     public int NumCasts;
     public BitMask IsCurrentTarget;
     private int numTargets;

@@ -53,9 +53,9 @@ sealed class VoidThunderIII(BossModule module) : Components.SingleTargetCast(mod
 
 sealed class FireIceTrap(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4), _firePlayers = new(6), _icePlayers = new(6);
+    private readonly List<AOEInstance> _aoes = [with(4)], _firePlayers = [with(6)], _icePlayers = [with(6)];
     private static readonly AOEShapeCircle circleTrap = new(8f), circleBig = new(38f); // seduced lasts 5s * 6y/s - traps activate 0.3s-1s before seduced ends, but who cares
-    private readonly List<(WPos position, bool isFire)> jesters = new(4);
+    private readonly List<(WPos position, bool isFire)> jesters = [with(4)];
     private bool first = true;
     private BitMask hasFireElement;
     private BitMask hasIceElement;

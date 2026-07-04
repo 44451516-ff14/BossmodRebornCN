@@ -9,7 +9,7 @@ sealed class LegendaryGeasAOE(BossModule module) : Components.SimpleAOEs(module,
 sealed class DefilersDesertsPredict(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCross cross = new(35.5f, 4f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

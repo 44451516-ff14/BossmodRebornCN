@@ -4,7 +4,7 @@
 [SkipLocalsInit]
 sealed class P4AlmightyJudgment(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(25);
+    private readonly List<AOEInstance> _aoes = [with(25)];
 
     private readonly AOEShapeCircle circle = new(6f);
 

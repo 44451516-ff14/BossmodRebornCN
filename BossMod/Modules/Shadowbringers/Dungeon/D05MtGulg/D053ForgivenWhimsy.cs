@@ -33,7 +33,7 @@ public enum AID : uint
 class PerfectContrition(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(5f, 15f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -70,7 +70,7 @@ class JudgmentDay(BossModule module) : Components.GenericTowers(module)
 
 class Exegesis(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeRect rect = new(5f, 5f, 5f);
     private static readonly AOEShapeCross cross = new(15f, 5f);
     private static readonly WPos[] diagonalPositions = [new(-240f, -50f), new(-250f, -40f), new(-230f, -40f), new(-250f, -60f), new(-230f, -60f)];

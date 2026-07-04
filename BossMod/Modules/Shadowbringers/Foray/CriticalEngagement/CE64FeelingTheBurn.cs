@@ -47,7 +47,7 @@ sealed class DiveFormation(BossModule module) : Components.SimpleAOEs(module, (u
 
 sealed class AntiPersonnelMissile(BossModule module) : Components.GenericAOEs(module, (uint)AID.BallisticImpact)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeRect _shape = new(12f, 12f, 12f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -75,9 +75,9 @@ sealed class AntiPersonnelMissile(BossModule module) : Components.GenericAOEs(mo
 
 sealed class ChainCannonEscort(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> _casters = new(6);
+    private readonly List<Actor> _casters = [with(6)];
     public static readonly AOEShapeRect Rect = new(60f, 2.5f);
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private DateTime activation;
     private readonly List<Actor> participants = [];
     private bool trackingactive;

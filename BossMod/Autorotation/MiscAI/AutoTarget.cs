@@ -4,7 +4,7 @@ namespace BossMod.Autorotation.MiscAI;
 
 public sealed class AutoTarget(RotationModuleManager manager, Actor player) : RotationModule(manager, player)
 {
-    public enum Track { General, Retarget, QuestBattle, DeepDungeon, EpicEcho, Hunt, FATE, TreasureHunt, Everything, CollectFATE, MaxTargets }
+    public enum Track { General, Retarget, QuestBattle, DeepDungeon, EpicEcho, Hunt, FATE, TreasureHunt, Everything, CollectFATE, Treasure, MaxTargets }
     public enum GeneralStrategy { Aggressive, Passive }
     public enum RetargetStrategy { NoTarget, Hostiles, Always, Never }
     public enum Flag { Disabled, Enabled }
@@ -55,6 +55,10 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
             .AddOption(Flag.Disabled)
             .AddOption(Flag.Enabled);
 
+        res.Define(Track.Treasure).As<Flag>("Treasure", "Open treasure chests", renderer: typeof(DefaultOffRenderer))
+            .AddOption(Flag.Disabled)
+            .AddOption(Flag.Enabled);
+
         res.DefineInt(Track.MaxTargets, "Maximum targets to pull (0 = no max)", minValue: 0, maxValue: 30, uiPriority: -130);
 
         return res;
@@ -62,6 +66,9 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
 
     public override void Execute(StrategyValues strategy, Actor? primaryTarget, float estimatedAnimLockDelay, bool isMoving)
     {
+        if (strategy.Option(Track.Treasure).As<Flag>() == Flag.Enabled)
+            Hints.InteractWithTarget ??= World.Actors.Where(a => a.Type == ActorType.Treasure && a.IsTargetable && !a.IsOpenTreasure).OrderBy(a => (a.Position - Player.Position).LengthSq()).FirstOrDefault();
+
         var generalOpt = strategy.Option(Track.General);
         var generalStrategy = generalOpt.As<GeneralStrategy>();
         if (generalStrategy == GeneralStrategy.Passive)
@@ -71,12 +78,12 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
         var canPullMore = maxTargets == 0 || World.Actors.Count(a => a.AggroPlayer && !a.IsDead) < maxTargets;
 
         Actor? bestTarget = null; // non-null if we bump any priorities
-        (int, float) bestTargetKey = (0, float.MinValue); // priority and negated squared distance
+        (bool, int, float) bestTargetKey = (false, 0, float.MinValue); // "force target" flag, priority, and negated squared distance
         void prioritize(AIHints.Enemy e, int prio)
         {
             e.Priority = prio;
 
-            var key = (e.Priority, -(e.Actor.Position - Player.Position).LengthSq());
+            var key = (e.ShouldBeTargeted, e.Priority, -(e.Actor.Position - Player.Position).LengthSq());
             if (key.CompareTo(bestTargetKey) > 0)
             {
                 bestTarget = e.Actor;
@@ -92,11 +99,11 @@ public sealed class AutoTarget(RotationModuleManager manager, Actor player) : Ro
         if (strategy.Option(Track.TreasureHunt).As<Flag>() == Flag.Enabled)
             allowAll |= Bossmods.LoadedModules is [{ Info.Category: BossModuleInfo.Category.TreasureHunt }];
 
-        if (strategy.Option(Track.DeepDungeon).As<Flag>() == Flag.Enabled)
+        if (strategy.Option(Track.DeepDungeon).As<Flag>() == Flag.Enabled && !World.Party.WithoutSlot(includeDead: true, excludeNPCs: true).Skip(1).Any())
             allowAll |= Bossmods.LoadedModules is [{ Info.Category: BossModuleInfo.Category.DeepDungeon }];
 
         if (strategy.Option(Track.EpicEcho).As<Flag>() == Flag.Enabled)
-            allowAll |= Player.Statuses.Any(static s => s.ID == 2734u);
+            allowAll |= Utils.IsPlayerUnsynced(World);
 
         ulong huntTarget = 0;
 

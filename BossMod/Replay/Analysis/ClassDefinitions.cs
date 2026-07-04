@@ -445,11 +445,9 @@ sealed class ClassDefinitions
         sb.AppendLine();
         sb.Append(stub ? "// *** paste SID enum here ***\n" : GenerateClassSID(cd));
         sb.AppendLine();
-        sb.AppendLine("public sealed class Definitions : IDisposable");
+        sb.AppendLine("public sealed class Definitions : Defs");
         sb.AppendLine("{");
         sb.Append(stub ? "    // *** paste constructor here ***\n" : GenerateClassRegistration(cd));
-        sb.AppendLine();
-        sb.AppendLine("    public void Dispose() { }");
         sb.AppendLine();
         sb.AppendLine("    private void Customize(ActionDefinitions d)");
         sb.AppendLine("    {");
@@ -635,7 +633,7 @@ sealed class ClassDefinitions
 
     private sealed record class DefinitionWriter(string Namespace)
     {
-        private readonly StringBuilder _sb = new("public Definitions(ActionDefinitions d)\n{\n");
+        private readonly StringBuilder _sb = new("public override void Define(ActionDefinitions d)\n{\n");
 
         public void Add(List<string> args, string comment = "") => _sb.AppendLine($"    d.RegisterSpell({string.Join(", ", args)});{(comment.Length > 0 ? " // " : "")}{comment}");
         public void Add(ActionData a)

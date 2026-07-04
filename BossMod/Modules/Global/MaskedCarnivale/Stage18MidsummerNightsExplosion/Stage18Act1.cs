@@ -23,7 +23,7 @@ sealed class TailSmash(BossModule module) : Components.SimpleAOEs(module, (uint)
 
 sealed class WildCharge(BossModule module) : Components.BaitAwayChargeCast(module, (uint)AID.WildCharge, 4f)
 {
-    private readonly List<Actor> kegs = new(12);
+    private readonly List<Actor> kegs = [with(12)];
 
     public override void OnActorCreated(Actor actor)
     {
@@ -52,7 +52,7 @@ sealed class WildCharge(BossModule module) : Components.BaitAwayChargeCast(modul
 
 sealed class KegExplosion(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> kegs = new(12);
+    private readonly List<Actor> kegs = [with(12)];
 
     public override void OnActorCreated(Actor actor)
     {

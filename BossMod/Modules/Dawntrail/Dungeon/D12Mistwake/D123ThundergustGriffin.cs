@@ -126,7 +126,7 @@ sealed class StormSurge(BossModule module) : Components.GenericAOEs(module)
 [SkipLocalsInit]
 sealed class ElectrifyingFlight(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _kbs = new(2);
+    private readonly List<Knockback> _kbs = [with(2)];
     private ShapeDistance distance;
     private static readonly AOEShapeRect rect = new(30f, 30f);
 

@@ -5,7 +5,7 @@ sealed class MultiMissileBig(BossModule module) : Components.SimpleAOEs(module, 
 
 sealed class CitadelSiege(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeRect rect = new(48f, 5f);
     private ArenaBoundsRect currentArena1Bounds;
     private WPos currentArena1Center;

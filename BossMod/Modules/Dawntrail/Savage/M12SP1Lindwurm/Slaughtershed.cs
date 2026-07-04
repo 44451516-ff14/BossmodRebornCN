@@ -18,7 +18,7 @@ sealed class SerpentineScourge(BossModule module) : Components.GenericAOEs(modul
     private const float Preview = 8f; // how early to show
     private string? _hintText;
 
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -106,7 +106,7 @@ sealed class RaptorKnuckles(BossModule module) : Components.GenericKnockback(mod
     private const float Preview = 8f; // how early to show
     private string? _hintText;
 
-    private readonly List<Knockback> _kbs = new(4);
+    private readonly List<Knockback> _kbs = [with(4)];
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {

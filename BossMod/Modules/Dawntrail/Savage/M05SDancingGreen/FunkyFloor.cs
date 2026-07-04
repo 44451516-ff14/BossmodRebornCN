@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Savage.M05SDancingGreen;
 sealed class FunkyFloor(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeRect square = new(2.5f, 2.5f, 2.5f);
-    private readonly List<AOEInstance> _aoes = new(64);
+    private readonly List<AOEInstance> _aoes = [with(64)];
     private readonly WPos[] ENVC20001 = GenerateCheckerboard(0); // 03.20001 top left active
     private readonly WPos[] ENVC200010 = GenerateCheckerboard(1); // 03.200010 top left inactive
     private bool? _activeSet;

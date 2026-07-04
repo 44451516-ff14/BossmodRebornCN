@@ -2,11 +2,11 @@ namespace BossMod.Dawntrail.Extreme.Ex5Necron;
 
 sealed class Aetherblight(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private readonly AOEShapeRect rect = new(100f, 6f);
     private readonly AOEShapeCircle circle = new(20f);
     private readonly AOEShapeDonut donut = new(16f, 60f);
-    public List<string> Hints = new(4);
+    public List<string> Hints = [with(4)];
     public bool Show = true;
     private bool relentlessReaping;
     private bool rotated;

@@ -20,11 +20,11 @@ public sealed class PresetDatabase
         {
             var countD = DefaultPresets.Count;
             var countU = UserPresets.Count;
-            List<Preset> presets = new(countD + countU);
+            List<Preset> presets = [with(countD + countU)];
             for (var i = 0; i < countD; ++i)
             {
                 var def = DefaultPresets[i];
-                if (def.HiddenByDefault == _cfg.HideDefaultPresets)
+                if (def.HiddenByDefault == _cfg.HideDefaultPresets || def.Name == "VBM Multibox")
                 {
                     presets.Add(def);
                 }
@@ -95,7 +95,7 @@ public sealed class PresetDatabase
     {
         var visible = AllPresets;
         var count = visible.Count;
-        List<Preset> presets = new(count);
+        List<Preset> presets = [with(count)];
         for (var i = 0; i < count; ++i)
         {
             var vis = visible[i];

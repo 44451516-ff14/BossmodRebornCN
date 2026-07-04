@@ -28,7 +28,7 @@ class LunarCry(BossModule module) : Components.RaidwideCast(module, (uint)AID.Lu
 class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
-    private readonly List<AOEInstance> _aoes = new(10);
+    private readonly List<AOEInstance> _aoes = [with(10)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

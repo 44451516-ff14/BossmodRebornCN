@@ -10,7 +10,7 @@ sealed class Ozmaspheres(BossModule module) : Components.GenericAOEs(module)
         var count = orbs.Count;
         if (count == 0)
             return [];
-        List<Actor> orbz = new(count);
+        List<Actor> orbz = [with(count)];
         for (var i = 0; i < count; ++i)
         {
             var o = orbs[i];

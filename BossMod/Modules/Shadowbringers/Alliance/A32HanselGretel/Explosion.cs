@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A32HanselGretel;
 
 sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(11);
+    private readonly List<AOEInstance> _aoes = [with(11)];
     private static readonly AOEShapeRect rect = new(4f, 25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

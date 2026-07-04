@@ -4,7 +4,7 @@ sealed class RuthlessRegalia(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(100f, 6f), rectWide = new(100f, 12f);
     private (Actor, DateTime)? _source;
-    private readonly List<Actor> _tethered = new(2);
+    private readonly List<Actor> _tethered = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

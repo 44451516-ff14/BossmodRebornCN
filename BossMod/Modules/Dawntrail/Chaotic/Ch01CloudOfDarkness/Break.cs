@@ -2,7 +2,7 @@
 
 sealed class Break(BossModule module) : Components.GenericGaze(module)
 {
-    public readonly List<Eye> Eyes = new(3);
+    public readonly List<Eye> Eyes = [with(3)];
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) => CollectionsMarshal.AsSpan(Eyes);
 

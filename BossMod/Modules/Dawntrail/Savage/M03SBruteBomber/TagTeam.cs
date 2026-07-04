@@ -2,7 +2,7 @@
 
 sealed class TagTeamLariatCombo(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private readonly Actor?[] _tetherSource = new Actor?[PartyState.MaxPartySize];
     private readonly AOEInstance[][] _safespot = new AOEInstance[PartyState.MaxPartySize][];
     private const string Hint = "Go to correct spot!";

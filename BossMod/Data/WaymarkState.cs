@@ -82,7 +82,7 @@ public sealed class WaymarkState
 
     public List<WorldState.Operation> CompareToInitial()
     {
-        List<WorldState.Operation> waymarks = new(16);
+        List<WorldState.Operation> waymarks = [with(16)];
         foreach (var i in _setMarkers.SetBits())
         {
             waymarks.Add(new OpWaymarkChange((Waymark)i, _positions[i]));

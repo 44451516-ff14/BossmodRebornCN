@@ -2,7 +2,7 @@
 
 sealed class MercyFourfold(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
     private readonly AOEShapeCone cone = new(50f, 90f.Degrees());
     private BalefulFirestorm? _aoe1 = module.FindComponent<BalefulFirestorm>();
     private IronSplitter? _aoe2 = module.FindComponent<IronSplitter>();

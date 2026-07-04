@@ -43,7 +43,7 @@ class LockOn(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < countC; ++i)
             {
                 var c = _casters[i];
-                aoes[i] = new(circle, c.Item1.Position, default, c.Item2);
+                aoes.Add(new(circle, c.Item1.Position, default, c.Item2));
             }
         aoes.AddRange(_aoes);
         return CollectionsMarshal.AsSpan(aoes);

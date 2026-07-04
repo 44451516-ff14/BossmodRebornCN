@@ -65,7 +65,7 @@ sealed class SapSpiller(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
     private static readonly Angle a180 = 180f.Degrees(), a90 = 90f.Degrees();
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

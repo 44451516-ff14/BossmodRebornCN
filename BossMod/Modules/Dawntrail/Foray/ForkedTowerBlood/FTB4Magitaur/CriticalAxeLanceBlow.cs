@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 
 sealed class CriticalAxeLanceBlow(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(20f);
     private static readonly AOEShapeDonut donut = new(10, 32f);
 

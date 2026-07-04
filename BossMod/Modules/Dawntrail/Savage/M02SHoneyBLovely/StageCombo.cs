@@ -2,7 +2,7 @@
 
 sealed class StageCombo(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(11);
+    private readonly List<AOEInstance> _aoes = [with(11)];
 
     private static readonly AOEShapeCircle _shapeOut = new(7f);
     private static readonly AOEShapeDonut _shapeIn = new(7f, 30f);

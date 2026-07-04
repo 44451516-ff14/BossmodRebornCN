@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace BossMod;
 
-public sealed class ReplayManager : IDisposable
+public sealed class ReplayManager(RotationDatabase rotationDB, string logDirectory) : IDisposable
 {
     private sealed class ReplayEntry : IDisposable
     {
@@ -70,27 +70,18 @@ public sealed class ReplayManager : IDisposable
         }
     }
 
-    private static readonly ReplayManagementConfig _config = Service.Config.Get<ReplayManagementConfig>();
     private readonly List<ReplayEntry> _replayEntries = [];
     private readonly List<AnalysisEntry> _analysisEntries = [];
     private int _nextAnalysisId;
     private string _path = "";
     private FileDialog? _fileDialog;
-    private string _logDirectory;
-    private readonly RotationDatabase _rotationDB;
+    private string _logDirectory = logDirectory;
+    private readonly RotationDatabase _rotationDB = rotationDB;
 
     public void SetLogDirectory(string logDirectory) => _logDirectory = logDirectory;
 
-    public ReplayManager(RotationDatabase rotationDB, string logDirectory)
-    {
-        _rotationDB = rotationDB;
-        _logDirectory = logDirectory;
-        RestoreHistory();
-    }
-
     public void Dispose()
     {
-        SaveHistory();
         foreach (var e in _analysisEntries)
         {
             e.Dispose();
@@ -187,7 +178,6 @@ public sealed class ReplayManager : IDisposable
                     if (ImGui.MenuItem("Show"))
                     {
                         e.Show(_rotationDB);
-                        SaveHistory();
                     }
                     if (ImGui.MenuItem("Convert to verbose"))
                     {
@@ -219,8 +209,6 @@ public sealed class ReplayManager : IDisposable
                 {
                     a.Dispose();
                 }
-
-                SaveHistory();
                 dispose = true;
             }
 
@@ -269,8 +257,6 @@ public sealed class ReplayManager : IDisposable
                 {
                     e.Dispose();
                 }
-
-                SaveHistory();
             }
         }
         ImGui.SameLine();
@@ -286,7 +272,6 @@ public sealed class ReplayManager : IDisposable
                 e.Dispose();
             }
 
-            SaveHistory();
             dispose = true;
         }
         if (dispose) //  replays somehow don't get cleaned up correctly without this?
@@ -314,7 +299,6 @@ public sealed class ReplayManager : IDisposable
             {
                 CleanPath();
                 _replayEntries.Add(new(_path, true));
-                SaveHistory();
             }
         }
         ImGui.SameLine();
@@ -337,7 +321,6 @@ public sealed class ReplayManager : IDisposable
             {
                 CleanPath();
                 LoadAll(_path);
-                SaveHistory();
             }
         }
     }
@@ -393,30 +376,4 @@ public sealed class ReplayManager : IDisposable
         using var relogger = new ReplayRecorder(player.WorldState, format, false, new DirectoryInfo(_logDirectory), format.ToString());
         player.AdvanceTo(DateTime.MaxValue, () => { });
     }
-
-    private void SaveHistory()
-    {
-        if (!RememberReplays)
-        {
-            return;
-        }
-
-        _config.ReplayHistory = [.. _replayEntries.Where(r => !r.Disposing).Select(r => new ReplayMemory(r.Path, r.Window?.IsOpen ?? false, r.Window?.CurrentTime ?? default))];
-        _config.Modified.Fire();
-    }
-
-    private void RestoreHistory()
-    {
-        if (!RememberReplays)
-        {
-            return;
-        }
-
-        foreach (var memory in _config.ReplayHistory)
-        {
-            _replayEntries.Add(new(memory.Path, memory.IsOpen, _config.RememberReplayTimes ? memory.PlaybackPosition : null));
-        }
-    }
-
-    private bool RememberReplays => Service.SigScanner == null && _config.RememberReplays;
 }

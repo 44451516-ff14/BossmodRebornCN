@@ -39,6 +39,17 @@ public sealed class AIHints
         public bool StayAtLongRange; // if set, players with ranged attacks don't bother coming closer than max range (TODO: reconsider)
         public bool Spikes; // if set, autoattacks will be prevented
 
+        public bool ShouldBeTargeted
+        {
+            set
+            {
+                field = value;
+                if (value)
+                    Priority = Math.Max(0, Priority);
+            }
+            get;
+        }
+
         public void ForcePriority(int priority) => _priority = priority;
     }
 
@@ -170,6 +181,7 @@ public sealed class AIHints
         ForcedTarget = null;
         ForcedFocusTarget = null;
         ForcedMovement = null;
+        SpinDirection = null;
         InteractWithTarget = null;
         ForbiddenZones.Clear();
         GoalZones.Clear();

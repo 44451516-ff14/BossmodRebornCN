@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A23Kamlanaut;
 
 sealed class SublimeEstoc(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(14);
+    private readonly List<AOEInstance> _aoes = [with(14)];
     private static readonly AOEShapeRect rect = new(40f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

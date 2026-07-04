@@ -2,10 +2,10 @@ namespace BossMod.Dawntrail.Trial.T05Necron;
 
 sealed class Aetherblight(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(20f);
     private static readonly AOEShapeDonut donut = new(16f, 60f);
-    public List<string> Hints = new(4);
+    public List<string> Hints = [with(4)];
     public bool Show = true;
     private bool relentlessReaping;
     private bool rotated;

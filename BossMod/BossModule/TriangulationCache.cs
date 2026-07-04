@@ -83,7 +83,7 @@ public sealed class TriangulationCache
         var frameJustRendered = _frame;
         ++_frame;
 
-        List<int> toRemove = new(_cache.Count);
+        List<int> toRemove = [with(_cache.Count)];
         foreach (var kvp in _cache)
         {
             if (kvp.Value.LastSeenFrame != frameJustRendered)

@@ -38,7 +38,7 @@ public enum AID : uint
 sealed class LineVoltage(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rectNarrow = new(50f, 2.5f), rectWide = new(50f, 5f);
-    public readonly List<AOEInstance> AOEs = new(18);
+    public readonly List<AOEInstance> AOEs = [with(18)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

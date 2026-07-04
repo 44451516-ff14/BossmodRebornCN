@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V13Gladiator;
 
 sealed class RushOfMight(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCone cone = new(60f, 90f.Degrees());
     private readonly RackAndRuin _aoe = module.FindComponent<RackAndRuin>()!;
 

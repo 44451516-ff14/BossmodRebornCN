@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V11Geryon;
 
 sealed class Shockwave(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _kbs = new(2);
+    private readonly List<Knockback> _kbs = [with(2)];
     private static readonly AOEShapeRect _shape = new(40f, 40f);
     private readonly RunawaySludge _aoe = module.FindComponent<RunawaySludge>()!;
     private readonly WPos[] voidzones = new WPos[4];

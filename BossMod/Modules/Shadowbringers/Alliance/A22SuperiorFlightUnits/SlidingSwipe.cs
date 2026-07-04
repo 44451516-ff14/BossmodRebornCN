@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A22SuperiorFlightUnits;
 
 sealed class SlidingSwipe(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeRect rect = new(30f, 110f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

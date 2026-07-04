@@ -23,8 +23,8 @@ sealed class LaughingLeap(BossModule module) : Components.SimpleAOEs(module, (ui
 
 sealed class Wingblade(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
-    private readonly List<Angle> offsets = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
+    private readonly List<Angle> offsets = [with(3)];
     private static readonly Angle a180 = 180f.Degrees(), a90 = 90f.Degrees();
     private static readonly AOEShapeCone cone = new(25f, a90);
 

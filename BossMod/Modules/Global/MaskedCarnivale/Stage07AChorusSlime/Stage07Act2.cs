@@ -14,7 +14,7 @@ public enum AID : uint
 
 sealed class SlimeExplosion(BossModule module) : Components.GenericStackSpread(module)
 {
-    private readonly List<Actor> slimes = new(4);
+    private readonly List<Actor> slimes = [with(4)];
 
     public override void OnActorCreated(Actor actor)
     {

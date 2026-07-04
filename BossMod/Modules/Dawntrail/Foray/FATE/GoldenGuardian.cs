@@ -48,7 +48,7 @@ sealed class Epigraph(BossModule module) : Components.SimpleAOEs(module, (uint)A
 
 sealed class ErosiveEye(BossModule module) : Components.GenericGaze(module)
 {
-    private readonly List<Eye> _eyes = new(4);
+    private readonly List<Eye> _eyes = [with(4)];
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) => _eyes.Count != 0 ? CollectionsMarshal.AsSpan(_eyes)[..1] : [];
 

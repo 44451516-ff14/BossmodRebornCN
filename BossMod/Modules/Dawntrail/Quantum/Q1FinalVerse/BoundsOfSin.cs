@@ -18,7 +18,7 @@ sealed class BoundsOfSinEnd(BossModule module) : Components.GenericAOEs(module)
     private AOEInstance[] _aoe = [];
     private readonly AOEShapeCircle circle = new(8f);
     private readonly AOEShapeDonut donut = new(8f, 30f);
-    public readonly List<Polygon> Pillars = new(12);
+    public readonly List<Polygon> Pillars = [with(12)];
     private const float radius = 2.57745f; // adjusted for hitbox radius
 
     private readonly Polygon[] pillarPolygons =

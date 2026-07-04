@@ -4,7 +4,7 @@ sealed class RhalgrBeaconAOE(BossModule module) : Components.SimpleAOEs(module, 
 
 sealed class RhalgrBeaconShock(BossModule module) : Components.GenericAOEs(module, (uint)AID.Shock)
 {
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
     private static readonly AOEShapeCircle _shape = new(8);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

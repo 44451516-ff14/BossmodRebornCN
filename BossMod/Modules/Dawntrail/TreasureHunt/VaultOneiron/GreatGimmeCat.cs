@@ -40,7 +40,7 @@ sealed class TormentingTwinkle(BossModule module) : Components.BaitAwayCast(modu
 
 sealed class BaskingBeam(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeRect rect = new(42f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

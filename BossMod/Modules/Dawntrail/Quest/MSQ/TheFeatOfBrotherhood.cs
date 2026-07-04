@@ -84,7 +84,7 @@ public enum AID : uint
 
 sealed class DualPyresSteelfoldStrike(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCone cone = new(30f, 90f.Degrees());
     private static readonly AOEShapeCross cross = new(30f, 4f);
 
@@ -152,7 +152,7 @@ sealed class DualPyresSteelfoldStrike(BossModule module) : Components.GenericAOE
 
 sealed class RoaringStarRect(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rect = new(50f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -176,7 +176,7 @@ sealed class RoaringStarRect(BossModule module) : Components.GenericAOEs(module)
 
 sealed class SublimeHeat(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     private static readonly AOEShapeCircle circle = new(10);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

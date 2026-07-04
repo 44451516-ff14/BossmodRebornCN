@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M05NDancingGreen;
 
 sealed class Spotlight(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(2.5f);
     private bool active;
     private static readonly WPos[] threeSpotlights = [new(87.48f, 112.474f), new(112.474f, 99.992f), new(99.992f, 87.48f), new(112.474f, 87.48f), new(87.48f, 99.992f), new(99.992f, 112.474f)];

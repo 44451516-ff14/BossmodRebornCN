@@ -3,7 +3,7 @@ namespace BossMod.Shadowbringers.Ultimate.TEA;
 [SkipLocalsInit]
 sealed class P3Tetrashatter(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     private readonly AOEShapeCircle circle = new(21f);
 

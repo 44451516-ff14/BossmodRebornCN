@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A14ShadowLord;
 
 sealed class Implosion(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     private static readonly AOEShapeCone _shapeSmall = new(12f, 90f.Degrees()), _shapeLarge = new(90f, 90f.Degrees());
 

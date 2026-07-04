@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A35FalseIdol;
 
 sealed class Distortion(BossModule module) : Components.GenericGaze(module)
 {
-    private readonly List<Eye> _eyes = new(3);
+    private readonly List<Eye> _eyes = [with(3)];
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) => CollectionsMarshal.AsSpan(_eyes);
 

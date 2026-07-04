@@ -23,7 +23,7 @@ class Firewalker(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fi
 class InfiniteAnguish(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(6f, 12f);
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

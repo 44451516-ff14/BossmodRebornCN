@@ -43,7 +43,7 @@ sealed class BrineBreath(BossModule module) : Components.SingleTargetCast(module
 sealed class AquaBurstHydroburst(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(10f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

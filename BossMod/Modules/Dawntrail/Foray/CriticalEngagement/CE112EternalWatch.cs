@@ -75,12 +75,12 @@ sealed class HolyBlaze(BossModule module) : Components.SimpleAOEs(module, (uint)
 
 sealed class WindStoneLightSurge(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(12);
+    public readonly List<AOEInstance> AOEs = [with(12)];
     private static readonly AOEShapeCircle circle = new(15f);
     public static readonly AOEShapeCone Cone = new(40f, 30f.Degrees());
-    private readonly List<Actor> spheres = new(12);
-    private readonly List<Actor> spheresStone = new(6);
-    private readonly List<Actor> spheresWind = new(6);
+    private readonly List<Actor> spheres = [with(12)];
+    private readonly List<Actor> spheresStone = [with(6)];
+    private readonly List<Actor> spheresWind = [with(6)];
     private readonly AncientHoly _aoe = module.FindComponent<AncientHoly>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

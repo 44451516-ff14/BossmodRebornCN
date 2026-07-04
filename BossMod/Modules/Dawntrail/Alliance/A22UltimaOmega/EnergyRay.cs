@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A22UltimaOmega;
 
 sealed class EnergyRay(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(3);
+    public readonly List<AOEInstance> _aoes = [with(3)];
     private readonly AOEShapeRect rectLong = new(48f, 10f), rectShort = new(40f, 8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

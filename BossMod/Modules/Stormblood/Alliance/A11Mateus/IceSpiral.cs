@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Alliance.A11Mateus;
 class IceSpiral(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(2f);
-    public readonly List<AOEInstance> _aoes = new(228);
+    public readonly List<AOEInstance> _aoes = [with(228)];
     private static readonly WPos[] coordinates =
     [   // Note: the spiral coordinates are slightly different (different from normal quantization  errors) in each replay I looked at. I assume they somehow get 
         // generated on the fly based on the actor movement along the spiral, which would have variations depending on the server tick

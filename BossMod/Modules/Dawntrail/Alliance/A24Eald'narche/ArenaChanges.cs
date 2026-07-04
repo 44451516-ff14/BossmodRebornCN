@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A24Ealdnarche;
 
 sealed class ArenaChanges(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DestroyTile, Duplicate.Rect)
 {
-    public readonly List<int> RemovedTiles = new(4);
+    public readonly List<int> RemovedTiles = [with(4)];
 
     public override void OnMapEffect(byte index, uint state)
     {

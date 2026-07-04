@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A35FalseIdol;
 
 sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(70f, 7f);
     private int numKnockbacks;
 
@@ -42,9 +42,9 @@ sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 
 sealed class ShockwaveKB(BossModule module) : Components.GenericKnockback(module, (uint)AID.ShockwaveKB)
 {
-    private readonly List<Knockback> _kbs = new(2);
+    private readonly List<Knockback> _kbs = [with(2)];
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;
-    private readonly List<SafeWall> walls = new(20);
+    private readonly List<SafeWall> walls = [with(20)];
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => _kbs.Count != 0 ? CollectionsMarshal.AsSpan(_kbs)[..1] : [];
 

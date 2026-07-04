@@ -67,7 +67,7 @@ class Hailfire(BossModule module) : Components.GenericAOEs(module)
 {
     private Actor? _target;
     private const float Length = 44.2f;
-    private readonly List<RectangleSE> rects = new(4);
+    private readonly List<RectangleSE> rects = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

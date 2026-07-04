@@ -25,7 +25,7 @@ sealed class PeckingFlurry(BossModule module) : Components.RaidwideCast(module, 
 
 sealed class MesmerizingMarchStirringSamba(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCircle circle = new(12f);
     private static readonly AOEShapeCone cone = new(40f, 90f.Degrees());
 

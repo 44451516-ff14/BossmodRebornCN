@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A21AegisUnit;
 
 sealed class BeamCannons(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeCone coneSmall = new(40f, 15f.Degrees()), coneMed = new(40f, 30f.Degrees()), coneBig = new(40f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

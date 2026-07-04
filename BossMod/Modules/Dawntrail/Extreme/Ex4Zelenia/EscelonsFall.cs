@@ -5,7 +5,7 @@ sealed class EscelonsFall(BossModule module) : Components.GenericBaitAway(module
     public enum Mechanic { None, Near, Far }
     public Mechanic CurMechanic;
     private DateTime _activation;
-    private readonly List<Mechanic> order = new(4);
+    private readonly List<Mechanic> order = [with(4)];
 
     private static readonly AOEShapeCone cone = new(24f, 22.5f.Degrees());
 

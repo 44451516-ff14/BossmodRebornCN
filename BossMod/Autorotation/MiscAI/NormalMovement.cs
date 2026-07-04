@@ -71,6 +71,7 @@ public sealed class NormalMovement : RotationModule
 
     public const float MeleeRange = 2.6f; // Note: melee range is always hitbox radius + 2.6 for auto attacks, doesn't matter if skills have 3 range...
     public const float CasterRange = 25f;
+    const float SpinningLookahead = 5.5f;
 
     private Task<NavigationDecision> _decisionTask = Task.FromResult(default(NavigationDecision));
     private NavigationDecision _lastDecision;
@@ -125,21 +126,34 @@ public sealed class NormalMovement : RotationModule
 
             if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && Hints.ImminentSpecialMode.activation <= World.FutureTime(0.5f))
                 Hints.WantJump = true;
+        }
 
-            if (Hints.InteractWithTarget != null)
+        if (Hints.InteractWithTarget != null)
+        {
+            var targetPos = Hints.InteractWithTarget.Position;
+            // strongly prefer moving towards interact target
+            Hints.GoalZones.Add(p =>
             {
-                var targetPos = Hints.InteractWithTarget.Position;
-                // strongly prefer moving towards interact target
-                Hints.GoalZones.Add(p =>
-                {
-                    var length = (p - targetPos).LengthSq();
+                var length = (p - targetPos).Length();
 
-                    // 99% of eventobjects have an interact range of 3.5y, while the rest have a range of 2.09y
-                    // checking only for the shorter range here would be fine in the vast majority of cases, but it can break interact pathfinding in the case that the target object is partially covered by a forbidden zone with a radius between 2.1 and 3.5
-                    // this is specifically an issue in the metal gear thancred solo duty in endwalker
-                    return length <= 4.3681f ? 101f : length <= 12.25f ? 100f : 0;
-                });
-            }
+                // 99% of eventobjects have an interact range of 3.5y, while the rest have a range of 2.09y
+                // checking only for the shorter range here would be fine in the vast majority of cases, but it can break interact pathfinding in the case that the target object is partially covered by a forbidden zone with a radius between 2.1 and 3.5
+                // this is specifically an issue in the metal gear thancred solo duty in endwalker
+                return length <= 2.09f ? 101 : length <= 3.5f ? 100 : 0;
+            });
+        }
+
+        // fallback so that we can automatically start some quest battles xddd (the RP rotation is a component on the module, which isn't active until we pull, so no goal zone)
+        if (Hints.GoalZones.Count == 0 && primaryTarget is { IsAlly: false, IsDead: false } && Player.Statuses.Any(static s => RotationModuleManager.TransformationStatuses.Contains(s.ID)))
+            Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, 3f));
+
+        var isSpinning = Player.FindStatus(2973u) != null;
+        // simulate forward forced movement; this is kind of a hack, but it definitely doesn't belong in modules because it's part of the movement constraint
+        if (isSpinning)
+        {
+            // rect is offset by -1 unit player-relative. we know very well that player-centered shapes make the pathfinder freak the fuck out
+            Hints.AddForbiddenZone(new SDRect(Player.Position, Player.Rotation, SpinningLookahead, SpinningLookahead + 2, SpinningLookahead + 2), World.FutureTime(2d));
+            Hints.AddForbiddenZone(new SDCone(Player.Position, 100f, Player.Rotation + 180f.Degrees(), 45f.Degrees()), DateTime.MaxValue);
         }
 
         var speed = World.Client.MoveSpeed;
@@ -177,6 +191,14 @@ public sealed class NormalMovement : RotationModule
         if (resetStats)
         {
             _lastDecision = default;
+        }
+
+        if (isSpinning)
+        {
+            if (Hints.SpinDirection == null && navi.Destination is { } wp)
+                Hints.SpinDirection = Player.DirectionTo(wp).ToAngle();
+
+            return;
         }
 
         if (navi.Destination == null)

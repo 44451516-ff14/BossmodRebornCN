@@ -3,7 +3,7 @@
 sealed class CastShadow(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(65f, 15f.Degrees());
-    public readonly List<AOEInstance> AOEs = new(8);
+    public readonly List<AOEInstance> AOEs = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

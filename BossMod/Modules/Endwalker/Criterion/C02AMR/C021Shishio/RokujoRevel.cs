@@ -21,7 +21,7 @@ class RokujoRevel(BossModule module) : Components.GenericAOEs(module)
         var total = countCircles + countLines;
         if (total == 0)
             return [];
-        List<AOEInstance> aoes = new(total);
+        List<AOEInstance> aoes = [with(total)];
         var color = Colors.Danger;
 
         if (countLines > 1)

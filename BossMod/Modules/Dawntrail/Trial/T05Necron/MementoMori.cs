@@ -34,7 +34,7 @@ sealed class MementoMori(BossModule module) : Components.GenericAOEs(module)
 
 sealed class ChokingGrasp(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeRect rect = new(24f, 3f);
     private bool fearOfDeath;
     private bool mementoMori;

@@ -103,7 +103,7 @@ sealed class KanRhaiBait(BossModule module) : Components.GenericBaitAway(module,
 
 sealed class KanRhaiAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

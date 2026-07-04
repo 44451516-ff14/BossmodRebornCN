@@ -43,7 +43,7 @@ sealed class PerilousLair(BossModule module) : Components.SimpleAOEs(module, (ui
 [SkipLocalsInit]
 sealed class StalkingStaticShock(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     private readonly AOEShapeCircle circle = new(30f);
     private readonly List<Actor> levins = module.Enemies((uint)OID.BallOfLevin);
 

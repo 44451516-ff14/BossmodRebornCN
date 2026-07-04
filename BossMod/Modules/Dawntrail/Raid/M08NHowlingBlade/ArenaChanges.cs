@@ -4,7 +4,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
     private static readonly AOEShapeDonut donut = new(12f, 17f);
-    private readonly List<Polygon> pillars = new(3);
+    private readonly List<Polygon> pillars = [with(3)];
     private static readonly WPos[] pillarPositions = [new(100f, 88.5f), new(109.959f, 94.25f), new(109.917f, 105.619f),
     new(100f, 111.5f), new(90.075f, 105.619f), new(90.041f, 94.25f)];
     private static readonly Polygon[] pillarPolygons =

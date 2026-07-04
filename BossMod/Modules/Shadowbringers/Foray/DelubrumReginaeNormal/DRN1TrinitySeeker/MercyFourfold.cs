@@ -2,7 +2,7 @@
 
 sealed class MercyFourfold(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly AOEShapeCone cone = new(50f, 90f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -88,14 +88,14 @@ public class BossComponent(BossModule module)
                 return Raid.WithSlot().OrderBy(r =>
                     // if boss is targeting a specific person, we know they are #1
                     primaryTarget.TargetID == r.Item2.InstanceID
-                        ? 0
-                        : r.Item2.Role switch
-                        {
-                            Role.Tank => 1,
-                            Role.Melee or Role.Ranged => 2,
-                            Role.Healer => 3,
-                            _ => 4
-                        });
+                    ? 0
+                    : r.Item2.Role switch
+                    {
+                        Role.Tank => 1,
+                        Role.Melee or Role.Ranged => 2,
+                        Role.Healer => 3,
+                        _ => 4
+                    });
             else
                 return [];
         }

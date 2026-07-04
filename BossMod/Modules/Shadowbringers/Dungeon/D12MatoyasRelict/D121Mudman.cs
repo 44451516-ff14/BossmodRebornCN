@@ -84,7 +84,7 @@ class BrittleBreccia(BossModule module) : Components.ConcentricAOEs(module, _sha
 class RockyRoll(BossModule module) : Components.GenericBaitAway(module)
 {
     private static readonly AOEShapeRect rect1 = new(60f, 2f), rect2 = new(60f, 3f), rect3 = new(60f, 4f);
-    private readonly List<WPos> activeHoles = new(4);
+    private readonly List<WPos> activeHoles = [with(4)];
 
     public override void OnMapEffect(byte index, uint state)
     {

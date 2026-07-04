@@ -2,9 +2,9 @@ namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL1Gauntlet;
 
 sealed class TerminusEst(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     public static readonly AOEShapeRect Rect = new(50f, 4f);
-    public readonly List<Actor> Casters = new(10);
+    public readonly List<Actor> Casters = [with(10)];
     public Angle CommonAngle;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

@@ -105,9 +105,9 @@ sealed class LightningRod(BossModule module) : Components.GenericTowers(module)
 
 sealed class ElectrochemicalReaction(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(50f, 12.5f);
-    private readonly List<(WPos position, int charges)> bartizans = new(4);
+    private readonly List<(WPos position, int charges)> bartizans = [with(4)];
     private readonly LightningRod _towers = module.FindComponent<LightningRod>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

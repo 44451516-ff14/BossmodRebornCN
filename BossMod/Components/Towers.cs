@@ -378,7 +378,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
 
     protected static HashSet<Actor> Soakers(BossModule module)
     {
-        HashSet<Actor> actors = new(module.WorldState.Actors.Actors.Values.Count);
+        HashSet<Actor> actors = [with(module.WorldState.Actors.Actors.Values.Count)];
         foreach (var a in module.WorldState.Actors.Actors.Values)
         {
             if (a.OID == default)
@@ -391,7 +391,7 @@ public class GenericTowersOpenWorld(BossModule module, uint aid = default, bool 
 
     protected static HashSet<Actor> TankSoakers(BossModule module)
     {
-        HashSet<Actor> actors = new(module.WorldState.Actors.Actors.Values.Count);
+        HashSet<Actor> actors = [with(module.WorldState.Actors.Actors.Values.Count)];
         foreach (var a in module.WorldState.Actors.Actors.Values)
         {
             if (a.OID == default && a.Role == Role.Tank)

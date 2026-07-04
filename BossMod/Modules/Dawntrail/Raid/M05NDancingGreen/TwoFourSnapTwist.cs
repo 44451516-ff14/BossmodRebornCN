@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M05NDancingGreen;
 
 sealed class TwoFourSnapTwist(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeRect rect = new(20f, 20f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

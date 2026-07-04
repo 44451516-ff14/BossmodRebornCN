@@ -49,7 +49,7 @@ sealed class ForecastClimateChange(BossModule module) : Components.GenericAOEs(m
     private static readonly AOEShapeDonut donut = new(5f, 40f);
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeCross cross = new(40f, 2.5f);
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private AOEShape[] shapes = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

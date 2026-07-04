@@ -89,9 +89,9 @@ sealed class ChocoMeteorImpact(BossModule module) : Components.StackWithIcon(mod
 
 sealed class ChocoMeteorStream(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(28);
+    private readonly List<AOEInstance> _aoes = [with(28)];
     private static readonly AOEShapeCircle circle = new(8f);
-    private readonly List<WPos> initialPositions = new(2);
+    private readonly List<WPos> initialPositions = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -26,7 +26,7 @@ public enum AID : uint
 class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(15f, 15f.Degrees());
-    public List<AOEInstance> _aoes = new(3);
+    public List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

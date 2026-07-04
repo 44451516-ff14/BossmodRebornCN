@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A34XunZiMengZi;
 
 sealed class HighPoweredLaser(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> casters = new(4);
+    private readonly List<Actor> casters = [with(4)];
     private static readonly AOEShapeRect rect = new(70f, 2f);
     private DateTime activation;
 

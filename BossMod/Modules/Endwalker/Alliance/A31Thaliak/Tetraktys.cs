@@ -106,7 +106,7 @@ sealed class TetraktuosKosmosCounter(BossModule module) : Components.CastCounter
 
 sealed class TetraktuosKosmos(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(6);
+    public readonly List<AOEInstance> AOEs = [with(6)];
     private static readonly AOEShapeTriCone _shapeTri = new(16f, 30f.Degrees());
     private static readonly AOEShapeRect _shapeRect = new(30f, 8f);
     private static readonly Angle[] Angles =

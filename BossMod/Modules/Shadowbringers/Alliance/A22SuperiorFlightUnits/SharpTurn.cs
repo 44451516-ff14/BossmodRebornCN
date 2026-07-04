@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A22SuperiorFlightUnits;
 
 sealed class SharpTurn(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeRect rect = new(30f, 130f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

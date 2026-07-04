@@ -46,7 +46,7 @@ public enum SID : uint
 
 sealed class LightningCrossingMammothBoltEpicenterShock(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(14);
+    private readonly List<AOEInstance> _aoes = [with(14)];
     public static readonly AOEShapeCircle CircleSmall = new(12f);
     public static readonly AOEShapeCircle CircleBig = new(30f);
     public static readonly AOEShapeCone Cone = new(70f, 22.5f.Degrees());
@@ -119,9 +119,9 @@ sealed class AgitatedGroan(BossModule module) : Components.RaidwideCastDelay(mod
 
 sealed class RushingRumbleRampage(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private bool? lightningIsCardinal;
-    private readonly List<Actor> activebirds = new(2);
+    private readonly List<Actor> activebirds = [with(2)];
     private bool showBait;
     private DateTime activation;
 

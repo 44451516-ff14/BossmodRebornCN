@@ -93,7 +93,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 sealed class Soulweave(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(28f, 32f);
-    private readonly List<AOEInstance> _aoes = new(10);
+    private readonly List<AOEInstance> _aoes = [with(10)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

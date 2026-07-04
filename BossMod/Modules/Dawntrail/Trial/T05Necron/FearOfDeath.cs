@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Trial.T05Necron;
 
 sealed class FearOfDeathAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeCircle circle = new(3);
     private bool fearOfDeath;
 

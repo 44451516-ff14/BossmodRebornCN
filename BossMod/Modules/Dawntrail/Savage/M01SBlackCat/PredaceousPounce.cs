@@ -2,7 +2,7 @@
 
 sealed class PredaceousPounce(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(12);
+    public readonly List<AOEInstance> AOEs = [with(12)];
     private static readonly AOEShapeCircle circle = new(11);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -24,7 +24,12 @@ public sealed class AutoDDConfig : ConfigNode
     public bool Enable = true;
     [PropertyDisplay("启用小地图")]
     public bool EnableMinimap = true;
-    [PropertyDisplay("尝试避开陷阱", tooltip: "避开源自PalacePal数据的已知陷阱位置。（无论此设置如何，由洞察宝玉揭示的陷阱始终会被避开。）")]
+
+    [PropertyDisplay("小地图缩放")]
+    [PropertySlider(min: 0.2f, max: 3, Speed = 0.05f)]
+    public float MinimapScale = 1.0f;
+
+    [PropertyDisplay("尝试避开陷阱", tooltip: "避开源自 PalacePal 数据的已知陷阱位置。BMR 已内置数据，因此不需要安装 PalacePal。（无论此设置如何，由洞察宝玉揭示的陷阱始终会被避开。）")]
     public bool TrapHints = true;
     [PropertyDisplay("自动导航到通路祭坛")]
     public bool AutoPassage = true;

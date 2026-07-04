@@ -215,7 +215,7 @@ class CratersWildRampage(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly WPos pos1 = new(738f, 482f), pos2 = new(762f, 482f);
     private static readonly Circle circle1 = new(pos1, 7f), circle2 = new(pos2, 7f);
-    public readonly List<Circle> Circles = new(2);
+    public readonly List<Circle> Circles = [with(2)];
     private bool invert;
     private DateTime activation;
     private AOEShapeCustom? _aoe;

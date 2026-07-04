@@ -396,7 +396,7 @@ sealed class DoubleIaiGiriBait(BossModule module) : IaiGiriBait(module, 1f, 23f)
         var count = Instances.Count;
         if (count == 0)
             return;
-        List<string> safespotsList = new(count);
+        List<string> safespotsList = [with(count)];
 
         for (var i = 0; i < count; ++i)
         {

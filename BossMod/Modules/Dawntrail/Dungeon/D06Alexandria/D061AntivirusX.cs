@@ -65,7 +65,7 @@ sealed class PathoCircuitCrossPurge(BossModule module) : Components.GenericAOEs(
     private readonly AOEShapeCross cross = new(40f, 3f);
     private readonly AOEShapeCone coneSmall = new(40f, 60f.Degrees());
     private readonly AOEShapeCone coneBig = new(40f, 120f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

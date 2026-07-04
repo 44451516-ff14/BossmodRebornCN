@@ -86,7 +86,7 @@ sealed class Draw(BossModule module) : Components.GenericAOEs(module)
         module.Enemies((uint)OID.Card6),
     ];
     private AOEInstance[] _aoes = [];
-    private readonly List<int> cachedCardIndices = new(2);
+    private readonly List<int> cachedCardIndices = [with(2)];
 
     private static readonly AOEShapeRect _shape = new(20f, 7f);
 
@@ -174,7 +174,7 @@ sealed class Draw(BossModule module) : Components.GenericAOEs(module)
 
 sealed class FlourishingBow(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     private static readonly AOEShapeCircle _shapeOut = new(10f);
     private static readonly AOEShapeDonut _shapeIn = new(10f, 30f);
@@ -218,7 +218,7 @@ sealed class DoubleMisdirect(BossModule module) : Components.SimpleAOEGroups(mod
 
 sealed class RollingStarlight(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
     private int lastVersion;
     private static readonly AOEShapeRect[] rects = [new(20f, 5f), new(29f, 5f), new(43f, 5f), new(52f, 5f)];
 

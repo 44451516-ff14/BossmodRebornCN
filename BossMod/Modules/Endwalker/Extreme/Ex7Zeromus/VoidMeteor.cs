@@ -13,10 +13,10 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
     }
 
     private int _numTethers;
-    private readonly List<WPos> _meteors = new(18);
+    private readonly List<WPos> _meteors = [with(18)];
     private readonly PlayerState[] _playerStates = new PlayerState[PartyState.MaxPartySize];
     private AOEInstance[] _aoe = [];
-    private readonly List<PolygonCustom> polygons = new(18);
+    private readonly List<PolygonCustom> polygons = [with(18)];
 
     private const float _radius = 2f;
     private const float _ownThickness = 2f;

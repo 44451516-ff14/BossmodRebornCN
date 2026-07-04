@@ -51,7 +51,7 @@ sealed class GroundToGroundBallistic(BossModule module) : Components.SimpleKnock
 sealed class StableCannon(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(60f, 5f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -80,7 +80,7 @@ sealed class MagitekMissile(BossModule module) : Components.GenericAOEs(module)
 {
     private const float Radius = 1f, Length = 10f;
     private static readonly AOEShapeCapsule capsule = new(Radius, Length);
-    private readonly List<Actor> _missiles = new(15);
+    private readonly List<Actor> _missiles = [with(15)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

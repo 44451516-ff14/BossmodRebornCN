@@ -5,7 +5,7 @@ sealed class VerdantScarletPlume(BossModule module) : Components.GenericAOEs(mod
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(3f, 12f);
     private static readonly AOEShapeRect rect = new(30f, 15f);
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private bool first = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

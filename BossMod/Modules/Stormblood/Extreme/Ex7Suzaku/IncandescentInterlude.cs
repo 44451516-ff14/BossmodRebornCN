@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 sealed class IncandescentInterlude(BossModule module) : Components.GenericTowers(module)
 {
     private BitMask _forbidden;
-    public readonly List<Tower> TowerCache = new(4);
+    public readonly List<Tower> TowerCache = [with(4)];
     private readonly int party = module.Raid.WithoutSlot(true, false, false).Length;
     private readonly RuthlessRefrain _kb = module.FindComponent<RuthlessRefrain>()!;
 

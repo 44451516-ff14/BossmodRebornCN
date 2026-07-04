@@ -47,7 +47,7 @@ public enum IconID : uint
 [SkipLocalsInit]
 sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private readonly AOEShapeDonut donut1 = new(9f, 14f), donut2 = new(14f, 19f), donut3 = new(19f, 24f), donut4 = new(24f, 29f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
@@ -166,7 +166,7 @@ sealed class DivineFavor(BossModule module) : Components.StandardChasingAOEs(mod
 [SkipLocalsInit]
 sealed class GripOfSalvationsReach(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeCone cone = new(30f, 110f.Degrees());
     private readonly AOEShapeRect rect = new(60f, 15f), rectFake = new(60f, 30f);
 

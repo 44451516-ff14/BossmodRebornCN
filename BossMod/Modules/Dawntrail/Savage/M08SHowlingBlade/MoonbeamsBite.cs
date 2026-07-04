@@ -3,8 +3,8 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 sealed class MoonbeamsBite(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 10f);
-    private readonly List<AOEInstance> _aoes = new(4);
-    private readonly List<Actor> casters = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
+    private readonly List<Actor> casters = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

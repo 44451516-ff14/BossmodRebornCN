@@ -4,7 +4,7 @@ sealed class PrimordialChaos(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance>[] _aoesPerPlayer = new List<AOEInstance>[PartyState.MaxPartySize];
     private readonly int[] playerTemperatures = new int[PartyState.MaxPartySize];
-    private readonly List<Polygon> circlesRed = new(3), circlesBlue = new(3);
+    private readonly List<Polygon> circlesRed = [with(3)], circlesBlue = [with(3)];
     private static readonly AOEShapeCircle circle = new(22f);
     public int NumTelegraphCasts;
     private bool isInit;

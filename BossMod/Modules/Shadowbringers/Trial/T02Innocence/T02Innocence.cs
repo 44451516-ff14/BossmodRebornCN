@@ -258,7 +258,7 @@ sealed class InnocenceStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(InnocenceStates),
     ConfigType = null, // replace null with typeof(InnocenceConfig) if applicable
     ObjectIDType = typeof(OID),

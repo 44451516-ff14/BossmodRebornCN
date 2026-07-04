@@ -55,7 +55,7 @@ sealed class Decompress(BossModule module) : Components.SimpleAOEs(module, (uint
 
 sealed class AetherialRay(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rect = new(28f, 6f); // extra safety margin because the predictions are not even close to pixel perfect
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -84,7 +84,7 @@ sealed class AetherialRay(BossModule module) : Components.GenericAOEs(module)
 
 sealed class BrightPulse(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(13f); // extra safety margin because the predictions are not even close to pixel perfect
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

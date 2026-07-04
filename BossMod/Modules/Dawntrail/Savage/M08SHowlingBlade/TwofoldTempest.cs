@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
 sealed class TwofoldTempestVoidzone(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private readonly AOEShapeCircle circle = new(9f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

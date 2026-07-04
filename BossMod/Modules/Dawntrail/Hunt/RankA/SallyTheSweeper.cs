@@ -30,8 +30,8 @@ sealed class ExecutionModel(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(10f, 40f);
     private static readonly AOEShapeCross cross = new(40f, 5f, 45f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(3);
-    private readonly List<AOEShape> _shapes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
+    private readonly List<AOEShape> _shapes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

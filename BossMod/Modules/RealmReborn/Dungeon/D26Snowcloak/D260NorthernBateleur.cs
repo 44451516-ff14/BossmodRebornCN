@@ -41,7 +41,7 @@ sealed class WallRemoval(BossModule module) : BossComponent(module)
 sealed class Frostbite(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(17f, 17f);
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

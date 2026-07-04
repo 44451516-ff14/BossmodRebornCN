@@ -27,7 +27,7 @@ sealed class Combos(BossModule module) : Components.GenericAOEs(module)
     private readonly AOEShapeCircle circle = new(6f);
     private readonly AOEShapeRect rect = new(15f, 5f);
     private readonly AOEShapeRect rect2 = new(80f, 5f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

@@ -4,7 +4,7 @@ sealed class AlexandrianThunderII(BossModule module) : Components.GenericRotatin
 {
     private Angle _increment;
     private DateTime _activation;
-    private readonly List<Angle> _rotation = new(3);
+    private readonly List<Angle> _rotation = [with(3)];
     private bool? clockwise;
     private static readonly AOEShapeDonutSector sector = new(2f, 8f, 15f.Degrees(), invertForbiddenZone: true);
     private static readonly Angle a75 = 7.5f.Degrees();

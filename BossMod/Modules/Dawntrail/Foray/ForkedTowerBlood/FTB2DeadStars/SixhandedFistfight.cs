@@ -22,7 +22,7 @@ sealed class CollateralDamage(BossModule module) : Components.GenericStackSpread
     {
         if (Spreads.Count == 0 && spell.Action.ID == (uint)AID.CollateralDamage)
         {
-            List<Actor> players = new(Module.WorldState.Actors.Actors.Values.Count);
+            List<Actor> players = [with(Module.WorldState.Actors.Actors.Values.Count)];
             foreach (var a in Module.WorldState.Actors.Actors.Values)
             {
                 if (a.OID == default)

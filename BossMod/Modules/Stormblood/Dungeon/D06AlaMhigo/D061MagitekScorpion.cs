@@ -25,7 +25,7 @@ public enum AID : uint
 sealed class TailLaser(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(20.5f, 5f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

@@ -56,7 +56,7 @@ sealed class BiochemicalFront(BossModule module) : Components.SimpleAOEs(module,
 
 sealed class SterileSphere(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(15f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);

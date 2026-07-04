@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V15ThorneKnight
 
 sealed class SpringToLife(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeRect rect = new(45f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

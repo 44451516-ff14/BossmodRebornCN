@@ -53,7 +53,7 @@ public class AddsMulti(BossModule module, uint[] oids, int priority = 0) : BossC
         {
             var enemies = Module.Enemies(OIDs);
             var count = enemies.Count;
-            List<Actor> activeActors = new(count);
+            List<Actor> activeActors = [with(count)];
             for (var i = 0; i < count; ++i)
             {
                 var actor = enemies[i];

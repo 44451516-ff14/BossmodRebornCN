@@ -102,7 +102,7 @@ class Necrobombs(BossModule module) : BossComponent(module)
 
 class Burst(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(8f);
 
     // Note: Burst5 to Burst8 locations are unknown until players unable to move, so they are irrelevant and not drawn

@@ -26,7 +26,7 @@ public enum AID : uint
 sealed class ExplosiveResonantFrequency(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(15f);
-    private readonly List<AOEInstance> _aoes = new(11);
+    private readonly List<AOEInstance> _aoes = [with(11)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

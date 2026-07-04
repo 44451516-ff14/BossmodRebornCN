@@ -6,7 +6,7 @@ sealed class ValorousAscension(BossModule module) : Components.CastCounterMulti(
 sealed class ValorousAscensionRect(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 4f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count > 1 ? CollectionsMarshal.AsSpan(_aoes)[..2] : [];
 

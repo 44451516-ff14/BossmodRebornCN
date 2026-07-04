@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Savage.M07SBruteAbombinator;
 
 sealed class ThornsOfDeath(BossModule module) : BossComponent(module)
 {
-    private readonly List<(Actor Player, Actor Source)> _tethers = new(4);
+    private readonly List<(Actor Player, Actor Source)> _tethers = [with(4)];
     public BitMask TetheredPlayers;
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)

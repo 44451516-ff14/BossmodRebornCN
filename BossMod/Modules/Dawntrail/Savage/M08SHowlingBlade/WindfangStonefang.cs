@@ -6,7 +6,7 @@ sealed class WindfangStonefang(BossModule module) : Components.GenericAOEs(modul
     private readonly AOEShapeCircle circle = new(9f);
     private readonly AOEShapeDonut donut = new(8f, 20f);
     public bool Draw;
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Draw ? CollectionsMarshal.AsSpan(_aoes) : [];
 

@@ -31,7 +31,7 @@ public sealed class ActorState : IEnumerable<Actor>
 
     public List<Operation> CompareToInitial()
     {
-        List<Operation> ops = new(Actors.Count * 5);
+        List<Operation> ops = [with(Actors.Count * 5)];
         foreach (var act in Actors.Values)
         {
             var instanceID = act.InstanceID;
@@ -43,6 +43,10 @@ public sealed class ActorState : IEnumerable<Actor>
             if (act.InCombat)
             {
                 ops.Add(new OpCombat(instanceID, true));
+            }
+            if (act.IsOpenTreasure)
+            {
+                ops.Add(new OpEventOpenTreasure(act.InstanceID));
             }
             if (act.ModelState != default)
             {
@@ -940,7 +944,11 @@ public sealed class ActorState : IEnumerable<Actor>
     public Event<Actor> EventOpenTreasure = new();
     public sealed class OpEventOpenTreasure(ulong instanceID) : Operation(instanceID)
     {
-        protected override void ExecActor(WorldState ws, Actor actor) => ws.Actors.EventOpenTreasure.Fire(actor);
+        protected override void ExecActor(WorldState ws, Actor actor)
+        {
+            actor.IsOpenTreasure = true;
+            ws.Actors.EventOpenTreasure.Fire(actor);
+        }
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("OPNT"u8).EmitActor(InstanceID);
     }
 }

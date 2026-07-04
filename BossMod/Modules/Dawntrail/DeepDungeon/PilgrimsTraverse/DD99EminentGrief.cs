@@ -306,7 +306,7 @@ sealed class BoundsOfSinEnd(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
     private readonly AOEShapeCircle circle = new(8f);
-    private readonly List<Polygon> pillars = new(12);
+    private readonly List<Polygon> pillars = [with(12)];
     private const float radius = 2.57745f; // adjusted for hitbox radius
 
     private readonly Polygon[] pillarPolygons =
@@ -477,7 +477,7 @@ sealed class BallOfFire(BossModule module) : Components.GenericBaitAway(module, 
 [SkipLocalsInit]
 sealed class AbyssalBlaze(BossModule module) : Components.Exaflare(module, 5f)
 {
-    private readonly List<(WDir, WPos)> crystals = new(8);
+    private readonly List<(WDir, WPos)> crystals = [with(8)];
     private AOEShapeCustom? shape;
     private WDir next;
 

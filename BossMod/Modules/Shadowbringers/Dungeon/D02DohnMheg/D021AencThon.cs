@@ -35,7 +35,7 @@ class LaughingLeapStack(BossModule module) : Components.StackWithIcon(module, (u
 class Geyser(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
-    private readonly List<AOEInstance> _aoes = new(14);
+    private readonly List<AOEInstance> _aoes = [with(14)];
 
     private readonly WDir[] geysers1 = [new(-9f, 15f), new(default, -16f)];
     private readonly WDir[] geysers2 = [new(-9f, -15f), new(default, 5f), new(7f, -7f)];

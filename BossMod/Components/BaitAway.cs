@@ -45,7 +45,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
             {
                 return CurrentBaits;
             }
-            List<Bait> activeBaits = new(count);
+            List<Bait> activeBaits = [with(count)];
             var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
             for (var i = 0; i < count; ++i)
             {
@@ -69,7 +69,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         {
             return CurrentBaits;
         }
-        List<Bait> activeBaitsOnTarget = new(count);
+        List<Bait> activeBaitsOnTarget = [with(count)];
         var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
         for (var i = 0; i < count; ++i)
         {
@@ -109,7 +109,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
         {
             return CurrentBaits;
         }
-        List<Bait> activeBaitsNotOnTarget = new(count);
+        List<Bait> activeBaitsNotOnTarget = [with(count)];
         var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
 
         for (var i = 0; i < count; ++i)
@@ -129,7 +129,7 @@ public class GenericBaitAway(BossModule module, uint aid = default, bool alwaysD
     {
         var actors = Raid.WithoutSlot();
         var len = actors.Length;
-        List<Actor> result = new(len);
+        List<Actor> result = [with(len)];
         for (var i = 0; i < len; ++i)
         {
             var actor = actors[i];
@@ -721,7 +721,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
             {
                 return CurrentBaits;
             }
-            List<Bait> activeBaits = new(count);
+            List<Bait> activeBaits = [with(count)];
             var curBaits = CollectionsMarshal.AsSpan(CurrentBaits);
             for (var i = 0; i < count; ++i)
             {
@@ -764,7 +764,7 @@ public class GenericBaitProximity(BossModule module, bool alwaysDrawOtherBaits =
     {
         var actors = Raid.WithoutSlot();
         var len = actors.Length;
-        List<Actor> result = new(len);
+        List<Actor> result = [with(len)];
         for (var i = 0; i < len; ++i)
         {
             var actor = actors[i];

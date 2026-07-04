@@ -2,7 +2,7 @@
 
 class Fireflight(BossModule module) : Components.GenericAOEs(module) {
     private List<AOEInstance> aoes = [];
-    public List<PathAOE> pathAOEs = new();
+    public List<PathAOE> pathAOEs = [];
     public int side = 0;
 
     public class PathAOE() {

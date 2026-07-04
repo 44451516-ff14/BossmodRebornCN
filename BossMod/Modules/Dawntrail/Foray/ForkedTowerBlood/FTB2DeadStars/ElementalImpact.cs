@@ -25,7 +25,7 @@ sealed class ElementalImpact(BossModule module) : Components.GenericTowersOpenWo
 sealed class FireSpread(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private static readonly AOEShapeCone cone = new(60f, 60f.Degrees());
-    private readonly List<(WPos, DateTime)> towerPositions = new(2);
+    private readonly List<(WPos, DateTime)> towerPositions = [with(2)];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -51,7 +51,7 @@ sealed class FireSpread(BossModule module) : Components.GenericBaitAway(module, 
         if (count != 0)
         {
             CurrentBaits.Clear();
-            List<Actor> players = new(48);
+            List<Actor> players = [with(48)];
             // note: this is problematic because player culling messes this up and leads to incorrect results (eg not finding the actual bait target)
             // in any frame players can be removed or added to the object table and will likely never contain all 48 players at the same time
             // caching removed players is also pointless since the player position no longer gets updated when this happens

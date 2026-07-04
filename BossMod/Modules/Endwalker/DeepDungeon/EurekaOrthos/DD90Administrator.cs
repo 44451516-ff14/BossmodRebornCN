@@ -49,7 +49,7 @@ class AetheroChemicalLaserCombo(BossModule module) : Components.GenericAOEs(modu
 {
     private static readonly AOEShape[] _shapes = [new AOEShapeCone(50f, 60f.Degrees()), new AOEShapeDonut(8f, 60f), new AOEShapeRect(40f, 2.5f),
     new AOEShapeCross(60f, 5f), new AOEShapeDonut(5f, 60f)];
-    public readonly List<AOEInstance> AOEs = new(6);
+    public readonly List<AOEInstance> AOEs = [with(6)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

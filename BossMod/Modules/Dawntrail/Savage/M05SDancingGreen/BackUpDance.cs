@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Savage.M05SDancingGreen;
 sealed class BackUpDance(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private DateTime _activation;
-    private readonly List<Actor> sources = new(4);
+    private readonly List<Actor> sources = [with(4)];
     private readonly AOEShapeCone cone = new(60f, 22.5f.Degrees());
 
     public override void Update()

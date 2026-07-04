@@ -58,7 +58,7 @@ sealed class Thundercrack(BossModule module) : Components.BaitAwayCast(module, (
 sealed class LightningBolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningBolt, 6f);
 sealed class ShockElectrify(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(16f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

@@ -55,7 +55,7 @@ sealed class ChaoticUndercurrent(BossModule module) : Components.GenericAOEs(mod
 {
     public enum Pattern { None, BBRR, RRBB, BRRB, RBBR }
     public Pattern currentPattern;
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeRect rect = new(40f, 5f);
     private CosmicKissKnockback? _kb;
 
@@ -147,7 +147,7 @@ sealed class CosmicKissCircle(BossModule module) : Components.SimpleAOEs(module,
 
 sealed class CosmicKissRect(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     private static readonly AOEShapeRect rect = new(50f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

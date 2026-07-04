@@ -45,8 +45,8 @@ sealed class MemoryOfTheStorm(BossModule module) : Components.LineStack(module, 
 
 sealed class Bombardment(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(8);
-    private readonly List<Actor> terrors = new(24);
+    public readonly List<AOEInstance> AOEs = [with(8)];
+    private readonly List<Actor> terrors = [with(24)];
 
     private static readonly AOEShapeCircle circleSmall = new(3f), circleBig = new(14f);
 
@@ -226,7 +226,7 @@ sealed class Turmoil(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Keraunography(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(60f, 10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

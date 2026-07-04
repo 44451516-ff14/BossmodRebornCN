@@ -58,15 +58,8 @@ sealed class IPCList(Replay replay, Replay.Encounter? enc, IEnumerable<WorldStat
     private List<(int index, NetworkState.OpServerIPC op, Lazy<PacketDecoder.TextNode> data)>? _nodes;
     private readonly HashSet<PacketID> _filteredPackets = [
         PacketID.ActorMove,
-        PacketID.ActorControlSelf,
         PacketID.UpdateHate,
         PacketID.UpdateHater,
-        PacketID.EffectResult1,
-        PacketID.ActionEffect1,
-        PacketID.ActionEffect8,
-        PacketID.EffectResultBasic1,
-        PacketID.StatusEffectList,
-        PacketID.StatusEffectListDouble,
         PacketID.UpdateHpMpTp,
         PacketID.ActorSetPos,
         PacketID.UpdateClassInfo,
@@ -95,7 +88,7 @@ sealed class IPCList(Replay replay, Replay.Encounter? enc, IEnumerable<WorldStat
         var timeRef = ImGui.GetIO().KeyShift && _relativeTS != default ? _relativeTS : reference;
 
         var c = new ImGuiListClipper();
-        c.Begin(_nodes.Count, 21);
+        c.Begin(_nodes.Count, ImGui.GetFrameHeight() - 2);
 
         while (c.Step())
         {
@@ -145,5 +138,8 @@ sealed class IPCList(Replay replay, Replay.Encounter? enc, IEnumerable<WorldStat
             _filterInvert = true;
             _nodes = null;
         }
+        ImGui.Separator();
+        if (ImGui.MenuItem("Jump to timestamp", "double click"))
+            scrollTo(op.Timestamp);
     }
 }

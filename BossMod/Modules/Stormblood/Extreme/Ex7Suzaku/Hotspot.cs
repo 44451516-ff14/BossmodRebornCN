@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 sealed class Hotspot(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(21f, 45f.Degrees());
-    public readonly List<AOEInstance> AOEs = new(16);
+    public readonly List<AOEInstance> AOEs = [with(16)];
     private readonly PayThePiper _kb = module.FindComponent<PayThePiper>()!;
     private static readonly uint[] _songs = [(uint)OID.SongOfDurance, (uint)OID.SongOfOblivion, (uint)OID.SongOfSorrow, (uint)OID.SongOfFire];
     private Angle startrotation;

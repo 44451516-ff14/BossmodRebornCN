@@ -235,7 +235,7 @@ sealed class AIManagementWindow : UIWindow
         var presets = _manager.Autorot.Database.Presets.AllPresets;
 
         var count = presets.Count;
-        List<string> presetNames = new(count + 1);
+        List<string> presetNames = [with(count + 1)];
         for (var i = 0; i < count; ++i)
         {
             presetNames.Add(presets[i].Name);

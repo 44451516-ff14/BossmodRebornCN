@@ -37,8 +37,8 @@ public enum SID : uint
 
 class PyricBreath(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
-    private readonly List<uint> buffs = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
+    private readonly List<uint> buffs = [with(2)];
     private static readonly Angle angle = 120f.Degrees();
     private static readonly AOEShapeCone cone = new(40f, 60f.Degrees());
 

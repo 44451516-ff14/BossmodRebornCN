@@ -32,7 +32,7 @@ sealed class HedgeMazing(BossModule module) : Components.SimpleAOEGroups(module,
 [SkipLocalsInit]
 sealed class Leafmash(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly AOEShapeCircle circle = new(14f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

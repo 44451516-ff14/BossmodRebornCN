@@ -7,7 +7,7 @@ sealed class DesertTempest(BossModule module) : Components.GenericAOEs(module)
     private static readonly AOEShapeDonut donut = new(14f, 60f);
     private static readonly AOEShapeDonutSector donutSector = new(14f, 60f, 90f.Degrees());
 
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.FATE.Ttokrrone;
 
 sealed class Landswallow(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeRect rect = new(68f, 13.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

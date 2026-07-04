@@ -35,7 +35,7 @@ sealed class TemporalParadoxMagitekRay(BossModule module) : Components.GenericAO
 {
     private static readonly AOEShapeRect rectShort = new(10f, 4f);
     private static readonly AOEShapeRect rectLong = new(40f, 4f);
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

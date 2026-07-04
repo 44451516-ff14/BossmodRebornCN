@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A35FalseIdol;
 
 sealed class LighterNoteBait(BossModule module) : BossComponent(module)
 {
-    private readonly List<(Actor caster, bool isNorthSouth)> casters = new(3);
+    private readonly List<(Actor caster, bool isNorthSouth)> casters = [with(3)];
     private DateTime activation;
     private BitMask targets;
     private bool readyToRemove;
@@ -106,7 +106,7 @@ sealed class LighterNoteBait(BossModule module) : BossComponent(module)
 
 sealed class LighterNoteExaflare(BossModule module) : Components.Exaflare(module, 6f)
 {
-    private readonly List<(Actor caster, bool isNorthSouth)> casters = new(3);
+    private readonly List<(Actor caster, bool isNorthSouth)> casters = [with(3)];
     private DateTime activation;
 
     public override void OnActorModelStateChange(Actor actor, byte modelState, byte animState1, byte animState2)

@@ -4,7 +4,7 @@ class SolarFans(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Sol
 
 class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeDonutSector _shape = new(20f, 30f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -66,7 +66,7 @@ class RadiantRhythm(BossModule module) : Components.GenericAOEs(module)
 
 class RadiantFlourish(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCircle _shape = new(25f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

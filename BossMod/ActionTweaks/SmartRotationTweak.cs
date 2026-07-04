@@ -4,7 +4,7 @@
 class SmartRotationConfig : ConfigNode
 {
     [PropertyDisplay("启用功能", tooltip: "用更智能的替代方案替换游戏内“自动面向目标”选项。\n使用动作时，只有目标不在正面扇区内才会改变朝向。\n咏唱期间会保持角色面向目标。")]
-    public bool Enabled = false;
+    public bool Enabled = true;
 
     [PropertyDisplay("自动规避视线判定")]
     public bool AvoidGazes = true;
@@ -23,7 +23,7 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
     private static readonly SmartRotationConfig _config = Service.Config.Get<SmartRotationConfig>();
     private readonly DisjointSegmentList _forbidden = new();
     private static readonly Angle _minWindow = 5f.Degrees();
-    public bool Enabled => _config.Enabled;
+    public static bool Enabled => _config.Enabled;
 
     // return 'ideal orientation' for a spell, or null if spell is not oriented (self-targeted or does not require facing)
     public Angle? GetSpellOrientation(uint spellId, WPos playerPos, bool targetIsSelf, WPos? targetPos, WPos targetLoc)

@@ -2,9 +2,9 @@ namespace BossMod.Shadowbringers.Alliance.A24TheCompound2P;
 
 sealed class R011Laser(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeRect rect = new(70f, 7.5f);
-    private readonly List<(WPos source, Angle rotation, Actor target)> _tethers = new(2); // tether target can teleport after tether got applied (in the same frame), leading to incorrect locations if used directly in OnTethered
+    private readonly List<(WPos source, Angle rotation, Actor target)> _tethers = [with(2)]; // tether target can teleport after tether got applied (in the same frame), leading to incorrect locations if used directly in OnTethered
     private int movedLasers;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => movedLasers != 0 ? CollectionsMarshal.AsSpan(_aoes) : [];

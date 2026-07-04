@@ -52,7 +52,7 @@ public enum AID : uint
 
 sealed class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     public static readonly AOEShapeRect Square = new(10f, 10f, 10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -118,7 +118,7 @@ sealed class Bunkerbuster(BossModule module) : Components.GenericAOEs(module)
 
 sealed class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(15);
+    private readonly List<AOEInstance> _aoes = [with(15)];
 
     // either 9 or 15 explosions depending on pattern
     // pattern 1: 1, 3, 5 explosions
@@ -186,7 +186,7 @@ sealed class BouncingBomb(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Combos(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCone cone = new(45f, 90f.Degrees());
     private static readonly AOEShapeDonut donut = new(16f, 60f);
     private static readonly AOEShapeRect rect = new(120f, 16f);

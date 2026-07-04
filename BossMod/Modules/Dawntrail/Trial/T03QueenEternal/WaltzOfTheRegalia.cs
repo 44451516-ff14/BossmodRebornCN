@@ -8,7 +8,7 @@ namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 sealed class WaltzOfTheRegaliaBait(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(MathF.Sqrt(212f) * 0.5f);
-    private readonly List<(Actor, DateTime)> _targets = new(3);
+    private readonly List<(Actor, DateTime)> _targets = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

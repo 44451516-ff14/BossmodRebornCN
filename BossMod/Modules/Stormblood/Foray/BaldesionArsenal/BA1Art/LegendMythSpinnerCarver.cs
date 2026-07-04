@@ -4,7 +4,7 @@ sealed class LegendMythSpinnerCarver(BossModule module) : Components.GenericAOEs
 {
     private static readonly AOEShapeCircle circle = new(15f);
     private static readonly AOEShapeDonut donut = new(7f, 22f);
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private bool mythcall;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

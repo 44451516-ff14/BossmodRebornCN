@@ -2,7 +2,7 @@
 
 class FlameAndSulphur(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(14);
+    private readonly List<AOEInstance> _aoes = [with(14)];
     private static readonly AOEShapeRect _shapeFlameExpand = new(46f, 5f);
     private static readonly AOEShapeRect _shapeFlameSplit = new(46f, 2.5f);
     private static readonly AOEShapeCircle _shapeRockExpand = new(11f);

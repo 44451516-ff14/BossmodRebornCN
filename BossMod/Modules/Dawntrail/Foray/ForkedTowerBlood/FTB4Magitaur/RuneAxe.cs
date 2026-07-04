@@ -106,8 +106,8 @@ sealed class RuneAxeAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly RuneAxeStatus _status = module.FindComponent<RuneAxeStatus>()!;
     private AOEInstance[] _aoePrepare = [];
-    private readonly List<AOEInstance>[] _aoeHintsForStatus = [new(1), new(1), new(1), new(1)];
-    private readonly List<AOEInstance>[] _aoeHintsNoStatus = [new(1), new(1)];
+    private readonly List<AOEInstance>[] _aoeHintsForStatus = [[with(1)], [with(1)], [with(1)], [with(1)]];
+    private readonly List<AOEInstance>[] _aoeHintsNoStatus = [[with(1)], [with(1)]];
     private bool prepare;
     public bool Show = true;
 

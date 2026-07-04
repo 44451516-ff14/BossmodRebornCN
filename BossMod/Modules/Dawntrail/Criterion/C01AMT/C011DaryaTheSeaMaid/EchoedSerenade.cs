@@ -4,7 +4,7 @@ class EchoedSerenade(BossModule module) : Components.GenericAOEs(module) {
     private List<AOEInstance> aoes = [];
     public int maxShow = 2;
     
-    private List<uint> orderVFX = new ();
+    private List<uint> orderVFX = [];
     private int indexVFX = 0;
     private DateTime lastVFX = DateTime.MinValue;
     private TimeSpan cooldown = TimeSpan.FromSeconds(0.5);

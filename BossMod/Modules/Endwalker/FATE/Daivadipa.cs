@@ -52,7 +52,7 @@ public enum SID : uint
 
 class LitPath(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private static readonly AOEShapeRect rect = new(50f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -115,7 +115,7 @@ class LitPath(BossModule module) : Components.GenericAOEs(module)
 
 class Burn(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(16);
+    private readonly List<AOEInstance> _aoes = [with(16)];
     private static readonly AOEShapeCircle circle = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -73,7 +73,7 @@ sealed class OldMagicArcaneEdgeContrapasso(BossModule module) : Components.Raidw
 
 sealed class DuplicitousBattery(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(32);
+    private readonly List<AOEInstance> _aoes = [with(32)];
     private static readonly AOEShapeCircle circle = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

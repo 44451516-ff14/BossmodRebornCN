@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Raid.M08NHowlingBlade;
 sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(30f, 3f);
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -118,7 +118,7 @@ class BigBoot(BossModule module) : Components.GenericKnockback(module, (uint)AID
 class Corrosion(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(9f);
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

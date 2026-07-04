@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA3AbsoluteVirtue;
 sealed class BrightDarkAurora(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(30f, 50f);
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -38,7 +38,7 @@ sealed class BrightDarkAuroraCounter(BossModule module) : Components.CastCounter
 sealed class AstralUmbralRays(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(16f);
-    public readonly List<AOEInstance> _aoes = new(9);
+    public readonly List<AOEInstance> _aoes = [with(9)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

@@ -63,7 +63,7 @@ class SelfDestruct2(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 
 class Breakthrough(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
@@ -122,7 +122,7 @@ class Breakthrough(BossModule module) : Components.GenericAOEs(module)
 
 class Bulldoze(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

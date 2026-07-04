@@ -8,7 +8,7 @@ sealed class HurricaneWingAOE(BossModule module) : Components.GenericAOEs(module
 {
     public override bool KeepOnPhaseChange => true;
 
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
 
     private static readonly AOEShape[] _shapes = [new AOEShapeCircle(9f), new AOEShapeDonut(9f, 16f), new AOEShapeDonut(16f, 23f), new AOEShapeDonut(23f, 30f)];
 
@@ -76,7 +76,7 @@ sealed class Whirlwinds(BossModule module) : Components.GenericAOEs(module)
     private const float Length = 5f;
     private static readonly AOEShapeCapsule capsuleSmall = new(3f, Length), capsuleBig = new(9f, Length);
     private static readonly AOEShapeCircle circleSmall = new(3f), circleBig = new(9f);
-    private readonly List<Actor> _smallWhirldwinds = new(3), _bigWhirldwinds = new(3);
+    private readonly List<Actor> _smallWhirldwinds = [with(3)], _bigWhirldwinds = [with(3)];
     public bool Active => _smallWhirldwinds.Count != 0 || _bigWhirldwinds.Count != 0;
     private static readonly Angle a180 = 180f.Degrees();
     private bool moving;

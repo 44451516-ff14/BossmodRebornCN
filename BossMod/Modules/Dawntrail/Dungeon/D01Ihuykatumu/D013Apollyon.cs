@@ -90,7 +90,7 @@ sealed class RazorStorm(BossModule module) : Components.SimpleAOEs(module, (uint
 
 sealed class CuttingWind(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private static readonly AOEShapeRect rect = new(36f, 4f, 36f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A35FalseIdol;
 
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeCircle circleDistortion = new(6f), circleShockWave = new(7f);
     private static readonly AOEShapeRect rect = new(3f, 25f);
     public readonly Polygon[] Towers = new Polygon[2];

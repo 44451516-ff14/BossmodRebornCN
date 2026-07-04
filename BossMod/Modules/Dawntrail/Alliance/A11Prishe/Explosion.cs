@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Alliance.A11Prishe;
 sealed class Explosion(BossModule module) : Components.GenericAOEs(module, (uint)AID.Explosion)
 {
     private static readonly AOEShapeCircle circle = new(8f);
-    private readonly List<AOEInstance> _aoes = new(28);
+    private readonly List<AOEInstance> _aoes = [with(28)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.Trial.T02Hydaelyn;
 
 class Lightwave(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> waves = new(4);
+    private readonly List<Actor> waves = [with(4)];
     private static readonly AOEShapeRect rect = new(16f, 8f, 12f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -2,9 +2,9 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V14ZelessGah;
 
 sealed class BallOfFire(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(12f);
-    private readonly List<Actor> cachedPortals = new(4);
+    private readonly List<Actor> cachedPortals = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

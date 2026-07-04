@@ -44,7 +44,7 @@ public enum TetherID : uint
 class Gurgle(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(60f, 5f);
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -92,7 +92,7 @@ class Crack(BossModule module) : Components.GenericBaitAway(module, tankbuster: 
 sealed class GeysersCloudPlatform(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private bool active;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

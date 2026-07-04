@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M01NBlackCat;
 
 sealed class OneTwoPaw(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private enum Pattern { None, WestEast, EastWest }
     private Pattern _currentPattern;
     private static readonly AOEShapeCone cone = new(60f, 90f.Degrees());

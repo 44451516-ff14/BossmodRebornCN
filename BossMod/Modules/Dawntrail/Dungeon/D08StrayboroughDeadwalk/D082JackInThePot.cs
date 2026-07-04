@@ -64,8 +64,8 @@ sealed class PipingPour(BossModule module) : Components.GenericAOEs(module)
 sealed class TeaAwhirl : Components.GenericAOEs
 {
     private static readonly AOEShapeCircle circle = new(19f);
-    private readonly List<Actor> _cups = new(2);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<Actor> _cups = [with(2)];
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private readonly Dictionary<uint, Action> cupPositions;
 
     public TeaAwhirl(BossModule module) : base(module)

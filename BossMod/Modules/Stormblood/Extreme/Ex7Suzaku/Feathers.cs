@@ -2,13 +2,13 @@ namespace BossMod.Stormblood.Extreme.Ex7Suzaku;
 
 sealed class ScarletPlumeTailFeather(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private static readonly AOEShapeCircle circle = new(9f);
     private static readonly uint[] _feathers = [(uint)OID.ScarletTailFeather, (uint)OID.ScarletPlume];
     private readonly int party = module.Raid.WithoutSlot(true, false, false).Length;
     private readonly RekindleP1 _spread = module.FindComponent<RekindleP1>()!;
     private BitMask _target;
-    private readonly List<WPos> plumeCache = new(4);
+    private readonly List<WPos> plumeCache = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

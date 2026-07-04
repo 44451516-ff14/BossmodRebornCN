@@ -68,7 +68,7 @@ sealed class PodBurst(BossModule module) : Components.SimpleAOEGroups(module, [(
 
 sealed class WrithingRiot(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCone coneLeftRight = new(25f, 105f.Degrees());
     private static readonly AOEShapeCone coneRear = new(25f, 45f.Degrees());
 

@@ -112,7 +112,7 @@ class ParhelionCone(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private Angle _increment;
     private DateTime _activation;
-    private readonly List<Angle> _rotation = new(3);
+    private readonly List<Angle> _rotation = [with(3)];
 
     private static readonly AOEShapeCone _shape = new(20f, 22.5f.Degrees());
 
@@ -180,7 +180,7 @@ class ParhelionDonut(BossModule module) : Components.ConcentricAOEs(module, [new
 
 class EpeaPteroenta(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCone cone = new(20f, 60f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -55,7 +55,7 @@ sealed class Sandblast(BossModule module) : Components.RaidwideCast(module, (uin
 sealed class Landslip(BossModule module) : Components.GenericKnockback(module)
 {
     public bool TowerDanger;
-    public readonly List<Knockback> Knockbacks = new(4);
+    public readonly List<Knockback> Knockbacks = [with(4)];
     private static readonly AOEShapeRect rect = new(40f, 5f);
     private Towerfall? _aoe = module.FindComponent<Towerfall>();
 
@@ -126,7 +126,7 @@ sealed class PoundSand(BossModule module) : Components.SimpleAOEs(module, (uint)
 
 sealed class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -164,7 +164,7 @@ sealed class AntlionMarch(BossModule module) : Components.GenericAOEs(module)
 sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly Landslip _kb = module.FindComponent<Landslip>()!;
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(40f, 5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

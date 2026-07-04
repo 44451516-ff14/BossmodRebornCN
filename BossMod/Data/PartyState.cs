@@ -190,7 +190,7 @@ public sealed class PartyState
     public List<WorldState.Operation> CompareToInitial()
     {
         var length = Members.Length;
-        List<WorldState.Operation> ops = new(length + 1);
+        List<WorldState.Operation> ops = [with(length + 1)];
         for (var i = 0; i < length; ++i)
         {
             ref var m = ref Members[i];

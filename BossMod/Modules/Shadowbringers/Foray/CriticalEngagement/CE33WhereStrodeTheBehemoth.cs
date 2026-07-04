@@ -55,7 +55,7 @@ sealed class WildHorn(BossModule module) : Components.BaitAwayCast(module, (uint
 sealed class Thunderbolt(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(45f, 45f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

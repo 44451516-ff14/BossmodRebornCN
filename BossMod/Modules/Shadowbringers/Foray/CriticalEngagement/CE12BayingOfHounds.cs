@@ -80,7 +80,7 @@ sealed class VoidTornado(BossModule module) : Components.CastHint(module, (uint)
 
 sealed class VoidQuake(BossModule module) : Components.GenericAOEs(module) // this concentric AOE can happen forwards or backwards in order with the same AID as the starter
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCircle _shape1 = new(10f);
     private static readonly AOEShapeDonut _shape2 = new(10f, 20f);
     private static readonly AOEShapeDonut _shape3 = new(20f, 30f);

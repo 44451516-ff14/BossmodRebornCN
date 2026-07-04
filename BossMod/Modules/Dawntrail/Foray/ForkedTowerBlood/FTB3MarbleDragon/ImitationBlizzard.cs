@@ -4,7 +4,7 @@ sealed class ImitationBlizzard(BossModule module) : Components.GenericAOEs(modul
 {
     private static readonly AOEShapeCircle circle = new(20f);
     private static readonly AOEShapeCross cross = new(60f, 8f);
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private Actor? referenceIcewind;
     private bool isPattern1;
     public bool IsRain4;
@@ -384,7 +384,7 @@ sealed class ImitationBlizzardTowers(BossModule module) : Components.GenericTowe
 sealed class BallOfIce(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circleBig = new(8f), circleSmall = new(4f);
-    private readonly List<AOEInstance> _aoes = new(10);
+    private readonly List<AOEInstance> _aoes = [with(10)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

@@ -130,7 +130,7 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeDonut donut = new(5f, 40f);
     private static readonly AOEShapeCircle circle = new(16f);
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly WPos _frozenStarShortTether = new(230f, 86f), _frozenStarLongTether = new(230f, 92f);
     private static readonly WPos _donut = new(230f, 79f), _circle1 = new(241f, 79f), _circle2 = new(219f, 79f);
 

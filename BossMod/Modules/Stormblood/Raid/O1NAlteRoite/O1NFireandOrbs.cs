@@ -18,8 +18,8 @@ sealed class FireOrbsTimedFollowAOE(BossModule module) : Components.GenericAOEs(
     private const float OuterExplodeFromDownburstStart = 12.18f;
     private record struct OrbInfo(DateTime Spawn, bool IsOuter, DateTime PredictedExplode, DateTime? ActualExplode);
 
-    private readonly Dictionary<ulong, OrbInfo> _orbs = new();
-    private readonly List<AOEInstance> _tmp = new();
+    private readonly Dictionary<ulong, OrbInfo> _orbs = [];
+    private readonly List<AOEInstance> _tmp = [];
 
     // used to classify inner vs outer by spawn timing
     private DateTime _firstRingSpawn = default;

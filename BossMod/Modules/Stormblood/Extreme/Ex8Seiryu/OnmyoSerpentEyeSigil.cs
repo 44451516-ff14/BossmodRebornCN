@@ -2,7 +2,7 @@
 
 sealed class OnmyoSerpentEyeSigil(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeDonut donut = new(7f, 30f);
     private static readonly AOEShapeCircle circle = new(12f);
 

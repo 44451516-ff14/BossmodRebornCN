@@ -20,7 +20,7 @@ class ByregotStrikeKnockback(BossModule module) : Components.SimpleKnockbacks(mo
 
 class ByregotStrikeCone(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     private static readonly AOEShapeCone _shape = new(90f, 22.5f.Degrees());
 

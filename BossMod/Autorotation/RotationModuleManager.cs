@@ -1,3 +1,4 @@
+using BossMod.AI;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 
 namespace BossMod.Autorotation;
@@ -52,6 +53,8 @@ public sealed class RotationModuleManager : IDisposable
 
     public static readonly Preset ForceDisable = new(""); // empty preset, so if it's activated, rotation is force disabled
 
+    private static readonly AIConfig _aiConfig = Service.Config.Get<AIConfig>();
+
     public WorldState WorldState => Bossmods.WorldState;
     public ulong PlayerInstanceId => WorldState.Party.Members[PlayerSlot].InstanceId;
     public Actor? Player => WorldState.Party[PlayerSlot];
@@ -80,6 +83,7 @@ public sealed class RotationModuleManager : IDisposable
         439u, // "Toad", palace of the dead
         1546u, // "Odder", heaven-on-high
         3502u, // "Owlet", EO
+        1284u, // "Out of the Action", bardam's mettle b2 and probably some others
         404u, // "Transporting", not a transformation but prevents actions
         4235u, // "Rage" status from Phantom Berserker, prevents all actions and movement
         4376u, // "Transporting", variant in Occult Crescent
@@ -109,7 +113,8 @@ public sealed class RotationModuleManager : IDisposable
             WorldState.Client.ActionRequested.Subscribe(OnActionRequested),
             WorldState.Client.CountdownChanged.Subscribe(OnCountdownChanged),
             WorldState.Client.ActionFailedLoS.Subscribe(OnLoSFailed),
-            Database.Presets.PresetModified.Subscribe(OnPresetModified)
+            Database.Presets.PresetModified.Subscribe(OnPresetModified),
+            _aiConfig.Modified.Subscribe(() => DirtyActiveModules(true))
         );
     }
 
@@ -214,7 +219,7 @@ public sealed class RotationModuleManager : IDisposable
 
     private Func<AIHints.Enemy, float> RateEnemy(StrategyEnemySelection criterion) => criterion switch
     {
-        StrategyEnemySelection.Closest => Player != null ? e => -(e.Actor.Position - Player.Position).LengthSq() : _ => 0,
+        StrategyEnemySelection.Closest => Player != null ? e => -Player.DistanceToHitbox(e.Actor) : _ => 0,
         StrategyEnemySelection.LowestCurHP => e => -e.Actor.HPMP.CurHP,
         StrategyEnemySelection.HighestCurHP => e => e.Actor.HPMP.CurHP,
         StrategyEnemySelection.LowestMaxHP => e => -e.Actor.HPMP.MaxHP,

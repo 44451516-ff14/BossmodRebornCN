@@ -2,8 +2,8 @@ namespace BossMod.Endwalker.VariantCriterion.V2MountRokkon.V23Gorai;
 
 sealed class ArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Polygon> octagonsInner = new(4);
-    private readonly List<Polygon> octagonsOuter = new(4);
+    private readonly List<Polygon> octagonsInner = [with(4)];
+    private readonly List<Polygon> octagonsOuter = [with(4)];
     private AOEInstance[] _aoe = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;

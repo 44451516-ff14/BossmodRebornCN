@@ -131,7 +131,7 @@ sealed class EnaeroAOE(BossModule module) : Components.GenericAOEs(module)
 
 sealed class EndeathAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private bool _delayed;
     private static readonly AOEShapeCircle _shapeOut = new(6f);
     private static readonly AOEShapeDonut _shapeIn = new(6f, 40f);

@@ -34,7 +34,7 @@ sealed class SunToss(BossModule module) : Components.SimpleAOEs(module, (uint)AI
 
 sealed class AncientWrath(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeRect rectShort = new(12f, 4f);
     private static readonly AOEShapeRect rectMedium = new(22f, 4f);
     private static readonly AOEShapeRect rectLong = new(35f, 4f);

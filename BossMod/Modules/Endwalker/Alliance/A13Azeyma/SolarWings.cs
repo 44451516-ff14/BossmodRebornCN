@@ -6,7 +6,7 @@ class SolarWingsR(BossModule module) : SolarWings(module, (uint)AID.SolarWingsR)
 
 class SolarFlair(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<WPos> _sunstorms = new(6);
+    private readonly List<WPos> _sunstorms = [with(6)];
     private BitMask _adjusted;
 
     private const float _kickDistance = 18f;

@@ -12,7 +12,7 @@ sealed class LancingBlowSpread(BossModule module) : Components.SpreadFromIcon(mo
 sealed class LancingBlowAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(10f);
-    public readonly List<AOEInstance> AOEs = new(6);
+    public readonly List<AOEInstance> AOEs = [with(6)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

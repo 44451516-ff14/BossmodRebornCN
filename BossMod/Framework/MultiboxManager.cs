@@ -28,7 +28,7 @@ internal sealed class MultiboxManager : IDisposable
             {
 #if DEBUG
                 Preset.ModuleSettings? md = null;
-                foreach (var m in p.Modules) if (m.Type == typeof(Autorotation.MiscAI.Multibox)) { md = m; break; }
+                foreach (var m in p.Modules) if (m.Type == typeof(Autorotation.MiscAI.FollowSlot)) { md = m; break; }
                 if (md != null)
                     md.TransientSettings.Add(new Preset.ModuleSetting(default, 0, new StrategyValueInt() { Value = (long)leaderId }));
                 else

@@ -92,7 +92,7 @@ sealed class Shattersteel(BossModule module) : Components.SimpleAOEs(module, (ui
 sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(10f);
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

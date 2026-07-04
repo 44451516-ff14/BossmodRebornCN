@@ -4,7 +4,7 @@ sealed class InsideOutOutsideIn(BossModule module) : Components.GenericAOEs(modu
 {
     private readonly AOEShapeCircle circle = new(7f);
     private readonly AOEShapeDonut donut = new(5f, 40f);
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => AOEs.Count != 0 ? CollectionsMarshal.AsSpan(AOEs)[..1] : [];
 

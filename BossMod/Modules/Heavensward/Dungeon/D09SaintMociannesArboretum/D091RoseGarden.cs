@@ -157,7 +157,7 @@ sealed class EarthyBreath(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCone cone = new(7.5f, 15f.Degrees());
     private readonly AOEShapeRect rect = new(7.5f, 1.5f);
-    private readonly List<AOEInstance> _aoes = new(10);
+    private readonly List<AOEInstance> _aoes = [with(10)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

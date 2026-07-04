@@ -5,7 +5,7 @@ sealed class P2WanderingVolleyDownhill(BossModule module) : Components.SimpleAOE
 sealed class P2WanderingVolleyKnockback(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly P2WanderingVolleyDownhill? _downhill = module.FindComponent<P2WanderingVolleyDownhill>();
-    private readonly List<Knockback> _sources = new(2);
+    private readonly List<Knockback> _sources = [with(2)];
     private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);

@@ -4,7 +4,7 @@ sealed class AlexandrianThunderIII(BossModule module) : Components.GenericAOEs(m
 {
     private static readonly AOEShapeCone cone = new(16f, 30f.Degrees());
     private static readonly AOEShapeCircle circle = new(4f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly bool[] activeTiles = new bool[6];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

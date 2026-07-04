@@ -115,7 +115,7 @@ sealed class Electray(BossModule module) : Components.SpreadFromCastTargets(modu
 
 sealed class Surge(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _kbs = new(2);
+    private readonly List<Knockback> _kbs = [with(2)];
     private const float XWest = -187.5f, XEast = -156.5f;
     private const float ZRow1 = -122f, ZRow2 = -132f, ZRow3 = -142f, ZRow4 = -152f, ZRow5 = -162f;
     private static readonly WDir offset = new(4f, default);
@@ -191,7 +191,7 @@ sealed class Surge(BossModule module) : Components.GenericKnockback(module)
 sealed class SurgeHint(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(15.5f, 5);
-    private readonly List<AOEInstance> _hints = new(4);
+    private readonly List<AOEInstance> _hints = [with(4)];
     private readonly Surge _kb = module.FindComponent<Surge>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_hints);

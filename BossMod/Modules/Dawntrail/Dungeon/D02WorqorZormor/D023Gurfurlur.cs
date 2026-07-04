@@ -166,7 +166,7 @@ sealed class Allfire(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(10f, 5f);
     private static readonly AOEShapeRect safespot = new(15f, 10f, invertForbiddenZone: true);
-    public readonly List<AOEInstance> AOEs = new(16);
+    public readonly List<AOEInstance> AOEs = [with(16)];
     private bool first = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

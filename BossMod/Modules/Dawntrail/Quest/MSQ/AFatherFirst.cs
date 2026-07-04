@@ -63,7 +63,7 @@ public enum AID : uint
 
 sealed class DualBlowsSteeledStrike(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCone cone = new(30f, 90f.Degrees());
     private static readonly AOEShapeCross cross = new(30f, 4f);
 
@@ -133,7 +133,7 @@ sealed class DualBlowsSteeledStrike(BossModule module) : Components.GenericAOEs(
 
 sealed class BurningSun(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(26);
+    private readonly List<AOEInstance> _aoes = [with(26)];
     private static readonly AOEShapeCircle circleSmall = new(4f), circleBig = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

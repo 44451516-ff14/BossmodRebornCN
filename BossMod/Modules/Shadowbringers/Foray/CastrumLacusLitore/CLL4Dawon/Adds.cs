@@ -42,7 +42,7 @@ sealed class SpikeFlail(BossModule module) : Components.SimpleAOEs(module, (uint
 sealed class LeftRightHammer(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCone cone = new(20f, 90f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly ArenaChange _arena = module.FindComponent<ArenaChange>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -3,7 +3,7 @@ namespace BossMod.Shadowbringers.Alliance.A23HeavyArtilleryUnit;
 sealed class UpperLaser(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly LowerLaser _aoe = module.FindComponent<LowerLaser>()!;
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     private static readonly Angle a30 = 30f.Degrees();
     private static readonly AOEShape[] donutsectors = [new AOEShapeCone(16f, a30), new AOEShapeDonutSector(14f, 23f, a30),
     new AOEShapeDonutSector(21f, 30f, a30)]; // waves slightly overlap with previous wave, we can use cone instead of donut sector for first wave since it will get clipped with arena shape anyway and save cpu cycles with less vertices
@@ -67,7 +67,7 @@ sealed class UpperLaser(BossModule module) : Components.GenericAOEs(module)
 
 sealed class LowerLaser(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(3);
+    public readonly List<AOEInstance> AOEs = [with(3)];
     private static readonly AOEShapeCone cone = new(40f, 30f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);

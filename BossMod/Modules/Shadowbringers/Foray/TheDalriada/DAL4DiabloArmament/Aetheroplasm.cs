@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL4DiabloArmament;
 
 sealed class Aetheroplasm(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> orbs = new(8);
+    private readonly List<Actor> orbs = [with(8)];
 
     public override void OnActorCreated(Actor actor)
     {

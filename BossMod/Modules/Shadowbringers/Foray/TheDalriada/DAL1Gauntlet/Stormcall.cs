@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL1Gauntlet;
 
 sealed class Stormcall(BossModule module) : Components.GenericAOEs(module, (uint)AID.Stormcall)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeCircle circle = new(35f);
     private NorthSouthwind? _kb = module.FindComponent<NorthSouthwind>();
 

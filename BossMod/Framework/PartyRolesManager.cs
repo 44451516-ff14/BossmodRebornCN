@@ -45,7 +45,7 @@ public sealed class PartyRolesManager : IDisposable
         for (var i = 0; i < PartyState.MaxPartySize; ++i)
         {
             ref var m = ref _ws.Party.Members[i];
-            if (m.IsValid() && m.ContentId != 0)
+            if (m.IsValid() && m.ContentId != default)
             {
                 var actor = _ws.Party[i];
                 if (actor == null)
@@ -76,7 +76,7 @@ public sealed class PartyRolesManager : IDisposable
         {
             Service.Log($"[PartyRoles] Entering duty, scheduling auto-assign roles");
             _pendingAutoAssign = true;
-            _autoAssignDeadline = _ws.CurrentTime.AddSeconds(5); // 5 second timeout
+            _autoAssignDeadline = _ws.CurrentTime.AddSeconds(5d); // 5 second timeout
         }
 
         _lastZone = op.Zone;

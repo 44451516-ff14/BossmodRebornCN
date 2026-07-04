@@ -3,7 +3,7 @@
 sealed class OneTwoPawBoss(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly PredaceousPounce? _pounce = module.FindComponent<PredaceousPounce>();
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     private static readonly AOEShapeCone _shape = new(100, 90.Degrees());
 
@@ -77,7 +77,7 @@ sealed class OneTwoPawBoss(BossModule module) : Components.GenericAOEs(module)
 sealed class OneTwoPawShade(BossModule module) : Components.GenericAOEs(module)
 {
     private Angle _firstDirection;
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     private static readonly AOEShapeCone _shape = new(100f, 90f.Degrees());
 
@@ -131,7 +131,7 @@ sealed class OneTwoPawShade(BossModule module) : Components.GenericAOEs(module)
 
 sealed class LeapingOneTwoPaw(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private Angle _leapDirection;
     private Angle _firstDirection;
     private Actor? _clone;

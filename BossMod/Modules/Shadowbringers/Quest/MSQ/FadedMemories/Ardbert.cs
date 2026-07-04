@@ -67,7 +67,7 @@ class SkyHighDrive(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private Angle _increment;
     private DateTime _activation;
-    private readonly List<Angle> _rotation = new(2);
+    private readonly List<Angle> _rotation = [with(2)];
 
     private static readonly AOEShapeRect rect = new(40f, 4f);
 

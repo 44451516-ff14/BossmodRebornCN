@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V14ZelessGah;
 
 sealed class TrespassersPyre(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rect = new(100f, 1f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

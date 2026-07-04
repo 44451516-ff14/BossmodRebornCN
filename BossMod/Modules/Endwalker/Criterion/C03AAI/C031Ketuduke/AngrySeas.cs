@@ -20,7 +20,7 @@ class AngrySeasAOE(BossModule module) : Components.GenericAOEs(module)
 // TODO: generalize
 class AngrySeasKnockback(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _sources = new(2);
+    private readonly List<Knockback> _sources = [with(2)];
     private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);

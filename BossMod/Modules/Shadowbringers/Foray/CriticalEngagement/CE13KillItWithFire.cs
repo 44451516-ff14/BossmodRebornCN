@@ -46,8 +46,8 @@ sealed class DeadLeaves(BossModule module) : Components.GenericAOEs(module, defa
 {
     private BitMask _tenderStatuses;
     private BitMask _jealousStatuses;
-    private readonly List<AOEInstance> _tenderAOEs = new(2);
-    private readonly List<AOEInstance> _jealousAOEs = new(2);
+    private readonly List<AOEInstance> _tenderAOEs = [with(2)];
+    private readonly List<AOEInstance> _jealousAOEs = [with(2)];
 
     private static readonly AOEShapeCone _shape = new(30f, 45f.Degrees());
 

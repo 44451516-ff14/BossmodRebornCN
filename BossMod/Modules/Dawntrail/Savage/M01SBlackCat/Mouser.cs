@@ -102,7 +102,7 @@ sealed class ArenaChanges(BossModule module) : BossComponent(module)
 
 sealed class Mouser(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(32);
+    private readonly List<AOEInstance> _aoes = [with(32)];
     private bool enrage;
     private static readonly AOEShapeRect rect = new(10f, 5f);
 

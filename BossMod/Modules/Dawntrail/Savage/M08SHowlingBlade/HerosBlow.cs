@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 
 sealed class HerosBlow(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCone cone = new(40f, 90f.Degrees());
     private static readonly AOEShapeDonut donut = new(15f, 30f);
     private static readonly AOEShapeCircle circle = new(22f);

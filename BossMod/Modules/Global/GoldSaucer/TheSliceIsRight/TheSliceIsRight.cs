@@ -39,7 +39,7 @@ public enum AID : uint
 
 sealed class BambooSplits(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeRect rect = new(28f, 2.5f);
     private static readonly AOEShapeCircle circle = new(11f);
     private static readonly AOEShapeCircle bamboospawn = new(3f);

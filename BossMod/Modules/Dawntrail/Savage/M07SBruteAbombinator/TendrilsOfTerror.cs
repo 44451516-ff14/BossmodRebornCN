@@ -40,7 +40,7 @@ sealed class TendrilsOfTerrorBait(BossModule module) : Components.GenericBaitAwa
 
 sealed class TendrilsOfTerrorPrediction(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -80,7 +80,7 @@ sealed class TendrilsOfTerror(BossModule module) : Components.GenericAOEs(module
 {
     private static readonly M07SBruteAbombinatorConfig _config = Service.Config.Get<M07SBruteAbombinatorConfig>();
     public static readonly AOEShapeCross Cross = new(60f, 2f);
-    public readonly List<AOEInstance> AOEs = new(8);
+    public readonly List<AOEInstance> AOEs = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

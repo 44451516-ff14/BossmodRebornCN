@@ -51,7 +51,7 @@ sealed class ScraplineStorm(BossModule module) : Components.SimpleKnockbacks(mod
 
 sealed class ScraplineTyphoon(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(8f, 40f);
 

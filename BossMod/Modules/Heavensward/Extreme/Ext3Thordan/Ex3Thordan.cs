@@ -20,7 +20,7 @@ sealed class BossReappear(BossModule module) : Components.CastCounter(module, (u
 
 sealed class LightOfAscalon(BossModule module) : Components.GenericKnockback(module, (uint)AID.LightOfAscalon)
 {
-    private readonly List<Knockback> _sources = new(7);
+    private readonly List<Knockback> _sources = [with(7)];
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);
 

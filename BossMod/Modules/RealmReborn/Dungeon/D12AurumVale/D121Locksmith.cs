@@ -36,7 +36,7 @@ sealed class GoldRush(BossModule module) : Components.RaidwideCast(module, (uint
 sealed class MorbolFruit(BossModule module) : BossComponent(module)
 {
     private BitMask goldlung;
-    private List<Actor> _fruits = new(4);
+    private List<Actor> _fruits = [with(4)];
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {

@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL1Gauntlet;
 
 sealed class PainStormFrigidPulsePainfulGust(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
     private static readonly AOEShapeCircle circle = new(20f);
     private static readonly AOEShapeDonut donut = new(8f, 25f);
     private static readonly AOEShapeCone cone = new(35f, 65f.Degrees());

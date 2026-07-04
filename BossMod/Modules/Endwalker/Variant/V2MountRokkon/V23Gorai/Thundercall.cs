@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V2MountRokkon.V23Gorai;
 
 sealed class Thundercall(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private int counter;
     private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(18f);
 

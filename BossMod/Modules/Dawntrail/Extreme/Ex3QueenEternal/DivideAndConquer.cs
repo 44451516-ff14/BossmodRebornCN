@@ -24,7 +24,7 @@ sealed class DivideAndConquerBait(BossModule module) : Components.GenericBaitAwa
 sealed class DivideAndConquerAOE(BossModule module) : Components.GenericAOEs(module, (uint)AID.DivideAndConquerBait)
 {
     private static readonly AOEShapeRect rect = new(60f, 2.5f);
-    public readonly List<AOEInstance> AOEs = new(8);
+    public readonly List<AOEInstance> AOEs = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);
 

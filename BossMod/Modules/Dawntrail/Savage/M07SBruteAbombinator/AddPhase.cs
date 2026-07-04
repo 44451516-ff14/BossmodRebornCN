@@ -23,8 +23,8 @@ sealed class WindingWildwinds(BossModule module) : Components.SimpleAOEs(module,
 
 sealed class AddInterruptHint(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> castersDonut = new(2);
-    private readonly List<Actor> castersCross = new(2);
+    private readonly List<Actor> castersDonut = [with(2)];
+    private readonly List<Actor> castersCross = [with(2)];
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {

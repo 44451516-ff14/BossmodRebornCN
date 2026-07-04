@@ -32,8 +32,8 @@ sealed class WhirlingOmenRaidwide(BossModule module) : Components.RaidwideCast(m
 
 sealed class WhirlingOmen(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
-    private List<Angle> offsets = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
+    private List<Angle> offsets = [with(2)];
     private static readonly Angle a90 = 90f.Degrees(), a180 = 180f.Degrees();
     private static readonly AOEShapeCone cone = new(40f, 75f.Degrees());
 

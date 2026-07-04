@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.DelubrumReginae.DRN6Queen;
 
 sealed class MeansEnds(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCross cross = new(60f, 5f);
     private readonly Chess _chess = module.FindComponent<Chess>()!;
     private bool shortActivation;

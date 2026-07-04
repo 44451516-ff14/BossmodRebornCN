@@ -93,7 +93,7 @@ sealed class RoarArenaChange(BossModule module) : Components.GenericAOEs(module)
 
 sealed class MagickedStandard(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(9);
+    public readonly List<AOEInstance> AOEs = [with(9)];
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(3f, 10f);
 
@@ -174,7 +174,7 @@ sealed class GreatLeap(BossModule module) : Components.GenericAOEs(module)
 
 sealed class SelfSacrifice(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

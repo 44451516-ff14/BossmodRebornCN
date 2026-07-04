@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Extreme.Ex5Necron;
 
 sealed class ColdGripExistentialDread(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private readonly AOEShapeRect rect1 = new(100f, 6f), rect2 = new(100f, 12f);
     private float offset;
 

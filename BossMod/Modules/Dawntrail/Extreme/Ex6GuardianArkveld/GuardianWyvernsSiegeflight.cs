@@ -2,9 +2,9 @@ namespace BossMod.Dawntrail.Extreme.Ex6GuardianArkveld;
 
 sealed class GuardianWyvernsSiegeflight(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private readonly AOEShapeRect rectFirst = new(40f, 4f), rectGuardian = new(40f, 8f), rectWyvern = new(40f, 9f);
-    private readonly List<(ulong actor, WDir offset)> offsets = new(2);
+    private readonly List<(ulong actor, WDir offset)> offsets = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

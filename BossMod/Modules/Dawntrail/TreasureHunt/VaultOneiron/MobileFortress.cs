@@ -120,7 +120,7 @@ sealed class QuietWorld(BossModule module) : Components.SimpleAOEs(module, (uint
 sealed class SystematicBombardment(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeRect rect = new(10f, 5f);
-    private readonly List<AOEInstance> _aoes = new(16);
+    private readonly List<AOEInstance> _aoes = [with(16)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

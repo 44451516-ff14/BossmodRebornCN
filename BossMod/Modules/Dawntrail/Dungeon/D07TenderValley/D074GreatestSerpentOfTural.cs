@@ -98,7 +98,7 @@ sealed class GreatestFlood(BossModule module) : Components.SimpleKnockbacks(modu
 
 sealed class GreatestLabyrinth(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly Square middle = new(D074GreatestSerpentOfTural.ArenaCenter, 4f);
     private const float Radius = 2f;
 

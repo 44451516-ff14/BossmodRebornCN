@@ -5,7 +5,7 @@ sealed class PiercingLight2(BossModule module) : Components.SpreadFromCastTarget
 
 sealed class Spiritcull(BossModule module) : Components.GenericStackSpread(module)
 {
-    private readonly List<Actor> targets = new(6);
+    private readonly List<Actor> targets = [with(6)];
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {

@@ -56,7 +56,7 @@ sealed class BarbarousBarrageTowers(BossModule module) : Components.GenericTower
 
     private List<WPos> TowerPositions(State state)
     {
-        List<WPos> towers = new(4);
+        List<WPos> towers = [with(4)];
         var pos = Arena.Center;
         switch (state)
         {

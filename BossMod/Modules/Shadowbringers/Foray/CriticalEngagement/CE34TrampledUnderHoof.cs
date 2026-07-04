@@ -65,7 +65,7 @@ sealed class ArrestingGaze(BossModule module) : Components.SimpleAOEs(module, (u
 
 sealed class GlimmerInTheDark(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCircle circle = new(6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -103,7 +103,7 @@ sealed class GlimmerInTheDark(BossModule module) : Components.GenericAOEs(module
 
 sealed class DemonEye(BossModule module) : Components.GenericGaze(module)
 {
-    private readonly List<Eye> _eyes = new(3);
+    private readonly List<Eye> _eyes = [with(3)];
     private bool inverted;
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) => CollectionsMarshal.AsSpan(_eyes);

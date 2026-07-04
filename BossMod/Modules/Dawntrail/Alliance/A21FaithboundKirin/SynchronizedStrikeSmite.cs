@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A21FaithboundKirin;
 
 sealed class SynchronizedStrikeSmite(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(4);
+    public readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rectNarrow = new(60f, 5f), rectWide = new(60f, 16f);
     private Actor? leftArm;
     private Actor? rightArm;

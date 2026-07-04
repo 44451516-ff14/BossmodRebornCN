@@ -3,8 +3,8 @@ namespace BossMod.Shadowbringers.Alliance.A33RedGirl;
 sealed class DiffuseEnergy(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private static readonly AOEShapeCone cone = new(12f, 60f.Degrees());
-    private readonly List<(Actor source, Actor target)> tethers = new(4);
-    private readonly List<(Actor source, WDir direction)> sources = new(2);
+    private readonly List<(Actor source, Actor target)> tethers = [with(4)];
+    private readonly List<(Actor source, WDir direction)> sources = [with(2)];
 
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {

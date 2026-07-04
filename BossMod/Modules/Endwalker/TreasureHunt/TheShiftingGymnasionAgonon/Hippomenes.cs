@@ -55,7 +55,7 @@ class DibridTetrabridBlaster(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Angle a180 = 180f.Degrees(), a90 = 90f.Degrees();
     private static readonly AOEShapeCone cone = new(30, 135f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
 

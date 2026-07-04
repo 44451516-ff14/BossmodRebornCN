@@ -33,7 +33,7 @@ sealed class TrapJaws(BossModule module) : Components.SingleTargetDelayableCast(
 sealed class SphereShatter(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
-    private readonly List<AOEInstance> _aoes = new(13);
+    private readonly List<AOEInstance> _aoes = [with(13)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

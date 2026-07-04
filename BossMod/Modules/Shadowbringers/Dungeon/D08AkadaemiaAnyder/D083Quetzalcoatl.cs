@@ -90,7 +90,7 @@ sealed class OrbCollecting(BossModule module) : BossComponent(module)
 
 sealed class ExpandingOrb(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> voidzones = new(4);
+    private readonly List<Actor> voidzones = [with(4)];
     private AOEInstance[] _aoes = [];
     private int lastVersion, lastCount;
 

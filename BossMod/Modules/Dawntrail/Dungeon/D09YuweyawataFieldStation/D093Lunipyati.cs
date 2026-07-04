@@ -107,7 +107,7 @@ sealed class RagingClaw(BossModule module) : Components.GenericAOEs(module)
 
 sealed class BoulderDance(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeCircle circle = new(7f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -159,9 +159,9 @@ sealed class Slabber(BossModule module) : Components.SingleTargetCast(module, (u
 
 sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(16);
+    private readonly List<AOEInstance> _aoes = [with(16)];
     private static readonly AOEShapeCircle circle = new(5f);
-    private readonly List<float> angles = new(4);
+    private readonly List<float> angles = [with(4)];
     private static readonly WPos[] spiralSmallPoints = [D093Lunipyati.ArenaCenter, new(31.8f, -715.5f), new(35, -721.7f), new(41, -722.5f)];
     private static readonly WPos[] spiralBigPoints = [D093Lunipyati.ArenaCenter, new(28.7f, -708.2f), new(29.4f, -714), new(35.4f, -715.8f),
     new(40f, -711f), new(38.7f, -705f), new(34f, -701.5f), new(28f, -701.4f), new(24f, -704.399f), new(22f, -709.7f), new(23.1f, -715.099f),
@@ -266,7 +266,7 @@ sealed class LeapingEarth(BossModule module) : Components.GenericAOEs(module)
 
 sealed class RockBlast(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(15);
+    private readonly List<AOEInstance> _aoes = [with(15)];
     private static readonly AOEShapeCircle circle = new(5f);
     private static readonly WPos[] clockPositions = [new(34f, -697f), new(48f, -710f), new(21f, -710f), new(34f, -724f)];
 

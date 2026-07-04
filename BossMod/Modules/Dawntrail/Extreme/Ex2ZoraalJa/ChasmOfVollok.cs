@@ -46,7 +46,7 @@ sealed class ChasmOfVollokFangLarge(BossModule module) : Components.GenericAOEs(
 sealed class ChasmOfVollokPlayer(BossModule module) : Components.GenericAOEs(module, (uint)AID.ChasmOfVollokPlayer, "GTFO from occupied cell!")
 {
     public bool Active;
-    private readonly List<Actor> _targets = new(8);
+    private readonly List<Actor> _targets = [with(8)];
     private DateTime _activation;
 
     private static readonly AOEShapeRect _shape = new(2.5f, 2.5f, 2.5f);

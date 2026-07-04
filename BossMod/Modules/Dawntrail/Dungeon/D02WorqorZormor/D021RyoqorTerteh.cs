@@ -65,7 +65,7 @@ sealed class IceScreamFrozenSwirl(BossModule module) : Components.GenericAOEs(mo
 {
     private static readonly AOEShapeRect rect = new(20f, 10f);
     private static readonly AOEShapeCircle circle = new(15f);
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private int tetherCount;
     private byte tutorial;
 

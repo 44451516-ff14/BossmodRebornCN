@@ -2,7 +2,7 @@
 
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
-    private readonly List<Rectangle> _rects = new(8);
+    private readonly List<Rectangle> _rects = [with(8)];
 
     public override void OnMapEffect(byte index, uint state)
     {

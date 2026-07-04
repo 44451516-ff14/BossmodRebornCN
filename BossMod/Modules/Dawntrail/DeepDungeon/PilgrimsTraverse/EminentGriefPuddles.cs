@@ -6,8 +6,8 @@ abstract class LightAndDarkBase(BossModule module) : Components.GenericAOEs(modu
     protected BitMask lightBuff;
     protected BitMask darkBuff;
     protected BitMask combined;
-    protected readonly List<AOEInstance> _aoes = new(2);
-    protected readonly List<ShapeDistance> _sdfs = new(2);
+    protected readonly List<AOEInstance> _aoes = [with(2)];
+    protected readonly List<ShapeDistance> _sdfs = [with(2)];
     protected readonly bool[] wantLight = new bool[2];
     protected readonly DateTime[] activations = new DateTime[2];
     protected bool aetherdrainActive;

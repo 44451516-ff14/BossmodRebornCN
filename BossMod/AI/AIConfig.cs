@@ -1,6 +1,5 @@
 ﻿namespace BossMod.AI;
 
-
 [ConfigDisplay(Name = "AI 配置 (AI 处于非常实验阶段，请自行承担风险！)", Order = 7)]
 sealed class AIConfig : ConfigNode
 {
@@ -13,10 +12,10 @@ sealed class AIConfig : ConfigNode
     // [PropertyDisplay("将目标设置为焦点")]
     // public bool FocusTargetLeader = true;
 
-    [PropertyDisplay("目标设置为焦点-Focus target master")]
+    [PropertyDisplay("将目标领袖设为焦点")]
     public bool FocusTargetMaster = false;
 
-    [PropertyDisplay("将按键广播到其他窗口", tooltip: "Can cause hitching on some computers. Only enable it if it is actually needed! It is only useful for multiboxers.")]
+    [PropertyDisplay("将按键广播到其他窗口", tooltip: "在某些电脑上可能导致卡顿。仅在确实需要时启用！此功能只对多开玩家有用。")]
     public bool BroadcastToSlaves = false;
 
     [PropertyDisplay("跟随小队位置")]
@@ -25,7 +24,7 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("禁止动作")]
     public bool ForbidActions = false;
 
-    [PropertyDisplay("手动目标选择-Manual targeting")]
+    [PropertyDisplay("手动目标选择")]
     public bool ManualTarget = false;
 
     [PropertyDisplay("禁止移动")]
@@ -45,7 +44,7 @@ sealed class AIConfig : ConfigNode
     public bool FollowTarget = false;
 
 
-    [PropertyDisplay("跟随目标时期望位置(Any任意,Flank侧面,Rear背面,Front正面)")]
+    [PropertyDisplay("跟随目标时期望位置(任意/侧面/背面/正面)")]
     // [PropertyCombo(["任何", "侧面", "后方", "前方"])]
     [PropertyCombo(["Any", "Flank", "Rear", "Front"])]
     public Positional DesiredPositional = Positional.Any;
@@ -70,14 +69,14 @@ sealed class AIConfig : ConfigNode
 
 
 
-    [PropertyDisplay("禁用障碍物地图加载-Disable loading obstacle maps", tooltip: "部分内容（如深层迷宫）可能需要启用此选项。")]
+    [PropertyDisplay("禁用障碍物地图加载", tooltip: "部分内容（如深层迷宫）可能需要启用此选项。")]
     public bool DisableObstacleMaps = false;
 
-    [PropertyDisplay("移动决策延迟-Movement decision delay", tooltip: "谨慎修改此值并保持较低数值！过高可能导致无法及时应对某些机制。请注意根据不同内容调整此值。")]
+    [PropertyDisplay("移动决策延迟", tooltip: "谨慎修改此值并保持较低数值！过高可能导致无法及时应对某些机制。请注意根据不同内容调整此值。")]
     public double MoveDelay = 0;
 
 
-    [PropertyDisplay("骑乘时保持静止-Idle while mounted")]
+    [PropertyDisplay("骑乘时保持静止")]
     public bool ForbidAIMovementMounted = false;
 
     [PropertyDisplay("将斜杠命令回显到聊天")]

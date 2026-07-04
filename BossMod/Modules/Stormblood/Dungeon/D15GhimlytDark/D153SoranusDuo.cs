@@ -129,7 +129,7 @@ class CeruleumTanks(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(11);
     private static readonly AOEShapeCircle circleRoundhouse = new(6.6f);
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     private static readonly WPos[] origins = [new(370.992f, -277.028f), new(362.514f, -273.49f), new(379.485f, -273.49f), new(358.999f, -265.034f),
     new(382.986f, -265.034f), new(379.485f, -256.52f), new(362.514f, -256.52f), new(370.992f, -253.01f)];
 
@@ -186,7 +186,7 @@ class CeruleumTanks(BossModule module) : Components.GenericAOEs(module)
 
 class Crosshatch(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeRect rect = new(40.5f, 2f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

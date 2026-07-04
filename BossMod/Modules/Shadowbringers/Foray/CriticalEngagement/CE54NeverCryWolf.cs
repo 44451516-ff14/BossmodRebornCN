@@ -124,7 +124,7 @@ sealed class AgeOfEndlessFrost(BossModule module) : Components.GenericRotatingAO
     private Angle _increment;
     private DateTime _activation;
     private WPos _pos;
-    private readonly List<Angle> _rotation = new(6);
+    private readonly List<Angle> _rotation = [with(6)];
 
     private static readonly AOEShapeCone _shape = new(40f, 10f.Degrees());
 

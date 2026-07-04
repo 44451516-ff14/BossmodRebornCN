@@ -11,7 +11,7 @@ sealed class Coronation(BossModule module) : Components.GenericAOEs(module, (uin
         public readonly bool Contains(Actor player) => LeftPartner == player || RightPartner == player;
     }
 
-    public readonly List<Group> Groups = new(4);
+    public readonly List<Group> Groups = [with(4)];
     private DateTime _activation;
 
     private static readonly AOEShapeRect _shape = new(100f, 6f);

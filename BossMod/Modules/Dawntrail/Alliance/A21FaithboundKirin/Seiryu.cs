@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A21FaithboundKirin;
 
 sealed class EastwindWheel(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(60f, 9f);
     private static readonly AOEShapeCone cone = new(60f, 45f.Degrees());
 

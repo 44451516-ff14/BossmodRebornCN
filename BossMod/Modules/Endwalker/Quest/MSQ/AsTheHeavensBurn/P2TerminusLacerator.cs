@@ -39,14 +39,14 @@ class DeadlyImpact2(BossModule module) : Components.SimpleAOEs(module, (uint)AID
 class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 6f);
 class Meteor(BossModule module) : Components.GenericLineOfSightAOE(module, default, 40f, safeInsideHitbox: false)
 {
-    private readonly List<(Actor, DateTime)> casters = new(4);
-    private readonly List<Actor> meteors = new(4);
+    private readonly List<(Actor, DateTime)> casters = [with(4)];
+    private readonly List<Actor> meteors = [with(4)];
 
     private void Refresh()
     {
         if (meteors.Count != 0)
         {
-            List<(WPos Position, float HitboxRadius)> activemeteors = new(4);
+            List<(WPos Position, float HitboxRadius)> activemeteors = [with(4)];
             for (var i = 0; i < meteors.Count; ++i)
             {
                 var m = meteors[i];

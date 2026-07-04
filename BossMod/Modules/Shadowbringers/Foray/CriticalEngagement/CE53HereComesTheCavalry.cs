@@ -79,7 +79,7 @@ sealed class RideDownAOE(BossModule module) : Components.SimpleAOEs(module, (uin
 // TODO: generalize to reusable component
 sealed class RideDownKnockback(BossModule module) : Components.GenericKnockback(module, (uint)AID.RideDownAOE, 1)
 {
-    private readonly List<Knockback> _sources = new(2);
+    private readonly List<Knockback> _sources = [with(2)];
     private static readonly AOEShapeCone _shape = new(30f, 90f.Degrees());
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);

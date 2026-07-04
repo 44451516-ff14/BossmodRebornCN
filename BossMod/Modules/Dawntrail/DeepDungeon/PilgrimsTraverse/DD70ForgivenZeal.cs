@@ -52,7 +52,7 @@ public enum AID : uint
 [SkipLocalsInit]
 sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(8);
+    public readonly List<AOEInstance> AOEs = [with(8)];
     private readonly AOEShapeDonut donut = new(3f, 20f);
     private DateTime activation;
     private ZealousGlower? _aoe1;
@@ -110,7 +110,7 @@ sealed class BrutalHalo(BossModule module) : Components.GenericAOEs(module)
 [SkipLocalsInit]
 sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeCone cone = new(40f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

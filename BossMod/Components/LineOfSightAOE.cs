@@ -70,8 +70,8 @@ public abstract class GenericLineOfSightAOE(BossModule module, uint aid, float m
 
     public void AddSafezone(DateTime activation, Angle rotation = default)
     {
-        List<Shape> unionShapes = new(4);
-        List<Shape> differenceShapes = new(4);
+        List<Shape> unionShapes = [with(4)];
+        List<Shape> differenceShapes = [with(4)];
         if (Origin != null)
         {
             if (!Rect)

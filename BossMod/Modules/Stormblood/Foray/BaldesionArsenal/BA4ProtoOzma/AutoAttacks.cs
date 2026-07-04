@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA4ProtoOzma;
 
 sealed class AutoAttacksCube(BossModule module) : Components.GenericBaitAway(module)
 {
-    private readonly List<Actor> targets = new(3);
+    private readonly List<Actor> targets = [with(3)];
     private static readonly AOEShapeRect rect = new(40.5f, 2f);
 
     // todo: this is a hack, ideally we need to determine who has the current highest enmity on each platform
@@ -62,7 +62,7 @@ sealed class AutoAttacksPyramid(BossModule module) : Components.GenericBaitAway(
     {
         if (active)
         {
-            List<Actor>[] platformActors = [new(20), new(20), new(20)];
+            List<Actor>[] platformActors = [[with(20)], [with(20)], [with(20)]];
             CurrentBaits.Clear();
 
             var primaryPos = Module.PrimaryActor.Position;
@@ -140,7 +140,7 @@ class AutoAttacksStar(BossModule module) : Components.GenericStackSpread(module)
     {
         if (active)
         {
-            List<Actor>[] platformActors = [new(20), new(20), new(20)];
+            List<Actor>[] platformActors = [[with(20)], [with(20)], [with(20)]];
             Stacks.Clear();
 
             var primaryPos = Module.PrimaryActor.Position;

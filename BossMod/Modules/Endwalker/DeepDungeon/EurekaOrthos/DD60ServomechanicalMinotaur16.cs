@@ -26,7 +26,7 @@ public enum AID : uint
 
 sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeCone cone = new(40f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -87,7 +87,7 @@ sealed class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(
 
 sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(15);
+    private readonly List<AOEInstance> _aoes = [with(15)];
     private readonly AOEShapeCircle circle = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

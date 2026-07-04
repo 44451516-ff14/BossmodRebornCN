@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A35FalseIdol;
 
 sealed class Crash(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeRect rect = new(50f, 5f);
     private bool first = true;
 

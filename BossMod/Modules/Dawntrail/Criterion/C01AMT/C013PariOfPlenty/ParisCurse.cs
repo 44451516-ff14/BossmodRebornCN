@@ -151,12 +151,12 @@ class ParisCurse(BossModule module) : Components.GenericAOEs(module) {
     private Actor? blueCrystal;
     private Actor? blueCrystalTracker; // Carpet that covers the blueCrystal
     private float blueCrystalTrackerDistance = float.MaxValue;
-    private List<Actor> redCrystals = new();
+    private List<Actor> redCrystals = [];
     
     GridMap? gridMap = null;
     private enum SafeHalf { Unknown, North, South }
     private SafeHalf safeHalf = SafeHalf.Unknown;
-    private List<int[]> safeTiles = new();
+    private List<int[]> safeTiles = [];
     
     private int? assignment;
     

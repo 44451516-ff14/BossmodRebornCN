@@ -28,7 +28,7 @@ sealed class Sludge(BossModule module) : Components.CleansableDebuff(module, (ui
 sealed class SandPillarEarthbreak(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circleSmall = new(4f), circleBig = new(10f);
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
     private readonly (WPos initialPos, Angle rotation)[] positions =
     [
         (new(-135.623f, 147.871f), -45f.Degrees()),

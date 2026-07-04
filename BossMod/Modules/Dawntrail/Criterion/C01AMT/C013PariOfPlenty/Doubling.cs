@@ -10,13 +10,13 @@ public class Doubling(BossModule module) : Components.CastTowers(module, (uint)A
     private enum roleDirection { North, East, South, West }
     public enum towerSide { East, West }
     
-    private Dictionary<ulong, roleDirection> tetheredRoles = new();
-    private List<ulong> eastPlayers = new();
-    private List<ulong> westPlayers = new();
-    private List<ulong> priorityPlayers = new ();
+    private Dictionary<ulong, roleDirection> tetheredRoles = [];
+    private List<ulong> eastPlayers = [];
+    private List<ulong> westPlayers = [];
+    private List<ulong> priorityPlayers = [];
     
-    private List<Tower> eastTowers = new();
-    private List<Tower> westTowers = new();
+    private List<Tower> eastTowers = [];
+    private List<Tower> westTowers = [];
     private bool towerWave1 = false;
     
     public override void OnCastStarted(Actor caster, ActorCastInfo spell) {

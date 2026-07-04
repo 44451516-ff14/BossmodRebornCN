@@ -59,10 +59,10 @@ sealed class Steelstrike(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(20f, 2f);
     private static readonly AOEShapeRect rect2 = new(20f, 2f, 20f);
-    private readonly List<AOEInstance> _aoes = new(15);
-    private readonly List<Angle> angles = new(15);
-    private readonly List<AOEInstance> swordsFire = new(5);
-    private readonly List<AOEInstance> swordsIce = new(5);
+    private readonly List<AOEInstance> _aoes = [with(15)];
+    private readonly List<Angle> angles = [with(15)];
+    private readonly List<AOEInstance> swordsFire = [with(5)];
+    private readonly List<AOEInstance> swordsIce = [with(5)];
     private bool? nextRaidwide; // null = none, false = fire, true = ice
     private BitMask soulOfFire, soulOfIce;
 
@@ -385,7 +385,7 @@ sealed class ThermalDivideSides(BossModule module) : Components.GenericAOEs(modu
 
 sealed class IceBloomCross(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeCross cross = new(40f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

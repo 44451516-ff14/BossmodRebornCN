@@ -35,7 +35,7 @@ sealed class AetherstockAbyssalSmog(BossModule module) : Components.GenericAOEs(
     private static readonly AOEShapeCone cone = new(40f, 90f.Degrees());
     private static readonly AOEShapeDonut donut = new(8f, 40f);
     private static readonly AOEShapeCircle circle = new(12f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

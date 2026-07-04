@@ -3,7 +3,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA3AbsoluteVirtue;
 sealed class BrightDarkAuroraExplosion(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(8f);
-    private readonly List<(Actor source, ulong target)> tetherByActor = new(8);
+    private readonly List<(Actor source, ulong target)> tetherByActor = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -47,7 +47,7 @@ sealed class BrightDarkAuroraExplosion(BossModule module) : Components.GenericAO
 
 abstract class Towers(BossModule module, uint oid, uint tid) : Components.GenericTowersOpenWorld(module)
 {
-    private readonly List<(Actor source, Actor target)> tetherByActor = new(4);
+    private readonly List<(Actor source, Actor target)> tetherByActor = [with(4)];
     private const string Hint = "Stand in a tower of opposite tether element!";
 
     public override void OnActorEAnim(Actor actor, uint state)
@@ -156,7 +156,7 @@ abstract class Towers(BossModule module, uint oid, uint tid) : Components.Generi
         var count = Towers.Count;
         if (count == 0)
             return;
-        HashSet<Actor> allowed = new(4);
+        HashSet<Actor> allowed = [with(4)];
         for (var i = 0; i < tetherByActor.Count; ++i)
             allowed.Add(tetherByActor[i].target);
         for (var i = 0; i < count; ++i)

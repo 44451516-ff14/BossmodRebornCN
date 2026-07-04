@@ -38,7 +38,7 @@ sealed class HereticsForkBreakingWheelStreak(BossModule module) : Components.Gen
 {
     private static readonly AOEShapeDonut donut = new(5f, 60f);
     private static readonly AOEShapeCross cross = new(60f, 5f);
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
 

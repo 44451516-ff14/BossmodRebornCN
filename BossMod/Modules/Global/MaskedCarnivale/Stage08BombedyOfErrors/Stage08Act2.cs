@@ -24,7 +24,7 @@ sealed class Selfdetonations(BossModule module) : BossComponent(module)
 {
     private const string hint = "In bomb explosion radius!";
 
-    private readonly List<Actor> bombs = new(6);
+    private readonly List<Actor> bombs = [with(6)];
 
     public override void OnActorCreated(Actor actor)
     {

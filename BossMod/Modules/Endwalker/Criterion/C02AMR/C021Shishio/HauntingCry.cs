@@ -2,7 +2,7 @@
 
 class HauntingCrySwipes(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCone _shape = new(40f, 90f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -38,7 +38,7 @@ class HauntingCrySwipes(BossModule module) : Components.GenericAOEs(module)
 
 class HauntingCryReisho(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> _ghosts = new(4);
+    private readonly List<Actor> _ghosts = [with(4)];
     private DateTime _activation;
     private DateTime _ignoreBefore;
 

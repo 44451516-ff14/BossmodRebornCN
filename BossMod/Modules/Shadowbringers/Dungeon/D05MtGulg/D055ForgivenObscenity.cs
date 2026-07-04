@@ -39,7 +39,7 @@ public enum AID : uint
 
 sealed class Orbs(BossModule module) : Components.GenericAOEs(module, default, "GTFO from voidzone!")
 {
-    private readonly List<Actor> _orbs = new(6);
+    private readonly List<Actor> _orbs = [with(6)];
     private const float Radius = 3f;
     private static readonly AOEShapeCircle circle = new(Radius);
 
@@ -101,11 +101,11 @@ sealed class Orbs(BossModule module) : Components.GenericAOEs(module, default, "
 sealed class GoldChaser(BossModule module) : Components.GenericAOEs(module)
 {
     private DateTime _activation;
-    private readonly List<Actor> _casters = new(6);
+    private readonly List<Actor> _casters = [with(6)];
     private readonly AOEShapeRect rect = new(40f, 2.5f);
     private readonly WPos[] positionsSet1 = [new(-227.5f, 253f), new(-232.5f, 251.5f)];
     private readonly WPos[] positionsSet2 = [new(-252.5f, 253f), new(-247.5f, 251.5f)];
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

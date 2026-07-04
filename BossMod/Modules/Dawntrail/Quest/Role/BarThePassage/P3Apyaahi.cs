@@ -90,7 +90,7 @@ sealed class RottingRoarMycocyclone(BossModule module) : Components.RaidwideCast
 sealed class PathogenicPowerAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(6f);
-    private readonly List<AOEInstance> _aoes = new(20);
+    private readonly List<AOEInstance> _aoes = [with(20)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

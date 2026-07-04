@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V11Geryon;
 
 sealed class Explosion(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private readonly AOEShapeCircle circle = new(15f);
     public static readonly AOEShapeDonut Donut = new(3f, 17f);
     private bool draw = true;

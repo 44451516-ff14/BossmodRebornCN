@@ -2,8 +2,8 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V11Geryon;
 
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
-    private readonly List<Square> squares = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
+    private readonly List<Square> squares = [with(2)];
     private static readonly AOEShapeRect square = new(10f, 10f, 10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Raid.M05NDancingGreen;
 sealed class RideTheWaves(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeRect rect = new(15f, 2.5f);
-    private readonly List<AOEInstance> _aoes = new(14);
+    private readonly List<AOEInstance> _aoes = [with(14)];
     private int exaflaresStarted;
     private int? safespot;
     private readonly WDir dir = new(default, 1f);

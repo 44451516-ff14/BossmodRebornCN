@@ -38,7 +38,7 @@ class ArenaChanges(BossModule module) : BossComponent(module)
     new(19.5f, 136f)];
     private static readonly Rectangle[] squares = InitializeSquares();
     private static readonly Rectangle[] rect = [new(ArenaCenter, 6.5f, 19.5f)];
-    private readonly List<Rectangle> union = new(2);
+    private readonly List<Rectangle> union = [with(2)];
 
     private static Rectangle[] InitializeSquares()
     {
@@ -111,7 +111,7 @@ class ShieldSkewer(BossModule module) : Components.SimpleAOEs(module, (uint)AID.
 
 class Shrapnel(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(18);
+    private readonly List<AOEInstance> _aoes = [with(18)];
     private static readonly AOEShapeCircle circle = new(6f);
     private static readonly WPos[] shrapnelPositionsSWNE =
         [

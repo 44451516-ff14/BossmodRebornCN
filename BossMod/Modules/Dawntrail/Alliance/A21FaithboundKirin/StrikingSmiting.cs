@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A21FaithboundKirin;
 
 sealed class StrikingSmiting(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCircle circleSmall = new(10f), circleBig = new(30f);
     private Actor? leftArm;
     private Actor? rightArm;

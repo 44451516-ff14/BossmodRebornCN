@@ -13,7 +13,7 @@ sealed class LingeringMiasma(BossModule module) : Components.SimpleExaflare(modu
 
 sealed class CreepingMiasma(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rect = new(50f, 6f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

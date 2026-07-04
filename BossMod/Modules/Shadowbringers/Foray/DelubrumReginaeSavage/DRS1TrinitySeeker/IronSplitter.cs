@@ -2,7 +2,7 @@
 
 sealed class IronSplitter(BossModule module) : Components.GenericAOEs(module, (uint)AID.IronSplitter)
 {
-    public readonly List<AOEInstance> AOEs = new(3);
+    public readonly List<AOEInstance> AOEs = [with(3)];
     private readonly AOEShape[] _shapes = [new AOEShapeCircle(4f), new AOEShapeDonut(8f, 12f), new AOEShapeDonut(16f, 20f),
     new AOEShapeDonut(4f, 8f), new AOEShapeDonut(12f, 16f), new AOEShapeDonut(20f, 25f)];
 

@@ -30,7 +30,7 @@ sealed class UniteMare2(BossModule module) : Components.SimpleAOEs(module, (uint
 sealed class UniteMare3(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(12f);
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

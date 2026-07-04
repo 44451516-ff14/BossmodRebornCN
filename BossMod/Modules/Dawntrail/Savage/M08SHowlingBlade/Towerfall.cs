@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeRect rect = new(30f, 5f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -40,7 +40,7 @@ sealed class Towerfall(BossModule module) : Components.GenericAOEs(module)
 sealed class FangedCrossing(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCross cross = new(21f, 3.5f);
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

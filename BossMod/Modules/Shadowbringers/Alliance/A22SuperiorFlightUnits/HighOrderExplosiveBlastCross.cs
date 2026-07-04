@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A22SuperiorFlightUnits;
 
 sealed class HighOrderExplosiveBlastCross(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private static readonly AOEShapeCross cross = new(20f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

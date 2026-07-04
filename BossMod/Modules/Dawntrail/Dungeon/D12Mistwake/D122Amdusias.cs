@@ -92,7 +92,7 @@ sealed class ThunderIII(BossModule module) : Components.UniformStackSpread(modul
 [SkipLocalsInit]
 sealed class GallopingThunder(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -125,7 +125,7 @@ sealed class GallopingThunder(BossModule module) : Components.GenericAOEs(module
 [SkipLocalsInit]
 sealed class Burst(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeCircle circle = new(9f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

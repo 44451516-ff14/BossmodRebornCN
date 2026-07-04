@@ -37,7 +37,7 @@ sealed class AethericBurst(BossModule module) : Components.RaidwideCast(module, 
 
 sealed class RockSlideStoneSwell(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeCircle circle = new(16f);
     private static readonly AOEShapeCross cross = new(40f, 5f);
 

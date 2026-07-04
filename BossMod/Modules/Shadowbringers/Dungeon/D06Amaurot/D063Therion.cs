@@ -39,7 +39,7 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
     private static readonly AOEShapeRect _square = new(2f, 2f, 2f);
     private Apokalypsis? _aoe = module.FindComponent<Apokalypsis>();
 
-    public readonly List<AOEInstance> BreakingPlatforms = new(2);
+    public readonly List<AOEInstance> BreakingPlatforms = [with(2)];
 
     private static readonly WPos[] positions = [new(-12f, -71f), new(12f, -71f), new(-12f, -51f),
     new(12f, -51f), new(-12f, -31f), new(12f, -31f), new(-12f, -17f), new(12f, -17f), new(default, -65f), new(default, -45f)];
@@ -49,7 +49,7 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
 
     private static readonly Rectangle[] rect = [new(new(default, -45f), 10f, 30f)];
     public readonly List<Shape> UnionRefresh = Union();
-    private readonly List<Shape> difference = new(8);
+    private readonly List<Shape> difference = [with(8)];
     public static readonly ArenaBoundsCustom DefaultArena = new([.. Union()], Offset: -1f);
 
     private static Square[] Squares()
@@ -183,7 +183,7 @@ sealed class DeathlyRayThereion(BossModule module) : Components.GenericAOEs(modu
 sealed class DeathlyRayFaces(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect _rect = new(60f, 3f);
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

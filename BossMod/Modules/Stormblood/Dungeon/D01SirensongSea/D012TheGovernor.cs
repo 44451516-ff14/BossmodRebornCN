@@ -86,7 +86,7 @@ sealed class ShadowFlow(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(6f);
     private readonly AOEShapeCone cone = new(22f, 23f.Degrees());
-    private readonly List<AOEInstance> _aoes = new(15);
+    private readonly List<AOEInstance> _aoes = [with(15)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count > 5 ? CollectionsMarshal.AsSpan(_aoes) : [];
 

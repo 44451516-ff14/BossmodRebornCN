@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Savage.M08SHowlingBlade;
 sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly M08SHowlingBladeConfig _config = Service.Config.Get<M08SHowlingBladeConfig>();
-    private readonly List<Polygon> polygons = new(5);
+    private readonly List<Polygon> polygons = [with(5)];
     private static readonly Polygon pillarPolygon = new(new(100f, 93f), 5.5f, 20);
     private static readonly Polygon[] pillarPolygons =
     [
@@ -138,9 +138,9 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Teleporters(BossModule module) : BossComponent(module)
 {
-    private readonly List<WPos> activeTeleporters = new(10);
+    private readonly List<WPos> activeTeleporters = [with(10)];
     private static readonly WPos[] teleporters = CalculateTeleporterPositions();
-    private readonly List<Pathfinding.Teleporter> activeTeleporterPairs = new(5);
+    private readonly List<Pathfinding.Teleporter> activeTeleporterPairs = [with(5)];
     private BitMask teleportingBlocked;
     private BitMask activeTeleportersMask;
 

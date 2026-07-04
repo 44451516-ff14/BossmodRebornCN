@@ -133,7 +133,7 @@ sealed class ForkedFissures(BossModule module) : Components.GenericAOEs(module)
             new(431.815f, -441.032f), new(425.437f, -432.547f), new(428.824f, -425.528f), new(424.002f, -448.966f)
         ]);
 
-    private readonly List<AOEInstance> _aoes = new(32);
+    private readonly List<AOEInstance> _aoes = [with(32)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

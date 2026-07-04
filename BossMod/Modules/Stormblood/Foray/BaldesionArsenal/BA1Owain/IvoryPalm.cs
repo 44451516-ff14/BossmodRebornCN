@@ -2,7 +2,7 @@ namespace BossMod.Stormblood.Foray.BaldesionArsenal.BA1Owain;
 
 sealed class IvoryPalm(BossModule module) : Components.GenericGaze(module)
 {
-    public readonly List<(Actor target, Actor source)> Tethers = new(2);
+    public readonly List<(Actor target, Actor source)> Tethers = [with(2)];
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
@@ -56,7 +56,7 @@ sealed class EurekanAero(BossModule module) : Components.Cleave(module, (uint)AI
     {
         var enemies = Module.Enemies(EnemyOID);
         var count = enemies.Count;
-        List<(Actor, Actor, Angle)> origins = new(count);
+        List<(Actor, Actor, Angle)> origins = [with(count)];
         for (var i = 0; i < count; ++i)
         {
             var enemy = enemies[i];

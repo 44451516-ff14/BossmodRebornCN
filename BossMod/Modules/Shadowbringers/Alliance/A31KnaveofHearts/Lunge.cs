@@ -12,7 +12,7 @@ sealed class Lunge(BossModule module) : Components.GenericKnockback(module, (uin
     {
         if (spell.Action.ID == WatchedAction)
         {
-            List<SafeWall> safewalls = new(4);
+            List<SafeWall> safewalls = [with(4)];
             var count = _arena.Squares.Count;
             var rot = spell.Rotation;
             var (vertex1, vertex2) = (int)rot.Deg switch

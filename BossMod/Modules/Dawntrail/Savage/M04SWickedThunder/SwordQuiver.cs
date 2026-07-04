@@ -11,7 +11,7 @@ sealed class SwordQuiverRaidwide(BossModule module) : Components.CastCounter(mod
 
 sealed class SwordQuiverBurst(BossModule module) : Components.GenericAOEs(module, (uint)AID.SwordQuiverBurst)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     private static readonly AOEShapeRect _shape = new(30f, 6f, 30f);
 

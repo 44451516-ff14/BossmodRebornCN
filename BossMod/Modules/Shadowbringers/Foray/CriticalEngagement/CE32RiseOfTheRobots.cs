@@ -82,7 +82,7 @@ sealed class Train(BossModule module) : Components.GenericRotatingAOE(module)
     private Angle _increment;
     private DateTime _activation;
     private int casts;
-    private readonly List<Angle> _rotation = new(2);
+    private readonly List<Angle> _rotation = [with(2)];
 
     private static readonly AOEShapeCone _shape = new(100f, 30f.Degrees());
 

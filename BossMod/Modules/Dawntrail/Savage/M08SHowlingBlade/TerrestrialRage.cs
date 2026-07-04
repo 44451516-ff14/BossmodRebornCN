@@ -34,7 +34,7 @@ sealed class HeavensearthSuspendedStone(BossModule module) : Components.IconStac
 sealed class FangedCharge(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 3f);
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -100,7 +100,7 @@ sealed class FangedCharge(BossModule module) : Components.GenericAOEs(module)
 sealed class Shadowchase(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 4f);
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

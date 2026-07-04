@@ -45,7 +45,7 @@ sealed class DecisiveBattleStatus(BossModule module) : BossComponent(module)
 sealed class DecisiveBattleAOEs(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    private readonly List<Polygon> circles = new(3);
+    private readonly List<Polygon> circles = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

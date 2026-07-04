@@ -7,7 +7,7 @@ sealed class PrimeBladeDonut(BossModule module) : Components.SimpleAOEs(module, 
 
 sealed class RelentlessSpiralTransfer(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -31,12 +31,12 @@ sealed class RelentlessSpiralTransfer(BossModule module) : Components.GenericAOE
 
 sealed class PrimeBladeTransfer(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circle = new(20f);
     public static readonly AOEShapeDonut Donut = new(8f, 43f);
     public static readonly AOEShapeRect Rect = new(85f, 10f);
-    private readonly List<(WPos source, Actor target)> _tethers = new(4); // tether target can teleport after tether got applied (in the same frame), leading to incorrect locations if used directly in OnTethered
-    private readonly List<(AOEShape shape, WPos origin, DateTime activation)> _casters = new(4);
+    private readonly List<(WPos source, Actor target)> _tethers = [with(4)]; // tether target can teleport after tether got applied (in the same frame), leading to incorrect locations if used directly in OnTethered
+    private readonly List<(AOEShape shape, WPos origin, DateTime activation)> _casters = [with(4)];
     private readonly A24TheCompound2P bossmod = (A24TheCompound2P)module;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

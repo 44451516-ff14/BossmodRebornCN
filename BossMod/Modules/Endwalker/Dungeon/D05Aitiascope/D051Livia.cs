@@ -34,9 +34,9 @@ class AglaeaBite(BossModule module) : Components.BaitAwayCast(module, (uint)AID.
 
 class AglaeaShot(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeRect rect = new(20f, 3f);
-    private readonly List<Actor> casters = new(8);
+    private readonly List<Actor> casters = [with(8)];
     private DateTime activation;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

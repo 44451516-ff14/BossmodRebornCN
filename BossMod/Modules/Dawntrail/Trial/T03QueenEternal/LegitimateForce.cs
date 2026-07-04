@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 
 sealed class LegitimateForce(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rect = new(20f, 40f);
     private static readonly WDir offset1 = new(default, 20f), offset2 = new(default, 8f);
     private readonly Besiegement _aoe = module.FindComponent<Besiegement>()!;

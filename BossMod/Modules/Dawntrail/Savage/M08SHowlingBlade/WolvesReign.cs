@@ -209,7 +209,7 @@ sealed class ReignsEnd(BossModule module) : Components.GenericBaitAway(module, d
 sealed class RoaringWind(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(40f, 4f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     public bool Draw;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => Draw ? CollectionsMarshal.AsSpan(_aoes) : [];
@@ -233,7 +233,7 @@ sealed class RoaringWind(BossModule module) : Components.GenericAOEs(module)
 
 sealed class WealOfStone(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rect = new(40f, 3f);
     public bool Draw;
 

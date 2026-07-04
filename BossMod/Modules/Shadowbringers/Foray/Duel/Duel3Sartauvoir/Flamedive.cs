@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.Duel.Duel3Sartauvoir;
 
 sealed class Flamedive(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(9);
+    private readonly List<AOEInstance> _aoes = [with(9)];
     private static readonly AOEShapeRect rect = new(55f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Extreme.Ex6GuardianArkveld;
 
 sealed class WyvernsRadianceCrackedCrystal(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private readonly AOEShapeCircle circleSmall = new(6f), circleBig = new(12f);
     private readonly List<Actor> bigCrystals = module.Enemies((uint)OID.CrackedCrystal1);
     private readonly List<Actor> smallCrystals = module.Enemies((uint)OID.CrackedCrystal2);

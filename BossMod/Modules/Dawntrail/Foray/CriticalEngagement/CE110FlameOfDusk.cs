@@ -46,8 +46,8 @@ sealed class Lamplight(BossModule module) : Components.RaidwideCastDelay(module,
 
 sealed class MoltAOEs(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
-    private readonly List<(WPos position, AOEShape? shape, bool knockback, DateTime activation)> pendingMechanics = new(4);
+    public readonly List<AOEInstance> AOEs = [with(2)];
+    private readonly List<(WPos position, AOEShape? shape, bool knockback, DateTime activation)> pendingMechanics = [with(4)];
     private static readonly AOEShapeDonut donut = new(7f, 50f);
     private static readonly AOEShapeCross cross = new(50f, 7.5f);
     private bool first = true;

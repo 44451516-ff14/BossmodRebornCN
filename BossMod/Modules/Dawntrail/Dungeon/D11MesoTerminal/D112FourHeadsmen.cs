@@ -65,7 +65,7 @@ public enum TetherID : uint
 
 sealed class Prisons(BossModule module) : BossComponent(module)
 {
-    private readonly List<DonutV> borders = new(4);
+    private readonly List<DonutV> borders = [with(4)];
     private readonly CellBlock _cell = module.FindComponent<CellBlock>()!;
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
@@ -117,7 +117,7 @@ sealed class Prisons(BossModule module) : BossComponent(module)
 sealed class CellBlock(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly Actor?[] AssignedBoss = new Actor?[4];
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
     private readonly AOEShapeRect square = new(8f, 8f, 8f);
     private readonly D112FourHeadsmen bossmod = (D112FourHeadsmen)module;
 
@@ -233,7 +233,7 @@ sealed class DismembermentExecutionWheelFlayingFlailChoppingBlock(BossModule mod
     private readonly AOEShapeCircle circleSmall = new(5f), circleBig = new(6f);
     private readonly AOEShapeRect rect = new(16f, 2f);
 
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

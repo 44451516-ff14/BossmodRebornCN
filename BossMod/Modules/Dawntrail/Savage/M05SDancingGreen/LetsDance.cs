@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Savage.M05SDancingGreen;
 
 sealed class LetsDance(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     public static readonly AOEShapeRect Rect = new(25f, 25f);
     private readonly GetDownBait _bait = module.FindComponent<GetDownBait>()!;
 
@@ -67,7 +67,7 @@ sealed class LetsDance(BossModule module) : Components.GenericAOEs(module)
 sealed class LetsDanceRemix(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly Angle a180 = 180f.Degrees();
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly GetDownBait _bait = module.FindComponent<GetDownBait>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

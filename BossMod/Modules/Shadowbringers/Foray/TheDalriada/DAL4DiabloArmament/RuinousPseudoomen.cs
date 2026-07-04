@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL4DiabloArmament;
 
 sealed class RuinousPseudoomen(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect rect = new(100f, 12f);
     private static readonly uint[] diabolicGates = [(uint)OID.DiabolicGate1, (uint)OID.DiabolicGate2, (uint)OID.DiabolicGate3, (uint)OID.DiabolicGate4];
 

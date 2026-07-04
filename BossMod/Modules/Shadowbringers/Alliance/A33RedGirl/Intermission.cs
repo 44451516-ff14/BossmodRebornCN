@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Alliance.A33RedGirl;
 
 sealed class IntermissionArena(BossModule module) : BossComponent(module)
 {
-    private readonly List<Rectangle> walls = new(8);
+    private readonly List<Rectangle> walls = [with(8)];
     private readonly A33RedGirl bossmod = (A33RedGirl)module;
     private PolygonCustom[] baseArena = [];
 

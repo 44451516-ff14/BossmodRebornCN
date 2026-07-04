@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Quantum.Q1FinalVerse;
 [SkipLocalsInit]
 sealed class ScourgingBlaze(BossModule module) : Components.Exaflare(module, 5f)
 {
-    private readonly List<(WDir, WPos)> crystals = new(12);
+    private readonly List<(WDir, WPos)> crystals = [with(12)];
     private WDir next;
     public int Direction;
     private AOEShapeCustom? shape;

@@ -131,7 +131,7 @@ sealed class Flame(BossModule module) : Components.RaidwideCast(module, (uint)AI
 
 sealed class Burn(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private static readonly AOEShapeCircle _shape = new(8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -2,7 +2,7 @@
 
 sealed class Spikesicle(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     private readonly AOEShape[] _shapes = [new AOEShapeDonut(20f, 25f), new AOEShapeDonut(25f, 30f), new AOEShapeDonut(30f, 35f), new AOEShapeDonut(35f, 40f), new AOEShapeRect(40f, 2.5f)]; // TODO: verify inner radius
 

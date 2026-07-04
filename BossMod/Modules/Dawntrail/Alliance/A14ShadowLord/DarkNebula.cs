@@ -5,7 +5,7 @@ sealed class DarkNebula(BossModule module) : Components.GenericKnockback(module)
     private const float Length = 4f;
     private const float HalfWidth = 1.75f;
 
-    public readonly List<Actor> Casters = new(4);
+    public readonly List<Actor> Casters = [with(4)];
 
     private static readonly Angle a90 = 90f.Degrees();
     private static readonly WDir[] directions = [45f.Degrees().ToDirection(), -135f.Degrees().ToDirection(), -45f.Degrees().ToDirection(), 135f.Degrees().ToDirection()];

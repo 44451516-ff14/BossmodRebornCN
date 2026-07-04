@@ -70,7 +70,7 @@ sealed class ScathingSweep(BossModule module) : Components.SimpleAOEs(module, (u
 
 sealed class HoppingMad(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeCircle circleSmall = new(8f), circleMedium = new(16f), circleBig = new(24f);
     private static readonly AOEShapeDonut donutSmall = new(8f, 60f), donutMedium = new(16f, 60f), donutBig = new(24, 60f);
     private readonly HeatedOutburst _aoe = module.FindComponent<HeatedOutburst>()!;

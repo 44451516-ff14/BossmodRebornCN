@@ -4,7 +4,7 @@ sealed class Obey(BossModule module) : Components.GenericAOEs(module)
 {
     public static readonly AOEShapeCross Cross = new(50f, 7f);
     public static readonly AOEShapeDonut Donut = new(12f, 60f);
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private bool first = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];

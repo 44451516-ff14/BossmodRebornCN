@@ -175,7 +175,7 @@ sealed class Barofield(BossModule module) : Components.GenericAOEs(module)
 
 sealed class NerveGasRingAndAutoCannons(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeCross cross = new(20f, 2.5f);
     private static readonly AOEShapeCross rect = new(43f, 2.5f);
     public static readonly AOEShapeDonut donut = new(8f, 30f);

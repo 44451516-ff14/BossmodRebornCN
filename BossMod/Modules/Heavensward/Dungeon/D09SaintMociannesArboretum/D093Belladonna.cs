@@ -84,7 +84,7 @@ sealed class Deracinator(BossModule module) : Components.SingleTargetInstant(mod
 sealed class Mildew(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly AOEShapeCircle circle = new(6f);
-    private readonly List<AOEInstance> _aoes = new(11);
+    private readonly List<AOEInstance> _aoes = [with(11)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

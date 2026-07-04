@@ -490,7 +490,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
             if (status == 0)
             {
                 // disable in-game auto rotation, to prevent fucking up with our logic
-                autoRotateConfig->Value.UInt = _smartRotationTweak.Enabled || AI.AIManager.Instance?.Beh != null ? 0 : autoRotateOriginal;
+                autoRotateConfig->Value.UInt = SmartRotationTweak.Enabled || AI.AIManager.Instance?.Beh != null ? 0 : autoRotateOriginal;
                 var res = ExecuteAction(actionAdj, targetID, AutoQueue.TargetPos);
                 //Service.Log($"[AMEx] Auto-execute {AutoQueue.Source} action {AutoQueue.Action} (=> {actionAdj}) @ {targetID:X} {Utils.Vec3String(AutoQueue.TargetPos)} => {res}");
             }

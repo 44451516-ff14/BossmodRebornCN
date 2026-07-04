@@ -3,7 +3,7 @@ namespace BossMod.Dawntrail.Trial.T03QueenEternal;
 sealed class Besiegement(BossModule module) : Components.GenericAOEs(module)
 {
     private const float L = 60f;
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
     private static readonly AOEShapeRect[] rects = [new(L, 2f), new(L, 4f), new(L, 5f), new(L, 6f), new(L, 9f)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);

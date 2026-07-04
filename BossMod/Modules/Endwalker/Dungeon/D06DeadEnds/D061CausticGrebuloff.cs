@@ -158,7 +158,7 @@ class CoughUpAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Co
 class WaveOfNausea(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly NecroticFluidMist _exa = module.FindComponent<NecroticFluidMist>()!;
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private static readonly AOEShapeDonut donut = new(6f, 40f);
     private static readonly Shape[] differenceShapes = [new Circle(new(271.473f, -178.027f), 6f), new Circle(new(261.494f, -178.027f), 6f)];
 

@@ -3,10 +3,10 @@ namespace BossMod.Shadowbringers.Foray.CastrumLacusLitore.CLL1Brionac4thLegionHe
 sealed class OrbsAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly DetermineArena _arena = module.FindComponent<DetermineArena>()!;
-    private readonly List<(Actor Orb, AOEShape Shape)> orbs = new(4);
+    private readonly List<(Actor Orb, AOEShape Shape)> orbs = [with(4)];
     public static readonly AOEShapeDonut Donut = new(5f, 20f);
     private static readonly AOEShapeCircle circle = new(12f);
-    public readonly List<AOEInstance> AOEs = new(4);
+    public readonly List<AOEInstance> AOEs = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

@@ -8,7 +8,7 @@ sealed class ScreamOfTheFallen(BossModule module) : Components.UniformStackSprea
 {
     public int NumCasts;
     private BitMask _second;
-    private readonly List<Actor> _towers = new(4);
+    private readonly List<Actor> _towers = [with(4)];
 
     private const float _towerRadius = 3;
 
@@ -65,7 +65,7 @@ sealed class ScreamOfTheFallen(BossModule module) : Components.UniformStackSprea
 
     private List<Actor> ActiveTowers(bool second)
     {
-        List<Actor> result = new(2);
+        List<Actor> result = [with(2)];
         var count = _towers.Count;
         if (second)
         {

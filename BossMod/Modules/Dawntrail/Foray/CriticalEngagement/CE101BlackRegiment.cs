@@ -41,7 +41,7 @@ sealed class ChocoSlaughter(BossModule module) : Components.SimpleExaflare(modul
 
 sealed class ChocoBeak(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(12);
+    private readonly List<AOEInstance> _aoes = [with(12)];
     private static readonly AOEShapeRect rect = new(50f, 2f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

@@ -41,7 +41,7 @@ sealed class CthonicFury(BossModule module) : Components.GenericAOEs(module)
 
 sealed class BurningCourtMoatKeepBattlements(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private static readonly AOEShape _shapeC = new AOEShapeCircle(8f);
     private static readonly AOEShape _shapeM = new AOEShapeDonut(5f, 15f);
     private static readonly AOEShape _shapeK = new AOEShapeRect(23f, 11.5f);

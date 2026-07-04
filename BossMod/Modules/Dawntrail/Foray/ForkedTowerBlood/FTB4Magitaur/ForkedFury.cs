@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 
 sealed class ForkedFury(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<Actor> targets = new(6);
+    private readonly List<Actor> targets = [with(6)];
     private bool active;
     private DateTime activation;
     private AOEInstance[] _aoe = [];
@@ -16,7 +16,7 @@ sealed class ForkedFury(BossModule module) : Components.GenericAOEs(module)
             return;
         }
         targets.Clear();
-        List<Actor>[] squareActors = [new(16), new(16), new(16)];
+        List<Actor>[] squareActors = [[with(16)], [with(16)], [with(16)]];
         var players = new List<Actor>(48);
         var primaryPos = Module.PrimaryActor.Position;
 
@@ -139,7 +139,7 @@ sealed class ForkedFury(BossModule module) : Components.GenericAOEs(module)
                 }
             }
 
-            List<Actor> squareActors = new(16);
+            List<Actor> squareActors = [with(16)];
             var primaryPos = Module.PrimaryActor.Position;
             var count = players.Count;
             for (var i = 0; i < count; ++i)

@@ -6,7 +6,7 @@ sealed class HeavensWrathAOE(BossModule module) : Components.SimpleAOEs(module, 
 // TODO: generalize
 sealed class HeavensWrathKnockback(BossModule module) : Components.GenericKnockback(module)
 {
-    private readonly List<Knockback> _sources = new(2);
+    private readonly List<Knockback> _sources = [with(2)];
     private static readonly AOEShapeRect _shape = new(60f, 50f, -5f);
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(_sources);

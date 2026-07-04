@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Foray.ForkedTowerBlood.FTB4Magitaur;
 
 sealed class AssassinsDagger(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(18);
+    private readonly List<AOEInstance> _aoes = [with(18)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

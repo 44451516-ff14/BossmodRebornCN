@@ -1,4 +1,5 @@
 ﻿using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility;
 using System.IO;
 
 namespace BossMod.ReplayVisualization;
@@ -87,7 +88,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
         var timeRef = ImGui.GetIO().KeyShift && _relativeTS != default ? _relativeTS : reference;
 
         var c = new ImGuiListClipper();
-        c.Begin(_nodes.Count, 21);
+        c.Begin(_nodes.Count, ImGui.GetFrameHeight() - 2);
 
         while (c.Step())
         {
@@ -332,15 +333,30 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
 
     private void DrawActionTimelineSync(UITree tree, ActorState.OpPlayActionTimelineSync op) => tree.LeafNodes(op.Actions, iii => $"{ActorString(iii.Item1, op.Timestamp)}: {iii.Item2:X4}");
 
-    private Action? OpContextMenu(WorldState.Operation o) => o switch
+    private Action? OpContextMenu(WorldState.Operation o)
     {
-        WorldState.OpDirectorUpdate op => () => ContextMenuDirectorUpdate(op),
-        ActorState.OpStatus op => () => ContextMenuActorStatus(op),
-        ActorState.OpCastInfo op => () => ContextMenuActorCast(op),
-        ActorState.OpCastEvent op => () => ContextMenuEventCast(op),
-        ActorState.Operation op => () => ContextMenuActor(op),
-        _ => null,
-    };
+        Action? opSpecific = o switch
+        {
+            WorldState.OpDirectorUpdate op => () => ContextMenuDirectorUpdate(op),
+            ActorState.OpStatus op => () => ContextMenuActorStatus(op),
+            ActorState.OpCastInfo op => () => ContextMenuActorCast(op),
+            ActorState.OpCastEvent op => () => ContextMenuEventCast(op),
+            ActorState.Operation op => () => ContextMenuActor(op),
+            _ => null,
+        };
+
+        return () =>
+        {
+            if (opSpecific != null)
+            {
+                opSpecific.Invoke();
+                ImGui.Separator();
+            }
+
+            if (ImGui.MenuItem("Jump to timestamp", "double click"))
+                scrollTo(o.Timestamp);
+        };
+    }
 
     private void ContextMenuDirectorUpdate(WorldState.OpDirectorUpdate op)
     {

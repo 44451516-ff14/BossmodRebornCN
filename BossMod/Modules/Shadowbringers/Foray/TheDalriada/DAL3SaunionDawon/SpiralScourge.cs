@@ -95,7 +95,7 @@ sealed class SpiralScourge(BossModule module) : Components.GenericAOEs(module)
             new(651.5449f, -663.35547f), new(650.75134f, -659.3271f)
         ]
     ];
-    private readonly List<AOEInstance> _aoes = new(35);
+    private readonly List<AOEInstance> _aoes = [with(35)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

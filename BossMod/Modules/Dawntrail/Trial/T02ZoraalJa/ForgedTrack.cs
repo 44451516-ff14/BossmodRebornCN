@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Trial.T02ZoraalJaP2;
 
 sealed class ForgedTrack(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(4);
+    public readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect _shape = new(10f, 2.5f, 10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

@@ -70,7 +70,7 @@ sealed class SmiteOfGloom(BossModule module) : Components.GenericStackSpread(mod
 
 sealed class ChokingGraspMM(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     public bool isRisky = true;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

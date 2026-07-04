@@ -125,7 +125,7 @@ class ShockSphere(BossModule module) : Components.Voidzone(module, 7f, GetSphere
 class SoulPurge(BossModule module) : Components.GenericAOEs(module)
 {
     private bool dualCast;
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
 
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(10f, 30f);

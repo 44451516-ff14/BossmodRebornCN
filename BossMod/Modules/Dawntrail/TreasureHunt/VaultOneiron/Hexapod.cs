@@ -93,7 +93,7 @@ sealed class AccelerationBomb(BossModule module) : Components.StayMove(module, 2
 
 sealed class Electromine(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(5);
+    public readonly List<AOEInstance> AOEs = [with(5)];
     private readonly AOEShapeCircle circle = new(5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);

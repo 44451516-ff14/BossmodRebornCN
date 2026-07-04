@@ -130,7 +130,7 @@ sealed class QuadrupleCrossingProtean(BossModule module) : Components.GenericBai
 
 sealed class QuadrupleCrossingAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private bool ready;
     private static readonly AOEShapeCone _shape = new(100f, 22.5f.Degrees());
 

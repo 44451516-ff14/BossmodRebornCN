@@ -57,7 +57,7 @@ sealed class GrandCrossBait(BossModule module) : Components.SimpleAOEs(module, (
 
 sealed class GrandCrossRect(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeRect rectPredict = new(50f, 2.25f, 50f), rect = new(100f, 2f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

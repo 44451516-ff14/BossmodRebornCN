@@ -2,7 +2,7 @@ namespace BossMod.Shadowbringers.Foray.TheDalriada.DAL1Gauntlet;
 
 sealed class BallisticImpact(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     private static readonly AOEShapeRect rect = new(12f, 12f, 12f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

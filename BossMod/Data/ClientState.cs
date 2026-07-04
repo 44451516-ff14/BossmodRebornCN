@@ -242,7 +242,7 @@ public sealed class ClientState
 
     public List<WorldState.Operation> CompareToInitial()
     {
-        List<WorldState.Operation> ops = new(15);
+        List<WorldState.Operation> ops = [with(15)];
         if (CountdownRemaining != null)
         {
             ops.Add(new OpCountdownChange(CountdownRemaining));

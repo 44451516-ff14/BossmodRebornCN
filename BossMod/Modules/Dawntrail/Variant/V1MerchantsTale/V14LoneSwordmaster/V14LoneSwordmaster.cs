@@ -201,7 +201,7 @@ sealed class ConcentrativityRocks(BossModule module) : Components.GenericKnockba
     // helper casts attract/repel on player, no need to check debuffs, 20f push/pull
     // followed by boss with 17f knockback from boss
     // stunned during knockbacks so clear after 1st
-    private readonly List<Knockback> Casters = new(2);
+    private readonly List<Knockback> Casters = [with(2)];
     private DateTime _finishAt = default;
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(Casters);
 

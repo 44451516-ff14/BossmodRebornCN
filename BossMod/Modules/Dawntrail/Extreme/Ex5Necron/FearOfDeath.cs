@@ -4,7 +4,7 @@ sealed class FearOfDeath(BossModule module) : Components.RaidwideCast(module, (u
 
 sealed class FearOfDeathAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private readonly AOEShapeCircle circle = new(3);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -29,7 +29,7 @@ sealed class FearOfDeathAOE(BossModule module) : Components.GenericAOEs(module)
 sealed class ChokingGraspBait1(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private DateTime _activation;
-    private readonly List<Actor> sources = new(4);
+    private readonly List<Actor> sources = [with(4)];
 
     public override void Update()
     {
@@ -85,7 +85,7 @@ sealed class ChokingGraspBait1(BossModule module) : Components.GenericBaitAway(m
 sealed class ChokingGraspBait2(BossModule module) : Components.GenericBaitAway(module, damageType: AIHints.PredictedDamageType.Raidwide)
 {
     private DateTime _activation;
-    private readonly List<Actor> sources = new(8);
+    private readonly List<Actor> sources = [with(8)];
 
     public override void Update()
     {

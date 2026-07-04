@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Raid.M04NWickedThunder;
 
 sealed class WickedCannon(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
     private static readonly AOEShapeRect rect = new(40f, 5f);
     private static readonly float[] delays3fold = [9.5f, 8.3f, 7.7f];
     private static readonly float[] delays4fold = [12, 10.9f, 10.2f, 9.5f];

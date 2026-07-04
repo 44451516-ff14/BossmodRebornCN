@@ -11,8 +11,8 @@ sealed class OnceTwiceThriceRokujo : Components.SimpleAOEGroups
 sealed class Rokujo(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle[] circles = [new(8f), new(12f), new(23f)];
-    private readonly List<AOEInstance> _aoes = new(12);
-    private readonly List<Actor> _clouds = new(18);
+    private readonly List<AOEInstance> _aoes = [with(12)];
+    private readonly List<Actor> _clouds = [with(18)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

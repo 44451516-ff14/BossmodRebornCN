@@ -5,7 +5,7 @@ sealed class TransitionAttacks(BossModule module) : Components.GenericAOEs(modul
     public static readonly AOEShapeCircle Circle = new(27f);
     public static readonly AOEShapeDonut Donut = new(17.5f, 38.5f);
     private static readonly AOEShapeRect rect = new(40.5f, 5.5f);
-    public readonly List<AOEInstance> AOEs = new(3);
+    public readonly List<AOEInstance> AOEs = [with(3)];
     private static readonly Angle[] angles = [-120.003f.Degrees(), -0.003f.Degrees(), 119.997f.Degrees()];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

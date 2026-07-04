@@ -116,7 +116,7 @@ sealed class StingingAnguishStingScornOfTheScorpion(BossModule module) : Compone
 
 sealed class Esuna(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> _affected = new(2);
+    private readonly List<Actor> _affected = [with(2)];
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {

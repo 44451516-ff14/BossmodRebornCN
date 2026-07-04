@@ -238,7 +238,7 @@ sealed class CatONineTails(BossModule module) : Components.GenericRotatingAOE(mo
 sealed class FierceBeating(BossModule module) : Components.Exaflare(module, 4f)
 {
     private readonly AOEShapeCircle circle = new(4f);
-    private readonly List<AOEInstance> _predictions = new(2);
+    private readonly List<AOEInstance> _predictions = [with(2)];
 
     public override void Update()
     {

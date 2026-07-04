@@ -54,7 +54,7 @@ sealed class WyvernsRadianceExaflare1(BossModule module) : Components.Exaflare(m
 
 sealed class WyvernsRadianceExaflare2(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(58);
+    private readonly List<AOEInstance> _aoes = [with(58)];
     private readonly AOEShapeRect rect1 = new(40f, 4f), rect2 = new(40f, 2f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

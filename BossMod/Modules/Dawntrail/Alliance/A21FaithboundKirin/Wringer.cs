@@ -2,7 +2,7 @@ namespace BossMod.Dawntrail.Alliance.A21FaithboundKirin;
 
 sealed class Wringer(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCircle circle = new(14f);
     private static readonly AOEShapeDonut donut = new(14f, 30f);
 

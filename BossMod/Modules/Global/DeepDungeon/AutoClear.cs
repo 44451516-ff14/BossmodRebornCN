@@ -69,7 +69,6 @@ public abstract partial class AutoClear : ZoneModule
 
     private readonly Dictionary<ulong, PomanderID> _chestContentsGold = [];
     private readonly Dictionary<ulong, int> _chestContentsSilver = [];
-    private readonly HashSet<ulong> _openedChests = [];
     private readonly HashSet<ulong> _fakeExits = [];
     private PomanderID? _lastChestContentsGold;
     private bool _lastChestMagicite;
@@ -117,7 +116,6 @@ public abstract partial class AutoClear : ZoneModule
                 if (!op.IsAlly && op.IsDead)
                     ++Kills;
             }),
-            ws.Actors.EventOpenTreasure.Subscribe(OnOpenTreasure),
             ws.Actors.EventObjectAnimation.Subscribe(OnEObjAnim),
             ws.DeepDungeon.MapDataChanged.Subscribe(_ =>
             {
@@ -220,8 +218,6 @@ public abstract partial class AutoClear : ZoneModule
         }
     }
 
-    private void OnOpenTreasure(Actor chest) => _openedChests.Add(chest.InstanceID);
-
     private void OnEObjAnim(Actor actor, ushort p1, ushort p2)
     {
         // fake beacon deactivation; accompanied by system log #9217 but it does not indicate a specific actor
@@ -253,7 +249,6 @@ public abstract partial class AutoClear : ZoneModule
         _chestContentsGold.Clear();
         _chestContentsSilver.Clear();
         _trapsHidden = true;
-        _openedChests.Clear();
         _fakeExits.Clear();
         OnChangeFloors();
         BetweenFloors = true;
@@ -415,7 +410,7 @@ public abstract partial class AutoClear : ZoneModule
                 // TODO use magicite/demiclone to prevent overcap
                 continue;
 
-            if (_openedChests.Contains(a.InstanceID) || _fakeExits.Contains(a.InstanceID))
+            if (a.IsOpenTreasure || _fakeExits.Contains(a.InstanceID))
                 continue;
 
             var oid = a.OID;

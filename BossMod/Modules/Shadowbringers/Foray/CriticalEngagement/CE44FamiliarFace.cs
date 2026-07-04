@@ -49,9 +49,9 @@ class Roxxor(BossModule module) : Components.SpreadFromCastTargets(module, (uint
 
 class ControlTowerAppear(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(6f);
-    private readonly List<Polygon> activeTowers = new(3);
+    private readonly List<Polygon> activeTowers = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -167,7 +167,7 @@ class IntractableLand(BossModule module) : Components.Exaflare(module, 8f)
 
 class Hammerfall(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeCircle circle = new(37f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

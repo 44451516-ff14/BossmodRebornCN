@@ -2,7 +2,7 @@ namespace BossMod.Endwalker.VariantCriterion.V2MountRokkon.V23Gorai;
 
 sealed class FlameAndSulphur(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private static readonly AOEShapeRect _shapeFlameExpand = new(46f, 5f);
     private static readonly AOEShapeRect _shapeFlameSplit = new(46f, 2.5f);
     private static readonly AOEShapeCircle _shapeRockExpand = new(11f);

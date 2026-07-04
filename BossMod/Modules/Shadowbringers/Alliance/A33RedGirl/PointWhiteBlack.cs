@@ -3,7 +3,7 @@ namespace BossMod.Shadowbringers.Alliance.A33RedGirl;
 sealed class PointBlackWhite(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly ArenaChanges _arena = module.FindComponent<ArenaChanges>()!;
-    private readonly List<AOEInstance> _aoes = new(8);
+    private readonly List<AOEInstance> _aoes = [with(8)];
     private static readonly AOEShapeRect rectShort = new(24f, 3f), rectLong = new(50f, 3f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);

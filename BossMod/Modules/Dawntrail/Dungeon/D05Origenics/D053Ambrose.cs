@@ -72,7 +72,7 @@ sealed class Psychokinesis(BossModule module) : Components.SimpleAOEs(module, (u
 
 sealed class ExtrasensoryExpulsion(BossModule module) : Components.GenericKnockback(module, maxCasts: 1)
 {
-    public readonly List<Knockback> KBs = new(4);
+    public readonly List<Knockback> KBs = [with(4)];
     public static readonly AOEShapeRect RectNS = new(20f, 7.5f);
     public static readonly AOEShapeRect RectEW = new(15f, 10f);
     private OverwhelmingCharge? _aoe;
@@ -246,7 +246,7 @@ sealed class WhorlOfTheMind(BossModule module) : Components.SpreadFromCastTarget
 sealed class Rush(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeRect rect = new(33f, 5f);
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

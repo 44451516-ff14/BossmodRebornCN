@@ -33,7 +33,7 @@ class PreternaturalTurnDonut(BossModule module) : Components.SimpleAOEs(module, 
 class Shatter(BossModule module) : Components.GenericAOEs(module)
 {
     private bool ferocityCasted;
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
 
     private static readonly AOEShapeCone cone = new(23.95f, 75.Degrees());
     private static readonly AOEShapeCircle circle = new(8);

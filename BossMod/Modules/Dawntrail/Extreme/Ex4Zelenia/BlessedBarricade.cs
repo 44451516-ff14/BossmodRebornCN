@@ -39,7 +39,7 @@ sealed class Towers2(BossModule module) : Components.GenericTowers(module)
 
 sealed class SpearpointPushAOE(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(2);
+    public readonly List<AOEInstance> AOEs = [with(2)];
     private readonly AOEShapeRect rect = new(33f, 37f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs);

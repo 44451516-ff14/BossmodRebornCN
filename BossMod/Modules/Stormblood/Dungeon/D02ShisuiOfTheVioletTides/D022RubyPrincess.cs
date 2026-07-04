@@ -35,7 +35,7 @@ class SeduceOld(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly AOEShapeCircle circle = new(2.5f);
     private bool active;
-    private readonly List<Actor> chests = new(4);
+    private readonly List<Actor> chests = [with(4)];
     private readonly List<Circle> closedChests = [];
     private readonly List<Circle> openChests = [];
     private AOEShapeCustom? closedAOE;

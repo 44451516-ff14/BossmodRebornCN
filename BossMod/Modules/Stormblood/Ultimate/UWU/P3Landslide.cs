@@ -8,7 +8,7 @@ class Landslide(BossModule module) : Components.GenericAOEs(module)
     public bool Awakened;
     public DateTime PredictedActivation;
     protected Actor? PredictedSource;
-    private readonly List<AOEInstance> _aoes = new(5);
+    private readonly List<AOEInstance> _aoes = [with(5)];
 
     public static readonly AOEShapeRect ShapeBoss = new(44.55f, 3f, 4.55f);
     public static readonly AOEShapeRect ShapeHelper = new(40.5f, 3f, 0.5f); // difference is only in hitbox radius

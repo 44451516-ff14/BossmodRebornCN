@@ -63,7 +63,7 @@ public sealed class WorldState
         var client = Client.CompareToInitial();
         // var network = Network.CompareToInitial();
         var deepdungeon = DeepDungeon.CompareToInitial();
-        List<Operation> ops = new(RSVEntries.Count + waymarks.Count + actors.Count + party.Count + client.Count + deepdungeon.Count + 2); // todo add network back
+        List<Operation> ops = [with(RSVEntries.Count + waymarks.Count + actors.Count + party.Count + client.Count + deepdungeon.Count + 2)]; // todo add network back
 
         if (CurrentTime != default)
         {

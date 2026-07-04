@@ -11,7 +11,7 @@ class Hieroglyphika(BossModule module) : Components.GenericAOEs(module, (uint)AI
 {
     public bool BindsAssigned;
     public WDir SafeSideDir;
-    public readonly List<AOEInstance> AOEs = new(14);
+    public readonly List<AOEInstance> AOEs = [with(14)];
 
     private static readonly AOEShapeRect _shape = new(12f, 6f);
     private static readonly WDir[] _canonicalSafespots = [new(6f, -18f), new(-18f, 18f)];

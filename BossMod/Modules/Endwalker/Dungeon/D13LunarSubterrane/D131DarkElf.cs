@@ -33,7 +33,7 @@ public enum SID : uint
 
 class HexingStaves(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private readonly Explosion _aoe = module.FindComponent<Explosion>()!;
     private static readonly AOEShapeCross cross = new(40f, 4f);
 

@@ -4,7 +4,7 @@ abstract class Sweethearts(BossModule module, uint oid, uint aid) : Components.G
 {
     private const float Radius = 1f, Length = 3f;
     private static readonly AOEShapeCapsule capsule = new(Radius, Length);
-    private readonly List<Actor> _hearts = new(34);
+    private readonly List<Actor> _hearts = [with(34)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

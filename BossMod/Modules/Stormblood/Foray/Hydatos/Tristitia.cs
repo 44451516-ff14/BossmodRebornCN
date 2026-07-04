@@ -43,7 +43,7 @@ class TornadoIIAerogaIVDualCast(BossModule module) : Components.GenericAOEs(modu
     private static readonly AOEShapeCircle circle = new(10f);
     private static readonly AOEShapeDonut donut = new(5f, 40f);
     private bool dualCast;
-    public readonly List<AOEInstance> _aoes = new(2);
+    public readonly List<AOEInstance> _aoes = [with(2)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {

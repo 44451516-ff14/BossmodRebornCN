@@ -2,10 +2,10 @@ namespace BossMod.Endwalker.VariantCriterion.V1SildihnSubterrane.V14ZelessGah;
 
 sealed class ArcaneFont(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(3);
+    private readonly List<AOEInstance> _aoes = [with(3)];
     private static readonly AOEShapeRect rect = new(100f, 5f);
-    private readonly List<Actor> cachedPortals = new(4);
-    private readonly List<Actor> fireballs = new(4);
+    private readonly List<Actor> cachedPortals = [with(4)];
+    private readonly List<Actor> fireballs = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 

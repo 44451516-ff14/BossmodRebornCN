@@ -43,7 +43,7 @@ sealed class DirtyNails(BossModule module) : Components.SingleTargetCast(module,
 
 sealed class Clawmarks(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(16);
+    public readonly List<AOEInstance> AOEs = [with(16)];
     private static readonly AOEShapeRect rect = new(60f, 3.5f);
     private uint lastOID;
     private int currentWave;
@@ -131,7 +131,7 @@ sealed class Clawmarks(BossModule module) : Components.GenericAOEs(module)
 
 sealed class ClawingShadow(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     public static readonly AOEShapeCone Cone = new(50f, 45f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count > 1 ? CollectionsMarshal.AsSpan(_aoes)[..2] : CollectionsMarshal.AsSpan(_aoes);
@@ -155,7 +155,7 @@ sealed class ClawingShadow(BossModule module) : Components.GenericAOEs(module)
 
 sealed class Crosshatch(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(4);
+    private readonly List<AOEInstance> _aoes = [with(4)];
     private readonly Clawmarks _aoe = module.FindComponent<Clawmarks>()!;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

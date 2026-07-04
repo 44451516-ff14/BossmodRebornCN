@@ -63,7 +63,7 @@ sealed class Hellsnap(BossModule module) : Components.StackWithCastTargets(modul
 
 sealed class StraightSpindle(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(6);
+    private readonly List<AOEInstance> _aoes = [with(6)];
     public static readonly AOEShapeRect rect = new(51.08f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)

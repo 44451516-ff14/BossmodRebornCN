@@ -77,7 +77,7 @@ sealed class HeavyweightNeedles(BossModule module) : Components.SimpleAOEs(modul
 
 sealed class NeedleStormSuperstorm(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> AOEs = new(16);
+    public readonly List<AOEInstance> AOEs = [with(16)];
     private static readonly AOEShapeCircle circleBig = new(11f), circleSmall = new(6f);
 
     private readonly BarrelBreaker _kb = module.FindComponent<BarrelBreaker>()!;

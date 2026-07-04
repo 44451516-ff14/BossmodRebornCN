@@ -2,7 +2,7 @@
 
 sealed class DragonsGaze(BossModule module) : Components.GenericGaze(module)
 {
-    private readonly List<Eye> _eyes = new(2);
+    private readonly List<Eye> _eyes = [with(2)];
     private WPos _posHint;
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) => CollectionsMarshal.AsSpan(_eyes);

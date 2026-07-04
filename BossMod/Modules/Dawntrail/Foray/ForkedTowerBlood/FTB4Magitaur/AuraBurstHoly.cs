@@ -137,8 +137,8 @@ sealed class ArcaneReaction(BossModule module) : Components.GenericBaitAway(modu
 
 sealed class ArcaneRecoil(BossModule module) : BossComponent(module)
 {
-    private readonly List<Actor> targets = new(6);
-    private List<Actor> conduits = new(3);
+    private readonly List<Actor> targets = [with(6)];
+    private List<Actor> conduits = [with(3)];
     private bool? isHoly;
     public int NumCasts;
 
@@ -185,7 +185,7 @@ sealed class ArcaneRecoil(BossModule module) : BossComponent(module)
         {
             var c = conduits[i];
             var pos = c.Position;
-            List<(Actor actor, float distSq)> distances = new(48);
+            List<(Actor actor, float distSq)> distances = [with(48)];
             // note: this is problematic because player culling messes this up and leads to incorrect results (eg not finding the actual bait target)
             // in any frame players can be removed or added to the object table and will likely never contain all 48 players at the same time
             // caching removed players is also pointless since the player position no longer gets updated when this happens

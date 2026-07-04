@@ -151,7 +151,7 @@ sealed class MagitekMissile(BossModule module) : Components.Voidzone(module, 3f,
 
 sealed class NeedleGunOilShower(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(2);
+    private readonly List<AOEInstance> _aoes = [with(2)];
     private static readonly AOEShapeCone cone1 = new(40f, 135f.Degrees());
     private static readonly AOEShapeCone cone2 = new(40f, 45f.Degrees());
 

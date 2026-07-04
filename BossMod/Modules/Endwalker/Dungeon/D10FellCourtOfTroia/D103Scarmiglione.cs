@@ -53,7 +53,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly VacuumWave _kb = module.FindComponent<VacuumWave>()!;
     public readonly List<Rectangle> SafeWalls = [.. D103Scarmiglione.SafeWalls];
-    public readonly List<Rectangle> PendingSafeWalls = new(4);
+    public readonly List<Rectangle> PendingSafeWalls = [with(4)];
     private static readonly AOEShapeDonut donut = new(20f, 25f);
     private static readonly Polygon[] defaultCircle = [new Polygon(D103Scarmiglione.ArenaCenter, 20f, 64)];
     private AOEInstance[] _aoe = [];

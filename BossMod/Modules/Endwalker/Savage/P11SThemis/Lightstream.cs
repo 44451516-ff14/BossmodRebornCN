@@ -2,7 +2,7 @@
 
 class Lightstream(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = new(7);
+    private readonly List<AOEInstance> _aoes = [with(7)];
 
     private static readonly AOEShapeRect _shape = new(50f, 5f);
 
