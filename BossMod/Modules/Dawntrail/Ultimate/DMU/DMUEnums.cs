@@ -56,9 +56,9 @@ public enum AID : uint {
 
     GravenImage = 48370, // Kefka->self, 3.0s cast, single-target
     PulseWave = 47785, // 4C31->player, no cast, single-target
-    BlizzardIIIBlowout = 47774, // Helper->self, 5.0s cast, range 40 ?-degree cone - Empty zone
-    BlizzardIIIBlowout1 = 47771, // Helper->self, 5.0s cast, range 40 ?-degree cone - Questionmark zone
-    BlizzardIIIBlowout2 = 47768, // Helper->self, 5.0s cast, range 40 ?-degree cone - Questionmark zone
+    BlizzardIIIBlowout = 47774, // Helper->self, 5.0s cast, range 40 ?-degree cone
+    BlizzardIIIBlowout1 = 47771, // Helper->self, 5.0s cast, range 40 ?-degree cone - Fake it does nothing
+    BlizzardIIIBlowout2 = 47768, // Helper->self, 5.0s cast, range 40 ?-degree cone
     BlizzardIIIBlowout3 = 47765, // Kefka->self, 5.0s cast, single-target - Not needed it seems
     MysteryMagic = 47764, // Kefka->self, 5.0s cast, single-target
     FlagrantFireIIIStack = 47779, // Helper->players, no cast, range 6 circle - Stack
@@ -107,8 +107,8 @@ public enum AID : uint {
     Spelldriver = 47808, // Helper->player, no cast, range 5 circle
     Spellwave = 47810, // Helper->self, no cast, range 40 ?-degree cone
 
-    PastsEnd = 47827, // BossP2->self, 6.4s cast, single-target
-    FuturesEnd = 47826, // BossP2->self, 6.4s cast, single-target
+    PastsEndCast = 47827, // BossP2->self, 6.4s cast, single-target
+    FuturesEndCast = 47826, // BossP2->self, 6.4s cast, single-target
     FuturesEndSpread = 47830, // BossP2->players, no cast, range 5 circle
     FuturesEndSpread1 = 47832, // 4C39->players, no cast, range 5 circle
     PastsEndSpread = 47831, // BossP2->player, no cast, range 5 circle
@@ -201,9 +201,10 @@ public enum AID : uint {
     P4Inferno1 = 47902, // 4C33->self, 9.0s cast, single-target - Applies buff to self for telling truth or lie
 
     EdgeOfDeath = 50070, // Helper->self, 5.5s cast, range 48 width 2 rect
-    FloodOfNaught = 50066, // NeoExdeath->self, 5.0+0.5s cast, single-target - purple will cast  white antilight, white will cast black antilight
-    FloodOfNaught1 = 50081, // NeoExdeath->self, 5.0+0.5s cast, single-target - purple will cast black antilight, white will cast white antilight
+    FloodOfNaught = 50066, // NeoExdeath->self, 5.0+0.5s cast, single-target - purple will cast white antilight, white will cast black antilight
     FloodOfNaught2 = 50067, // NeoExdeath->self, 5.0+0.5s cast, single-target - purple will cast white antilight, white will cast black antilight
+    FloodOfNaught1 = 50081, // NeoExdeath->self, 5.0+0.5s cast, single-target - purple will cast black antilight, white will cast white antilight
+    FloodOfNaught3 = 50082, // NeoExdeath->self, 5.0+0.5s cast, single-target - purple will cast black antilight, white will cast white antilight
     WhiteAntilight = 50068, // Helper->self, 5.5s cast, range 47 width 21 rect
     BlackAntilight = 50069, // Helper->self, 5.5s cast, range 47 width 21 rect
     DeathSurge = 47900, // Helper->self, no cast, range 100 circle - After Antilight casts to ensure it was solved correctly
@@ -230,6 +231,7 @@ public enum AID : uint {
     _Ability_ThrummingThunderIII = 50654, // KefkaP4->self, 5.0s cast, single-target - can this is the cast that will be stored for later?
     _Ability_ManaRelease = 47781, // KefkaP4->self, 7.0s cast, single-target
     _Ability_BlackSpark = 48333, // Helper->player, no cast, single-target - Unknown, maybe blackhole if you walk into it?
+    _Ability_UnmitigatedImpact = 47857, // Helper->self, no cast, range 100 circle
 
     // Phase 5
     UltimaRepeaterCast = 47936, // KefkaP5->self, 4.0+1.0s cast, single-target

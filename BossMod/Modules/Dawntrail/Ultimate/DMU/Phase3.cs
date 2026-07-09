@@ -515,8 +515,6 @@ class UltimaBlasterLimitCut(BossModule module) : Components.GenericBaitAway(modu
     }
 }
 
-// TODO Functions (HeadTailWind & Cyclone) below work fine for the mechanics, but should be revisited and improved to solve how the mechanic works normally
-//  Most groups are currently doing LB strats which makes the mechanic resolve in a certain way / where stuff doesn't matter
 class HeadTailWind(BossModule module) : Components.GenericKnockback(module) {
     public SID[] Direction = new SID[8];
     private (WPos Origin, DateTime Activation, bool EventHappened) wave;
@@ -1128,7 +1126,6 @@ class BigBang(BossModule module) : Components.GenericAOEs(module) {
     }
 }
 
-// TODO verify towers always spawn this distance away from the boss and the angles are correct
 class StompAMole(BossModule module) : Components.GenericTowers(module) {
     private Actor? boss = null;
     private KnockDown? stacks = module.FindComponent<KnockDown>();

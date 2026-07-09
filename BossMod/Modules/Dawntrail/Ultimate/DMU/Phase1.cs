@@ -40,7 +40,7 @@ class RevoltingRuinIII(BossModule module) : Components.GenericBaitAway(module, (
         {
             NumCasts++;
             secondTB = true;
-            activation = WorldState.FutureTime(0.3f); // TODO random guess find the actual timing
+            activation = WorldState.FutureTime(0.3f);
         }
 
         if (spell.Action.ID == (uint)AID.RevoltingRuinIII1)
@@ -208,56 +208,8 @@ class StackSpreadOrbs(BossModule module) : Components.UniformStackSpread(module,
     }
 }
 
-class BlizzardSafeSpots(BossModule module) : Components.GenericAOEs(module) {
-    protected bool questionMark = false;
-    private readonly List<(uint AID, AOEInstance AOE)> aoesAvailable = [];
-    private readonly List<AOEInstance> aoes = [];
-
-    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID) {
-        if (iconID == (uint)IconID.BlueRingQuestionMark) {
-            questionMark = true;
-        }
-
-        if (iconID == (uint)IconID.BlueRingBlueOrb) {
-            questionMark = false;
-        }
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID is ((uint)AID.BlizzardIIIBlowout) or ((uint)AID.BlizzardIIIBlowout1) or
-            ((uint)AID.BlizzardIIIBlowout2)) {
-            aoesAvailable.Add((spell.Action.ID, new AOEInstance(new AOEShapeCone(40f, 45f.Degrees()), caster.Position, caster.Rotation, actorID: caster.InstanceID)));
-        }
-    }
-
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID is ((uint)AID.BlizzardIIIBlowout) or ((uint)AID.BlizzardIIIBlowout1) or
-            ((uint)AID.BlizzardIIIBlowout2)) {
-            NumCasts++;
-            aoesAvailable.Clear();
-        }
-    }
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) {
-        aoes.Clear();
-
-        foreach (var currentAOE in aoesAvailable) {
-            if (questionMark) {
-                if (currentAOE.AID == (uint)AID.BlizzardIIIBlowout) {
-                    aoes.Add(currentAOE.AOE);
-                }
-            }
-
-            if (!questionMark) {
-                if (currentAOE.AID is ((uint)AID.BlizzardIIIBlowout1) or ((uint)AID.BlizzardIIIBlowout2)) {
-                    aoes.Add(currentAOE.AOE);
-                }
-            }
-        }
-
-        return CollectionsMarshal.AsSpan(aoes);
-    }
-}
+class BlizzardSafeSpots(BossModule module) : Components.SimpleAOEGroups(module,
+    [(uint)AID.BlizzardIIIBlowout, (uint)AID.BlizzardIIIBlowout2], new AOEShapeCone(40f, 45f.Degrees()));
 
 class WaveCannon(BossModule module) : Components.BaitAwayEveryone(module,
     module.Enemies((uint)OID.StatueBodyOrb).FirstOrDefault(), new AOEShapeRect(100f, 3f),
@@ -274,7 +226,6 @@ class WaveCannon(BossModule module) : Components.BaitAwayEveryone(module,
     }
 }
 
-// TODO add priority system
 class WaveCannonTowers(BossModule module) : Components.CastTowers(module, (uint)AID.TowerExplosion, 4)
 {
     private readonly DateTime[] magicVulnerability = new DateTime[PartyState.MaxPartySize];
@@ -763,9 +714,6 @@ class GravitationalWave(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-// TODO make it so it leaves behind a puddle of the AOE
-// TODO add support to allow different points of views for different players in the reply
-//      Not needed as it only helps with the development and testing, just need to expand the variables to list and store all players debuffs instead
 class TeleTrouncing(BossModule module) : BossComponent(module) {
     public int NumCasts = 0;
     private (Direction direction, DateTime activation)? Debuff1;

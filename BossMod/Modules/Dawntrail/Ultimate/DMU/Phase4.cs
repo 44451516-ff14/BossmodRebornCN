@@ -11,8 +11,12 @@ class GrandCrossOrder(BossModule module) : BossComponent(module) {
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell) {
         if (spell.Action.ID == (uint)AID.GrandCross) {
-            tellingTruthCaught = false;
             currentCast++;
+
+            if (currentCast < 3)
+            {
+                tellingTruthCaught = false;
+            }
         }
     }
 
@@ -66,7 +70,8 @@ class GrandCrossOrder(BossModule module) : BossComponent(module) {
                 var sid = (SID)status.ID;
                 var expireAt = status.ExpireAt;
                 foreach (var entry in grandCross) {
-                    entry.playerBuffs[slot].RemoveAll(b => b.buff == sid && b.expireAt == expireAt);
+                    entry.playerBuffs[slot].RemoveAll(b => b.buff == sid);
+                    Service.Logger.Info("Slot:" + slot + "Removed status effect: " + status.ID + " at world time: " + status.ExpireAt);
                 }
             }
         }
@@ -225,7 +230,8 @@ class AntiLight(BossModule module) : BossComponent(module) {
             blackAntiLight = caster;
         }
 
-        if (spell.Action.ID == (uint)AID.FloodOfNaught || spell.Action.ID == (uint)AID.FloodOfNaught1 || spell.Action.ID == (uint)AID.FloodOfNaught2) {
+        if (spell.Action.ID == (uint)AID.FloodOfNaught || spell.Action.ID == (uint)AID.FloodOfNaught1 ||
+            spell.Action.ID == (uint)AID.FloodOfNaught2 || spell.Action.ID == (uint)AID.FloodOfNaught3) {
             spellID = spell.Action.ID;
         }
     }
@@ -242,7 +248,8 @@ class AntiLight(BossModule module) : BossComponent(module) {
         }
 
         if (spell.Action.ID == (uint)AID.FloodOfNaught || spell.Action.ID == (uint)AID.FloodOfNaught1 ||
-            spell.Action.ID == (uint)AID.FloodOfNaught2 || spell.Action.ID == (uint)AID.EdgeOfDeath) {
+            spell.Action.ID == (uint)AID.FloodOfNaught2 || spell.Action.ID == (uint)AID.FloodOfNaught3 ||
+            spell.Action.ID == (uint)AID.EdgeOfDeath) {
             NumCasts++;
         }
     }
@@ -417,26 +424,35 @@ class ForkedWater(BossModule module) : Components.UniformStackSpread(module, 8.0
 }
 
 // 4x accleration bombs where two are from 1st set and the other 2 are from the 2nd set, so it can a mix of truth and lie
-// TODO missing spell? or maybe it just doesn't have one
+// TODO move the StatusLose here for acceleration bomb to reset the playerStates since it follows the standard way to do it - wont change anything tho
+// TODO improve timeline for the mechanic make the component deactivate itself, can most likely do it base on the number of buffs gone by increasing it StatusLose
 class AccelerationBomb(BossModule module) : Components.StayMove(module) {
     private GrandCrossOrder? grandCrossOrder = module.FindComponent<GrandCrossOrder>();
+    public int NumCasts = 0;
 
-    /*public override void OnStatusLose(Actor actor, ref ActorStatus status) {
+    public override void OnStatusLose(Actor actor, ref ActorStatus status) {
         if (status.ID == (uint)SID.AccelerationBomb) {
-            PlayerStates[Raid.FindSlot(actor.InstanceID)] = default;
+            var slot = Raid.FindSlot(actor.InstanceID);
+            if (slot >= 0) {
+                PlayerStates[slot] = default;
+                NumCasts++;
+
+                Service.Logger.Info($"Slot {slot} resetting");
+                Service.Logger.Info($"NumCasts {NumCasts}");
+            }
         }
-    }*/
+    }
 
     public override void Update() {
         foreach (var (slot, _) in Raid.WithSlot()) {
             PlayerStates[slot] = default;
+            //Service.Logger.Info($"Slot {slot} resetting"); // todo debug - remove later
         }
 
         if (grandCrossOrder == null) {
             return;
         }
 
-        // TODO fix this
         foreach (var (slot, expireAt, tellingTruth) in grandCrossOrder.getNextBuffPlayers(SID.AccelerationBomb, 4)) {
             if ((expireAt - WorldState.CurrentTime).TotalSeconds > 7.0f) {
                 continue;
@@ -444,10 +460,12 @@ class AccelerationBomb(BossModule module) : Components.StayMove(module) {
 
             if (tellingTruth == true) {
                 PlayerStates[slot] = new(Requirement.Stay, expireAt);
+                Service.Logger.Info($"Slot {slot} real bomb - stay still, which expires at {expireAt}"); // todo debug - remove later
             }
 
             if (tellingTruth == false) {
                 PlayerStates[slot] = new(Requirement.Move, expireAt);
+                Service.Logger.Info($"Slot {slot} fake bomb - move, which expires at {expireAt}"); // todo debug - remove later
             }
         }
     }
@@ -485,6 +503,23 @@ class CursedShriek(BossModule module) : Components.GenericGaze(module) {
         return CollectionsMarshal.AsSpan(eyes);
     }
 
+    public override void AddHints(int slot, Actor actor, TextHints hints) {
+        if (grandCrossOrder == null || NumCasts >= 2) {
+            return;
+        }
+
+        var players = grandCrossOrder.getNextBuffPlayers(SID.CursedShriek, 2).ToList();
+        if (players.Count != 2) {
+            return;
+        }
+
+        foreach (var player in players) {
+            if (player.slot == slot) {
+                hints.Add("You're Gaze");
+            }
+        }
+    }
+
     public override void AddGlobalHints(GlobalHints hints) {
         if (eyes.Count == 0) {
             return;
@@ -507,6 +542,9 @@ class CursedShriek(BossModule module) : Components.GenericGaze(module) {
         }
 
         var players = grandCrossOrder.getNextBuffPlayers(SID.CursedShriek, 2).ToList();
+        if (players.Count != 2) {
+            return;
+        }
 
         for (int i = 0; i < players.Count; i++) {
             if ((players[i].expireAt - WorldState.CurrentTime).TotalSeconds > 8.0) {
@@ -562,16 +600,18 @@ class CursedShriek(BossModule module) : Components.GenericGaze(module) {
             var forward = (aoe.Rotation + rect.DirectionOffset).ToDirection();
             var safeSpot = new WPos(0.0f, 0.0f);
 
-            // Case 1: The safe spots are in the real areas, this means we figure out the bad spot and go left of it
-            //         so the lightning aoe will be around [117.662, 89.372]
-            if (aoe.Origin.AlmostEqual(new WPos(117.662f, 89.372f), 1.0f)) {
+            // Case 1: Either of these coordinates means we figure out the bad spot and go left of it
+            //         so the lightning aoe will be around [117.662, 89.372] or [89.372, 82.292]
+            if (aoe.Origin.AlmostEqual(new WPos(117.662f, 89.372f), 1.0f) ||
+                aoe.Origin.AlmostEqual(new WPos(89.372f, 82.292f), 1.0f)) {
                 var edgeCenter = aoe.Origin - forward.OrthoL() * rect.HalfWidth;
                 safeSpot = edgeCenter + forward * (Module.Center - edgeCenter).Dot(forward) - forward.OrthoL();
             }
 
             // Case 2: The safe spots are in the question mark areas, this means we figure out the bad spot and go right of it
-            //         so the lightning aoe will be around [110.582, 82.292]
-            if (aoe.Origin.AlmostEqual(new WPos(110.582f, 82.292f), 1.0f)) {
+            //         so the lightning aoe will be around [110.582, 82.292] or [82.292, 89.372]
+            if (aoe.Origin.AlmostEqual(new WPos(110.582f, 82.292f), 1.0f) ||
+                aoe.Origin.AlmostEqual(new WPos(82.292f, 89.372f), 1.0f)) {
                 var edgeCenter = aoe.Origin + forward.OrthoL() * rect.HalfWidth;
                 safeSpot = edgeCenter + forward * (Module.Center - edgeCenter).Dot(forward) + forward.OrthoL();
             }
@@ -750,29 +790,6 @@ class Tsunami(BossModule module) : Components.GenericBaitProximity(module, onlyS
 }
 
 class UltimaUpsurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.UltimaUpsurge);
-
-// Customize version of P1 blizzard safe spots function that uses the truth and lies stored throughout the phase instead
-class P4BlizzardSafeSpots(BossModule module) : BlizzardSafeSpots(module) {
-    private KefkaOrder? kefkaOrder = module.FindComponent<KefkaOrder>();
-
-    public override void Update() {
-        if (kefkaOrder == null) {
-            return;
-        }
-
-        var blizzards = kefkaOrder.tellingTruthOrder.Where(e => e.element == KefkaOrder.Element.Blizzard).ToList();
-        if (blizzards.Count != 2) {
-            return;
-        }
-
-        // Cases: If both are the same value then its true otherwise its false
-        // 1. True + True = True
-        // 2. True + Fake = Fake
-        // 3. Fake + True = Fake
-        // 4. Fake + Fake = True
-        questionMark = blizzards[0].tellingTruth != blizzards[1].tellingTruth;
-    }
-}
 
 // Customize version of P1 lightning safe spots function that uses the truth and lies stored throughout the phase instead
 class P4LightningSafeSpots(BossModule module) : LightningSafeSpots(module) {

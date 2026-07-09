@@ -49,8 +49,6 @@ class PathOfLight(BossModule module) : Components.GenericTowers(module, (uint)AI
 }
 
 // Used for setting up each player's role, such as the shape the player has, the pair the player belongs, if the player is a helper or soaker, etc.
-// TODO this whole phase needs to be rewritten, its annoying to extend other strategy into it with how much they differ between each other
-//  It can work fine, its just becoming a lot of dupe logic
 class ForsakenShapes(BossModule module) : BossComponent(module) {
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
     private readonly DMUConfig dmuConfig = Service.Config.Get<DMUConfig>();
@@ -440,7 +438,7 @@ class ForsakenBaitsBossClones(BossModule module) : Components.UniformStackSpread
     private int NumCasts = 0;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.FuturesEnd || spell.Action.ID == (uint)AID.PastsEnd) {
+        if (spell.Action.ID == (uint)AID.FuturesEndCast || spell.Action.ID == (uint)AID.PastsEndCast) {
             foreach (var actor in WorldState.Actors) {
                 if (actor.OID == (uint)OID.BossP2 || actor.OID == (uint)OID.P2KefkaHelpers) {
                     clones.Add(actor);
@@ -869,150 +867,6 @@ class ForsakenSolverSet2(BossModule module) : BossComponent(module) {
             }
 
             towers.Towers[i] = t;
-        }
-    }
-}
-
-// TODO baiters list is most likely not needed, the same person can most likely bait all 4
-class AllThingsEnding(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AllThingsEnding, new AOEShapeCone(100, 25.Degrees())) {
-    private List<AOEInstance> aoes = [];
-    private List<(Actor clone, ulong target)> clones = [];
-    private List<Actor> baiters = [];
-    private enum _bait { None, Far, Close }
-    private _bait currentBait = _bait.None;
-    public bool aoesLocked = false;
-
-    // If this mechanic is ever rewritten, please include a way to handle tower storing for the final set; some strategies
-    // include using the two last towers for the mechanic, some will simply just use a waymark
-    private WPos? lastKnownTowerMidPoint = null;
-
-    private PathOfLight? towers = module.FindComponent<PathOfLight>();
-    private ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
-    private readonly DMUConfig dmuConfig = Service.Config.Get<DMUConfig>();
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.FuturesEnd) {
-            currentBait = _bait.Far;
-            lastKnownTowerMidPoint = null;
-        }
-
-        if (spell.Action.ID == (uint)AID.PastsEnd) {
-            currentBait = _bait.Close;
-            lastKnownTowerMidPoint = null;
-        }
-
-        if (spell.Action.ID == (uint)AID.AllThingsEnding || spell.Action.ID == (uint)AID.AllThingsEnding1) {
-            aoesLocked = true;
-        }
-    }
-
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        Service.Logger.Info("Cast id " + spell.Action.ID + "cast name " + spell.Action.Name());
-
-
-        if (spell.Action.ID == (uint)AID.PastsEndSpread || spell.Action.ID == (uint)AID.PastsEndSpread1 ||
-            spell.Action.ID == (uint)AID.FuturesEndSpread || spell.Action.ID == (uint)AID.FuturesEndSpread1) {
-            clones.Add((caster, spell.MainTargetID));
-        }
-
-        if (spell.Action.ID == (uint)AID.AllThingsEnding || spell.Action.ID == (uint)AID.AllThingsEnding1) {
-            NumCasts++;
-            Service.Logger.Info("Num casts " + NumCasts);
-            aoes.Clear();
-            baiters.Clear();
-        }
-    }
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) {
-        if (aoesLocked == true) {
-            return CollectionsMarshal.AsSpan(aoes);
-        }
-
-        aoes.Clear();
-        baiters.Clear();
-
-        foreach (var (clone, target) in clones) {
-            var baiter = Raid.WithoutSlot().Where(p => !baiters.Contains(p)).SortedByRange(clone.Position).Take(1).FirstOrDefault();
-            if (baiter == null) {
-                continue;
-            }
-
-            baiters.Add(baiter);
-            var direction = clone.AngleTo(baiter);
-            if (currentBait == _bait.Close) {
-                direction = direction + 180.Degrees();
-            }
-            aoes.Add(new(new AOEShapeCone(100, 90.Degrees()), clone.Position, direction));
-        }
-
-        return CollectionsMarshal.AsSpan(aoes);
-    }
-
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        base.DrawArenaForeground(pcSlot, pc);
-
-        if (aoesLocked == true) {
-            return;
-        }
-
-        if (towers == null || shapes == null) {
-            return;
-        }
-
-        // TODO change this - its a lazy way of checking if we should draw the hint or not yet for past/future ending
-        if (shapes.currentTowerSet != 3 && shapes.currentTowerSet != 5 && shapes.currentTowerSet != 7 &&
-            shapes.currentTowerSet != 8 && shapes.currentTowerSet != 9) {
-            return;
-        }
-
-        if (shapes.currentTowerSet == 9) {
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                var waymark = WorldState.Waymarks.GetFieldMark((int)Waymark.A);
-                if (waymark == null) {
-                    return;
-                }
-
-                Arena.AddCircle(waymark.Value.ToWPos(), 1.0f, Colors.Safe, 2.0f);
-                return;
-            }
-
-            // TODO clean up later, just dupe code from below but with the last known reference of the midpoint
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
-                if (lastKnownTowerMidPoint != null) {
-                    var newSouthMP = (lastKnownTowerMidPoint.Value - Arena.Center).Normalized();
-
-
-                    if (currentBait == _bait.Close) {
-                        Arena.AddCircle(lastKnownTowerMidPoint.Value + (newSouthMP * 1.5f), 1.0f, Colors.Safe, 2.0f);
-                    }
-
-                    if (currentBait == _bait.Far) {
-                        Arena.AddCircle(lastKnownTowerMidPoint.Value - (newSouthMP * 12.0f), 1.0f, Colors.Safe, 2.0f);
-                    }
-                }
-            }
-        }
-
-        if (towers.Towers.Count != 2 || towers.CurrentSE == null || towers.CurrentSW == null) {
-            return;
-        }
-
-        var midpoint = new WPos((towers.CurrentSW.Value.Position.X + towers.CurrentSE.Value.Position.X) * 0.5f,
-            (towers.CurrentSW.Value.Position.Z + towers.CurrentSE.Value.Position.Z) * 0.5f);
-        var newSouth = (midpoint - Arena.Center).Normalized();
-        lastKnownTowerMidPoint = midpoint;
-
-        if (shapes.currentTowerSet == 8) {
-            return;
-        }
-
-        if (currentBait == _bait.Close) {
-            Arena.AddCircle(midpoint + (newSouth * 1.5f), 1.0f, Colors.Safe, 2.0f);
-        }
-
-        if (currentBait == _bait.Far) {
-            Arena.AddCircle(midpoint - (newSouth * 12.0f), 1.0f, Colors.Safe, 2.0f);
         }
     }
 }

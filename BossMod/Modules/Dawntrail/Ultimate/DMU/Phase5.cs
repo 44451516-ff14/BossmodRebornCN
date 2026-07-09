@@ -1,6 +1,4 @@
-﻿using Lumina.Extensions;
-
-namespace BossMod.Dawntrail.Ultimate.DMU;
+﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
 class UltimaRepeater(BossModule module) : Components.RaidwideCast(module, (uint)AID.UltimaRepeaterCast) {
     public override void OnEventCast(Actor caster, ActorCastEvent spell) {
@@ -11,7 +9,7 @@ class UltimaRepeater(BossModule module) : Components.RaidwideCast(module, (uint)
 }
 
 class FellForces(BossModule module) : Components.GenericBaitStack(module) {
-    public bool active = true;
+    public bool active = false;
     private bool setup = false;
     public int expectedCasts = 9;
 

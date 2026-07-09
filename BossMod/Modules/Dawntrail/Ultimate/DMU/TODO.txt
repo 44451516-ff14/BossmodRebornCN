@@ -1,0 +1,38 @@
+﻿General (for all phases / multiple phases)
+- Activation times for spells
+- Timeline improvements
+- Turns out we only need to know some of the casts going off for blizzrd and lightning, blizzard has already been refactored
+    but lightning could also be refactored, this is for P1 & P4, p4 had extra logic for the fake & truth part, but turns out none of it is needed
+    Be careful when changing lightning tho as it is used by gazes as well
+
+Phase 1:
+- Graven Image 1 safe spots
+- WaveCannonTowers Priority order
+- P1 arrow puddles with arrows
+- TeleTrouncing - add support to allow different points of views for different players in the replay - need to use pcSlot and slot of the raid members
+
+Phase 2:
+- If forsaken is reamde
+    - Ensure to store the order of towers in a list that can be used by other methods like AllThingsEnding, so it doesn't require
+        to save a lastKnownMidPoint making the logic more complex
+    - Add an option to show the bait for AllThingsEnding earlier in the config settings - might not even be worth it at most you save like 0.5 seconds
+        - Reason for config option is because it adds to the clutter of the radar during the mechanic and some players may not want to see it early on
+        - Forsaken towers are needed as the bait is used on the next tower set
+    - Come up with a plan for forsaken rewrite that allow multiple options, like assign slots of helping and taking etc, towers 1-8 etc
+- Trines for tanks improvement for safe spot - seems like some marker strats are just before the starting position of the triangle
+    So need to add a safe distance before the triangle position like 5y, but not too much as its right next to A
+- Safe spots for towers change for a frame compared to first showing - not really needed to be fixed as in-game you will never notice it, but worth fixing at some point
+    
+Phase 3:
+- General improvements for the whole phase
+- Crystals need to be remade so they work correctly for non LB strats
+- BH hints added in terms of being idel, taking tether or passing it + where to stand for tether
+    - make tether point inwards or outwards option - e.g. if first tether set, it can be pointed anywhere, if 2nd tether set it can be pointed anywhere since it will despawn
+- Safe spots added to p3 end - should add a config option for this (default is none) + improve it to have hints in a list instead, 
+    so we can just read them and just remove them on EventCast
+ 
+Phase 4: 
+- Need spread / stacks show for a frame - can be easily avoided by just setting it to where numcasts is >1 or remove the baits
+
+Phase 5:
+- Needs completing still
