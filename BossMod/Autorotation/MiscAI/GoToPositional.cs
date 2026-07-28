@@ -8,6 +8,7 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
     }
 
     private static readonly Positional[] positionals = Enum.GetValues<Positional>();
+    private static readonly AutorotationConfig _config = Service.Config.Get<AutorotationConfig>();
 
     public static RotationModuleDefinition Definition()
     {
@@ -26,13 +27,13 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
         if (!Player.InCombat
             || Player.FindStatus((uint)ClassShared.AID.TrueNorth) != null
             || primaryTarget == null
-            || primaryTarget is { Omnidirectional: true }
-            || primaryTarget is { TargetID: var t, CastInfo: null, IsStrikingDummy: false } && t == Player.InstanceID)
+            || primaryTarget is { Omnidirectional: true })
         {
             return;
         }
 
-        var positional = strategy.Option(Tracks.Positional).As<Positional>();
+        // when enabled, RotationSolverReborn's live desired positional overrides the manual track selection
+        var positional = _config.FollowRSRDesiredPositional ? Hints.RSRDesiredPositional : strategy.Option(Tracks.Positional).As<Positional>();
         if (positional == Positional.Any)
             return;
 

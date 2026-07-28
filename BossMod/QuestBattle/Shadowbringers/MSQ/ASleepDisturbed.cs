@@ -35,5 +35,10 @@ public class ASleepDisturbed(WorldState ws) : QuestBattle(ws)
                 }
                 hints.InteractWithTarget = best;
             })
+            .With(obj => {
+                obj.OnActorKilled += (actor) => obj.CompleteIf(actor.OID == (uint)BossMod.Shadowbringers.Quest.MSQ.ASleepDistubed.OID.Boss);
+            }),
+
+        new QuestObjective(ws).WithConnection(new Vector3(100, 0, 110))
     ];
 }

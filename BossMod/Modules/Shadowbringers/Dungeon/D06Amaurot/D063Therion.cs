@@ -55,10 +55,9 @@ sealed class Border(BossModule module) : Components.GenericAOEs(module, warningT
     private static Square[] Squares()
     {
         var squares = new Square[8];
-        var square = new Square(default, 2f);
         for (var i = 0; i < 8; ++i)
         {
-            squares[i] = square with { Center = positions[i] };
+            squares[i] = new Square(positions[i], 2f);
         }
         return squares;
     }

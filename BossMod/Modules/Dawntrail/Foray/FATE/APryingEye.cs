@@ -79,5 +79,5 @@ sealed class APryingEyeStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1970)]
-public sealed class APryingEye(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class APryingEye(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
 

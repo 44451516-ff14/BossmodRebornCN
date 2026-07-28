@@ -173,6 +173,13 @@ public readonly struct PendingEffectStatusExtra(PendingEffect effect, uint statu
     public readonly byte ExtraLo = extraLo;
 }
 
+public enum Visibility
+{
+    Unknown, // raycasting is disabled, or target is outside render distance
+    Visible,
+    Blocked
+}
+
 public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layoutID, string name, uint nameID, ActorType type, Class classID, int level, Vector4 posRot, float hitboxRadius = 1f, ActorHPMP hpmp = default, bool targetable = true, bool ally = false, ulong ownerID = default, uint fateID = default, int renderflags = 0)
 {
     public ulong InstanceID = instanceID; // 'uuid'
@@ -192,6 +199,7 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layou
     public bool IsDestroyed; // set to true when actor is removed from world; object might still be alive because of other references
     public bool IsTargetable = targetable;
     public bool IsAlly = ally;
+    public Visibility Visibility = Visibility.Unknown;
     public bool IsDead;
     public bool InCombat;
     public bool AggroPlayer; // determines whether a given actor shows in the player's UI enemy list
@@ -340,4 +348,24 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layou
     public float DistanceToPoint(WPos pos) => (pos - Position).Length();
 
     public override string ToString() => $"{OID:X} '{Name}' <{InstanceID:X}>";
+}
+
+public static class VisibilityExtensions
+{
+    extension(Visibility v)
+    {
+        public char Encode() => v switch
+        {
+            Visibility.Visible => 'V',
+            Visibility.Blocked => 'B',
+            _ => 'U'
+        };
+
+        public static Visibility Decode(char c) => c switch
+        {
+            'V' => Visibility.Visible,
+            'B' => Visibility.Blocked,
+            _ => Visibility.Unknown
+        };
+    }
 }

@@ -23,6 +23,7 @@ public enum AID : uint
 {
     _AutoAttack_Attack = 11523, // Tsukuyomi->player, no cast, single-target
     TormentUntoDeath = 11235, // Tsukuyomi->self/player, 4.0s cast, range 15+R ?-degree cone
+    TormentUntoDeath1 = 11955, // Tsukuyomi->self/player, 4.0s cast, range 15+R ?-degree cone
     ZashikiAsobi = 11244, // Tsukuyomi->self, 4.0s cast, single-target
     Nightfall = 11237, // Tsukuyomi->self, 4.0s cast, single-target
     TsukiNoMaiogi = 11245, // DancingFan->self, 5.0s cast, range 10 circle
@@ -60,7 +61,6 @@ public enum AID : uint
     DarkBlade = 11257, // Tsukuyomi->self, 3.0s cast, range 40+R 210.000-degree cone
     AutoAttack_Attack4 = 870, // Tsukuyomi->player, no cast, single-target
     BrightBlade = 11258, // Tsukuyomi->self, 3.0s cast, range 40+R 210.000-degree cone
-    TormentUntoDeath1 = 11955, // Tsukuyomi->self/player, 4.0s cast, range 15+R ?-degree cone
     ToAshes = 11243, // 2242->self, 20.0s cast, range 100 circle
 }
 
@@ -92,8 +92,8 @@ public enum TetherID : uint
 }
 
 
-sealed class TormentUntoDeath(BossModule module) : Components.BaitAwayIcon(module,
-    new AOEShapeCone(15f, 37.5f.Degrees()), (uint)IconID.TormentBait, (uint)AID.TormentUntoDeath, tankbuster: true);
+sealed class TormentUntoDeath(BossModule module) : Components.BaitAwayCast(module, (uint)AID.TormentUntoDeath,
+    new AOEShapeCone(15f, 37.5f.Degrees()), tankbuster: true);
 
 sealed class TsukuNoMaiogi(BossModule module)
     : Components.SimpleAOEs(module, (uint)AID.TsukiNoMaiogi, new AOEShapeCircle(10f), 7);

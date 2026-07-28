@@ -1,9 +1,12 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
 [ConfigDisplay(Order = 0x400, Parent = typeof(DawntrailConfig))]
-public class DMUConfig : ConfigNode {
+[SkipLocalsInit]
+public sealed class DMUConfig : ConfigNode
+{
 
-    public enum P1GravenImage2Strategy {
+    public enum P1GravenImage2Strategy
+    {
         [PropertyDisplay("P1 刻印 2 常规处理")]
         GravenImage2Normal,
 
@@ -14,7 +17,8 @@ public class DMUConfig : ConfigNode {
     [PropertyDisplay("P1 刻印 2 处理策略")]
     public P1GravenImage2Strategy P1GravenImage2 = P1GravenImage2Strategy.GravenImage2Uptime;
 
-    public enum P1TeleTrouncingStrategy {
+    public enum P1TeleTrouncingStrategy
+    {
         [PropertyDisplay("改版 Xolo")]
         Modified_Xolo,
 
@@ -28,7 +32,8 @@ public class DMUConfig : ConfigNode {
     [PropertyDisplay("P1 刻印 3 固定站位")]
     public bool P1GravenImage3Static = true;
 
-    public enum P2ForsakenStrategy {
+    public enum P2ForsakenStrategy
+    {
         [PropertyDisplay("EU meow 无脑打法（无标点）")]
         Meow_Markerless,
 

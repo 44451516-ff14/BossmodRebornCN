@@ -48,6 +48,10 @@ public sealed class ActorState : IEnumerable<Actor>
             {
                 ops.Add(new OpEventOpenTreasure(act.InstanceID));
             }
+            if (act.Visibility != default)
+            {
+                ops.Add(new OpVisibility(act.InstanceID, act.Visibility));
+            }
             if (act.ModelState != default)
             {
                 ops.Add(new OpModelState(instanceID, act.ModelState));
@@ -452,6 +456,19 @@ public sealed class ActorState : IEnumerable<Actor>
             ws.Actors.IsTargetableChanged.Fire(actor);
         }
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC(Value ? "ATG+"u8 : "ATG-"u8).EmitActor(InstanceID);
+    }
+
+    public Event<Actor> VisibilityChanged = new();
+    public sealed class OpVisibility(ulong instanceID, Visibility value) : Operation(instanceID)
+    {
+        public readonly Visibility Value = value;
+
+        protected override void ExecActor(WorldState ws, Actor actor)
+        {
+            actor.Visibility = Value;
+            ws.Actors.VisibilityChanged.Fire(actor);
+        }
+        public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("AVIS"u8).EmitActor(InstanceID).Emit(Value.Encode());
     }
 
     public Event<Actor> RenderflagsChanged = new();

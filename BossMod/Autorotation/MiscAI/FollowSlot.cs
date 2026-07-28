@@ -4,7 +4,7 @@ namespace BossMod.Autorotation.MiscAI;
 
 public sealed class FollowSlot(RotationModuleManager manager, Actor player) : TypedRotationModule<FollowSlot.Strategy>(manager, player)
 {
-    readonly AIConfig _aiConfig = Service.Config.Get<AIConfig>();
+    private static readonly AIConfig _aiConfig = Service.Config.Get<AIConfig>();
 
     public enum Flag { Disabled, Enabled }
 

@@ -2,13 +2,11 @@
 
 public enum OID : uint
 {
+    Shinryu = 0x1983, // R22.000, x?
     Platform = 0x1EA1A1, // R2.000, x?, EventObj type : Destructible square tiles. 9 platforms.
-    Helper = 0x18D6, // R0.500, x?, mixed types : Helper types~
     RightWing = 0x1B1A, // R15.000, x?, Part type
     LeftWing = 0x1B19, // R15.000, x?, Part type
-    Exit = 0x1E850B, // R0.500, x?, EventObj type
     WaterSpout = 0x1E8536, // R2.000, x?, EventObj type : Water Spout
-    Shinryu = 0x1983, // R22.000, x?
     WaterPuddles = 0x1E950D, // R0.500, x?, EventObj type
     Icicle = 0x1B16, // R2.500, x?
     EyeOfTheStorm = 0x1B17, // R1.000, Hurricane with pulsing knockback
@@ -18,11 +16,12 @@ public enum OID : uint
     Hakkinryu = 0x1C83, // R3.600, x?
     Fetters = 0x1B15, // R1.000, x? （仮）temporary　鎖 : Fetters, then atb button mash.
     Tail = 0x1B12, // R17.940, x?, Helper type
+    Helper = 0x18D6 // R0.500, x?, mixed types : Helper types~
 }
 
 public enum AID : uint
 {
-    _AutoAttack_Attack = 8105, // RightWing/LeftWing->player, no cast, single-target
+    AutoAttack = 8105, // RightWing/LeftWing->player, no cast, single-target
     TidalWave = 8075, // Helper->self, 10.0s cast, range 80+R width 60 rect
     TidalWaveCast = 8106, // Shinryu->self, 10.0s cast, single-target
     Levinbolt = 8092, // Helper->player, no cast, range 5 circle
@@ -47,7 +46,9 @@ public enum AID : uint
     GyreCharge = 8104, // Shinryu->self, no cast, range 100+R width 60 rect
     GyreChargeVisual = 8180, // Helper->self, 6.3s cast, range 100+R width 60 rect
     _Ability_3 = 8081, // Shinryu->self, no cast, single-target
-    TailSlap = 8083, // Tail->self, 3.0s cast, range 40 width 20 rect
+    TailSlap1 = 8083, // Tail->self, 3.0s cast, range 40 width 20 rect
+    TailSlap2 = 9130, // Tail->self, 3.0s cast, range 40 width 20 rect
+
     _Ability_4 = 8084, // Tail->self, no cast, single-target
     _Ability_5 = 8142, // Shinryu->self, no cast, single-target
     _Ability_6 = 8082, // Shinryu->self, no cast, single-target
@@ -91,9 +92,7 @@ public enum SID : uint
     Fetters = 667, // Boss->player, extra=0xEC4
     Affixed = 1267, // Boss->player, extra=0xE/0xC/0x14/0x18/0x12/0xD/0x13/0xF
     BurningChains = 769, // none->player, extra=0x0 : run apart to break chains
-    VulnerabilityUp = 202, // Helper/Icicle->player, extra=0x1
-    DownForTheCount = 783, // Helper->player, extra=0xEC7
-    ThinIce = 911 // Diamond Dust gives thin ice. pc slips and slides
+    ThinIce = 911 // none->player, extra=0x12C, Diamond Dust gives thin ice. pc slips and slides
 }
 
 public enum IconID : uint
@@ -102,12 +101,12 @@ public enum IconID : uint
     BurningChainsIcon = 97, // player :
     HyperNovaStackIcon = 62, // player->self
     BaitAwayIcon = 98, // player->self : green marker.  Might bait a tail slap? Unconfirmed.
-    EarthBreathIcon = 23, // player->self
+    EarthBreathIcon = 23 // player->self
 }
 
 public enum TetherID : uint
 {
-     BurningTether = 9, // player->player
+    BurningTether = 9 // player->player
 }
 
 /*
@@ -153,13 +152,13 @@ sealed class WaterPuddles(BossModule module) : BossComponent(module)
         if (spell.Action.ID == (uint)AID.LevinboltVisual)
         {
             _levinCasting = true;
-            _activation = WorldState.FutureTime(6.0f);
+            _activation = WorldState.FutureTime(6d);
         }
 
-        if (spell.Action.ID == (uint)AID.HellfireVisual)
+        else if (spell.Action.ID == (uint)AID.HellfireVisual)
         {
             _fireCasting = true;
-            _activation = WorldState.FutureTime(10.0f);
+            _activation = WorldState.FutureTime(10d);
         }
     }
 
@@ -168,7 +167,7 @@ sealed class WaterPuddles(BossModule module) : BossComponent(module)
         base.OnCastFinished(caster, spell);
         if (spell.Action.ID == (uint)AID.LevinboltVisual)
             _levinCasting = false;
-        if (spell.Action.ID == (uint)AID.HellfireVisual)
+        else if (spell.Action.ID == (uint)AID.HellfireVisual)
             _fireCasting = false;
     }
 
@@ -192,11 +191,14 @@ sealed class WaterPuddles(BossModule module) : BossComponent(module)
     public override void AddGlobalHints(GlobalHints hints)
     {
         var orbs = GetPuddles(Module);
-        var count = orbs.Count;
-        if (count != 0 && _levinCasting)
-            hints.Add("Avoid puddles during lightning bolts.");
-        if (count != 0 && _fireCasting)
-            hints.Add("Stand in puddles during hellfire.");
+
+        if (orbs.Count != 0)
+        {
+            if (_levinCasting)
+                hints.Add("Avoid puddles during lightning bolts.");
+            else if (_fireCasting)
+                hints.Add("Stand in puddles during hellfire.");
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -243,8 +245,7 @@ sealed class WaterPuddles(BossModule module) : BossComponent(module)
 }
 
 // Big bait away cones.
-sealed class EarthBreathBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(60f, 30f.Degrees()),
-    (uint)IconID.EarthBreathIcon, (uint)AID.EarthBreath);
+sealed class EarthBreathBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(60f, 30f.Degrees()), (uint)IconID.EarthBreathIcon, (uint)AID.EarthBreath);
 
 sealed class EarthBreathAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthBreath1, new AOEShapeCone(60f, 30f.Degrees()));
 
@@ -253,7 +254,7 @@ sealed class IcicleAdds(BossModule module) : Components.AddsMulti(module, [(uint
 // Icicles land and do circle aoe
 sealed class IcicleSummon(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(6f);
+    private readonly AOEShapeCircle circle = new(6f);
     private readonly List<AOEInstance> _aoes = [];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
@@ -283,10 +284,9 @@ sealed class IcicleSummon(BossModule module) : Components.GenericAOEs(module)
 /*
  * Icicles shoot across the arena.
  */
-sealed class IcicleThrustAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spikesicle, new AOEShapeRect(60f, 5f), maxCasts: 3);
+sealed class IcicleThrustAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Spikesicle, new AOEShapeRect(64.5f, 5f), maxCasts: 3);
 
-sealed class IcicleThrustKnockback(BossModule module)
-    : Components.SimpleKnockbacks(module, (uint)AID.Spikesicle, 10f, maxCasts: 1, kind: Kind.DirForward);
+sealed class IcicleThrustKnockback(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.Spikesicle, 10f, shape: new AOEShapeRect(64.5f, 5f), kind: Kind.DirForward, maxCasts: 3);
 
 /*
  * Initial akh morn stack to share damage
@@ -297,7 +297,7 @@ sealed class BurningChains(BossModule module) : Components.StretchTetherSingle(m
 
 // Phase 2 with cocoons and smaller adds.
 // Purposefully make these smaller because they are proximity and will otherwise cover whole arena.
-sealed class MeteorImpact(BossModule module) : Components.ProximityAOEs(module, (uint)AID.MeteorImpact, 26f);
+sealed class MeteorImpact(BossModule module) : Components.ProximityAOEs(module, (uint)AID.MeteorImpact, 14f);
 
 sealed class Cocoons(BossModule module) : Components.AddsMulti(module, [(uint)OID.Cocoon1, (uint)OID.MassiveCocoon]);
 
@@ -305,7 +305,7 @@ sealed class Cocoons(BossModule module) : Components.AddsMulti(module, [(uint)OI
  * Summons all the little dragons
  */
 sealed class DragonAdds(BossModule module) : Components.AddsMulti(module, [(uint)OID.Ginryu, (uint)OID.Hakkinryu], priority: 1);
-sealed class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, new AOEShapeCircle(4f));
+sealed class Fireball(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Fireball, 4f);
 sealed class BlazingTrail(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlazingTrail, new AOEShapeRect(15f, 5.5f));
 
 // Use fetters as the time to update the arena.
@@ -325,15 +325,14 @@ sealed class Fetters(BossModule module) : BossComponent(module)
  * Initial charge has a knockback component that is probably what actually kills.
  */
 // Phase 3
-sealed class GyreCharge(BossModule module)
-    : Components.SimpleAOEs(module, (uint)AID.GyreChargeVisual, new AOEShapeRect(100f, 30f));
+sealed class GyreCharge(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GyreChargeVisual, new AOEShapeRect(100f, 30f));
 
 /*
  * Tail slap hits the square tiles. First hit cracks, and second hit breaks.
  * This class has the tracking for broken tiles and changes arena bounds as needed.
  * Also accounts for Earthen Fury tile breaks.
  */
-sealed class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TailSlap, new AOEShapeRect(40f, 10f))
+sealed class TailSlap(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TailSlap1, (uint)AID.TailSlap2], new AOEShapeRect(40f, 10f))
 {
     private readonly List<Square> _active = []; // The main large square arena shape
     private readonly List<Square> _inactive = []; // As a tile breaks it is added to _inactive.
@@ -346,37 +345,36 @@ sealed class TailSlap(BossModule module) : Components.SimpleAOEs(module, (uint)A
         switch (state)
         {
             // 0x00100020 - gets cracked. Will break on next hit.
-            case 0x00040008: // Initial state
-                if (_active.Count  < 1)
+            case 0x00040008u: // Initial state
+                if (_active.Count < 1)
                     // Add the main outline. We do not need more than shape.
                     _active.Add(new Square(Arena.Center, 30f));
                 break;
-            case 0x00400080: // Broken platform state.
+            case 0x00400080u: // Broken platform state.
                 // never remove center square
-                if (actor.Position != Arena.Center)
+                if (actor.OID == (uint)OID.Platform && !actor.Position.AlmostEqual(default, 1f))
                 {
-                    _inactive.Add(new Square(actor.Position, 10f));
+                    _inactive.Add(new Square(actor.Position.Rounded(), 10f));
                     // New arena bounds are the main arena outline minus (difference) the broken tiles.
-                    ArenaBoundsCustom tailSlapArena = new([.._active], [.._inactive]);
+                    ArenaBoundsCustom tailSlapArena = new([.. _active], [.. _inactive]);
                     Arena.Bounds = tailSlapArena;
+                    Arena.Center = tailSlapArena.Center;
                 }
                 break;
         }
     }
 }
 
-sealed class Raidwides(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.IceStormRaidwide, (uint)AID.Protostar, (uint)AID.DarkMatter, (uint)AID.JudgmentBolt]);
+sealed class Raidwides(BossModule module) : Components.RaidwideCasts(module, [(uint)AID.IceStormRaidwide, (uint)AID.Protostar, (uint)AID.DarkMatter, (uint)AID.JudgmentBolt, (uint)AID.EarthenFury]);
 
 // Shinryu slaps fist down in center tile of arena.
-sealed class Dragonfist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DragonfistVisual, new AOEShapeCircle(16f));
+sealed class Dragonfist(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DragonfistVisual, 16f);
 
 /*
  * Diamond dust gives players thin ice for some seconds.  They slide around while under status.
  */
-sealed class ThinIce(BossModule module) : Components.ThinIce(module, 25, stopAtWall: false);
+sealed class ThinIce(BossModule module) : Components.ThinIce(module, 30f, stopAtWall: false);
 
-sealed class ElementalAOEs(BossModule module)
-    : Components.SimpleAOEGroups(module, [(uint)AID.EarthenFury], new AOEShapeCircle(30f));
 sealed class EarthenFurySmash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EarthenFurySmash, new AOEShapeRect(20f, 10f));
 
 sealed class SuperCyclone(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.SuperCycloneKB, 5f)
@@ -413,8 +411,7 @@ sealed class AerialBlast(BossModule module) : Components.SimpleKnockbacks(module
     }
 }
 
-sealed class Hypernova(BossModule module) : Components.StackWithIcon(module,(uint)IconID.HyperNovaStackIcon, (uint)AID.Hypernova, 7f, 6d);
-
+sealed class Hypernova(BossModule module) : Components.StackWithIcon(module, (uint)IconID.HyperNovaStackIcon, (uint)AID.Hypernova, 7f, 6d);
 
 [SkipLocalsInit]
 sealed class ShinryuStates : StateMachineBuilder
@@ -453,7 +450,6 @@ sealed class ShinryuStates : StateMachineBuilder
             .ActivateOnEnter<TailSlap>()
             .ActivateOnEnter<Dragonfist>()
             .ActivateOnEnter<ThinIce>()
-            .ActivateOnEnter<ElementalAOEs>()
             .ActivateOnEnter<EarthenFurySmash>()
             .ActivateOnEnter<SuperCyclone>()
             .ActivateOnEnter<AerialBlast>()
@@ -480,5 +476,4 @@ sealed class ShinryuStates : StateMachineBuilder
     PlanLevel = 0)]
 
 [SkipLocalsInit]
-public sealed class Shinryu(WorldState ws, Actor primary)
-    : BossModule(ws, primary, new(0f, 0f), new ArenaBoundsSquare(20f));
+public sealed class T03Shinryu(WorldState ws, Actor primary) : BossModule(ws, primary, default, new ArenaBoundsSquare(20f, mapResolution: 0.3f));

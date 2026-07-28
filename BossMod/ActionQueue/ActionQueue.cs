@@ -129,6 +129,9 @@ public sealed class ActionQueue
             return false;
         }
 
+        if (entry.Target?.Visibility == Visibility.Blocked && def.RequiresLineOfSight)
+            return false;
+
         if (def.ID.Type == ActionType.Item && ws.Client.GetInventoryItemQuantity(def.ID.ID) == 0)
         {
             return false;
@@ -151,6 +154,6 @@ public sealed class ActionQueue
             }
         }
 
-        return def.ForbidExecute == null || !def.ForbidExecute.Invoke(ws, player, entry, hints);
+        return def.AllowExecute == null || def.AllowExecute.Invoke(ws, player, entry, hints);
     }
 }

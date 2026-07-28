@@ -28,11 +28,14 @@ public sealed class AutorotationConfig : ConfigNode
     [PropertyDisplay ("在游戏里面中显示位置提示", tooltip: "显示位置技能提示，指示移动到目标的侧面或背面")]
     public bool ShowPositionals = false;
 
+    [PropertyDisplay("跟随 RotationSolverReborn 请求的身位", tooltip: "启用后，“杂项 AI：移动到指定身位”循环模块会覆盖自身身位设置，改为通过 IPC 使用 RotationSolverReborn 当前请求的身位（不适用于木桩）")]
+    public bool FollowRSRDesiredPositional = true;
+
+    [PropertyDisplay("死亡时自动禁用自动循环")]
+    public bool ClearPresetOnDeath = true;
+
     [PropertyDisplay("脱战后自动禁用自动循环")]
     public bool ClearPresetOnCombatEnd = false;
-
-    [PropertyDisplay("脱战后自动重置强制禁用状态")]
-    public bool ClearPresetOnDeath = true;
 
     [PropertyDisplay ("若引诱陷阱触发则自动禁用自动循环", tooltip: "仅适用于深层地下城")]
     public bool ClearPresetOnLuring = false;
@@ -43,4 +46,7 @@ public sealed class AutorotationConfig : ConfigNode
     [PropertyDisplay("提前开怪判定阈值", tooltip: "当队伍成员在倒计时剩余时间超过此值时进入战斗，将被判定为提前开怪并强制禁用自动循环")]
     [PropertySlider(0, 30, Speed = 1)]
     public float EarlyPullThreshold = 1.5f;
+
+    [PropertyDisplay("无倒计时开怪时禁用自动循环", tooltip: "仅在激活冷却计划时适用。")]
+    public bool PlannedPullSafety = true;
 }

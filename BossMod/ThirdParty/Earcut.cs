@@ -2,6 +2,7 @@
 
 namespace EarcutNet;
 
+[SkipLocalsInit]
 public sealed class Earcut
 {
 	public static List<int> Tessellate(ReadOnlySpan<double> data, List<int> holeIndices)
@@ -9,7 +10,9 @@ public sealed class Earcut
 		var hasHoles = holeIndices.Count > 0;
 		var outerLen = hasHoles ? holeIndices[0] * 2 : data.Length;
 		var outerNode = LinkedList(data, 0, outerLen, true);
-		var triangles = new List<int>();
+		int vertexCount = data.Length >> 1;
+
+		var triangles = new List<int>((vertexCount - 2) * 3);
 
 		if (outerNode == null)
 		{
@@ -32,33 +35,17 @@ public sealed class Earcut
 		{
 			for (int i = 0; i < outerLen; i += 2)
 			{
-				double x = data[i];
-				double y = data[i + 1];
-
-				if (x < minX)
-				{
-					minX = x;
-				}
-
-				if (y < minY)
-				{
-					minY = y;
-				}
-
-				if (x > maxX)
-				{
-					maxX = x;
-				}
-
-				if (y > maxY)
-				{
-					maxY = y;
-				}
+				var x = data[i];
+				var y = data[i + 1];
+				minX = x < minX ? x : minX;
+				minY = y < minY ? y : minY;
+				maxX = x > maxX ? x : maxX;
+				maxY = y > maxY ? y : maxY;
 			}
 
 			// minX, minY and invSize are later used to transform coords into integers for z-order calculation
 			invSize = Math.Max(maxX - minX, maxY - minY);
-			invSize = invSize != 0 ? 1 / invSize : 0;
+			invSize = invSize != 0d ? 1d / invSize : 0d;
 		}
 
 		EarcutLinked(outerNode, triangles, minX, minY, invSize, 0);
@@ -71,7 +58,7 @@ public sealed class Earcut
 	{
 		var last = default(Node);
 
-		if (clockwise == (SignedArea(data, start, end) > 0))
+		if (clockwise == (SignedArea(data, start, end) > 0d))
 		{
 			for (int i = start; i < end; i += 2)
 			{
@@ -115,7 +102,7 @@ public sealed class Earcut
 		{
 			again = false;
 
-			if (!p.steiner && (Equals(p, p.next) || Area(p.prev, p, p.next) == 0))
+			if (!p.steiner && (Equals(p, p.next) || Area(p.prev, p, p.next) == 0d))
 			{
 				RemoveNode(p);
 				p = end = p.prev;
@@ -145,7 +132,7 @@ public sealed class Earcut
 		}
 
 		// interlink polygon nodes in z-order
-		if (pass == 0 && invSize != 0)
+		if (pass == 0 && invSize != 0d)
 		{
 			IndexCurve(ear, minX, minY, invSize);
 		}
@@ -153,6 +140,7 @@ public sealed class Earcut
 		var stop = ear;
 		Node prev;
 		Node next;
+		var useHash = invSize != 0d;
 
 		// iterate through ears, slicing them one by one
 		while (ear.prev != ear.next)
@@ -160,12 +148,12 @@ public sealed class Earcut
 			prev = ear.prev;
 			next = ear.next;
 
-			if (invSize != 0 ? IsEarHashed(ear, minX, minY, invSize) : IsEar(ear))
+			if (useHash ? IsEarHashed(ear, minX, minY, invSize) : IsEar(ear))
 			{
 				// cut off the triangle
-				triangles.Add(prev.i / 2);
-				triangles.Add(ear.i / 2);
-				triangles.Add(next.i / 2);
+				triangles.Add(prev.i >> 1);
+				triangles.Add(ear.i >> 1);
+				triangles.Add(next.i >> 1);
 
 				RemoveNode(ear);
 
@@ -212,18 +200,25 @@ public sealed class Earcut
 		var b = ear;
 		var c = ear.next;
 
-		if (Area(a, b, c) >= 0)
+		if (Area(a, b, c) >= 0d)
 		{
 			return false; // reflex, can't be an ear
 		}
 
 		// now make sure we don't have other points inside the potential ear
 		var p = ear.next.next;
+		var ax = a.x;
+		var ay = a.y;
 
-		while (p != ear.prev)
+		var bx = b.x;
+		var by = b.y;
+
+		var cx = c.x;
+		var cy = c.y;
+
+		while (p != a)
 		{
-			if (PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-				Area(p.prev, p, p.next) >= 0)
+    		if (PointInTriangle(ax, ay, bx, by, cx, cy, p.x, p.y) && Area(p.prev, p, p.next) >= 0d)
 			{
 				return false;
 			}
@@ -240,16 +235,22 @@ public sealed class Earcut
 		var b = ear;
 		var c = ear.next;
 
-		if (Area(a, b, c) >= 0)
+		if (Area(a, b, c) >= 0d)
 		{
 			return false; // reflex, can't be an ear
 		}
 
 		// triangle bbox; min & max are calculated like this for speed
-		var minTX = a.x < b.x ? (a.x < c.x ? a.x : c.x) : (b.x < c.x ? b.x : c.x);
-		var minTY = a.y < b.y ? (a.y < c.y ? a.y : c.y) : (b.y < c.y ? b.y : c.y);
-		var maxTX = a.x > b.x ? (a.x > c.x ? a.x : c.x) : (b.x > c.x ? b.x : c.x);
-		var maxTY = a.y > b.y ? (a.y > c.y ? a.y : c.y) : (b.y > c.y ? b.y : c.y);
+		var ax = a.x;
+		var bx = b.x;
+		var ay = a.y;
+		var by = b.y;
+		var cx = c.x;
+		var cy = c.y;
+		var minTX = ax < bx ? (ax < cx ? ax : cx) : (bx < cx ? bx : cx);
+		var minTY = ay < by ? (ay < cy ? ay : cy) : (by < cy ? by : cy);
+		var maxTX = ax > bx ? (ax > cx ? ax : cx) : (bx > cx ? bx : cx);
+		var maxTY = ay > by ? (ay > cy ? ay : cy) : (by > cy ? by : cy);
 
 		// z-order range for the current triangle bbox;
 		var minZ = ZOrder(minTX, minTY, minX, minY, invSize);
@@ -261,18 +262,14 @@ public sealed class Earcut
 		// look for points inside the triangle in both directions
 		while (p != null && p.z >= minZ && n != null && n.z <= maxZ)
 		{
-			if (p != ear.prev && p != ear.next &&
-				PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-				Area(p.prev, p, p.next) >= 0)
+			if (p != a && p != c &&	PointInTriangle(ax, ay, bx, by, cx, cy, p.x, p.y) && Area(p.prev, p, p.next) >= 0d)
 			{
 				return false;
 			}
 
 			p = p.prevZ;
 
-			if (n != ear.prev && n != ear.next &&
-				PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-				Area(n.prev, n, n.next) >= 0)
+			if (n != a && n != c &&	PointInTriangle(ax, ay, bx, by, cx, cy, n.x, n.y) && Area(n.prev, n, n.next) >= 0d)
 			{
 				return false;
 			}
@@ -283,9 +280,7 @@ public sealed class Earcut
 		// look for remaining points in decreasing z-order
 		while (p != null && p.z >= minZ)
 		{
-			if (p != ear.prev && p != ear.next &&
-				PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, p.x, p.y) &&
-				Area(p.prev, p, p.next) >= 0)
+			if (p != a && p != c && PointInTriangle(ax, ay, bx, by, cx, cy, p.x, p.y) && Area(p.prev, p, p.next) >= 0d)
 			{
 				return false;
 			}
@@ -296,9 +291,7 @@ public sealed class Earcut
 		// look for remaining points in increasing z-order
 		while (n != null && n.z <= maxZ)
 		{
-			if (n != ear.prev && n != ear.next &&
-				PointInTriangle(a.x, a.y, b.x, b.y, c.x, c.y, n.x, n.y) &&
-				Area(n.prev, n, n.next) >= 0)
+			if (n != a && n != c &&	PointInTriangle(ax, ay, bx, by, cx, cy, n.x, n.y) && Area(n.prev, n, n.next) >= 0d)
 			{
 				return false;
 			}
@@ -321,9 +314,9 @@ public sealed class Earcut
 			if (!Equals(a, b) && Intersects(a, p, p.next, b) && LocallyInside(a, b) && LocallyInside(b, a))
 			{
 
-				triangles.Add(a.i / 2);
-				triangles.Add(p.i / 2);
-				triangles.Add(b.i / 2);
+				triangles.Add(a.i >> 1);
+				triangles.Add(p.i >> 1);
+				triangles.Add(b.i >> 1);
 
 				// remove two nodes involved
 				RemoveNode(p);
@@ -370,14 +363,15 @@ public sealed class Earcut
 	// link every hole into the outer loop, producing a single-ring polygon without holes
 	private static Node EliminateHoles(ReadOnlySpan<double> data, List<int> holeIndices, Node outerNode)
 	{
-		var queue = new List<Node>();
+		var countH = holeIndices.Count;
+		var queue = new List<Node>(countH);
 
-		var len = holeIndices.Count;
+		var lenData = data.Length;
 
-		for (var i = 0; i < len; ++i)
+		for (var i = 0; i < countH; ++i)
 		{
 			var start = holeIndices[i] * 2;
-			var end = i < len - 1 ? holeIndices[i + 1] * 2 : data.Length;
+			var end = i < countH - 1 ? holeIndices[i + 1] * 2 : lenData;
 			var list = LinkedList(data, start, end, false);
 			if (list == list.next)
 			{
@@ -387,21 +381,30 @@ public sealed class Earcut
 			queue.Add(GetLeftmost(list));
 		}
 
-		queue.Sort(CompareX);
+		queue.Sort(static (a, b) =>
+		{
+			var ax = a.x;
+			var bx = b.x;
+			if (ax < bx)
+			{
+				 return -1;
+			}
+			if (ax > bx)
+			{
+				return 1;
+			}
+			return 0;
+		});
 
 		// process holes from left to right
-		for (var i = 0; i < queue.Count; ++i)
+		var countQueue = queue.Count;
+		for (var i = 0; i < countQueue; ++i)
 		{
 			EliminateHole(queue[i], outerNode);
 			outerNode = FilterPoints(outerNode, outerNode.next);
 		}
 
 		return outerNode;
-	}
-
-	private static int CompareX(Node a, Node b)
-	{
-		return Math.Sign(a.x - b.x);
 	}
 
 	// find a bridge between vertices that connects hole with an outer ring and and link it
@@ -428,28 +431,33 @@ public sealed class Earcut
 		// segment's endpoint with lesser x will be potential connection point
 		do
 		{
-			if (hy <= p.y && hy >= p.next.y && p.next.y != p.y)
+			var next = p.next;
+			var py = p.y;
+			var nexty = next.y;
+			if (hy <= py && hy >= nexty && nexty != py)
 			{
-				var x = p.x + (hy - p.y) * (p.next.x - p.x) / (p.next.y - p.y);
+				var nextx = next.x;
+				var px = p.x;
+				var x = px + (hy - py) * (nextx - px) / (nexty - py);
 				if (x <= hx && x > qx)
 				{
 					qx = x;
 					if (x == hx)
 					{
-						if (hy == p.y)
+						if (hy == py)
 						{
 							return p;
 						}
 
-						if (hy == p.next.y)
+						if (hy == nexty)
 						{
-							return p.next;
+							return next;
 						}
 					}
-					m = p.x < p.next.x ? p : p.next;
+					m = px < nextx ? p : next;
 				}
 			}
-			p = p.next;
+			p = next;
 		} while (p != outerNode);
 
 		if (m == null)
@@ -476,12 +484,13 @@ public sealed class Earcut
 
 		while (p != stop)
 		{
-			if (hx >= p.x && p.x >= mx && hx != p.x && PointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y))
+			var px = p.x;
+			if (hx >= px && px >= mx && hx != px && PointInTriangle(hy < my ? hx : qx, hy, mx, my, hy < my ? qx : hx, hy, p.x, p.y))
 			{
 
-				tan = Math.Abs(hy - p.y) / (hx - p.x); // tangential
+				tan = Math.Abs(hy - p.y) / (hx - px); // tangential
 
-				if ((tan < tanMin || (tan == tanMin && p.x > m.x)) && LocallyInside(p, hole))
+				if ((tan < tanMin || (tan == tanMin && px > mx)) && LocallyInside(p, hole))
 				{
 					m = p;
 					tanMin = tan;
@@ -500,7 +509,7 @@ public sealed class Earcut
 		Node p = start;
 		do
 		{
-			if (p.z == null)
+			if (p.z == Node.InvalidZ)
 			{
 				p.z = ZOrder(p.x, p.y, minX, minY, invSize);
 			}
@@ -634,15 +643,28 @@ public sealed class Earcut
 	// check if a point lies within a convex triangle
 	private static bool PointInTriangle(double ax, double ay, double bx, double by, double cx, double cy, double px, double py)
 	{
-		return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
-			   (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
-			   (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
+		var ab = (cx - px) * (ay - py) - (ax - px) * (cy - py);
+
+		if (ab < 0d)
+		{
+			return false;
+		}
+
+		var bc = (ax - px) * (by - py) - (bx - px) * (ay - py);
+
+		if (bc < 0d)
+		{
+			return false;
+		}
+
+		return (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0d;
 	}
 
 	// check if a diagonal between two polygon nodes is valid (lies in polygon interior)
 	private static bool IsValidDiagonal(Node a, Node b)
 	{
-		return a.next.i != b.i && a.prev.i != b.i && !IntersectsPolygon(a, b) &&
+		var bi = b.i;
+		return a.next.i != bi && a.prev.i != bi && !IntersectsPolygon(a, b) &&
 			   LocallyInside(a, b) && LocallyInside(b, a) && MiddleInside(a, b);
 	}
 
@@ -667,8 +689,8 @@ public sealed class Earcut
 			return true;
 		}
 
-		return Area(p1, q1, p2) > 0 != Area(p1, q1, q2) > 0 &&
-			   Area(p2, q2, p1) > 0 != Area(p2, q2, q1) > 0;
+		return Area(p1, q1, p2) > 0d != Area(p1, q1, q2) > 0d &&
+			   Area(p2, q2, p1) > 0d != Area(p2, q2, q1) > 0d;
 	}
 
 	// check if a polygon diagonal intersects any polygon segments
@@ -677,13 +699,17 @@ public sealed class Earcut
 		Node p = a;
 		do
 		{
-			if (p.i != a.i && p.next.i != a.i && p.i != b.i && p.next.i != b.i &&
-					Intersects(p, p.next, a, b))
+			var next = p.next;
+			var pi = p.i;
+			var bi = b.i;
+			var nexti = next.i;
+			var ai = a.i;
+			if (pi != ai && nexti != ai && pi != bi && nexti != bi && Intersects(p, next, a, b))
 			{
 				return true;
 			}
 
-			p = p.next;
+			p = next;
 		} while (p != a);
 
 		return false;
@@ -692,9 +718,11 @@ public sealed class Earcut
 	// check if a polygon diagonal is locally inside the polygon
 	private static bool LocallyInside(Node a, Node b)
 	{
-		return Area(a.prev, a, a.next) < 0d ?
-			Area(a, b, a.next) >= 0d && Area(a, a.prev, b) >= 0d :
-			Area(a, b, a.prev) < 0d || Area(a, a.next, b) < 0d;
+		var prev = a.prev;
+		var next = a.next;
+		return Area(prev, a, next) < 0d ?
+			Area(a, b, next) >= 0d && Area(a, prev, b) >= 0d :
+			Area(a, b, prev) < 0d || Area(a, next, b) < 0d;
 	}
 
 	// check if the middle point of a polygon diagonal is inside the polygon
@@ -702,12 +730,16 @@ public sealed class Earcut
 	{
 		var p = a;
 		var inside = false;
-		var px = (a.x + b.x) / 2;
-		var py = (a.y + b.y) / 2;
+		var px = (a.x + b.x) * 0.5d;
+		var py = (a.y + b.y) * 0.5d;
 		do
 		{
-			if (((p.y > py) != (p.next.y > py)) && p.next.y != p.y &&
-					(px < (p.next.x - p.x) * (py - p.y) / (p.next.y - p.y) + p.x))
+			var py2 = p.y;
+			var next = p.next;
+			var pnexty = next.y;
+			var px2 = p.x;
+			if (((py2 > py) != (pnexty > py)) && pnexty != py2 &&
+					(px < (next.x - px2) * (py - py2) / (pnexty - py2) + px2))
 			{
 				inside = !inside;
 			}
@@ -765,59 +797,41 @@ public sealed class Earcut
 
 	private static void RemoveNode(Node p)
 	{
-		p.next.prev = p.prev;
-		p.prev.next = p.next;
+		var prev = p.prev;
+		var next = p.next;
 
-		if (p.prevZ != null)
+		prev.next = next;
+		next.prev = prev;
+
+		var prevZ = p.prevZ;
+		if (prevZ != null)
 		{
-			p.prevZ.nextZ = p.nextZ;
+			prevZ.nextZ = p.nextZ;
 		}
 
-		if (p.nextZ != null)
+		var nextZ = p.nextZ;
+		if (nextZ != null)
 		{
-			p.nextZ.prevZ = p.prevZ;
+			nextZ.prevZ = prevZ;
 		}
 	}
 
-	sealed class Node
+	private sealed class Node(int i, double x, double y)
 	{
-		public int i;
-		public double x;
-		public double y;
+		public int i = i;
+		public double x = x;
+		public double y = y;
 
-		public int? z;
+		public const int InvalidZ = -1;
+		public int z = InvalidZ;
 
-		public Node prev;
-		public Node next;
+		public Node? prev;
+		public Node? next;
 
-		public Node prevZ;
-		public Node nextZ;
+		public Node? prevZ;
+		public Node? nextZ;
 
 		public bool steiner;
-
-		public Node(int i, double x, double y)
-		{
-			// vertex index in coordinates array
-			this.i = i;
-
-			// vertex coordinates
-			this.x = x;
-			this.y = y;
-
-			// previous and next vertex nodes in a polygon ring
-			this.prev = null;
-			this.next = null;
-
-			// z-order curve value
-			this.z = null;
-
-			// previous and next nodes in z-order
-			this.prevZ = null;
-			this.nextZ = null;
-
-			// indicates whether this is a steiner point
-			this.steiner = false;
-		}
 	}
 
 	private static double SignedArea(ReadOnlySpan<double> data, int start, int end)
@@ -831,40 +845,5 @@ public sealed class Earcut
 		}
 
 		return sum;
-	}
-
-	// return a percentage difference between the polygon area and its triangulation area;
-	// used to verify correctness of triangulation
-	public static double Deviation(ReadOnlySpan<double> data, ReadOnlySpan<int> holeIndices, ReadOnlySpan<int> triangles)
-	{
-		var hasHoles = holeIndices.Length > 0;
-		var outerLen = hasHoles ? holeIndices[0] * 2 : data.Length;
-
-		var polygonArea = Math.Abs(SignedArea(data, 0, outerLen));
-		if (hasHoles)
-		{
-			var len = holeIndices.Length;
-
-			for (var i = 0; i < len; ++i)
-			{
-				var start = holeIndices[i] * 2;
-				var end = i < len - 1 ? holeIndices[i + 1] * 2 : data.Length;
-				polygonArea -= Math.Abs(SignedArea(data, start, end));
-			}
-		}
-
-		var trianglesArea = default(double);
-		for (var i = 0; i < triangles.Length; i += 3)
-		{
-			var a = triangles[i] * 2;
-			var b = triangles[i + 1] * 2;
-			var c = triangles[i + 2] * 2;
-			trianglesArea += Math.Abs(
-				(data[a] - data[c]) * (data[b + 1] - data[a + 1]) -
-				(data[a] - data[b]) * (data[c + 1] - data[a + 1]));
-		}
-
-		return polygonArea == 0d && trianglesArea == 0d ? 0d :
-			Math.Abs((trianglesArea - polygonArea) / polygonArea);
 	}
 }

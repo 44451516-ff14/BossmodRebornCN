@@ -14,6 +14,9 @@ public class PartyRolesConfig : ConfigNode
     [PropertyDisplay("进入副本时自动分配位置")]
     public bool AutoAssignOnDutyEnter = false;
 
+    [PropertyDisplay("Preferred auto-assigned role", tooltip: "Only applied when auto-assigning roles (via the 'Auto-Assign Roles' button or on zone change when that option is enabled). Biases the player toward the chosen slot when their job matches the role; otherwise it falls back to the default logic.")]
+    public Assignment PreferredAutoAssignedRole = Assignment.Unassigned;
+
     public Dictionary<ulong, Assignment> Assignments = [];
 
     public Class[] MainTankPriority = [Class.WAR, Class.PLD, Class.DRK, Class.GNB];
@@ -102,6 +105,9 @@ public class PartyRolesConfig : ConfigNode
             }
         }
 
+        // build preferred-auto-assign context for the player (ignore when preference is Unassigned or player is absent)
+        var preference = BuildPreferredAutoAssignContext(party, members);
+
         // separate by role
         List<(ulong contentId, Class job, Role role, ClassCategory category)> tanks = [];
         List<(ulong contentId, Class job, Role role, ClassCategory category)> healers = [];
@@ -112,7 +118,10 @@ public class PartyRolesConfig : ConfigNode
         for (var i = 0; i < countMembers; ++i)
         {
             ref var member = ref members.Ref(i);
-            if (member.role == Role.Tank)
+            // special-case: ranged player wanting melee, needs 3+ ranged total - pre-classify into melee role family
+            if (preference.ForceMeleePromotion && member.contentId == preference.PlayerContentId)
+                melee.Add(member);
+            else if (member.role == Role.Tank)
                 tanks.Add(member);
             else if (member.role == Role.Healer)
                 healers.Add(member);
@@ -122,35 +131,23 @@ public class PartyRolesConfig : ConfigNode
                 ranged.Add(member);
         }
 
-        var countM = melee.Count;
-        var countR = ranged.Count;
-        var countT = tanks.Count;
-        var countH = healers.Count;
-
-        // main tank is picked using the user configurable MainTankPriority order
-        tanks.Sort((a, b) => GetTankPriority(a.job, MainTankPriority).CompareTo(GetTankPriority(b.job, MainTankPriority)));
-        if (countT > 0)
-            Assignments[tanks.Ref(0).contentId] = Assignment.MT;
-
-        if (countT > 1)
-        {
-            // off tank is picked among the remaining tanks using its own user configurable OffTankPriority order
-            var otCandidates = tanks.GetRange(1, countT - 1);
-            otCandidates.Sort((a, b) => GetTankPriority(a.job, OffTankPriority).CompareTo(GetTankPriority(b.job, OffTankPriority)));
-            Assignments[otCandidates.Ref(0).contentId] = Assignment.OT;
-        }
+        // MT chosen by MainTankPriority; OT chosen from the remaining tanks by OffTankPriority (defaults are reverses of each other, so a 2-tank party is unaffected)
+        OrderTanksForAssignment(tanks);
+        PlayerToPreferredSlot(tanks, preference, Assignment.MT, Assignment.OT);
+        AssignRolesRespectingPreference(tanks, preference, Assignment.MT, Assignment.OT);
 
         // healer priority: WHM > AST > SCH > SGE for H1, reverse for H2
         healers.Sort(static (a, b) => GetHealerPriority(a.job).CompareTo(GetHealerPriority(b.job)));
-        if (countH > 0)
-            Assignments[healers.Ref(0).contentId] = Assignment.H1;
-        if (countH > 1)
-            Assignments[healers.Ref(1).contentId] = Assignment.H2;
+        PlayerToPreferredSlot(healers, preference, Assignment.H1, Assignment.H2);
+        AssignRolesRespectingPreference(healers, preference, Assignment.H1, Assignment.H2);
 
         // sort ranged by priority first
         ranged.Sort(static (a, b) => GetRangedPriority(a.job).CompareTo(GetRangedPriority(b.job)));
 
-        // melee DPS - if 3+ ranged, fill melee slots from the lowest priority ranged
+        var countM = melee.Count;
+        var countR = ranged.Count;
+
+        // melee DPS — if 3+ ranged, fill melee slots from the lowest priority ranged
         if (countR >= 3)
         {
             // first try to move RDM to melee (if it exists and is low priority)
@@ -185,20 +182,133 @@ public class PartyRolesConfig : ConfigNode
             countR = ranged.Count;
         }
 
-        // assign melee by party order
-        for (var i = 0; i < countM && i < 2; ++i)
-        {
-            Assignments[melee.Ref(i).contentId] = i == 0 ? Assignment.M1 : Assignment.M2;
-        }
+        // pin the player into their preferred melee/ranged slot AFTER the promotion block, so the pin survives any list mutations
+        PlayerToPreferredSlot(melee, preference, Assignment.M1, Assignment.M2);
+        PlayerToPreferredSlot(ranged, preference, Assignment.R1, Assignment.R2);
 
-        // assign ranged (already sorted by priority)
-
-        if (countR > 0)
-            Assignments[ranged.Ref(0).contentId] = Assignment.R1;
-        if (countR > 1)
-            Assignments[ranged.Ref(1).contentId] = Assignment.R2;
+        // finally, write the assignments (honors a lone player's secondary preference too, e.g. lone melee picking M2)
+        AssignRolesRespectingPreference(melee, preference, Assignment.M1, Assignment.M2);
+        AssignRolesRespectingPreference(ranged, preference, Assignment.R1, Assignment.R2);
 
         Modified.Fire();
+    }
+
+    // bundles all preferred-auto-assign state needed by the role-family/pinning helpers; HasPreference is false when no override should apply
+    private readonly record struct PreferredAutoAssignContext(bool HasPreference, ulong PlayerContentId, Assignment Preference, bool ForceMeleePromotion);
+
+    private PreferredAutoAssignContext BuildPreferredAutoAssignContext(PartyState party, List<(ulong contentId, Class job, Role role, ClassCategory category)> members)
+    {
+        var pref = PreferredAutoAssignedRole;
+        var prefFamily = GetRoleFamilyForPreferredAssignment(pref);
+        if (prefFamily == null)
+            return default;
+
+        var playerCid = party.Members[PartyState.PlayerSlot].ContentId;
+        if (playerCid == default)
+            return default;
+
+        var playerIdx = members.FindIndex(m => m.contentId == playerCid);
+        if (playerIdx < 0)
+            return default;
+
+        var playerEntry = members[playerIdx];
+
+        // ranged player wanting a melee slot is only legal when the existing algorithm would have promoted someone (3+ ranged in party)
+        var rangedCount = 0;
+        var memberCount = members.Count;
+        for (var i = 0; i < memberCount; ++i)
+        {
+            if (members[i].role == Role.Ranged)
+                ++rangedCount;
+        }
+
+        var forceMeleePromotion = playerEntry.role == Role.Ranged
+            && (pref == Assignment.M1 || pref == Assignment.M2)
+            && rangedCount >= 3;
+
+        // silently ignore preferences whose role family the player doesn't satisfy (and isn't eligible to be promoted into)
+        if (playerEntry.role != prefFamily && !forceMeleePromotion)
+        {
+            return default;
+        }
+
+        return new PreferredAutoAssignContext(true, playerCid, pref, forceMeleePromotion);
+    }
+
+    private static Role? GetRoleFamilyForPreferredAssignment(Assignment a) => a switch
+    {
+        Assignment.MT or Assignment.OT => Role.Tank,
+        Assignment.H1 or Assignment.H2 => Role.Healer,
+        Assignment.M1 or Assignment.M2 => Role.Melee,
+        Assignment.R1 or Assignment.R2 => Role.Ranged,
+        _ => null
+    };
+
+    // moves the player to index 0 (when preference matches primary slot) or index 1 (when it matches secondary) of the role family;
+    // the secondary case is only honored here when the role family already has at least 2 entries — solo role family secondary is handled by AssignRolesRespectingPreference
+    private static void PlayerToPreferredSlot(
+        List<(ulong contentId, Class job, Role role, ClassCategory category)> roleFamily,
+        PreferredAutoAssignContext preference,
+        Assignment primary,
+        Assignment secondary)
+    {
+        if (!preference.HasPreference)
+            return;
+
+        int targetIndex;
+        if (preference.Preference == primary)
+            targetIndex = 0;
+        else if (preference.Preference == secondary)
+            targetIndex = 1;
+        else
+            return;
+
+        var currentIndex = roleFamily.FindIndex(m => m.contentId == preference.PlayerContentId);
+        if (currentIndex < 0 || targetIndex >= roleFamily.Count || currentIndex == targetIndex)
+            return;
+
+        var entry = roleFamily[currentIndex];
+        roleFamily.RemoveAt(currentIndex);
+        roleFamily.Insert(targetIndex, entry);
+    }
+
+    // writes primary/secondary assignments for a role family, honoring a secondary-slot preference for the local player
+    // even when they are the only member in the role family (e.g. lone melee picking M2)
+    private void AssignRolesRespectingPreference(
+        List<(ulong contentId, Class job, Role role, ClassCategory category)> roleFamily,
+        PreferredAutoAssignContext preference,
+        Assignment primary,
+        Assignment secondary)
+    {
+        if (roleFamily.Count == 0)
+            return;
+
+        var playerWantsSecondary = preference.HasPreference
+            && preference.Preference == secondary
+            && roleFamily[0].contentId == preference.PlayerContentId;
+
+        if (roleFamily.Count == 1)
+        {
+            Assignments[roleFamily[0].contentId] = playerWantsSecondary ? secondary : primary;
+            return;
+        }
+
+        Assignments[roleFamily[0].contentId] = primary;
+        Assignments[roleFamily[1].contentId] = secondary;
+    }
+
+    // orders the tank list so index 0 = MT (best per MainTankPriority) and index 1 = OT (best per OffTankPriority among the rest)
+    private void OrderTanksForAssignment(List<(ulong contentId, Class job, Role role, ClassCategory category)> tanks)
+    {
+        if (tanks.Count < 2)
+            return;
+
+        tanks.Sort((a, b) => GetTankPriority(a.job, MainTankPriority).CompareTo(GetTankPriority(b.job, MainTankPriority)));
+        var mt = tanks[0];
+        tanks.RemoveAt(0);
+
+        tanks.Sort((a, b) => GetTankPriority(a.job, OffTankPriority).CompareTo(GetTankPriority(b.job, OffTankPriority)));
+        tanks.Insert(0, mt);
     }
 
     private static int GetTankPriority(Class job, Class[] order)

@@ -48,7 +48,7 @@ class SapphireWeapon(WorldState ws) : UnmanagedRotation(ws, 40f)
                     break;
             }
 
-            if (!ActionDefinitions.IsDashDangerous(Player.Position, primaryTarget.Position, Hints))
+            if (ActionPredicate.IsDashSafe(Player.Position, primaryTarget.Position, Hints))
             {
                 UseAction(Roleplay.AID.Aethersaber, primaryTarget);
             }
@@ -82,12 +82,30 @@ internal class SleepNowInSapphire(WorldState ws) : QuestBattle(ws)
                     shieldActivate |= status.ID == (uint)Roleplay.SID.SafetyLockAetherialAegis;
                 };
 
-                obj.OnStatusGain += (act, status) => {
-                    if (status.ID == (uint)Roleplay.SID.PyreticBooster) { pyreticActivate = false; } if (status.ID == (uint)Roleplay.SID.AetherialAegis) { shieldActivate = false; } };
+                obj.OnStatusGain += (act, status) =>
+                {
+                    if (status.ID == (uint)Roleplay.SID.PyreticBooster)
+                    {
+                        pyreticActivate = false;
+                         }
+                    if (status.ID == (uint)Roleplay.SID.AetherialAegis)
+                    {
+                        shieldActivate = false;
+                    }
+                };
 
-                obj.AddAIHints += (player, hints) => {
+                obj.AddAIHints += (player, hints) =>
+                {
                     hints.PrioritizeAll();
-                    if (pyreticActivate) { hints.ActionsToExecute.Push(ActionID.MakeSpell(Roleplay.AID.PyreticBooster), player, ActionQueue.Priority.High); } if (shieldActivate) { hints.ActionsToExecute.Push(ActionID.MakeSpell(Roleplay.AID.AetherialAegis), player, ActionQueue.Priority.High); } };
+                    if (pyreticActivate)
+                    {
+                        hints.ActionsToExecute.Push(ActionID.MakeSpell(Roleplay.AID.PyreticBooster), player, ActionQueue.Priority.High);
+                    }
+                    if (shieldActivate)
+                    {
+                        hints.ActionsToExecute.Push(ActionID.MakeSpell(Roleplay.AID.AetherialAegis), player, ActionQueue.Priority.High);
+                    }
+                };
             })
         ];
 

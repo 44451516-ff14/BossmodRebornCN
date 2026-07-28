@@ -1,6 +1,6 @@
 ﻿namespace BossMod.QuestBattle.Shadowbringers.MSQ;
 
-class AutoEstinien(WorldState ws) : UnmanagedRotation(ws, 10f)
+class AutoEstinien(WorldState ws) : UnmanagedRotation(ws, 3f)
 {
     protected override void Exec(Actor? primaryTarget)
     {
@@ -17,11 +17,8 @@ class AutoEstinien(WorldState ws) : UnmanagedRotation(ws, 10f)
         };
 
         UseAction(gcd, primaryTarget);
-        var hpmp = Player.HPMP;
-        if (hpmp.CurHP * 2u < hpmp.MaxHP)
-        {
-            UseAction(Roleplay.AID.AquaVitae, Player, -10f);
-        }
+        if (Player.HPRatio < 0.5f)
+            UseAction(Roleplay.AID.AquaVitae, Player, -10);
 
         UseAction(Roleplay.AID.SkydragonDive, primaryTarget, -10f);
     }
@@ -37,10 +34,6 @@ public class VowsOfVirtueDeedsOfCruelty(WorldState ws) : QuestBattle(ws)
             .WithConnection(new Vector3(134f, default, 400f))
             .With(obj => {
                 obj.OnConditionChange += (flag, val) => obj.CompleteIf(flag == Dalamud.Game.ClientState.Conditions.ConditionFlag.Jumping61 && !val);
-            })
-            .Hints((player, hints) => {
-                hints.PathfindMapCenter = new(player.PosRot.X, 400f);
-                hints.PathfindMapBounds = new ArenaBoundsRect(20f, 14f);
             }),
 
         new QuestObjective(ws)

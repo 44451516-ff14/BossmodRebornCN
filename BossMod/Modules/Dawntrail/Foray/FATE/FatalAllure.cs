@@ -91,7 +91,7 @@ sealed class FatalAllureStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1971)]
-public sealed class FatalAllure(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
+public sealed class FatalAllure(WorldState ws, Actor primary) : OpenWorldFate(ws, primary)
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

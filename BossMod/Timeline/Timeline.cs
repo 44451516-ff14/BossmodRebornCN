@@ -1,5 +1,6 @@
 ﻿using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 
 namespace BossMod;
 
@@ -18,8 +19,8 @@ public sealed class Timeline
 
         public virtual void DrawHeader(Vector2 topLeft)
         {
-            var s = ImGui.CalcTextSize(Name);
-            ImGui.GetWindowDrawList().AddText(topLeft + new Vector2((Width - s.X) * 0.5f, 0), BossMod.Colors.TextColor4, Name);
+            ImGui.SetCursorPos(topLeft - ImGui.GetWindowPos() + new Vector2(Width * 0.5f, ImGui.GetFrameHeight() * -0.5f));
+            UIMisc.TextRotated(Name, MathF.PI / 3);
         }
 
         public virtual void Draw() { }
@@ -30,6 +31,8 @@ public sealed class Timeline
             Draw();
             x += Width;
         }
+
+        public virtual IEnumerable<string> GetSupportedFilters() => [];
     }
 
     // a number of consecutive columns grouped together
@@ -84,12 +87,14 @@ public sealed class Timeline
         public T Add<T>(T col) where T : Column
         {
             Columns.Add(col);
+            Timeline.UpdateFilters();
             return col;
         }
 
         public T AddBefore<T>(T col, Column next) where T : Column
         {
             Columns.Insert(Columns.IndexOf(next), col);
+            Timeline.UpdateFilters();
             return col;
         }
 
@@ -98,6 +103,8 @@ public sealed class Timeline
             Columns.Add(new(Timeline));
             return Columns[^1];
         }
+
+        public override IEnumerable<string> GetSupportedFilters() => Columns.SelectMany(c => c.GetSupportedFilters());
     }
 
     public readonly ColorConfig Colors = Service.Config.Get<ColorConfig>();
@@ -105,8 +112,8 @@ public sealed class Timeline
     public float MaxTime;
     public float? CurrentTime;
     public float PixelsPerSecond = 10f * ImGuiHelpers.GlobalScale;
-    public float TopMargin = 20f * ImGuiHelpers.GlobalScale;
-    public float BottomMargin = 5f * ImGuiHelpers.GlobalScale;
+    public static float TopMargin => 80f * ImGuiHelpers.GlobalScale;
+    public static float BottomMargin => 5f * ImGuiHelpers.GlobalScale;
     public ColumnGroup Columns;
 
     private float _tickFrequency = 5;
@@ -123,20 +130,47 @@ public sealed class Timeline
     public float Height;
     public Vector2 ScreenClientTL => _screenClientTL;
 
-    public Timeline() => Columns = new(this);
+    public Timeline()
+    {
+        Columns = new(this);
+        UpdateFilters();
+    }
 
     public void Draw()
     {
         Columns.Update();
 
+        if (_allFilters.Count > 0)
+        {
+            ImGui.AlignTextToFramePadding();
+            ImGui.Text("Condition filters:");
+        }
+        for (var i = 0; i < _allFilters.Count; i++)
+        {
+            ImGui.SameLine();
+            var k = _allFilters[i];
+            var isHidden = _hiddenFilters.Contains(k);
+            using (ImRaii.PushColor(ImGuiCol.Button, 0xff000080, isHidden))
+            {
+                if (ImGui.Button(k))
+                {
+                    if (isHidden)
+                        _hiddenFilters.Remove(k);
+                    else
+                        _hiddenFilters.Add(k);
+                    UpdateFilters();
+                }
+            }
+        }
+
         _screenClientTL = ImGui.GetCursorScreenPos();
+        _screenClientTL.Y += TopMargin;
         Columns.DrawHeader(_screenClientTL + new Vector2(_timeAxisWidth, 0));
 
-        _screenClientTL.Y += TopMargin;
         ImGui.SetCursorScreenPos(_screenClientTL);
         _screenClientTL.X += _timeAxisWidth;
 
-        Height = Math.Max(10, ImGui.GetWindowPos().Y + ImGui.GetWindowHeight() - _screenClientTL.Y - TopMargin - BottomMargin - 8);
+        Height = Math.Max(10f, ImGui.GetWindowPos().Y + ImGui.GetWindowHeight() - _screenClientTL.Y - BottomMargin - 8f);
         ImGui.InvisibleButton("canvas", new(_timeAxisWidth + Columns.Width, Height), ImGuiButtonFlags.MouseButtonLeft | ImGuiButtonFlags.MouseButtonRight);
         HandleScrollZoom();
         DrawTimeAxis();
@@ -175,6 +209,17 @@ public sealed class Timeline
             ImGui.EndTooltip();
             _tooltip.Clear();
         }
+    }
+
+    private List<string> _allFilters = [];
+    private readonly List<string> _hiddenFilters = [];
+
+    public ImmutableSortedSet<string> ActiveFilters { get; private set; } = [];
+
+    public void UpdateFilters()
+    {
+        _allFilters = [.. Columns.GetSupportedFilters().Distinct()];
+        ActiveFilters = [.. _allFilters.Except(_hiddenFilters)];
     }
 
     // API below is supposed to be called during column's Draw() function

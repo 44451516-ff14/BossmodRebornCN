@@ -112,7 +112,7 @@ public sealed class DebugObjects
             Camera.Instance?.DrawWorldLine(Service.ObjectTable.LocalPlayer?.Position ?? default, selected.Position, Colors.TextColor3);
             Camera.Instance?.DrawWorldCircle(selected.Position, selected.HitboxRadius, Colors.TextColor4);
             Camera.Instance?.DrawWorldCircle(selected.Position + h, selected.HitboxRadius, Colors.TextColor4);
-            Camera.Instance?.DrawWorldCircle(selected.Position - h, selected.HitboxRadius, Colors.TextColor4);
+            Camera.Instance?.DrawWorldCircle(selected.Position + h * 2, selected.HitboxRadius, Colors.TextColor4);
             var numSegments = CurveApprox.CalculateCircleSegments(selected.HitboxRadius, 360f.Degrees(), 1f);
             for (var i = 0; i < numSegments; ++i)
             {

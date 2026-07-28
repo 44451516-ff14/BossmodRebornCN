@@ -6,20 +6,12 @@ public class AFeastOfLies(WorldState ws) : QuestBattle(ws)
     public override List<QuestObjective> DefineObjectives(WorldState ws) => [
         new QuestObjective(ws)
             .WithConnection(new Vector3(0.02f, 5.96f, -56.50f))
-            .Hints((player, hints) => {
-                hints.PathfindMapCenter = new(default, player.PosRot.Z);
-                hints.PathfindMapBounds = new ArenaBoundsRect(8f, 20f);
-            })
             .With(obj => {
                 obj.OnEventObjectStateChanged += (act, state) => obj.CompleteIf(act.OID == 0x1EACEFu && state == 2);
             }),
 
         new QuestObjective(ws)
             .WithConnection(new Vector3(-0.00f, 6.00f, -29.00f))
-            .Hints((player, hints) => {
-                hints.PathfindMapCenter = new(default, -28.5f);
-                hints.PathfindMapBounds = new ArenaBoundsRect(11f, 16f);
-            })
             .With(obj => {
                 var redDead = false;
                 var blueDead = false;

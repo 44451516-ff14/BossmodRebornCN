@@ -30,7 +30,7 @@ abstract class SequencedPreviewAOEs<TEntry>(BossModule module)
 
     // --------------------------------------------------------------------------
 
-    /// <summary>Call when the scripted sequence begins (AssaultEvolved / AssaultApex).</summary>
+    /// Call when the scripted sequence begins (AssaultEvolved / AssaultApex).
     protected void StartSequence()
     {
         _cursor = -1;
@@ -39,7 +39,7 @@ abstract class SequencedPreviewAOEs<TEntry>(BossModule module)
         _dangerActivation = default;
     }
 
-    /// <summary>Stops and clears all state.</summary>
+    /// Stops and clears all state.
     protected void StopSequence()
     {
         _active = false;
@@ -677,8 +677,8 @@ sealed class AssaultWeaponSafeSpots(BossModule module) : BossComponent(module)
     {
         var offset = role switch
         {
-            PartyRolesConfig.Assignment.MT => 180.Degrees(),
-            PartyRolesConfig.Assignment.OT => 0.Degrees(),
+            PartyRolesConfig.Assignment.MT => 0.Degrees(),
+            PartyRolesConfig.Assignment.OT => 180.Degrees(),
             PartyRolesConfig.Assignment.H2 => (-90).Degrees(),
             PartyRolesConfig.Assignment.H1 => 90.Degrees(),
             PartyRolesConfig.Assignment.R2 => (-45).Degrees(),

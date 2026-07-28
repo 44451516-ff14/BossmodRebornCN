@@ -68,8 +68,10 @@ public sealed class ModuleViewer : IDisposable
         Customize(BossModuleInfo.Category.TreasureHunt, contentType.GetRow(9u));
         Customize(BossModuleInfo.Category.GoldSaucer, contentType.GetRow(19u));
         Customize(BossModuleInfo.Category.DeepDungeon, contentType.GetRow(21u));
+        Customize(BossModuleInfo.Category.Quantum, contentType.GetRow(21u), "Quantum");
         Customize(BossModuleInfo.Category.Ultimate, contentType.GetRow(28u));
         Customize(BossModuleInfo.Category.VariantCriterion, contentType.GetRow(30u));
+        Customize(BossModuleInfo.Category.HallOfTheNovice, contentType.GetRow(20u), "Hall of the Novice");
 
         var playStyle = Service.LuminaSheet<CharaCardPlayStyle>()!;
         Customize(BossModuleInfo.Category.Foray, playStyle.GetRow(6u));
@@ -160,7 +162,7 @@ public sealed class ModuleViewer : IDisposable
     public void Draw(UITree tree, WorldState ws)
     {
         var availWidth = ImGui.GetContentRegionAvail().X;
-        var filterWidth = 200f; // Fixed width for filter panel
+        var filterWidth = 300f; // Fixed width for filter panel
         var moduleWidth = availWidth - filterWidth - ImGui.GetStyle().ItemSpacing.X;
 
         using (var child = ImRaii.Child("FiltersPanel", new Vector2(filterWidth, 0), true))

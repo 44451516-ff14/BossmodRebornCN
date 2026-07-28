@@ -17,7 +17,7 @@ public sealed class PlanExecution
         public StateFlag Vulnerable = new(false, float.MaxValue);
     }
 
-    public record class EntryData(float WindowStart, float WindowEnd, int BranchID, int NumBranches, StrategyValue Value)
+    public record class EntryData(float WindowStart, float WindowEnd, int BranchID, int NumBranches, StrategyValue Value, StrategyCondition ConditionType, int ConditionParam)
     {
         public bool IntersectBranchRange(int branchID, int numBranches) => BranchID < branchID + numBranches && branchID < BranchID + NumBranches;
         public bool IsActive(float t, StateData s) => t >= WindowStart && t <= WindowEnd && IntersectBranchRange(s.BranchID, s.NumBranches);
@@ -80,7 +80,7 @@ public sealed class PlanExecution
         return (s.Vulnerable.Active, s.Vulnerable.TransitionIn - Math.Min(Module.StateMachine.TimeSinceTransition, s.Duration));
     }
 
-    public StrategyValues ActiveStrategyOverrides(int moduleIndex)
+    public StrategyValues ActiveStrategyOverrides(int moduleIndex, WorldState ws, int playerSlot)
     {
         var s = FindCurrentStateData();
         var t = GetVirtualTime(s);
@@ -91,18 +91,84 @@ public sealed class PlanExecution
             // set global default
             res.Values[i] = data.Defaults[i];
             // then override with entries
-            var entry = GetEntryAt(data.Tracks[i], t, s);
+            var entry = GetEntryAt(data.Tracks[i], ws, playerSlot, t, s);
             if (entry != null)
                 res.Values[i] = entry.Value with { ExpireIn = entry.WindowEnd - t };
         }
         return res;
     }
 
-    public StrategyValueTrack? ActiveForcedTarget()
+    public StrategyValueTrack? ActiveForcedTarget(WorldState ws, int playerSlot)
     {
         var s = FindCurrentStateData();
         var t = GetVirtualTime(s);
-        return GetEntryAt(ForcedTargets, t, s)?.Value as StrategyValueTrack;
+        return GetEntryAt(ForcedTargets, ws, playerSlot, t, s)?.Value as StrategyValueTrack;
+    }
+
+    // a single planned entry resolved (when possible) to a concrete game action, alongside the raw track/option data it came from
+    // ActionType/ActionId are 0 if the entry couldn't be resolved to an unambiguous action (in which case consumers should fall back to ModuleType/TrackName/OptionName)
+    public readonly record struct PlannedAction(
+        string ModuleType,
+        string TrackName,
+        string OptionName,
+        uint ActionType,
+        uint ActionId,
+        float ActivationIn,
+        float WindowEndIn,
+        int Target,
+        int TargetParam);
+
+    // returns planned entries within [now, now + lookAheadSeconds), resolved along the currently active branch of the plan
+    // only tracks where every non-default option maps 1:1 to an associated action are resolved to a concrete ActionId; others are skipped
+    public List<PlannedAction> GetUpcomingPlannedActions(WorldState ws, int playerSlot, float lookAheadSeconds = 60)
+    {
+        var result = new List<PlannedAction>();
+        if (Plan == null)
+            return result;
+
+        var s = FindCurrentStateData();
+        var t = GetVirtualTime(s);
+        var maxT = t + lookAheadSeconds;
+
+        for (var mi = 0; mi < Strategies.Count; ++mi)
+        {
+            var module = Strategies[mi];
+            for (var ti = 0; ti < module.Tracks.Count; ++ti)
+            {
+                if (module.Definition.Configs[ti] is not StrategyConfigTrack config)
+                    continue;
+                // only resolve tracks where associated actions map 1:1 to non-default options
+                if (config.AssociatedActions.Count != config.Options.Count - 1)
+                    continue;
+
+                var entries = module.Tracks[ti];
+                for (var ei = 0; ei < entries.Count; ++ei)
+                {
+                    var e = entries[ei];
+                    if (e.WindowEnd < t || e.WindowStart > maxT)
+                        continue;
+                    if (!e.IntersectBranchRange(s.BranchID, s.NumBranches))
+                        continue;
+                    if (e.Value is not StrategyValueTrack stv || stv.Option <= 0)
+                        continue;
+
+                    var action = config.AssociatedActions[stv.Option - 1];
+                    result.Add(new(
+                        module.Type.FullName ?? module.Type.Name,
+                        config.InternalName,
+                        config.Options[stv.Option].InternalName,
+                        (uint)action.Type,
+                        action.ID,
+                        e.WindowStart - t,
+                        e.WindowEnd - t,
+                        (int)stv.Target,
+                        stv.TargetParam));
+                }
+            }
+        }
+
+        result.Sort((a, b) => a.ActivationIn.CompareTo(b.ActivationIn));
+        return result;
     }
 
     private StateData ProcessState(StateMachineTree tree, StateMachineTree.Node curState, StateData? prev, StateData? nextPhaseStart)
@@ -164,7 +230,7 @@ public sealed class PlanExecution
                 if (s != null)
                 {
                     var windowStart = s.EnterTime + Math.Min(s.Duration, entry.TimeSinceActivation);
-                    res.Add(new(windowStart, windowStart + entry.WindowLength, s.BranchID, s.NumBranches, entry.Value));
+                    res.Add(new(windowStart, windowStart + entry.WindowLength, s.BranchID, s.NumBranches, entry.Value, entry.ConditionType, entry.ConditionParam));
                 }
                 else
                 {
@@ -175,6 +241,20 @@ public sealed class PlanExecution
         return res;
     }
 
+    // TODO: this should be replay-scoped, but we need to add roles config to replays for that
+    private static bool FilterEntry(EntryData data, WorldState world, int playerSlot)
+    {
+        switch (data.ConditionType)
+        {
+            case StrategyCondition.AssignedRole:
+                var role = (PartyRolesConfig.Assignment)data.ConditionParam;
+                var member = world.Party.Members.BoundSafeAt(playerSlot);
+                return member.ContentId != 0 && Service.Config.Get<PartyRolesConfig>()[member.ContentId] == role;
+            default:
+                return true;
+        }
+    }
+
     // if there are several intersecting entries, select one with biggest windowstart
-    private EntryData? GetEntryAt(List<EntryData> entries, float t, StateData s) => entries.Where(e => e.IsActive(t, s)).MaxBy(s => s.WindowStart);
+    private EntryData? GetEntryAt(List<EntryData> entries, WorldState world, int playerSlot, float t, StateData s) => entries.Where(e => FilterEntry(e, world, playerSlot) && e.IsActive(t, s)).MaxBy(s => s.WindowStart);
 }

@@ -691,7 +691,7 @@ sealed class AIManager : IDisposable
             return;
         }
 
-        var userInput = string.Join(" ", presetName.Skip(1)).Trim();
+        var userInput = string.Join(" ", presetName, 1, presetName.Length - 1).Trim();
         if (userInput == "null" || string.IsNullOrWhiteSpace(userInput))
         {
             SetAIPreset(null);
@@ -703,10 +703,19 @@ sealed class AIManager : IDisposable
             return;
         }
 
-        var normalizedInput = userInput.ToUpperInvariant();
-        var preset = Autorot.Database.Presets.AllPresets
-            .FirstOrDefault(p => p.Name.Trim().Equals(normalizedInput, StringComparison.OrdinalIgnoreCase))
-            ?? RotationModuleManager.ForceDisable;
+        var allpresets = Autorot.Database.Presets.AllPresets;
+        var count = allpresets.Count;
+        Preset? preset = null;
+        for (var i = 0; i < count; ++i)
+        {
+            var p = allpresets[i];
+            if (p.Name.Trim().Equals(userInput, StringComparison.OrdinalIgnoreCase))
+            {
+                preset = p;
+                break;
+            }
+        }
+        preset ??= RotationModuleManager.ForceDisable;
 
         if (preset != null)
         {

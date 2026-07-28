@@ -71,7 +71,6 @@ public sealed class NormalMovement : RotationModule
 
     public const float MeleeRange = 2.6f; // Note: melee range is always hitbox radius + 2.6 for auto attacks, doesn't matter if skills have 3 range...
     public const float CasterRange = 25f;
-    const float SpinningLookahead = 5.5f;
 
     private Task<NavigationDecision> _decisionTask = Task.FromResult(default(NavigationDecision));
     private NavigationDecision _lastDecision;
@@ -124,7 +123,7 @@ public sealed class NormalMovement : RotationModule
             if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.NoMovement && Hints.ImminentSpecialMode.activation <= World.FutureTime(1d))
                 return;
 
-            if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && Hints.ImminentSpecialMode.activation <= World.FutureTime(0.5f))
+            if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && Hints.ImminentSpecialMode.activation <= World.FutureTime(0.5f) && Player.PosRot == Player.PrevPosRot)
                 Hints.WantJump = true;
         }
 
@@ -146,15 +145,6 @@ public sealed class NormalMovement : RotationModule
         // fallback so that we can automatically start some quest battles xddd (the RP rotation is a component on the module, which isn't active until we pull, so no goal zone)
         if (Hints.GoalZones.Count == 0 && primaryTarget is { IsAlly: false, IsDead: false } && Player.Statuses.Any(static s => RotationModuleManager.TransformationStatuses.Contains(s.ID)))
             Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, 3f));
-
-        var isSpinning = Player.FindStatus(2973u) != null;
-        // simulate forward forced movement; this is kind of a hack, but it definitely doesn't belong in modules because it's part of the movement constraint
-        if (isSpinning)
-        {
-            // rect is offset by -1 unit player-relative. we know very well that player-centered shapes make the pathfinder freak the fuck out
-            Hints.AddForbiddenZone(new SDRect(Player.Position, Player.Rotation, SpinningLookahead, SpinningLookahead + 2, SpinningLookahead + 2), World.FutureTime(2d));
-            Hints.AddForbiddenZone(new SDCone(Player.Position, 100f, Player.Rotation + 180f.Degrees(), 45f.Degrees()), DateTime.MaxValue);
-        }
 
         var speed = World.Client.MoveSpeed;
         var destinationOpt = strategy.Option(Track.Destination);
@@ -193,12 +183,13 @@ public sealed class NormalMovement : RotationModule
             _lastDecision = default;
         }
 
-        if (isSpinning)
+        if (World.CurrentCFCID == 844u && Player.FindStatus(2973u) != null) // spinning in alzadaal, expand if needed for other content
         {
             if (Hints.SpinDirection == null && navi.Destination is { } wp)
+            {
                 Hints.SpinDirection = Player.DirectionTo(wp).ToAngle();
-
-            return;
+                return;
+            }
         }
 
         if (navi.Destination == null)
@@ -214,7 +205,7 @@ public sealed class NormalMovement : RotationModule
         var rangeStrategy = rangeOpt.As<RangeStrategy>();
         if (rangeStrategy != RangeStrategy.Any && Player.InCombat)
         {
-            var rangeReference = ResolveTargetOverride(rangeOpt.Value) ?? primaryTarget;
+            var rangeReference = ResolveTarget(rangeOpt.Value) ?? primaryTarget;
             if (rangeReference != null)
             {
                 // TODO: instead of hardcoding, is it possible to reuse goal zones for this purpose?

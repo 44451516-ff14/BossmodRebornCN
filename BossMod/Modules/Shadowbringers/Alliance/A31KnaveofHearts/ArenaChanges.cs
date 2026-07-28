@@ -5,15 +5,13 @@ sealed class BoxSpawn(BossModule module) : Components.SimpleAOEs(module, (uint)A
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
     public readonly List<Square> Squares = [with(4)];
-    private static readonly Square square = new(default, 4f);
     private DateTime lastUpdate;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BoxSpawn)
         {
-            var pos = caster.Position;
-            Squares.Add(square with { Center = pos });
+            Squares.Add(new Square(caster.Position, 4f));
         }
     }
 

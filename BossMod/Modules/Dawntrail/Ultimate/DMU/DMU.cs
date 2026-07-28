@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
-class LightOfJudgment(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightOfJudgment);
+sealed class LightOfJudgment(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightOfJudgment);
 
 [ModuleInfo(BossModuleInfo.Maturity.WIP,
     StatesType = typeof(DMUStates),
@@ -20,7 +20,8 @@ class LightOfJudgment(BossModule module) : Components.RaidwideCast(module, (uint
     SortOrder = 1,
     PlanLevel = 100)]
 [SkipLocalsInit]
-public sealed class DMU(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f)) {
+public sealed class DMU(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
+{
     public override bool ShouldPrioritizeAllEnemies => true;
 
     //private Actor? bossP1;
@@ -46,33 +47,50 @@ public sealed class DMU(WorldState ws, Actor primary) : BossModule(ws, primary, 
     private Actor? kefkaP5;
     public Actor? KefkaP5() => kefkaP5;
 
-    protected override void UpdateModule() {
-        bossP2 ??= Enemies((uint)OID.BossP2).FirstOrDefault();
-        chaosP3 ??= Enemies((uint)OID.Chaos).FirstOrDefault();
-        exdeathP3 ??= Enemies((uint)OID.Exdeath).FirstOrDefault();
-        chaosP4 ??= Enemies((uint)OID.ChaosP4).FirstOrDefault();
-        neoExdeath ??= Enemies((uint)OID.NeoExdeath).FirstOrDefault();
-
-        if (StateMachine.ActivePhaseIndex == 2) {
-            bossP3 ??= Enemies((uint)OID.Kefka).FirstOrDefault();
-        }
-
-        if (StateMachine.ActivePhaseIndex == 3) {
-            kefkaP4 ??= Enemies((uint)OID.KefkaP4).FirstOrDefault();
-        }
-
-        if (StateMachine.ActivePhaseIndex == 4) {
-            kefkaP5 ??= Enemies((uint)OID.KefkaP5).FirstOrDefault();
+    protected override void UpdateModule()
+    {
+        switch (StateMachine.ActivePhaseIndex)
+        {
+            case 1:
+                bossP2 ??= GetActor((uint)OID.BossP2);
+                break;
+            case 2:
+                bossP3 ??= GetActor((uint)OID.Kefka);
+                chaosP3 ??= GetActor((uint)OID.Chaos);
+                exdeathP3 ??= GetActor((uint)OID.Exdeath);
+                break;
+            case 3:
+                kefkaP4 ??= GetActor((uint)OID.KefkaP4);
+                chaosP4 ??= GetActor((uint)OID.ChaosP4);
+                neoExdeath ??= GetActor((uint)OID.NeoExdeath);
+                break;
+            case 4:
+                kefkaP5 ??= GetActor((uint)OID.KefkaP5);
+                break;
         }
     }
 
-    protected override void DrawEnemies(int pcSlot, Actor pc) {
-        Arena.Actor(PrimaryActor);
-        Arena.Actor(bossP2);
-        Arena.Actor(chaosP3);
-        Arena.Actor(exdeathP3);
-        Arena.Actor(bossP3);
-        Arena.Actor(kefkaP4);
-        Arena.Actor(kefkaP5);
+    protected override void DrawEnemies(int pcSlot, Actor pc)
+    {
+        switch (StateMachine.ActivePhaseIndex)
+        {
+            case 0:
+                Arena.Actor(PrimaryActor);
+                break;
+            case 1:
+                Arena.Actor(bossP2);
+                break;
+            case 2:
+                Arena.Actor(chaosP3);
+                Arena.Actor(exdeathP3);
+                Arena.Actor(bossP3);
+                break;
+            case 3:
+                Arena.Actor(kefkaP4);
+                break;
+            case 4:
+                Arena.Actor(kefkaP5);
+                break;
+        }
     }
 }

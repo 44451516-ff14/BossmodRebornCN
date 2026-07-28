@@ -58,7 +58,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                 var misdirectionMode = autorot.Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Misdirection && autorot.Hints.ImminentSpecialMode.activation <= WorldState.CurrentTime;
                 var forbidTargeting = _config.ForbidActions || _afkMode || gazeImminent || pyreticImminent;
                 var hadNavi = _naviDecision.Destination != null;
-
+                var hints = autorot.Hints;
                 Targeting target = default;
                 if (!forbidTargeting && AIPreset != null && (!_config.ForbidAIMovementMounted || _config.ForbidAIMovementMounted && player.MountId == default))
                 {
@@ -77,7 +77,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                     }
                     if (target.Target != null || TargetIsForbidden(player.TargetID))
                     {
-                        autorot.Hints.ForcedTarget ??= target.Target?.Actor;
+                        hints.ForcedTarget ??= target.Target?.Actor;
                     }
 
                     AdjustTargetPositional(player, ref target);
@@ -112,7 +112,14 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
                 {
                     autorot.Preset = target.Target != null ? AIPreset : null;
                 }
-                UpdateMovement(player, master, gazeImminent || pyreticImminent, misdirectionMode ? autorot.Hints.MisdirectionThreshold : default, !forbidTargeting ? autorot.Hints.ActionsToExecute : null);
+                if (WorldState.CurrentCFCID == 844u && player.FindStatus(2973u) != null) // spinning in alzadaal, expand if needed for other content
+                {
+                    if (hints.SpinDirection == null && _naviDecision.Destination is WPos dest)
+                    {
+                        hints.SpinDirection = player.DirectionTo(dest).ToAngle();
+                    }
+                }
+                UpdateMovement(player, master, gazeImminent || pyreticImminent, misdirectionMode ? hints.MisdirectionThreshold : default, !forbidTargeting ? hints.ActionsToExecute : null);
             }
             finally
             {
@@ -130,7 +137,11 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         AIHints.Enemy? target = null;
         foreach (var e in autorot.Hints.PriorityTargets)
         {
-            if (e.Actor.InstanceID == targetId) { target = e; break; }
+            if (e.Actor.InstanceID == targetId)
+            {
+                target = e;
+                break;
+            }
         }
 
         // if we don't have a valid target yet, use some heuristics to select some 'ok' target to attack
@@ -139,14 +150,26 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         {
             foreach (var t in autorot.Hints.PriorityTargets)
             {
-                if (master.TargetID == t.Actor.InstanceID) { target = t; break; }
+                if (master.TargetID == t.Actor.InstanceID)
+                {
+                    target = t;
+                    break;
+                }
             }
         }
 
         if (target == null)
         {
             var bestDistSq = float.MaxValue;
-            foreach (var e in autorot.Hints.PriorityTargets) { var dsq = (e.Actor.Position - player.Position).LengthSq(); if (dsq < bestDistSq) { bestDistSq = dsq; target = e; } }
+            foreach (var e in autorot.Hints.PriorityTargets)
+            {
+                var dsq = (e.Actor.Position - player.Position).LengthSq();
+                if (dsq < bestDistSq)
+                {
+                    bestDistSq = dsq;
+                    target = e;
+                }
+            }
         }
 
         // if the previous line returned no target, there aren't any priority targets at all - give up
@@ -238,7 +261,9 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
             }
             else if (_config.FollowTarget && target != null && AIPreset == null)
             {
-                var positional = _config.DesiredPositional;
+                var positional = _config.FollowRSRDesiredPositional && autorot.Hints.RSRDesiredPositional != Positional.Any
+                    ? autorot.Hints.RSRDesiredPositional
+                    : _config.DesiredPositional;
                 var mindist = _config.MinDistance;
                 var maxdist = _config.MaxDistanceToTarget;
                 if (positional is Positional.Rear or Positional.Flank && (target.CastInfo == null && target.NameID != 541u && target.TargetID == player.InstanceID || target.Omnidirectional)) // if player is target, rear/flank is usually impossible unless target is casting
@@ -384,5 +409,15 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         }
     }
 
-    private bool TargetIsForbidden(ulong actorId) { foreach (var e in autorot.Hints.ForbiddenTargets) { if (e.Actor.InstanceID == actorId) { return true; } } return false; }
+    private bool TargetIsForbidden(ulong actorId)
+    {
+        foreach (var e in autorot.Hints.ForbiddenTargets)
+        {
+            if (e.Actor.InstanceID == actorId)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

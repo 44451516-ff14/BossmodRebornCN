@@ -82,5 +82,8 @@ sealed class AIConfig : ConfigNode
     [PropertyDisplay("将斜杠命令回显到聊天")]
     public bool EchoToChat = true;
 
+    [PropertyDisplay("跟随 RotationSolverReborn 请求的身位", tooltip: "启用后，自动移动会通过 IPC 使用 RotationSolverReborn 当前请求的身位")]
+    public bool FollowRSRDesiredPositional = true;
+
     public string? AIAutorotPresetName;
 }

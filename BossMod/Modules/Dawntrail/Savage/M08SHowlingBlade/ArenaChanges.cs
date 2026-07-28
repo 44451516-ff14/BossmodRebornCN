@@ -4,22 +4,20 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
 {
     private static readonly M08SHowlingBladeConfig _config = Service.Config.Get<M08SHowlingBladeConfig>();
     private readonly List<Polygon> polygons = [with(5)];
-    private static readonly Polygon pillarPolygon = new(new(100f, 93f), 5.5f, 20);
-    private static readonly Polygon[] pillarPolygons =
+    private readonly Polygon[] pillarPolygons =
     [
         new(new(107f, 100f), 5.5f, 20, -89.98f.Degrees()), // east, ENVC 0x10
         new(new(93f, 100f), 5.5f, 20, 89.98f.Degrees()), // west, ENVC 0x11
-        pillarPolygon, // north, ENVC 0x012
-        pillarPolygon with { Center = new(100f, 107f) }, // southeast, ENVC 0x13
+        new(new(100f, 93f), 5.5f, 20), // north, ENVC 0x012
+        new(new(100f, 107f), 5.5f, 20), // southeast, ENVC 0x13
     ];
-    private static readonly Polygon endPlatforms = new(new(100f, 117.5f), 8f, 40);
     public static readonly Polygon[] EndArenaPlatforms =
     [
-        endPlatforms, // south, ENVC 0x16
-        endPlatforms with { Center = new(83.357f, 105.408f) }, // southwest, ENVC 0x17
-        endPlatforms with { Center = new(89.714f, 85.842f) }, // northwest, ENVC 0x18
-        endPlatforms with { Center = new(110.286f, 85.842f) }, // northeast, ENVC 0x19
-        endPlatforms with { Center = new(116.643f, 105.408f) }, // southeast, ENVC 0x1A
+        new(new(100f, 117.5f), 8f, 40), // south, ENVC 0x16
+        new(new(83.357f, 105.408f), 8f, 40), // southwest, ENVC 0x17
+        new(new(89.714f, 85.842f), 8f, 40), // northwest, ENVC 0x18
+        new(new(110.286f, 85.842f), 8f, 40), // northeast, ENVC 0x19
+        new(new(116.643f, 105.408f), 8f, 40) // southeast, ENVC 0x1A
     ];
     public static readonly Angle[] PlatformAngles = CalculateAngles();
     private static readonly WPos[] numberPositions = CalculateNumberPositions();

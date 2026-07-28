@@ -35,7 +35,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             }
             else
             {
-                Towers[1] = Towers[0] with { Center = caster.Position };
+                Towers[1] = new Polygon(caster.Position, 7.5f, 20);
                 Arena.Bounds = new ArenaBoundsCustom(A35FalseIdol.BaseSquare, Towers);
                 Array.Clear(Towers);
             }

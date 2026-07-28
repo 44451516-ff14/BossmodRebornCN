@@ -32,6 +32,10 @@ public sealed class RotationModuleManager : IDisposable
     public int PlayerSlot; // TODO: reconsider, we rely on too many things in clientstate...
     public readonly AIHints Hints;
     public PlanExecution? Planner;
+
+    // raised whenever the active plan (and therefore the set of upcoming planned actions) changes; used by external IPC users (RSR) to know when to re-poll
+    public event Action? PlannedActionsChanged;
+
     private static readonly PartyRolesConfig _prc = Service.Config.Get<PartyRolesConfig>();
     private readonly EventSubscriptions _subscriptions;
     private List<ActiveModule>? ActiveModules;
@@ -78,6 +82,8 @@ public sealed class RotationModuleManager : IDisposable
         // hacking intermission gimmick in Tower of Paradigm's Breach boss 3
         (uint)Shadowbringers.Alliance.A33RedGirl.SID.Program000000,
         (uint)Shadowbringers.Alliance.A33RedGirl.SID.ProgramFFFFFFF,
+
+        (uint)Stormblood.Dungeon.D09DrownedCityOfSkalla.D092TheOldOne.SID.Transfiguration,
 
         565u, // "Transfiguration" from certain pomanders in Palace of the Dead
         439u, // "Toad", palace of the dead
@@ -141,6 +147,7 @@ public sealed class RotationModuleManager : IDisposable
             Service.Log($"[RMM] Changing active plan: '{Planner?.Plan?.Guid}' -> '{expectedPlan?.Guid}'");
             Planner = Bossmods.ActiveModule != null ? new(Bossmods.ActiveModule, expectedPlan) : null;
             DirtyActiveModules(Preset == null);
+            PlannedActionsChanged?.Invoke();
         }
 
         // rebuild modules if needed
@@ -151,7 +158,7 @@ public sealed class RotationModuleManager : IDisposable
             return;
 
         // forced target update
-        if (Hints.ForcedTarget == null && Preset == null && Planner?.ActiveForcedTarget() is var forced && forced != null)
+        if (Hints.ForcedTarget == null && Preset == null && Planner?.ActiveForcedTarget(WorldState, PlayerSlot) is var forced && forced != null)
         {
             Hints.ForcedTarget = forced.Target != StrategyTarget.Automatic
                 ? ResolveTargetOverride(forced.Target, forced.TargetParam)
@@ -160,10 +167,11 @@ public sealed class RotationModuleManager : IDisposable
 
         // auto actions
         var target = Hints.ForcedTarget ?? WorldState.Actors.Find(Player?.TargetID ?? 0);
-        for (var i = 0; i < ActiveModules.Count; ++i)
+        var count = ActiveModules.Count;
+        for (var i = 0; i < count; ++i)
         {
             var m = ActiveModules[i];
-            var values = Preset?.ActiveStrategyOverrides(m.DataIndex) ?? Planner?.ActiveStrategyOverrides(m.DataIndex) ?? throw new InvalidOperationException("Both preset and plan are null, but there are active modules");
+            var values = Preset?.ActiveStrategyOverrides(m.DataIndex) ?? Planner?.ActiveStrategyOverrides(m.DataIndex, WorldState, PlayerSlot) ?? throw new InvalidOperationException("Both preset and plan are null, but there are active modules");
             m.Module.Execute(values, target, estimatedAnimLockDelay, isMoving);
         }
     }
@@ -293,7 +301,13 @@ public sealed class RotationModuleManager : IDisposable
             Service.Log($"[RMM] Player ninja pulled => force-disabling from '{Preset?.Name ?? "<n/a>"}'");
             Preset = ForceDisable;
         }
-        // if player enters combat when countdown is either not active or around zero, proceed normally - if override is queued, let it run, otherwise let plan run
+
+        // some jank: we can't check value of this.Planner because the expected plan isn't loaded until either countdown starts or boss is pulled, and BMM doesn't activate the module until after this event fires, so the best we can do is check what the plan is expected to be
+        else if (actor.InCombat && WorldState.Client.CountdownRemaining == null && Config.PlannedPullSafety && Bossmods.LoadedModules is [var mod] && Database.Plans.GetPlans(mod.GetType(), actor.Class).SelectedIndex >= 0)
+        {
+            Service.Log($"[RMM] Boss pulled without countdown => force-disabling from '{Preset?.Name}'");
+            Preset = ForceDisable;
+        }
     }
 
     private void OnDeadChanged(Actor actor)

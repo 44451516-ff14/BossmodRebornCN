@@ -57,19 +57,19 @@ sealed class P1Explosion(BossModule module) : Components.GenericTowers(module)
         {
             case (uint)AID.Explosion11:
             case (uint)AID.Explosion12:
-                AddTower(caster.Position, 1, spell);
+                AddTower(caster, 1, spell);
                 break;
             case (uint)AID.Explosion21:
             case (uint)AID.Explosion22:
-                AddTower(caster.Position, 2, spell);
+                AddTower(caster, 2, spell);
                 break;
             case (uint)AID.Explosion31:
             case (uint)AID.Explosion32:
-                AddTower(caster.Position, 3, spell);
+                AddTower(caster, 3, spell);
                 break;
             case (uint)AID.Explosion41:
             case (uint)AID.Explosion42:
-                AddTower(caster.Position, 4, spell);
+                AddTower(caster, 4, spell);
                 break;
             case (uint)AID.ExplosionBurnout:
                 _isWideLine = true;
@@ -90,7 +90,17 @@ sealed class P1Explosion(BossModule module) : Components.GenericTowers(module)
             case (uint)AID.Explosion41:
             case (uint)AID.Explosion42:
                 ++NumCasts;
-                Towers.RemoveAll(t => t.Position == caster.Position);
+                var id = caster.InstanceID;
+                var count = Towers.Count;
+                var towers = CollectionsMarshal.AsSpan(Towers);
+                for (var i = 0; i < count; ++i)
+                {
+                    if (towers[i].ActorID == id)
+                    {
+                        Towers.RemoveAt(i);
+                        return;
+                    }
+                }
                 break;
             case (uint)AID.ExplosionBurnout:
             case (uint)AID.ExplosionBlastburn:
@@ -99,10 +109,10 @@ sealed class P1Explosion(BossModule module) : Components.GenericTowers(module)
         }
     }
 
-    private void AddTower(WPos pos, int numSoakers, ActorCastInfo spell)
+    private void AddTower(Actor caster, int numSoakers, ActorCastInfo spell)
     {
         Activation = Module.CastFinishAt(spell);
-        Towers.Add(new(pos, 4f, numSoakers, numSoakers, default, Activation));
+        Towers.Add(new(spell.LocXZ, 4f, numSoakers, numSoakers, default, Activation, caster.InstanceID));
         if (Towers.Count != 3)
             return;
 

@@ -12,6 +12,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using FFXIVClientStructs.Interop;
 
 namespace BossMod;
@@ -395,6 +396,8 @@ sealed class WorldStateGameSync : IDisposable
         var forayInfo = forayInfoPtr == null ? default : new ActorForayInfo(forayInfoPtr->Level, forayInfoPtr->Element);
         var isOpenTreasure = obj->ObjectKind == ObjectKind.Treasure && ((Treasure*)obj)->Flags.HasFlag(Treasure.TreasureFlags.Opened);
 
+        var visibility = targetable ? DetermineVisibility(obj) : Visibility.Unknown;
+
         if (act == null)
         {
             var type = (ActorType)(((int)obj->ObjectKind << 8) + obj->SubKind);
@@ -493,7 +496,11 @@ sealed class WorldStateGameSync : IDisposable
 
         if (act.ForayInfo != forayInfo)
         {
-            _ws.Execute(new ActorState.OpForayInfo(act.InstanceID, forayInfo));
+            _ws.Execute(new ActorState.OpForayInfo(instanceID, forayInfo));
+        }
+        if (act.Visibility != visibility)
+        {
+            _ws.Execute(new ActorState.OpVisibility(instanceID, visibility));
         }
 
         DispatchActorEvents(instanceID);
@@ -558,6 +565,32 @@ sealed class WorldStateGameSync : IDisposable
                 }
             }
         }
+    }
+
+    private unsafe Visibility DetermineVisibility(GameObject* obj)
+    {
+        var playerObj = GameObjectManager.Instance()->Objects.IndexSorted[0].Value;
+
+        if (playerObj == null)
+            return Visibility.Unknown;
+
+        if (playerObj == obj)
+            return Visibility.Visible;
+
+        var sourcePos = playerObj->Position;
+        var targetPos = obj->Position;
+        sourcePos.Y += 2f;
+        targetPos.Y += 2f;
+        var offset = targetPos - sourcePos;
+        // if distance to target is >50y, their nameplate isn't visible and we definitely can't target them
+        if (offset.SqrMagnitude <= 2500f)
+        {
+            var distance = offset.Magnitude;
+            var direction = offset / distance;
+            return BGCollisionModule.RaycastMaterialFilter(sourcePos, direction, out _, distance) ? Visibility.Blocked : Visibility.Visible;
+        }
+
+        return Visibility.Unknown;
     }
 
     private void UpdateActorCastInfo(Actor act, ActorCastInfo? cast)

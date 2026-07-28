@@ -1,34 +1,33 @@
-namespace BossMod.Stormblood.Dungeon.D09DrownedCityOfSkalla.D092OldOne;
+namespace BossMod.Stormblood.Dungeon.D09DrownedCityOfSkalla.D092TheOldOne;
 
 public enum OID : uint
 {
-    Helper = 0x18D6, // R0.500, x?, Helper type
     TheOldOne = 0x1FAC, // R4.600, x?
     Subservient = 0x1FAD, // R1.725, x?
+    Helper = 0x18D6
 }
 
 public enum AID : uint
 {
-    _AutoAttack_ = 29791, // TheOldOne->player, no cast, single-target
-    MysticLight = 9815, // TheOldOne->self, 4.0s cast, range 40+R 60.000-degree cone
+    AutoAttack = 29791, // TheOldOne->player, no cast, single-target
+
+    MysticLight = 9815, // TheOldOne->self, 4.0s cast, range 40+R 60-degree cone
     MysticFlame = 9816, // TheOldOne->self, 3.0s cast, single-target
     MysticFlame1 = 9817, // Helper->self, 3.5s cast, range 8 circle
     ShiftingLight = 9818, // TheOldOne->self, 3.0s cast, range 20+R circle
     Shatterstone = 9824, // Helper->self, 2.0s cast, range 5 circle : Duty action : This is not the duty action.
-    OrderToDetonate = 9819, // TheOldOne->self, 20.0s cast, single-target
+    OrderToDetonate = 9819 // TheOldOne->self, 20.0s cast, single-target
 }
 
 public enum SID : uint
 {
     Invincibility = 325, // none->Helper/TheOldOne/_Gen_, extra=0x0 : Boss goes invincible while subservient are out.
-    Transfiguration = 1448, // none->player/3F7F/40C0/3F75, extra=0x4A : players transformed.
+    Transfiguration = 1448 // none->player/3F7F/40C0/3F75, extra=0x4A : players transformed.
 }
 
+sealed class MysticLight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticLight, new AOEShapeCone(40f, 30f.Degrees()));
 
-sealed class MysticLight(BossModule module)
-    : Components.SimpleAOEs(module, (uint)AID.MysticLight, new AOEShapeCone(40f, 30f.Degrees()));
-
-sealed class MysticFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticFlame1, new AOEShapeCircle(8f));
+sealed class MysticFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MysticFlame1, 8f);
 
 sealed class SubservientAdds(BossModule module) : Components.Adds(module, (uint)OID.Subservient, priority: 1);
 
@@ -78,7 +77,7 @@ sealed class Shatterstone(BossModule module) : BossComponent(module)
             // move towards nearest subservient add.
             hints.GoalZones.Add(AIHints.GoalSingleTarget(optimalAttackPosition, attackRadius - 2, 10));
             // use duty action if you are transformed.
-            if (actor.DistanceToHitbox(closestSub) < attackRadius - 1  && _transfigurationStatus[slot])
+            if (actor.DistanceToHitbox(closestSub) < attackRadius - 1 && _transfigurationStatus[slot])
                 hints.ActionsToExecute.Push(ActionID.MakeSpell(ClassShared.AID.Shatterstone), null, ActionQueue.Priority.High, targetPos: closestSub.PosRot.XYZ());
         }
     }

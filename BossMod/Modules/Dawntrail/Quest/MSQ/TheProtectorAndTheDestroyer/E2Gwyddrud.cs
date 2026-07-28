@@ -120,7 +120,7 @@ sealed class RoaringBoltKB(BossModule module) : Components.SimpleKnockbacks(modu
             return;
         }
         var aoes = CollectionsMarshal.AsSpan(_aoe.Casters);
-        ref var c = ref Casters.Ref(0);
+        ref readonly var c = ref Casters.Ref(0);
         var len = aoes.Length;
         if (len != 0)
         {

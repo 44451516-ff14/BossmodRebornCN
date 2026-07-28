@@ -42,13 +42,11 @@ public enum SID : uint
 
 sealed class BillowingBoltsArenaChange(BossModule module) : BossComponent(module)
 {
-    private static readonly ArenaBoundsRect smallerBounds = new(15f, 20f);
-
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.BillowingBolts && Arena.Bounds != smallerBounds)
+        if (spell.Action.ID == (uint)AID.BillowingBolts && Arena.Bounds.Radius < 24f)
         {
-            Arena.Bounds = smallerBounds;
+            Arena.Bounds = new ArenaBoundsRect(15f, 20f);
         }
     }
 }
@@ -156,19 +154,20 @@ sealed class RotaryGale(BossModule module) : Components.SpreadFromCastTargets(mo
 sealed class CrewelSlice(BossModule module) : Components.SingleTargetDelayableCast(module, (uint)AID.CrewelSlice);
 sealed class BillowingBolts(BossModule module) : Components.RaidwideCast(module, (uint)AID.BillowingBolts);
 
-sealed class SpinningHints(BossModule module) : BossComponent(module)
+sealed class SpinningHints(BossModule module) : Components.Spinning(module, (uint)AID.SpinOut)
 {
-    int _numBlades;
+    private int _numBlades;
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
+        base.OnStatusGain(actor, ref status);
         if (status.ID == (uint)SID.Spinning)
         {
             _numBlades = 0;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.BastingBlade)
         {
@@ -178,10 +177,11 @@ sealed class SpinningHints(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (actor.FindStatus((uint)SID.Spinning) == null)
+        if (mask[slot])
         {
             return;
         }
+        base.AddAIHints(slot, actor, assignment, hints);
         var center = Arena.Center;
         if (_numBlades == 0)
         {

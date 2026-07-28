@@ -1,31 +1,38 @@
 ﻿namespace BossMod.Dawntrail.Ultimate.DMU;
 
-class UltimateEmbrace(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.UltimateEmbrace, 5.0f);
+sealed class UltimateEmbrace(BossModule module) : Components.CastSharedTankbuster(module, (uint)AID.UltimateEmbrace, 5.0f);
 
-class Forsaken(BossModule module) : Components.RaidwideCast(module, (uint)AID.Forsaken);
+sealed class Forsaken(BossModule module) : Components.RaidwideCast(module, (uint)AID.Forsaken);
 
-class LightOfJudgmentP2(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightOfJudgmentP2);
+sealed class LightOfJudgmentP2(BossModule module) : Components.RaidwideCast(module, (uint)AID.LightOfJudgmentP2);
 
 // Used for towers' spawn locations and marking them as SW or SE depending on the spawn point.
-class PathOfLight(BossModule module) : Components.GenericTowers(module, (uint)AID.ThePathOfLight) {
+sealed class PathOfLight(BossModule module) : Components.GenericTowers(module, (uint)AID.ThePathOfLight)
+{
     public Tower? CurrentSW;
     public Tower? CurrentSE;
 
-    public override void OnMapEffect(byte index, uint state) {
-        if (index >= 1 && index <= 8 && state == 131073) {
-            var angle = (180 - (index - 1) * 45).Degrees();
-            Towers.Add(new(Arena.Center + angle.ToDirection() * 8, 4, 2, 2, default, WorldState.FutureTime(10.0f)));
+    public override void OnMapEffect(byte index, uint state)
+    {
+        if (index >= 1 && index <= 8 && state == 131073)
+        {
+            var angle = (180f - (index - 1) * 45f).Degrees();
+            Towers.Add(new(Arena.Center + angle.ToDirection() * 8, 4, 2, 2, default, WorldState.FutureTime(10d)));
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == WatchedAction) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == WatchedAction)
+        {
             Towers.RemoveAll(tower => tower.Position.AlmostEqual(caster.Position, 1.0f));
         }
     }
 
-    public override void Update() {
-        if (Towers.Count != 2) {
+    public override void Update()
+    {
+        if (Towers.Count != 2)
+        {
             return;
         }
 
@@ -34,14 +41,18 @@ class PathOfLight(BossModule module) : Components.GenericTowers(module, (uint)AI
 
         var middleOfTowers = new WPos((tower1.X + tower2.X) * 0.5f, (tower1.Z + tower2.Z) * 0.5f);
         var southDirection = (middleOfTowers - Arena.Center).Normalized();
-        if (southDirection.Length() <= 0) {
+        if (southDirection.Length() <= 0)
+        {
             return;
         }
 
-        if ((tower1 - middleOfTowers).Dot(southDirection.OrthoL()) <= (tower2 - middleOfTowers).Dot(southDirection.OrthoL())) {
+        if ((tower1 - middleOfTowers).Dot(southDirection.OrthoL()) <= (tower2 - middleOfTowers).Dot(southDirection.OrthoL()))
+        {
             CurrentSW = Towers[0];
             CurrentSE = Towers[1];
-        } else {
+        }
+        else
+        {
             CurrentSW = Towers[1];
             CurrentSE = Towers[0];
         }
@@ -49,9 +60,10 @@ class PathOfLight(BossModule module) : Components.GenericTowers(module, (uint)AI
 }
 
 // Used for setting up each player's role, such as the shape the player has, the pair the player belongs, if the player is a helper or soaker, etc.
-class ForsakenShapes(BossModule module) : BossComponent(module) {
-    private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
-    private readonly DMUConfig dmuConfig = Service.Config.Get<DMUConfig>();
+sealed class ForsakenShapes(BossModule module) : BossComponent(module)
+{
+    private static readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
+    private static readonly DMUConfig dmuConfig = Service.Config.Get<DMUConfig>();
     public int currentTowerSet = 1; // We start on odd tower set
     public bool towerSetLocked = false;
     public DateTime? lastTowerSetChange = null;
@@ -69,18 +81,12 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
     public bool pairsLocked = false;
     private bool pairsSwapped = false;
 
-    public sealed class PairInfo {
-        public PartyRolesConfig.Assignment player1Assignment;
-        public PartyRolesConfig.Assignment player2Assignment;
-        public bool isSupport;
-        public TowerRole role;
-
-        public PairInfo(PartyRolesConfig.Assignment player1, PartyRolesConfig.Assignment player2, bool isSupport) {
-            player1Assignment = player1;
-            player2Assignment = player2;
-            this.isSupport = isSupport;
-            role = TowerRole.Unknown;
-        }
+    public sealed class PairInfo(PartyRolesConfig.Assignment player1, PartyRolesConfig.Assignment player2, bool isSupport)
+    {
+        public PartyRolesConfig.Assignment player1Assignment = player1;
+        public PartyRolesConfig.Assignment player2Assignment = player2;
+        public bool isSupport = isSupport;
+        public TowerRole role = TowerRole.Unknown;
     }
 
     public readonly PairInfo[] pairs = [
@@ -90,56 +96,70 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
         new(PartyRolesConfig.Assignment.M2, PartyRolesConfig.Assignment.R2, false),
     ];
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.ThePathOfLight) {
-            if (towerSetLocked == false) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.ThePathOfLight)
+        {
+            if (!towerSetLocked)
+            {
                 lastTowerSetChange = WorldState.CurrentTime;
                 towerSetLocked = true;
                 currentTowerSet++;
             }
 
-            if (currentTowerSet == 4 || currentTowerSet == 8) {
+            if (currentTowerSet is 4 or 8)
+            {
                 pairsSwapped = false;
             }
         }
     }
 
-    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID) {
-        var shape = (IconID)iconID switch {
-            IconID.TowerSpreadIcon => Shape.Spread,
-            IconID.TowerConeIcon => Shape.Cone,
-            IconID.TowerStackIcon => Shape.Stack,
+    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
+    {
+        var shape = iconID switch
+        {
+            (uint)IconID.TowerSpreadIcon => Shape.Spread,
+            (uint)IconID.TowerConeIcon => Shape.Cone,
+            (uint)IconID.TowerStackIcon => Shape.Stack,
             _ => default
         };
 
-        if (shape != default) {
+        if (shape != default)
+        {
             var slot = Raid.FindSlot(actor.InstanceID);
-            if (slot >= 0) {
+            if (slot >= 0)
+            {
                 shapes[slot] = shape;
             }
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         swSoakers = default;
         seSoakers = default;
         supportHelpers = default;
         dpsHelpers = default;
 
-        if (WorldState.CurrentTime - lastTowerSetChange > TimeSpan.FromSeconds(1.0) && towerSetLocked == true) {
+        if (WorldState.CurrentTime - lastTowerSetChange > TimeSpan.FromSeconds(1.0) && towerSetLocked)
+        {
             towerSetLocked = false;
         }
 
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
 
         SetupPairs(slots);
 
-        if ((currentTowerSet == 4 || currentTowerSet == 8) && pairsSwapped == false) {
-            foreach (var pair in pairs) {
-                pair.role = pair.role switch {
+        if ((currentTowerSet == 4 || currentTowerSet == 8) && !pairsSwapped)
+        {
+            foreach (var pair in pairs)
+            {
+                pair.role = pair.role switch
+                {
                     TowerRole.Helper => TowerRole.Taker,
                     TowerRole.Taker => TowerRole.Helper,
                     _ => pair.role
@@ -149,88 +169,114 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
             pairsSwapped = true;
         }
 
-        foreach (var pair in pairs) {
+        foreach (var pair in pairs)
+        {
             var slotPlayer1 = slots[(int)pair.player1Assignment];
             var slotPlayer2 = slots[(int)pair.player2Assignment];
             var shapeA = shapes[slotPlayer1];
             var shapeB = shapes[slotPlayer2];
 
-            if (pair.role == TowerRole.Helper) {
-                if (pair.isSupport) {
+            if (pair.role == TowerRole.Helper)
+            {
+                if (pair.isSupport)
+                {
                     supportHelpers.Set(slotPlayer1);
                     supportHelpers.Set(slotPlayer2);
-                } else {
+                }
+                else
+                {
                     dpsHelpers.Set(slotPlayer1);
                     dpsHelpers.Set(slotPlayer2);
                 }
             }
 
             if (pair.role == TowerRole.Taker && (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                                                 dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)) {
+                                                 dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers))
+            {
                 // First set of towers (tower set odd)
-                if (currentTowerSet % 2 != 0) {
+                if (currentTowerSet % 2 != 0)
+                {
                     // Case: for the first set of towers no adjustment is needed between the Melee & Tank
-                    if (currentTowerSet == 1) {
-                        if (shapeA == Shape.Cone || shapeB == Shape.Cone) {
+                    if (currentTowerSet == 1)
+                    {
+                        if (shapeA == Shape.Cone || shapeB == Shape.Cone)
+                        {
                             swSoakers.Set(slotPlayer1);
                             swSoakers.Set(slotPlayer2);
                         }
 
-                        if (shapeA == Shape.Spread || shapeB == Shape.Spread) {
+                        if (shapeA == Shape.Spread || shapeB == Shape.Spread)
+                        {
                             seSoakers.Set(slotPlayer1);
                             seSoakers.Set(slotPlayer2);
                         }
                     }
 
                     // Case: every odd tower beyond the first set, the Melee & Tank may need to adjust base on pair shapes
-                    if (currentTowerSet > 1) {
+                    if (currentTowerSet > 1)
+                    {
                         // Cones and spreads are forced, where cone is always SW and spread is always SE
-                        if (shapeA == Shape.Cone) {
+                        if (shapeA == Shape.Cone)
+                        {
                             swSoakers.Set(slotPlayer1);
                         }
 
-                        if (shapeB == Shape.Cone) {
+                        if (shapeB == Shape.Cone)
+                        {
                             swSoakers.Set(slotPlayer2);
                         }
 
-                        if (shapeA == Shape.Spread) {
+                        if (shapeA == Shape.Spread)
+                        {
                             seSoakers.Set(slotPlayer1);
                         }
 
-                        if (shapeB == Shape.Spread) {
+                        if (shapeB == Shape.Spread)
+                        {
                             seSoakers.Set(slotPlayer2);
                         }
 
                         // If the pairs has the same shape, an adjustment is needed
-                        if (shapeA == shapeB) {
+                        if (shapeA == shapeB)
+                        {
                             // If supports are the same shape, MT/OT has to go to the SE tower
-                            if (pair.isSupport) {
+                            if (pair.isSupport)
+                            {
                                 seSoakers.Set(slotPlayer1);
                                 swSoakers.Set(slotPlayer2);
                             }
 
                             // If dps are the same shape, M1/M2 goes to the SW tower
-                            if (pair.isSupport == false) {
+                            if (!pair.isSupport)
+                            {
                                 swSoakers.Set(slotPlayer1);
                                 seSoakers.Set(slotPlayer2);
                             }
-                        } else { // Otherwise people just go to their default side
-                            if (pair.isSupport) {
-                                if (shapeA == Shape.Stack) {
+                        }
+                        else
+                        { // Otherwise people just go to their default side
+                            if (pair.isSupport)
+                            {
+                                if (shapeA == Shape.Stack)
+                                {
                                     swSoakers.Set(slotPlayer1);
                                 }
 
-                                if (shapeB == Shape.Stack) {
+                                if (shapeB == Shape.Stack)
+                                {
                                     swSoakers.Set(slotPlayer2);
                                 }
                             }
 
-                            if (pair.isSupport == false) {
-                                if (shapeA == Shape.Stack) {
+                            if (!pair.isSupport)
+                            {
+                                if (shapeA == Shape.Stack)
+                                {
                                     seSoakers.Set(slotPlayer1);
                                 }
 
-                                if (shapeB == Shape.Stack) {
+                                if (shapeB == Shape.Stack)
+                                {
                                     seSoakers.Set(slotPlayer2);
                                 }
                             }
@@ -239,24 +285,33 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
                 }
 
                 // Second set of towers (tower set even)
-                if (currentTowerSet % 2 == 0) {
-                    if (pair.isSupport) {
+                if (currentTowerSet % 2 == 0)
+                {
+                    if (pair.isSupport)
+                    {
                         // They have different shapes - both go to the same tower which is west tower
-                        if (shapeA != shapeB) {
+                        if (shapeA != shapeB)
+                        {
                             swSoakers.Set(slotPlayer1);
                             swSoakers.Set(slotPlayer2);
-                        } else { // healer goes to SW tower, tank goes to SE tower - player2 is healer, player1 is tank
+                        }
+                        else
+                        { // healer goes to SW tower, tank goes to SE tower - player2 is healer, player1 is tank
                             swSoakers.Set(slotPlayer2);
                             seSoakers.Set(slotPlayer1);
                         }
                     }
 
-                    if (pair.isSupport == false) {
-                        if (shapeA != shapeB) {
+                    if (!pair.isSupport)
+                    {
+                        if (shapeA != shapeB)
+                        {
                             // They have different shapes - both go to the same tower which is east tower
                             seSoakers.Set(slotPlayer1);
                             seSoakers.Set(slotPlayer2);
-                        } else {
+                        }
+                        else
+                        {
                             // range goes to SE tower, melee goes to SE tower - player2 is range, player1 is melee
                             seSoakers.Set(slotPlayer2);
                             swSoakers.Set(slotPlayer1);
@@ -265,56 +320,73 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
                 }
             }
 
-            if (pair.role == TowerRole.Taker && dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
+            if (pair.role == TowerRole.Taker && dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
                 // First set of towers (tower set odd)
-                if (currentTowerSet % 2 != 0) {
+                if (currentTowerSet % 2 != 0)
+                {
                     // Cones and spreads are forced, where cone is always SW and spread is always SE
-                    if (shapeA == Shape.Cone) {
+                    if (shapeA == Shape.Cone)
+                    {
                         swSoakers.Set(slotPlayer1);
                     }
 
-                    if (shapeB == Shape.Cone) {
+                    if (shapeB == Shape.Cone)
+                    {
                         swSoakers.Set(slotPlayer2);
                     }
 
-                    if (shapeA == Shape.Spread) {
+                    if (shapeA == Shape.Spread)
+                    {
                         seSoakers.Set(slotPlayer1);
                     }
 
-                    if (shapeB == Shape.Spread) {
+                    if (shapeB == Shape.Spread)
+                    {
                         seSoakers.Set(slotPlayer2);
                     }
 
                     // If the pairs have the same shape, an adjustment is needed
-                    if (shapeA == shapeB) {
+                    if (shapeA == shapeB)
+                    {
                         // If supports are the same shape, MT/OT has to go to the SE tower
-                        if (pair.isSupport) {
+                        if (pair.isSupport)
+                        {
                             seSoakers.Set(slotPlayer1);
                             swSoakers.Set(slotPlayer2);
                         }
 
                         // If dps are the same shape, M1/M2 goes to the SW tower
-                        if (pair.isSupport == false) {
+                        if (!pair.isSupport)
+                        {
                             swSoakers.Set(slotPlayer1);
                             seSoakers.Set(slotPlayer2);
                         }
-                    } else {
-                        if (pair.isSupport) {
-                            if (shapeA == Shape.Stack) {
+                    }
+                    else
+                    {
+                        if (pair.isSupport)
+                        {
+                            if (shapeA == Shape.Stack)
+                            {
                                 swSoakers.Set(slotPlayer1);
                             }
 
-                            if (shapeB == Shape.Stack) {
+                            if (shapeB == Shape.Stack)
+                            {
                                 swSoakers.Set(slotPlayer2);
                             }
                         }
 
-                        if (pair.isSupport == false) {
-                            if (shapeA == Shape.Stack) {
+                        if (!pair.isSupport)
+                        {
+                            if (shapeA == Shape.Stack)
+                            {
                                 seSoakers.Set(slotPlayer1);
                             }
 
-                            if (shapeB == Shape.Stack) {
+                            if (shapeB == Shape.Stack)
+                            {
                                 seSoakers.Set(slotPlayer2);
                             }
                         }
@@ -322,24 +394,33 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
                 }
 
                 // Second set of towers (tower set even)
-                if (currentTowerSet % 2 == 0) {
-                    if (pair.isSupport) {
+                if (currentTowerSet % 2 == 0)
+                {
+                    if (pair.isSupport)
+                    {
                         // They have different shapes - both go to the same tower which is west tower
-                        if (shapeA != shapeB) {
+                        if (shapeA != shapeB)
+                        {
                             swSoakers.Set(slotPlayer1);
                             swSoakers.Set(slotPlayer2);
-                        } else { // healer goes to SW tower, tank goes to SE tower - player2 is healer, player1 is tank
+                        }
+                        else
+                        { // healer goes to SW tower, tank goes to SE tower - player2 is healer, player1 is tank
                             swSoakers.Set(slotPlayer2);
                             seSoakers.Set(slotPlayer1);
                         }
                     }
 
-                    if (pair.isSupport == false) {
-                        if (shapeA != shapeB) {
+                    if (!pair.isSupport)
+                    {
+                        if (shapeA != shapeB)
+                        {
                             // They have different shapes - both go to the same tower which is east tower
                             seSoakers.Set(slotPlayer1);
                             seSoakers.Set(slotPlayer2);
-                        } else {
+                        }
+                        else
+                        {
                             // range goes to SE tower, melee goes to SW tower - player2 is range, player1 is melee
                             seSoakers.Set(slotPlayer2);
                             swSoakers.Set(slotPlayer1);
@@ -350,22 +431,27 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
         }
     }
 
-    private void SetupPairs(int[] slots) {
-        if (pairsLocked == true) {
+    private void SetupPairs(int[] slots)
+    {
+        if (pairsLocked)
+        {
             return;
         }
 
         pairsLocked = true;
 
-        foreach (var pair in pairs) {
-            if (pair.role != TowerRole.Unknown) {
+        foreach (var pair in pairs)
+        {
+            if (pair.role != TowerRole.Unknown)
+            {
                 continue;
             }
 
             var shapeA = shapes[slots[(int)pair.player1Assignment]];
             var shapeB = shapes[slots[(int)pair.player2Assignment]];
 
-            if (shapeA == Shape.None || shapeB == Shape.None) {
+            if (shapeA == Shape.None || shapeB == Shape.None)
+            {
                 pairsLocked = false;
                 continue;
             }
@@ -373,8 +459,10 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
             pair.role = shapeA == shapeB ? TowerRole.Helper : TowerRole.Taker;
         }
 
-        foreach (var pair in pairs) {
-            if (pair.role == TowerRole.Unknown) {
+        foreach (var pair in pairs)
+        {
+            if (pair.role == TowerRole.Unknown)
+            {
                 pairsLocked = false;
                 break;
             }
@@ -382,25 +470,32 @@ class ForsakenShapes(BossModule module) : BossComponent(module) {
     }
 }
 
-class ForsakenBaitsSpreadStacks(BossModule module) : Components.UniformStackSpread(module, 5, 5, 3) {
-    private ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
-    private PathOfLight? towers = module.FindComponent<PathOfLight>();
+sealed class ForsakenBaitsSpreadStacks(BossModule module) : Components.UniformStackSpread(module, 5, 5, 3)
+{
+    private readonly ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
+    private readonly PathOfLight? towers = module.FindComponent<PathOfLight>();
 
-    public override void Update() {
-        if (towers == null || shapes == null) {
+    public override void Update()
+    {
+        if (towers == null || shapes == null)
+        {
             return;
         }
 
         Stacks.Clear();
         Spreads.Clear();
 
-        foreach (var (i, player) in Raid.WithSlot()) {
-            if (towers.Towers.Any(t => player.Position.InCircle(t.Position, 4.00f))) {
-                if (shapes.shapes[i] == ForsakenShapes.Shape.Stack) {
+        foreach (var (i, player) in Raid.WithSlot())
+        {
+            if (towers.Towers.Any(t => player.Position.InCircle(t.Position, 4.00f)))
+            {
+                if (shapes.shapes[i] == ForsakenShapes.Shape.Stack)
+                {
                     AddStack(player);
                 }
 
-                if (shapes.shapes[i] == ForsakenShapes.Shape.Spread) {
+                if (shapes.shapes[i] == ForsakenShapes.Shape.Spread)
+                {
                     AddSpread(player);
                 }
             }
@@ -408,22 +503,29 @@ class ForsakenBaitsSpreadStacks(BossModule module) : Components.UniformStackSpre
     }
 }
 
-class ForsakenBaitsCone(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Spellwave) {
-    private ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
-    private PathOfLight? towers = module.FindComponent<PathOfLight>();
+sealed class ForsakenBaitsCone(BossModule module) : Components.GenericBaitAway(module, (uint)AID.Spellwave)
+{
+    private readonly ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
+    private readonly PathOfLight? towers = module.FindComponent<PathOfLight>();
 
-    public override void Update() {
-        if (towers == null || shapes == null) {
+    public override void Update()
+    {
+        if (towers == null || shapes == null)
+        {
             return;
         }
 
         CurrentBaits.Clear();
 
-        foreach (var (i, player) in Raid.WithSlot()) {
-            if (towers.Towers.Any(t => player.Position.InCircle(t.Position, 4.00f))) {
-                if (shapes.shapes[i] == ForsakenShapes.Shape.Cone) {
+        foreach (var (i, player) in Raid.WithSlot())
+        {
+            if (towers.Towers.Any(t => player.Position.InCircle(t.Position, 4.00f)))
+            {
+                if (shapes.shapes[i] == ForsakenShapes.Shape.Cone)
+                {
                     var closestPlayer = Raid.WithoutSlot().Exclude(player).Closest(player.Position);
-                    if (closestPlayer != null) {
+                    if (closestPlayer != null)
+                    {
                         CurrentBaits.Add(new(player, closestPlayer, new AOEShapeCone(40, 45.Degrees())));
                     }
                 }
@@ -432,44 +534,56 @@ class ForsakenBaitsCone(BossModule module) : Components.GenericBaitAway(module, 
     }
 }
 
-class ForsakenBaitsBossClones(BossModule module) : Components.UniformStackSpread(module, 5, 5) {
-    private List<Actor> clones = []; // Also includes the boss since he will cast the same spell
-    private List<Actor> baiters = []; // List of players currently baiting - prevents dupes
+sealed class ForsakenBaitsBossClones(BossModule module) : Components.UniformStackSpread(module, 5, 5)
+{
+    private readonly List<Actor> clones = []; // Also includes the boss since he will cast the same spell
+    private readonly List<Actor> baiters = []; // List of players currently baiting - prevents dupes
     private int NumCasts = 0;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.FuturesEndCast || spell.Action.ID == (uint)AID.PastsEndCast) {
-            foreach (var actor in WorldState.Actors) {
-                if (actor.OID == (uint)OID.BossP2 || actor.OID == (uint)OID.P2KefkaHelpers) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is ((uint)AID.FuturesEndCast) or ((uint)AID.PastsEndCast))
+        {
+            foreach (var actor in WorldState.Actors)
+            {
+                if (actor.OID is ((uint)OID.BossP2) or ((uint)OID.P2KefkaHelpers))
+                {
                     clones.Add(actor);
                 }
             }
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.PastsEndSpread || spell.Action.ID == (uint)AID.PastsEndSpread1 ||
-            spell.Action.ID == (uint)AID.FuturesEndSpread || spell.Action.ID == (uint)AID.FuturesEndSpread1) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID is ((uint)AID.PastsEndSpread) or ((uint)AID.PastsEndSpread1) or
+            ((uint)AID.FuturesEndSpread) or ((uint)AID.FuturesEndSpread1))
+        {
             NumCasts++;
 
-            if (NumCasts == 4) {
+            if (NumCasts == 4)
+            {
                 clones.Clear();
                 NumCasts = 0;
             }
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         Spreads.Clear();
         baiters.Clear();
 
-        if (clones.Count == 0) {
+        if (clones.Count == 0)
+        {
             return;
         }
 
-        foreach (var clone in clones) {
+        foreach (var clone in clones)
+        {
             var baiter = Raid.WithoutSlot().Where(p => !baiters.Contains(p)).SortedByRange(clone.Position).Take(1).FirstOrDefault();
-            if (baiter == null) {
+            if (baiter == null)
+            {
                 continue;
             }
 
@@ -480,23 +594,28 @@ class ForsakenBaitsBossClones(BossModule module) : Components.UniformStackSpread
 }
 
 // Used for odd tower sets in figuring out what each player is responsible for
-class ForsakenSolverSet1(BossModule module) : BossComponent(module) {
-    private ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
-    private PathOfLight? towers = module.FindComponent<PathOfLight>();
+sealed class ForsakenSolverSet1(BossModule module) : BossComponent(module)
+{
+    private readonly ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
+    private readonly PathOfLight? towers = module.FindComponent<PathOfLight>();
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
     private readonly DMUConfig dmuConfig = Service.Config.Get<DMUConfig>();
     public uint colourCircle = Colors.Safe;
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        if (shapes == null || towers == null) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (shapes == null || towers == null)
+        {
             return;
         }
 
-        if (towers.Towers.Count != 2 || shapes.swSoakers.None() || shapes.seSoakers.None() || towers.CurrentSW == null || towers.CurrentSE == null) {
+        if (towers.Towers.Count != 2 || shapes.swSoakers.None() || shapes.seSoakers.None() || towers.CurrentSW == null || towers.CurrentSE == null)
+        {
             return;
         }
 
-        if (shapes.currentTowerSet % 2 == 0) {
+        if (shapes.currentTowerSet % 2 == 0)
+        {
             return;
         }
 
@@ -508,157 +627,196 @@ class ForsakenSolverSet1(BossModule module) : BossComponent(module) {
         var towardSE = (towers.CurrentSE.Value.Position - midpoint).Normalized();
 
         // Case: SW players with different debuffs
-        if (shapes.swSoakers[pcSlot]) {
+        if (shapes.swSoakers[pcSlot])
+        {
             var swPosition = towers.CurrentSW.Value.Position;
             var shape = shapes.shapes[pcSlot];
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (shape == ForsakenShapes.Shape.Stack) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (shape == ForsakenShapes.Shape.Stack)
+                {
                     Arena.AddCircle(swPosition + (-towardSW * 0.5f) + (-newSouth * 1.0f), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (shape == ForsakenShapes.Shape.Cone) {
+                if (shape == ForsakenShapes.Shape.Cone)
+                {
                     Arena.AddCircle(swPosition + (newSouth * 3.0f), 1.0f, colourCircle, 2.0f);
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
                 var toCenter = (Arena.Center - swPosition).Normalized();
-                if (toCenter.LengthSq() <= 0) {
+                if (toCenter.LengthSq() <= 0)
+                {
                     return;
                 }
 
-                if (shape == ForsakenShapes.Shape.Stack) {
+                if (shape == ForsakenShapes.Shape.Stack)
+                {
                     Arena.AddCircle(swPosition + 1.0f * toCenter + 0.5f * toCenter.Rotate(90f.Degrees()), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (shape == ForsakenShapes.Shape.Cone) {
+                if (shape == ForsakenShapes.Shape.Cone)
+                {
                     Arena.AddCircle(swPosition - 3.0f * toCenter, 1.0f, colourCircle, 2.0f);
                 }
             }
         }
 
         // Case: SW players with same debuffs
-        if (shapes.supportHelpers[pcSlot]) {
+        if (shapes.supportHelpers[pcSlot])
+        {
             var swPosition = towers.CurrentSW.Value.Position;
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (assignment == PartyRolesConfig.Assignment.H1 || assignment == PartyRolesConfig.Assignment.H2) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (assignment is PartyRolesConfig.Assignment.H1 or PartyRolesConfig.Assignment.H2)
+                {
                     Arena.AddCircle(swPosition + (newSouth * 4.5f), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.OT) {
+                if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT)
+                {
                     Arena.AddCircle(swPosition + (-towardSW * 3.0f) + (-newSouth * 4.0f), 1.0f, colourCircle, 2.0f);
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
                 var toCenter = (Arena.Center - swPosition).Normalized();
-                if (toCenter.LengthSq() <= 0) {
+                if (toCenter.LengthSq() <= 0)
+                {
                     return;
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.H1 || assignment == PartyRolesConfig.Assignment.H2) {
+                if (assignment is PartyRolesConfig.Assignment.H1 or PartyRolesConfig.Assignment.H2)
+                {
                     Arena.AddCircle(swPosition - 4.5f * toCenter, 1.0f, colourCircle, 2.0f);
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.OT) {
+                if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT)
+                {
                     Arena.AddCircle(swPosition + 4.5f * toCenter + 0.5f * toCenter.Rotate(90f.Degrees()), 1.0f, colourCircle, 2.0f);
                 }
             }
         }
 
         // Case: SE players with different debuffs
-        if (shapes.seSoakers[pcSlot]) {
+        if (shapes.seSoakers[pcSlot])
+        {
             var sePosition = towers.CurrentSE.Value.Position;
             var shape = shapes.shapes[pcSlot];
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (shape == ForsakenShapes.Shape.Stack) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (shape == ForsakenShapes.Shape.Stack)
+                {
                     Arena.AddCircle(sePosition + (-towardSE * 2.5f) + (newSouth * 2.5f), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (shape == ForsakenShapes.Shape.Spread) {
+                if (shape == ForsakenShapes.Shape.Spread)
+                {
                     Arena.AddCircle(sePosition + (towardSE * 2.0f) + (-newSouth * 3.0f), 1.0f, colourCircle, 2.0f);
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
                 var toCenter = (Arena.Center - sePosition).Normalized();
-                if (toCenter.LengthSq() <= 0) {
+                if (toCenter.LengthSq() <= 0)
+                {
                     return;
                 }
 
-                if (shape == ForsakenShapes.Shape.Stack) {
+                if (shape == ForsakenShapes.Shape.Stack)
+                {
                     Arena.AddCircle(sePosition + 3.0f * toCenter - 2.0f * toCenter.Rotate(90f.Degrees()), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (shape == ForsakenShapes.Shape.Spread) {
+                if (shape == ForsakenShapes.Shape.Spread)
+                {
                     Arena.AddCircle(sePosition - 2.5f * toCenter + 2.5f * toCenter.Rotate(90f.Degrees()), 1.0f, colourCircle, 2.0f);
                 }
             }
         }
 
         // Case: SE players with same debuffs
-        if (shapes.dpsHelpers[pcSlot]) {
+        if (shapes.dpsHelpers[pcSlot])
+        {
             var sePosition = towers.CurrentSE.Value.Position;
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2)
+                {
                     Arena.AddCircle(sePosition + (-towardSE * 4.0f) + (newSouth * 3.0f), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
+                if (assignment is PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+                {
                     Arena.AddCircle(sePosition + (-towardSE * 4.0f) + (newSouth * 3.0f), 1.0f, colourCircle, 2.0f);
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
                 var toCenter = (Arena.Center - sePosition).Normalized();
-                if (toCenter.LengthSq() <= 0) {
+                if (toCenter.LengthSq() <= 0)
+                {
                     return;
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2) {
+                if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2)
+                {
                     Arena.AddCircle(sePosition + 4.5f * toCenter - 1.0f * toCenter.Rotate(90f.Degrees()), 1.0f, colourCircle, 2.0f);
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
+                if (assignment is PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+                {
                     Arena.AddCircle(sePosition + 4.5f * toCenter - 1.0f * toCenter.Rotate(90f.Degrees()), 1.0f, colourCircle, 2.0f);
                 }
             }
         }
     }
 
-    public override void Update() {
-        if (shapes == null || towers == null) {
+    public override void Update()
+    {
+        if (shapes == null || towers == null)
+        {
             return;
         }
 
-        if (towers.Towers.Count != 2 || towers.CurrentSE == null || towers.CurrentSW == null) {
+        if (towers.Towers.Count != 2 || towers.CurrentSE == null || towers.CurrentSW == null)
+        {
             return;
         }
 
-        if (shapes.currentTowerSet % 2 == 0) {
+        if (shapes.currentTowerSet % 2 == 0)
+        {
             return;
         }
 
         var party = new BitMask(0xFF);
 
-        for (int i = 0; i < towers.Towers.Count; i++) {
+        for (int i = 0; i < towers.Towers.Count; i++)
+        {
             var t = towers.Towers[i];
 
-            if (t.Position.AlmostEqual(towers.CurrentSW.Value.Position, 1.0f)) {
+            if (t.Position.AlmostEqual(towers.CurrentSW.Value.Position, 1.0f))
+            {
                 t.ForbiddenSoakers = party & ~shapes.swSoakers;
             }
 
-            if (t.Position.AlmostEqual(towers.CurrentSE.Value.Position, 1.0f)) {
+            if (t.Position.AlmostEqual(towers.CurrentSE.Value.Position, 1.0f))
+            {
                 t.ForbiddenSoakers = party & ~shapes.seSoakers;
             }
 
@@ -668,201 +826,253 @@ class ForsakenSolverSet1(BossModule module) : BossComponent(module) {
 }
 
 // Used for even tower sets in figuring out what each player is responsible for
-class ForsakenSolverSet2(BossModule module) : BossComponent(module) {
-    private ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
-    private PathOfLight? towers = module.FindComponent<PathOfLight>();
+sealed class ForsakenSolverSet2(BossModule module) : BossComponent(module)
+{
+    private readonly ForsakenShapes? shapes = module.FindComponent<ForsakenShapes>();
+    private readonly PathOfLight? towers = module.FindComponent<PathOfLight>();
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
     private readonly DMUConfig dmuConfig = Service.Config.Get<DMUConfig>();
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        if (shapes == null || towers == null) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (shapes == null || towers == null)
+        {
             return;
         }
 
-        if (towers.Towers.Count != 2 || shapes.swSoakers.None() || shapes.seSoakers.None() || towers.CurrentSW == null || towers.CurrentSE == null) {
+        if (towers.Towers.Count != 2 || shapes.swSoakers.None() || shapes.seSoakers.None() || towers.CurrentSW == null || towers.CurrentSE == null)
+        {
             return;
         }
 
-        if (shapes.currentTowerSet % 2 != 0) {
+        if (shapes.currentTowerSet % 2 != 0)
+        {
             return;
         }
 
         // Case: SW players with different debuffs (soakers)
-        if (shapes.swSoakers[pcSlot]) {
+        if (shapes.swSoakers[pcSlot])
+        {
             var swPosition = towers.CurrentSW.Value.Position;
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
             var toCenter = (Arena.Center - swPosition).Normalized();
-            if (toCenter.LengthSq() <= 0) {
+            if (toCenter.LengthSq() <= 0)
+            {
                 return;
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone)
+                {
                     Arena.AddCircle(swPosition + toCenter.Normalized() * 3.5f, 0.75f, Colors.Safe, 1.0f);
                 }
 
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread) {
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless) {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread)
+                {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless)
+                    {
                         Arena.AddCircle(swPosition + (-toCenter.Normalized()) * 3.5f, 0.75f, Colors.Safe, 1.0f);
                     }
 
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+                    {
                         Arena.AddCircle(swPosition + (-toCenter).Rotate(34f.Degrees()).Normalized() * 3.57f, 0.75f, Colors.Safe, 1.0f);
                     }
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone)
+                {
                     Arena.AddCircle(swPosition + 3.0f * toCenter + 2.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
 
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread) {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread)
+                {
                     Arena.AddCircle(swPosition - 3.0f * toCenter - 2.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
             }
         }
 
         // Case: SW players with same debuffs (helpers)
-        if (shapes.supportHelpers[pcSlot]) {
+        if (shapes.supportHelpers[pcSlot])
+        {
             var swPosition = towers.CurrentSW.Value.Position;
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
             var toCenter = (Arena.Center - swPosition).Normalized();
-            if (toCenter.LengthSq() <= 0) {
+            if (toCenter.LengthSq() <= 0)
+            {
                 return;
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (assignment == PartyRolesConfig.Assignment.H1 || assignment == PartyRolesConfig.Assignment.H2) {
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (assignment is PartyRolesConfig.Assignment.H1 or PartyRolesConfig.Assignment.H2)
+                {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless)
+                    {
                         Arena.AddCircle(swPosition + toCenter.Rotate(90f.Degrees()).Normalized() * 4.5f, 0.75f, Colors.Safe, 1.0f);
                     }
 
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+                    {
                         Arena.AddCircle(swPosition + toCenter.Rotate(82f.Degrees()).Normalized() * 7.07f, 0.75f, Colors.Safe, 1.0f);
                     }
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.OT) {
+                if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT)
+                {
                     Arena.AddCircle(swPosition + toCenter.Rotate(35.0f.Degrees()).Normalized() * 11.5f, 0.75f, Colors.Safe, 1.0f);
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
-                if (assignment == PartyRolesConfig.Assignment.H1 || assignment == PartyRolesConfig.Assignment.H2) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
+                if (assignment is PartyRolesConfig.Assignment.H1 or PartyRolesConfig.Assignment.H2)
+                {
                     Arena.AddCircle(swPosition + 1.0f * toCenter + 7.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.OT) {
+                if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT)
+                {
                     Arena.AddCircle(swPosition + 9.0f * toCenter + 6.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
             }
         }
 
         // Case: SE players with different debuffs (soakers)
-        if (shapes.seSoakers[pcSlot]) {
+        if (shapes.seSoakers[pcSlot])
+        {
             var sePosition = towers.CurrentSE.Value.Position;
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
             var toCenter = (Arena.Center - sePosition).Normalized();
-            if (toCenter.LengthSq() <= 0) {
+            if (toCenter.LengthSq() <= 0)
+            {
                 return;
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone)
+                {
                     Arena.AddCircle(sePosition + toCenter.Normalized() * 3.5f, 0.75f, Colors.Safe, 1.0f);
                 }
 
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread) {
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless) {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread)
+                {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless)
+                    {
                         Arena.AddCircle(sePosition + (-toCenter.Normalized()) * 3.5f, 0.75f, Colors.Safe, 1.0f);
                     }
 
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+                    {
                         Arena.AddCircle(sePosition + (-toCenter).Rotate(-26f.Degrees()).Normalized() * 3.6f, 0.75f, Colors.Safe, 1.0f);
                     }
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Cone)
+                {
                     Arena.AddCircle(sePosition + 3.0f * toCenter - 2.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
 
-                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread) {
+                if (shapes.shapes[pcSlot] == ForsakenShapes.Shape.Spread)
+                {
                     Arena.AddCircle(sePosition - 3.0f * toCenter + 2.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
             }
         }
 
         // Case: SE players with same debuffs (helpers)
-        if (shapes.dpsHelpers[pcSlot]) {
+        if (shapes.dpsHelpers[pcSlot])
+        {
             var sePosition = towers.CurrentSE.Value.Position;
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
             var toCenter = (Arena.Center - sePosition).Normalized();
-            if (toCenter.LengthSq() <= 0) {
+            if (toCenter.LengthSq() <= 0)
+            {
                 return;
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless ||
-                dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
-                if (assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless) {
+            if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or
+                DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+            {
+                if (assignment is PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+                {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_Markerless)
+                    {
                         Arena.AddCircle(sePosition + toCenter.Rotate(-90f.Degrees()).Normalized() * 4.5f, 0.75f, Colors.Safe, 1.0f);
                     }
 
-                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers) {
+                    if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
+                    {
                         Arena.AddCircle(sePosition + toCenter.Rotate(-82f.Degrees()).Normalized() * 7.07f, 0.75f, Colors.Safe, 1.0f);
                     }
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2) {
+                if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2)
+                {
                     Arena.AddCircle(sePosition + toCenter.Rotate(-35.0f.Degrees()).Normalized() * 11.5f, 0.75f, Colors.Safe, 1.0f);
                 }
             }
 
-            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex) {
-                if (assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
+            if (dmuConfig.P2Forsaken == DMUConfig.P2ForsakenStrategy.Kroxy_Rinon_Melee_Flex)
+            {
+                if (assignment is PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+                {
                     Arena.AddCircle(sePosition + 1.0f * toCenter - 7.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
 
-                if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2) {
+                if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2)
+                {
                     Arena.AddCircle(sePosition + 9.0f * toCenter - 6.0f * toCenter.Rotate(90f.Degrees()), 0.75f, Colors.Safe, 1.0f);
                 }
             }
         }
     }
 
-    public override void Update() {
-        if (shapes == null || towers == null) {
+    public override void Update()
+    {
+        if (shapes == null || towers == null)
+        {
             return;
         }
 
-        if (towers.Towers.Count != 2 || towers.CurrentSE == null || towers.CurrentSW == null) {
+        if (towers.Towers.Count != 2 || towers.CurrentSE == null || towers.CurrentSW == null)
+        {
             return;
         }
 
-        if (shapes.currentTowerSet % 2 != 0) {
+        if (shapes.currentTowerSet % 2 != 0)
+        {
             return;
         }
 
         var party = new BitMask(0xFF);
 
-        for (int i = 0; i < towers.Towers.Count; i++) {
+        for (int i = 0; i < towers.Towers.Count; i++)
+        {
             var t = towers.Towers[i];
 
-            if (t.Position.AlmostEqual(towers.CurrentSW.Value.Position, 1.0f)) {
+            if (t.Position.AlmostEqual(towers.CurrentSW.Value.Position, 1.0f))
+            {
                 t.ForbiddenSoakers = party & ~shapes.swSoakers;
             }
 
-            if (t.Position.AlmostEqual(towers.CurrentSE.Value.Position, 1.0f)) {
+            if (t.Position.AlmostEqual(towers.CurrentSE.Value.Position, 1.0f))
+            {
                 t.ForbiddenSoakers = party & ~shapes.seSoakers;
             }
 
@@ -871,58 +1081,71 @@ class ForsakenSolverSet2(BossModule module) : BossComponent(module) {
     }
 }
 
-class WingsOfDestructionLeftRight(BossModule module) : Components.SimpleAOEGroups(module,
+sealed class WingsOfDestructionLeftRight(BossModule module) : Components.SimpleAOEGroups(module,
     [(uint)AID.WingsOfDestructionLeft, (uint)AID.WingsOfDestructionRight], new AOEShapeRect(80, 20));
 
-class WingsOfDestructionTB(BossModule module) : Components.GenericBaitAway(module, (uint)AID.WingsOfDestructionTB, true, true) {
+sealed class WingsOfDestructionTB(BossModule module) : Components.GenericBaitAway(module, (uint)AID.WingsOfDestructionTB, true, true)
+{
     private Actor? casterPosition;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.WingsOfDestructionTB) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.WingsOfDestructionTB)
+        {
             casterPosition = caster;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.WingsOfDestructionTB1) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.WingsOfDestructionTB1)
+        {
             casterPosition = null;
             NumCasts++;
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         CurrentBaits.Clear();
 
-        if (casterPosition == null) {
+        if (casterPosition == null)
+        {
             return;
         }
 
         var players = Raid.WithoutSlot().SortedByRange(casterPosition.Position).ToList();
-        if (players.Count > 1) {
-            CurrentBaits.Add(new(casterPosition, players[0], new AOEShapeCircle(7)));
-            CurrentBaits.Add(new(casterPosition, players[^1], new AOEShapeCircle(7)));
+        if (players.Count > 1)
+        {
+            CurrentBaits.Add(new(casterPosition, players[0], new AOEShapeCircle(7f)));
+            CurrentBaits.Add(new(casterPosition, players[^1], new AOEShapeCircle(7f)));
         }
     }
 }
 
-class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine) {
-    private List<AOEInstance> aoes = [];
-    private List<Actor> triangles = new List<Actor>();
-    private float radius = 10 * MathF.Sqrt(3) / 3;
+sealed class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine)
+{
+    private readonly List<AOEInstance> aoes = [];
+    private readonly List<Actor> triangles = [];
+    private readonly float radius = 10 * MathF.Sqrt(3) / 3;
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
 
-    public override void OnActorCreated(Actor actor) {
-        if (actor.OID == (uint)OID.YellowTriangle || actor.OID == (uint)OID.YellowTriangle1) {
+    public override void OnActorCreated(Actor actor)
+    {
+        if (actor.OID is ((uint)OID.YellowTriangle) or ((uint)OID.YellowTriangle1))
+        {
             triangles.Add(actor);
         }
 
-        if (actor.OID == (uint)OID.YellowTriangle) {
+        if (actor.OID == (uint)OID.YellowTriangle)
+        {
             aoes.Add(new(new AOEShapeCircle(6f), actor.Position + new WDir(radius, 0f)));
             aoes.Add(new(new AOEShapeCircle(6f), actor.Position + new WDir(-radius / 2, 5f)));
             aoes.Add(new(new AOEShapeCircle(6f), actor.Position + new WDir(-radius / 2, -5f)));
         }
 
-        if (actor.OID == (uint)OID.YellowTriangle1) {
+        if (actor.OID == (uint)OID.YellowTriangle1)
+        {
             aoes.Add(new(new AOEShapeCircle(6f), actor.Position + new WDir(-radius, 0f)));
             aoes.Add(new(new AOEShapeCircle(6f), actor.Position + new WDir(radius / 2, 5f)));
             aoes.Add(new(new AOEShapeCircle(6f), actor.Position + new WDir(radius / 2, -5f)));
@@ -931,26 +1154,30 @@ class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine)
 
     public override void OnActorEAnim(Actor actor, uint state)
     {
-        if (actor.OID == (uint)OID.YellowTriangle || actor.OID == (uint)OID.YellowTriangle1)
+        if (actor.OID is ((uint)OID.YellowTriangle) or ((uint)OID.YellowTriangle1))
         {
             if (state == (uint)Animations.TriangleExplosion)
             {
                 aoes.RemoveRange(0, 3);
-                NumCasts = NumCasts + 3;
+                NumCasts += 3;
             }
         }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) {
-        if (aoes.Count == 0) {
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        if (aoes.Count == 0)
+        {
             return CollectionsMarshal.AsSpan(aoes);
         }
 
-        (int currentWave, int nextWave)[] wave = [(9,3), (3,9), (9,0)];
+        (int currentWave, int nextWave)[] wave = [(9, 3), (3, 9), (9, 0)];
         var (currentSize, nextSize) = wave[NumCasts < 9 ? 0 : NumCasts < 12 ? 1 : 2];
         var count = Math.Min(currentSize + nextSize, aoes.Count);
-        for (int i = 0; i < count; i++) {
-            aoes[i] = aoes[i] with {
+        for (int i = 0; i < count; i++)
+        {
+            aoes[i] = aoes[i] with
+            {
                 Color = i < currentSize ? Colors.Danger : Colors.AOE,
                 Risky = i < currentSize
             };
@@ -959,13 +1186,16 @@ class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine)
         return CollectionsMarshal.AsSpan(aoes)[..count];
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        if (NumCasts < 9) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (NumCasts < 9)
+        {
             return;
         }
 
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
         var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
@@ -973,7 +1203,8 @@ class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine)
         var waymarkA = WorldState.Waymarks.GetFieldMark((int)Waymark.A);
         var waymark1 = WorldState.Waymarks.GetFieldMark((int)Waymark.N1);
 
-        if (waymarkA == null || waymark1 == null) {
+        if (waymarkA == null || waymark1 == null)
+        {
             return;
         }
 
@@ -981,7 +1212,8 @@ class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine)
         var waymark1Angle = (waymark1.Value.ToWPos() - Arena.Center).ToAngle();
         var firstWave = triangles.Take(3).Select(t => t.Position).ToArray();
 
-        Array.Sort(firstWave, delegate(WPos x, WPos y) {
+        Array.Sort(firstWave, delegate (WPos x, WPos y)
+        {
             var xAngle = (x - Arena.Center).ToAngle();
             var yAngle = (y - Arena.Center).ToAngle();
 
@@ -991,39 +1223,47 @@ class Trine(BossModule module) : Components.GenericAOEs(module, (uint)AID.Trine)
             return xDeg < yDeg ? 1 : -1;
         });
 
-        if (assignment != PartyRolesConfig.Assignment.MT && assignment != PartyRolesConfig.Assignment.OT) {
+        if (assignment is not PartyRolesConfig.Assignment.MT and not PartyRolesConfig.Assignment.OT)
+        {
             Arena.AddCircle(firstWave[0], 1f, Colors.Safe, 2f);
             return;
         }
 
         var boss = (Module as DMU)?.BossP2();
-        if (boss == null) {
+        if (boss == null)
+        {
             return;
         }
 
         var ccwSpot = firstWave.MinBy(p => (waymark1Angle - (p - Arena.Center).ToAngle()).Normalized().Deg)!;
-        if (assignment == PartyRolesConfig.Assignment.OT) {
+        if (assignment == PartyRolesConfig.Assignment.OT)
+        {
             Arena.AddCircle(Arena.Center + (ccwSpot - Arena.Center).Normalized() * Arena.Bounds.Radius, 1f, Colors.Safe, 2f);
         }
 
         WPos closestSpot = ccwSpot;
-        for (float r = 0.5f; r <= (ccwSpot - boss.Position).Length(); r = r + 0.5f) {
-            List<WPos> spots = new List<WPos>();
-            for (int degree = -60; degree <= 60; degree = degree + 5) {
+        for (float r = 0.5f; r <= (ccwSpot - boss.Position).Length(); r += 0.5f)
+        {
+            List<WPos> spots = [];
+            for (int degree = -60; degree <= 60; degree += 5)
+            {
                 var spot = boss.Position + r * ((ccwSpot - boss.Position).ToAngle() + degree.Degrees()).ToDirection();
 
-                if (!aoes.Any(aoe => aoe.Check(spot))) {
+                if (!aoes.Any(aoe => aoe.Check(spot)))
+                {
                     spots.Add(spot);
                 }
             }
 
-            if (spots.Count > 0) {
+            if (spots.Count > 0)
+            {
                 closestSpot = spots.MinBy(spot => ((spot - boss.Position).ToAngle() - (ccwSpot - boss.Position).ToAngle()).Abs().Deg)!;
                 break;
             }
         }
 
-        if (assignment == PartyRolesConfig.Assignment.MT) {
+        if (assignment == PartyRolesConfig.Assignment.MT)
+        {
             Arena.AddCircle(closestSpot, 1f, Colors.Safe, 2f);
         }
     }

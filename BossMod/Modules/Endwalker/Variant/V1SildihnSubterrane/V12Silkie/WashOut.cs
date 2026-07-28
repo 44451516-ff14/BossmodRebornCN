@@ -8,7 +8,7 @@ sealed class WashOut(BossModule module) : Components.SimpleKnockbacks(module, (u
     {
         if (Casters.Count != 0)
         {
-            ref var kb = ref Casters.Ref(0);
+            ref readonly var kb = ref Casters.Ref(0);
             var act = kb.Activation;
             if (!IsImmune(slot, act))
             {

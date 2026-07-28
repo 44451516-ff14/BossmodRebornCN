@@ -2,71 +2,86 @@
 
 namespace BossMod.Dawntrail.Ultimate.DMU;
 
-class AeroIIIAssault(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AeroIIIAssault, 15f);
+sealed class AeroIIIAssault(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AeroIIIAssault, 15f);
 
-class TheDecisiveBattle(BossModule module) : BossComponent(module) {
+sealed class TheDecisiveBattle(BossModule module) : BossComponent(module)
+{
     private Actor? chaosBoss;
     private Actor? exDeathBoss;
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        if (chaosBoss == null || exDeathBoss == null) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (chaosBoss == null || exDeathBoss == null)
+        {
             return;
         }
 
         var players = Raid.WithoutSlot().SortedByRange(chaosBoss.Position).Take(4).ToList();
-        foreach (var player in players) {
+        foreach (var player in players)
+        {
             Arena.AddLine(chaosBoss.Position, player.Position, Colors.Danger);
         }
 
-        players = Raid.WithoutSlot().SortedByRange(exDeathBoss.Position).Take(4).ToList();
-        foreach (var player in players) {
+        players = [.. Raid.WithoutSlot().SortedByRange(exDeathBoss.Position).Take(4)];
+        foreach (var player in players)
+        {
             Arena.AddLine(exDeathBoss.Position, player.Position, Colors.Danger);
         }
 
-        foreach (var (_, player) in Raid.WithSlot()) {
+        foreach (var (_, player) in Raid.WithSlot())
+        {
             Arena.Actor(player, player == pc ? Colors.PC : Colors.PlayerGeneric, true);
         }
 
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
 
         var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
-        if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.H1 ||
-            assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2) {
+        if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.H1 or
+            PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2)
+        {
             Arena.AddCircle(chaosBoss.Position, 1.25f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.OT || assignment == PartyRolesConfig.Assignment.H2 ||
-            assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
+        if (assignment is PartyRolesConfig.Assignment.OT or PartyRolesConfig.Assignment.H2 or
+            PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+        {
             Arena.AddCircle(exDeathBoss.Position, 1.25f, Colors.Safe, 2.0f);
         }
     }
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.TheDecisiveBattle) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.TheDecisiveBattle)
+        {
             chaosBoss = caster;
         }
 
-        if (spell.Action.ID == (uint)AID.TheDecisiveBattle1) {
+        if (spell.Action.ID == (uint)AID.TheDecisiveBattle1)
+        {
             exDeathBoss = caster;
         }
     }
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.TheDecisiveBattle || spell.Action.ID == (uint)AID.TheDecisiveBattle1) {
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is ((uint)AID.TheDecisiveBattle) or ((uint)AID.TheDecisiveBattle1))
+        {
             chaosBoss = null;
             exDeathBoss = null;
         }
     }
 }
 
-class BowelsOfAgony(BossModule module) : Components.RaidwideCast(module, (uint)AID.BowelsOfAgony);
+sealed class BowelsOfAgony(BossModule module) : Components.RaidwideCast(module, (uint)AID.BowelsOfAgony);
 
-class Crystals(BossModule module) : BossComponent(module) {
+sealed class Crystals(BossModule module) : BossComponent(module)
+{
     public List<(Actor actor, uint colour)> crystals = [];
     public List<(Actor actor, uint colour)> crystalsStored = []; // Used as a reference point for where the crystals were for easier hint logic
     public List<(Actor actor, ActorStatus debuff)> debuffPlayers = [];
@@ -74,86 +89,111 @@ class Crystals(BossModule module) : BossComponent(module) {
     public Element nextElement = Element.None;
     public enum Element { None, Water, Fire, Wind }
 
-    public override void OnStatusGain(Actor actor, ref ActorStatus status) {
-        if (status.ID == (uint)SID.DynamicFluid) {
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.DynamicFluid)
+        {
             debuffPlayers.Add((actor, status));
         }
 
-        if (status.ID == (uint)SID.Entropy) {
+        if (status.ID == (uint)SID.Entropy)
+        {
             debuffPlayers.Add((actor, status));
         }
 
-        if (debuffPlayers.Count == 4) {
+        if (debuffPlayers.Count == 4)
+        {
             debuffPlayers.Sort((a, b) => a.debuff.ExpireAt.CompareTo(b.debuff.ExpireAt));
-            if (debuffPlayers[0].debuff.ID == (uint)SID.DynamicFluid) {
+            if (debuffPlayers[0].debuff.ID == (uint)SID.DynamicFluid)
+            {
                 nextElement = Element.Water;
-            } else {
+            }
+            else
+            {
                 nextElement = Element.Fire;
             }
         }
     }
 
-    public override void OnStatusLose(Actor actor, ref ActorStatus status) {
-        if (status.ID == (uint)SID.DynamicFluid || status.ID == (uint)SID.Entropy) {
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID is ((uint)SID.DynamicFluid) or ((uint)SID.Entropy))
+        {
             debuffPlayers.RemoveAll(d => d.actor == actor);
         }
     }
 
-    public override void OnActorCreated(Actor actor) {
-        if (actor.OID == (uint)OID.FireP3) {
+    public override void OnActorCreated(Actor actor)
+    {
+        if (actor.OID == (uint)OID.FireP3)
+        {
             crystals.Add((actor, Colors.Enemy));
         }
 
-        if (actor.OID == (uint)OID.WaterP3) {
+        if (actor.OID == (uint)OID.WaterP3)
+        {
             crystals.Add((actor, Color.FromRGBA(0x268BD280).ABGR));
         }
 
-        if (actor.OID == (uint)OID.WindP3) {
+        if (actor.OID == (uint)OID.WindP3)
+        {
             crystals.Add((actor, Colors.Safe));
         }
 
-        if (crystals.Count == 3) {
-            crystalsStored = crystals.ToList();
+        if (crystals.Count == 3)
+        {
+            crystalsStored = [.. crystals];
         }
     }
 
-    public override void OnActorDestroyed(Actor actor) {
-        if (actor.OID == (uint)OID.FireP3) {
+    public override void OnActorDestroyed(Actor actor)
+    {
+        if (actor.OID == (uint)OID.FireP3)
+        {
             crystals.RemoveAll(c => c.actor == actor);
             nextElement = Element.Water;
         }
 
-        if (actor.OID == (uint)OID.WaterP3) {
+        if (actor.OID == (uint)OID.WaterP3)
+        {
             crystals.RemoveAll(c => c.actor == actor);
             nextElement = Element.Fire;
         }
 
-        if (actor.OID == (uint)OID.WindP3) {
+        if (actor.OID == (uint)OID.WindP3)
+        {
             crystals.RemoveAll(c => c.actor == actor);
             nextElement = Element.None;
         }
 
-        if (crystals.Count == 1) {
+        if (crystals.Count == 1)
+        {
             nextElement = Element.Wind;
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        foreach (var (actor, colour) in crystals) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        foreach (var (actor, colour) in crystals)
+        {
             Arena.AddCircleFilled(actor.Position, 1, colour);
         }
     }
 }
 
-class ThunderIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderIII, new AOEShapeCircle(15.0f));
+sealed class ThunderIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ThunderIII, new AOEShapeCircle(15.0f));
 
-class WaterCrystal(BossModule module) : Components.GenericBaitProximity(module) {
-    private Crystals? crystals = module.FindComponent<Crystals>();
+sealed class WaterCrystal(BossModule module) : Components.GenericBaitProximity(module)
+{
+    private readonly Crystals? crystals = module.FindComponent<Crystals>();
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.Tsunami) {
-            if (crystals == null) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.Tsunami)
+        {
+            if (crystals == null)
+            {
                 return;
             }
 
@@ -161,49 +201,60 @@ class WaterCrystal(BossModule module) : Components.GenericBaitProximity(module) 
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         CurrentBaits.Clear();
 
-        if (crystals == null || crystals.crystals.Count == 0) {
+        if (crystals == null || crystals.crystals.Count == 0)
+        {
             return;
         }
 
-        if (crystals.nextElement != Crystals.Element.Water) {
+        if (crystals.nextElement != Crystals.Element.Water)
+        {
             return;
         }
 
         var waterCrystal = crystals.crystals.FirstOrNull(c => c.actor.OID == (uint)OID.WaterP3);
-        if (waterCrystal == null) {
+        if (waterCrystal == null)
+        {
             return;
         }
 
         var players = Raid.WithoutSlot().SortedByRange(waterCrystal.Value.actor.Position).ToList();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++)
+        {
             CurrentBaits.Add(new(players[i], new AOEShapeCircle(5.0f)));
         }
 
         var debuffPlayers = crystals.debuffPlayers.Where(d => d.debuff.ID == (uint)SID.DynamicFluid).Take(2).ToList();
-        if (debuffPlayers.Count < 2) {
+        if (debuffPlayers.Count < 2)
+        {
             return;
         }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++)
+        {
             CurrentBaits.Add(new(debuffPlayers[i].actor, new AOEShapeDonut(4.0f, 10.0f)));
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints) {
+    public override void AddGlobalHints(GlobalHints hints)
+    {
         hints.Add($"Element: {crystals?.nextElement}");
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
         var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
-        if (crystals == null || crystals.crystalsStored.Count != 3) {
+        if (crystals == null || crystals.crystalsStored.Count != 3)
+        {
             return;
         }
 
@@ -211,32 +262,40 @@ class WaterCrystal(BossModule module) : Components.GenericBaitProximity(module) 
         var fireCrystal = crystals.crystalsStored.First(c => c.actor.OID == (uint)OID.FireP3);
         var windCrystal = crystals.crystalsStored.First(c => c.actor.OID == (uint)OID.WindP3);
 
-        if (assignment == PartyRolesConfig.Assignment.H1) {
+        if (assignment == PartyRolesConfig.Assignment.H1)
+        {
             Arena.AddCircle(waterCrystal.actor.Position, 1.5f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.H2) {
+        if (assignment == PartyRolesConfig.Assignment.H2)
+        {
             Arena.AddCircle(Module.Center + (waterCrystal.actor.Position - Module.Center).Normalized() * 3.5f, 1.5f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
+        if (assignment is PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+        {
             Arena.AddCircle(fireCrystal.actor.Position, 1.5f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2 ||
-            assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.OT) {
+        if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2 or
+            PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT)
+        {
             Arena.AddCircle(windCrystal.actor.Position, 1.5f, Colors.Safe, 2.0f);
         }
     }
 }
 
-class FireCrystal(BossModule module) : Components.GenericBaitProximity(module) {
-    private Crystals? crystals = module.FindComponent<Crystals>();
+sealed class FireCrystal(BossModule module) : Components.GenericBaitProximity(module)
+{
+    private readonly Crystals? crystals = module.FindComponent<Crystals>();
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.Inferno) {
-            if (crystals == null) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.Inferno)
+        {
+            if (crystals == null)
+            {
                 return;
             }
 
@@ -244,49 +303,60 @@ class FireCrystal(BossModule module) : Components.GenericBaitProximity(module) {
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         CurrentBaits.Clear();
 
-        if (crystals == null || crystals.crystals.Count == 0) {
+        if (crystals == null || crystals.crystals.Count == 0)
+        {
             return;
         }
 
-        if (crystals.nextElement != Crystals.Element.Fire) {
+        if (crystals.nextElement != Crystals.Element.Fire)
+        {
             return;
         }
 
         var fireCrystal = crystals.crystals.FirstOrNull(c => c.actor.OID == (uint)OID.FireP3);
-        if (fireCrystal == null) {
+        if (fireCrystal == null)
+        {
             return;
         }
 
         var players = Raid.WithoutSlot().SortedByRange(fireCrystal.Value.actor.Position).ToList();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++)
+        {
             CurrentBaits.Add(new(players[i], new AOEShapeDonut(4.0f, 10.0f)));
         }
 
         var debuffPlayers = crystals.debuffPlayers.Where(d => d.debuff.ID == (uint)SID.Entropy).Take(2).ToList();
-        if (debuffPlayers.Count < 2) {
+        if (debuffPlayers.Count < 2)
+        {
             return;
         }
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++)
+        {
             CurrentBaits.Add(new(debuffPlayers[i].actor, new AOEShapeCircle(5.0f)));
         }
     }
 
-    public override void AddGlobalHints(GlobalHints hints) {
+    public override void AddGlobalHints(GlobalHints hints)
+    {
         hints.Add($"Element: {crystals?.nextElement}");
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
         var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
-        if (crystals == null || crystals.crystalsStored.Count != 3) {
+        if (crystals == null || crystals.crystalsStored.Count != 3)
+        {
             return;
         }
 
@@ -294,40 +364,49 @@ class FireCrystal(BossModule module) : Components.GenericBaitProximity(module) {
         var fireCrystal = crystals.crystalsStored.First(c => c.actor.OID == (uint)OID.FireP3);
         var windCrystal = crystals.crystalsStored.First(c => c.actor.OID == (uint)OID.WindP3);
 
-        if (assignment == PartyRolesConfig.Assignment.H1) {
+        if (assignment == PartyRolesConfig.Assignment.H1)
+        {
             Arena.AddCircle(waterCrystal.actor.Position, 1.5f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.H2) {
+        if (assignment == PartyRolesConfig.Assignment.H2)
+        {
             Arena.AddCircle(Module.Center + (waterCrystal.actor.Position - Module.Center).Normalized() * 3.5f, 1.5f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.R1 || assignment == PartyRolesConfig.Assignment.R2) {
+        if (assignment is PartyRolesConfig.Assignment.R1 or PartyRolesConfig.Assignment.R2)
+        {
             Arena.AddCircle(fireCrystal.actor.Position, 1.5f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.M2) {
+        if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.M2)
+        {
             Arena.AddCircle(windCrystal.actor.Position + (windCrystal.actor.Position - Module.Center).Normalized().OrthoL() * 2.5f, 1.0f, Colors.Safe, 2.0f);
         }
 
-        if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.OT) {
+        if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.OT)
+        {
             Arena.AddCircle(windCrystal.actor.Position + (windCrystal.actor.Position - Module.Center).Normalized().OrthoR() * 2.5f, 1.0f, Colors.Safe, 2.0f);
         }
     }
 }
 
-class LongitudinalLatitudinalImplosion(BossModule module) : Components.GenericAOEs(module, (uint)AID.Shockwave) {
-    private List<AOEInstance> aoes = [];
+sealed class LongitudinalLatitudinalImplosion(BossModule module) : Components.GenericAOEs(module, (uint)AID.Shockwave)
+{
+    private readonly List<AOEInstance> aoes = [];
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.LongitudinalImplosion) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.LongitudinalImplosion)
+        {
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation + 180.Degrees(), Module.CastFinishAt(spell)));
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation + 90.Degrees(), Module.CastFinishAt(spell)));
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation - 90.Degrees(), Module.CastFinishAt(spell)));
         }
 
-        if (spell.Action.ID == (uint)AID.LatitudinalImplosion) {
+        if (spell.Action.ID == (uint)AID.LatitudinalImplosion)
+        {
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation + 90.Degrees(), Module.CastFinishAt(spell)));
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation - 90.Degrees(), Module.CastFinishAt(spell)));
             aoes.Add(new(new AOEShapeCone(40, 45.Degrees()), spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
@@ -335,48 +414,61 @@ class LongitudinalLatitudinalImplosion(BossModule module) : Components.GenericAO
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.Shockwave) {
-            NumCasts++;
-            if (aoes.Count > 0) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.Shockwave)
+        {
+            ++NumCasts;
+            if (aoes.Count > 0)
+            {
                 aoes.RemoveAt(0);
             }
         }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) {
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
         var nextAOEs = aoes.Take(2).ToList();
         return CollectionsMarshal.AsSpan(nextAOEs);
     }
 }
 
-class ThunderIIITB(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ThunderIIITBCast, new AOEShapeCircle(5.0f), true) {
+sealed class ThunderIIITB(BossModule module) : Components.BaitAwayCast(module, (uint)AID.ThunderIIITBCast, new AOEShapeCircle(5.0f), true)
+{
     private Actor? boss = null;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.ThunderIIITBCast) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.ThunderIIITBCast)
+        {
             boss = caster;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.ThunderIIITB) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.ThunderIIITB)
+        {
             NumCasts++;
-            if (NumCasts == 2) {
+            if (NumCasts == 2)
+            {
                 boss = null;
             }
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         CurrentBaits.Clear();
 
-        if (boss == null) {
+        if (boss == null)
+        {
             return;
         }
 
         var player = Raid.WithoutSlot().SortedByRange(boss.Position).FirstOrDefault();
-        if (player == null) {
+        if (player == null)
+        {
             return;
         }
 
@@ -384,119 +476,148 @@ class ThunderIIITB(BossModule module) : Components.BaitAwayCast(module, (uint)AI
     }
 }
 
-class UmbraSmash(BossModule module) : Components.GenericBaitProximity(module) {
-    private Crystals? crystals = module.FindComponent<Crystals>();
+sealed class UmbraSmash(BossModule module) : Components.GenericBaitProximity(module)
+{
+    private readonly Crystals? crystals = module.FindComponent<Crystals>();
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
     private bool castStarted = false;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.UmbraSmash) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.UmbraSmash)
+        {
             castStarted = true;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.UmbraSmash) {
-            NumCasts++;
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.UmbraSmash)
+        {
+            ++NumCasts;
             CurrentBaits.Clear();
         }
     }
 
-    public override void Update() {
-        if (crystals == null || crystals.crystals.Count != 1) {
+    public override void Update()
+    {
+        if (crystals == null || crystals.crystals.Count != 1)
+        {
             return;
         }
 
-        if (castStarted == true) {
+        if (castStarted)
+        {
             return;
         }
 
         CurrentBaits.Clear();
 
         var chaosBoss = WorldState.Actors.FirstOrDefault(a => a.OID == (uint)OID.Chaos);
-        if (chaosBoss == null) {
+        if (chaosBoss == null)
+        {
             return;
         }
 
         var player = Raid.WithoutSlot().SortedByRange(chaosBoss.Position).LastOrDefault();
-        if (player == null) {
+        if (player == null)
+        {
             return;
         }
 
         CurrentBaits.Add(new(player, new AOEShapeCircle(15.0f)));
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        if (crystals == null || crystals.crystals.Count != 1) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (crystals == null || crystals.crystals.Count != 1)
+        {
             return;
         }
 
-        if (castStarted == true) {
+        if (castStarted)
+        {
             return;
         }
 
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
         var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
         var windCrystal = crystals.crystalsStored.First(c => c.actor.OID == (uint)OID.WindP3);
 
-        if (assignment == PartyRolesConfig.Assignment.R1) {
-            Arena.AddCircle((Module.Center - (windCrystal.actor.Position - Module.Center).Normalized() * Module.Bounds.Radius) + new WDir(0, 1.0f), 1.0f, Colors.Safe, 2.0f);
+        if (assignment == PartyRolesConfig.Assignment.R1)
+        {
+            Arena.AddCircle((Arena.Center - (windCrystal.actor.Position - Arena.Center).Normalized() * 20f) + new WDir(0, 1.0f), 1.0f, Colors.Safe, 2.0f);
         }
     }
 }
 
-class UltimaBlaster(BossModule module) : Components.RaidwideInstant(module, (uint)AID.UltimaBlaster);
+sealed class UltimaBlaster(BossModule module) : Components.RaidwideInstant(module, (uint)AID.UltimaBlaster);
 
-class UltimaBlasterLimitCut(BossModule module) : Components.GenericBaitAway(module) {
+sealed class UltimaBlasterLimitCut(BossModule module) : Components.GenericBaitAway(module)
+{
     private WPos startPosition;
     private Angle angleRotate;
-    private int[] orbNumbers = Utils.MakeArray(8, -1);
+    private readonly int[] orbNumbers = Utils.MakeArray(8, -1);
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.UltimaBlaster) {
-            if (startPosition == default) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.UltimaBlaster)
+        {
+            if (startPosition == default)
+            {
                 startPosition = caster.Position;
-            } else if (angleRotate == default) {
+            }
+            else if (angleRotate == default)
+            {
                 angleRotate = (startPosition - Arena.Center).OrthoL().Dot(caster.Position - Arena.Center) > 0 ? -45.Degrees() : 45.Degrees();
             }
         }
 
-        if (spell.Action.ID == (uint)AID.UltimaBlasterBait) {
+        if (spell.Action.ID == (uint)AID.UltimaBlasterBait)
+        {
             NumCasts++;
-            if (CurrentBaits.Count > 0) {
+            if (CurrentBaits.Count > 0)
+            {
                 CurrentBaits.RemoveAt(0);
             }
         }
     }
 
-    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID) {
-        var orbNumber = (IconID)iconID switch {
-            IconID.OrbNumber1 => 0,
-            IconID.OrbNumber2 => 1,
-            IconID.OrbNumber3 => 2,
-            IconID.OrbNumber4 => 3,
-            IconID.OrbNumber5 => 4,
-            IconID.OrbNumber6 => 5,
-            IconID.OrbNumber7 => 6,
-            IconID.OrbNumber8 => 7,
+    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
+    {
+        var orbNumber = iconID switch
+        {
+            (uint)IconID.OrbNumber1 => 0,
+            (uint)IconID.OrbNumber2 => 1,
+            (uint)IconID.OrbNumber3 => 2,
+            (uint)IconID.OrbNumber4 => 3,
+            (uint)IconID.OrbNumber5 => 4,
+            (uint)IconID.OrbNumber6 => 5,
+            (uint)IconID.OrbNumber7 => 6,
+            (uint)IconID.OrbNumber8 => 7,
             _ => -1
         };
 
-        if (orbNumber >= 0) {
+        if (orbNumber >= 0)
+        {
             var slot = Raid.FindSlot(actor.InstanceID);
-            if (slot >= 0) {
+            if (slot >= 0)
+            {
                 orbNumbers[slot] = orbNumber;
 
-                if (startPosition == default || angleRotate == default) {
+                if (startPosition == default || angleRotate == default)
+                {
                     return;
                 }
 
                 var player = WorldState.Actors.Find(targetID);
-                if (player == null) {
+                if (player == null)
+                {
                     return;
                 }
 
@@ -506,85 +627,108 @@ class UltimaBlasterLimitCut(BossModule module) : Components.GenericBaitAway(modu
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         base.DrawArenaForeground(pcSlot, pc);
 
-        foreach (var bait in ActiveBaitsOn(pc)) {
+        foreach (var bait in ActiveBaitsOn(pc))
+        {
             Arena.AddCircle(Arena.Center + (Arena.Center - bait.Source.Position).Normalized().Rotate(angleRotate * 0.5f) * 19.0f, 0.75f, Colors.Safe);
         }
     }
 }
 
-class HeadTailWind(BossModule module) : Components.GenericKnockback(module) {
-    public SID[] Direction = new SID[8];
+sealed class HeadTailWind(BossModule module) : Components.GenericKnockback(module)
+{
+    public uint[] Direction = new uint[8];
     private (WPos Origin, DateTime Activation, bool EventHappened) wave;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.VacuumWave) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.VacuumWave)
+        {
             wave = new(caster.Position, DateTime.Now, false);
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.VacuumWave) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.VacuumWave)
+        {
             NumCasts++;
             wave.EventHappened = true;
         }
     }
 
-    public override void OnStatusGain(Actor actor, ref ActorStatus status) {
-        SID? direction = (SID)status.ID switch {
-            SID.Headwind => SID.Headwind,
-            SID.Tailwind => SID.Tailwind,
-            _ => null
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        uint direction = status.ID switch
+        {
+            (uint)SID.Headwind => (uint)SID.Headwind,
+            (uint)SID.Tailwind => (uint)SID.Tailwind,
+            _ => default
         };
 
-        if (direction != null) {
+        if (direction != default)
+        {
             var slot = Raid.FindSlot(actor.InstanceID);
-            if (slot >= 0) {
-                Direction[slot] = direction.Value;
+            if (slot >= 0)
+            {
+                Direction[slot] = direction;
             }
         }
     }
 
-    public override void OnStatusLose(Actor actor, ref ActorStatus status) {
-        if (status.ID == (uint)SID.Headwind || status.ID == (uint)SID.Tailwind) {
+    public override void OnStatusLose(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID is (uint)SID.Headwind or (uint)SID.Tailwind)
+        {
             var slot = Raid.FindSlot(actor.InstanceID);
-            if (slot >= 0) {
+            if (slot >= 0)
+            {
                 Direction[slot] = 0;
             }
         }
     }
 
-    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) {
-        if (wave.Origin != default) {
+    public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
+    {
+        if (wave.Origin != default)
+        {
             return new[] { new Knockback(wave.Origin, KnockDistance(slot, actor, wave.Origin), wave.Activation) };
         }
 
         return [];
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         base.DrawArenaForeground(pcSlot, pc);
-
-        if (Direction[pcSlot] != SID.Headwind || Direction[pcSlot] != SID.Tailwind) {
+        var direction = Direction[pcSlot];
+        if (direction is not (uint)SID.Headwind and not (uint)SID.Tailwind)
+        {
             return;
         }
 
-        foreach (var knockback in ActiveKnockbacks(pcSlot, pc)) {
+        foreach (var knockback in ActiveKnockbacks(pcSlot, pc))
+        {
             var toSource = (knockback.Origin - pc.Position).Normalized();
-            var safeFacing = (Direction[pcSlot] == SID.Headwind ? -toSource : toSource).ToAngle();
-            Arena.PathArcTo(pc.Position, 1, (safeFacing + 45.Degrees()).Rad, (safeFacing - 45.Degrees()).Rad);
+            var safeFacing = (Direction[pcSlot] == (uint)SID.Headwind ? -toSource : toSource).ToAngle();
+            Arena.PathArcTo(pc.Position, 1, (safeFacing + 45f.Degrees()).Rad, (safeFacing - 45f.Degrees()).Rad);
             MiniArena.PathStroke(false, Colors.Safe);
-            Arena.PathArcTo(pc.Position, 1, (safeFacing + 225.Degrees()).Rad, (safeFacing + 135.Degrees()).Rad);
+            Arena.PathArcTo(pc.Position, 1, (safeFacing + 225f.Degrees()).Rad, (safeFacing + 135f.Degrees()).Rad);
             MiniArena.PathStroke(false, Colors.Danger);
         }
     }
 
-    public override void Update() {
-        if (wave.EventHappened) {
-            foreach (var player in Raid.WithoutSlot()) {
-                if (player.LastFrameMovement.Length() / WorldState.Frame.Duration > 15) {
+    public override void Update()
+    {
+        if (wave.EventHappened)
+        {
+            foreach (var player in Raid.WithoutSlot())
+            {
+                if (player.LastFrameMovement.Length() / WorldState.Frame.Duration > 15)
+                {
                     wave = default;
                     break;
                 }
@@ -592,62 +736,77 @@ class HeadTailWind(BossModule module) : Components.GenericKnockback(module) {
         }
     }
 
-    float KnockDistance(int pcSlot, Actor pc, WPos source) {
+    float KnockDistance(int pcSlot, Actor pc, WPos source)
+    {
         var direction = Direction[pcSlot];
-        if (direction != SID.Headwind && direction != SID.Tailwind) {
-            return 20;
+        if (direction is not (uint)SID.Headwind and not (uint)SID.Tailwind)
+        {
+            return 20f;
         }
 
         var toSource = (source - pc.Position).Normalized();
-        var safeFacing = direction == SID.Headwind ? -toSource : toSource;
+        var safeFacing = direction == (uint)SID.Headwind ? -toSource : toSource;
         var rel = safeFacing.Normalized().Dot(pc.Rotation.ToDirection());
 
-        if (rel > 0.7071067f) {
-            return 10;
+        if (rel > 0.7071067f)
+        {
+            return 10f;
         }
 
-        if (rel < -0.7071068f) {
-            return 40;
+        if (rel < -0.7071068f)
+        {
+            return 40f;
         }
 
-        return 20;
+        return 20f;
     }
 }
 
-class Cyclone(BossModule module) : Components.GenericStackSpread(module) {
-    private HeadTailWind? windDebuffs = module.FindComponent<HeadTailWind>();
+sealed class Cyclone(BossModule module) : Components.GenericStackSpread(module)
+{
+    private readonly HeadTailWind? windDebuffs = module.FindComponent<HeadTailWind>();
     public int NumCasts = 0;
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.Cyclone) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.Cyclone)
+        {
             NumCasts++;
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         Stacks.Clear();
 
-        if (windDebuffs == null) {
+        if (windDebuffs == null)
+        {
             return;
         }
 
-        foreach (var (slot, player) in Raid.WithSlot().WhereSlot(p => windDebuffs.Direction[p] is SID.Headwind or SID.Tailwind)) {
+        foreach (var (slot, player) in Raid.WithSlot().WhereSlot(p => windDebuffs.Direction[p] is (uint)SID.Headwind or (uint)SID.Tailwind))
+        {
             Stacks.Add(new(player, 6.0f));
         }
     }
 }
 
-class KefkaMax(BossModule module) : BossComponent(module) {
+sealed class KefkaMax(BossModule module) : BossComponent(module)
+{
     public Actor? boss = null;
 
-    public override void OnStatusGain(Actor actor, ref ActorStatus status) {
-        if (status.ID == (uint)SID.KefkaMax) {
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.KefkaMax)
+        {
             boss = actor;
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
-        if (boss == null) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (boss == null)
+        {
             return;
         }
 
@@ -663,19 +822,23 @@ class KefkaMax(BossModule module) : BossComponent(module) {
     }
 }
 
-class SlapHappy(BossModule module) : Components.GenericAOEs(module) {
-    private List<AOEInstance> aoes = [];
+sealed class SlapHappy(BossModule module) : Components.GenericAOEs(module)
+{
+    private readonly List<AOEInstance> aoes = [];
 
     // Big Hands AOEs are 10y apart
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.SlapHappyRightHand) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.SlapHappyRightHand)
+        {
             aoes.Add(new(new AOEShapeCircle(13.0f), Arena.Center + spell.Rotation.ToDirection().OrthoR() * 10.0f + (spell.Rotation.ToDirection().OrthoR() * 10.0f).OrthoR()));
             aoes.Add(new(new AOEShapeCircle(13.0f), Arena.Center + spell.Rotation.ToDirection().OrthoR() * 10.0f));
             aoes.Add(new(new AOEShapeCircle(13.0f), Arena.Center + spell.Rotation.ToDirection().OrthoR() * 10.0f + (spell.Rotation.ToDirection().OrthoR() * 10.0f).OrthoL()));
             aoes.Add(new(new AOEShapeCircle(6.0f), Arena.Center));
         }
 
-        if (spell.Action.ID == (uint)AID.SlapHappyLeftHand) {
+        if (spell.Action.ID == (uint)AID.SlapHappyLeftHand)
+        {
             aoes.Add(new(new AOEShapeCircle(13.0f), Arena.Center + spell.Rotation.ToDirection().OrthoL() * 10.0f + (spell.Rotation.ToDirection().OrthoL() * 10.0f).OrthoL()));
             aoes.Add(new(new AOEShapeCircle(13.0f), Arena.Center + spell.Rotation.ToDirection().OrthoL() * 10.0f));
             aoes.Add(new(new AOEShapeCircle(13.0f), Arena.Center + spell.Rotation.ToDirection().OrthoL() * 10.0f + (spell.Rotation.ToDirection().OrthoL() * 10.0f).OrthoR()));
@@ -683,40 +846,51 @@ class SlapHappy(BossModule module) : Components.GenericAOEs(module) {
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.SlapHappyBigAOE || spell.Action.ID == (uint)AID.SlapHappySmallAOE) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID is ((uint)AID.SlapHappyBigAOE) or ((uint)AID.SlapHappySmallAOE))
+        {
             NumCasts++;
-            if (aoes.Count > 0) {
+            if (aoes.Count > 0)
+            {
                 aoes.RemoveAt(0);
             }
         }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) {
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
         return CollectionsMarshal.AsSpan(aoes);
     }
 }
 
-class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(module) {
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.SlapHappyLeftHand) {
+sealed class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(module)
+{
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.SlapHappyLeftHand)
+        {
             var party = Raid.WithSlot(true, true, true);
             BitMask allowedTanks = default;
             BitMask allowedHealers = default;
             BitMask allowedDDs = default;
 
-            for (int i = 0; i < party.Length; i++) {
+            for (int i = 0; i < party.Length; i++)
+            {
                 ref var p = ref party[i];
 
-                if (p.Item2.Role == Role.Tank) {
+                if (p.Item2.Role == Role.Tank)
+                {
                     allowedTanks.Set(p.Item1);
                 }
 
-                if (p.Item2.Role == Role.Healer) {
+                if (p.Item2.Role == Role.Healer)
+                {
                     allowedHealers.Set(p.Item1);
                 }
 
-                if (p.Item2.Role == Role.Melee || p.Item2.Role == Role.Ranged) {
+                if (p.Item2.Role is Role.Melee or Role.Ranged)
+                {
                     allowedDDs.Set(p.Item1);
                 }
             }
@@ -725,30 +899,38 @@ class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(module) {
             var addedHealer = false;
             var addedDD = false;
 
-            for (int i = 0; i < party.Length; i++) {
+            for (int i = 0; i < party.Length; i++)
+            {
                 ref var player = ref party[i];
                 var p = player.Item2;
 
-                if (p.IsDead) {
+                if (p.IsDead)
+                {
                     continue;
                 }
 
-                if (p.Role == Role.Tank) {
-                    if (!addedTank) {
+                if (p.Role == Role.Tank)
+                {
+                    if (!addedTank)
+                    {
                         CurrentBaits.Add(new(caster, p, new AOEShapeCone(100, 22.5f.Degrees()), forbidden: ~allowedTanks));
                         addedTank = true;
                     }
                 }
 
-                if (p.Role == Role.Healer) {
-                    if (!addedHealer) {
+                if (p.Role == Role.Healer)
+                {
+                    if (!addedHealer)
+                    {
                         CurrentBaits.Add(new(caster, p, new AOEShapeCone(100, 22.5f.Degrees()), forbidden: ~allowedHealers));
                         addedHealer = true;
                     }
                 }
 
-                if (p.Role == Role.Melee || p.Role == Role.Ranged) {
-                    if (!addedDD) {
+                if (p.Role is Role.Melee or Role.Ranged)
+                {
+                    if (!addedDD)
+                    {
                         CurrentBaits.Add(new(caster, p, new AOEShapeCone(100, 22.5f.Degrees()), forbidden: ~allowedDDs));
                         addedDD = true;
                     }
@@ -756,9 +938,11 @@ class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(module) {
             }
         }
 
-        if (spell.Action.ID == (uint)AID.SlapHappyRightHand) {
+        if (spell.Action.ID == (uint)AID.SlapHappyRightHand)
+        {
             var target = WorldState.Actors.Find(caster.TargetID);
-            if (target == null) {
+            if (target == null)
+            {
                 return;
             }
 
@@ -766,9 +950,12 @@ class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(module) {
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.SlapHappyShockingImpactStack || spell.Action.ID == (uint)AID.SlapHappyShockwaveRole) {
-            if (CurrentBaits.Count > 0) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID is ((uint)AID.SlapHappyShockingImpactStack) or ((uint)AID.SlapHappyShockwaveRole))
+        {
+            if (CurrentBaits.Count > 0)
+            {
                 NumCasts++;
                 CurrentBaits.RemoveAt(0);
             }
@@ -776,85 +963,104 @@ class SlapHappyBaits(BossModule module) : Components.GenericBaitStack(module) {
     }
 }
 
-class DamningEdict(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DamningEdict, new AOEShapeRect(60.0f, 40.0f));
+sealed class DamningEdict(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DamningEdict, new AOEShapeRect(60.0f, 40.0f));
 
-class LookUponMeAndDespairAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LookUponMeAndDespairAOE, new AOEShapeRect(100.0f, 8.0f));
+sealed class LookUponMeAndDespairAOE(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LookUponMeAndDespairAOE, new AOEShapeRect(100.0f, 8.0f));
 
-class WhiteHole(BossModule module) : Components.RaidwideCast(module, (uint)AID.WhiteHole);
+sealed class WhiteHole(BossModule module) : Components.RaidwideCast(module, (uint)AID.WhiteHole);
 
-class EarthquakeRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.EarthquakeRaidwide);
+sealed class EarthquakeRaidwide(BossModule module) : Components.RaidwideCast(module, (uint)AID.EarthquakeRaidwide);
 
-class BlackHoleActors(BossModule module) : Components.Voidzone(module, 2.0f, enemies => enemies.Enemies((uint)OID.BlackHole));
+sealed class BlackHoleActors(BossModule module) : Components.Voidzone(module, 2.0f, enemies => enemies.Enemies((uint)OID.BlackHole));
 
-class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(125.0f, 3.0f), (uint)TetherID.BlackHoleTether) {
+sealed class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOEShapeRect(125.0f, 3.0f), (uint)TetherID.BlackHoleTether)
+{
     private readonly List<(Actor blackHole, ulong target)> Tethers = [];
-    private KefkaMax? kefkaMax = module.FindComponent<KefkaMax>();
+    private readonly KefkaMax? kefkaMax = module.FindComponent<KefkaMax>();
 
     private enum Roles { NONE, DPS, SUPPORT, ACCRETION }
-    private (Roles role, int order)[] orderedRoles = Utils.MakeArray(8, (Roles.NONE, 0));
+    private readonly (Roles role, int order)[] orderedRoles = Utils.MakeArray(8, (Roles.NONE, 0));
     private (Roles role, int order)[] currentSet = [];
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BlackHole) {
-            currentSetSolver();
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.BlackHole)
+        {
+            CurrentSetSolver();
         }
     }
 
-    public override void OnTethered(Actor source, in ActorTetherInfo tether) {
+    public override void OnTethered(Actor source, in ActorTetherInfo tether)
+    {
         base.OnTethered(source, tether);
 
-        if (tether.ID == (uint)TetherID.BlackHoleTether) {
+        if (tether.ID == (uint)TetherID.BlackHoleTether)
+        {
             Tethers.Add((source, tether.Target));
             SortTethersCW();
         }
     }
 
-    public override void OnUntethered(Actor source, in ActorTetherInfo tether) {
+    public override void OnUntethered(Actor source, in ActorTetherInfo tether)
+    {
         base.OnUntethered(source, tether);
 
-        if (tether.ID == (uint)TetherID.BlackHoleTether) {
+        if (tether.ID == (uint)TetherID.BlackHoleTether)
+        {
             Tethers.RemoveAll(t => t.blackHole.InstanceID == source.InstanceID);
         }
     }
 
-    public override void OnStatusGain(Actor actor, ref ActorStatus status) {
-        var order = (SID)status.ID switch {
-            SID.FirstInLine => 1,
-            SID.SecondInLine => 2,
-            SID.ThirdInLine => 3,
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        var order = status.ID switch
+        {
+            (uint)SID.FirstInLine => 1,
+            (uint)SID.SecondInLine => 2,
+            (uint)SID.ThirdInLine => 3,
             _ => 0
         };
 
-        if (order != 0) {
+        if (order != 0)
+        {
             var slot = Raid.FindSlot(actor.InstanceID);
-            if (slot >= 0) {
+            if (slot >= 0)
+            {
                 orderedRoles[slot].order = order;
-                if (orderedRoles[slot].role == Roles.NONE) {
+                if (orderedRoles[slot].role == Roles.NONE)
+                {
                     orderedRoles[slot].role = actor.Class.IsSupport() ? Roles.SUPPORT : Roles.DPS;
                 }
             }
         }
 
-        if (status.ID == (uint)SID.Accretion) {
+        if (status.ID == (uint)SID.Accretion)
+        {
             var slot = Raid.FindSlot(actor.InstanceID);
-            if (slot >= 0) {
+            if (slot >= 0)
+            {
                 orderedRoles[slot].role = Roles.ACCRETION;
             }
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.Nothingness) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.Nothingness)
+        {
             NumCasts++;
-            currentSetSolver();
+            CurrentSetSolver();
         }
     }
 
-    public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor) {
+    public override PlayerPriority CalcPriority(int pcSlot, Actor pc, int playerSlot, Actor player, ref uint customColor)
+    {
         var baits = ActiveBaitsOn(pc);
-        foreach (var bait in baits) {
+        foreach (var bait in baits)
+        {
             var currentBait = bait;
-            if (IsClippedBy(player, ref currentBait)) {
+            if (IsClippedBy(player, ref currentBait))
+            {
                 customColor = Colors.Danger;
                 return PlayerPriority.Danger;
             }
@@ -863,8 +1069,10 @@ class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOES
         return base.CalcPriority(pcSlot, pc, playerSlot, player, ref customColor);
     }
 
-    private void currentSetSolver() {
-        currentSet = (NumCasts) switch {
+    private void CurrentSetSolver()
+    {
+        currentSet = (NumCasts) switch
+        {
             0 => [new(Roles.DPS, 1)], // Set 1-1
             1 => [new(Roles.DPS, 1), new(Roles.SUPPORT, 1)], // Set 1-2
             3 => [new(Roles.DPS, 1), new(Roles.SUPPORT, 1), new(Roles.ACCRETION, 1)], // Set 2-1
@@ -880,13 +1088,16 @@ class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOES
 
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         base.DrawArenaForeground(pcSlot, pc);
 
-        for (int i = 0; i < Tethers.Count; i++) {
+        for (int i = 0; i < Tethers.Count; i++)
+        {
             var (blackHoleActor, targetID) = Tethers[i];
             var target = WorldState.Actors.Find(targetID);
-            if (target == null) {
+            if (target == null)
+            {
                 continue;
             }
 
@@ -896,8 +1107,10 @@ class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOES
     }
 
     // TODO move into data actor at some point called CWWith
-    private void SortTethersCW() {
-        if (kefkaMax == null || kefkaMax.boss == null) {
+    private void SortTethersCW()
+    {
+        if (kefkaMax == null || kefkaMax.boss == null)
+        {
             return;
         }
 
@@ -905,10 +1118,12 @@ class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOES
         var startingAngle = (startingPos - Module.Center).ToAngle().Rad + 5 * MathF.PI / 180;
 
         var list = new List<((Actor BlackHoleActor, ulong PlayerID) item, float angle)>();
-        foreach (var tether in Tethers) {
+        foreach (var tether in Tethers)
+        {
             var thisAngle = (tether.blackHole.Position - Module.Center).ToAngle().Rad;
-            if (thisAngle > startingAngle) {
-                thisAngle = thisAngle - Angle.DoublePI;
+            if (thisAngle > startingAngle)
+            {
+                thisAngle -= Angle.DoublePI;
             }
             list.Add((tether, thisAngle));
         }
@@ -918,101 +1133,136 @@ class BlackHole(BossModule module) : Components.BaitAwayTethers(module, new AOES
     }
 }
 
-class P3BlizzardBaits(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlizzardIIIBaitCast, new AOEShapeCircle(6.0f)) {
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.BlizzardIIIBaitCast) {
+sealed class P3BlizzardBaits(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BlizzardIIIBaitCast, new AOEShapeCircle(6.0f))
+{
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.BlizzardIIIBaitCast)
+        {
             NumCasts++;
         }
     }
 }
 
-class P3Blizzard(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true, onlyShowOutlines: true) {
+sealed class P3Blizzard(BossModule module) : Components.GenericBaitAway(module, centerAtTarget: true, onlyShowOutlines: true)
+{
     private Actor? boss = null;
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BlizzardIIICast) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.BlizzardIIICast)
+        {
             boss = caster;
         }
 
-        if (spell.Action.ID == (uint)AID.BlizzardIIIBaitCast) {
+        if (spell.Action.ID == (uint)AID.BlizzardIIIBaitCast)
+        {
             NumCasts++;
 
-            if (NumCasts == 16) {
+            if (NumCasts == 16)
+            {
                 boss = null;
             }
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         CurrentBaits.Clear();
 
-        if (boss == null) {
+        if (boss == null)
+        {
             return;
         }
 
-        foreach (var player in Raid.WithoutSlot()) {
+        foreach (var player in Raid.WithoutSlot())
+        {
             CurrentBaits.Add(new(boss, player, new AOEShapeCircle(6.0f)));
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         base.DrawArenaForeground(pcSlot, pc);
 
-        if (NumCasts >= 16) { // TODO remove this when adding hints array
+        if (NumCasts >= 16)
+        { // TODO remove this when adding hints array
             return;
         }
 
         var kefkaBoss = ((DMU)Module).BossP3();
-        if (kefkaBoss == null) {
+        if (kefkaBoss == null)
+        {
             return;
         }
 
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length == 0) {
+        if (slots.Length == 0)
+        {
             return;
         }
         var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
 
-        if (pc.Class.IsDD()) {
-            if (NumCasts < 8) {
+        if (pc.Class.IsDD())
+        {
+            if (NumCasts < 8)
+            {
                 Arena.AddCircle(kefkaBoss.Position + 10.0f * kefkaBoss.Rotation.ToDirection(), 1.0f, Colors.Safe);
             }
 
-            if (assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.R1) {
-                if (NumCasts < 8) {
+            if (assignment is PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.R1)
+            {
+                if (NumCasts < 8)
+                {
                     Arena.AddCircle((kefkaBoss.Position + 10.0f * kefkaBoss.Rotation.ToDirection()) - 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Danger);
-                } else {
+                }
+                else
+                {
                     Arena.AddCircle((kefkaBoss.Position + 10.0f * kefkaBoss.Rotation.ToDirection()) - 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Safe);
                 }
             }
 
-            if (assignment == PartyRolesConfig.Assignment.M2 || assignment == PartyRolesConfig.Assignment.R2) {
-                if (NumCasts < 8) {
+            if (assignment is PartyRolesConfig.Assignment.M2 or PartyRolesConfig.Assignment.R2)
+            {
+                if (NumCasts < 8)
+                {
                     Arena.AddCircle((kefkaBoss.Position + 10.0f * kefkaBoss.Rotation.ToDirection()) + 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Danger);
-                } else {
+                }
+                else
+                {
                     Arena.AddCircle((kefkaBoss.Position + 10.0f * kefkaBoss.Rotation.ToDirection()) + 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Safe);
                 }
             }
         }
 
-        if (pc.Class.IsSupport()) {
-            if (NumCasts < 8) {
+        if (pc.Class.IsSupport())
+        {
+            if (NumCasts < 8)
+            {
                 Arena.AddCircle(kefkaBoss.Position - 10.0f * kefkaBoss.Rotation.ToDirection(), 1.0f, Colors.Safe);
             }
 
-            if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.H1) {
-                if (NumCasts < 8) {
+            if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.H1)
+            {
+                if (NumCasts < 8)
+                {
                     Arena.AddCircle((kefkaBoss.Position - 10.0f * kefkaBoss.Rotation.ToDirection()) - 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Danger);
-                } else {
+                }
+                else
+                {
                     Arena.AddCircle((kefkaBoss.Position - 10.0f * kefkaBoss.Rotation.ToDirection()) - 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Safe);
                 }
             }
 
-            if (assignment == PartyRolesConfig.Assignment.OT || assignment == PartyRolesConfig.Assignment.H2) {
-                if (NumCasts < 8) {
+            if (assignment is PartyRolesConfig.Assignment.OT or PartyRolesConfig.Assignment.H2)
+            {
+                if (NumCasts < 8)
+                {
                     Arena.AddCircle((kefkaBoss.Position - 10.0f * kefkaBoss.Rotation.ToDirection()) + 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Danger);
-                } else {
+                }
+                else
+                {
                     Arena.AddCircle((kefkaBoss.Position - 10.0f * kefkaBoss.Rotation.ToDirection()) + 8.0f * kefkaBoss.Rotation.ToDirection().OrthoL(), 1.0f, Colors.Safe);
                 }
             }
@@ -1020,20 +1270,27 @@ class P3Blizzard(BossModule module) : Components.GenericBaitAway(module, centerA
     }
 }
 
-class P3BlizzardMove(BossModule module) : Components.StayMove(module, 5d) {
+sealed class P3BlizzardMove(BossModule module) : Components.StayMove(module, 5d)
+{
     public int NumCasts = 0;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BlizzardIIIRaidwide) {
-            foreach (var (slot, _) in Raid.WithSlot()) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.BlizzardIIIRaidwide)
+        {
+            foreach (var (slot, _) in Raid.WithSlot())
+            {
                 PlayerStates[slot] = new(Requirement.Move, WorldState.FutureTime(spell.RemainingTime));
             }
         }
     }
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BlizzardIIIRaidwide) {
-            foreach (var (slot, _) in Raid.WithSlot()) {
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.BlizzardIIIRaidwide)
+        {
+            foreach (var (slot, _) in Raid.WithSlot())
+            {
                 PlayerStates[slot] = default;
             }
             NumCasts++;
@@ -1041,31 +1298,41 @@ class P3BlizzardMove(BossModule module) : Components.StayMove(module, 5d) {
     }
 }
 
-class KnockDown(BossModule module) : Components.GenericStackSpread(module) {
-    public List<WPos> stackLocations = new List<WPos>();
+sealed class KnockDown(BossModule module) : Components.GenericStackSpread(module)
+{
+    public List<WPos> stackLocations = [];
     public Class stackClass = Class.None;
 
-    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID) {
-        if (iconID == (uint)IconID.StackShare) {
+    public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
+    {
+        if (iconID == (uint)IconID.StackShare)
+        {
             var target = WorldState.Actors.Find(targetID);
-            if (target == null) {
+            if (target == null)
+            {
                 return;
             }
 
             stackClass = target.Class;
 
             BitMask allowedPlayers = default;
-            if (target.Class.IsSupport()) {
-                foreach (var (slot, player) in Raid.WithSlot()) {
-                    if (player.Class.IsSupport()) {
+            if (target.Class.IsSupport())
+            {
+                foreach (var (slot, player) in Raid.WithSlot())
+                {
+                    if (player.Class.IsSupport())
+                    {
                         allowedPlayers.Set(slot);
                     }
                 }
             }
 
-            if (target.Class.IsDD()) {
-                foreach (var (slot, player) in Raid.WithSlot()) {
-                    if (player.Class.IsDD()) {
+            if (target.Class.IsDD())
+            {
+                foreach (var (slot, player) in Raid.WithSlot())
+                {
+                    if (player.Class.IsDD())
+                    {
                         allowedPlayers.Set(slot);
                     }
                 }
@@ -1075,9 +1342,12 @@ class KnockDown(BossModule module) : Components.GenericStackSpread(module) {
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.KnockDown) {
-            if (Stacks.Count > 0) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.KnockDown)
+        {
+            if (Stacks.Count > 0)
+            {
                 stackLocations.Add(Stacks[0].Target.Position);
                 Stacks.RemoveAt(0);
             }
@@ -1085,92 +1355,118 @@ class KnockDown(BossModule module) : Components.GenericStackSpread(module) {
     }
 }
 
-class BigBang(BossModule module) : Components.GenericAOEs(module) {
-    private KnockDown? stacks = module.FindComponent<KnockDown>();
-    private List<AOEInstance> aoes = [];
+sealed class BigBang(BossModule module) : Components.GenericAOEs(module)
+{
+    private readonly KnockDown? stacks = module.FindComponent<KnockDown>();
+    private readonly List<AOEInstance> aoes = [];
     private bool active = false;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BigBangCast) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.BigBangCast)
+        {
             active = true;
         }
     }
 
-    public override void Update() {
+    public override void Update()
+    {
         aoes.Clear();
 
-        if (active == false) {
+        if (!active)
+        {
             return;
         }
 
-        if (stacks != null && stacks.stackLocations.Count > 0) {
-            foreach (var stack in stacks.stackLocations) {
+        if (stacks != null && stacks.stackLocations.Count > 0)
+        {
+            foreach (var stack in stacks.stackLocations)
+            {
                 aoes.Add(new(new AOEShapeCircle(6.0f), stack));
             }
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.BigBang) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.BigBang)
+        {
             NumCasts++;
-            if (stacks != null) {
-                if (stacks.stackLocations.Count > 0) {
+            if (stacks != null)
+            {
+                if (stacks.stackLocations.Count > 0)
+                {
                     stacks.stackLocations.RemoveAt(0);
                 }
             }
         }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) {
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
         return CollectionsMarshal.AsSpan(aoes);
     }
 }
 
-class StompAMole(BossModule module) : Components.GenericTowers(module) {
+sealed class StompAMole(BossModule module) : Components.GenericTowers(module)
+{
     private Actor? boss = null;
-    private KnockDown? stacks = module.FindComponent<KnockDown>();
+    private readonly KnockDown? stacks = module.FindComponent<KnockDown>();
     private enum TowerSide { LEFT, RIGHT }
-    private List<(Tower tower, TowerSide side, int wave)> towers = new List<(Tower tower, TowerSide side, int wave)>();
+    private readonly List<(Tower tower, TowerSide side, int wave)> towers = [];
     private readonly PartyRolesConfig partyConfig = Service.Config.Get<PartyRolesConfig>();
 
-    private IEnumerable<(Tower tower, TowerSide side, int wave)> currentTowers => towers.Where(t => t.wave == (NumCasts < 2 ? 0 : 1));
+    private IEnumerable<(Tower tower, TowerSide side, int wave)> CurrentTowers => towers.Where(t => t.wave == (NumCasts < 2 ? 0 : 1));
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.StompAMoleCast) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID == (uint)AID.StompAMoleCast)
+        {
             boss = caster;
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell) {
-        if (spell.Action.ID == (uint)AID.StompAMoleTower) {
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.StompAMoleTower)
+        {
             int wave = NumCasts < 2 ? 0 : 1;
             towers.RemoveAll(t => t.wave == wave && t.tower.Position.AlmostEqual(caster.Position, 1.0f));
             NumCasts++;
         }
     }
 
-    public override void Update() {
-        if (boss == null) {
+    public override void Update()
+    {
+        if (boss == null)
+        {
             return;
         }
 
-        if (stacks == null || stacks.stackClass == Class.None) {
+        if (stacks == null || stacks.stackClass == Class.None)
+        {
             return;
         }
 
         BitMask towerSoakers = default;
 
-        if (stacks.stackClass.IsSupport() == true) {
-            foreach (var (slot, player) in Raid.WithSlot()) {
-                if (player.Class.IsDD()) {
+        if (stacks.stackClass.IsSupport())
+        {
+            foreach (var (slot, player) in Raid.WithSlot())
+            {
+                if (player.Class.IsDD())
+                {
                     towerSoakers.Set(slot);
                 }
             }
         }
 
-        if (stacks.stackClass.IsDD() == true) {
-            foreach (var (slot, player) in Raid.WithSlot()) {
-                if (player.Class.IsSupport()) {
+        if (stacks.stackClass.IsDD())
+        {
+            foreach (var (slot, player) in Raid.WithSlot())
+            {
+                if (player.Class.IsSupport())
+                {
                     towerSoakers.Set(slot);
                 }
             }
@@ -1183,34 +1479,46 @@ class StompAMole(BossModule module) : Components.GenericTowers(module) {
         boss = null; // Prevents towers constantly getting added
     }
 
-    public override void DrawArenaBackground(int pcSlot, Actor pc) {
-        foreach (var (tower, side, wave) in currentTowers) {
-            if (tower.ForbiddenSoakers[pcSlot] || !tower.IsInside(pc) && tower.NumInside(Module) >= tower.MaxSoakers) {
+    public override void DrawArenaBackground(int pcSlot, Actor pc)
+    {
+        foreach (var (tower, side, wave) in CurrentTowers)
+        {
+            if (tower.ForbiddenSoakers[pcSlot] || !tower.IsInside(pc) && tower.NumInside(Module) >= tower.MaxSoakers)
+            {
                 tower.Shape.Draw(Arena, tower.Position, tower.Rotation);
             }
         }
     }
 
-    public override void DrawArenaForeground(int pcSlot, Actor pc) {
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
         TowerSide? assignmentTower = null;
         var slots = partyConfig.SlotsPerAssignment(Raid);
-        if (slots.Length > 0) {
+        if (slots.Length > 0)
+        {
             var assignment = partyConfig[Raid.Members[pcSlot].ContentId];
-            if (assignment == PartyRolesConfig.Assignment.MT || assignment == PartyRolesConfig.Assignment.H1 ||
-                assignment == PartyRolesConfig.Assignment.M1 || assignment == PartyRolesConfig.Assignment.R1) {
+            if (assignment is PartyRolesConfig.Assignment.MT or PartyRolesConfig.Assignment.H1 or
+                PartyRolesConfig.Assignment.M1 or PartyRolesConfig.Assignment.R1)
+            {
                 assignmentTower = TowerSide.LEFT;
-            } else {
+            }
+            else
+            {
                 assignmentTower = TowerSide.RIGHT;
             }
         }
 
-        foreach (var (tower, side, wave) in currentTowers) {
-            if (tower.ForbiddenSoakers[pcSlot]) {
+        foreach (var (tower, side, wave) in CurrentTowers)
+        {
+            if (tower.ForbiddenSoakers[pcSlot])
+            {
                 continue;
             }
 
-            if (slots.Length > 0 && assignmentTower != side) {
-                if (tower.NumInside(Module) < tower.MaxSoakers) {
+            if (slots.Length > 0 && assignmentTower != side)
+            {
+                if (tower.NumInside(Module) < tower.MaxSoakers)
+                {
                     tower.Shape.Outline(Arena, tower.Position, tower.Rotation, Colors.Danger, 2f);
                 }
                 continue;
@@ -1220,26 +1528,34 @@ class StompAMole(BossModule module) : Components.GenericTowers(module) {
             var numInside = tower.NumInside(Module);
             var safe = numInside < tower.MaxSoakers || isInside && numInside <= tower.MaxSoakers;
 
-            if (safe) {
+            if (safe)
+            {
                 tower.Shape.Outline(Arena, tower.Position, tower.Rotation, Colors.Safe, 2f);
-            } else if (isInside && numInside > tower.MaxSoakers) {
+            }
+            else if (isInside && numInside > tower.MaxSoakers)
+            {
                 tower.Shape.Outline(Arena, tower.Position, tower.Rotation, default, 2f);
             }
         }
     }
 }
 
-class P3Enrage(BossModule module) : BossComponent(module) {
+sealed class P3Enrage(BossModule module) : BossComponent(module)
+{
     public bool enrage;
 
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BowelsOfAgonyEnrage || spell.Action.ID == (uint)AID.MeteorEnrage) {
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is ((uint)AID.BowelsOfAgonyEnrage) or ((uint)AID.MeteorEnrage))
+        {
             enrage = true;
         }
     }
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell) {
-        if (spell.Action.ID == (uint)AID.BowelsOfAgonyEnrage || spell.Action.ID == (uint)AID.MeteorEnrage) {
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is ((uint)AID.BowelsOfAgonyEnrage) or ((uint)AID.MeteorEnrage))
+        {
             enrage = false;
         }
     }

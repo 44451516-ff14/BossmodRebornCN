@@ -134,8 +134,8 @@ public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player
 
                 _navi = NavigationDecision.Build(_naviCtx, ws.CurrentTime, hints, player, forbiddenZoneCushion: cushionSize);
 
-                _naviTimePathfinding = _navi.PathfindTime.TotalMilliseconds;
-                _naviTimeRaster = _navi.RasterizeTime.TotalMilliseconds;
+                _naviTimePathfinding = _navi.PathfindTime * 1000d / Stopwatch.Frequency;
+                _naviTimeRaster = _navi.RasterizeTime * 1000d / Stopwatch.Frequency;
                 _naviTimeTotal = _naviTimePathfinding + _naviTimeRaster;
 
                 sumPath += _naviTimePathfinding;
@@ -187,8 +187,8 @@ public sealed class AIHintsVisualizer(AIHints hints, WorldState ws, Actor player
 
         _navi = NavigationDecision.Build(_naviCtx, ws.CurrentTime, hints, player, forbiddenZoneCushion: cushionSize);
 
-        _naviTimePathfinding = _navi.PathfindTime.TotalMilliseconds;
-        _naviTimeRaster = _navi.RasterizeTime.TotalMilliseconds;
+        _naviTimePathfinding = _navi.PathfindTime * 1000d / Stopwatch.Frequency;
+        _naviTimeRaster = _navi.RasterizeTime * 1000d / Stopwatch.Frequency;
         _naviTimeTotal = _naviTimePathfinding + _naviTimeRaster;
         return new MapVisualizer(_naviCtx.Map, player.Position);
     }

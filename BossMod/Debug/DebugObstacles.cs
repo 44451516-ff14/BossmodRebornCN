@@ -192,7 +192,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
 
     internal readonly ObstacleMapManager Obstacles = obstacles;
     private readonly UITree _tree = new();
-    private readonly Func<Vector3, string, float, Vector3, Vector3, (Vector3, Vector3)> _createMap = (startingPos, filename, pixelSize, minBounds, maxBounds) => dalamud.GetIpcSubscriber<Vector3, string, float, Vector3, Vector3, (Vector3, Vector3)>("vnavmesh.Nav.BuildBitmapBounded").InvokeFunc(startingPos, filename, pixelSize, minBounds, maxBounds);
+    private readonly Func<List<Vector3>, string, float, Vector3, Vector3, (Vector3, Vector3)> _createMap = (startingPos, filename, pixelSize, minBounds, maxBounds) => dalamud.GetIpcSubscriber<List<Vector3>, string, float, Vector3, Vector3, (Vector3, Vector3)>("vnavmesh.Nav.BuildBitmapMultiBounded").InvokeFunc(startingPos, filename, pixelSize, minBounds, maxBounds);
     private bool _dbModified;
 
     private static readonly Vector3 DefaultMinBounds = new(-1024);
@@ -254,6 +254,16 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
         ImGui.DragFloat3("地图最大边界", ref _maxBounds, 1, -1024, 1024);
 
         foreach (var n in _tree.Node($"当前区域: {Obstacles.World.CurrentZone}.{Obstacles.World.CurrentCFCID}###curr", curZoneEntries == null || curZoneEntries.Count == 0))
+        if (ImGui.Button("将当前位置添加为额外种子点") && Obstacles.World.Party.Player() is { } player)
+            _extraPoints.Add(player.PosRot.XYZ());
+
+        ImGui.SameLine();
+        if (ImGui.Button("清除点位"))
+            _extraPoints.Clear();
+
+        foreach (var _ in _tree.Node("额外点位", _extraPoints.Count == 0))
+            _tree.LeafNodes(_extraPoints, Utils.Vec3String);
+
         {
             DrawEntries(curZoneEntries ?? []);
         }
@@ -263,6 +273,8 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
             DrawEntries(n.Value);
         }
     }
+
+    readonly List<Vector3> _extraPoints = [];
 
     internal void MarkModified() => _dbModified = true;
 
@@ -315,7 +327,7 @@ sealed class DebugObstacles(ObstacleMapManager obstacles, IDalamudPluginInterfac
     {
         var pos = Obstacles.World.Party.Player()?.PosRot.XYZ() ?? default;
         var filename = GenerateMapName();
-        var (min, max) = _createMap(pos, Obstacles.RootPath + filename, 0.5f, _minBounds, _maxBounds);
+        var (min, max) = _createMap([pos, .. _extraPoints], Obstacles.RootPath + filename, 0.5f, _minBounds, _maxBounds);
         var (tweakMin, tweakMax) = _minBounds == DefaultMinBounds && _maxBounds == DefaultMaxBounds ? (min - new Vector3(0, 1, 0), max + new Vector3(0, 10, 0)) : (min, max); // account for jumping etc...
         var entry = new ObstacleMapDatabase.Entry(tweakMin, tweakMax, new(min.XZ()), 60, 60, filename);
         OpenEditor(entry);

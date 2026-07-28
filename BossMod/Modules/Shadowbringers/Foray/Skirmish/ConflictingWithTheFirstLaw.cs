@@ -67,7 +67,7 @@ sealed class ConflictingWithTheFirstLawStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 735, NameID = 1605)]
-public sealed class ConflictingWithTheFirstLaw(WorldState ws, Actor primary) : SimpleBossModule(ws, primary)
+public sealed class ConflictingWithTheFirstLaw(WorldState ws, Actor primary) : OpenWorldFate(ws, primary)
 {
     private static readonly uint[] adds = [(uint)OID.FourthLegionRoader, (uint)OID.FourthLegionNimrod, (uint)OID.FourthLegionSlasher, (uint)OID.FourthLegionDeathClaw,
     (uint)OID.InkClaw, (uint)OID.BozjanMatamata, (uint)OID.LightningSprite, (uint)OID.NimrodEscort, (uint)OID.WaterSprite, (uint)OID.BozjanGeshunpest, (uint)OID.BozjanWraith];

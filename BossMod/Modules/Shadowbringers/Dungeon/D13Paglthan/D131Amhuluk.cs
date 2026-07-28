@@ -231,11 +231,11 @@ public sealed class D131Amhuluk(WorldState ws, Actor primary) : BossModule(ws, p
         const float radius = 1.5f;
         const int edges = 16;
         var polygons = new Polygon[8];
-        var poly = new Polygon(default, radius, edges);
-        polygons[0] = poly with { Center = LightningRod };
+
+        polygons[0] = new Polygon(LightningRod, radius, edges);
         for (var i = 1; i < 8; ++i)
         {
-            polygons[i] = poly with { Center = WPos.RotateAroundOrigin(i * 45f, ArenaCenter, LightningRod) };
+            polygons[i] = new Polygon(WPos.RotateAroundOrigin(i * 45f, ArenaCenter, LightningRod), radius, edges);
         }
         return polygons;
     }

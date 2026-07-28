@@ -111,4 +111,4 @@ sealed class BrainDrainStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1967)]
-public sealed class BrainDrain(WorldState ws, Actor primary) : SimpleBossModule(ws, primary);
+public sealed class BrainDrain(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);

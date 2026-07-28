@@ -25,7 +25,7 @@ sealed class ReplayDetailsWindow : UIWindow
     private readonly ConfigUI _config;
     private readonly PartyRolesConfig _roles = Service.Config.Get<PartyRolesConfig>();
     private bool _showConfig;
-    private bool _showDebug;
+    private bool _showDebug = true;
     private readonly EventList _events;
     private readonly ReplayAnalysis.AnalysisManager _analysis;
 
@@ -118,6 +118,12 @@ sealed class ReplayDetailsWindow : UIWindow
         _rmm.Update(0, false, false);
         if (_mgr.ActiveModule != null)
         {
+            if (_mgr.WorldState.Client.CountdownRemaining != null)
+            {
+                ImGui.SameLine();
+                ImGui.Text($"Countdown: {_mgr.WorldState.Client.CountdownRemaining.Value:f3}");
+            }
+
             var drawTimerPre = DateTime.Now;
             _mgr.ActiveModule.Draw(_azimuthOverride ? _azimuth.Degrees() : _mgr.WorldState.Client.CameraAzimuth, _povSlot, true, true);
             var drawTimerPost = DateTime.Now;
@@ -137,6 +143,13 @@ sealed class ReplayDetailsWindow : UIWindow
                     _mgr.ActiveModule.Arena.AddLine(from, to, (col & 0xffffff) | 0x80000000);
                     _mgr.ActiveModule.Arena.AddCircle(to, 0.5f, (col & 0xffffff) | 0x80000000);
                 }
+            }
+
+            if (_showDebug && _povSlot == 0 && _mgr.WorldState.Party[0] is { } player)
+            {
+                var cursor = ImGui.GetCursorPos();
+                GaugeVisualizer.Instance().Draw(player, _mgr.WorldState.Client);
+                ImGui.SetCursorPos(cursor);
             }
 
             var compListSb = new System.Text.StringBuilder();

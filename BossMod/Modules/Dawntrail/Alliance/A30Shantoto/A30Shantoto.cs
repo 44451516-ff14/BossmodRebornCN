@@ -82,7 +82,7 @@ sealed class DiagrammaticDoorway(BossModule module) : Components.GenericAOEs(mod
                 break;
             case (uint)TetherID.PurpleCircle:
                 {
-                    _predicted.Add(new(new AOEShapeDonut(7, 70), WorldState.Actors.Find(tether.Target)!.Position,
+                    _predicted.Add(new(new AOEShapeDonut(6, 70), WorldState.Actors.Find(tether.Target)!.Position,
                         default, _predicted[^1].Activation.AddSeconds(3.1f)));
                 }
                 break;

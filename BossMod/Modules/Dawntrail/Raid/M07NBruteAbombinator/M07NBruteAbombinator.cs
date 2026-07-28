@@ -58,7 +58,7 @@ sealed class NeoBombarianSpecialKB(BossModule module) : Components.SimpleKnockba
             }
             if (Casters.Count == 0)
                 return;
-            ref var c = ref Casters.Ref(0);
+            ref readonly var c = ref Casters.Ref(0);
             hints.AddForbiddenZone(new SDKnockbackInComplexPolygonAwayFromOrigin(Arena.Center, Module.PrimaryActor.Position, 58f, poly), c.Activation);
         }
     }

@@ -1,59 +1,18 @@
 ﻿namespace BossMod.Endwalker.Savage.P7SAgdistis;
 
-// TODO: consider setting up 'real' bounds to match the borders
-// TODO: consider showing some aoe zone outside bounds?..
-class Border(BossModule module) : BossComponent(module)
+[SkipLocalsInit]
+sealed class Border(BossModule module) : Components.GenericAOEs(module)
 {
-    private bool _threePlatforms;
-    private bool _bridgeN;
-    private bool _bridgeE;
-    private bool _bridgeW;
-    private bool _bridgeCenter;
+    private AOEInstance[] _aoe = [];
+    private static readonly WPos circleCenterNW = new(85.71058f, 91.75f), circleCenterS = new(100f, 116.5f), circleCenterNE = new(114.28942f, 91.75f), arenaCenter = new(100f, 100f);
+    private readonly Polygon[] circles = [new(circleCenterNW, 10f, 48), new(circleCenterS, 10f, 48), new(circleCenterNE, 10f, 48)];
+    private readonly RectangleSE[] centerBridge = [new(arenaCenter, circleCenterNW, 4f), new(arenaCenter, circleCenterS, 4f), new(arenaCenter, circleCenterNE, 4f)];
+    private readonly List<RectangleSE> activeBridges = [with(3)];
+    private readonly List<RectangleSE> disappearingBridges = [with(3)];
+    private readonly RectangleSE[] bridgeN = [new(circleCenterNW, circleCenterNE, 4f)];
+    private readonly RectangleSE[] bridgeEandW = [new(circleCenterNW, circleCenterS, 4f), new(circleCenterNE, circleCenterS, 4f)];
 
-    public const float LargePlatformRadius = 20;
-    public const float SmallPlatformRadius = 10;
-    public const float SmallPlatformOffset = 16.5f;
-    public const float BridgeHalfWidth = 4;
-    public static readonly WDir PlatformSOffset = SmallPlatformOffset * new WDir(0, 1);
-    public static readonly WDir PlatformEOffset = SmallPlatformOffset * 120f.Degrees().ToDirection();
-    public static readonly WDir PlatformWOffset = SmallPlatformOffset * (-120f.Degrees()).ToDirection();
-    public static readonly float BridgeStartOffset = MathF.Sqrt(SmallPlatformRadius * SmallPlatformRadius - BridgeHalfWidth * BridgeHalfWidth);
-    public static readonly float BridgeCenterOffset = BridgeHalfWidth / 60.Degrees().Tan();
-
-    public override void DrawArenaForeground(int pcSlot, Actor pc)
-    {
-        if (!_threePlatforms)
-        {
-            Arena.AddCircle(Arena.Center, LargePlatformRadius, Colors.Border);
-        }
-        else
-        {
-            var cs = Arena.Center + PlatformSOffset;
-            var ce = Arena.Center + PlatformEOffset;
-            var cw = Arena.Center + PlatformWOffset;
-            Arena.AddCircle(cs, SmallPlatformRadius, Colors.Border);
-            Arena.AddCircle(ce, SmallPlatformRadius, Colors.Border);
-            Arena.AddCircle(cw, SmallPlatformRadius, Colors.Border);
-            if (_bridgeN)
-            {
-                DrawBridge(ce, cw, false);
-            }
-            if (_bridgeE)
-            {
-                DrawBridge(ce, cs, false);
-            }
-            if (_bridgeW)
-            {
-                DrawBridge(cw, cs, false);
-            }
-            if (_bridgeCenter)
-            {
-                DrawBridge(cs, Arena.Center, true);
-                DrawBridge(ce, Arena.Center, true);
-                DrawBridge(cw, Arena.Center, true);
-            }
-        }
-    }
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
     public override void OnMapEffect(byte index, uint state)
     {
@@ -65,50 +24,97 @@ class Border(BossModule module) : BossComponent(module)
                     // 0x00200010 - large platform disappears?
                     // 0x00800040 - small platforms appear?
                     // 0x08000004 - small platforms disappear?
-                    case 0x00020001: // this is preparation
-                        _threePlatforms = true;
+                    case 0x00020001u: // small plattforms appear preparation
+                        _aoe = [new(new AOEShapeCustom([new Square(Arena.Center, 20f)], circles), arenaCenter, activation: WorldState.FutureTime(6.8d))];
                         break;
-                    case 0x02000100: // this is preparation
-                        _threePlatforms = false;
+                    case 0x00800040u: // small platforms appear
+                        _aoe = [];
+                        var arena = new ArenaBoundsCustom(circles);
+                        Arena.Bounds = arena;
+                        Arena.Center = arena.Center;
+                        break;
+                    case 0x02000100u: // small plattforms disappear prep
+                        _aoe = [new(new AOEShapeCustom([new DonutV(arenaCenter, 20f, 24.5f, 128)]), Arena.Center, activation: WorldState.FutureTime(6.8d))];
+                        break;
+                    case 0x08000004u: // large platform appears
+                        _aoe = [];
+                        var arena2 = new ArenaBoundsCustom([new Polygon(arenaCenter, 20f, 128)]);
+                        Arena.Bounds = arena2;
+                        Arena.Center = arena2.Center;
                         break;
                 }
                 break;
             case 1: // bridge N
-                BridgeEnvControl(ref _bridgeN, state);
+                switch (state)
+                {
+                    case 0x00020001u: // bridge appears
+                        AddBridges(bridgeN);
+                        break;
+                    case 0x00200010u: // bridge starts to disappear
+                        AddBridgesWarning(bridgeN);
+                        break;
+                    case 0x00800004u: // bridge disappears
+                        RemoveBridges(bridgeN);
+                        break;
+                }
                 break;
-            case 2: // bridge ?
-                BridgeEnvControl(ref _bridgeE, state);
-                break;
-            case 3: // bridge ?
-                BridgeEnvControl(ref _bridgeW, state);
+            case 2: // bridge E, index 3 is bridge W, but they always get added/removed together
+                switch (state)
+                {
+                    case 0x00020001u: // bridge appears
+                        AddBridges(bridgeEandW);
+                        break;
+                    case 0x00200010u: // bridge starts to disappear
+                        AddBridgesWarning(bridgeEandW);
+                        break;
+                    case 0x00800004u: // bridge disappears
+                        RemoveBridges(bridgeEandW);
+                        break;
+                }
                 break;
             case 6: // bridge center
-                BridgeEnvControl(ref _bridgeCenter, state);
+                switch (state)
+                {
+                    case 0x00020001u: // bridge appears
+                        AddBridges(centerBridge);
+                        break;
+                    case 0x00200010u: // bridge starts to disappear
+                        AddBridgesWarning(centerBridge);
+                        break;
+                    case 0x00800004u: // bridge disappears
+                        RemoveBridges(centerBridge);
+                        break;
+                }
                 break;
-        }
-    }
-
-    private void DrawBridge(WPos p1, WPos p2, bool p2center)
-    {
-        var dir = (p2 - p1).Normalized();
-        var p1adj = p1 + dir * BridgeStartOffset;
-        var p2adj = p2 - dir * (p2center ? BridgeCenterOffset : BridgeStartOffset);
-        var ortho = dir.OrthoL() * BridgeHalfWidth;
-        Arena.AddLine(p1adj + ortho, p2adj + ortho, Colors.Border);
-        Arena.AddLine(p1adj - ortho, p2adj - ortho, Colors.Border);
-    }
-
-    private void BridgeEnvControl(ref bool bridge, uint state)
-    {
-        switch (state)
-        {
-            case 0x00020001: // bridge appears
-                bridge = true;
-                break;
-            // 0x00200010: // bridge starts to disappear
-            case 0x00800004: // bridge disappears
-                bridge = false;
-                break;
+                void AddBridges(RectangleSE[] bridges)
+                {
+                    var count = bridges.Length;
+                    for (var i = 0; i < count; ++i)
+                    {
+                        activeBridges.Add(bridges[i]);
+                    }
+                    Arena.Bounds = new ArenaBoundsCustom([.. circles, .. activeBridges]);
+                }
+                void AddBridgesWarning(RectangleSE[] bridges)
+                {
+                    var count = bridges.Length;
+                    for (var i = 0; i < count; ++i)
+                    {
+                        disappearingBridges.Add(bridges[i]);
+                    }
+                    _aoe = [new(new AOEShapeCustom(disappearingBridges, circles), Arena.Center, activation: WorldState.FutureTime(5.7d))];
+                }
+                void RemoveBridges(RectangleSE[] bridges)
+                {
+                    var count = bridges.Length;
+                    for (var i = 0; i < count; ++i)
+                    {
+                        activeBridges.Remove(bridges[i]);
+                    }
+                    _aoe = [];
+                    disappearingBridges.Clear();
+                    Arena.Bounds = new ArenaBoundsCustom([.. circles, .. activeBridges]);
+                }
         }
     }
 }

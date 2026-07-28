@@ -54,6 +54,12 @@ internal class AFrostyReception(WorldState ws) : QuestBattle(ws)
         }
 
         _ai.Execute(player, hints);
+
+        // allow interrupting interact to dodge patrols
+        if (hints.ForbiddenZones.Any(z => z.shapeDistance.Contains(player.Position)))
+        {
+            hints.InteractWithTarget = null;
+        }
     }
 
     private static ShapeDistance GetSightCone(Actor p)
@@ -173,15 +179,15 @@ internal class AFrostyReception(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Named("Carriage 2")
-            .MoveHint(new WPos(default, 235f))
+            .WithConnection(new Vector3(0f, 1f, 235f))
             .With(obj => {
                 obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000001u && diru.Param1 == 0x7B77u);
             }),
 
         new QuestObjective(ws)
             .Named("Carriage 3")
-            .MoveHint(new WPos(default, 176f))
-            .CompleteOnKilled(0x3635u),
+            .MoveHint(new WPos(0f, 176f))
+            .CompleteOnKilled(0x3635),
 
         new QuestObjective(ws)
             .Named("Teleport")

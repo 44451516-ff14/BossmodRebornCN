@@ -56,9 +56,12 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
     {
         foreach (var h in hints.PotentialTargets.Where(p => p.Actor.Position.InCircle(player.Position, 40f)))
         {
-            if (!h.Actor.InCombat && !h.Actor.Position.AlmostEqual(new(111f, -317f), 10f))
+            var a = h.Actor;
+            var pos = a.Position;
+            if (!a.InCombat && !pos.AlmostEqual(new(111f, -317f), 10f))
             {
-                hints.AddForbiddenZone(new SDCone(h.Actor.Position, 8.5f + h.Actor.HitboxRadius, h.Actor.Rotation, 45f.Degrees()));
+                hints.AddForbiddenZone(new SDCone(pos, 8.5f + a.HitboxRadius, a.Rotation, 45f.Degrees()));
+                hints.AddForbiddenZone(new SDCircle(pos, a.HitboxRadius));
             }
         }
 
@@ -86,6 +89,9 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Named("Reaper 1")
+            .MoveHint(new WPos(134f, -290f), 0.1f)
+            .MoveHint(new WPos(133f, -262f), 0.2f)
+            .MoveHint(new WPos(133f, -234f), 0.3f)
             .WithInteract(0x1EB456u)
             .With(obj => obj.OnDirectorUpdate += (diru) => obj.CompleteIf(diru.UpdateID == 0x10000002u && diru.Param1 == 0x76DFu)),
 
@@ -103,6 +109,9 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Named("Fuel")
+            .MoveHint(new WPos(133f, -231f), 0.1f)
+            .MoveHint(new WPos(160f, -224f), 0.2f)
+            .MoveHint(new WPos(188f, -227f), 0.3f)
             .WithInteract(0x1EB69Eu)
             .Hints((player, hints) => {
                 if (player.Position.AlmostEqual(new WPos(109, -257.263f), 2f)) { hints.WantJump = true; } })
@@ -110,6 +119,8 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Named("Refuel")
+            .MoveHint(new WPos(165f, -235f), 0.1f)
+            .MoveHint(new WPos(137f, -233f), 0.2f)
             .Hints((player, hints) => {
                 hints.InteractWithOID(World, 0x1EB56Fu);
                 if (hints.InteractWithTarget == null) { hints.InteractWithOID(World, 0x1EB4F1u); } })
@@ -126,11 +137,16 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
 
         new QuestObjective(ws)
             .Named("Help the townspeople")
+            .WithConnection(new Vector3(96, 10.8f, -215.7f))
+            .WithConnection(new Vector3(17, 10.8f, -154.9f))
             .Hints((player, hints) => {
                 hints.WantDismount = true;
-                hints.GoalZones.Add(AIHints.GoalSingleTarget(new WPos(12f, -148f), 5f, 0.5f));
-                hints.GoalZones.Add(AIHints.GoalSingleTarget(new WPos(-81f, -180f), 5f, 0.75f));
             })
+            .CompleteOnKilled(0x351C), // almasty
+
+        new QuestObjective(ws)
+            .Named("Miniboss")
+            .WithConnection(new Vector3(-80, 10.8f, -181.5f))
             .With(obj => {
                 obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == default && st.ID == 2737u);
             }),
