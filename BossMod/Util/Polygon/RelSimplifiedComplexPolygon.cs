@@ -53,8 +53,8 @@ public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
         return idx.Contains(p);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // useful for knockbacks that have the player as origin
-    public void AddForbiddenDirectionsArena(Actor actor, WPos center, AIHints hints, DateTime activation, float forbiddenDist, float safetyMargin = 1f)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // useful for knockbacks that have the player as origin to block all angles that intersect the polygon (doesn't matter if outside or inside polygon)
+    public void AddForbiddenDirections(Actor actor, WPos center, AIHints hints, DateTime activation, float forbiddenDist, float safetyMargin = 1f)
     {
         var idx = _rayIndex;
         if (idx == null)
@@ -118,11 +118,10 @@ public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
         {
             var part = Parts[i];
             allPaths.Add(ToPath64(part.Exterior));
-            var holes = part.Holes;
-            var len = holes.Length;
-            for (var j = 0; j < len; ++j)
+            var countH = part.HoleStarts.Count;
+            for (var j = 0; j < countH; ++j)
             {
-                allPaths.Add(ToPath64(part.Interior(holes[j])));
+                allPaths.Add(ToPath64(part.Interior(j)));
             }
         }
 
