@@ -49,6 +49,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
     // functions for clipping various shapes to bounds; all shapes are expected to be defined relative to bounds center
     public List<RelTriangle> ClipAndTriangulate(ReadOnlySpan<WDir> poly) => Clipper.Intersect(new PolygonClipper.Operand(poly), _clipOperand).Triangulate();
     public List<RelTriangle> ClipAndTriangulate(RelSimplifiedComplexPolygon poly) => Clipper.Intersect(new(poly), _clipOperand).Triangulate();
+    public List<RelTriangle> Triangulate(RelSimplifiedComplexPolygon poly) => poly.Triangulate();
     public RelSimplifiedComplexPolygon Clip(ReadOnlySpan<WDir> poly) => Clipper.Intersect(new PolygonClipper.Operand(poly), _clipOperand);
     public RelSimplifiedComplexPolygon Clip(RelSimplifiedComplexPolygon poly) => Clipper.Intersect(new(poly), _clipOperand);
 
@@ -112,16 +113,14 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return Clip(CircleVertices(centerOffset, radius));
     }
 
-    public WDir[] CapsuleVertices(WDir centerOffset, WDir direction, float radius, float length)
+    public List<WDir> CapsuleVertices(WDir centerOffset, WDir direction, float radius, float length)
     {
-        var points = CurveApprox.Capsule(direction, length, radius, MaxApproxError);
-        var len = points.Length;
-        var offset = centerOffset;
-        for (var i = 0; i < len; ++i)
-        {
-            points[i] += offset;
-        }
-        return points;
+        return CurveApprox.Capsule(centerOffset, direction, length, radius, MaxApproxError);
+    }
+
+    public RelSimplifiedComplexPolygon CapsulePolygon(WDir centerOffset, WDir direction, float radius, float length)
+    {
+        return new(CurveApprox.Capsule(centerOffset, direction, length, radius, MaxApproxError));
     }
 
     public WDir[] ArcCapsuleVertices(WDir startOffset, WDir toOrbitCenter, Angle angularLength, float radius)
@@ -138,7 +137,12 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
 
     public List<RelTriangle> ClipAndTriangulateCapsule(WDir centerOffset, WDir direction, float radius, float length)
     {
-        return ClipAndTriangulate(CapsuleVertices(centerOffset, direction, radius, length));
+        return ClipAndTriangulate(CollectionsMarshal.AsSpan(CapsuleVertices(centerOffset, direction, radius, length)));
+    }
+
+    public List<RelTriangle> TriangulateCapsule(WDir centerOffset, WDir direction, float radius, float length)
+    {
+        return Triangulate(CapsulePolygon(centerOffset, direction, radius, length));
     }
 
     public List<RelTriangle> ClipAndTriangulateArcCapsule(WDir startOffset, WDir toOrbitCenter, Angle angularLength, float radius)
@@ -148,7 +152,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
 
     public RelSimplifiedComplexPolygon ClipCapsule(WDir centerOffset, WDir direction, float radius, float length)
     {
-        return Clip(CapsuleVertices(centerOffset, direction, radius, length));
+        return Clip(CollectionsMarshal.AsSpan(CapsuleVertices(centerOffset, direction, radius, length)));
     }
 
     public RelSimplifiedComplexPolygon ClipArcCapsule(WDir startOffset, WDir toOrbitCenter, Angle angularLength, float radius)
@@ -226,6 +230,39 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return ClipAndTriangulate([startOffset + side, startOffset - side, endOffset - side, endOffset + side]);
     }
 
+    public List<RelTriangle> TriangulateRect(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
+    {
+        var side = halfWidth * direction.OrthoR();
+        var front = originOffset + lenFront * direction;
+        var back = originOffset - lenBack * direction;
+        return Triangulate(new([front + side, front - side, back - side, back + side]));
+    }
+
+    public List<RelTriangle> TriangulateRect(WDir originOffset, Angle direction, float lenFront, float lenBack, float halfWidth)
+        => TriangulateRect(originOffset, direction.ToDirection(), lenFront, lenBack, halfWidth);
+
+    public List<RelTriangle> TriangulateRect(WDir startOffset, WDir endOffset, float halfWidth)
+    {
+        var dir = (endOffset - startOffset).Normalized();
+        var side = halfWidth * dir.OrthoR();
+        return Triangulate(new([startOffset + side, startOffset - side, endOffset - side, endOffset + side]));
+    }
+
+    public RelSimplifiedComplexPolygon RectPolygon(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
+    {
+        var side = halfWidth * direction.OrthoR();
+        var front = originOffset + lenFront * direction;
+        var back = originOffset - lenBack * direction;
+        return new([front + side, front - side, back - side, back + side]);
+    }
+
+    public RelSimplifiedComplexPolygon RectPolygon(WDir startOffset, WDir endOffset, float halfWidth)
+    {
+        var dir = (endOffset - startOffset).Normalized();
+        var side = halfWidth * dir.OrthoR();
+        return new([startOffset + side, startOffset - side, endOffset - side, endOffset + side]);
+    }
+
     public RelSimplifiedComplexPolygon ClipRect(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
     {
         var side = halfWidth * direction.OrthoR();
@@ -242,6 +279,32 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         var dir = (endOffset - startOffset).Normalized();
         var side = halfWidth * dir.OrthoR();
         return Clip([startOffset + side, startOffset - side, endOffset - side, endOffset + side]);
+    }
+
+    public RelSimplifiedComplexPolygon CirclePolygon(WDir centerOffset, float radius)
+    {
+        var points = CurveApprox.Circle(radius, MaxApproxError);
+        var len = points.Length;
+        var offset = centerOffset;
+        List<WDir> pointsO = [with(len)];
+        for (var i = 0; i < len; ++i)
+        {
+            pointsO.Add(points[i] + offset);
+        }
+        return new(pointsO);
+    }
+
+    public RelSimplifiedComplexPolygon DonutPolygon(WDir centerOffset, float innerRadius, float outerRadius)
+    {
+        var points = CurveApprox.Donut(innerRadius, outerRadius, MaxApproxError);
+        var len = points.Length;
+        var offset = centerOffset;
+        List<WDir> pointsO = [with(len)];
+        for (var i = 0; i < len; ++i)
+        {
+            pointsO.Add(points[i] + offset);
+        }
+        return new(pointsO);
     }
 }
 
@@ -556,8 +619,9 @@ public sealed class ArenaBoundsCustom : ArenaBounds
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool Contains(in WDir offset) => Polygon.Contains(offset);
 
+    // useful to get forbidden directions if the player is origin of a self knockback
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void AddForbiddenDirections(Actor actor, WPos center, AIHints hints, DateTime activation, float forbiddenDist, float safetyMargin = 1f) => Polygon.AddForbiddenDirections(actor, center, hints, activation, forbiddenDist, safetyMargin);
+    public void AddForbiddenDirections(in WDir centerOffset, Angle offset, AIHints hints, DateTime activation, float forbiddenDist, float safetyMargin = 1f) => Polygon.AddForbiddenDirections(centerOffset, offset, hints, activation, forbiddenDist, safetyMargin);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float IntersectRay(in WDir originOffset, in WDir dir) => Intersect.RayPolygon(originOffset, dir, Polygon);
