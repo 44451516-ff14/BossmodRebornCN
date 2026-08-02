@@ -5,6 +5,8 @@ public static class BossModuleInfo
 {
     public enum Maturity
     {
+        [PropertyDisplay("仅用于开发调试的占位模组.")]
+        Dummy,
 
         [PropertyDisplay("开发中；可能不完整或存在严重错误")]
         WIP,
