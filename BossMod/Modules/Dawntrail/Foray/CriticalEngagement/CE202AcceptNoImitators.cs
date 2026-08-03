@@ -277,9 +277,9 @@ sealed class ShapeshiftingSupercellRings(BossModule module) : Components.Generic
 sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> aoes = [];
+    private readonly List<AOEInstance> aoeCasters = [];
     private readonly AOEShapeCone shape = new(60.0f, 45.0f.Degrees());
     private int direction = 0; // -1 = right, 1 = left
-    private bool futureAOEsAdded = false;
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
@@ -298,7 +298,7 @@ sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(
     {
         if (spell.Action.ID == (uint)AID.ShapeshiftingSupercellCone)
         {
-            aoes.Add(new(shape, caster.Position, caster.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
+            aoeCasters.Add(new(shape, caster.Position, caster.Rotation, Module.CastFinishAt(spell)));
         }
     }
 
@@ -315,23 +315,22 @@ sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(
             if (aoes.Count == 0)
             {
                 direction = 0;
-                futureAOEsAdded = false;
             }
         }
     }
 
     public override void Update()
     {
-        if (direction == 0)
-        {
-            return;
-        }
-
         AddFutureAOEs();
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
+        if (aoes.Count == 0)
+        {
+            return [];
+        }
+
         var incomingAOEs = aoes.OrderBy(a => a.Activation).Take(3).ToList();
         foreach (ref var aoe in CollectionsMarshal.AsSpan(incomingAOEs))
         {
@@ -344,14 +343,17 @@ sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(
 
     private void AddFutureAOEs()
     {
-        if (futureAOEsAdded)
+        if (aoeCasters.Count == 0 || direction == 0)
         {
             return;
         }
 
         List<AOEInstance> futureAOEs = [];
-        foreach (var aoe in aoes)
+        var processedAOEsCount = aoeCasters.Count;
+        for (int i = 0; i < processedAOEsCount; i++)
         {
+            var aoe = aoeCasters[i];
+            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation, aoe.Activation));
             futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 30.0f.Degrees() * direction, aoe.Activation.AddSeconds(1.5f)));
             futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 60.0f.Degrees() * direction, aoe.Activation.AddSeconds(3.0f)));
             futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 90.0f.Degrees() * direction, aoe.Activation.AddSeconds(4.5f)));
@@ -359,8 +361,11 @@ sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(
             futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 150.0f.Degrees() * direction, aoe.Activation.AddSeconds(7.5f)));
         }
 
-        aoes.AddRange(futureAOEs);
-        futureAOEsAdded = true;
+        aoeCasters.RemoveRange(0, processedAOEsCount);
+        if (futureAOEs.Count > 0)
+        {
+            aoes.AddRange(futureAOEs);
+        }
     }
 }
 
@@ -385,7 +390,7 @@ sealed class CE202AcceptNoImitatorsStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(CE202AcceptNoImitatorsStates),
     ConfigType = null, // replace null with typeof(MetamorphConfig) if applicable
     ObjectIDType = typeof(OID),
