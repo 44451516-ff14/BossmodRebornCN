@@ -95,8 +95,15 @@ public sealed class UIPresetDatabaseEditor(RotationDatabase rotationDB)
             """);
         ImGui.SameLine();
 
+        var selectedPresetList = _selectedPresetDefault ? PresetDB.DefaultPresets : PresetDB.UserPresets;
+        if (_selectedPresetIndex >= selectedPresetList.Count)
+        {
+            _selectedPresetIndex = -1;
+            _selectedPreset = null;
+        }
+
         ImGui.SetNextItemWidth(200);
-        using (var combo = ImRaii.Combo("预设", _selectedPreset == null ? "" : _selectedPresetIndex < 0 ? "<新建>" : (_selectedPresetDefault ? PresetDB.DefaultPresets : PresetDB.UserPresets)[_selectedPresetIndex].Name))
+        using (var combo = ImRaii.Combo("预设", _selectedPreset == null ? "" : _selectedPresetIndex < 0 ? "<新建>" : selectedPresetList[_selectedPresetIndex].Name))
         {
             if (combo)
             {
