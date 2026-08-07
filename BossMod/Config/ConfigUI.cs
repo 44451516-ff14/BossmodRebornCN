@@ -159,6 +159,8 @@ public sealed class ConfigUI : IDisposable
         ( "r", "打开回放菜单" ),
         ( "r on/off", "开始/停止录制回放" ),
         ( "gc", "触发垃圾回收" ),
+        ( "radar", "切换雷达显示" ),
+        ( "radar on/off", "设置雷达显示为开启/关闭" ),
         ( "cfg", "列出所有配置项" )
     ];
 
@@ -184,7 +186,7 @@ public sealed class ConfigUI : IDisposable
         ImGui.Separator();
         ImGui.Text("其他命令:");
         ImGui.Separator();
-        for (var i = 0; i < 7; ++i)
+        for (var i = 0; i < 9; ++i)
         {
             ref readonly var text = ref _availableOtherCommands[i];
             ImGui.Text($"/bmr {text.Item1}: {text.Item2}");
