@@ -309,7 +309,7 @@ public abstract class BossModule : IDisposable
         // draw borders
         if (WindowConfig.ShowBorder)
         {
-            Arena.AddComplexPolygon(Bounds.ShapeSimplified, haveRisks && WindowConfig.ShowBorderRisk ? Colors.Enemy : Colors.Border, 2f, false);
+            Arena.AddComplexPolygon(Bounds.Shape, haveRisks && WindowConfig.ShowBorderRisk ? Colors.Enemy : Colors.Border, 2f, false);
         }
 
         if (WindowConfig.ShowCardinals)
@@ -395,7 +395,7 @@ public abstract class BossModule : IDisposable
         if (Arena.Bounds.AllowObstacleMap)
         {
             var (entry, bitmap) = Obstacles.Find(new Vector3(Center.X, actor.PosRot.Y, Center.Z));
-            if (entry != null && bitmap != null)
+            if (entry != null && bitmap != null && bitmap.PixelSize == Bounds.MapResolution)
             {
                 var originCell = (Center - entry.Origin) / bitmap.PixelSize;
                 var originX = (int)originCell.X;
