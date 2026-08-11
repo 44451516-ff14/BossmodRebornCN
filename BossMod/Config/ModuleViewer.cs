@@ -387,7 +387,10 @@ public sealed class ModuleViewer : IDisposable
                 return (new("旗舰达尔里阿达攻略战", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.TheForkedTowerBlood:
                 return (new("蜃景幻界：血之塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
+            case BossModuleInfo.GroupType.TheForkedTowerMagic:
+                return (new("蜃景幻界：魔之塔", groupId, groupId), new(module, BNpcName(module.NameID), module.SortOrder));
             case BossModuleInfo.GroupType.ForayFATE:
+                groupId |= module.GroupID;
                 var fateRowBozjaSkirmish = Service.LuminaRow<Fate>(module.NameID)!.Value;
                 var skirmishName = $"{FixCase(Service.LuminaRow<ContentFinderCondition>(module.GroupID)!.Value.Name)} 临危受命";
                 return (new(skirmishName, groupId, groupId), new(module, $"{fateRowBozjaSkirmish.Name}", module.SortOrder));

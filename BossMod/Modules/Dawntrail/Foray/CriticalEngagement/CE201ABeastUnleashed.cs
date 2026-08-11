@@ -390,7 +390,7 @@ sealed class CE201ABeastUnleashedStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
     StatesType = typeof(CE201ABeastUnleashedStates),
     ConfigType = null, // replace null with typeof(ABeastUnleashedConfig) if applicable
     ObjectIDType = typeof(OID),
@@ -402,10 +402,10 @@ sealed class CE201ABeastUnleashedStates : StateMachineBuilder
     Contributors = "The Combat Reborn Team (LTS)",
     Expansion = BossModuleInfo.Expansion.Dawntrail,
     Category = BossModuleInfo.Category.Foray,
-    GroupType = BossModuleInfo.GroupType.CFC,
+    GroupType = BossModuleInfo.GroupType.CriticalEngagement,
     GroupID = 1093u,
-    NameID = 14791u,
-    SortOrder = 1,
+    NameID = 56u,
+    SortOrder = 8,
     PlanLevel = 0)]
 [SkipLocalsInit]
 public sealed class CE201ABeastUnleashed(WorldState ws, Actor primary) : BossModule(ws, primary, new(238f, 352f), new ArenaBoundsSquare(20f))
