@@ -3,7 +3,6 @@
 sealed class SwordStormCast(BossModule module) : Components.RaidwideCast(module, (uint)AID.SwordStormCast);
 sealed class RushShort1(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Rush1, 3.5f);
 sealed class RushShort2(BossModule module) : Components.ChargeAOEs(module, (uint)AID.Rush2, 3.5f);
-//sealed class RushSurgesword(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RushSurgesword, new AOEShapeRect(60f, 3f));
 sealed class RushSurgesword(BossModule module) : Components.GenericAOEs(module)
 {
     // hide AOE until knockback done, less clutter
@@ -42,7 +41,9 @@ sealed class MartialMystique(BossModule module) : Components.SimpleAOEs(module, 
 sealed class Pierce(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Pierce, 5f);
 sealed class Cyclosword(BossModule module) : Components.GenericAOEs(module)
 {
+    // model state change doesn't trigger each time; if actor does the same AOE later, doesn't happen
     private readonly List<AOEInstance> _aoes = [];
+    private readonly Dictionary<ulong, AOEShape> _cycloswords = [];
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         return CollectionsMarshal.AsSpan(_aoes);
@@ -55,6 +56,7 @@ sealed class Cyclosword(BossModule module) : Components.GenericAOEs(module)
             AOEShape? shape = modelState switch
             {
                 4 => new AOEShapeDonut(15f, 60f),
+                5 => new AOEShapeDonut(20f, 60f),
                 7 => new AOEShapeCircle(15f),
                 31 => new AOEShapeCircle(20f),
                 _ => null
@@ -65,7 +67,18 @@ sealed class Cyclosword(BossModule module) : Components.GenericAOEs(module)
                 return;
             }
 
-            _aoes.Add(new(shape, actor.Position, activation: WorldState.FutureTime(13.3d)));
+            _cycloswords[actor.InstanceID] = shape;
+        }
+    }
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.Cyclosword)
+        {
+            if (_cycloswords.TryGetValue(actor.InstanceID, out var shape))
+            {
+                _aoes.Add(new(shape, actor.Position, default, WorldState.CurrentTime.AddSeconds(8.2d)));
+            }
         }
     }
 
@@ -78,6 +91,7 @@ sealed class Cyclosword(BossModule module) : Components.GenericAOEs(module)
                 case (uint)AID.Spin:
                 case (uint)AID.Spin1:
                 case (uint)AID.Spin2:
+                case (uint)AID.Spin3:
                     _aoes.RemoveAt(0);
                     break;
             }
@@ -124,7 +138,7 @@ sealed class SwordDance(BossModule module) : Components.GenericAOEs(module)
 sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(module)
 {
     // do we need to avoid getting knocked back into RushSurgesword?
-    // only show 1 knockback; showing all 4 is visually confusing
+    // only subset; showing all 4 is visually confusing
     private readonly List<Knockback> _knockbacks = [];
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -133,6 +147,7 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
             return [];
 
         var kbs = CollectionsMarshal.AsSpan(_knockbacks);
+        //var max = count > 2 ? 2 : count;
         return kbs[..1];
     }
 
@@ -178,9 +193,58 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
             }
         }
     }
+
+    private sealed class SDKnockbackInCircleAwayFromOriginInverted(WPos Center, WPos Origin, float Distance, float Radius) : ShapeDistance
+    {
+        private readonly WPos center = Center;
+        private readonly WPos origin = Origin;
+        private readonly float radius = Radius;
+        private readonly float distance = Distance;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool Contains(in WPos p)
+        {
+            var projected = p + distance * (p - origin).Normalized();
+            return projected.InCircle(center, radius);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+    }
+
+    private sealed class SDKnockbackInCircleAwayFromOriginIntoCircleInverted(WPos Center, WPos Origin, float Distance, float Radius, WPos CircleOrigin, float CircleRadius) : ShapeDistance
+    {
+        private readonly WPos center = Center;
+        private readonly WPos origin = Origin;
+        private readonly float radius = Radius;
+        private readonly float distance = Distance;
+        private readonly WPos circleOrigin = CircleOrigin;
+        private readonly float circleRadius = CircleRadius;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool Contains(in WPos p)
+        {
+            var projected = p + distance * (p - origin).Normalized();
+            if (projected.InCircle(center, radius))
+            {
+                return true;
+            }
+            return projected.InCircle(circleOrigin, circleRadius);
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+    }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(SwordDancerStates),
     ConfigType = null, // replace null with typeof(SwordDancerConfig) if applicable
     ObjectIDType = typeof(OID),

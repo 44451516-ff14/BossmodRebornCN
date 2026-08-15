@@ -3,18 +3,18 @@
 public enum OID : uint
 {
     Arbatel = 0x4BD3,
-    Helper = 0x233C,
     Page8 = 0x4BD6, // R1.5
     Page16 = 0x4BD5, // R3.22
     Page64 = 0x4BD4, // R2.4
-    Page512 = 0x4BD7 // R1.95
+    Page512 = 0x4BD7, // R1.95
+    Helper = 0x233C
 }
 
 public enum AID : uint
 {
     AutoAttack = 49056, // Arbatel->player, no cast, single-target
-
     Teleport = 48246, // Arbatel->location, no cast, single-target
+
     MarginaliaCast = 47327, // Helper->self, 5.0s cast, ???
     Marginalia = 47328, // Arbatel->self, 5.0s cast, single-target
     CoverToCoverForward = 47302, // Arbatel->self, 4.0s cast, range 30 180-degree cone
@@ -286,7 +286,17 @@ sealed class CE209ForbiddenFoliosStates : StateMachineBuilder
     SortOrder = 4,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class CE209ForbiddenFolios(WorldState ws, Actor primary) : BossModule(ws, primary, new(658.991f, 658.991f), new ArenaBoundsCircle(25f))
+public sealed class CE209ForbiddenFolios : BossModule
 {
+    public CE209ForbiddenFolios(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private CE209ForbiddenFolios(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(659f, 659f), 24.5f, 32)]);
+        return (arena.Center, arena);
+    }
+
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 25f);
 }

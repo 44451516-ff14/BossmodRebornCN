@@ -44,8 +44,8 @@ public enum SID : uint
 sealed class EmbrittlingBlade(BossModule module) : Components.RaidwideCast(module, (uint)AID.EmbrittlingBlade);
 sealed class OccultTornado(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OccultTornado, new AOEShapeCircle(5.0f));
 sealed class FalseSpellbladeHoly(BossModule module) : Components.RaidwideCast(module, (uint)AID.FalseSpellbladeHoly);
-
 sealed class OccultAeroIII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OccultAeroIII, new AOEShapeRect(50.0f, 5.0f));
+sealed class OccultAero(BossModule module) : Components.SimpleAOEGroupsByTimewindow(module, [(uint)AID.OccultAero], new AOEShapeRect(50.0f, 5.0f));
 
 sealed class RightLeftCombination(BossModule module) : Components.GenericAOEs(module)
 {
@@ -89,95 +89,11 @@ sealed class RightLeftCombination(BossModule module) : Components.GenericAOEs(mo
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(aoes);
 }
 
-sealed class OccultAero(BossModule module) : Components.GenericAOEs(module)
+sealed class OccultStoneII : Components.SimpleAOEs
 {
-    private readonly List<AOEInstance> aoes = [];
-    private readonly AOEShapeRect shape = new(50.0f, 5.0f);
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    public OccultStoneII(BossModule module) : base(module, (uint)AID.OccultStoneII, new AOEShapeCone(40.0f, 30.0f.Degrees()))
     {
-        if (spell.Action.ID == (uint)AID.OccultAero)
-        {
-            aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
-        }
-    }
-
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        if (spell.Action.ID == (uint)AID.OccultAero)
-        {
-            if (aoes.Count > 0)
-            {
-                aoes.RemoveAll(aoe => aoe.ActorID == caster.InstanceID);
-            }
-        }
-    }
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (aoes.Count == 0)
-        {
-            return [];
-        }
-
-        var waveTimer = aoes.MinBy(a => a.Activation).Activation.AddSeconds(0.2f);
-        int show = 0;
-        foreach (ref var aoe in CollectionsMarshal.AsSpan(aoes))
-        {
-            if (aoe.Activation <= waveTimer)
-            {
-                aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-                show++;
-            }
-        }
-
-        return CollectionsMarshal.AsSpan(aoes)[..show];
-    }
-}
-
-sealed class OccultStoneII(BossModule module) : Components.GenericAOEs(module)
-{
-    private readonly List<AOEInstance> aoes = [];
-    private readonly AOEShapeCone shape = new(40.0f, 30.0f.Degrees());
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.OccultStoneII)
-        {
-            aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
-        }
-    }
-
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
-    {
-        if (spell.Action.ID == (uint)AID.OccultStoneII)
-        {
-            if (aoes.Count > 0)
-            {
-                aoes.RemoveAll(aoe => aoe.ActorID == caster.InstanceID);
-            }
-        }
-    }
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (aoes.Count == 0)
-        {
-            return [];
-        }
-
-        var waveTimer = aoes.MinBy(a => a.Activation).Activation.AddSeconds(0.2f);
-        foreach (ref var aoe in CollectionsMarshal.AsSpan(aoes))
-        {
-            if (aoe.Activation <= waveTimer)
-            {
-                aoe.Color = Colors.Danger;
-                aoe.Risky = true;
-            }
-        }
-
-        return CollectionsMarshal.AsSpan(aoes);
+        MaxDangerColor = 3;
     }
 }
 
@@ -187,6 +103,7 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
     private readonly AOEShapeCone shape = new(40.0f, 45.0f.Degrees());
     private readonly List<(Actor caster, int turns)> golemCasters = [];
     private int totalGolems = 0;
+    private readonly double RiskyWithSecondsLeft = 5.0f;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -194,7 +111,7 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
         {
             if (caster.OID == (uint)OID.AlabasterGolemVisual)
             {
-                aoes.Add(new(shape, caster.Position, caster.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID));
+                aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
             }
         }
     }
@@ -203,20 +120,18 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
     {
         if (status.ID == (uint)SID.BlueArrow)
         {
-            switch (status.Extra)
+            var turns = status.Extra switch
             {
-                case 0x43B:
-                    golemCasters.Add((actor, 3));
-                    totalGolems++;
-                    break;
-                case 0x43C:
-                    golemCasters.Add((actor, 2));
-                    totalGolems++;
-                    break;
-                case 0x43D:
-                    golemCasters.Add((actor, 1));
-                    totalGolems++;
-                    break;
+                0x43B => 3,
+                0x43C => 2,
+                0x43D => 1,
+                _ => 0,
+            };
+
+            if (turns != 0)
+            {
+                golemCasters.Add((actor, turns));
+                totalGolems++;
             }
         }
     }
@@ -227,7 +142,6 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
         {
             if (aoes.Count > 0)
             {
-                aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
                 aoes.RemoveAt(0);
             }
 
@@ -239,23 +153,7 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
         }
     }
 
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (aoes.Count == 0)
-        {
-            return [];
-        }
-
-        var incomingAOEs = aoes.OrderBy(a => a.Activation).Take(totalGolems).ToList();
-        return CollectionsMarshal.AsSpan(incomingAOEs);
-    }
-
     public override void Update()
-    {
-        AddFutureAOEs();
-    }
-
-    private void AddFutureAOEs()
     {
         if (golemCasters.Count == 0)
         {
@@ -264,23 +162,24 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
 
         List<AOEInstance> incomingAOEs = [];
         List<(Actor caster, int turns)> processedGolems = [];
-        foreach (var golem in golemCasters)
+        foreach (var golem in CollectionsMarshal.AsSpan(golemCasters))
         {
-            foreach (var aoe in CollectionsMarshal.AsSpan(aoes))
+            var count = golem.turns;
+            foreach (ref var aoe in CollectionsMarshal.AsSpan(aoes))
             {
                 if (aoe.Origin.AlmostEqual(golem.caster.Position, 0.5f))
                 {
-                    Angle rotation = aoe.Rotation;
+                    var rotation = aoe.Rotation;
 
-                    for (int i = 0; i < golem.turns; i++)
+                    for (var i = 0; i < count; ++i)
                     {
                         rotation -= 90.0f.Degrees();
-                        incomingAOEs.Add(new(shape, aoe.Origin, rotation.Normalized(), aoe.Activation + TimeSpan.FromSeconds(7.3f * (i + 1)), actorID: aoe.ActorID));
+                        incomingAOEs.Add(new(shape, aoe.Origin, rotation.Normalized(), aoe.Activation + TimeSpan.FromSeconds(7.3d * (i + 1d))));
                     }
 
-                    for (int i = 0; i < 3 - golem.turns; i++)
+                    for (var i = 0; i < 3 - count; ++i)
                     {
-                        incomingAOEs.Add(new(shape, aoe.Origin, rotation.Normalized(), aoe.Activation + TimeSpan.FromSeconds(7.3f * (golem.turns + i + 1)), actorID: aoe.ActorID));
+                        incomingAOEs.Add(new(shape, aoe.Origin, rotation.Normalized(), aoe.Activation + TimeSpan.FromSeconds(7.3d * (golem.turns + i + 1d))));
                     }
 
                     processedGolems.Add(golem);
@@ -296,7 +195,29 @@ sealed class Acclaim(BossModule module) : Components.GenericAOEs(module)
         if (incomingAOEs.Count > 0)
         {
             aoes.AddRange(incomingAOEs);
+            SortHelpers.SortAOEByActivation(aoes);
         }
+    }
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        var count = aoes.Count;
+        if (count == 0)
+        {
+            return [];
+        }
+
+        var time = WorldState.CurrentTime;
+        var max = count > totalGolems ? totalGolems : count;
+
+        var nextAOEs = CollectionsMarshal.AsSpan(aoes);
+        for (var i = 0; i < max; i++)
+        {
+            ref var aoe = ref nextAOEs[i];
+            aoe.Risky = aoe.Activation.AddSeconds(-RiskyWithSecondsLeft) <= time;
+        }
+
+        return nextAOEs[..max];
     }
 }
 

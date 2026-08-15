@@ -113,6 +113,11 @@ public sealed class NormalMovement : RotationModule
 
     public override void Execute(StrategyValues strategy, Actor? primaryTarget, float estimatedAnimLockDelay, bool isMoving)
     {
+        if (AI.AIManager.Instance?.Beh != null) // prevent both AI movement modes from being active at the same time
+        {
+            return;
+        }
+
         // do nothing if we're already being moved by some other module (i.e. quest battle pathfinding)
         if (Hints.ForcedMovement != null)
             return;
@@ -122,7 +127,7 @@ public sealed class NormalMovement : RotationModule
         if (castStrategy is CastStrategy.FinishInstants or CastStrategy.DropInstants)
         {
             Hints.MaxCastTime = 0;
-            Hints.ForceCancelCast |= castStrategy == CastStrategy.DropInstants;
+            Hints.ForceCancelCastOther |= castStrategy == CastStrategy.DropInstants;
         }
 
         var allowSpecialModes = strategy.Option(Track.SpecialModes).As<SpecialModesStrategy>() == SpecialModesStrategy.Automatic;
@@ -133,14 +138,14 @@ public sealed class NormalMovement : RotationModule
 
             if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && Hints.ImminentSpecialMode.activation <= World.FutureTime(1d))
             {
-                Hints.ForceCancelCast = true; // this is only useful if autopyretic tweak is disabled
+                Hints.ForceCancelCastMechanic = true; // this is only useful if autopyretic tweak is disabled
                 return; // pyretic is imminent, do not move
             }
 
             if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.NoMovement && Hints.ImminentSpecialMode.activation <= World.FutureTime(1d))
                 return;
 
-            if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && Hints.ImminentSpecialMode.activation <= World.FutureTime(0.5f) && Player.PosRot == Player.PrevPosRot)
+            if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Freezing && Hints.ImminentSpecialMode.activation <= World.FutureTime(0.5d) && Player.PosRot == Player.PrevPosRot)
                 Hints.WantJump = true;
         }
 
@@ -150,12 +155,14 @@ public sealed class NormalMovement : RotationModule
             // strongly prefer moving towards interact target
             Hints.GoalZones.Add(p =>
             {
-                var length = (p - targetPos).Length();
+                var lengthSq = (p - targetPos).LengthSq();
+                const float interactRange1 = 2.09f * 2.09f;
+                const float interactRange2 = 3.5f * 3.5f;
 
                 // 99% of eventobjects have an interact range of 3.5y, while the rest have a range of 2.09y
                 // checking only for the shorter range here would be fine in the vast majority of cases, but it can break interact pathfinding in the case that the target object is partially covered by a forbidden zone with a radius between 2.1 and 3.5
                 // this is specifically an issue in the metal gear thancred solo duty in endwalker
-                return length <= 2.09f ? 101 : length <= 3.5f ? 100 : 0;
+                return lengthSq <= interactRange1 ? 101f : lengthSq <= interactRange2 ? 100f : 0f;
             });
         }
 
@@ -340,13 +347,13 @@ public sealed class NormalMovement : RotationModule
             _ => 0,
         };
         Hints.MaxCastTime = Math.Max(0, Math.Min(Hints.MaxCastTime, maxCastTime));
-        Hints.ForceCancelCast |= castStrategy == CastStrategy.DropMove;
+        Hints.ForceCancelCastOther |= castStrategy == CastStrategy.DropMove;
         if (castStrategy is CastStrategy.Leeway && Player.CastInfo is { } castInfo)
         {
-            var effectiveCastRemaining = Math.Max(0, castInfo.RemainingTime - 0.5f);
+            var effectiveCastRemaining = Math.Max(0, castInfo.RemainingTime - 0.5d);
             if (Hints.MaxCastTime < effectiveCastRemaining)
             {
-                Hints.ForceCancelCast = true;
+                Hints.ForceCancelCastOther = true;
                 // no leeway, cast might have been initiated by user, keep moving
                 Hints.ForcedMovement = dir.ToVec3(Player.PosRot.Y);
             }

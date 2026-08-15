@@ -530,6 +530,7 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
             var count = aoes.Length;
             for (var i = 0; i < count; i++)
             {
+                /*
                 ref var aoe = ref aoes[i];
                 if (aoe.Shape is AOEShapeDonut)
                 {
@@ -539,12 +540,19 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
                 {
                     hints.AddForbiddenZone(aoe.Shape, aoe.Origin, activation: aoe.Activation);
                 }
+                */
+                ref var aoe = ref aoes[i];
+                hints.AddForbiddenZone(aoe.Shape, aoe.Origin, activation: aoe.Activation);
+                if (aoe.Shape is AOEShapeDonut)
+                {
+                    hints.GoalZones.Add(AIHints.GoalProximity(aoe.Origin, 3.5f, 500f));
+                }
             }
         }
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
     StatesType = typeof(IndexStates),
     ConfigType = typeof(IndexConfig),
     ObjectIDType = typeof(OID),

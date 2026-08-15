@@ -49,6 +49,7 @@ public enum AID : uint
     SeveredBlizzardIII = 47466, // Necrophobia->self, 5.5s cast, range 45 width 15 cross
     SeveredDarkCurrent = 47479, // Necrophobia->self, 4.2+1.3s cast, single-target
     SeveredFireIII = 47465, // Necrophobia->self, 5.5s cast, range 18 circle
+    SeveredThunderIII = 50357, // NecrophobiaHelper->self, 5.5s cast, range 60 45.000-degree cone
 
     UnknownAbility1 = 47454, // Necrophobia2->self, no cast, range ?-30 donut
     UnknownAbility2 = 47450, // Necrophobia->location, no cast, single-target

@@ -1,8 +1,8 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN1TwoHeadedAevis;
-
 sealed class StormsBreath(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.StormsBreathCast, 14f)
 {
     // on visual cast since there are x2 instances of actual knockback
+    // if happening during hissing reprise, handling drawing/hints there so arrows follow order
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == WatchedAction)
@@ -10,17 +10,37 @@ sealed class StormsBreath(BossModule module) : Components.SimpleKnockbacks(modul
             Casters.Add(new(Arena.Center, Distance, Module.CastFinishAt(spell), Shape, spell.Rotation, KnockbackKind, 0, [], caster.InstanceID, IgnoreImmunes));
         }
     }
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        var hissing = Module.FindComponent<HissingReprise>();
+        if (hissing == null || hissing.ActiveKnockbacks(pcSlot, pc).Length == 0)
+        {
+            base.DrawArenaForeground(pcSlot, pc);
+        }
+    }
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        var hissing = Module.FindComponent<HissingReprise>();
+        if (hissing == null || hissing.ActiveKnockbacks(slot, actor).Length == 0)
+        {
+            base.AddHints(slot, actor, hints);
+        }
+    }
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        var kbs = ActiveKnockbacks(slot, actor);
-        if (kbs.Length != 0)
+        var hissing = Module.FindComponent<HissingReprise>();
+        if (hissing == null || hissing.ActiveKnockbacks(slot, actor).Length == 0)
         {
-            var kb = kbs[0];
-            var act = kb.Activation;
-            if (!IsImmune(slot, act))
+            var kbs = ActiveKnockbacks(slot, actor);
+            if (kbs.Length != 0)
             {
-                // slightly larger to avoid sus knockback
-                hints.AddForbiddenZone(new SDKnockbackInAABBSquareAwayFromOrigin(Arena.Center, kb.Origin, 15f, 20f), act);
+                var kb = kbs[0];
+                var act = kb.Activation;
+                if (!IsImmune(slot, act))
+                {
+                    // slightly larger to avoid sus knockback
+                    hints.AddForbiddenZone(new SDKnockbackInAABBSquareAwayFromOrigin(Arena.Center, kb.Origin, 19f, 20f), act);
+                }
             }
         }
     }
@@ -163,7 +183,7 @@ sealed class ArcaneBeacon(BossModule module) : Components.SimpleAOEs(module, (ui
 sealed class Archaeofury1(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Archaeofury1, 6f);
 sealed class Archaeofury2(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.Archaeofury2, 6f);
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Verified,
     StatesType = typeof(TwoHeadedAevisStates),
     ConfigType = typeof(TwoHeadedAevisConfig),
     ObjectIDType = typeof(OID),

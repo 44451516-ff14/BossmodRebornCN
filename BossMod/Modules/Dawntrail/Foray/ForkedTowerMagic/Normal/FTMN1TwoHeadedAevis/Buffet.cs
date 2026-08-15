@@ -57,7 +57,7 @@ sealed class Buffet(BossModule module) : BossComponent(module)
             for (var i = 0; i < count; ++i)
             {
                 var enemy = hints.PotentialTargets[i];
-                if (enemy.Actor != assignedSlot)
+                if (assignedSlot != null && enemy.Actor != assignedSlot)
                 {
                     enemy.Priority = AIHints.Enemy.PriorityInvincible;
                 }

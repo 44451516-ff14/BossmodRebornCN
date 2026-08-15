@@ -127,11 +127,13 @@ public readonly struct WPos(float x, float z)
     public static WPos RotateAroundOrigin(float rotateByDegrees, WPos origin, WPos point)
     {
         var (sin, cos) = ((float, float))Math.SinCos(rotateByDegrees * Angle.DegToRad);
-        var deltaX = point.X - origin.X;
-        var deltaZ = point.Z - origin.Z;
+        var originX = origin.X;
+        var originZ = origin.Z;
+        var deltaX = point.X - originX;
+        var deltaZ = point.Z - originZ;
         var rotatedX = cos * deltaX - sin * deltaZ;
         var rotatedZ = sin * deltaX + cos * deltaZ;
-        return new(origin.X + rotatedX, origin.Z + rotatedZ);
+        return new(originX + rotatedX, originZ + rotatedZ);
     }
 
     public static WPos[] GenerateRotatedVertices(WPos center, WPos[] vertices, float rotationAngle)

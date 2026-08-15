@@ -73,11 +73,18 @@ public enum IconID : uint
 
 sealed class BlackenedRain(BossModule module) : Components.RaidwideCast(module, (uint)AID.BlackenedRain);
 sealed class TongueOfFlame(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TongueOfFlame, new AOEShapeCircle(15.0f));
-sealed class HellfireFetch(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HellfireFetch, new AOEShapeCircle(6.0f));
 sealed class DarkDealing(BossModule module) : Components.SingleTargetCast(module, (uint)AID.DarkDealing);
 sealed class CyclonicRing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CyclonicRing, new AOEShapeDonut(10.0f, 30.0f));
 sealed class CycloneCrossing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CycloneCrossing1, new AOEShapeCross(60.0f, 8.0f));
 sealed class WindSphere(BossModule module) : Components.Voidzone(module, 17.5f, module => module.Enemies((uint)OID.WindSphere).Where(z => z.EventState != 7));
+
+sealed class HellfireFetch : Components.SimpleAOEs
+{
+    public HellfireFetch(BossModule module) : base(module, (uint)AID.HellfireFetch, new AOEShapeCircle(6.0f), 8, 5.0f)
+    {
+        MaxDangerColor = 4;
+    }
+}
 
 sealed class HellwardBoundCharge : Components.ChargeAOEs
 {
@@ -118,16 +125,23 @@ sealed class HellwardBound(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        int show = 0;
-        var incomingAOEs = aoes.Take(2).ToList();
-        foreach (ref var aoe in CollectionsMarshal.AsSpan(incomingAOEs))
+        var count = aoes.Count;
+        if (count == 0)
         {
-            aoe.Color = show == 0 ? Colors.Danger : Colors.AOE;
-            aoe.Risky = show == 0;
-            show++;
+            return [];
         }
 
-        return CollectionsMarshal.AsSpan(incomingAOEs);
+        var max = count > 2 ? 2 : count;
+        var nextAOEs = CollectionsMarshal.AsSpan(aoes);
+
+        for (var i = 0; i < max; i++)
+        {
+            ref var aoe = ref nextAOEs[i];
+            aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
+            aoe.Risky = i == 0;
+        }
+
+        return nextAOEs[..max];
     }
 
     private void CreatePath()
@@ -165,7 +179,7 @@ sealed class HellwardBound(BossModule module) : Components.GenericAOEs(module)
         }
 
         // Setup the aoes
-        for (int i = 0; i < pathList.Count; i++)
+        for (var i = 0; i < pathList.Count; i++)
         {
             if (i == 0)
             {
@@ -193,7 +207,8 @@ sealed class HellishBreath(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.HellishBreathVisual1 or (uint)AID.HellishBreathVisual2 or (uint)AID.HellishBreathVisual3)
         {
-            aoes.Add(new(shape, caster.Position, caster.Rotation, Module.CastFinishAt(spell)));
+            aoes.Add(new(shape, spell.LocXZ, spell.Rotation, Module.CastFinishAt(spell)));
+            SortHelpers.SortAOEByActivation(aoes);
         }
     }
 
@@ -201,7 +216,6 @@ sealed class HellishBreath(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID is (uint)AID.HellishBreathCast1 or (uint)AID.HellishBreathCast2 or (uint)AID.HellishBreathCast3)
         {
-            aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
             if (aoes.Count > 0)
             {
                 aoes.RemoveAt(0);
@@ -211,94 +225,113 @@ sealed class HellishBreath(BossModule module) : Components.GenericAOEs(module)
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        int show = 0;
-        var incomingAOEs = aoes.OrderBy(aoe => aoe.Activation).Take(2).ToList();
-        foreach (ref var aoe in CollectionsMarshal.AsSpan(incomingAOEs))
+        var count = aoes.Count;
+        if (count == 0)
         {
-            aoe.Color = show == 0 ? Colors.Danger : Colors.AOE;
-            aoe.Risky = show == 0;
-            show++;
+            return [];
         }
 
-        return CollectionsMarshal.AsSpan(incomingAOEs);
+        var max = count > 2 ? 2 : count;
+        var nextAOEs = CollectionsMarshal.AsSpan(aoes);
+
+        for (var i = 0; i < max; i++)
+        {
+            ref var aoe = ref nextAOEs[i];
+            aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
+            aoe.Risky = i == 0;
+        }
+
+        return nextAOEs[..max];
     }
 }
 
 sealed class ShapeshiftingSupercellRings(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> aoes = [];
+    private readonly List<AOEInstance> Casters = [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.ShapeshiftingSupercellInner or (uint)AID.ShapeshiftingSupercellInner1)
+        AOEShape? shape = (AID)spell.Action.ID switch
         {
-            aoes.Add(new(new AOEShapeCircle(8.0f), caster.Position, caster.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, risky: false));
-        }
+            AID.ShapeshiftingSupercellInner => new AOEShapeCircle(8.0f),
+            AID.ShapeshiftingSupercellInner1 => new AOEShapeCircle(8.0f),
+            AID.ShapeshiftingSupercellMiddle => new AOEShapeDonut(8.0f, 16.0f),
+            AID.ShapeshiftingSupercellOuter => new AOEShapeDonut(16.0f, 30.0f),
+            _ => null
+        };
 
-        if (spell.Action.ID == (uint)AID.ShapeshiftingSupercellMiddle)
+        if (shape != null)
         {
-            aoes.Add(new(new AOEShapeDonut(8.0f, 16.0f), caster.Position, caster.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, risky: false));
-        }
-
-        if (spell.Action.ID == (uint)AID.ShapeshiftingSupercellOuter)
-        {
-            aoes.Add(new(new AOEShapeDonut(16.0f, 30.0f), caster.Position, caster.Rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, risky: false));
+            var origin = spell.LocXZ;
+            var rotation = spell.Rotation;
+            Casters.Add(new(shape, origin, rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(origin, rotation)));
+            SortHelpers.SortAOEByActivation(Casters);
         }
     }
 
-    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.ShapeshiftingSupercellInner or (uint)AID.ShapeshiftingSupercellInner1 or (uint)AID.ShapeshiftingSupercellMiddle or
             (uint)AID.ShapeshiftingSupercellOuter)
         {
-            aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
-            if (aoes.Count > 0)
+            if (Casters.Count > 0)
             {
-                aoes.RemoveAll(aoe => aoe.ActorID == caster.InstanceID);
+                Casters.RemoveAt(0);
             }
         }
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        int show = 0;
-        var incomingAOEs = aoes.OrderBy(a => a.Activation).Take(2).ToList();
-        foreach (ref var aoe in CollectionsMarshal.AsSpan(incomingAOEs))
+        var count = Casters.Count;
+        if (count == 0)
         {
-            aoe.Color = show == 0 ? Colors.Danger : Colors.AOE;
-            aoe.Risky = show == 0;
-            show++;
+            return [];
         }
 
-        return CollectionsMarshal.AsSpan(incomingAOEs);
+        var max = count > 2 ? 2 : count;
+        var aoes = CollectionsMarshal.AsSpan(Casters);
+
+        for (var i = 0; i < max; i++)
+        {
+            ref var aoe = ref aoes[i];
+            aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
+            aoe.Risky = i == 0;
+        }
+
+        return aoes[..max];
     }
 }
 
-sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(module)
+sealed class ShapeshiftingSupercell : Components.GenericRotatingAOE
 {
-    private readonly List<AOEInstance> aoes = [];
-    private readonly List<AOEInstance> aoeCasters = [];
+    private readonly List<ActorCastInfo> rotations = [with(3)];
     private readonly AOEShapeCone shape = new(60.0f, 45.0f.Degrees());
-    private int direction = 0; // -1 = right, 1 = left
+    private Angle increment;
+
+    public ShapeshiftingSupercell(BossModule module) : base(module)
+    {
+        FutureColor = Colors.Danger;
+    }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
-        if (iconID == (uint)IconID.TurnRight)
+        increment = iconID switch
         {
-            direction = -1;
-        }
+            (uint)IconID.TurnLeft => 30.0f.Degrees(),
+            (uint)IconID.TurnRight => -30.0f.Degrees(),
+            _ => default
+        };
 
-        if (iconID == (uint)IconID.TurnLeft)
-        {
-            direction = 1;
-        }
+        InitIfReady();
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ShapeshiftingSupercellCone)
         {
-            aoeCasters.Add(new(shape, caster.Position, caster.Rotation, Module.CastFinishAt(spell)));
+            rotations.Add(spell);
+            InitIfReady();
         }
     }
 
@@ -306,65 +339,22 @@ sealed class ShapeshiftingSupercell(BossModule module) : Components.GenericAOEs(
     {
         if (spell.Action.ID is (uint)AID.ShapeshiftingSupercellCone or (uint)AID.ShapeshiftingSupercellCone1)
         {
-            aoes.Sort((a, b) => a.Activation.CompareTo(b.Activation));
-            if (aoes.Count > 0)
+            AdvanceSequence(caster.Position, spell.Rotation, WorldState.CurrentTime);
+        }
+    }
+
+    private void InitIfReady()
+    {
+        if (rotations.Count == 3 && increment != default)
+        {
+            for (var i = 0; i < 3; i++)
             {
-                aoes.RemoveAt(0);
+                var spell = rotations[i];
+                Sequences.Add(new(shape, spell.LocXZ, spell.Rotation, increment, Module.CastFinishAt(spell), 2.5f, 6, 1));
             }
 
-            if (aoes.Count == 0)
-            {
-                direction = 0;
-            }
-        }
-    }
-
-    public override void Update()
-    {
-        AddFutureAOEs();
-    }
-
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        if (aoes.Count == 0)
-        {
-            return [];
-        }
-
-        var incomingAOEs = aoes.OrderBy(a => a.Activation).Take(3).ToList();
-        foreach (ref var aoe in CollectionsMarshal.AsSpan(incomingAOEs))
-        {
-            aoe.Color = Colors.Danger;
-            aoe.Risky = true;
-        }
-
-        return CollectionsMarshal.AsSpan(incomingAOEs);
-    }
-
-    private void AddFutureAOEs()
-    {
-        if (aoeCasters.Count == 0 || direction == 0)
-        {
-            return;
-        }
-
-        List<AOEInstance> futureAOEs = [];
-        var processedAOEsCount = aoeCasters.Count;
-        for (int i = 0; i < processedAOEsCount; i++)
-        {
-            var aoe = aoeCasters[i];
-            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation, aoe.Activation));
-            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 30.0f.Degrees() * direction, aoe.Activation.AddSeconds(1.5f)));
-            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 60.0f.Degrees() * direction, aoe.Activation.AddSeconds(3.0f)));
-            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 90.0f.Degrees() * direction, aoe.Activation.AddSeconds(4.5f)));
-            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 120.0f.Degrees() * direction, aoe.Activation.AddSeconds(6.0f)));
-            futureAOEs.Add(new(shape, aoe.Origin, aoe.Rotation + 150.0f.Degrees() * direction, aoe.Activation.AddSeconds(7.5f)));
-        }
-
-        aoeCasters.RemoveRange(0, processedAOEsCount);
-        if (futureAOEs.Count > 0)
-        {
-            aoes.AddRange(futureAOEs);
+            rotations.Clear();
+            increment = default;
         }
     }
 }

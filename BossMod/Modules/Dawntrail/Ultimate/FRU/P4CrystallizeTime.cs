@@ -134,7 +134,7 @@ sealed class P4CrystallizeTimeDragonHead(BossModule module) : BossComponent(modu
                     if (p.soaker != pcAssignment)
                         hints.AddForbiddenZone(new SDCircle(p.puddle.Position, 2f));
                     else if (_numMaelstroms >= 6)
-                        hints.GoalZones.Add(AIHints.GoalProximity(p.puddle.Position, 15f, 0.25f));
+                        hints.GoalZones.Add(AIHints.GoalProximity(p.puddle.Position, 15f, 0.5f));
                 }
             }
         }
@@ -710,9 +710,9 @@ sealed class P4CrystallizeTimeRewind(BossModule module) : Components.GenericKnoc
         if (!RewindDone && _ct != null && _exalines != null && _ct.Cleansed[slot])
         {
             var midpoint = SafeCorner();
-            hints.GoalZones.Add(AIHints.GoalProximity(midpoint, 15f, 0.5f));
+            hints.GoalZones.Add(AIHints.GoalProximity(midpoint, 15f, 1f));
             var destPoint = midpoint + AssignedPositionOffset(actor, assignment);
-            hints.GoalZones.Add(AIHints.GoalProximity(destPoint, 1f, 1f));
+            hints.GoalZones.Add(AIHints.GoalProximity(destPoint, 1f, 1.5f));
         }
     }
 

@@ -6,6 +6,7 @@ sealed class HissingReprise(BossModule module) : Components.GenericKnockback(mod
     private readonly IceCluster ice = module.FindComponent<IceCluster>()!;
     private readonly LightningCluster lightning = module.FindComponent<LightningCluster>()!;
     private readonly HypothermalCombustionShock hyposhock = module.FindComponent<HypothermalCombustionShock>()!;
+    private readonly StormsBreath storm = module.FindComponent<StormsBreath>()!;
     private DateTime activation = default;
     private BitMask easterly;
     private BitMask westerly;
@@ -14,7 +15,8 @@ sealed class HissingReprise(BossModule module) : Components.GenericKnockback(mod
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
-        List<Knockback> kb = [with(1)];
+        List<Knockback> kb = [with(2)];
+        /*
         if (easterly[slot])
         {
             kb.Add(new(new(-880f, Arena.Center.Z), 21f, activation, kind: Kind.DirRight));
@@ -22,6 +24,24 @@ sealed class HissingReprise(BossModule module) : Components.GenericKnockback(mod
         else if (westerly[slot])
         {
             kb.Add(new(new(-920f, Arena.Center.Z), 21f, activation, kind: Kind.DirLeft));
+        }
+
+        var s = storm.ActiveKnockbacks(slot, actor);
+        if (s.Length != 0)
+        {
+            kb.Add(s[0]);
+        }
+        */
+        if (easterly[slot] || westerly[slot])
+        {
+            var posx = easterly[slot] ? -880f : -920f;
+            var kind = easterly[slot] ? Kind.DirRight : Kind.DirLeft;
+            kb.Add(new(new(posx, Arena.Center.Z), 21f, activation, kind: kind));
+            var s = storm.ActiveKnockbacks(slot, actor);
+            if (s.Length != 0)
+            {
+                kb.Add(s[0]);
+            }
         }
 
         return CollectionsMarshal.AsSpan(kb);
