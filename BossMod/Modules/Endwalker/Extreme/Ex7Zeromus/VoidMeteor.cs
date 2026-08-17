@@ -155,7 +155,7 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
         var halfAngleFromMeteor = 90f.Degrees() - halfAngle;
         var circlearc = CurveApprox.CircleArc(_radius * 2, dirFromMeteor + halfAngleFromMeteor, dirFromMeteor - halfAngleFromMeteor, maxerror);
         var count = circlearc.Length;
-        WPos[] vertices = new WPos[count + 2];
+        var vertices = new WPos[count + 2];
         for (var i = 0; i < count; ++i)
         {
             vertices[i] = meteorOffset + circlearc[i] + center;

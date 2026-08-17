@@ -1,5 +1,4 @@
 ﻿using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility;
 using System.IO;
 
 namespace BossMod.ReplayVisualization;
@@ -210,6 +209,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
         ClientState.OpComboChange => false,
         ClientState.OpCooldown => false,
         ClientState.OpForcedMovementDirectionChange => false,
+        ClientState.OpFlyingChange => false,
         WorldState.OpRSVData => false,
         ClientState.OpMoveSpeedChange => ShowCLMVEvents,
         NetworkState.OpServerIPC => false,
@@ -262,7 +262,7 @@ sealed class OpList(Replay replay, Replay.Encounter? enc, BossModuleRegistry.Inf
         ClientState.OpActiveFateChange op => $"FATE: {op.Value.ID} '{Service.LuminaRow<Lumina.Excel.Sheets.Fate>(op.Value.ID)?.Name}' {op.Value.Progress}%",
         ClientState.OpActivePetChange op => $"Player pet: {ActorString(op.Value.InstanceID, op.Timestamp)}",
         ClientState.OpInventoryChange op => ItemString(op),
-        PartyState.OpModify op => $"Party slot {op.Slot}: {op.Member.InstanceId:X8} {op.Member.Name}",
+        PartyState.OpModify op => $"Party slot {op.Slot}: {ActorString(op.Member.InstanceId, op.Timestamp)}",
         WorldState.OpDirectorUpdate op => $"DirectorUpdate: DirectorID: {op.DirectorID:X8}, UpdateID: {op.UpdateID:X8}, Params: {op.Param1:X8}|{op.Param2:X8}|{op.Param3:X8}|{op.Param4:X8}",
         WorldState.OpMapEffect op => $"MapEffect: {op.Index:X2} {op.State:X8}",
         WorldState.OpLegacyMapEffect op => $"MapEffect (legacy): seq={op.Sequence} param={op.Param} data={GetOpLegacyMapEffectString(op.Data)}",

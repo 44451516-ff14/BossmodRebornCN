@@ -661,11 +661,14 @@ public static class ApplicationDelay
         Register(ClassShared.AID.Bladedance, 3.28f);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void Register<A>(A id, float delay) where A : Enum
     {
         _delay[(uint)(object)id] = delay;
     }
 
-    public static float Get(uint actionId) => _delay.TryGetValue(actionId, out var d) ? d : 0;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static float Get(uint actionId) => _delay.TryGetValue(actionId, out var d) ? d : 0f;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float Get(ActionID aid) => Get(aid.ID);
 }

@@ -394,6 +394,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
             // if there's no active cast right now (e.g. it was just interrupted and an external plugin like RotationSolverReborn is about to re-queue it),
             // there's nothing to protect - don't block forced movement, otherwise we can get stuck in an endless cast/interrupt loop without ever actually moving away from danger
             ctrl.AllowInterruptingCastByMovement = player.CastInfo == null || _naviDecision.LeewaySeconds <= player.CastInfo.RemainingTime - 0.5d;
+            ctrl.ForceCancelCastMechanicAI = false;
             ctrl.ForceCancelCastOtherAI = false;
 
             //var cameraFacing = _ctrl.CameraFacing;

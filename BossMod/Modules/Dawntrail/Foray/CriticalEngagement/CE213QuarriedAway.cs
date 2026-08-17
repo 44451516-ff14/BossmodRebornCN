@@ -256,8 +256,18 @@ sealed class CE213QuarriedAwayStates : StateMachineBuilder
     SortOrder = 3,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class CE213QuarriedAway(WorldState ws, Actor primary) : BossModule(ws, primary, new(-519.000f, -641.000f), new ArenaBoundsCircle(25f))
+public sealed class CE213QuarriedAway : BossModule
 {
+    public CE213QuarriedAway(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private CE213QuarriedAway(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-519f, -641f), 24.5f, 32)]);
+        return (arena.Center, arena);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

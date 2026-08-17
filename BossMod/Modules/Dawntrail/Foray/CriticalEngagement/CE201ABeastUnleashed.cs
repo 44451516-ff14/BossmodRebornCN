@@ -41,13 +41,10 @@ public enum AID : uint
     RubyReflection2 = 48285, // Helper->self, no cast, range 20 width 20 rect
 }
 
-public enum SID : uint
-{
-    DirectionalDisregard = 3808, // none->AtlasCarbuncle, extra=0x0
-}
-
+[SkipLocalsInit]
 sealed class SonicHowl(BossModule module) : Components.RaidwideCast(module, (uint)AID.SonicHowl);
 
+[SkipLocalsInit]
 sealed class TailToClaw(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [];
@@ -90,12 +87,13 @@ sealed class TailToClaw(BossModule module) : Components.GenericAOEs(module)
     {
         if (rubyaoe.AOEs.Count != 0)
         {
-            return CollectionsMarshal.AsSpan(_aoes);
+            return [];
         }
         return CollectionsMarshal.AsSpan(_aoes);
     }
 }
 
+[SkipLocalsInit]
 sealed class TopazRay(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.TopazRay1, (uint)AID.TopazRay2], 4f)
 {
     public readonly List<Actor> Actors = [with(10)];
@@ -180,6 +178,7 @@ sealed class TopazRay(BossModule module) : Components.SimpleAOEGroups(module, [(
     }
 }
 
+[SkipLocalsInit]
 sealed class RubyReflection : Components.GenericAOEs
 {
     public RubyReflection(BossModule module) : base(module)
@@ -231,7 +230,7 @@ sealed class RubyReflection : Components.GenericAOEs
                     for (var j = 0; j < quadCount; ++j)
                     {
                         var quad = Quadrants[j];
-                        var p = Arena.ClampToBounds(pos + (rot + 180f.Degrees()).ToDirection() * 3f);
+                        var p = pos + (rot + 180f.Degrees()).ToDirection() * 3f;
                         if (quad.InSquare(pos, 10f) && !quad.InSquare(p, 10f))
                         {
                             AOEs.Add(new(rect, quad, activation: act, shapeDistance: rect.Distance(quad, default)));
@@ -261,7 +260,7 @@ sealed class RubyReflection : Components.GenericAOEs
                         var shape = shapes[j];
                         var poly = shape.Polygon.Transform(default, rubyRot.ToDirection());
                         poly.InitPolygonIndex();
-                        var p = Arena.ClampToBounds(t.Position + (rot + 180f.Degrees()).ToDirection() * 3f);
+                        var p = pos + (rot + 180f.Degrees()).ToDirection() * 3f;
                         if (poly.Contains(pos - center) && !poly.Contains(p - center))
                         {
                             var aoe = new AOEShapeCustom(center, [], skipPolygonInit: true);
@@ -283,6 +282,7 @@ sealed class RubyReflection : Components.GenericAOEs
     }
 }
 
+[SkipLocalsInit]
 sealed class SpinebreakingStampede(BossModule module) : Components.GenericKnockback(module)
 {
     private readonly List<Knockback> _kbs = [with(3)];
@@ -394,12 +394,12 @@ sealed class CE201ABeastUnleashedStates : StateMachineBuilder
     StatesType = typeof(CE201ABeastUnleashedStates),
     ConfigType = null, // replace null with typeof(ABeastUnleashedConfig) if applicable
     ObjectIDType = typeof(OID),
-    ActionIDType = typeof(AID), // replace null with typeof(AID) if applicable
-    StatusIDType = typeof(SID), // replace null with typeof(SID) if applicable
+    ActionIDType = typeof(AID),
+    StatusIDType = null, // replace null with typeof(SID) if applicable
     TetherIDType = null, // replace null with typeof(TetherID) if applicable
     IconIDType = null, // replace null with typeof(IconID) if applicable
     PrimaryActorOID = (uint)OID.AtlasCarbuncle,
-    Contributors = "The Combat Reborn Team (LTS)",
+    Contributors = "gynorhino",
     Expansion = BossModuleInfo.Expansion.Dawntrail,
     Category = BossModuleInfo.Category.Foray,
     GroupType = BossModuleInfo.GroupType.CriticalEngagement,

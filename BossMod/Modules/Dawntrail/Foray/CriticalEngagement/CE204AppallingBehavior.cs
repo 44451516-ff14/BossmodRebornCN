@@ -244,7 +244,8 @@ sealed class Roulette(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.RouletteVisual)
         {
-            aoes.Add(new(circle, Arena.Center, activation: WorldState.FutureTime(18.3d)));
+            var pos = Arena.Center;
+            aoes.Add(new(circle, pos, activation: WorldState.FutureTime(18.3d), shapeDistance: circle.Distance(pos, default)));
         }
     }
 
@@ -259,10 +260,12 @@ sealed class Roulette(BossModule module) : Components.GenericAOEs(module)
                 var isring2 = id == (uint)OID.RouletteRing2;
                 var shape = isring2 ? inner : outer;
                 var diff = isring2 ? innerDiff : outerDiff;
-                var rot = actor.Rotation;
                 var center = Arena.Center;
-                aoes.Add(new(shape, center, rot + diff * (isCW ? -1f : 1f), act));
-                aoes.Add(new(shape, center, rot + 180f.Degrees() + diff * (isCW ? -1f : 1f), act));
+                var rot = actor.Rotation + diff * (isCW ? -1f : 1f);
+
+                aoes.Add(new(shape, center, rot, act, shapeDistance: shape.Distance(center, rot)));
+                var a180 = rot + 180f.Degrees();
+                aoes.Add(new(shape, center, a180, act, shapeDistance: shape.Distance(center, a180)));
             }
         }
     }

@@ -4,8 +4,11 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
 {
     public enum Tracks
     {
-        Positional
+        Positional,
+        EdgeBuffer
     }
+
+    public enum EdgeBufferStrategy { None, Small, Medium, Large }
 
     private static readonly Positional[] positionals = Enum.GetValues<Positional>();
     private static readonly AutorotationConfig _config = Service.Config.Get<AutorotationConfig>();
@@ -15,10 +18,18 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
         RotationModuleDefinition def = new("Misc AI: Goes to specified positional", "Module for use with other rotation plugins.", "AI", "erdelf", RotationModuleQuality.Basic, new(~0ul), 1000);
 
         var track = def.Define(Tracks.Positional).As<Positional>("Positional", "Positional");
+
         for (var i = 0; i < 4; ++i)
         {
             track.AddOption(positionals[i]);
         }
+
+        def.Define(Tracks.EdgeBuffer).As<EdgeBufferStrategy>("EdgeBuffer", "Edge buffer", 20)
+            .AddOption(EdgeBufferStrategy.None, "Stand at positional edges")
+            .AddOption(EdgeBufferStrategy.Small, "Prefer staying 0.5y inside from the edges")
+            .AddOption(EdgeBufferStrategy.Medium, "Prefer staying 1.5y inside from the edges")
+            .AddOption(EdgeBufferStrategy.Large, "Prefer staying 3y inside from the edges");
+
         return def;
     }
 
@@ -45,7 +56,15 @@ public sealed class GoToPositional(RotationModuleManager manager, Actor player) 
             _ => true
         };
 
+        var cushion = strategy.Option(Tracks.EdgeBuffer).As<EdgeBufferStrategy>() switch
+        {
+            EdgeBufferStrategy.Small => 0.5f,
+            EdgeBufferStrategy.Medium => 1.5f,
+            EdgeBufferStrategy.Large => 3.0f,
+            _ => 0f
+        };
+
         Hints.RecommendedPositional = (primaryTarget, positional, true, correct);
-        Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, positional));
+        Hints.GoalZones.Add(AIHints.GoalSingleTarget(primaryTarget, positional, cushion: cushion));
     }
 }

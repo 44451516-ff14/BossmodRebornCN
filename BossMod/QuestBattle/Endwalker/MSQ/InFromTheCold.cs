@@ -1,4 +1,4 @@
-﻿namespace BossMod.QuestBattle.Endwalker.MSQ;
+namespace BossMod.QuestBattle.Endwalker.MSQ;
 
 class ImperialAI(WorldState ws) : UnmanagedRotation(ws, 3f)
 {
@@ -114,7 +114,11 @@ internal class InFromTheCold(WorldState ws) : QuestBattle(ws)
             .MoveHint(new WPos(188f, -227f), 0.3f)
             .WithInteract(0x1EB69Eu)
             .Hints((player, hints) => {
-                if (player.Position.AlmostEqual(new WPos(109, -257.263f), 2f)) { hints.WantJump = true; } })
+                if (player.Position.AlmostEqual(new WPos(109f, -257.263f), 2f))
+                {
+                    hints.WantJump = true;
+                }
+            })
             .With(obj => obj.OnStatusGain += (act, st) => obj.CompleteIf(act.OID == default && st.ID == 404u)),
 
         new QuestObjective(ws)

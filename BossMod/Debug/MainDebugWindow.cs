@@ -24,6 +24,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
     private readonly DebugAutorotation _debugAutorot = new(autorot);
     private readonly DebugAddon _debugAddon = new();
     private readonly DebugTiming _debugTiming = new();
+    private readonly DebugTeleport _debugTeleport = new();
     private readonly DebugCollision _debugCollision = new();
     private readonly DebugQuests _debugQuests = new();
 
@@ -33,6 +34,7 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         _debugInput.Dispose();
         _debugAddon.Dispose();
         _debugMapEffect.Dispose();
+        _debugTeleport.Dispose();
         _debugCollision.Dispose();
         base.Dispose(disposing);
     }
@@ -181,6 +183,10 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
         if (ImGui.CollapsingHeader("Window system"))
         {
             DrawWindowSystem();
+        }
+        if (ImGui.CollapsingHeader("Teleport"))
+        {
+            _debugTeleport.Draw();
         }
         if (ImGui.CollapsingHeader("Collision"))
         {
@@ -471,7 +477,11 @@ sealed class MainDebugWindow(WorldState ws, RotationModuleManager autorot, ZoneM
                 }
 
                 var d = (o.Position - selfPos).LengthSquared();
-                if (d < closestDist) { closestDist = d; closest = o; }
+                if (d < closestDist)
+                {
+                    closestDist = d;
+                    closest = o;
+                }
             }
             if (closest != null)
             {

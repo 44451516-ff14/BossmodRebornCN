@@ -122,6 +122,22 @@ public sealed class NormalMovement : RotationModule
         if (Hints.ForcedMovement != null)
             return;
 
+        // lots of assumptions made in this module are broken by being in flight (or diving)
+        // e.g. being inside an obstacle is fine, AOEs may not reach the player depending on vertical distance, etc
+        if (World.Client.Flying)
+            return;
+
+        // if the player on a ranged job pulls a dungeon boss from outside (e.g. Mistwake B1), pathfinder won't force it to move inside the arena, since their position isn't in the pathfinding map
+        // TODO: what should the generic solution be? do we need multiple sets of bounds?
+        // forcing the player to move directly toward the arena center works fine in this basic case, but would be terrible for other content
+        //   - hunt marks can be hundreds of units away
+        //   - araid/foray bosses are often located on an isolated platform with a clientpath leading to it, so VBM would just run directly forward into the abyss
+        if (Bossmods.ActiveModule is { Info.Category: BossModuleInfo.Category.Dungeon, StateMachine.ActivePhase: not null } module && !module.Arena.InBounds(Player.Position))
+        {
+            Hints.ForcedMovement = Player.DirectionTo(module.Arena.Center).ToVec3();
+            return;
+        }
+
         var castOpt = strategy.Option(Track.Cast);
         var castStrategy = castOpt.As<CastStrategy>();
         if (castStrategy is CastStrategy.FinishInstants or CastStrategy.DropInstants)
@@ -138,6 +154,7 @@ public sealed class NormalMovement : RotationModule
 
             if (Hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && Hints.ImminentSpecialMode.activation <= World.FutureTime(1d))
             {
+                //Service.Log("[CancelCast] ForceCancelCastMechanic set true due to Pyretic Special Mode");
                 Hints.ForceCancelCastMechanic = true; // this is only useful if autopyretic tweak is disabled
                 return; // pyretic is imminent, do not move
             }
@@ -312,7 +329,7 @@ public sealed class NormalMovement : RotationModule
                 // TODO: maybe just check a single closest grid cell that we would intersect if we go forward?..
                 allowMovement = CalculateUnobstructedPathLength(World.Client.ForcedMovementDirection) >= Math.Min(4, distSq);
             }
-            Hints.ForcedMovement = allowMovement ? World.Client.ForcedMovementDirection.ToDirection().ToVec3(Player.PosRot.Y) : default;
+            Hints.ForcedMovement = allowMovement ? World.Client.ForcedMovementDirection.ToDirection().ToVec3() : default;
 
             //var halfThreshold = Hints.MisdirectionThreshold; // even much smaller threshold seems to work fine in practice (TODO: reconsider...)
             //var idealDir = Angle.FromDirection(dir);
@@ -336,7 +353,7 @@ public sealed class NormalMovement : RotationModule
             // the dedicated CastStrategy.Leeway handling below already forces movement (and cancels the cast) when
             // there genuinely isn't enough leeway left to both finish the cast and reach the destination in time.
             var allowMovement = Player.CastInfo == null || Player.CastInfo.EventHappened || castStrategy is CastStrategy.DropMove or CastStrategy.DropInstants;
-            Hints.ForcedMovement = allowMovement ? dir.ToVec3(Player.PosRot.Y) : default;
+            Hints.ForcedMovement = allowMovement ? dir.ToVec3() : default;
         }
 
         var maxCastTime = castStrategy switch
@@ -355,7 +372,7 @@ public sealed class NormalMovement : RotationModule
             {
                 Hints.ForceCancelCastOther = true;
                 // no leeway, cast might have been initiated by user, keep moving
-                Hints.ForcedMovement = dir.ToVec3(Player.PosRot.Y);
+                Hints.ForcedMovement = dir.ToVec3();
             }
         }
     }

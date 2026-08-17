@@ -441,7 +441,7 @@ public abstract class BossModule : IDisposable
     protected virtual void UpdateModule() { }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Actor? GetActor(uint enemy)
+    internal Actor? GetActor(uint enemy)
     {
         var b = Enemies(enemy);
         return b.Count != 0 ? b[0] : null;

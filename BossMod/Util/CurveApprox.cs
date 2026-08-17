@@ -25,13 +25,16 @@ public static class CurveApprox
         var radius = Radius;
         var numSegments = CalculateCircleSegments(radius, 360f.Degrees(), maxError);
         var angleIncrement = (Angle.DoublePI / numSegments).Radians();
-        var points = new List<WDir>(numSegments);
+
+        var result = new List<WDir>(numSegments);
+        CollectionsMarshal.SetCount(result, numSegments);
+        var vertices = CollectionsMarshal.AsSpan(result);
 
         for (var i = 0; i < numSegments; ++i) // note: do not include last point
         {
-            points.Add(radius * (i * angleIncrement).ToDirection());
+            vertices[i] = radius * (i * angleIncrement).ToDirection();
         }
-        return points;
+        return result;
     }
 
     public static WDir[] Circle(WDir centerOffset, float Radius, float maxError)
@@ -48,18 +51,10 @@ public static class CurveApprox
         return points;
     }
 
-    public static List<WDir> CircleL(WDir centerOffset, float Radius, float maxError)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static List<WDir> CircleL(WDir centerOffset, float radius, float maxError)
     {
-        var radius = Radius;
-        var numSegments = CalculateCircleSegments(radius, 360f.Degrees(), maxError);
-        var angleIncrement = (Angle.DoublePI / numSegments).Radians();
-        var points = new List<WDir>(numSegments);
-        var centerO = centerOffset;
-        for (var i = 0; i < numSegments; ++i) // note: do not include last point
-        {
-            points.Add(radius * (i * angleIncrement).ToDirection() + centerO);
-        }
-        return points;
+        return ArrayListWrapper<WDir>.Wrap(Circle(centerOffset, radius, maxError));
     }
 
     public static WDir[] CircleArc(float radius, Angle angleStart, Angle angleEnd, float maxError)
@@ -96,22 +91,10 @@ public static class CurveApprox
         return points;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static List<WDir> CircleSectorL(WDir centerOffset, float radius, Angle angleStart, Angle angleEnd, float maxError)
     {
-        var length = angleEnd - angleStart;
-        var _radius = radius;
-        var numSegments = CalculateCircleSegments(_radius, length.Abs(), maxError);
-        var angleIncrement = length / numSegments;
-        var points = new List<WDir>(numSegments + 2);
-        var centerO = centerOffset;
-
-        points.Add(centerO);
-        for (var i = 0; i <= numSegments; ++i)
-        {
-            points.Add(_radius * (angleStart + i * angleIncrement).ToDirection() + centerO);
-        }
-
-        return points;
+        return ArrayListWrapper<WDir>.Wrap(CircleSector(centerOffset, radius, angleStart, angleEnd, maxError));
     }
 
     // return polygon points approximating full donut; implicitly closed path - outer arc + inner arc
@@ -146,34 +129,10 @@ public static class CurveApprox
         return points;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static List<WDir> DonutL(WDir centerOffset, float innerRadius, float outerRadius, float maxError)
     {
-        var radiusO = outerRadius;
-        var radiusI = innerRadius;
-        var a360 = 360f.Degrees();
-        var numSegmentsO = CalculateCircleSegments(radiusO, a360, maxError);
-        var numSegmentsI = CalculateCircleSegments(radiusI, a360, maxError);
-        var angleIncrementO = (Angle.DoublePI / numSegmentsO).Radians();
-        var points = new List<WDir>(numSegmentsO + numSegmentsI + 2);
-        var centerO = centerOffset;
-
-        for (var i = 0; i < numSegmentsO; ++i) // note: do not include last point
-        {
-            points.Add(radiusO * (i * angleIncrementO).ToDirection() + centerO);
-        }
-
-        var v1 = new WDir(0f, 1f);
-        points.Add(radiusO * v1 + centerOffset);
-        points.Add(radiusI * v1 + centerOffset);
-
-        var innerAdj = numSegmentsI - 1;
-        var angleIncrementI = (Angle.DoublePI / numSegmentsI).Radians();
-        for (var i = innerAdj; i >= 0; --i)
-        {
-            points.Add(radiusI * (i * angleIncrementI).ToDirection() + centerO);
-        }
-
-        return points;
+        return ArrayListWrapper<WDir>.Wrap(Donut(centerOffset, innerRadius, outerRadius, maxError));
     }
 
     // return polygon points approximating donut sector; implicitly closed path - outer arc + inner arc
@@ -203,29 +162,10 @@ public static class CurveApprox
         return points;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static List<WDir> DonutSectorL(WDir centerOffset, float innerRadius, float outerRadius, Angle angleStart, Angle angleEnd, float maxError)
     {
-        var length = angleEnd - angleStart;
-        var radiusO = outerRadius;
-        var radiusI = innerRadius;
-        var lenAbs = length.Abs();
-        var numSegmentsO = CalculateCircleSegments(radiusO, lenAbs, maxError);
-        var numSegmentsI = CalculateCircleSegments(radiusI, lenAbs, maxError);
-        var angleIncrementO = length / numSegmentsO;
-        var angleIncrementI = length / numSegmentsI;
-        var points = new List<WDir>(numSegmentsO + numSegmentsI + 2);
-        var centerO = centerOffset;
-
-        for (var i = 0; i <= numSegmentsO; ++i)
-        {
-            points.Add(radiusO * (angleStart + i * angleIncrementO).ToDirection() + centerO);
-        }
-
-        for (var i = 0; i <= numSegmentsI; ++i)
-        {
-            points.Add(radiusI * (angleEnd - i * angleIncrementI).ToDirection() + centerO);
-        }
-        return points;
+        return ArrayListWrapper<WDir>.Wrap(DonutSector(centerOffset, innerRadius, outerRadius, angleStart, angleEnd, maxError));
     }
 
     private static WDir PolarToCartesian(float r, Angle phi) => r * phi.ToDirection();
@@ -266,39 +206,16 @@ public static class CurveApprox
         return points;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static List<WDir> CapsuleL(WDir centerOffset, WDir dir, float length, float radius, float maxError)
     {
-        dir = dir.Normalized();
+        return ArrayListWrapper<WDir>.Wrap(Capsule(centerOffset, dir, length, radius, maxError));
+    }
 
-        var p0 = default(WDir);
-        var p1 = length * dir;
-        var offset = centerOffset;
-        var angleDir = Angle.FromDirection(dir);
-        var a90 = 90f.Degrees();
-
-        // Start at the +OrthoL side, go around the forward end to -OrthoL.
-        var p1AngleStart = angleDir + a90;
-        var lengthP1 = angleDir - a90 - p1AngleStart;
-        var _radius = radius;
-        var numSegments = CalculateCircleSegments(_radius, lengthP1.Abs(), maxError);
-        var angleIncrement = lengthP1 / numSegments;
-        var points = new List<WDir>((numSegments + 1) * 2);
-        for (var i = 0; i <= numSegments; ++i)
-        {
-            var angle = p1AngleStart + i * angleIncrement;
-            points.Add(p1 + radius * angle.ToDirection() + offset);
-        }
-
-        // Start at the -OrthoL side, go around the rear end to +OrthoL.
-        var p2AngleStart = angleDir - a90;
-
-        for (var i = 0; i <= numSegments; ++i)
-        {
-            var angle = p2AngleStart + i * angleIncrement;
-            points.Add(p0 + radius * angle.ToDirection() + offset);
-        }
-
-        return points;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static List<WDir> ArcCapsuleL(WDir toOrbitCenter, Angle angularLength, float radius, float maxError)
+    {
+        return ArrayListWrapper<WDir>.Wrap(ArcCapsule(toOrbitCenter, angularLength, radius, maxError));
     }
 
     public static WDir[] ArcCapsule(WDir toOrbitCenter, Angle angularLength, float radius, float maxError)

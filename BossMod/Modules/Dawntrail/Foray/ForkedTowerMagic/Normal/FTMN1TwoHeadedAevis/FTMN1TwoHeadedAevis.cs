@@ -1,4 +1,5 @@
 ﻿namespace BossMod.Dawntrail.Foray.ForkedTowerMagic.Normal.FTMN1TwoHeadedAevis;
+
 sealed class StormsBreath(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.StormsBreathCast, 14f)
 {
     // on visual cast since there are x2 instances of actual knockback
@@ -64,9 +65,47 @@ sealed class ThunderfrostTempest(BossModule module) : Components.RaidwideCast(mo
     }
 }
 sealed class TwoTerrors(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TwoTerrors, new AOEShapeRect(40f, 5f));
-//sealed class PoisonBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoisonBreath, 18f);
-sealed class PoisonBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.PoisonBreath, 18f)
+
+sealed class LightningIcePoison(BossModule module) : Components.GenericAOEs(module)
 {
+    public readonly List<AOEInstance> aoes = [];
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
+    {
+        return CollectionsMarshal.AsSpan(aoes);
+    }
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.PoisonBreath or (uint)AID.IceCluster or (uint)AID.LightningCluster)
+        {
+            var origin = spell.LocXZ;
+            var rotation = spell.Rotation;
+            AOEShapeCircle shape = spell.Action.ID switch
+            {
+                (uint)AID.PoisonBreath => new(18f),
+                _ => new(15f)
+            };
+            aoes.Add(new(shape, origin, rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(origin, rotation)));
+        }
+    }
+
+    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
+    {
+        if (spell.Action.ID is (uint)AID.PoisonBreath or (uint)AID.IceCluster or (uint)AID.LightningCluster)
+        {
+            var count = aoes.Count;
+            var id = caster.InstanceID;
+            var aoespan = CollectionsMarshal.AsSpan(aoes);
+            for (var i = 0; i < count; ++i)
+            {
+                if (aoespan[i].ActorID == id)
+                {
+                    aoes.RemoveAt(i);
+                    return;
+                }
+            }
+        }
+    }
+
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         var knockbacks = Module.FindComponent<HissingReprise>();
@@ -81,46 +120,11 @@ sealed class PoisonBreath(BossModule module) : Components.SimpleAOEs(module, (ui
         if (knockbacks == null || knockbacks.ActiveKnockbacks(slot, actor).Length == 0)
         {
             base.AddAIHints(slot, actor, assignment, hints);
-        }
-    }
-}
-//sealed class IceCluster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceCluster, 15f);
-sealed class IceCluster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IceCluster, 15f)
-{
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        var knockbacks = Module.FindComponent<HissingReprise>();
-        if (knockbacks == null || knockbacks.ActiveKnockbacks(slot, actor).Length == 0)
-        {
-            base.AddHints(slot, actor, hints);
-        }
-    }
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var knockbacks = Module.FindComponent<HissingReprise>();
-        if (knockbacks == null || knockbacks.ActiveKnockbacks(slot, actor).Length == 0)
-        {
-            base.AddAIHints(slot, actor, assignment, hints);
-        }
-    }
-}
-//sealed class LightningCluster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningCluster, 15f);
-sealed class LightningCluster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LightningCluster, 15f)
-{
-    public override void AddHints(int slot, Actor actor, TextHints hints)
-    {
-        var knockbacks = Module.FindComponent<HissingReprise>();
-        if (knockbacks == null || knockbacks.ActiveKnockbacks(slot, actor).Length == 0)
-        {
-            base.AddHints(slot, actor, hints);
-        }
-    }
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var knockbacks = Module.FindComponent<HissingReprise>();
-        if (knockbacks == null || knockbacks.ActiveKnockbacks(slot, actor).Length == 0)
-        {
-            base.AddAIHints(slot, actor, assignment, hints);
+            if (aoes.Count != 0)
+            {
+                // avoid standing on edge to look less sus
+                hints.AddForbiddenZone(new SDInvertedRect(Arena.Center, 0f.Degrees(), 18f, 18f, 18f));
+            }
         }
     }
 }

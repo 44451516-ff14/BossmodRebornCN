@@ -35,9 +35,12 @@ public sealed class PolygonCustom(WPos[] vertices) : Shape
     {
         var len = Vertices.Length;
         var result = new List<WDir>(len);
+        CollectionsMarshal.SetCount(result, len);
+        var vertices = CollectionsMarshal.AsSpan(result);
+
         for (var i = 0; i < len; ++i)
         {
-            result.Add(Vertices[i] - center);
+            vertices[i] = Vertices[i] - center;
         }
         return result;
     }
@@ -60,7 +63,7 @@ public sealed class PolygonCustom(WPos[] vertices) : Shape
 public sealed class PolygonCustomRel(WDir[] vertices) : Shape
 {
     public readonly WDir[] Vertices = vertices;
-    public override List<WDir> Contour(WPos center) => [.. Vertices];
+    public override List<WDir> Contour(WPos center) => ArrayListWrapper<WDir>.Wrap(Vertices);
 
     public override string ToString()
     {
@@ -106,20 +109,15 @@ public class Rectangle(WPos center, float halfWidth, float halfHeight, Angle rot
         var dx = dir.OrthoL() * HalfWidth;
         var dz = dir * HalfHeight;
 
-        WDir[] vertices =
-        [
-            dx - dz,
-            -dx - dz,
-            -dx + dz,
-            dx + dz
-        ];
-
-        var offset = Center - center;
         var result = new List<WDir>(4);
-        for (var i = 0; i < 4; ++i)
-        {
-            result.Add(vertices[i] + offset);
-        }
+        CollectionsMarshal.SetCount(result, 4);
+        var vertices = CollectionsMarshal.AsSpan(result);
+        var offset = Center - center;
+
+        vertices[0] = dx - dz + offset;
+        vertices[1] = -dx - dz + offset;
+        vertices[2] = -dx + dz + offset;
+        vertices[3] = dx + dz + offset;
         return result;
     }
 
@@ -155,28 +153,24 @@ public sealed class Cross(WPos center, float length, float halfWidth, Angle rota
         var dy1 = dy * Length;
         var dy2 = dy * HalfWidth;
 
-        WDir[] vertices =
-        [
-            dx1 + dy2,
-            dx2 + dy2,
-            dx2 + dy1,
-            -dx2 + dy1,
-            -dx2 + dy2,
-            -dx1 + dy2,
-            -dx1 - dy2,
-            -dx2 - dy2,
-            -dx2 - dy1,
-            dx2 - dy1,
-            dx2 - dy2,
-            dx1 - dy2
-        ];
-
-        var offset = Center - center;
         var result = new List<WDir>(12);
-        for (var i = 0; i < 12; ++i)
-        {
-            result.Add(vertices[i] + offset);
-        }
+        CollectionsMarshal.SetCount(result, 12);
+        var vertices = CollectionsMarshal.AsSpan(result);
+        var offset = Center - center;
+
+        vertices[0] = dx1 + dy2 + offset;
+        vertices[1] = dx2 + dy2 + offset;
+        vertices[2] = dx2 + dy1 + offset;
+        vertices[3] = -dx2 + dy1 + offset;
+        vertices[4] = -dx2 + dy2 + offset;
+        vertices[5] = -dx1 + dy2 + offset;
+        vertices[6] = -dx1 - dy2 + offset;
+        vertices[7] = -dx2 - dy2 + offset;
+        vertices[8] = -dx2 - dy1 + offset;
+        vertices[9] = dx2 - dy1 + offset;
+        vertices[10] = dx2 - dy2 + offset;
+        vertices[11] = dx1 - dy2 + offset;
+
         return result;
     }
 
@@ -198,16 +192,21 @@ public sealed class Polygon(WPos center, float radius, int edges, Angle rotation
         var angleIncrement = Angle.DoublePI / edges;
         var initialRotation = Rotation.Rad;
         var radius = Radius;
-        var vertices = new List<WDir>(edges);
+
+        var result = new List<WDir>(edges);
+        CollectionsMarshal.SetCount(result, edges);
+        var vertices = CollectionsMarshal.AsSpan(result);
+
         var offset = Center - center;
         var offsetX = offset.X;
         var offsetZ = offset.Z;
+
         for (var i = 0; i < edges; ++i)
         {
             var (sin, cos) = ((float, float))Math.SinCos(i * angleIncrement + initialRotation);
-            vertices.Add(new(radius * sin + offsetX, radius * cos + offsetZ));
+            vertices[i] = new(radius * sin + offsetX, radius * cos + offsetZ);
         }
-        return vertices;
+        return result;
     }
 
     public override string ToString() => $"Polygon:{Center},{Radius},{Edges},{Rotation}";
@@ -272,19 +271,25 @@ public sealed class ConeV(WPos center, float radius, Angle centerDir, Angle half
         var edges = Edges;
         var angleIncrement = 2f * HalfAngle.Rad / edges;
         var startAngle = CenterDir.Rad - HalfAngle.Rad;
-        var vertices = new List<WDir>(edges + 2);
+
+        var count = edges + 2;
+        var result = new List<WDir>(count);
+        CollectionsMarshal.SetCount(result, count);
+        var vertices = CollectionsMarshal.AsSpan(result);
+
         var radius = Radius;
         var offset = Center - center;
         var offsetX = offset.X;
         var offsetZ = offset.Z;
         var e1 = edges + 1;
+
         for (var i = 0; i < e1; ++i)
         {
             var (sin, cos) = ((float, float))Math.SinCos(startAngle + i * angleIncrement);
-            vertices.Add(new(radius * sin + offsetX, radius * cos + offsetZ));
+            vertices[i] = new(radius * sin + offsetX, radius * cos + offsetZ);
         }
-        vertices.Add(offset);
-        return vertices;
+        vertices[e1] = offset;
+        return result;
     }
 
     public override string ToString() => $"ConeV:{Center},{Radius},{CenterDir},{HalfAngle},{Edges}";
@@ -307,13 +312,18 @@ public sealed class DonutSegmentV(WPos center, float innerRadius, float outerRad
         var angleIncrement = 2f * HalfAngle.Rad / edges;
         var startAngle = CenterDir.Rad - HalfAngle.Rad;
         var n = Edges + 1;
-        Span<WDir> vertices = stackalloc WDir[2 * edges + 2];
+        var count = 2 * edges + 2;
+
+        var result = new List<WDir>(count);
+        CollectionsMarshal.SetCount(result, count);
+        var vertices = CollectionsMarshal.AsSpan(result);
         var innerRadius = InnerRadius;
         var outerRadius = OuterRadius;
         var offset = Center - center;
         var offsetX = offset.X;
         var offsetZ = offset.Z;
         var indexInner = 2 * edges + 1;
+
         for (var i = 0; i < n; ++i)
         {
             var (sin, cos) = ((float, float))Math.SinCos(startAngle + i * angleIncrement);
@@ -321,7 +331,7 @@ public sealed class DonutSegmentV(WPos center, float innerRadius, float outerRad
             vertices[indexInner - i] = new(innerRadius * sin + offsetX, innerRadius * cos + offsetZ);
         }
 
-        return [.. vertices];
+        return result;
     }
 
     public override string ToString() => $"DonutSegmentV:{Center},{InnerRadius},{OuterRadius},{CenterDir},{HalfAngle},{Edges}";
@@ -341,7 +351,11 @@ public sealed class DonutV(WPos center, float innerRadius, float outerRadius, in
     {
         var edges = Edges;
         var angleIncrement = Angle.DoublePI / edges;
-        Span<WDir> vertices = stackalloc WDir[2 * edges + 2];
+
+        var count = 2 * edges + 2;
+        var result = new List<WDir>(count);
+        CollectionsMarshal.SetCount(result, count);
+        var vertices = CollectionsMarshal.AsSpan(result);
         var initialRotation = Rotation.Rad;
         var innerRadius = InnerRadius;
         var outerRadius = OuterRadius;
@@ -349,6 +363,7 @@ public sealed class DonutV(WPos center, float innerRadius, float outerRadius, in
         var offsetX = offset.X;
         var offsetZ = offset.Z;
         var indexInner = 2 * edges + 1;
+
         for (var i = 0; i < edges; ++i)
         {
             var (sin, cos) = ((float, float))Math.SinCos(i * angleIncrement + initialRotation);
@@ -359,7 +374,7 @@ public sealed class DonutV(WPos center, float innerRadius, float outerRadius, in
         // ensure closed polygons, copy first vertices of each ring
         vertices[edges] = vertices[0];
         vertices[edges + 1] = vertices[indexInner];
-        return [.. vertices];
+        return result;
     }
 
     public override string ToString() => $"DonutV:{Center},{InnerRadius},{OuterRadius},{Edges}";
@@ -377,23 +392,26 @@ public sealed class Ellipse(WPos center, float halfWidth, float halfHeight, int 
 
     public override List<WDir> Contour(WPos center)
     {
-        var angleIncrement = Angle.DoublePI / Edges;
+        var edges = Edges;
+        var angleIncrement = Angle.DoublePI / edges;
         var (sinRotation, cosRotation) = ((float, float))Math.SinCos(Rotation.Rad);
-        var vertices = new List<WDir>(Edges);
+        var result = new List<WDir>(edges);
+        CollectionsMarshal.SetCount(result, edges);
+        var vertices = CollectionsMarshal.AsSpan(result);
         var halfWidth = HalfWidth;
         var halfHeight = HalfHeight;
         var offset = Center - center;
         var offsetX = offset.X;
         var offsetZ = offset.Z;
-        for (var i = 0; i < Edges; ++i)
+
+        for (var i = 0; i < edges; ++i)
         {
-            var currentAngle = i * angleIncrement;
-            var (sin, cos) = ((float, float))Math.SinCos(currentAngle);
+            var (sin, cos) = ((float, float))Math.SinCos(i * angleIncrement);
             var x = halfWidth * cos;
             var y = halfHeight * sin;
-            vertices.Add(new(x * cosRotation - y * sinRotation + offsetX, x * sinRotation + y * cosRotation + offsetZ));
+            vertices[i] = new(x * cosRotation - y * sinRotation + offsetX, x * sinRotation + y * cosRotation + offsetZ);
         }
-        return vertices;
+        return result;
     }
 
     public override string ToString() => $"Ellipse:{Center},{HalfWidth},{HalfHeight},{Edges},{Rotation}";
@@ -412,27 +430,38 @@ public sealed class Capsule(WPos center, float halfHeight, float halfWidth, int 
 
     public override List<WDir> Contour(WPos center)
     {
-        Span<WDir> vertices = stackalloc WDir[2 * Edges];
-        var angleIncrement = MathF.PI / Edges;
+        var edges = Edges;
+        var edgeAdj = edges + 1;
+        var count = 2 * (edges + 1);
+        var result = new List<WDir>(count);
+
+        CollectionsMarshal.SetCount(result, count);
+        var vertices = CollectionsMarshal.AsSpan(result);
+
+        var angleIncrement = MathF.PI / edges;
         var (sinRot, cosRot) = ((float, float))Math.SinCos(Rotation.Rad);
-        var halfWidth = HalfWidth;
-        var halfHeight = HalfHeight;
         var offset = Center - center;
         var offsetX = offset.X;
         var offsetZ = offset.Z;
-        for (var i = 0; i < Edges; ++i)
+
+        for (var i = 0; i <= edges; ++i)
         {
             var (sin, cos) = ((float, float))Math.SinCos(i * angleIncrement);
-            var halfWidthCos = halfWidth * cos;
-            var halfWidthSin = halfWidth * sin + halfHeight;
-            var rxTop = halfWidthCos * cosRot - halfWidthSin * sinRot + offsetX;
-            var ryTop = halfWidthCos * sinRot + halfWidthSin * cosRot + offsetZ;
-            vertices[i] = new(rxTop, ryTop);
-            var rxBot = -rxTop;
-            var ryBot = -ryTop;
-            vertices[Edges + i] = new(rxBot, ryBot);
+
+            var x = HalfWidth * cos;
+            var z = HalfWidth * sin + HalfHeight;
+
+            var rx = x * cosRot - z * sinRot;
+            var rz = x * sinRot + z * cosRot;
+
+            // Upper semicircle
+            vertices[i] = new(rx + offsetX, rz + offsetZ);
+
+            // Lower semicircle
+            vertices[edgeAdj + i] = new(-rx + offsetX, -rz + offsetZ);
         }
-        return [.. vertices];
+
+        return result;
     }
 
     public override string ToString() => $"Capsule:{Center},{HalfHeight},{HalfWidth},{Rotation},{Edges}";

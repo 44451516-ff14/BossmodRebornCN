@@ -325,7 +325,7 @@ public sealed class ReplayManagementWindow : UIWindow
 
         try
         {
-            _recorder = new(_ws, _config.WorldLogFormat, true, _logDir, prefix + GetPrefix());
+            _recorder = new(_ws, _config.WorldLogFormat, true, _logDir, prefix + GetPrefix(), _config.Anonymize);
         }
         catch (Exception ex)
         {
@@ -391,18 +391,20 @@ public sealed class ReplayManagementWindow : UIWindow
         if (player != null)
         {
             prefix += "_" + player.Class + player.Level + "_";
-
-            var nameParts = player.Name.Split(' ');
-            List<string> shortenedParts = [];
-            var nameLen = nameParts.Length;
-            for (var i = 0; i < nameLen; ++i)
+            if (!_config.Anonymize)
             {
-                ref var part = ref nameParts[i];
-                var len = Math.Min(2, part.Length);
-                shortenedParts.Add(part[..len]);
-            }
+                var nameParts = player.Name.Split(' ');
+                List<string> shortenedParts = [];
+                var nameLen = nameParts.Length;
+                for (var i = 0; i < nameLen; ++i)
+                {
+                    ref var part = ref nameParts[i];
+                    var len = Math.Min(2, part.Length);
+                    shortenedParts.Add(part[..len]);
+                }
 
-            prefix += string.Join("_", shortenedParts);
+                prefix += string.Join("_", shortenedParts);
+            }
         }
 
         var cf = FFXIVClientStructs.FFXIV.Client.Game.UI.ContentsFinder.Instance();

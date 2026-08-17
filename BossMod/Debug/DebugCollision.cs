@@ -761,7 +761,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         new( 1,  1,  1),
     ];
 
-    private float _maxDrawDistance = 10;
+    private float _maxColliderDistanceXZ = 0f; // 0 => no scene collider distance filter
 
     public void Dispose() { }
 
@@ -770,7 +770,6 @@ public sealed unsafe class DebugCollision() : IDisposable
         var module = Framework.Instance()->BGCollisionModule;
         ImGui.TextUnformatted($"Module: {(nint)module:X}->{(nint)module->SceneManager:X} ({module->SceneManager->NumScenes} scenes, {module->LoadInProgressCounter} loads)");
         ImGui.TextUnformatted($"Streaming: {SphereStr(module->ForcedStreamingSphere)} / {SphereStr(module->SceneManager->StreamingSphere)}");
-        module->ForcedStreamingSphere.W = _maxDrawDistance;
 
         GatherInfo();
         DrawSettings();
@@ -828,7 +827,7 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private bool FilterCollider(Collider* coll)
     {
-        // mayer & flag filters
+        // layer & flag filters
         if (coll->LayerMask == 0 ? !_showZeroLayer : (_shownLayers.Raw & coll->LayerMask) == 0)
         {
             return false;
@@ -838,6 +837,10 @@ public sealed unsafe class DebugCollision() : IDisposable
             return false;
         }
         if (_showOnlyFlagVisit && (coll->VisibilityFlags & 2) == 0)
+        {
+            return false;
+        }
+        if (!ColliderWithinMaxDistanceXZ(coll))
         {
             return false;
         }
@@ -863,6 +866,100 @@ public sealed unsafe class DebugCollision() : IDisposable
         var wantedId = _materialId.Raw;
         var objValue = coll->ObjectMaterialValue; // primitives only have object-level material
         return ((objValue ^ wantedId) & maskActiveBits) == 0UL;
+    }
+
+    private bool ColliderWithinMaxDistanceXZ(Collider* coll)
+    {
+        if (_maxColliderDistanceXZ <= 0f)
+        {
+            return true;
+        }
+
+        var player = Service.ObjectTable.LocalPlayer;
+        if (player == null)
+        {
+            return true;
+        }
+
+        var p = player.Position;
+        var maxD2 = _maxColliderDistanceXZ * _maxColliderDistanceXZ;
+
+        switch (coll->GetColliderType())
+        {
+            case ColliderType.Streamed:
+                {
+                    var cast = (ColliderStreamed*)coll;
+                    return Distance2PointRectXZ(p.X, p.Z, cast->StreamedMinX, cast->StreamedMinZ, cast->StreamedMaxX, cast->StreamedMaxZ) <= maxD2;
+                }
+            case ColliderType.Mesh:
+                {
+                    var bb = ((ColliderMesh*)coll)->WorldBoundingBox;
+                    return Distance2PointRectXZ(p.X, p.Z, bb.Min.X, bb.Min.Z, bb.Max.X, bb.Max.Z) <= maxD2;
+                }
+            case ColliderType.Box:
+                {
+                    var cast = (ColliderBox*)coll;
+                    return Distance2ProjectedUnitBoxXZ(ref cast->World, p) <= maxD2;
+                }
+            case ColliderType.Cylinder:
+                {
+                    // Conservative projected bound around the unit cylinder used by VisualizeCylinder.
+                    var cast = (ColliderCylinder*)coll;
+                    return Distance2ProjectedUnitBoxXZ(ref cast->World, p) <= maxD2;
+                }
+            case ColliderType.Sphere:
+                {
+                    var cast = (ColliderSphere*)coll;
+                    var dx = p.X - cast->Translation.X;
+                    var dz = p.Z - cast->Translation.Z;
+                    var centerDistance = MathF.Sqrt(dx * dx + dz * dz);
+                    var surfaceDistance = MathF.Max(0f, centerDistance - MathF.Abs(cast->Scale.X));
+                    return surfaceDistance * surfaceDistance <= maxD2;
+                }
+            case ColliderType.Plane:
+            case ColliderType.PlaneTwoSided:
+                {
+                    var cast = (ColliderPlane*)coll;
+                    var a = cast->World.TransformCoordinate(new(-1, +1, 0));
+                    var b = cast->World.TransformCoordinate(new(-1, -1, 0));
+                    var c = cast->World.TransformCoordinate(new(+1, -1, 0));
+                    var d = cast->World.TransformCoordinate(new(+1, +1, 0));
+                    var minX = Math.Min(Math.Min(a.X, b.X), Math.Min(c.X, d.X));
+                    var maxX = Math.Max(Math.Max(a.X, b.X), Math.Max(c.X, d.X));
+                    var minZ = Math.Min(Math.Min(a.Z, b.Z), Math.Min(c.Z, d.Z));
+                    var maxZ = Math.Max(Math.Max(a.Z, b.Z), Math.Max(c.Z, d.Z));
+                    return Distance2PointRectXZ(p.X, p.Z, minX, minZ, maxX, maxZ) <= maxD2;
+                }
+            default:
+                return true;
+        }
+    }
+
+    private static float Distance2ProjectedUnitBoxXZ(ref Matrix4x3 world, in Vector3 p)
+    {
+        var first = world.TransformCoordinate(_boxCorners[0]);
+        var minX = first.X;
+        var maxX = first.X;
+        var minZ = first.Z;
+        var maxZ = first.Z;
+
+        for (var i = 1; i < _boxCorners.Length; ++i)
+        {
+            var v = world.TransformCoordinate(_boxCorners[i]);
+            minX = Math.Min(minX, v.X);
+            maxX = Math.Max(maxX, v.X);
+            minZ = Math.Min(minZ, v.Z);
+            maxZ = Math.Max(maxZ, v.Z);
+        }
+
+        return Distance2PointRectXZ(p.X, p.Z, minX, minZ, maxX, maxZ);
+    }
+
+    private static float Distance2PointRectXZ(float x, float z, float minX, float minZ, float maxX, float maxZ)
+    {
+        var dx = x < minX ? minX - x : x > maxX ? x - maxX : 0f;
+        var dz = z < minZ ? minZ - z : z > maxZ ? z - maxZ : 0f;
+        return dx * dx + dz * dz;
     }
 
     private readonly CollisionOutlinesExtractor.MaterialMatchMode[] modes = Enum.GetValues<CollisionOutlinesExtractor.MaterialMatchMode>();
@@ -933,7 +1030,7 @@ public sealed unsafe class DebugCollision() : IDisposable
             }
         }
 
-        ImGui.SliderFloat("Max Draw Distance", ref _maxDrawDistance, 10f, 1000f, "%.0f");
+        ImGui.SliderFloat("Max collider distance XZ (0 = off)", ref _maxColliderDistanceXZ, 0f, 1000f, "%.0f");
 
         using var ex = _tree.Node2("Export / Union settings");
         if (ex.Opened)
@@ -1086,7 +1183,10 @@ public sealed unsafe class DebugCollision() : IDisposable
                     // TODO: visualize cell bounds?
                     foreach (var coll in node.Colliders)
                     {
-                        VisualizeCollider(coll, _materialId, _materialMask);
+                        if (FilterCollider(coll))
+                        {
+                            VisualizeCollider(coll, _materialId, _materialMask);
+                        }
                     }
                 }
             }
@@ -1407,7 +1507,11 @@ public sealed unsafe class DebugCollision() : IDisposable
                         for (var i = 0; i < cast->Header->NumMeshes; ++i)
                         {
                             var elem = cast->Elements + i;
-                            VisualizeColliderMesh(elem->Mesh, Colors.CollisionColor1, _materialId, _materialMask);
+                            var mesh = elem->Mesh;
+                            if (mesh != null && ColliderWithinMaxDistanceXZ(&mesh->Collider))
+                            {
+                                VisualizeColliderMesh(mesh, Colors.CollisionColor1, _materialId, _materialMask);
+                            }
                         }
                     }
                 }
@@ -1906,7 +2010,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         for (var i = 0; i < cs->Header->NumMeshes; ++i)
         {
             var cm = (cs->Elements + i)->Mesh;
-            if (cm == null || cm->MeshIsSimple || cm->Mesh == null)
+            if (cm == null || cm->MeshIsSimple || cm->Mesh == null || !ColliderWithinMaxDistanceXZ(&cm->Collider))
             {
                 continue;
             }

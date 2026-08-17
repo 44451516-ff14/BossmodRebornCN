@@ -74,6 +74,7 @@ public sealed class ReplayManager(RotationDatabase rotationDB, string logDirecto
     private readonly List<AnalysisEntry> _analysisEntries = [];
     private int _nextAnalysisId;
     private string _path = "";
+    private bool _convertAnonymize;
     private FileDialog? _fileDialog;
     private string _logDirectory = logDirectory;
     private readonly RotationDatabase _rotationDB = rotationDB;
@@ -181,23 +182,30 @@ public sealed class ReplayManager(RotationDatabase rotationDB, string logDirecto
                     }
                     if (ImGui.MenuItem("Convert to verbose"))
                     {
-                        ConvertLog(e.Replay.Result, ReplayLogFormat.TextVerbose);
+                        ConvertLog(e.Replay.Result, ReplayLogFormat.TextVerbose, _convertAnonymize);
                     }
 
                     if (ImGui.MenuItem("Convert to short text"))
                     {
-                        ConvertLog(e.Replay.Result, ReplayLogFormat.TextCondensed);
+                        ConvertLog(e.Replay.Result, ReplayLogFormat.TextCondensed, _convertAnonymize);
                     }
 
                     if (ImGui.MenuItem("Convert to uncompressed binary"))
                     {
-                        ConvertLog(e.Replay.Result, ReplayLogFormat.BinaryUncompressed);
+                        ConvertLog(e.Replay.Result, ReplayLogFormat.BinaryUncompressed, _convertAnonymize);
                     }
 
                     if (ImGui.MenuItem("Convert to compressed binary"))
                     {
-                        ConvertLog(e.Replay.Result, ReplayLogFormat.BinaryCompressed);
+                        ConvertLog(e.Replay.Result, ReplayLogFormat.BinaryCompressed, _convertAnonymize);
                     }
+                    ImGui.Separator();
+                    ImGuiP.PushItemFlag(ImGuiItemFlags.SelectableDontClosePopup, true);
+                    if (ImGui.MenuItem("转换时匿名化录像", _convertAnonymize))
+                    {
+                        _convertAnonymize = !_convertAnonymize;
+                    }
+                    ImGuiP.PopItemFlag();
                 }
             }
 
@@ -364,7 +372,7 @@ public sealed class ReplayManager(RotationDatabase rotationDB, string logDirecto
         }
     }
 
-    private void ConvertLog(Replay r, ReplayLogFormat format)
+    private void ConvertLog(Replay r, ReplayLogFormat format, bool anonymize)
     {
         if (r.Ops.Count == 0)
         {
@@ -373,7 +381,7 @@ public sealed class ReplayManager(RotationDatabase rotationDB, string logDirecto
 
         var player = new ReplayPlayer(r);
         player.WorldState.Frame.Timestamp = r.Ops[0].Timestamp; // so that we get correct name etc.
-        using var relogger = new ReplayRecorder(player.WorldState, format, false, new DirectoryInfo(_logDirectory), format.ToString());
+        using var relogger = new ReplayRecorder(player.WorldState, format, false, new DirectoryInfo(_logDirectory), format.ToString(), anonymize);
         player.AdvanceTo(DateTime.MaxValue, () => { });
     }
 }

@@ -70,11 +70,11 @@ class AutoYshtola(BossModule module, WorldState ws) : QuestBattle.UnmanagedRotat
 {
     private Actor Magnai => module.Enemies((uint)OID.Magnai)[0];
     private Actor Hien => module.Enemies((uint)OID.Hien)[0];
-    private Actor Daidukul => module.Enemies((uint)OID.Daidukul)[0];
+    private Actor? Daidukul => module.GetActor((uint)OID.Daidukul);
 
     protected override void Exec(Actor? primaryTarget)
     {
-        var hienMinHP = Daidukul.CastInfo?.Action.ID == (uint)AID.TranquilAnnihilation
+        var hienMinHP = Daidukul?.CastInfo?.Action.ID == (uint)AID.TranquilAnnihilation
             ? 28000
             : 10000;
 
@@ -162,8 +162,8 @@ class SaduHeavensflameStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68683, NameID = 6152)]
-public class SaduHeavensflame(WorldState ws, Actor primary) : BossModule(ws, primary, new(-223, 519), new ArenaBoundsCircle(20))
+[ModuleInfo(BossModuleInfo.Maturity.Contributed, GroupType = BossModuleInfo.GroupType.Quest, GroupID = 68683u, NameID = 6152u)]
+public class SaduHeavensflame(WorldState ws, Actor primary) : BossModule(ws, primary, new(-223f, 519f), new ArenaBoundsCircle(20u))
 {
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

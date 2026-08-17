@@ -18,24 +18,24 @@ public sealed class PartyState
     public const int MaxAllianceSize = 24;
     public const int MaxAllies = 64;
 
-    public struct Member(ulong contentId, ulong instanceId, bool inCutscene, string name)
+    public struct Member(ulong contentId, ulong instanceId, bool inCutscene)
     {
         public readonly ulong ContentId = contentId;
         public readonly ulong InstanceId = instanceId;
         public bool InCutscene = inCutscene;
-        public readonly string Name = name;
+
         // note that a valid member can have 0 contentid (eg buddy) or 0 instanceid (eg player in a different zone)
         public readonly bool IsValid() => ContentId != default || InstanceId != default;
 
         public static bool operator ==(Member left, Member right) => left.ContentId == right.ContentId && left.InstanceId == right.InstanceId && left.InCutscene == right.InCutscene;
         public static bool operator !=(Member left, Member right) => left.ContentId != right.ContentId || left.InstanceId != right.InstanceId || left.InCutscene != right.InCutscene;
 
-        public override readonly string ToString() => $"ContentID: {ContentId}, " + $"InstanceID: {InstanceId}, " + $"Name: {Name}";
+        public override readonly string ToString() => $"ContentID: {ContentId}, " + $"InstanceID: {InstanceId}";
         public readonly bool Equals(Member other) => this == other;
         public override readonly bool Equals(object? obj) => obj is Member other && Equals(other);
         public override readonly int GetHashCode() => (ContentId, InstanceId, InCutscene).GetHashCode();
     }
-    public static readonly Member EmptySlot = new(default, default, false, "");
+    public static readonly Member EmptySlot = new(default, default, false);
 
     public readonly Member[] Members = Utils.MakeArray(MaxAllies, EmptySlot);
     private readonly Actor?[] _actors = new Actor?[MaxAllies]; // transient
@@ -172,21 +172,6 @@ public sealed class PartyState
         return -1;
     }
 
-    // find a slot index containing specified player (by name); returns -1 if not found
-    public int FindSlot(ReadOnlySpan<char> name, StringComparison cmp = StringComparison.CurrentCultureIgnoreCase)
-    {
-        var length = Members.Length;
-        for (var i = 0; i < length; ++i)
-        {
-            ref var m = ref Members[i];
-            if (name.Equals(m.Name, cmp))
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public List<WorldState.Operation> CompareToInitial()
     {
         var length = Members.Length;
@@ -230,7 +215,7 @@ public sealed class PartyState
         public override void Write(ReplayRecorder.Output output)
         {
             ref readonly var m = ref Member;
-            output.EmitFourCC("PAR "u8).Emit(Slot).Emit(m.ContentId, "X").Emit(m.InstanceId, "X8").Emit(m.InCutscene).Emit(m.Name);
+            output.EmitFourCC("PAR "u8).Emit(Slot).Emit(m.ContentId, "X").Emit(m.InstanceId, "X8").Emit(m.InCutscene);
         }
     }
 

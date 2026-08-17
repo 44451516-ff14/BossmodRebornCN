@@ -1,4 +1,5 @@
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
@@ -75,7 +76,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
     private DateTime _nextAllowedExecuteCommand;
     private const uint InvalidEntityId = 0xE0000000;
 
-    private readonly unsafe delegate* unmanaged<TargetSystem*, TargetSystem*> _autoSelectTarget;
+    private readonly delegate* unmanaged<TargetSystem*, TargetSystem*> _autoSelectTarget;
 
     public ActionManagerEx(WorldState ws, AIHints hints, MovementOverride movement)
     {
@@ -123,6 +124,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
 
     public void QueueManualActions()
     {
+        _cancelCastTweak.Reset();
         _manualQueue.RemoveExpired();
         _manualQueue.FillQueue(_hints.ActionsToExecute);
     }
@@ -507,20 +509,6 @@ public sealed unsafe class ActionManagerEx : IDisposable
         autoRotateConfig->Value.UInt = autoRotateOriginal;
         _cooldownTweak.StopAdjustment(); // clear any potential adjustments
         _movement.MovementBlocked = blockMovement;
-
-        // TODO: what's the reason to do it in AM update, rather than plugin's executehints?..
-        if (_ws.Party.Player()?.CastInfo != null)
-        {
-            if (_cancelCastTweak.ShouldCancel(_ws.CurrentTime, _hints.ForceCancelCastMechanic))
-            {
-                UIState.Instance()->Hotbar.CancelCast();
-            }
-
-            //if (_cancelCastTweak.ShouldCancel(_ws.CurrentTime, _hints.ForceCancelCastOther))
-            //{
-            //    UIState.Instance()->Hotbar.CancelCast();
-            //}
-        }
 
         if (!GameMain.IsInPvPArea() && !Service.Condition.Any(ConditionFlag.DutyRecorderPlayback, ConditionFlag.InThisState89))
         {

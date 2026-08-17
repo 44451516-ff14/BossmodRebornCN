@@ -115,6 +115,7 @@ public sealed class AIHintsBuilder : IDisposable
                 _rsr.TriggerSpecialStateWithDuration(RotationSolverRebornModule.SpecialCommandType.NoCasting, finish != default ? (float)(finish - now).TotalSeconds : _config.PyreticThreshold);
                 if (isPyretic)
                 {
+                    //Service.Log("[AMEx] Canceling cast (RSR)");
                     hints.ForceCancelCastMechanic = true;
                 }
             }
@@ -247,7 +248,10 @@ public sealed class AIHintsBuilder : IDisposable
             var finishAt = _ws.FutureTime(caster.NPCRemainingTime);
             if (aoe.IsCharge)
             {
-                hints.AddForbiddenZone(new SDRect(aoe.Caster.Position.Quantized(), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
+                if (aoe.Target != player)
+                {
+                    hints.AddForbiddenZone(new SDRect(aoe.Caster.Position.Quantized(), target, ((AOEShapeRect)aoe.Shape).HalfWidth), finishAt, aoe.Caster.InstanceID);
+                }
             }
             else
             {

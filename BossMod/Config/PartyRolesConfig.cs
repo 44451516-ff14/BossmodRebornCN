@@ -417,7 +417,7 @@ public class PartyRolesConfig : ConfigNode
                     ref var m = ref ws.Party.Members[i];
                     if (m.IsValid())
                     {
-                        party.Add((m.ContentId, m.Name, ws.Party[i]?.Role.ToString()[0] ?? '?', this[m.ContentId]));
+                        party.Add(new(m.ContentId, ws.Party[i]?.Name ?? "", ws.Party[i]?.Role.ToString()[0] ?? '?', this[m.ContentId]));
                     }
                 }
 

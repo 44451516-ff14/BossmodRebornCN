@@ -148,7 +148,7 @@ sealed class ReplayDetailsWindow : UIWindow
 
             drawnGauge = DrawGauge(true);
 
-            var compListSb = new System.Text.StringBuilder();
+            var compListSb = new StringBuilder();
             var comps = _mgr.ActiveModule.Components;
             for (var ci = 0; ci < comps.Count; ++ci)
             {
@@ -208,7 +208,11 @@ sealed class ReplayDetailsWindow : UIWindow
                     var encs = _player.Replay.Encounters;
                     for (var ei = 0; ei < encs.Count; ++ei)
                     {
-                        if (encs[ei].InstanceID == _mgr.ActiveModule.PrimaryActor.InstanceID) { enc = encs[ei]; break; }
+                        if (encs[ei].InstanceID == _mgr.ActiveModule.PrimaryActor.InstanceID)
+                        {
+                            enc = encs[ei];
+                            break;
+                        }
                     }
 
                     if (enc != null)
@@ -715,12 +719,12 @@ sealed class ReplayDetailsWindow : UIWindow
 
         var player = new ReplayPlayer(_player.Replay);
         player.WorldState.Frame.Timestamp = _player.Replay.Ops[0].Timestamp; // so that we get correct name etc.
-        using (var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, false, new FileInfo(_player.Replay.Path).Directory!, "Before"))
+        using (var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, false, new FileInfo(_player.Replay.Path).Directory!, "Before", false))
         {
             player.AdvanceTo(_curTime, () => { });
         }
 
-        using (var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, "After"))
+        using (var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, "After", false))
         {
             player.AdvanceTo(DateTime.MaxValue, () => { });
         }
@@ -744,7 +748,7 @@ sealed class ReplayDetailsWindow : UIWindow
         var player = new ReplayPlayer(_player.Replay);
         player.WorldState.Frame.Timestamp = _player.Replay.Ops[0].Timestamp;
         player.AdvanceTo(enc.Time.Start, () => { });
-        using var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, $"Encounter_{Utils.StringToIdentifier(primaryActorName ?? "未知")}");
+        using var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, $"Encounter_{Utils.StringToIdentifier(primaryActorName ?? "未知")}", false);
         player.AdvanceTo(enc.Time.End, () => { });
     }
 }

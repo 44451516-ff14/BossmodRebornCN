@@ -6,6 +6,7 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game.Event;
 using FFXIVClientStructs.FFXIV.Client.Game.Fate;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -36,6 +37,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private DTRProvider _dtr = null!;
     private MultiboxManager _mbox = null!;
     private PartyRolesManager _partyRoles = null!;
+    private CancelCastTweak _cancelCastTweak = null!;
     private TimeSpan _prevUpdateTime;
     private DateTime _throttleJump;
     private DateTime _throttleInteract;
@@ -112,6 +114,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         _rsr = new(_dalamud);
         _ws = new(qpf, _gameVersion);
         _hints = new();
+        _cancelCastTweak = new(_ws, _hints);
         _bossmod = new(_ws);
         _zonemod = new(_ws);
         _hintsBuilder = new(_ws, _bossmod, _zonemod, _rsr);
@@ -366,11 +369,27 @@ public sealed class Plugin : IAsyncDalamudPlugin
                 }
             }
         }
+
+        if (_ws.Party.Player()?.CastInfo != null)
+        {
+            if (_cancelCastTweak.ShouldCancel(_ws.CurrentTime, _hints.ForceCancelCastMechanic))
+            {
+                Service.Log($"[CancelCast] Canceling cast due to ShouldCancel, {_hints.ForceCancelCastMechanic}");
+                UIState.Instance()->Hotbar.CancelCast();
+            }
+
+            //if (_cancelCastTweak.ShouldCancel(_ws.CurrentTime, _hints.ForceCancelCastOther))
+            //{
+            //    UIState.Instance()->Hotbar.CancelCast();
+            //}
+        }
+
         if (_hints.ShouldLeaveDuty && _ws.CurrentTime >= _throttleLeaveDuty)
         {
             EventFramework.LeaveCurrentContent(false);
             _throttleLeaveDuty = _ws.FutureTime(1d);
         }
+
         HandleFateSync();
     }
 

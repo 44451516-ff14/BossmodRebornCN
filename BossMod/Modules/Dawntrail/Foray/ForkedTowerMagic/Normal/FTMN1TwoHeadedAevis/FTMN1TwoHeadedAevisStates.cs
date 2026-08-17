@@ -7,12 +7,10 @@ sealed class TwoHeadedAevisStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<Buffet>()
-            .ActivateOnEnter<PoisonBreath>()
+            .ActivateOnEnter<LightningIcePoison>()
             .ActivateOnEnter<StormsBreath>()
             .ActivateOnEnter<ThunderfrostTempest>()
             .ActivateOnEnter<TwoTerrors>()
-            .ActivateOnEnter<IceCluster>()
-            .ActivateOnEnter<LightningCluster>()
             .ActivateOnEnter<HypothermalCombustionShock>()
             .ActivateOnEnter<HissingReprise>()
             .ActivateOnEnter<BlazeLoop>()

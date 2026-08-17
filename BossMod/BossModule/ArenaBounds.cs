@@ -49,10 +49,15 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
     public abstract WDir ClampToBounds(in WDir offset);
 
     // functions for clipping various shapes to bounds; all shapes are expected to be defined relative to bounds center
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulate(ReadOnlySpan<WDir> poly) => Clipper.Intersect(new PolygonClipper.Operand(poly), _clipOperand).Triangulate();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulate(RelSimplifiedComplexPolygon poly) => Clipper.Intersect(new(poly), _clipOperand).Triangulate();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] Triangulate(RelSimplifiedComplexPolygon poly) => poly.Triangulate();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon Clip(ReadOnlySpan<WDir> poly) => Clipper.Intersect(new PolygonClipper.Operand(poly), _clipOperand);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon Clip(RelSimplifiedComplexPolygon poly) => Clipper.Intersect(new(poly), _clipOperand);
 
     public WDir[] ConeVertices(WDir centerOffset, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle)
@@ -75,45 +80,50 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return points;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateCone(WDir centerOffset, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle)
     {
         return ClipAndTriangulate(ConeVertices(centerOffset, innerRadius, outerRadius, centerDirection, halfAngle));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipCone(WDir centerOffset, float innerRadius, float outerRadius, Angle centerDirection, Angle halfAngle)
     {
         return Clip(ConeVertices(centerOffset, innerRadius, outerRadius, centerDirection, halfAngle));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateCircle(WDir centerOffset, float radius)
     {
-
         return ClipAndTriangulate(CurveApprox.Circle(centerOffset, radius, MaxApproxError).AsSpan());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] TriangulateCircle(WDir centerOffset, float radius)
     {
-
         return Triangulate(new(CurveApprox.CircleL(centerOffset, radius, MaxApproxError)));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipCircle(WDir centerOffset, float radius)
     {
 
         return Clip(CurveApprox.Circle(centerOffset, radius, MaxApproxError).AsSpan());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon CirclePolygon(WDir centerOffset, float radius)
     {
-
         return new(CurveApprox.CircleL(centerOffset, radius, MaxApproxError));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public WDir[] CapsuleVertices(WDir centerOffset, WDir direction, float radius, float length)
     {
         return CurveApprox.Capsule(centerOffset, direction, length, radius, MaxApproxError);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon CapsulePolygon(WDir centerOffset, WDir direction, float radius, float length)
     {
         return new(CurveApprox.CapsuleL(centerOffset, direction, length, radius, MaxApproxError));
@@ -131,47 +141,57 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return points;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateCapsule(WDir centerOffset, WDir direction, float radius, float length)
     {
         return ClipAndTriangulate(CurveApprox.Capsule(centerOffset, direction, length, radius, MaxApproxError).AsSpan());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] TriangulateCapsule(WDir centerOffset, WDir direction, float radius, float length)
     {
         return Triangulate(CapsulePolygon(centerOffset, direction, radius, length));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateArcCapsule(WDir startOffset, WDir toOrbitCenter, Angle angularLength, float radius)
     {
         return ClipAndTriangulate(ArcCapsuleVertices(startOffset, toOrbitCenter, angularLength, radius));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipCapsule(WDir centerOffset, WDir direction, float radius, float length)
     {
         return Clip(CurveApprox.Capsule(centerOffset, direction, length, radius, MaxApproxError).AsSpan());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipArcCapsule(WDir startOffset, WDir toOrbitCenter, Angle angularLength, float radius)
     {
         return Clip(ArcCapsuleVertices(startOffset, toOrbitCenter, angularLength, radius));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateDonut(WDir centerOffset, float innerRadius, float outerRadius)
     {
         return ClipAndTriangulate(CurveApprox.DonutL(centerOffset, innerRadius, outerRadius, MaxApproxError).AsSpan());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipDonut(WDir centerOffset, float innerRadius, float outerRadius)
     {
         return Clip(CurveApprox.DonutL(centerOffset, innerRadius, outerRadius, MaxApproxError).AsSpan());
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateTri(WDir oa, WDir ob, WDir oc)
         => ClipAndTriangulate([oa, ob, oc]);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateIsoscelesTri(WDir apexOffset, WDir height, WDir halfBase)
         => ClipAndTriangulateTri(apexOffset, apexOffset + height + halfBase, apexOffset + height - halfBase);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateIsoscelesTri(WDir apexOffset, Angle direction, Angle halfAngle, float height)
     {
         var dir = direction.ToDirection();
@@ -179,12 +199,15 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return ClipAndTriangulateIsoscelesTri(apexOffset, height * dir, height * halfAngle.Tan() * normal);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipTri(WDir oa, WDir ob, WDir oc)
         => Clip([oa, ob, oc]);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipIsoscelesTri(WDir apexOffset, WDir height, WDir halfBase)
         => ClipIsoscelesTri(apexOffset, apexOffset + height + halfBase, apexOffset + height - halfBase);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipIsoscelesTri(WDir apexOffset, Angle direction, Angle halfAngle, float height)
     {
         var dir = direction.ToDirection();
@@ -192,6 +215,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return ClipIsoscelesTri(apexOffset, height * dir, height * halfAngle.Tan() * normal);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateRect(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
     {
         var side = halfWidth * direction.OrthoR();
@@ -200,9 +224,11 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return ClipAndTriangulate([front + side, front - side, back - side, back + side]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateRect(WDir originOffset, Angle direction, float lenFront, float lenBack, float halfWidth)
         => ClipAndTriangulateRect(originOffset, direction.ToDirection(), lenFront, lenBack, halfWidth);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] ClipAndTriangulateRect(WDir startOffset, WDir endOffset, float halfWidth)
     {
         var dir = (endOffset - startOffset).Normalized();
@@ -210,6 +236,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return ClipAndTriangulate([startOffset + side, startOffset - side, endOffset - side, endOffset + side]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] TriangulateRect(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
     {
         var side = halfWidth * direction.OrthoR();
@@ -218,9 +245,11 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return Triangulate(new([front + side, front - side, back - side, back + side]));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] TriangulateRect(WDir originOffset, Angle direction, float lenFront, float lenBack, float halfWidth)
         => TriangulateRect(originOffset, direction.ToDirection(), lenFront, lenBack, halfWidth);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelTriangle[] TriangulateRect(WDir startOffset, WDir endOffset, float halfWidth)
     {
         var dir = (endOffset - startOffset).Normalized();
@@ -228,6 +257,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return Triangulate(new([startOffset + side, startOffset - side, endOffset - side, endOffset + side]));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon RectPolygon(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
     {
         var side = halfWidth * direction.OrthoR();
@@ -236,6 +266,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return new([front + side, front - side, back - side, back + side]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon RectPolygon(WDir startOffset, WDir endOffset, float halfWidth)
     {
         var dir = (endOffset - startOffset).Normalized();
@@ -243,6 +274,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return new([startOffset + side, startOffset - side, endOffset - side, endOffset + side]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipRect(WDir originOffset, WDir direction, float lenFront, float lenBack, float halfWidth)
     {
         var side = halfWidth * direction.OrthoR();
@@ -251,9 +283,11 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return Clip([front + side, front - side, back - side, back + side]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipRect(WDir originOffset, Angle direction, float lenFront, float lenBack, float halfWidth)
         => ClipRect(originOffset, direction.ToDirection(), lenFront, lenBack, halfWidth);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon ClipRect(WDir startOffset, WDir endOffset, float halfWidth)
     {
         var dir = (endOffset - startOffset).Normalized();
@@ -261,6 +295,7 @@ public abstract class ArenaBounds(float radius, float mapResolution, float scale
         return Clip([startOffset + side, startOffset - side, endOffset - side, endOffset + side]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RelSimplifiedComplexPolygon DonutPolygon(WDir centerOffset, float innerRadius, float outerRadius)
     {
         return new(CurveApprox.DonutL(centerOffset, innerRadius, outerRadius, MaxApproxError));
@@ -280,13 +315,18 @@ public sealed class ArenaBoundsCircle(float Radius, float MapResolution = 0.5f, 
     }
 
     public override void PathfindMap(Pathfinding.Map map, WPos center) => map.Init(_cachedMap ??= BuildMap(), center);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool Contains(in WDir offset)
     {
         var radius = Radius;
         return offset.LengthSq() <= radius * radius;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float IntersectRay(in WDir originOffset, in WDir dir) => Intersect.RayCircle(originOffset, dir, Radius);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override WDir ClampToBounds(in WDir offset)
     {
         var radius = Radius;
@@ -413,9 +453,12 @@ public abstract class ABRect : ArenaBounds
         return map;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override bool Contains(in WDir offset) => offset.InRect(Orientation, HalfHeight, HalfHeight, HalfWidth);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override float IntersectRay(in WDir originOffset, in WDir dir) => Intersect.RayRect(originOffset, dir, Orientation, HalfWidth, HalfHeight);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override WDir ClampToBounds(in WDir offset)
     {
         var orientation = Orientation;

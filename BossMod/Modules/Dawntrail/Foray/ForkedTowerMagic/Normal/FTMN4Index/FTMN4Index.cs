@@ -307,6 +307,8 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
 {
     private readonly Aim _aim = module.FindComponent<Aim>()!;
     private readonly RomeosBallad _romeo = module.FindComponent<RomeosBallad>()!;
+    public RelSimplifiedComplexPolygon Polygon;
+    public bool PolygonInit;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -351,15 +353,20 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
         if (kbs.Length != 0)
         {
             var kb = kbs[0];
-            var polygon = ((ArenaBoundsCustom)Arena.Bounds).Polygon;
             var aim = _aim.ActiveAOEs(slot, actor);
             var romeo = _romeo.ActiveAOEs(slot, actor);
+
+            if (!PolygonInit)
+            {
+                Polygon = Arena.Bounds.Shape.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
+                PolygonInit = true;
+            }
 
             if (aim.Length == 0 && romeo.Length == 0)
             {
                 if (textHints != null)
                 {
-                    var sd = new SDKnockbackInComplexPolygonAwayFromOrigin(Arena.Center, kb.Origin, Distance, polygon);
+                    var sd = new SDKnockbackInComplexPolygonAwayFromOrigin(Arena.Center, kb.Origin, Distance, Polygon);
                     if (sd.Contains(actor.Position))
                     {
                         textHints?.Add("About to be knocked into danger!");
@@ -367,7 +374,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
                 }
                 else
                 {
-                    var sd = new SDKnockbackInComplexPolygonAwayFromOrigin(Arena.Center, kb.Origin, Distance + 1f, polygon);
+                    var sd = new SDKnockbackInComplexPolygonAwayFromOrigin(Arena.Center, kb.Origin, Distance + 1f, Polygon);
                     aiHints?.AddForbiddenZone(sd, kb.Activation);
                 }
             }
@@ -387,7 +394,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
 
                 if (textHints != null)
                 {
-                    var sd = new SDKnockbackInComplexPolygonAwayFromOriginPlusAOECircles(Arena.Center, kb.Origin, Distance, polygon, origins, radius, origins.Length);
+                    var sd = new SDKnockbackInComplexPolygonAwayFromOriginPlusAOECircles(Arena.Center, kb.Origin, Distance, Polygon, origins, radius, origins.Length);
                     if (sd.Contains(actor.Position))
                     {
                         textHints?.Add("About to be knocked into danger!");
@@ -406,7 +413,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
                             aiHints?.AddForbiddenZone(new SDCircle(origin, radius + 1f), kb.Activation);
                         }
                     }
-                    var sd = new SDKnockbackInComplexPolygonAwayFromOriginPlusAOECircles(Arena.Center, kb.Origin, Distance + 1f, polygon, origins, radius + 1f, origins.Length);
+                    var sd = new SDKnockbackInComplexPolygonAwayFromOriginPlusAOECircles(Arena.Center, kb.Origin, Distance + 1f, Polygon, origins, radius + 1f, origins.Length);
                     aiHints?.AddForbiddenZone(sd, kb.Activation);
                 }
             }
@@ -457,60 +464,85 @@ sealed class DuologyOfImplements(BossModule module) : Components.GenericAOEs(mod
 sealed class AllConsumingFlames(BossModule module) : Components.SpreadFromIcon(module, (uint)IconID.Spread, (uint)AID.AllConsumingFlames, 6f, 5d);
 sealed class Predict(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> _aoes = [];
-    private readonly List<(Actor Source, ulong TargetID)> _tethered = [];
+    // sometimes tether goes out 1st before status, sometimes they happen on same timestamp
+    // sometimes on same timestamp, tether goes out after status gained
+    private readonly Dictionary<ulong, PredictAOE> _predict = [];
+    private readonly AOEShapeCircle _circle = new(10f);
+    private readonly AOEShapeDonut _donut = new(4f, 15f);
+    private DateTime _activation = default;
+
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        return CollectionsMarshal.AsSpan(_aoes);
+        if (_predict.Count == 0)
+        {
+            return [];
+        }
+
+        List<AOEInstance> aoes = [];
+        var keys = _predict.Keys.ToArray();
+        var count = keys.Length;
+        for (var i = 0; i < count; i++)
+        {
+            if (_predict.TryGetValue(keys[i], out var value))
+            {
+                if (value.Position != default && value.Mechanic != Mechanic.None)
+                {
+                    aoes.Add(new(value.Mechanic == Mechanic.Circle ? _circle : _donut, value.Position, activation: _activation));
+                }
+            }
+        }
+
+        return CollectionsMarshal.AsSpan(aoes);
     }
 
-    // predict tethers go out 1st, then actor created and AOE status gained 0.1s later
-    // is this always the case, or can it be either or?
     public override void OnTethered(Actor source, in ActorTetherInfo tether)
     {
         if (tether.ID == (uint)TetherID.Predict)
         {
-            _tethered.Add((source, tether.Target));
+            var targetId = tether.Target;
+            var position = source.Position;
+            if (_predict.TryGetValue(targetId, out var value))
+            {
+                value.Position = position;
+            }
+            else
+            {
+                _predict[targetId] = new(position, Mechanic.None);
+            }
         }
     }
-
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.Predict)
         {
-            var tethered = CollectionsMarshal.AsSpan(_tethered);
-            var count = tethered.Length;
-            for (var i = 0; i < count; i++)
+            var instanceId = actor.InstanceID;
+            var mech = status.Extra switch
             {
-                var tether = tethered[i];
-                var targetId = tether.TargetID;
-                if (actor.InstanceID == targetId)
-                {
-                    var target = WorldState.Actors.Find(targetId);
-                    if (target == null)
-                    {
-                        return;
-                    }
+                0x44C => Mechanic.Donut,
+                0x44D => Mechanic.Circle,
+                _ => Mechanic.None
+            };
 
-                    var source = tether.Source;
-                    _aoes.Add(new(status.Extra == 0x44C ? new AOEShapeDonut(4f, 15f) : new AOEShapeCircle(10f), source.Position, activation: WorldState.FutureTime(10d)));
-                    break;
-                }
+            if (_predict.TryGetValue(instanceId, out var value))
+            {
+                value.Mechanic = mech;
             }
+            else
+            {
+                _predict[instanceId] = new(default, mech);
+            }
+            _activation = WorldState.FutureTime(10d);
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (_aoes.Count != 0)
+        switch (spell.Action.ID)
         {
-            switch (spell.Action.ID)
-            {
-                case (uint)AID.Cleansing:
-                case (uint)AID.Starfall:
-                    _aoes.RemoveAt(0);
-                    break;
-            }
+            case (uint)AID.Cleansing:
+            case (uint)AID.Starfall:
+                _predict.Remove(caster.InstanceID);
+                break;
         }
     }
 
@@ -518,30 +550,19 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
     {
         if (actor.OID == (uint)OID.ForetoldPhenomenon)
         {
-            _tethered.Clear();
+            _predict.Clear();
+            _activation = default;
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_aoes.Count != 0)
+        if (ActiveAOEs(slot, actor) is var aoes && aoes.Length != 0)
         {
-            var aoes = CollectionsMarshal.AsSpan(_aoes);
             var count = aoes.Length;
             for (var i = 0; i < count; i++)
             {
-                /*
-                ref var aoe = ref aoes[i];
-                if (aoe.Shape is AOEShapeDonut)
-                {
-                    hints.GoalZones.Add(AIHints.GoalProximity(aoe.Origin, 3.5f, 1f));
-                }
-                else
-                {
-                    hints.AddForbiddenZone(aoe.Shape, aoe.Origin, activation: aoe.Activation);
-                }
-                */
-                ref var aoe = ref aoes[i];
+                var aoe = aoes[i];
                 hints.AddForbiddenZone(aoe.Shape, aoe.Origin, activation: aoe.Activation);
                 if (aoe.Shape is AOEShapeDonut)
                 {
@@ -549,6 +570,19 @@ sealed class Predict(BossModule module) : Components.GenericAOEs(module)
                 }
             }
         }
+    }
+
+    private class PredictAOE(WPos position, Mechanic mechanic)
+    {
+        public WPos Position = position;
+        public Mechanic Mechanic = mechanic;
+    }
+
+    private enum Mechanic
+    {
+        None,
+        Circle,
+        Donut
     }
 }
 
@@ -587,7 +621,8 @@ public sealed class Index(WorldState ws, Actor primary) : BossModule(ws, primary
         new(7.49992f, -656.00012f),new(7.50200f, -640.99408f),new(20.49863f, -648.49530f),new(27.99863f, -635.50494f),
         new(15.00408f, -628.00012f),new(15.00408f, -628.00012f)];
 
-    private static readonly WPos[] _innerHexPos = [new(-2.88752f, -623.00104f), new(0.62856f, -623.00043f), new(2.88607f, -623.00067f), new(5.77356f, -628.00012f), new(2.88633f, -633.00024f), new(-2.88692f, -633.00024f), new(-5.77374f, -628.00012f)];
+    //private static readonly WPos[] _innerHexPos = [new(-2.88752f, -623.00104f), new(0.62856f, -623.00043f), new(2.88607f, -623.00067f), new(5.77356f, -628.00012f), new(2.88633f, -633.00024f), new(-2.88692f, -633.00024f), new(-5.77374f, -628.00012f)];
+    private static readonly WPos[] _innerHexPos = [new(-3f, -623f), new(3f, -623f), new(6f, -628f), new(3f, -633f), new(-3f, -633f), new(-6f, -628f)];
 
     private static readonly PolygonCustom[] _arenaInitial = [new(_arenaInitialPos)];
     private static readonly PolygonCustom[] _arenaFull = [new(_arenaFullPos)];

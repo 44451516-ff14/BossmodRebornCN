@@ -79,12 +79,15 @@ sealed class Camera
         var p2p = Vector4.Transform(p2w, ViewProj);
         var p1c = p1p.XY() * (1 / p1p.W);
         var p2c = p2p.XY() * (1 / p2p.W);
-        var p1screen = new Vector2(0.5f * ViewportSize.X * (1 + p1c.X), 0.5f * ViewportSize.Y * (1 - p1c.Y)) + ImGuiHelpers.MainViewport.Pos;
-        var p2screen = new Vector2(0.5f * ViewportSize.X * (1 + p2c.X), 0.5f * ViewportSize.Y * (1 - p2c.Y)) + ImGuiHelpers.MainViewport.Pos;
+        var p1screen = new Vector2(0.5f * ViewportSize.X * (1 + p1c.X), 0.5f * ViewportSize.Y * (1 - p1c.Y)) +
+                       ImGuiHelpers.MainViewport.Pos;
+        var p2screen = new Vector2(0.5f * ViewportSize.X * (1 + p2c.X), 0.5f * ViewportSize.Y * (1 - p2c.Y)) +
+                       ImGuiHelpers.MainViewport.Pos;
         _worldDrawLines.Add(new(p1screen, p2screen, color, thickness));
     }
 
-    public void DrawWorldCone(Vector3 center, float radius, Angle direction, Angle halfWidth, uint color, float thickness = 1)
+    public void DrawWorldCone(Vector3 center, float radius, Angle direction, Angle halfWidth, uint color,
+        float thickness = 1)
     {
         var numSegments = CurveApprox.CalculateCircleSegments(radius, halfWidth, maxerror);
         var delta = halfWidth / numSegments;
@@ -97,6 +100,7 @@ sealed class Camera
             DrawWorldLine(prev, curr, color, thickness);
             prev = curr;
         }
+
         DrawWorldLine(prev, center, color, thickness);
     }
 
@@ -109,6 +113,113 @@ sealed class Camera
             var curr = center + radius * (i * 360.0f / numSegments).Degrees().ToDirection().ToVec3();
             DrawWorldLine(curr, prev, color, thickness);
             prev = curr;
+        }
+    }
+
+    // Pass in both Vec 3 center and Shape rectangle so we have the Y coordinate as well.
+    public void DrawWorldRectangle(Vector3 center, Rectangle rectangle, uint color, float thickness = 1)
+    {
+        var pos = rectangle.Center;
+        // pull out the 4 vertices directly from Shape Rectangle.
+        var dirs = rectangle.Contour(pos);
+        var numSides = 4; //rectangles have 4 sides
+
+
+        if (dirs.Count == 0)
+            return;
+        // align each line with vec3 center so that it is drawn at the correct Y value.
+        var prev = center + dirs[3].ToVec3();
+        // If the list of dirs has values we start at dirs[0] for first line and loop through the
+        // array until we end up back at dirs[0]
+        for (var i = 0; i < numSides; ++i)
+        {
+            var curr = center + dirs[i].ToVec3();
+            DrawWorldLine(curr, prev, color, thickness);
+            prev = curr;
+        }
+    }
+
+    // Shape agnostic drawing logic. Every Shape in Shapes.cs has a contour that is a list of WDir. Just pull that information
+    // and peg it to the vec3 center for arena height. Camera doesn't need to redo the logic, just use what Shapes delivers.
+    public void DrawWorldShape(Vector3 center, Shape shape, uint color, float thickness = 1)
+    {
+        WPos pos = new WPos(center.X, center.Z);
+        var dirs = shape.Contour(pos);
+        var dirsCount = dirs.Count;
+
+        if (dirs.Count == 0)
+            return;
+        // align each line with vec3 center so that it is drawn at the correct Y value.
+        var prev = center +
+                   dirs[dirsCount - 1]
+                       .ToVec3(); // Start from the last point so we can complete the outline of the shape
+        // If the list of dirs has values we start at dirs[0] for first line and loop through the
+        // array until we end up back at dirs[0]
+        for (var i = 0; i < dirsCount; ++i)
+        {
+            var curr = center + dirs[i].ToVec3();
+            DrawWorldLine(curr, prev, color, thickness);
+            prev = curr;
+        }
+    }
+
+    // Draw a shape from a polygon such as customArenaBounds : adapted from MiniArena.cs
+    // Curves and circles will not look clean because these guts were designed for tiny radar shapes in mind.
+    // Import to radar and then determine if it looks right instead of being bothered by jaggy curves for now.
+    public void DrawWorldPoly(Vector3 center, RelSimplifiedComplexPolygon poly, uint color, float thickness = 1)
+    {
+        var parts = CollectionsMarshal.AsSpan(poly.Parts);
+        var len = parts.Length;
+
+        for (var i = 0; i < len; ++i)
+        {
+            var part = parts[i];
+
+            DrawContour(part.Exterior);
+            var countH = part.HoleStarts.Count;
+            for (var h = 0; h < countH; ++h)
+            {
+                DrawContour(part.Interior(h));
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void DrawContour(ReadOnlySpan<WDir> contour)
+        {
+            var len = contour.Length;
+            Span<Vector3> points = stackalloc Vector3[len];
+
+            for (var i = 0; i < len; ++i)
+            {
+                points[i] = center + contour[i].ToVec3();
+            }
+            DrawPolygon(points);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        unsafe void DrawPolygon(Span<Vector3> points)
+        {
+            // fixed keyword to pin points in memory so GC doesn't relocate or dispose of any of them.
+            fixed (Vector3* p = points)
+            {
+                var len = points.Length;
+                Vector3* prevPtr = p + (len - 1);
+                Vector3 prev = *prevPtr;
+
+                for (var i = 0; i < len; ++i)
+                {
+                    Vector3* currentPtr = p;
+                    // moves the pointer to the i'th address
+                    if (i != 0)
+                        currentPtr = p + i;
+                    // Grabs the value of the pointer
+                    Vector3 currPtrValue = *currentPtr;
+                    var curr = currPtrValue;
+
+                    DrawWorldLine(curr, prev, color, thickness);
+                    prev = curr;
+                }
+            }
         }
     }
 
@@ -157,6 +268,7 @@ sealed class Camera
                 b = p;
             }
         }
+
         return true;
     }
 }

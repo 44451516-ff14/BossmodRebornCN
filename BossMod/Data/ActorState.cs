@@ -318,7 +318,7 @@ public sealed class ActorState : IEnumerable<Actor>
            .Emit(OID, "X")
            .Emit(SpawnIndex)
            .Emit(LayoutID, "X")
-           .Emit(Name)
+           .EmitName(Name, Type, Class, Level)
            .Emit(NameID)
            .Emit((ushort)Type, "X4")
            .Emit(Class)
@@ -388,6 +388,7 @@ public sealed class ActorState : IEnumerable<Actor>
             actor.NameID = NameID;
             ws.Actors.Renamed.Fire(actor);
         }
+        // note that this op is never triggered for players, so anonymization is unnecessary
         public override void Write(ReplayRecorder.Output output) => output.EmitFourCC("NAME"u8).Emit(InstanceID, "X8").Emit(Name).Emit(NameID);
     }
 

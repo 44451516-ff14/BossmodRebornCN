@@ -18,20 +18,21 @@ public enum SID : uint
 public enum AID : uint
 {
     AutoAttack = 50122, // ConjuredCalofisteri->player, no cast, single-target
-    AuraBurst = 47079, // ConjuredCalofisteri->self, 5.0s cast, single-target
-    AuraBurstVisual = 47080, // Helper->self, no cast, ???
+
+    AuraBurstVisual = 47079, // ConjuredCalofisteri->self, 5.0s cast, single-target
+    AuraBurst = 47080, // Helper->self, no cast, ???
     AsymmetricCoifChangeRightLeft = 47054, // ConjuredCalofisteri->self, 3.0s cast, single-target - right to left
     AsymmetricCoifChangeLeftRight = 47055, // ConjuredCalofisteri->self, 3.0s cast, single-target - left to right
-    DualCutCast = 47058, // ConjuredCalofisteri->self, 2.0s cast, single-target
-    DualCutCast1 = 47059, // ConjuredCalofisteri->self, 2.0s cast, single-target
-    DualCutVisual = 47061, // ConjuredCalofisteri->self, no cast, single-target
-    DualCutVisual2 = 47060, // ConjuredCalofisteri->self, no cast, single-target
-    DualCut = 50691, // Helper->self, 2.8s cast, range 60 180-degree cone
-    DualCut1 = 50692, // Helper->self, 4.8s cast, range 60 180-degree cone
+    DualCutVisual1 = 47058, // ConjuredCalofisteri->self, 2.0s cast, single-target
+    DualCutVisual2 = 47059, // ConjuredCalofisteri->self, 2.0s cast, single-target
+    DualCutVisual3 = 47061, // ConjuredCalofisteri->self, no cast, single-target
+    DualCutVisual4 = 47060, // ConjuredCalofisteri->self, no cast, single-target
+    DualCut1 = 50691, // Helper->self, 2.8s cast, range 60 180-degree cone
+    DualCut2 = 50692, // Helper->self, 4.8s cast, range 60 180-degree cone
     DashingCutLongTeleport = 47067, // ConjuredCalofisteri->location, 6.0s cast, single-target
     DashingCutTeleport = 47068, // ConjuredCalofisteri->location, 0.5s cast, single-target
-    DashingCut = 49052, // Helper->location, 6.5s cast, width 10 rect charge
-    DashingCut1 = 49053, // Helper->location, 1.0s cast, width 10 rect charge
+    DashingCut1 = 49052, // Helper->location, 6.5s cast, width 10 rect charge
+    DashingCut2 = 49053, // Helper->location, 1.0s cast, width 10 rect charge
 
     Extension = 47069, // ConjuredCalofisteri->self, 3.0s cast, single-target
 
@@ -56,33 +57,67 @@ public enum AID : uint
     RedIconTeleport = 47066, // 4BBC->location, no cast, single-target
 }
 
-sealed class AuraBurst(BossModule module) : Components.RaidwideCast(module, (uint)AID.AuraBurst);
-sealed class Graft(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Graft, (uint)AID.MaliciousWeave, (uint)AID.MaliciousWeave1],
-    new AOEShapeCircle(6.0f));
-sealed class DashingCut(BossModule module) : Components.SimpleChargeAOEGroups(module, [(uint)AID.DashingCut, (uint)AID.DashingCut1], 5.0f);
-sealed class HairShearsCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HairShearsCross, new AOEShapeCross(60.0f, 2.0f));
-sealed class HairShearsCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HairShearsCircle, new AOEShapeCircle(10.0f));
+[SkipLocalsInit]
+sealed class AuraBurst(BossModule module) : Components.RaidwideCastDelay(module, (uint)AID.AuraBurstVisual, (uint)AID.AuraBurst, 0.8d);
+[SkipLocalsInit]
+sealed class Graft(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Graft, (uint)AID.MaliciousWeave, (uint)AID.MaliciousWeave1], 6f);
+[SkipLocalsInit]
+sealed class DashingCut(BossModule module) : Components.SimpleChargeAOEGroups(module, [(uint)AID.DashingCut1, (uint)AID.DashingCut2], 5f);
+[SkipLocalsInit]
+sealed class HairShearsCross(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HairShearsCross, new AOEShapeCross(60f, 2f));
+[SkipLocalsInit]
+sealed class HairShearsCircle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HairShearsCircle, 10f);
 
-sealed class DualCut : Components.SimpleAOEGroups
+[SkipLocalsInit]
+sealed class DualCut(BossModule module) : Components.GenericAOEs(module)
 {
-    public DualCut(BossModule module) : base(module, [(uint)AID.DualCut, (uint)AID.DualCut1], new AOEShapeCone(60.0f, 90.0f.Degrees()),
-        expectedNumCasters: 2)
+    private readonly List<AOEInstance> _aoes = [with(2)];
+    private readonly AOEShapeCone cone = new(60f, 90f.Degrees());
+    private (WPos, Angle, DateTime)? caster1;
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
+
+    // TODO: probably should make an early prediction based on coif changes and teleports if possible
+    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        MaxDangerColor = 1;
-        MaxRisky = 1;
+        if (spell.Action.ID is var id && id is (uint)AID.DualCut1 or (uint)AID.DualCut2)
+        {
+            var pos = spell.LocXZ;
+            var rot = spell.Rotation;
+            var act = Module.CastFinishAt(spell);
+            if (caster1 == null)
+            {
+                caster1 = (pos, rot, act);
+            }
+            else
+            {
+                var isFirst = id == (uint)AID.DualCut1;
+                var c1 = caster1.Value;
+                AddAOE(isFirst ? pos : c1.Item1, isFirst ? rot : c1.Item2, isFirst ? act : c1.Item3, false);
+                AddAOE(isFirst ? c1.Item1 : pos, isFirst ? c1.Item2 : rot, isFirst ? c1.Item3 : act, true);
+                caster1 = null;
+            }
+        }
+        void AddAOE(WPos position, Angle rotation, DateTime activation, bool isSecond)
+        {
+            var pos2 = isSecond ? position + 5f * rotation.ToDirection() : position;
+            _aoes.Add(new(cone, pos2, rotation, activation, shapeDistance: cone.Distance(pos2, rotation)));
+        }
     }
 
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        base.AddAIHints(slot, actor, assignment, hints);
-        if (Casters.Count == 0)
+        if (_aoes.Count is var count && count != 0 && spell.Action.ID is (uint)AID.DualCut1 or (uint)AID.DualCut2)
         {
-            return;
+            _aoes.RemoveAt(0);
+            if (count == 2)
+            {
+                ref var aoe2 = ref _aoes.Ref(0);
+                var rot = aoe2.Rotation;
+                aoe2.Origin -= 5f * rot.ToDirection();
+                aoe2.ShapeDistance = cone.Distance(aoe2.Origin, rot);
+            }
         }
-
-        var nextAOE = Casters[0];
-        var distance = nextAOE.Shape.Distance(nextAOE.Origin, nextAOE.Rotation);
-        hints.GoalZones.Add(p => distance.Distance(p) is > 0.0f and <= 1.0f ? 100.0f : 0.0f);
     }
 }
 
@@ -120,8 +155,18 @@ sealed class CE207DoubleTroubleStates : StateMachineBuilder
     SortOrder = 2,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class CE207DoubleTrouble(WorldState ws, Actor primary) : BossModule(ws, primary, new(-215.200f, -65.000f), new ArenaBoundsCircle(22f))
+public sealed class CE207DoubleTrouble : BossModule
 {
+    public CE207DoubleTrouble(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private CE207DoubleTrouble(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-215f, -65f), 22f, 128, 15f.Degrees())]);
+        return (arena.Center, arena);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
