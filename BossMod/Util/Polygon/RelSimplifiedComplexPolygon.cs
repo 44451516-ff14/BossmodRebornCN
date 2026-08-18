@@ -1,6 +1,3 @@
-// using System.IO;
-// using System.Globalization;
-
 using Clipper2Lib;
 
 namespace BossMod;
@@ -21,87 +18,6 @@ public sealed class RelSimplifiedComplexPolygon(List<RelPolygonWithHoles> parts)
     public RelTriangle[] Triangulate()
     {
         return EarCut.Triangulate(this);
-    }
-
-    internal (float minX, float maxX, float minZ, float maxZ, WPos Center) CalculateCenterAndRecenter()
-    {
-        float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
-        var parts = Parts;
-        var count = parts.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            var ext = parts[i].Exterior;
-            var len = ext.Length;
-            for (var j = 0; j < len; ++j)
-            {
-                var vertex = ext[j];
-                var vX = vertex.X;
-                var vZ = vertex.Z;
-                if (vX < minX)
-                {
-                    minX = vX;
-                }
-                if (vX > maxX)
-                {
-                    maxX = vX;
-                }
-                if (vZ < minZ)
-                {
-                    minZ = vZ;
-                }
-                if (vZ > maxZ)
-                {
-                    maxZ = vZ;
-                }
-            }
-        }
-
-        // var sb = new StringBuilder();
-        // sb.AppendLine("WPos[] vertices");
-        // sb.AppendLine("[");
-
-        // const int perLine = 5;
-        // var count = 0;
-        // var culture = CultureInfo.InvariantCulture;
-        // for (var i = 0; i < count; ++i)
-        // {
-        //     var verts = combined[i].Vertices;
-        //     for (var j = 0; j < verts.Count; ++j)
-        //     {
-        //         if (count % perLine == 0)
-        //             sb.Append("    ");
-
-        //         var v = verts[j];
-        //         sb.Append($"new({v.X.ToString(culture)}f, {v.Z.ToString(culture)}f), ");
-
-        //         ++count;
-
-        //         if (count % perLine == 0)
-        //             sb.AppendLine();
-        //     }
-        // }
-
-        // if (count % perLine != 0)
-        //     sb.AppendLine();
-
-        // sb.AppendLine("];");
-
-        // File.WriteAllText("vertices.txt", sb.ToString());
-
-        var center = new WPos((minX + maxX) * 0.5f, (minZ + maxZ) * 0.5f);
-        var dir = center.ToWDir();
-        for (var i = 0; i < count; ++i)
-        {
-            var verts = CollectionsMarshal.AsSpan(parts[i].Vertices);
-            var len = verts.Length;
-            for (var j = 0; j < len; ++j)
-            {
-                ref var vert = ref verts[j];
-                vert -= dir;
-            }
-        }
-        InitPolygonIndex();
-        return (minX, maxX, minZ, maxZ, center);
     }
 
     // build a new polygon by transformation

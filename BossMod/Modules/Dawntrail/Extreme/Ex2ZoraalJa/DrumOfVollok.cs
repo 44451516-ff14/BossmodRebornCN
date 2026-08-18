@@ -10,24 +10,23 @@ sealed class DrumOfVollokPlatforms(BossModule module) : BossComponent(module)
         {
             return;
         }
-        var a135 = 135f.Degrees();
-        var center = new WPos(100f, 100f);
+
         switch (state)
         {
-            case 0x00800040u:
-                var dir135 = 15f * a135.ToDirection();
-                var arenaNW = new ArenaBoundsCustom([new Square(center - dir135, 10f, a135), new Square(center + dir135, 10f, a135)], ScaleFactor: 1.24f);
-                Arena.Bounds = arenaNW;
-                Arena.Center = arenaNW.Center;
-                Active = true;
+            case 0x00800040u: // top square NW
+                SetArena(new(121.2132f, 78.7868f));
                 break;
-            case 0x02000100u:
-                var dirM135 = 15f * (-a135).ToDirection();
-                var arenaNE = new ArenaBoundsCustom([new Square(center - dirM135, 10f, -a135), new Square(center + dirM135, 10f, -a135)], ScaleFactor: 1.24f);
-                Arena.Bounds = arenaNE;
-                Arena.Center = arenaNE.Center;
-                Active = true;
+            case 0x02000100u: // top square NE
+                SetArena(new(78.7868f, 78.7868f));
                 break;
+        }
+        void SetArena(WPos center1)
+        {
+            var a45 = 45f.Degrees();
+            Active = true;
+            var arena = new ArenaBoundsCustom([new Square(center1, 10f, a45), new Square(Arena.Center, 10f, a45)], ScaleFactor: 1.24f, RotatePathfindingMap: true);
+            Arena.Bounds = arena;
+            Arena.Center = arena.Center;
         }
     }
 }

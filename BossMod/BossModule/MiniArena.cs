@@ -60,7 +60,7 @@ public sealed class MiniArena(WPos center, ArenaBounds bounds)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public WPos ClampToBounds(WPos position) => _center + _bounds.ClampToBounds(position - _center);
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public float IntersectRayBounds(WPos rayOrigin, WDir rayDir) => _bounds.IntersectRay(rayOrigin - _center, rayDir);
+    public float IntersectRayBounds(WPos rayOrigin, in WDir rayDir) => _bounds.IntersectRay(rayOrigin - _center, rayDir);
 
     // prepare for drawing - set up internal state, clip rect etc.
     public void Begin(Angle cameraAzimuth)

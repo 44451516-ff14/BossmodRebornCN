@@ -139,6 +139,7 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
 {
     // do we need to avoid getting knocked back into RushSurgesword?
     // only subset; showing all 4 is visually confusing
+    // players can be hit by either Helper->SteelsBreath(50359) or DancingSword->SteelsBreath1(49599), happens at same timestamp
     private readonly List<Knockback> _knockbacks = [];
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor)
     {
@@ -157,7 +158,7 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
         {
             // 10.7s between 1st status and resolve, status 1.4s between each, resolve 2.5s between each
             var count = _knockbacks.Count;
-            var act = WorldState.FutureTime(10.7d + 1.3d * count);
+            var act = WorldState.FutureTime(10.7d + 1.1d * count);
             _knockbacks.Add(new(actor.Position, 24f, act));
         }
         base.OnStatusGain(actor, ref status);
@@ -167,19 +168,48 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
     {
         if (_knockbacks.Count != 0 && spell.Action.ID == (uint)AID.Steelsbreath)
         {
+            ++NumCasts;
             _knockbacks.RemoveAt(0);
         }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        // ActorState knockback: annoying case where Direction = 6 (AwayFromSource2) and knockback not removed before 3s expiration time
+        // 3s too long, AI will eat the next knockback into deathwall
+        // replace existing pendingeffect with new one, same values except shorter expiration so AI will move
+        // do replacement outside knockback count check, otherwise AI eats criss cross swords
+        var pendingkbs = actor.PendingKnockbacks;
+        var pcount = pendingkbs.Count;
+        if (pcount != 0)
+        {
+            var pkbs = CollectionsMarshal.AsSpan(pendingkbs);
+            for (var i = 0; i < pcount; i++)
+            {
+                ref var pkb = ref pkbs[i];
+                var timeleft = (pkb.Expiration - WorldState.CurrentTime).TotalSeconds;
+                if (timeleft >= 2.5d)
+                {
+                    var source = WorldState.Actors.Find(pkb.SourceInstanceID);
+                    if (source?.OID is (uint)OID.Helper or (uint)OID.DancingSwordSteelsbreath)
+                    {
+                        var newkb = new PendingEffect(pkb.GlobalSequence, pkb.TargetIndex, pkb.SourceInstanceID, WorldState.FutureTime(1d), true);
+                        pendingkbs.Add(newkb);
+                        pendingkbs.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+        }
+
         var kbs = CollectionsMarshal.AsSpan(_knockbacks);
         var count = kbs.Length;
         if (count != 0)
         {
             ref var kb = ref kbs[0];
             var act = kb.Activation;
-            if (!IsImmune(slot, act))
+            var isImmune = IsImmune(slot, act);
+            if (!isImmune)
             {
                 if (count == 1)
                 {
@@ -192,55 +222,6 @@ sealed class Steelsbreath(BossModule module) : Components.GenericKnockback(modul
                 }
             }
         }
-    }
-
-    private sealed class SDKnockbackInCircleAwayFromOriginInverted(WPos Center, WPos Origin, float Distance, float Radius) : ShapeDistance
-    {
-        private readonly WPos center = Center;
-        private readonly WPos origin = Origin;
-        private readonly float radius = Radius;
-        private readonly float distance = Distance;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Contains(in WPos p)
-        {
-            var projected = p + distance * (p - origin).Normalized();
-            return projected.InCircle(center, radius);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
-    }
-
-    private sealed class SDKnockbackInCircleAwayFromOriginIntoCircleInverted(WPos Center, WPos Origin, float Distance, float Radius, WPos CircleOrigin, float CircleRadius) : ShapeDistance
-    {
-        private readonly WPos center = Center;
-        private readonly WPos origin = Origin;
-        private readonly float radius = Radius;
-        private readonly float distance = Distance;
-        private readonly WPos circleOrigin = CircleOrigin;
-        private readonly float circleRadius = CircleRadius;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Contains(in WPos p)
-        {
-            var projected = p + distance * (p - origin).Normalized();
-            if (projected.InCircle(center, radius))
-            {
-                return true;
-            }
-            return projected.InCircle(circleOrigin, circleRadius);
-
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
     }
 }
 

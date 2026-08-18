@@ -502,10 +502,11 @@ public sealed class ArenaBoundsCustom : ArenaBounds
     public readonly RelSimplifiedComplexPolygon Polygon;
     public readonly float HalfWidth, HalfHeight;
     private readonly float offset;
+    private readonly bool rotatePathfindingMap;
     public readonly WPos Center;
     public bool IsCircle; // can be used by gaze component for gazes outside of the arena
 
-    public ArenaBoundsCustom(Shape[] UnionShapes, Shape[]? DifferenceShapes = null, Shape[]? AdditionalShapes = null, float MapResolution = 0.5f, float ScaleFactor = 1f, bool AllowObstacleMap = false, float Offset = default, bool AdjustForHitboxInwards = false, bool AdjustForHitboxOutwards = false)
+    public ArenaBoundsCustom(Shape[] UnionShapes, Shape[]? DifferenceShapes = null, Shape[]? AdditionalShapes = null, float MapResolution = 0.5f, float ScaleFactor = 1f, bool AllowObstacleMap = false, float Offset = default, bool AdjustForHitboxInwards = false, bool AdjustForHitboxOutwards = false, bool RotatePathfindingMap = false)
     : base(BuildBounds(UnionShapes, DifferenceShapes ?? [], AdditionalShapes ?? [], ScaleFactor, AdjustForHitboxInwards, AdjustForHitboxOutwards, out var poly, out var center, out var halfWidth, out var halfHeight), MapResolution, ScaleFactor, AllowObstacleMap)
     {
         Center = center;
@@ -513,6 +514,7 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         HalfHeight = halfHeight + Offset;
         Polygon = poly;
         offset = Offset;
+        rotatePathfindingMap = RotatePathfindingMap; // allow finding optimal polygon rotation for the minimum amount of grid cells on the pathfinding map
     }
 
     private static float BuildBounds(Shape[] unionShapes, Shape[]? differenceShapes, Shape[]? additionalShapes, float scalefactor, bool adjustForHitboxInwards, bool adjustForHitboxOutwards, out RelSimplifiedComplexPolygon poly, out WPos center, out float halfWidth, out float halfHeight)
@@ -532,7 +534,7 @@ public sealed class ArenaBoundsCustom : ArenaBounds
         var additionalPolygons = ParseShapes(additionalShapes);
         var combinedPoly = CombinePolygons(unionPolygons, differencePolygons, additionalPolygons, adjustForHitboxInwards ? -0.5f : adjustForHitboxOutwards ? 0.5f : default);
 
-        var props = combinedPoly.CalculateCenterAndRecenter();
+        var props = CalculateCenterAndRecenter(combinedPoly);
         var center = props.Center;
         var maxX = props.maxX;
         var minX = props.minX;
@@ -585,30 +587,61 @@ public sealed class ArenaBoundsCustom : ArenaBounds
     private Pathfinding.Map BuildMap()
     {
         var polygon = offset != default ? Polygon.Offset(offset) : Polygon;
-        if (offset != default)
+
+        var halfWidth = HalfWidth;
+        WPos center = default;
+        var halfHeight = HalfHeight;
+        Angle rotation = default;
+
+        if (rotatePathfindingMap)
+        {
+            var bounds = CalculateOptimalGridBounds(polygon, MapResolution);
+            static float Round(float extent)
+            {
+                // tolerate float noise near an exact grid boundary
+                var ext = extent;
+                var nearestExtent = MathF.Round(extent);
+                if (Math.Abs(extent - nearestExtent) <= 0.0001f)
+                {
+                    ext = nearestExtent;
+                }
+                return ext;
+            }
+            halfWidth = Round(bounds.HalfWidth);
+            halfHeight = Round(bounds.HalfHeight);
+            rotation = bounds.Rotation;
+            center = bounds.Center;
+            polygon = TransformToGrid(polygon, bounds);
+        }
+
+        if (rotatePathfindingMap || offset != default)
         {
             polygon.InitPolygonIndex();
         }
-        var map = new Pathfinding.Map(MapResolution, default, HalfWidth, HalfHeight);
+
+        var map = new Pathfinding.Map(MapResolution, center, halfWidth, halfHeight, rotation);
 
         var pixelMaxG = map.PixelMaxG;
         var pixelPriority = map.PixelPriority;
         var width = map.Width;
         var height = map.Height;
         var resolution = map.Resolution;
+
         // var startTime = Stopwatch.GetTimestamp();
         // for (var i = 0; i < 10000; ++i)
         // {
-        var halfCell = resolution * 0.49999f; // tiny offset to account for floating point inaccuracies and the assumption that being exactly on the polygon border is safe
+        var halfCell = resolution * 0.49999f;
 
         var dx = new WDir(resolution, default);
         var dy = new WDir(default, resolution);
-        var startPos = map.Center - ((width >> 1) - 0.5f) * dx - ((height >> 1) - 0.5f) * dy;
+
+        var startPos = -((width >> 1) - 0.5f) * dx - ((height >> 1) - 0.5f) * dy;
 
         Parallel.ForEach(Partitioner.Create(0, height), range =>
         {
             var r1 = range.Item1;
             var r2 = range.Item2;
+
             for (var y = r1; y < r2; ++y)
             {
                 var rowOffset = y * width;
@@ -617,9 +650,8 @@ public sealed class ArenaBoundsCustom : ArenaBounds
                 for (var x = 0; x < width; ++x)
                 {
                     var cellCenter = posY + x * dx;
-                    var relativeCenter = new WDir(cellCenter.X, cellCenter.Z);
 
-                    var relation = polygon.PolygonAABBIntersection(relativeCenter, halfCell, halfCell);
+                    var relation = polygon.PolygonAABBIntersection(cellCenter, halfCell, halfCell);
 
                     if (relation == PolygonShapeRelation.Inside)
                     {
@@ -680,5 +712,263 @@ public sealed class ArenaBoundsCustom : ArenaBounds
             vertsCount += parts[i].Vertices.Count;
         }
         return $"{nameof(ArenaBoundsCustom)}, Radius {Radius}, HalfWidth: {HalfWidth}, HalfHeight: {HalfHeight}, MapResolution: {MapResolution}, Pathfinding offset: {offset}, Vertices: {vertsCount}, ScaleFactor: {ScaleFactor}";
+    }
+
+    private readonly struct OrientedGridBounds(WPos center, Angle rotation, float halfWidth, float halfHeight)
+    {
+        public readonly WPos Center = center;
+        public readonly Angle Rotation = rotation;
+        public readonly float HalfWidth = halfWidth;
+        public readonly float HalfHeight = halfHeight;
+    }
+
+    // Find a compact oriented bounding rectangle
+    // The exact minimum-area rectangle has an axis parallel to a convex-hull edge.
+    // Amongst those candidates we prefer the one producing the fewest actual pathfinding cells at the requested resolution, with geometric area as tie-breaker
+    private OrientedGridBounds CalculateOptimalGridBounds(RelSimplifiedComplexPolygon poly, float resolution)
+    {
+        var totalVertices = 0;
+        var parts = poly.Parts;
+        var partCount = parts.Count;
+
+        for (var i = 0; i < partCount; ++i)
+        {
+            totalVertices += parts[i].Exterior.Length;
+        }
+
+        Span<WDir> points = stackalloc WDir[totalVertices];
+
+        var pointIndex = 0;
+        for (var i = 0; i < partCount; ++i)
+        {
+            var exterior = parts[i].Exterior;
+            var len = exterior.Length;
+            for (var j = 0; j < len; ++j)
+            {
+                points[pointIndex++] = exterior[j];
+            }
+        }
+
+        points.Sort(static (a, b) =>
+        {
+            var cmp = a.X.CompareTo(b.X);
+            return cmp != 0 ? cmp : a.Z.CompareTo(b.Z);
+        });
+
+        Span<WDir> hullStorage = stackalloc WDir[totalVertices * 2];
+        var hullCount = BuildConvexHull(points, hullStorage);
+        var hull = hullStorage[..hullCount];
+
+        var bestCellCount = long.MaxValue;
+        var bestArea = float.MaxValue;
+        OrientedGridBounds best = default;
+
+        void Evaluate(ReadOnlySpan<WDir> hull, WDir xAxis)
+        {
+            var lenSq = xAxis.LengthSq();
+            if (lenSq <= 1e-12f)
+            {
+                return;
+            }
+
+            xAxis /= MathF.Sqrt(lenSq);
+
+            var zAxis = xAxis.OrthoR();
+
+            var minX = float.MaxValue;
+            var maxX = float.MinValue;
+            var minZ = float.MaxValue;
+            var maxZ = float.MinValue;
+
+            var len = hull.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                var p = hull[i];
+                var px = p.Dot(xAxis);
+                var pz = p.Dot(zAxis);
+
+                if (px < minX)
+                {
+                    minX = px;
+                }
+
+                if (px > maxX)
+                {
+                    maxX = px;
+                }
+
+                if (pz < minZ)
+                {
+                    minZ = pz;
+                }
+
+                if (pz > maxZ)
+                {
+                    maxZ = pz;
+                }
+            }
+
+            var width = maxX - minX;
+            var height = maxZ - minZ;
+
+            var halfWidth = width * 0.5f;
+            var halfHeight = height * 0.5f;
+
+            var gridWidth = 2 * GridHalfExtent(halfWidth, resolution);
+            var gridHeight = 2 * GridHalfExtent(halfHeight, resolution);
+
+            var cellCount = (long)gridWidth * gridHeight;
+            var area = width * height;
+
+            if (cellCount > bestCellCount || cellCount == bestCellCount && area >= bestArea)
+            {
+                return;
+            }
+
+            var centerX = (minX + maxX) * 0.5f;
+            var centerZ = (minZ + maxZ) * 0.5f;
+            var center = xAxis * centerX + zAxis * centerZ;
+
+            bestCellCount = cellCount;
+            bestArea = area;
+
+            best = new(center.ToWPos(), zAxis.ToAngle(), halfWidth, halfHeight);
+        }
+
+        // Prefer no rotation when equally good
+        Evaluate(hull, new WDir(1f, 0f));
+
+        for (var i = 0; i < hullCount; ++i)
+        {
+            var edge = hull[(i + 1) % hullCount] - hull[i];
+            Evaluate(hull, edge);
+        }
+
+        return best;
+
+        static int BuildConvexHull(ReadOnlySpan<WDir> points, Span<WDir> hull)
+        {
+            var countP = points.Length;
+
+            var hullCount = 0;
+
+            // Lower hull
+            for (var i = 0; i < countP; ++i)
+            {
+                var p = points[i];
+
+                while (hullCount >= 2)
+                {
+                    var a = hull[hullCount - 2];
+                    var b = hull[hullCount - 1];
+
+                    if ((b - a).Cross(p - b) > 0f)
+                    {
+                        break;
+                    }
+
+                    --hullCount;
+                }
+
+                hull[hullCount++] = p;
+            }
+
+            // Upper hull
+            var lowerCount = hullCount;
+
+            for (var i = countP - 2; i >= 0; --i)
+            {
+                var p = points[i];
+
+                while (hullCount > lowerCount)
+                {
+                    var a = hull[hullCount - 2];
+                    var b = hull[hullCount - 1];
+
+                    if ((b - a).Cross(p - b) > 0f)
+                    {
+                        break;
+                    }
+
+                    --hullCount;
+                }
+
+                hull[hullCount++] = p;
+            }
+
+            // Final point duplicates the first
+            --hullCount;
+
+            return hullCount;
+        }
+
+        static int GridHalfExtent(float halfExtent, float resolution)
+        {
+            var cells = halfExtent / resolution;
+            var nearest = MathF.Round(cells);
+
+            if (MathF.Abs(cells - nearest) <= 0.001f)
+            {
+                cells = nearest;
+            }
+
+            return (int)MathF.Ceiling(cells);
+        }
+    }
+
+    private RelSimplifiedComplexPolygon TransformToGrid(RelSimplifiedComplexPolygon poly, in OrientedGridBounds bounds)
+    {
+        var inverseRotation = (-bounds.Rotation).ToDirection();
+        var offset = -bounds.Center.ToWDir().Rotate(inverseRotation);
+        return poly.Transform(offset, inverseRotation);
+    }
+
+    private static (float minX, float maxX, float minZ, float maxZ, WPos Center) CalculateCenterAndRecenter(RelSimplifiedComplexPolygon poly)
+    {
+        float minX = float.MaxValue, maxX = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
+        var parts = poly.Parts;
+        var count = parts.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var ext = parts[i].Exterior;
+            var len = ext.Length;
+            for (var j = 0; j < len; ++j)
+            {
+                var vertex = ext[j];
+                var vX = vertex.X;
+                var vZ = vertex.Z;
+                if (vX < minX)
+                {
+                    minX = vX;
+                }
+                if (vX > maxX)
+                {
+                    maxX = vX;
+                }
+                if (vZ < minZ)
+                {
+                    minZ = vZ;
+                }
+                if (vZ > maxZ)
+                {
+                    maxZ = vZ;
+                }
+            }
+        }
+
+        var center = new WPos((minX + maxX) * 0.5f, (minZ + maxZ) * 0.5f);
+        var dir = center.ToWDir();
+        for (var i = 0; i < count; ++i)
+        {
+            var verts = CollectionsMarshal.AsSpan(parts[i].Vertices);
+            var len = verts.Length;
+            for (var j = 0; j < len; ++j)
+            {
+                ref var vert = ref verts[j];
+                vert -= dir;
+            }
+        }
+        poly.InitPolygonIndex();
+        return (minX, maxX, minZ, maxZ, center);
     }
 }
