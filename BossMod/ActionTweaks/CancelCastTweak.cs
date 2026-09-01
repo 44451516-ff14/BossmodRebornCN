@@ -4,7 +4,7 @@
 // Since the game API is sending a packet, this implements some rate limiting.
 public sealed class CancelCastTweak(WorldState ws, AIHints hints)
 {
-    private readonly ActionTweaksConfig _config = Service.Config.Get<ActionTweaksConfig>();
+    private static readonly ActionTweaksConfig _config = Service.Config.Get<ActionTweaksConfig>();
     private readonly WorldState _ws = ws;
     private DateTime _nextCancelAllowed;
 
@@ -31,7 +31,7 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
 
     private bool WantCancel()
     {
-        if (_config.PyreticThreshold > 0 && hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < _ws.FutureTime(_config.PyreticThreshold))
+        if (_config.PyreticThreshold > 0f && hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < _ws.FutureTime(_config.PyreticThreshold))
         {
             return true;
         }
@@ -44,7 +44,9 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
 
         // mount doesn't break movement as of 7.whatever
         if (cast.Action.Type == ActionType.Mount)
+        {
             return false;
+        }
 
         var target = _ws.Actors.Find(cast.TargetID);
         if (target == null)
@@ -52,7 +54,7 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
             return false;
         }
 
-        if (hints.FindEnemy(target)?.Priority == AIHints.Enemy.PriorityForbidden)
+        if ((_config.PreventForbiddenTargets || AI.AIManager.Instance?.Beh != null || Autorotation.MiscAI.NormalMovement.Instance != null) && hints.FindEnemy(target)?.Priority == AIHints.Enemy.PriorityForbidden)
         {
             return true;
         }
@@ -70,9 +72,12 @@ public sealed class CancelCastTweak(WorldState ws, AIHints hints)
 
         // for raise spells, we want to cancel them if target becomes alive or gains 'raise' status
         var hasRaiseStatus = false;
-        foreach (var s in target.Statuses)
+
+        var statuses = target.Statuses.AsSpan();
+        var len = statuses.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if (s.ID is 148 or 1140)
+            if (statuses[i].ID is 148u or 1140u)
             {
                 hasRaiseStatus = true;
                 break;

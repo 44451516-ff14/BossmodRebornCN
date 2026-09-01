@@ -63,8 +63,10 @@ public enum AID : uint
     AeroDynamics = 50198, // ShantottoTheDemon->self, 3.0s cast, single-target
     AeroDynamics1 = 50199, // Helper->self, no cast, range 48 width 60 rect
     UnknownSpell2 = 50382, // Helper->self, no cast, range 48 width 60 rect
-    FinalExam = 50210, // ShantottoTheDemon->player, 4.2+0.8s cast, single-target
+    FinalExamVisual = 50210, // ShantottoTheDemon->player, 4.2+0.8s cast, single-target
     FinalExam1 = 50211, // Helper->player, 5.0s cast, range 6 circle
+    FinalExam2 = 50212, // Helper->players, no cast, range 6 circle
+
 }
 
 public enum IconID : uint

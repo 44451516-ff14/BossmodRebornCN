@@ -27,7 +27,9 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
         float minDistance = default, // irrelevant for knockbacks
         IReadOnlyList<SafeWall>? safeWalls = null,
         ulong actorID = default,
-        bool ignoreImmunes = false
+        bool ignoreImmunes = false,
+        int? arenaProjectionLayer = null,
+        bool restrictToArenaProjectionLayer = false
     )
     {
         public readonly WPos Origin = origin;
@@ -40,6 +42,8 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
         public readonly SafeWall[] SafeWalls = safeWalls != null ? [.. safeWalls] : [];
         public readonly ulong ActorID = actorID;
         public readonly bool IgnoreImmunes = ignoreImmunes;
+        public readonly int? ArenaProjectionLayer = arenaProjectionLayer;
+        public readonly bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     }
 
     public readonly struct SafeWall(WPos vertex1, WPos vertex2)
@@ -103,12 +107,17 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        var movements = CalculateMovements(pcSlot, pc);
+        var projectionLayers = new List<(int? layer, bool restrict)>();
+        var movements = CalculateMovements(pcSlot, pc, projectionLayers);
         var count = movements.Count;
         for (var i = 0; i < count; ++i)
         {
             var e = movements[i];
-            DrawKnockback(e.from, e.to, pc.Rotation, Arena);
+            var layer = projectionLayers[i];
+            using (Arena.WorldProjectionLayer(layer.layer, layer.restrict))
+            {
+                DrawKnockback(e.from, e.to, pc.Rotation, Arena);
+            }
         }
     }
 
@@ -177,7 +186,9 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
         ApplyImmuneExpire(actor, kind, default);
     }
 
-    public List<(WPos from, WPos to)> CalculateMovements(int slot, Actor actor)
+    public List<(WPos from, WPos to)> CalculateMovements(int slot, Actor actor) => CalculateMovements(slot, actor, null);
+
+    private List<(WPos from, WPos to)> CalculateMovements(int slot, Actor actor, List<(int? layer, bool restrict)>? projectionLayers)
     {
         if (MaxCasts <= 0)
         {
@@ -192,6 +203,10 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
         for (var i = 0; i < len; ++i)
         {
             ref readonly var s = ref activeKnockbacks[i];
+            if (!ArenaProjectionLayerParticipantApplies(actor, s.ArenaProjectionLayer, s.RestrictToArenaProjectionLayer))
+            {
+                continue;
+            }
             if (!s.IgnoreImmunes && PlayerImmunes[slot].ImmuneAt(s.Activation))
             {
                 continue; // this source won't affect player due to immunity
@@ -266,6 +281,7 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
 
             var to = from + distance * dir;
             movements.Add((from, to));
+            projectionLayers?.Add((s.ArenaProjectionLayer, s.RestrictToArenaProjectionLayer));
             from = to;
 
             if (++count == MaxCasts)
@@ -280,7 +296,7 @@ public abstract class GenericKnockback(BossModule module, uint aid = default, in
 // generic 'knockback from/attract to cast target' component
 // TODO: knockback is really applied when effectresult arrives rather than when actioneffect arrives, this is important for ai hints (they can reposition too early otherwise)
 [SkipLocalsInit]
-public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false)
+public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false, float[]? arenaProjectionLayers = null, bool restrictToArenaProjectionLayer = true)
     : GenericKnockback(module, aid, maxCasts, stopAtWall, stopAfterWall)
 {
     public readonly float Distance = distance;
@@ -289,7 +305,12 @@ public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool 
     public readonly float MinDistance = minDistance;
     public readonly bool IgnoreImmunes = ignoreImmunes;
     public readonly bool MinDistanceBetweenHitboxes = minDistanceBetweenHitboxes;
+    public float[]? ArenaProjectionLayers = arenaProjectionLayers;
+    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public readonly List<Knockback> Casters = [];
+
+    protected int? ResolveArenaProjectionLayer(float y)
+        => ArenaProjectionLayers is { Length: > 0 } layers ? GenericAOEs.IndexOfClosestLayer(layers, y) : null;
 
     public override ReadOnlySpan<Knockback> ActiveKnockbacks(int slot, Actor actor) => CollectionsMarshal.AsSpan(Casters);
 
@@ -298,7 +319,8 @@ public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool 
         if (spell.Action.ID == WatchedAction)
         {
             var minDist = KnockbackKind == Kind.TowardsOrigin ? (MinDistance + (MinDistanceBetweenHitboxes ? Raid.Player()!.HitboxRadius + caster.HitboxRadius : default)) : MinDistance;
-            Casters.Add(new(spell.LocXZ, Distance, Module.CastFinishAt(spell), Shape, spell.Rotation, KnockbackKind, minDist, [], caster.InstanceID, IgnoreImmunes));
+            Casters.Add(new(spell.LocXZ, Distance, Module.CastFinishAt(spell), Shape, spell.Rotation, KnockbackKind, minDist, [], caster.InstanceID, IgnoreImmunes,
+                ResolveArenaProjectionLayer(spell.Location.Y), RestrictToArenaProjectionLayer));
         }
     }
 
@@ -322,19 +344,21 @@ public class SimpleKnockbacks(BossModule module, uint aid, float distance, bool 
 }
 
 [SkipLocalsInit]
-public class SimpleKnockbackGroups(BossModule module, uint[] aids, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false) : SimpleKnockbacks(module, default, distance, ignoreImmunes, maxCasts, shape, kind, minDistance, minDistanceBetweenHitboxes, stopAtWall, stopAfterWall)
+public class SimpleKnockbackGroups(BossModule module, uint[] aids, float distance, bool ignoreImmunes = false, int maxCasts = int.MaxValue, AOEShape? shape = null, Kind kind = Kind.AwayFromOrigin, float minDistance = default, bool minDistanceBetweenHitboxes = false, bool stopAtWall = false, bool stopAfterWall = false, float[]? arenaProjectionLayers = null, bool restrictToArenaProjectionLayer = true) : SimpleKnockbacks(module, default, distance, ignoreImmunes, maxCasts, shape, kind, minDistance, minDistanceBetweenHitboxes, stopAtWall, stopAfterWall, arenaProjectionLayers, restrictToArenaProjectionLayer)
 {
     protected readonly uint[] AIDs = aids;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         var len = AIDs.Length;
+        var aid = spell.Action.ID;
         for (var i = 0; i < len; ++i)
         {
-            if (spell.Action.ID == AIDs[i])
+            if (aid == AIDs[i])
             {
                 var minDist = KnockbackKind == Kind.TowardsOrigin ? (MinDistance + (MinDistanceBetweenHitboxes ? Raid.Player()!.HitboxRadius + caster.HitboxRadius : default)) : default;
-                Casters.Add(new(spell.LocXZ, Distance, Module.CastFinishAt(spell), Shape, spell.Rotation, KnockbackKind, minDist, [], caster.InstanceID, IgnoreImmunes));
+                Casters.Add(new(spell.LocXZ, Distance, Module.CastFinishAt(spell), Shape, spell.Rotation, KnockbackKind, minDist, [], caster.InstanceID, IgnoreImmunes,
+                    ResolveArenaProjectionLayer(spell.Location.Y), RestrictToArenaProjectionLayer));
                 return;
             }
         }
@@ -359,9 +383,10 @@ public class SimpleKnockbackGroups(BossModule module, uint[] aids, float distanc
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         var len = AIDs.Length;
+        var aid = spell.Action.ID;
         for (var i = 0; i < len; ++i)
         {
-            if (spell.Action.ID == AIDs[i])
+            if (aid == AIDs[i])
             {
                 ++NumCasts;
                 return;

@@ -1,6 +1,6 @@
 ﻿namespace BossMod.Endwalker.VariantCriterion.C03AAI.C032Lala;
 
-class Analysis(BossModule module) : BossComponent(module)
+sealed class Analysis(BossModule module) : BossComponent(module)
 {
     public Angle[] SafeDir = new Angle[4];
 
@@ -15,11 +15,13 @@ class Analysis(BossModule module) : BossComponent(module)
             _ => null
         };
         if (offset != null && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && slot < SafeDir.Length)
+        {
             SafeDir[slot] = offset.Value;
+        }
     }
 }
 
-class AnalysisRadiance(BossModule module) : Components.GenericGaze(module)
+sealed class AnalysisRadiance(BossModule module) : Components.GenericGaze(module)
 {
     private readonly Analysis? _analysis = module.FindComponent<Analysis>();
     private readonly ArcaneArray? _pulse = module.FindComponent<ArcaneArray>();
@@ -29,14 +31,20 @@ class AnalysisRadiance(BossModule module) : Components.GenericGaze(module)
     {
         var (nextGlobe, activation) = NextGlobe();
         if (_analysis != null && nextGlobe != null && activation != default)
-            return new Eye[1] { new(nextGlobe.Position, activation, _analysis.SafeDir[slot], inverted: true) };
+        {
+            var loc = nextGlobe.Position.Quantized();
+            Eye[] eye = [new(loc, activation, inverted: true, eyeCenter: loc)];
+            return eye;
+        }
         return [];
     }
 
     public override void OnActorCreated(Actor actor)
     {
         if (actor.OID is (uint)OID.NArcaneGlobe or (uint)OID.SArcaneGlobe)
+        {
             _globes.Add(actor);
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -48,11 +56,52 @@ class AnalysisRadiance(BossModule module) : Components.GenericGaze(module)
         }
     }
 
-    private DateTime GlobeActivation(Actor globe) => _pulse?.AOEs.FirstOrDefault(aoe => aoe.Check(globe.Position)).Activation.AddSeconds(0.2d) ?? default;
-    private (Actor? actor, DateTime activation) NextGlobe() => _globes.Select(g => (g, GlobeActivation(g))).MinBy(ga => ga.Item2);
+    private DateTime GlobeActivation(Actor globe)
+    {
+        if (_pulse == null)
+        {
+            return default;
+        }
+
+        var aoes = CollectionsMarshal.AsSpan(_pulse.AOEs);
+        var len = aoes.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            ref var aoe = ref aoes[i];
+            if (aoe.Check(globe.Position))
+            {
+                return aoe.Activation.AddSeconds(0.2d);
+            }
+        }
+
+        return default;
+    }
+
+    private (Actor? actor, DateTime activation) NextGlobe()
+    {
+        Actor? bestActor = null;
+        DateTime bestActivation = default;
+        var found = false;
+
+        var globes = CollectionsMarshal.AsSpan(_globes);
+        var len = globes.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var globe = globes[i];
+            var activation = GlobeActivation(globe);
+
+            if (!found || activation < bestActivation)
+            {
+                bestActor = globe;
+                bestActivation = activation;
+                found = true;
+            }
+        }
+        return (bestActor, bestActivation);
+    }
 }
 
-class TargetedLight(BossModule module) : Components.GenericGaze(module)
+sealed class TargetedLight(BossModule module) : Components.GenericGaze(module)
 {
     public bool Active;
     private readonly Analysis? _analysis = module.FindComponent<Analysis>();
@@ -64,14 +113,20 @@ class TargetedLight(BossModule module) : Components.GenericGaze(module)
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
         if (Active)
-            return new Eye[1] { new(Arena.Center, _activation, _safeDir[slot], inverted: true) };
+        {
+            var loc = Arena.Center.Quantized();
+            Eye[] eye = [new(loc, _activation, _safeDir[slot], inverted: true, eyeCenter: loc)];
+            return eye;
+        }
         return [];
     }
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
         if (_rotation[slot] != default)
+        {
             hints.Add($"Rotation: {(_rotation[slot].Rad < 0 ? "CW" : "CCW")}", false);
+        }
         base.AddHints(slot, actor, hints);
     }
 
@@ -84,7 +139,9 @@ class TargetedLight(BossModule module) : Components.GenericGaze(module)
             _ => 0
         };
         if (count != 0 && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0 && slot < _rotationCount.Length)
+        {
             _rotationCount[slot] = count;
+        }
     }
 
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
@@ -99,19 +156,25 @@ class TargetedLight(BossModule module) : Components.GenericGaze(module)
         {
             _rotation[slot] = rot * _rotationCount[slot];
             if (_analysis != null)
+            {
                 _safeDir[slot] = _analysis.SafeDir[slot] + _rotation[slot];
+            }
         }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.NTargetedLightAOE or (uint)AID.STargetedLightAOE)
+        {
             _activation = Module.CastFinishAt(spell);
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID is (uint)AID.NTargetedLightAOE or (uint)AID.STargetedLightAOE)
+        {
             ++NumCasts;
+        }
     }
 }

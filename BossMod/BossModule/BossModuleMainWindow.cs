@@ -12,7 +12,7 @@ public sealed class BossModuleMainWindow : UIWindow
 
     private const string _windowID = "###Boss module";
 
-    public BossModuleMainWindow(BossModuleManager mgr, ZoneModuleManager zmm) : base(_windowID, false, new(400, 400))
+    public BossModuleMainWindow(BossModuleManager mgr, ZoneModuleManager zmm) : base(_windowID, false, new(400f, 400f))
     {
         _mgr = mgr;
         _zmm = zmm;
@@ -43,6 +43,17 @@ public sealed class BossModuleMainWindow : UIWindow
         {
             DrawMovementHints(_mgr.ActiveModule.CalculateMovementHintsForRaidMember(PartyState.PlayerSlot, pc), pc.PosRot.Y);
         }
+
+        if (!BossModuleManager.Config.Enable && BossModuleManager.Config.ProjectRadarInto3DWorld)
+        {
+            var module = _mgr.ActiveModule;
+            if (module == null)
+            {
+                return;
+            }
+
+            module.DrawWorldProjection(_mgr.WorldState.Client.CameraAzimuth, PartyState.PlayerSlot);
+        }
     }
 
     public override void OnOpen() => Service.Log($"[BMM] Opening main window; there are {_mgr.LoadedModules.Count} loaded modules, active is {_mgr.ActiveModule?.GetType().FullName ?? "<n/a>"}; zone module is {_zmm.ActiveModule?.GetType().FullName ?? "<n/a>"}");
@@ -54,7 +65,7 @@ public sealed class BossModuleMainWindow : UIWindow
         if (_shouldRecenter)
         {
             var viewport = ImGui.GetMainViewport();
-            var windowSize = Size ?? new Vector2(400, 400);
+            var windowSize = Size ?? new Vector2(400f, 400f);
             var center = viewport.Pos + viewport.Size * 0.5f;
             var newPos = center - windowSize * 0.5f;
             ImGui.SetNextWindowPos(newPos, ImGuiCond.Always);
@@ -110,21 +121,15 @@ public sealed class BossModuleMainWindow : UIWindow
 
     private void DrawMovementHints(BossComponent.MovementHints? arrows, float y)
     {
-        if (arrows == null || arrows.Count == 0 || Camera.Instance == null)
+        if (arrows == null || Camera.Instance == null)
         {
             return;
         }
-
-        foreach ((var start, var end, var color) in arrows)
+        var count = arrows.Count;
+        for (var i = 0; i < count; ++i)
         {
-            var start3 = start.ToVec3(y);
-            var end3 = end.ToVec3(y);
-            Camera.Instance.DrawWorldLine(start3, end3, color);
-            var dir = Vector3.Normalize(end3 - start3);
-            var arrowStart = end3 - 0.4f * dir;
-            var offset = 0.07f * Vector3.Normalize(Vector3.Cross(Vector3.UnitY, dir));
-            Camera.Instance.DrawWorldLine(arrowStart + offset, end3, color);
-            Camera.Instance.DrawWorldLine(arrowStart - offset, end3, color);
+            var a = arrows[i];
+            Camera.Instance.DrawWorldArrow(a.Item1.ToVec3(y), a.Item2.ToVec3(y), a.Item3, shaftWidth: 0.25f, headLength: 0.8f, headWidth: 0.7f, projectionHeight: 2.5f);
         }
     }
 

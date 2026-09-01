@@ -31,11 +31,16 @@ sealed class BloodshotGaze(BossModule module) : Components.GenericGaze(module)
         {
             var count = comp.Stacks.Count;
             if (count == 0)
+            {
                 return [];
+            }
             ref var stack = ref comp.Stacks.Ref(0);
             if (stack.Target == actor)
+            {
                 return [];
-            return [new(stack.Target.Position, stack.Activation, inverted: inverted)];
+            }
+            var loc = stack.Target.Position.Quantized();
+            return [new(loc, stack.Activation, inverted: inverted, eyeCenter: IndicatorWorldPos(loc))];
         }
         var stack = TryGetEye(_stack, false);
         return stack.Length != 0 ? stack : TryGetEye(_stackInv, true);

@@ -1,11 +1,11 @@
-using Clipper2Lib;
-using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision;
 using FFXIVClientStructs.FFXIV.Common.Component.BGCollision.Math;
+using Dalamud.Bindings.ImGui;
 using Vector3 = System.Numerics.Vector3;
 using Vector4 = System.Numerics.Vector4;
+using Clipper2Lib;
 
 namespace BossMod;
 
@@ -69,7 +69,7 @@ public static unsafe class CollisionOutlinesExtractor
         var yLUT = new Dictionary<Point64, float>(1 << 15);
         var edges = new List<EdgeY>(1 << 17);
 
-        var n = streamed->Header->NumMeshes;
+        int n = streamed->Header->NumMeshes;
         for (var i = 0; i < n; ++i)
         {
             var elem = streamed->Elements + i;
@@ -133,8 +133,8 @@ public static unsafe class CollisionOutlinesExtractor
     {
         var mesh = (MeshPCB*)coll->Mesh;
         var world = coll->World;
-        var objMask = coll->Collider.ObjectMaterialMask;
-        var objId = coll->Collider.ObjectMaterialValue & objMask;
+        ulong objMask = coll->Collider.ObjectMaterialMask;
+        ulong objId = coll->Collider.ObjectMaterialValue & objMask;
 
         CollectNode(mesh->RootNode, ref world, objId, objMask, wantedId, wantedMask, centerXZ, radius, strictRadius, matchMode, scale, snapInt, subjects, yLUT, edges);
     }
@@ -152,7 +152,7 @@ public static unsafe class CollisionOutlinesExtractor
             return;
         }
 
-        var nv = node->NumVertsRaw + node->NumVertsCompressed;
+        int nv = node->NumVertsRaw + node->NumVertsCompressed;
         int np = node->NumPrims;
 
         if (nv > 0 && np > 0)
@@ -242,13 +242,13 @@ public static unsafe class CollisionOutlinesExtractor
                 continue;
             }
 
-            var aInt = Math.Abs(AreaSigned(cleaned));
+            var aSigned = AreaSigned(cleaned);
+            var aInt = Math.Abs(aSigned);
             if (aInt < minAreaInt)
             {
                 continue; // drop tiny fragments
             }
 
-            var aSigned = AreaSigned(cleaned); // signed for orientation
             var bb = BoundsXZ(cleaned);
 
             if (aSigned > 0d)
@@ -418,17 +418,15 @@ public static unsafe class CollisionOutlinesExtractor
         return sb.ToString();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool MatchesMaterial(ulong primMaterial, ulong objMatId, ulong objMatMask, ulong wantedId, ulong wantedMask, MaterialMatchMode mode)
     {
-        var prim = primMaterial;
-        var effective = (prim & ~objMatMask) | (objMatId & objMatMask);
-
         return mode switch
         {
-            MaterialMatchMode.PrimExact => prim == wantedId,
-            MaterialMatchMode.PrimMasked => ((prim ^ wantedId) & wantedMask) == 0UL,
-            MaterialMatchMode.EffectiveExact => effective == wantedId,
-            MaterialMatchMode.EffectiveMasked => ((effective ^ wantedId) & wantedMask) == 0UL,
+            MaterialMatchMode.PrimExact => primMaterial == wantedId,
+            MaterialMatchMode.PrimMasked => ((primMaterial ^ wantedId) & wantedMask) == 0ul,
+            MaterialMatchMode.EffectiveExact => ((primMaterial & ~objMatMask) | (objMatId & objMatMask)) == wantedId,
+            MaterialMatchMode.EffectiveMasked => ((((primMaterial & ~objMatMask) | (objMatId & objMatMask)) ^ wantedId) & wantedMask) == 0ul,
             _ => false
         };
     }
@@ -440,7 +438,10 @@ public static unsafe class CollisionOutlinesExtractor
 
     private static Point64 ToP64(in Vector3 v, long s) => new((long)Math.Round(v.X * s), (long)Math.Round(v.Z * s));
 
-    private static void AccumY(Dictionary<Point64, float> lut, Point64 p, float y) => lut[p] = lut.TryGetValue(p, out var cur) ? (cur + y) * 0.5f : y;
+    private static void AccumY(Dictionary<Point64, float> lut, Point64 p, float y)
+    {
+        lut[p] = lut.TryGetValue(p, out var cur) ? (cur + y) * 0.5f : y;
+    }
 
     private readonly struct EdgeY
     {
@@ -479,7 +480,7 @@ public static unsafe class CollisionOutlinesExtractor
 
             // param t along the dominant axis
             long dx = e.B.X - e.A.X, dz = e.B.Y - e.A.Y;
-            var t = Math.Abs(dx) >= Math.Abs(dz) ? dx == 0 ? 0 : (p.X - e.A.X) / (double)dx : dz == 0 ? 0 : (p.Y - e.A.Y) / (double)dz;
+            var t = Math.Abs(dx) >= Math.Abs(dz) ? dx == 0L ? 0d : (p.X - e.A.X) / (double)dx : dz == 0L ? 0d : (p.Y - e.A.Y) / (double)dz;
             return (float)(e.YA + t * (e.YB - e.YA));
         }
 
@@ -511,7 +512,7 @@ public static unsafe class CollisionOutlinesExtractor
 
     private static Point64 Snap(Point64 p, long snapInt)
     {
-        if (snapInt <= 1)
+        if (snapInt <= 1L)
         {
             return p;
         }
@@ -526,7 +527,9 @@ public static unsafe class CollisionOutlinesExtractor
 
     private static void EnsureCCW(ref Point64 a, ref Point64 b, ref Point64 c)
     {
-        var cross = (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+        var aX = a.X;
+        var aY = a.Y;
+        var cross = (b.X - aX) * (c.Y - aY) - (b.Y - aY) * (c.X - aX);
         if (cross < 0L)
         {
             (b, c) = (c, b);
@@ -535,14 +538,20 @@ public static unsafe class CollisionOutlinesExtractor
 
     private static bool OnSegment(in Point64 p, in Point64 a, in Point64 b)
     {
-        var cross = (b.X - a.X) * (p.Y - a.Y) - (b.Y - a.Y) * (p.X - a.X);
+        var aX = a.X;
+        var aY = a.Y;
+        var bX = b.X;
+        var bY = b.Y;
+        var pX = p.X;
+        var pY = p.Y;
+        var cross = (bX - aX) * (pY - aY) - (bY - aY) * (pX - aX);
         if (cross != 0L)
         {
             return false;
         }
-        long minX = Math.Min(a.X, b.X), maxX = Math.Max(a.X, b.X);
-        long minY = Math.Min(a.Y, b.Y), maxY = Math.Max(a.Y, b.Y);
-        return p.X >= minX && p.X <= maxX && p.Y >= minY && p.Y <= maxY;
+        long minX = Math.Min(aX, bX), maxX = Math.Max(aX, bX);
+        long minY = Math.Min(aY, bY), maxY = Math.Max(aY, bY);
+        return pX >= minX && pX <= maxX && pY >= minY && pY <= maxY;
     }
 
     private static double AreaSigned(Path64 p)
@@ -553,7 +562,7 @@ public static unsafe class CollisionOutlinesExtractor
         {
             a += p[j].X * p[i].Y - p[i].X * p[j].Y;
         }
-        return 0.5 * a;
+        return 0.5d * a;
     }
 
     private static AABB2 BoundsXZ(Path64 p)
@@ -563,21 +572,23 @@ public static unsafe class CollisionOutlinesExtractor
         for (var i = 0; i < count; ++i)
         {
             var pt = p[i];
-            if (pt.X < minX)
+            var pX = pt.X;
+            var pY = pt.Y;
+            if (pX < minX)
             {
-                minX = pt.X;
+                minX = pX;
             }
-            if (pt.X > maxX)
+            if (pX > maxX)
             {
-                maxX = pt.X;
+                maxX = pX;
             }
-            if (pt.Y < minZ)
+            if (pY < minZ)
             {
-                minZ = pt.Y;
+                minZ = pY;
             }
-            if (pt.Y > maxZ)
+            if (pY > maxZ)
             {
-                maxZ = pt.Y;
+                maxZ = pY;
             }
         }
         return new AABB2(minX, minZ, maxX, maxZ);
@@ -605,7 +616,7 @@ public static unsafe class CollisionOutlinesExtractor
             var vi = path[i];
             var vj = path[j];
             double xi = vi.X, zi = vi.Y, xj = vj.X, zj = vj.Y;
-            var inter = (zi > pz) != (zj > pz) && px < (xj - xi) * (pz - zi) / ((zj - zi) == 0 ? double.Epsilon : (zj - zi)) + xi;
+            var inter = (zi > pz) != (zj > pz) && px < (xj - xi) * (pz - zi) / ((zj - zi) == 0d ? double.Epsilon : (zj - zi)) + xi;
             if (inter)
             {
                 inside = !inside;
@@ -635,30 +646,42 @@ public static unsafe class CollisionOutlinesExtractor
     private static float Dist2PointSeg(in Vector2 p, in Vector2 a, in Vector2 b)
     {
         var ab = b - a;
-        var len2 = ab.X * ab.X + ab.Y * ab.Y;
+        var abX = ab.X;
+        var abY = ab.Y;
+        var len2 = abX * abX + abY * abY;
+
+        var pX = p.X;
+        var pY = p.Y;
+        var aX = a.X;
+        var aY = a.Y;
         if (len2 <= float.Epsilon)
         {
-            var dx = p.X - a.X;
-            var dy = p.Y - a.Y;
+            var dx = pX - aX;
+            var dy = pY - aY;
             return dx * dx + dy * dy;
         }
-        var t = ((p.X - a.X) * ab.X + (p.Y - a.Y) * ab.Y) / len2;
-        t = MathF.Max(0, MathF.Min(1, t));
-        var q = new Vector2(a.X + t * ab.X, a.Y + t * ab.Y);
-        float dx2 = p.X - q.X, dy2 = p.Y - q.Y;
+        var t = ((pX - aX) * abX + (pY - aY) * abY) / len2;
+        t = Math.Max(0f, Math.Min(1f, t));
+        var q = new Vector2(aX + t * abX, aY + t * abY);
+        float dx2 = pX - q.X, dy2 = pY - q.Y;
         return dx2 * dx2 + dy2 * dy2;
     }
 
     private static bool PointInTri2(in Vector2 p, in Vector2 a, in Vector2 b, in Vector2 c)
     {
         // barycentric sign test
-        var s1 = Sign(p, a, b) >= 0;
-        var s2 = Sign(p, b, c) >= 0;
-        var s3 = Sign(p, c, a) >= 0;
+        var s1 = Sign(p, a, b) >= 0f;
+        var s2 = Sign(p, b, c) >= 0f;
+        var s3 = Sign(p, c, a) >= 0f;
         return s1 == s2 && s2 == s3;
     }
 
-    private static float Sign(in Vector2 p1, in Vector2 p2, in Vector2 p3) => (p1.X - p3.X) * (p2.Y - p3.Y) - (p2.X - p3.X) * (p1.Y - p3.Y);
+    private static float Sign(in Vector2 p1, in Vector2 p2, in Vector2 p3)
+    {
+        var p3y = p3.Y;
+        var p3x = p3.X;
+        return (p1.X - p3x) * (p2.Y - p3y) - (p2.X - p3x) * (p1.Y - p3y);
+    }
 
     private static bool OBBXZIntersectsCircle(in AABB local, ref Matrix4x3 world, in Vector2 c, float r)
     {
@@ -679,10 +702,26 @@ public static unsafe class CollisionOutlinesExtractor
         var bba = world.TransformCoordinate(new(localMaxX, localMaxY, localMinZ));
         var bbb = world.TransformCoordinate(new(localMaxX, localMaxY, localMaxZ));
 
-        var minX = Math.Min(Math.Min(Math.Min(aaa.X, aab.X), Math.Min(aba.X, abb.X)), Math.Min(Math.Min(baa.X, bab.X), Math.Min(bba.X, bbb.X)));
-        var maxX = Math.Max(Math.Max(Math.Max(aaa.X, aab.X), Math.Max(aba.X, abb.X)), Math.Max(Math.Max(baa.X, bab.X), Math.Max(bba.X, bbb.X)));
-        var minZ = Math.Min(Math.Min(Math.Min(aaa.Z, aab.Z), Math.Min(aba.Z, abb.Z)), Math.Min(Math.Min(baa.Z, bab.Z), Math.Min(bba.Z, bbb.Z)));
-        var maxZ = Math.Max(Math.Max(Math.Max(aaa.Z, aab.Z), Math.Max(aba.Z, abb.Z)), Math.Max(Math.Max(baa.Z, bab.Z), Math.Max(bba.Z, bbb.Z)));
+        var aaaX = aaa.X;
+        var aabX = aab.X;
+        var aaaZ = aaa.Z;
+        var aabZ = aab.Z;
+        var abaX = aba.X;
+        var abbX = abb.X;
+        var abaZ = abb.Z;
+        var abbZ = abb.Z;
+        var baaX = baa.X;
+        var babX = bab.X;
+        var baaZ = baa.Z;
+        var babZ = bab.Z;
+        var bbaX = bba.X;
+        var bbbX = bbb.X;
+        var bbaZ = bba.Z;
+        var bbbZ = bbb.Z;
+        var minX = Math.Min(Math.Min(Math.Min(aaaX, aabX), Math.Min(abaX, abbX)), Math.Min(Math.Min(baaX, babX), Math.Min(bbaX, bbbX)));
+        var maxX = Math.Max(Math.Max(Math.Max(aaaX, aabX), Math.Max(abaX, abbX)), Math.Max(Math.Max(baaX, babX), Math.Max(bbaX, bbbX)));
+        var minZ = Math.Min(Math.Min(Math.Min(aaaZ, aabZ), Math.Min(abaZ, abbZ)), Math.Min(Math.Min(baaZ, babZ), Math.Min(bbaZ, bbbZ)));
+        var maxZ = Math.Max(Math.Max(Math.Max(aaaZ, aabZ), Math.Max(abaZ, abbZ)), Math.Max(Math.Max(baaZ, babZ), Math.Max(bbaZ, bbbZ)));
 
         return RectXZIntersectsCircle(minX, minZ, maxX, maxZ, c, r);
     }
@@ -761,15 +800,72 @@ public sealed unsafe class DebugCollision() : IDisposable
         new( 1,  1,  1),
     ];
 
-    private float _maxColliderDistanceXZ = 0f; // 0 => no scene collider distance filter
+    private static readonly Dx11ArenaRenderer.WorldLineLocalSegment[] _boxLocalLines = BuildBoxLocalLines();
+    private static readonly Dx11ArenaRenderer.WorldLineLocalSegment[] _planeLocalLines =
+    [
+        new(new(-1, +1, 0), new(-1, -1, 0)),
+        new(new(-1, -1, 0), new(+1, -1, 0)),
+        new(new(+1, -1, 0), new(+1, +1, 0)),
+        new(new(+1, +1, 0), new(-1, +1, 0)),
+    ];
+
+    // PCB topology and local-space vertex positions are immutable. Cache the complete mesh's deduplicated-per-node local edge list once per material-filter configuration;
+    // steady-state frames then do one lookup and one bulk affine submission per mesh instead of recursively looking up/submitting every PCB node.
+    private Vector3[] _visualizeLocalVertices = [];
+    private readonly HashSet<ulong> _visualizeEdgeSet = [];
+    private readonly List<Dx11ArenaRenderer.WorldLineLocalSegment> _visualizeLocalLines = [];
+    private readonly Dictionary<ulong, VisualizeTopologyEntry> _visualizeTopologyCache = [];
+    private readonly List<ulong> _visualizeStaleTopologyKeys = [];
+
+    private readonly Dictionary<int, Dx11ArenaRenderer.WorldLineLocalSegment[]> _visualizeCylinderLineCache = [];
+    private readonly Dictionary<ulong, MeshMaterialCacheEntry> _meshMaterialCache = [];
+    private readonly List<ulong> _meshMaterialStaleKeys = [];
+    private int _visualizeTopologyFrame;
+
+    private sealed class VisualizeTopologyEntry(Dx11ArenaRenderer.WorldLineLocalSegment[] lines, int lastUse)
+    {
+        public readonly Dx11ArenaRenderer.WorldLineLocalSegment[] Lines = lines;
+        public int LastUse = lastUse;
+    }
+
+    private sealed class MeshMaterialCacheEntry(ulong bits, int lastUse)
+    {
+        public readonly ulong Bits = bits;
+        public int LastUse = lastUse;
+    }
+
+    private float _maxColliderDistanceXZ = 30f;
+    private Vector2 _colliderDistanceCenterXZ;
+    private bool _colliderDistanceCenterValid;
+
+    private Vector2 _visualizeCenterXZ;
 
     public void Dispose() { }
 
     public void Draw()
     {
+        _visualizeTopologyFrame++;
+        if ((_visualizeTopologyFrame & 0x7F) == 0)
+        {
+            PruneVisualizeTopologyCache();
+        }
+
         var module = Framework.Instance()->BGCollisionModule;
         ImGui.TextUnformatted($"Module: {(nint)module:X}->{(nint)module->SceneManager:X} ({module->SceneManager->NumScenes} scenes, {module->LoadInProgressCounter} loads)");
         ImGui.TextUnformatted($"Streaming: {SphereStr(module->ForcedStreamingSphere)} / {SphereStr(module->SceneManager->StreamingSphere)}");
+        _visualizeCenterXZ = new(module->ForcedStreamingSphere.X, module->ForcedStreamingSphere.Z);
+
+        var localPlayer = Service.ObjectTable.LocalPlayer;
+        if (localPlayer != null)
+        {
+            var playerPosition = localPlayer.Position;
+            _colliderDistanceCenterXZ = new(playerPosition.X, playerPosition.Z);
+            _colliderDistanceCenterValid = true;
+        }
+        else
+        {
+            _colliderDistanceCenterValid = false;
+        }
 
         GatherInfo();
         DrawSettings();
@@ -801,7 +897,8 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var cast = (ColliderStreamed*)coll;
                     if (cast->Header != null && cast->Elements != null)
                     {
-                        for (var i = 0; i < cast->Header->NumMeshes; ++i)
+                        var numMeshes = cast->Header->NumMeshes;
+                        for (var i = 0; i < numMeshes; ++i)
                         {
                             var m = cast->Elements[i].Mesh;
                             if (m != null)
@@ -817,8 +914,8 @@ public sealed unsafe class DebugCollision() : IDisposable
                     if (!cast->MeshIsSimple && cast->Mesh != null)
                     {
                         var mesh = (MeshPCB*)cast->Mesh;
-                        var mask = new BitMask(coll->ObjectMaterialMask);
-                        GatherMeshNodeMaterials(mesh->RootNode, ~mask);
+                        var rawPrimMaterials = GetMeshRawMaterialBits(cast, mesh);
+                        _availableMaterials |= new BitMask(rawPrimMaterials & ~coll->ObjectMaterialMask);
                     }
                 }
             }
@@ -827,8 +924,8 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private bool FilterCollider(Collider* coll)
     {
-        // layer & flag filters
-        if (coll->LayerMask == 0 ? !_showZeroLayer : (_shownLayers.Raw & coll->LayerMask) == 0)
+        // mayer & flag filters
+        if (coll->LayerMask == 0ul ? !_showZeroLayer : (_shownLayers.Raw & coll->LayerMask) == 0ul)
         {
             return false;
         }
@@ -865,23 +962,18 @@ public sealed unsafe class DebugCollision() : IDisposable
         // keep the ones whose (objectMaterial ^ wantedId) has no differences inside the active mask bits
         var wantedId = _materialId.Raw;
         var objValue = coll->ObjectMaterialValue; // primitives only have object-level material
-        return ((objValue ^ wantedId) & maskActiveBits) == 0UL;
+        return ((objValue ^ wantedId) & maskActiveBits) == 0ul;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ColliderWithinMaxDistanceXZ(Collider* coll)
     {
-        if (_maxColliderDistanceXZ <= 0f)
+        if (coll == null || !(_maxColliderDistanceXZ > 0f) || !_colliderDistanceCenterValid)
         {
             return true;
         }
 
-        var player = Service.ObjectTable.LocalPlayer;
-        if (player == null)
-        {
-            return true;
-        }
-
-        var p = player.Position;
+        var p = _colliderDistanceCenterXZ;
         var maxD2 = _maxColliderDistanceXZ * _maxColliderDistanceXZ;
 
         switch (coll->GetColliderType())
@@ -889,12 +981,12 @@ public sealed unsafe class DebugCollision() : IDisposable
             case ColliderType.Streamed:
                 {
                     var cast = (ColliderStreamed*)coll;
-                    return Distance2PointRectXZ(p.X, p.Z, cast->StreamedMinX, cast->StreamedMinZ, cast->StreamedMaxX, cast->StreamedMaxZ) <= maxD2;
+                    return Distance2PointRectXZ(p.X, p.Y, cast->StreamedMinX, cast->StreamedMinZ, cast->StreamedMaxX, cast->StreamedMaxZ) <= maxD2;
                 }
             case ColliderType.Mesh:
                 {
                     var bb = ((ColliderMesh*)coll)->WorldBoundingBox;
-                    return Distance2PointRectXZ(p.X, p.Z, bb.Min.X, bb.Min.Z, bb.Max.X, bb.Max.Z) <= maxD2;
+                    return Distance2PointRectXZ(p.X, p.Y, bb.Min.X, bb.Min.Z, bb.Max.X, bb.Max.Z) <= maxD2;
                 }
             case ColliderType.Box:
                 {
@@ -911,10 +1003,10 @@ public sealed unsafe class DebugCollision() : IDisposable
                 {
                     var cast = (ColliderSphere*)coll;
                     var dx = p.X - cast->Translation.X;
-                    var dz = p.Z - cast->Translation.Z;
-                    var centerDistance = MathF.Sqrt(dx * dx + dz * dz);
-                    var surfaceDistance = MathF.Max(0f, centerDistance - MathF.Abs(cast->Scale.X));
-                    return surfaceDistance * surfaceDistance <= maxD2;
+                    var dz = p.Y - cast->Translation.Z;
+                    // Equivalent to distance-to-sphere-surface <= filter distance, but avoids sqrt.
+                    var expandedRadius = _maxColliderDistanceXZ + MathF.Abs(cast->Scale.X);
+                    return dx * dx + dz * dz <= expandedRadius * expandedRadius;
                 }
             case ColliderType.Plane:
             case ColliderType.PlaneTwoSided:
@@ -924,18 +1016,26 @@ public sealed unsafe class DebugCollision() : IDisposable
                     var b = cast->World.TransformCoordinate(new(-1, -1, 0));
                     var c = cast->World.TransformCoordinate(new(+1, -1, 0));
                     var d = cast->World.TransformCoordinate(new(+1, +1, 0));
-                    var minX = Math.Min(Math.Min(a.X, b.X), Math.Min(c.X, d.X));
-                    var maxX = Math.Max(Math.Max(a.X, b.X), Math.Max(c.X, d.X));
-                    var minZ = Math.Min(Math.Min(a.Z, b.Z), Math.Min(c.Z, d.Z));
-                    var maxZ = Math.Max(Math.Max(a.Z, b.Z), Math.Max(c.Z, d.Z));
-                    return Distance2PointRectXZ(p.X, p.Z, minX, minZ, maxX, maxZ) <= maxD2;
+                    var ax = a.X;
+                    var bx = b.X;
+                    var az = a.Z;
+                    var bz = b.Z;
+                    var cx = c.X;
+                    var dx = d.X;
+                    var cz = c.Z;
+                    var dz = d.Z;
+                    var minX = Math.Min(Math.Min(ax, bx), Math.Min(cx, dx));
+                    var maxX = Math.Max(Math.Max(ax, bx), Math.Max(cx, dx));
+                    var minZ = Math.Min(Math.Min(az, bz), Math.Min(cz, dz));
+                    var maxZ = Math.Max(Math.Max(az, bz), Math.Max(cz, dz));
+                    return Distance2PointRectXZ(p.X, p.Y, minX, minZ, maxX, maxZ) <= maxD2;
                 }
             default:
                 return true;
         }
     }
 
-    private static float Distance2ProjectedUnitBoxXZ(ref Matrix4x3 world, in Vector3 p)
+    private static float Distance2ProjectedUnitBoxXZ(ref Matrix4x3 world, in Vector2 p)
     {
         var first = world.TransformCoordinate(_boxCorners[0]);
         var minX = first.X;
@@ -943,18 +1043,21 @@ public sealed unsafe class DebugCollision() : IDisposable
         var minZ = first.Z;
         var maxZ = first.Z;
 
-        for (var i = 1; i < _boxCorners.Length; ++i)
+        for (var i = 1; i < 8; ++i)
         {
             var v = world.TransformCoordinate(_boxCorners[i]);
-            minX = Math.Min(minX, v.X);
-            maxX = Math.Max(maxX, v.X);
-            minZ = Math.Min(minZ, v.Z);
-            maxZ = Math.Max(maxZ, v.Z);
+            var vX = v.X;
+            var vZ = v.Z;
+            minX = Math.Min(minX, vX);
+            maxX = Math.Max(maxX, vX);
+            minZ = Math.Min(minZ, vZ);
+            maxZ = Math.Max(maxZ, vZ);
         }
 
-        return Distance2PointRectXZ(p.X, p.Z, minX, minZ, maxX, maxZ);
+        return Distance2PointRectXZ(p.X, p.Y, minX, minZ, maxX, maxZ);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static float Distance2PointRectXZ(float x, float z, float minX, float minZ, float maxX, float maxZ)
     {
         var dx = x < minX ? minX - x : x > maxX ? x - maxX : 0f;
@@ -1095,7 +1198,7 @@ public sealed unsafe class DebugCollision() : IDisposable
 
             ImGui.Separator();
             ImGui.TextDisabled("Merge by mesh-id list (hex pointers, any separators: , ; space tab newline)");
-            ImGui.InputTextMultiline("MeshId list (hex)", ref _exportMeshIdListHex, 4096, new Vector2(-1, ImGui.GetTextLineHeight() * 6));
+            ImGui.InputTextMultiline("MeshId list (hex)", ref _exportMeshIdListHex, 4096, new Vector2(-1, ImGui.GetTextLineHeight() * 6f));
             var (okList, meshIds) = TryParseHexU64List(_exportMeshIdListHex);
             ImGui.Text(okList ? $"Parsed {meshIds.Count} unique mesh ids" : "Enter hex values like 0x7FFB1234ABCD0000");
 
@@ -1104,13 +1207,11 @@ public sealed unsafe class DebugCollision() : IDisposable
             {
                 ExportPolysByMeshIdList(meshIds, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector2XZ);
             }
-
             ImGui.SameLine();
             if (ImGui.Button("Copy polygons (Vector3, mesh-id list)"))
             {
                 ExportPolysByMeshIdList(meshIds, CollisionOutlinesExtractor.ClipboardVectorFormat.Vector3XYZ);
             }
-
             ImGui.EndDisabled();
         }
     }
@@ -1128,7 +1229,6 @@ public sealed unsafe class DebugCollision() : IDisposable
                 }
             }
         }
-
         if (n.Opened)
         {
             foreach (var coll in s->Colliders)
@@ -1146,7 +1246,8 @@ public sealed unsafe class DebugCollision() : IDisposable
             return;
         }
 
-        for (var level = 0; level < tree->NumLevels; ++level)
+        var countl = tree->NumLevels;
+        for (var level = 0; level < countl; ++level)
         {
             var cellSizeX = (tree->MaxX - tree->MinX + 1) / (1 << level);
             var cellSizeZ = (tree->MaxZ - tree->MinZ + 1) / (1 << level);
@@ -1157,7 +1258,8 @@ public sealed unsafe class DebugCollision() : IDisposable
             }
 
             var nodes = tree->NodesAtLevel(level);
-            for (var i = 0; i < nodes.Length; ++i)
+            var len = nodes.Length;
+            for (var i = 0; i < len; ++i)
             {
                 ref var node = ref nodes[i];
                 if (node.Node.NodeLink.Next == null)
@@ -1183,10 +1285,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                     // TODO: visualize cell bounds?
                     foreach (var coll in node.Colliders)
                     {
-                        if (FilterCollider(coll))
-                        {
-                            VisualizeCollider(coll, _materialId, _materialMask);
-                        }
+                        VisualizeCollider(coll, _materialId, _materialMask);
                     }
                 }
             }
@@ -1196,9 +1295,7 @@ public sealed unsafe class DebugCollision() : IDisposable
     private void DrawCollider(Collider* coll)
     {
         if (!FilterCollider(coll))
-        {
             return;
-        }
 
         var raycastFlag = (coll->VisibilityFlags & 1) != 0;
         var globalVisitFlag = (coll->VisibilityFlags & 2) != 0;
@@ -1254,7 +1351,6 @@ public sealed unsafe class DebugCollision() : IDisposable
                 {
                     ImGui.SetClipboardText(FormatHexU64(ptr));
                 }
-
                 if (ImGui.MenuItem("Append mesh id to list"))
                 {
                     AppendIdToList(ref _exportMeshIdListHex, ptr.ToString("X16"));
@@ -1266,7 +1362,6 @@ public sealed unsafe class DebugCollision() : IDisposable
         {
             VisualizeCollider(coll, _materialId, _materialMask);
         }
-
         if (!n.Opened)
         {
             return;
@@ -1286,8 +1381,9 @@ public sealed unsafe class DebugCollision() : IDisposable
                     if (cast->Header != null && cast->Entries != null && cast->Elements != null)
                     {
                         var headerRaw = (float*)cast->Header;
-                        _tree.LeafNode2($"Header: meshes={cast->Header->NumMeshes}, u={headerRaw[1]:f3} {headerRaw[2]:f3} {headerRaw[3]:f3} {headerRaw[4]:f3} {headerRaw[5]:f3} {headerRaw[6]:f3} {headerRaw[7]:f3}");
-                        for (var i = 0; i < cast->Header->NumMeshes; ++i)
+                        var len = cast->Header->NumMeshes;
+                        _tree.LeafNode2($"Header: meshes={len}, u={headerRaw[1]:f3} {headerRaw[2]:f3} {headerRaw[3]:f3} {headerRaw[4]:f3} {headerRaw[5]:f3} {headerRaw[6]:f3} {headerRaw[7]:f3}");
+                        for (var i = 0; i < len; ++i)
                         {
                             var entry = cast->Entries + i;
                             var elem = cast->Elements + i;
@@ -1298,7 +1394,6 @@ public sealed unsafe class DebugCollision() : IDisposable
                             {
                                 VisualizeCollider(&elem->Mesh->Collider, _materialId, _materialMask);
                             }
-
                             if (mn.Opened)
                             {
                                 DrawColliderMesh(elem->Mesh);
@@ -1373,12 +1468,10 @@ public sealed unsafe class DebugCollision() : IDisposable
         {
             VisualizeSphere(coll->BoundingSphere, Colors.CollisionColor1);
         }
-
         if (_tree.LeafNode2($"Bounding box: {AABBStr(coll->WorldBoundingBox)}").SelectedOrHovered)
         {
             VisualizeOBB(ref coll->WorldBoundingBox, ref Matrix4x3.Identity, Colors.CollisionColor1);
         }
-
         _tree.LeafNode2($"Total size: {coll->TotalPrimitives} prims, {coll->TotalChildren} nodes");
         _tree.LeafNode2($"Mesh type: {(coll->MeshIsSimple ? "simple" : coll->MemoryData != null ? "PCB in-memory" : "PCB from file")} {(coll->Loaded ? "" : "(loading)")}");
         if (coll->Mesh == null || coll->MeshIsSimple)
@@ -1400,9 +1493,8 @@ public sealed unsafe class DebugCollision() : IDisposable
         using var n = _tree.Node2(tag);
         if (n.SelectedOrHovered)
         {
-            VisualizeColliderMeshPCBNode(node, ref world, Colors.CollisionColor1, objMatId, objMatId, _materialId, _materialMask);
+            VisualizeColliderMeshPCBNode(node, ref world, Colors.CollisionColor1, objMatId, objMatInvMask, _materialId, _materialMask);
         }
-
         if (!n.Opened)
         {
             return;
@@ -1418,35 +1510,29 @@ public sealed unsafe class DebugCollision() : IDisposable
         using var nv = _tree.Node2($"Vertices: {node->NumVertsRaw}+{node->NumVertsCompressed}", node->NumVertsRaw + node->NumVertsCompressed == 0);
         if (nv.Opened)
         {
-            // Collect all vertices
+            // Collect all vertices and precompute the sort key once. The old comparer recalculated
+            // two XZ distances on every O(n log n) comparison, which becomes noticeable on large PCB nodes.
             var translation = coll->Translation;
             var rotation = coll->Rotation;
+            var vertexCount = node->NumVertsRaw + node->NumVertsCompressed;
+            var playerPos = Service.ObjectTable.LocalPlayer!.Position;
 
-            List<(Vector3 vertex, int index, char type)> vertices = [];
+            List<(Vector3 vertex, int index, char type, float distanceSq)> vertices = [with(vertexCount)];
 
-            for (var i = 0; i < node->NumVertsRaw + node->NumVertsCompressed; ++i)
+            for (var i = 0; i < vertexCount; ++i)
             {
                 var v = node->Vertex(i);
                 var transformedVertex = ApplyTransformation(v, translation, rotation);
-                vertices.Add((transformedVertex, i, i < node->NumVertsRaw ? 'r' : 'c'));
+                var dx = playerPos.X - transformedVertex.X;
+                var dz = playerPos.Z - transformedVertex.Z;
+                vertices.Add((transformedVertex, i, i < node->NumVertsRaw ? 'r' : 'c', dx * dx + dz * dz));
             }
 
-            var playerPos = Service.ObjectTable.LocalPlayer!.Position;
             // Sort vertices by distance to player position, ignore height
-
-            vertices.Sort((a, b) =>
-            {
-                var distA = (playerPos.X - a.vertex.X) * (playerPos.X - a.vertex.X) +
-                              (playerPos.Z - a.vertex.Z) * (playerPos.Z - a.vertex.Z);
-
-                var distB = (playerPos.X - b.vertex.X) * (playerPos.X - b.vertex.X) +
-                              (playerPos.Z - b.vertex.Z) * (playerPos.Z - b.vertex.Z);
-
-                return distA.CompareTo(distB);
-            });
+            vertices.Sort(static (a, b) => a.distanceSq.CompareTo(b.distanceSq));
 
             // Render vertices in sorted order
-            foreach (var (vertex, index, type) in vertices)
+            foreach (var (vertex, index, type, _) in vertices)
             {
                 var vertexStr = $"new({vertex.X.ToString("F5", System.Globalization.CultureInfo.InvariantCulture)}f, {vertex.Z.ToString("F5", System.Globalization.CultureInfo.InvariantCulture)}f)";
                 using var node2 = _tree.Node2($"[{index}] ({type}): {Vec3Str(vertex)}");
@@ -1479,8 +1565,8 @@ public sealed unsafe class DebugCollision() : IDisposable
                 }
             }
         }
-        DrawColliderMeshPCBNode($"Child 1 (+{node->Child1Offset})", node->Child1, ref world, objMatId, objMatId, coll);
-        DrawColliderMeshPCBNode($"Child 2 (+{node->Child2Offset})", node->Child2, ref world, objMatId, objMatId, coll);
+        DrawColliderMeshPCBNode($"Child 1 (+{node->Child1Offset})", node->Child1, ref world, objMatId, objMatInvMask, coll);
+        DrawColliderMeshPCBNode($"Child 2 (+{node->Child2Offset})", node->Child2, ref world, objMatId, objMatInvMask, coll);
     }
 
     private void DrawResource(Resource* res)
@@ -1497,21 +1583,29 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     public void VisualizeCollider(Collider* coll, BitMask filterId, BitMask filterMask)
     {
-        switch (coll->GetColliderType())
+        if (coll == null || Camera.Instance is not Camera camera)
+        {
+            return;
+        }
+
+        var colliderType = coll->GetColliderType();
+        if (colliderType is not ColliderType.Streamed and not ColliderType.Mesh)
+        {
+            return;
+        }
+
+        switch (colliderType)
         {
             case ColliderType.Streamed:
                 {
                     var cast = (ColliderStreamed*)coll;
                     if (cast->Header != null && cast->Elements != null)
                     {
-                        for (var i = 0; i < cast->Header->NumMeshes; ++i)
+                        var len = cast->Header->NumMeshes;
+                        for (var i = 0; i < len; ++i)
                         {
                             var elem = cast->Elements + i;
-                            var mesh = elem->Mesh;
-                            if (mesh != null && ColliderWithinMaxDistanceXZ(&mesh->Collider))
-                            {
-                                VisualizeColliderMesh(mesh, Colors.CollisionColor1, _materialId, _materialMask);
-                            }
+                            VisualizeColliderMesh(elem->Mesh, Colors.CollisionColor1, _materialId, _materialMask);
                         }
                     }
                 }
@@ -1522,16 +1616,8 @@ public sealed unsafe class DebugCollision() : IDisposable
             case ColliderType.Box:
                 {
                     var cast = (ColliderBox*)coll;
-                    Span<Vector3> corners = stackalloc Vector3[8];
-                    for (var i = 0; i < 8; ++i)
-                    {
-                        corners[i] = cast->World.TransformCoordinate(_boxCorners[i]);
-                    }
-
-                    foreach (var (start, end) in _boxEdges)
-                    {
-                        Camera.Instance?.DrawWorldLine(corners[start], corners[end], Colors.CollisionColor3);
-                    }
+                    var transform = ToWorldLineTransform(ref cast->World);
+                    camera.DrawLocalLines(_boxLocalLines, ref transform, Colors.CollisionColor3);
                 }
                 break;
             case ColliderType.Cylinder:
@@ -1543,21 +1629,15 @@ public sealed unsafe class DebugCollision() : IDisposable
             case ColliderType.Sphere:
                 {
                     var cast = (ColliderSphere*)coll;
-                    Camera.Instance?.DrawWorldSphere(cast->Translation, cast->Scale.X, Colors.CollisionColor3);
+                    camera.DrawWorldSphere(cast->Translation, cast->Scale.X, Colors.CollisionColor3);
                 }
                 break;
             case ColliderType.Plane:
             case ColliderType.PlaneTwoSided:
                 {
                     var cast = (ColliderPlane*)coll;
-                    var a = cast->World.TransformCoordinate(new(-1, +1, 0));
-                    var b = cast->World.TransformCoordinate(new(-1, -1, 0));
-                    var c = cast->World.TransformCoordinate(new(+1, -1, 0));
-                    var d = cast->World.TransformCoordinate(new(+1, +1, 0));
-                    Camera.Instance?.DrawWorldLine(a, b, Colors.CollisionColor3);
-                    Camera.Instance?.DrawWorldLine(b, c, Colors.CollisionColor3);
-                    Camera.Instance?.DrawWorldLine(c, d, Colors.CollisionColor3);
-                    Camera.Instance?.DrawWorldLine(d, a, Colors.CollisionColor3);
+                    var transform = ToWorldLineTransform(ref cast->World);
+                    camera.DrawLocalLines(_planeLocalLines, ref transform, Colors.CollisionColor3);
                 }
                 break;
         }
@@ -1565,86 +1645,347 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private void VisualizeColliderMesh(ColliderMesh* coll, uint color, BitMask filterId, BitMask filterMask)
     {
-        if (coll != null && !coll->MeshIsSimple && coll->Mesh != null)
+        if (coll == null || coll->MeshIsSimple || coll->Mesh == null || Camera.Instance is not Camera camera)
         {
-            var mesh = (MeshPCB*)coll->Mesh;
-            VisualizeColliderMeshPCBNode(mesh->RootNode, ref coll->World, color, coll->Collider.ObjectMaterialValue & coll->Collider.ObjectMaterialMask, ~coll->Collider.ObjectMaterialMask, filterId, filterMask);
+            return;
         }
+        if (!ColliderWithinMaxDistanceXZ(&coll->Collider))
+        {
+            return;
+        }
+
+        var mesh = (MeshPCB*)coll->Mesh;
+        var lines = GetVisualizeMeshLocalLines(coll, mesh, coll->Collider.ObjectMaterialValue & coll->Collider.ObjectMaterialMask,
+            ~coll->Collider.ObjectMaterialMask, filterId.Raw, filterMask.Raw);
+        if (lines.IsEmpty)
+        {
+            return;
+        }
+
+        // Every PCB node in one ColliderMesh shares this affine world transform. Build it once and submit the entire cached mesh topology in one camera call
+        var transform = ToWorldLineTransform(ref coll->World);
+        camera.DrawLocalLines(lines, ref transform, color);
     }
 
+    // Inspector-only subtree visualization. Unlike whole-collider visualization this is driven by a specific tree node hover, so rebuild just that 
+    // subtree into the reusable scratch list rather than polluting the whole-mesh cache with arbitrary subtree keys
     private void VisualizeColliderMeshPCBNode(MeshPCB.FileNode* node, ref Matrix4x3 world, uint color, ulong objMatId, ulong objMatInvMask, BitMask filterId, BitMask filterMask)
+    {
+        if (node == null || Camera.Instance is not Camera camera)
+        {
+            return;
+        }
+
+        var rawFilterMask = filterMask.Raw;
+        var rawFilterId = filterId.Raw;
+        if (rawFilterMask == 0ul)
+        {
+            rawFilterId = 0ul;
+            objMatId = 0ul;
+            objMatInvMask = 0ul;
+        }
+
+        _visualizeLocalLines.Clear();
+        AppendVisualizeMeshNodeLines(node, objMatId, objMatInvMask, rawFilterId, rawFilterMask);
+        if (_visualizeLocalLines.Count == 0)
+        {
+            return;
+        }
+
+        var transform = ToWorldLineTransform(ref world);
+        camera.DrawLocalLines(CollectionsMarshal.AsSpan(_visualizeLocalLines), ref transform, color);
+    }
+
+    private ReadOnlySpan<Dx11ArenaRenderer.WorldLineLocalSegment> GetVisualizeMeshLocalLines(
+        ColliderMesh* coll, MeshPCB* mesh, ulong objMatId, ulong objMatInvMask, ulong filterId, ulong filterMask)
+    {
+        // With no material mask active, object/material values cannot affect topology; normalize them
+        // out of the cache key so toggling an irrelevant ID does not create duplicate entries
+        if (filterMask == 0ul)
+        {
+            filterId = 0ul;
+            objMatId = 0ul;
+            objMatInvMask = 0ul;
+        }
+
+        var root = mesh->RootNode;
+        if (root == null)
+        {
+            return [];
+        }
+
+        var key = (ulong)mesh;
+
+        if (_visualizeTopologyCache.TryGetValue(key, out var cached))
+        {
+            cached.LastUse = _visualizeTopologyFrame;
+            return cached.Lines;
+        }
+
+        _visualizeLocalLines.Clear();
+        var totalPrimitives = Math.Max(0L, coll->TotalPrimitives);
+        if (totalPrimitives > 0)
+        {
+            // Most manifold triangle meshes settle around ~1.5 unique edges/primitive. Reserving a
+            // bounded estimate avoids repeated List growth without letting corrupt metadata force a
+            // giant up-front allocation.
+            var estimate = (int)Math.Min(totalPrimitives, 500_000L) * 2;
+            _visualizeLocalLines.EnsureCapacity(estimate);
+        }
+        AppendVisualizeMeshNodeLines(root, objMatId, objMatInvMask, filterId, filterMask);
+
+        var lineArray = _visualizeLocalLines.ToArray();
+        _visualizeTopologyCache[key] = new(lineArray, _visualizeTopologyFrame);
+        return lineArray;
+    }
+
+    private void AppendVisualizeMeshNodeLines(MeshPCB.FileNode* node, ulong objMatId, ulong objMatInvMask, ulong filterId, ulong filterMask)
     {
         if (node == null)
         {
             return;
         }
 
-        if (node->NumVertsRaw + node->NumVertsCompressed != 0)
+        var vertexCount = node->NumVertsRaw + node->NumVertsCompressed;
+        if (vertexCount > 0 && node->NumPrims > 0)
         {
-            for (var i = 0; i < node->NumPrims; ++i)
+            var processNode = true;
+            if (filterMask != 0ul)
             {
-                var prim = node->Primitives[i];
+                processNode = false;
+                var numPrisms = node->NumPrims;
+                for (var i = 0; i < numPrisms; ++i)
+                {
+                    var effectiveMaterial = objMatId | (node->Primitives[i].Material & objMatInvMask);
+                    if (((effectiveMaterial ^ filterId) & filterMask) == 0ul)
+                    {
+                        processNode = true;
+                        break;
+                    }
+                }
+            }
 
-                var v1 = world.TransformCoordinate(node->Vertex(prim.V1));
-                var v2 = world.TransformCoordinate(node->Vertex(prim.V2));
-                var v3 = world.TransformCoordinate(node->Vertex(prim.V3));
+            if (processNode)
+            {
+                EnsureVisualizeVertexCapacity(vertexCount);
+                var localVertices = _visualizeLocalVertices;
+                for (var i = 0; i < vertexCount; ++i)
+                {
+                    localVertices[i] = node->Vertex(i);
+                }
 
-                Camera.Instance?.DrawWorldLine(v1, v2, color);
-                Camera.Instance?.DrawWorldLine(v2, v3, color);
-                Camera.Instance?.DrawWorldLine(v3, v1, color);
+                // Primitive vertex indices are node-local, so deduplication is intentionally reset for
+                // each node while the resulting line list is aggregated across the whole mesh
+                _visualizeEdgeSet.Clear();
+                var numPrisms = node->NumPrims;
+                for (var i = 0; i < numPrisms; ++i)
+                {
+                    var prim = node->Primitives[i];
+                    if (filterMask != 0)
+                    {
+                        var effectiveMaterial = objMatId | (prim.Material & objMatInvMask);
+                        if (((effectiveMaterial ^ filterId) & filterMask) != 0ul)
+                            continue;
+                    }
+
+                    AddVisualizeEdge(prim.V1, prim.V2, vertexCount, localVertices);
+                    AddVisualizeEdge(prim.V2, prim.V3, vertexCount, localVertices);
+                    AddVisualizeEdge(prim.V3, prim.V1, vertexCount, localVertices);
+                }
             }
         }
 
-        VisualizeColliderMeshPCBNode(node->Child1, ref world, color, objMatId, objMatInvMask, filterId, filterMask);
-        VisualizeColliderMeshPCBNode(node->Child2, ref world, color, objMatId, objMatInvMask, filterId, filterMask);
+        AppendVisualizeMeshNodeLines(node->Child1, objMatId, objMatInvMask, filterId, filterMask);
+        AppendVisualizeMeshNodeLines(node->Child2, objMatId, objMatInvMask, filterId, filterMask);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddVisualizeEdge(int a, int b, int vertexCount, Vector3[] localVertices)
+    {
+        if (a == b || (uint)a >= (uint)vertexCount || (uint)b >= (uint)vertexCount)
+        {
+            return;
+        }
+
+        uint ua = (uint)a, ub = (uint)b;
+        if (ua > ub)
+        {
+            (ua, ub) = (ub, ua);
+        }
+        var edge = ((ulong)ua << 32) | ub;
+        if (_visualizeEdgeSet.Add(edge))
+        {
+            _visualizeLocalLines.Add(new(localVertices[(int)ua], localVertices[(int)ub]));
+        }
+    }
+
+    private void PruneVisualizeTopologyCache()
+    {
+        if (_visualizeTopologyCache.Count != 0)
+        {
+            _visualizeStaleTopologyKeys.Clear();
+            foreach (var (key, entry) in _visualizeTopologyCache)
+            {
+                // Signed subtraction handles frame-counter wraparound naturally for these small ages.
+                if (_visualizeTopologyFrame - entry.LastUse > 512)
+                {
+                    _visualizeStaleTopologyKeys.Add(key);
+                }
+            }
+            var count = _visualizeStaleTopologyKeys.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                _visualizeTopologyCache.Remove(_visualizeStaleTopologyKeys[i]);
+            }
+        }
+
+        if (_meshMaterialCache.Count != 0)
+        {
+            _meshMaterialStaleKeys.Clear();
+            foreach (var (key, entry) in _meshMaterialCache)
+            {
+                if (_visualizeTopologyFrame - entry.LastUse > 512)
+                {
+                    _meshMaterialStaleKeys.Add(key);
+                }
+            }
+            var count = _meshMaterialStaleKeys.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                _meshMaterialCache.Remove(_meshMaterialStaleKeys[i]);
+            }
+        }
+    }
+
+    private void EnsureVisualizeVertexCapacity(int count)
+    {
+        var len = _visualizeLocalVertices.Length;
+        if (_visualizeLocalVertices.Length >= count)
+        {
+            return;
+        }
+
+        var capacity = Math.Max(256, len);
+        while (capacity < count)
+        {
+            capacity *= 2;
+        }
+        Array.Resize(ref _visualizeLocalVertices, capacity);
+    }
+
+    private static Dx11ArenaRenderer.WorldLineLocalSegment[] BuildBoxLocalLines()
+    {
+        var lines = new Dx11ArenaRenderer.WorldLineLocalSegment[8];
+        for (var i = 0; i < 8; ++i)
+        {
+            var (start, end) = _boxEdges[i];
+            lines[i] = new(_boxCorners[start], _boxCorners[end]);
+        }
+        return lines;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static Dx11ArenaRenderer.WorldLineTransform ToWorldLineTransform(ref Matrix4x3 world)
+        => new(world.FullMatrix());
 
     private void VisualizeOBB(ref AABB localBB, ref Matrix4x3 world, uint color)
     {
-        var localBBMinX = localBB.Min.X;
-        var localBBMinY = localBB.Min.Y;
-        var localBBMinZ = localBB.Min.Z;
-        var localBBMaxX = localBB.Max.X;
-        var localBBMaxY = localBB.Max.Y;
-        var localBBMaxZ = localBB.Max.Z;
-        var aaa = world.TransformCoordinate(new(localBBMinX, localBBMinY, localBBMinZ));
-        var aab = world.TransformCoordinate(new(localBBMinX, localBBMinY, localBBMaxZ));
-        var aba = world.TransformCoordinate(new(localBBMinX, localBBMaxY, localBBMinZ));
-        var abb = world.TransformCoordinate(new(localBBMinX, localBBMaxY, localBBMaxZ));
-        var baa = world.TransformCoordinate(new(localBBMaxX, localBBMinY, localBBMinZ));
-        var bab = world.TransformCoordinate(new(localBBMaxX, localBBMinY, localBBMaxZ));
-        var bba = world.TransformCoordinate(new(localBBMaxX, localBBMaxY, localBBMinZ));
-        var bbb = world.TransformCoordinate(new(localBBMaxX, localBBMaxY, localBBMaxZ));
-        Camera.Instance?.DrawWorldLine(aaa, aab, color);
-        Camera.Instance?.DrawWorldLine(aab, bab, color);
-        Camera.Instance?.DrawWorldLine(bab, baa, color);
-        Camera.Instance?.DrawWorldLine(baa, aaa, color);
-        Camera.Instance?.DrawWorldLine(aba, abb, color);
-        Camera.Instance?.DrawWorldLine(abb, bbb, color);
-        Camera.Instance?.DrawWorldLine(bbb, bba, color);
-        Camera.Instance?.DrawWorldLine(bba, aba, color);
-        Camera.Instance?.DrawWorldLine(aaa, aba, color);
-        Camera.Instance?.DrawWorldLine(aab, abb, color);
-        Camera.Instance?.DrawWorldLine(baa, bba, color);
-        Camera.Instance?.DrawWorldLine(bab, bbb, color);
+        if (Camera.Instance is not Camera camera)
+        {
+            return;
+        }
+
+        var min = localBB.Min;
+        var max = localBB.Max;
+        var minX = min.X;
+        var minY = min.Y;
+        var minZ = min.Z;
+        var maxX = max.X;
+        var maxY = max.Y;
+        var maxZ = max.Z;
+        Span<Vector3> corners =
+        [
+            new(minX, minY, minZ),
+            new(minX, minY, maxZ),
+            new(minX, maxY, minZ),
+            new(minX, maxY, maxZ),
+            new(maxX, minY, minZ),
+            new(maxX, minY, maxZ),
+            new(maxX, maxY, minZ),
+            new(maxX, maxY, maxZ),
+        ];
+        Span<Dx11ArenaRenderer.WorldLineLocalSegment> lines = stackalloc Dx11ArenaRenderer.WorldLineLocalSegment[8];
+        for (var i = 0; i < 8; ++i)
+        {
+            var (from, to) = _boxEdges[i];
+            lines[i] = new(corners[from], corners[to]);
+        }
+
+        var transform = ToWorldLineTransform(ref world);
+        camera.DrawLocalLines(lines, ref transform, color);
     }
 
     private void VisualizeCylinder(ref Matrix4x3 world, uint color)
     {
-        var numSegments = CurveApprox.CalculateCircleSegments(world.Row0.Length(), 360f.Degrees(), 0.1f);
-        var prev1 = world.TransformCoordinate(new(0, +1, 1));
-        var prev2 = world.TransformCoordinate(new(0, -1, 1));
+        if (Camera.Instance is not Camera camera)
+        {
+            return;
+        }
+
+        var transform = ToWorldLineTransform(ref world);
+        const int segments = 256;
+        if (camera.DrawLocalCylinder(ref transform, segments, color))
+        {
+            return;
+        }
+
+        // Only reachable if a single overlay batch exhausts all 1024 GPU transform slots.
+        if (!_visualizeCylinderLineCache.TryGetValue(segments, out var lines))
+        {
+            lines = BuildCylinderLocalLines(segments);
+            _visualizeCylinderLineCache[segments] = lines;
+        }
+        camera.DrawLocalLines(lines, ref transform, color);
+    }
+
+    private static Dx11ArenaRenderer.WorldLineLocalSegment[] BuildCylinderLocalLines(int numSegments)
+    {
+        var lines = new Dx11ArenaRenderer.WorldLineLocalSegment[numSegments * 3];
+        var step = (360.0f / numSegments).Degrees().ToDirection();
+        var sinStep = step.X;
+        var cosStep = step.Z;
+        var x = 0f;
+        var z = 1f;
+        var prevTop = new Vector3(0, +1, 1);
+        var prevBottom = new Vector3(0, -1, 1);
+        var dst = 0;
+
         for (var i = 1; i <= numSegments; ++i)
         {
-            var dir = (i * 360.0f / numSegments).Degrees().ToDirection().ToVec2();
-            var curr1 = world.TransformCoordinate(new(dir.X, +1, dir.Y));
-            var curr2 = world.TransformCoordinate(new(dir.X, -1, dir.Y));
-            Camera.Instance?.DrawWorldLine(curr1, prev1, color);
-            Camera.Instance?.DrawWorldLine(curr2, prev2, color);
-            Camera.Instance?.DrawWorldLine(curr1, curr2, color);
-            prev1 = curr1;
-            prev2 = curr2;
+            Vector3 currTop, currBottom;
+            if (i == numSegments)
+            {
+                currTop = new(0, +1, 1);
+                currBottom = new(0, -1, 1);
+            }
+            else
+            {
+                var nextX = x * cosStep + z * sinStep;
+                var nextZ = z * cosStep - x * sinStep;
+                x = nextX;
+                z = nextZ;
+                currTop = new(x, +1, z);
+                currBottom = new(x, -1, z);
+            }
+
+            lines[dst++] = new(prevTop, currTop);
+            lines[dst++] = new(prevBottom, currBottom);
+            lines[dst++] = new(currTop, currBottom);
+            prevTop = currTop;
+            prevBottom = currBottom;
         }
+
+        return lines;
     }
 
     private void VisualizeSphere(Vector4 sphere, uint color) => Camera.Instance?.DrawWorldSphere(new(sphere.X, sphere.Y, sphere.Z), sphere.W, color);
@@ -1653,28 +1994,61 @@ public sealed unsafe class DebugCollision() : IDisposable
 
     private void VisualizeTriangle(MeshPCB.FileNode* node, ref Mesh.Primitive prim, ref Matrix4x3 world, uint color)
     {
-        var v1 = world.TransformCoordinate(node->Vertex(prim.V1));
-        var v2 = world.TransformCoordinate(node->Vertex(prim.V2));
-        var v3 = world.TransformCoordinate(node->Vertex(prim.V3));
-        Camera.Instance?.DrawWorldLine(v1, v2, color);
-        Camera.Instance?.DrawWorldLine(v2, v3, color);
-        Camera.Instance?.DrawWorldLine(v3, v1, color);
-    }
-
-    private void GatherMeshNodeMaterials(MeshPCB.FileNode* node, BitMask invMask)
-    {
-        if (node == null)
+        if (Camera.Instance is not Camera camera)
         {
             return;
         }
 
-        foreach (ref var prim in node->Primitives)
+        var v1 = node->Vertex(prim.V1);
+        var v2 = node->Vertex(prim.V2);
+        var v3 = node->Vertex(prim.V3);
+        Span<Dx11ArenaRenderer.WorldLineLocalSegment> lines =
+        [
+            new(v1, v2),
+            new(v2, v3),
+            new(v3, v1),
+        ];
+        var transform = ToWorldLineTransform(ref world);
+        camera.DrawLocalLines(lines, ref transform, color);
+    }
+
+    private ulong GetMeshRawMaterialBits(ColliderMesh* coll, MeshPCB* mesh)
+    {
+        var root = mesh->RootNode;
+        if (root == null)
         {
-            _availableMaterials |= invMask & new BitMask(prim.Material);
+            return 0ul;
         }
 
-        GatherMeshNodeMaterials(node->Child1, invMask);
-        GatherMeshNodeMaterials(node->Child2, invMask);
+        var key = (ulong)mesh;
+
+        if (_meshMaterialCache.TryGetValue(key, out var cached))
+        {
+            cached.LastUse = _visualizeTopologyFrame;
+            return cached.Bits;
+        }
+
+        var bits = GatherMeshNodeMaterialBits(root);
+        _meshMaterialCache[key] = new(bits, _visualizeTopologyFrame);
+        return bits;
+    }
+
+    private static ulong GatherMeshNodeMaterialBits(MeshPCB.FileNode* node)
+    {
+        if (node == null)
+        {
+            return 0ul;
+        }
+
+        var bits = 0ul;
+        foreach (ref var prim in node->Primitives)
+        {
+            bits |= prim.Material;
+        }
+
+        bits |= GatherMeshNodeMaterialBits(node->Child1);
+        bits |= GatherMeshNodeMaterialBits(node->Child2);
+        return bits;
     }
 
     private string SphereStr(Vector4 s) => $"[{s.X:f3}, {s.Y:f3}, {s.Z:f3}] R{s.W:f3}";
@@ -1707,7 +2081,6 @@ public sealed unsafe class DebugCollision() : IDisposable
         {
             coll->VisibilityFlags ^= 1;
         }
-
         var globalVisit = (coll->VisibilityFlags & 2) != 0;
         if (ImGui.Checkbox("Flag: global visit", ref globalVisit))
         {
@@ -1880,10 +2253,7 @@ public sealed unsafe class DebugCollision() : IDisposable
         return (true, set);
 
         static bool IsSep(char c) => c == ',' || c == ';' || char.IsWhiteSpace(c);
-        static bool IsHex(char c)
-            => c is >= '0' and <= '9' or
-            >= 'a' and <= 'f' or
-            >= 'A' and <= 'F';
+        static bool IsHex(char c) => c is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F';
     }
 
     private void ExportPolysByMeshIdList(HashSet<ulong> ids, CollisionOutlinesExtractor.ClipboardVectorFormat fmt)
@@ -1904,9 +2274,7 @@ public sealed unsafe class DebugCollision() : IDisposable
                             {
                                 var addr = (ulong)(nuint)cm;
                                 if (ids.Contains(addr))
-                                {
                                     meshPtrs.Add((nint)cm);
-                                }
                             }
                             break;
                         }
@@ -1915,7 +2283,8 @@ public sealed unsafe class DebugCollision() : IDisposable
                             var cs = (ColliderStreamed*)coll;
                             if (cs->Header != null && cs->Elements != null)
                             {
-                                for (var i = 0; i < cs->Header->NumMeshes; ++i)
+                                var numMeshes = cs->Header->NumMeshes;
+                                for (var i = 0; i < numMeshes; ++i)
                                 {
                                     var cm = (cs->Elements + i)->Mesh;
                                     if (cm == null || cm->MeshIsSimple || cm->Mesh == null)
@@ -1947,14 +2316,9 @@ public sealed unsafe class DebugCollision() : IDisposable
         var centerXZ = new Vector2(p.X, p.Z);
         var useRadius = _exportRadiusXZ > 0f;
 
-        var polys = CollisionOutlinesExtractor.ExtractPolygonsUnionMany(
-            meshPtrs, wantedId, wantedMask,
-            _exportSnapEpsXZ,
-            useRadius ? centerXZ : default,
-            useRadius ? _exportRadiusXZ : 0f,
-            _exportStrictRadius,
-            _exportMatchMode,
-            minAreaMeters2: _exportMinArea);
+        var polys = CollisionOutlinesExtractor.ExtractPolygonsUnionMany(meshPtrs, wantedId, wantedMask,
+            _exportSnapEpsXZ, useRadius ? centerXZ : default, useRadius ? _exportRadiusXZ : 0f,
+            _exportStrictRadius, _exportMatchMode, minAreaMeters2: _exportMinArea);
 
         var text = CollisionOutlinesExtractor.FormatForClipboard(polys, fmt, 5);
         ImGui.SetClipboardText(text);
@@ -2007,7 +2371,8 @@ public sealed unsafe class DebugCollision() : IDisposable
         {
             return;
         }
-        for (var i = 0; i < cs->Header->NumMeshes; ++i)
+        var numMeshes = cs->Header->NumMeshes;
+        for (var i = 0; i < numMeshes; ++i)
         {
             var cm = (cs->Elements + i)->Mesh;
             if (cm == null || cm->MeshIsSimple || cm->Mesh == null || !ColliderWithinMaxDistanceXZ(&cm->Collider))

@@ -51,9 +51,9 @@ sealed class BreathWing(BossModule module) : Components.RaidwideCast(module, (ui
 
 sealed class TripleFlightCyclone(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donut = new(10f, 20f);
-    private static readonly AOEShapeCircle circle = new(10f);
-    private static readonly AOEShapeRect rect = new(40f, 5f, 40f);
+    private readonly AOEShapeDonut donut = new(10f, 20f);
+    private readonly AOEShapeCircle circle = new(10f);
+    private readonly AOEShapeRect rect = new(40f, 5f, 40f);
     private readonly List<AOEInstance> _aoes = [with(3)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
@@ -101,14 +101,19 @@ sealed class BrainDrainStates : StateMachineBuilder
     public BrainDrainStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<ZombieScales>()
             .ActivateOnEnter<AeroII>()
             .ActivateOnEnter<ZombieBreath>()
             .ActivateOnEnter<QuarryLake>()
-            .ActivateOnEnter<BreathWing>()
-            .ActivateOnEnter<TripleFlightCyclone>();
+            .ActivateOnEnter<BreathWing>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1967)]
-public sealed class BrainDrain(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018u, NameID = 1967u)]
+public sealed class BrainDrain : OpenWorldFate
+{
+    public BrainDrain(WorldState ws, Actor primary) : base(ws, primary)
+    {
+        ActivateComponent<TripleFlightCyclone>();
+        ActivateComponent<ZombieScales>();
+    }
+}

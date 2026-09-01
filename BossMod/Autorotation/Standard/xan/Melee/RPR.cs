@@ -203,10 +203,26 @@ public sealed class RPR(RotationModuleManager manager, Actor player) : Attackxan
         {
             case AOEStrategy.AOE:
             case AOEStrategy.ForceAOE:
-                var nearbyDD = Hints.PriorityTargets.Where(x => TargetInAOECircle(x.Actor, Player.Position, 5f)).Select(DDLeft);
                 var minNeeded = strategy.AOE.Value == AOEStrategy.ForceAOE ? 1 : 3;
-                if (MinIfEnoughElements(nearbyDD.Where(x => x < 30), minNeeded) is float m)
-                    ShortestNearbyDDLeft = m;
+                var nearbyCount = 0;
+                var shortestNearby = float.MaxValue;
+                var targets = Hints.PriorityTargetsSpan;
+                var len = targets.Length;
+                for (var i = 0; i < len; ++i)
+                {
+                    var target = targets[i];
+                    if (!TargetInAOECircle(target.Actor, Player.Position, 5f))
+                        continue;
+
+                    var left = DDLeft(target);
+                    if (left < 30)
+                    {
+                        ++nearbyCount;
+                        shortestNearby = Math.Min(shortestNearby, left);
+                    }
+                }
+                if (nearbyCount >= minNeeded)
+                    ShortestNearbyDDLeft = shortestNearby;
                 break;
         }
 
@@ -590,16 +606,4 @@ public sealed class RPR(RotationModuleManager manager, Actor player) : Attackxan
             ? float.MaxValue
             : StatusDetails(target?.Actor, SID.DeathsDesign, Player.InstanceID, 30).Left;
 
-    private float? MinIfEnoughElements(IEnumerable<float> collection, int minElements)
-    {
-        var min = float.MaxValue;
-        var elements = 0;
-        foreach (var flt in collection)
-        {
-            ++elements;
-            min = Math.Min(flt, min);
-        }
-
-        return elements >= minElements ? min : null;
-    }
 }

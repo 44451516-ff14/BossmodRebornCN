@@ -18,6 +18,8 @@ public abstract class BossModule : IDisposable
     public readonly bool OnlyLoadIfTargetable;
 
     private readonly EventSubscriptions _subscriptions;
+    private ArenaBoundsCustom? _arenaProjectionLayerOwner;
+    private readonly Dictionary<ulong, int> _actorArenaProjectionLayers = [];
 
     public Event<BossModule, BossComponent?, string> Error = new();
 
@@ -279,7 +281,7 @@ public abstract class BossModule : IDisposable
         }
         if (includeArena)
         {
-            Arena.Begin(cameraAzimuth);
+            Arena.Begin(cameraAzimuth, PrimaryActor, pc);
             var haveRisks = false;
             var count = pcHints.Count;
             for (var i = 0; i < count; ++i)
@@ -291,7 +293,7 @@ public abstract class BossModule : IDisposable
                 }
             }
             DrawArena(pcSlot, pc, haveRisks);
-            MiniArena.End();
+            Arena.End();
         }
     }
 
@@ -307,9 +309,14 @@ public abstract class BossModule : IDisposable
         }
 
         // draw borders
+        var arenaBorderColor = haveRisks && WindowConfig.ShowBorderRisk ? Colors.Enemy : Colors.Border;
         if (WindowConfig.ShowBorder)
         {
-            Arena.AddComplexPolygon(Bounds.Shape, haveRisks && WindowConfig.ShowBorderRisk ? Colors.Enemy : Colors.Border, 2f, false);
+            Arena.ArenaOutline(arenaBorderColor, 2f);
+        }
+        else if (WindowConfig.ProjectRadarInto3DWorld && WindowConfig.EnableArenaOutlineIn3DWorld && Arena.Bounds.AllowDrawing3DArenaBounds)
+        {
+            Arena.WorldArenaOutline(arenaBorderColor, 2f);
         }
 
         if (WindowConfig.ShowCardinals)
@@ -343,7 +350,8 @@ public abstract class BossModule : IDisposable
             var actor = t != null && !t.IsAlly && !t.IsDead && t.InCombat ? t : !PrimaryActor.IsDead && PrimaryActor.IsTargetable ? PrimaryActor : null;
             if (actor != null)
             {
-                Arena.ZoneDonut(actor.Position, actor.HitboxRadius + 2.6f, actor.HitboxRadius + 2.9f, Colors.MeleeRangeIndicator);
+                var radius = actor.HitboxRadius;
+                Arena.ZoneDonut(actor.Position, radius + 2.8f, radius + 3f, Colors.MeleeRangeIndicator);
             }
         }
         // draw enemies & player
@@ -361,6 +369,56 @@ public abstract class BossModule : IDisposable
         }
 
         return hints;
+    }
+
+    // Resolves an actor's current authored arena floor independently of world-projection settings.
+    // Disjoint layers select by X/Z containment; overlapping floors use Y plus per-actor hysteresis
+    // to prevent jumps near a midpoint from flickering hints, AI restrictions and pathfinding maps.
+    public int? ResolveArenaProjectionLayer(Actor actor)
+    {
+        if (Bounds is not ArenaBoundsCustom { WorldProjectionLayers.Length: > 0 } custom)
+        {
+            _arenaProjectionLayerOwner = null;
+            _actorArenaProjectionLayers.Clear();
+            return null;
+        }
+
+        if (!ReferenceEquals(_arenaProjectionLayerOwner, custom))
+        {
+            _arenaProjectionLayerOwner = custom;
+            _actorArenaProjectionLayers.Clear();
+        }
+
+        if (!_actorArenaProjectionLayers.TryGetValue(actor.InstanceID, out var current))
+        {
+            current = -1;
+        }
+        var resolved = custom.ResolveProjectionLayer(actor.Position - Center, actor.PosRot.Y, current);
+        _actorArenaProjectionLayers[actor.InstanceID] = resolved;
+        return resolved;
+    }
+
+    // A restriction is meaningful only for a valid explicitly authored layer. Null/invalid IDs keep
+    // normal behavior. Grouped physical floors form one 2D/hint/AI visibility domain, allowing remote
+    // teleporter destinations to remain visible and rasterized on their shared map.
+    public bool MechanicAppliesToArenaProjectionLayer(Actor actor, int? mechanicLayer, bool restrictToLayer)
+    {
+        if (!restrictToLayer || Bounds is not ArenaBoundsCustom custom || !custom.IsValidProjectionLayer(mechanicLayer))
+        {
+            return true;
+        }
+        return custom.ProjectionLayersShare2DGroup(ResolveArenaProjectionLayer(actor), mechanicLayer);
+    }
+
+    // Participant selection/counting remains tied to the exact physical floor. This prevents actors
+    // on another island in the same 2D group from becoming bait targets, stack members or tower soakers.
+    public bool ActorMatchesArenaProjectionLayer(Actor actor, int? mechanicLayer, bool restrictToLayer)
+    {
+        if (!restrictToLayer || Bounds is not ArenaBoundsCustom custom || !custom.IsValidProjectionLayer(mechanicLayer))
+        {
+            return true;
+        }
+        return ResolveArenaProjectionLayer(actor) == mechanicLayer;
     }
 
     public BossComponent.MovementHints CalculateMovementHintsForRaidMember(int slot, Actor actor)
@@ -391,6 +449,7 @@ public abstract class BossModule : IDisposable
     {
         hints.PathfindMapCenter = Center;
         hints.PathfindMapBounds = Bounds;
+        hints.PathfindMapArenaProjectionLayer = ResolveArenaProjectionLayer(actor);
 
         if (Arena.Bounds.AllowObstacleMap)
         {
@@ -595,6 +654,10 @@ public abstract class BossModule : IDisposable
 
     private void DrawWaymarks()
     {
+        var fontsize = WindowConfig.WaymarkFontSize;
+        var showOutlines = WindowConfig.ShowOutlinesAndShadows;
+        var shadows = showOutlines ? Colors.Shadows : 0u;
+        var outlinewidth = showOutlines ? 1.5f : 0f;
         DrawWaymark(WorldState.Waymarks[Waymark.A], "A", Colors.WaymarkA);
         DrawWaymark(WorldState.Waymarks[Waymark.B], "B", Colors.WaymarkB);
         DrawWaymark(WorldState.Waymarks[Waymark.C], "C", Colors.WaymarkC);
@@ -610,11 +673,7 @@ public abstract class BossModule : IDisposable
             if (position?.XZ() is Vector2 vec2)
             {
                 WPos pos = new(vec2);
-                if (WindowConfig.ShowOutlinesAndShadows)
-                {
-                    Arena.TextWorld(pos, text, Colors.Shadows, WindowConfig.WaymarkFontSize + 3f);
-                }
-                Arena.TextWorld(pos, text, color, WindowConfig.WaymarkFontSize);
+                Arena.TextWorld(pos, text, color, fontsize, shadows, outlinewidth);
             }
         }
     }
@@ -636,7 +695,7 @@ public abstract class BossModule : IDisposable
                 var pos = Arena.WorldPositionToScreenPosition(actor.Position);
                 var scale = WindowConfig.ArenaScale * 24f;
 
-                ImGui.GetWindowDrawList().AddImage(wrap.Handle, pos - new Vector2(scale), pos);
+                Arena.SpriteScreen(pos - new Vector2(scale), pos, wrap);
             }
         }
     }
@@ -974,5 +1033,26 @@ public abstract class BossModule : IDisposable
         {
             Components[i].OnEventDirectorUpdate(op.UpdateID, op.Param1, op.Param2, op.Param3, op.Param4);
         }
+    }
+
+    public void DrawWorldProjection(Angle cameraAzimuth, int pcSlot)
+    {
+        var pc = Raid[pcSlot];
+        if (pc == null)
+        {
+            return;
+        }
+
+        var hints = CalculateHintsForRaidMember(pcSlot, pc);
+        var haveRisks = false;
+        var count = hints.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            haveRisks |= hints[i].Item2;
+        }
+
+        Arena.Begin(cameraAzimuth, PrimaryActor, pc, draw2D: false);
+        DrawArena(pcSlot, pc, haveRisks);
+        Arena.End();
     }
 }

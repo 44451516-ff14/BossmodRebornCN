@@ -161,13 +161,18 @@ sealed class GlassyEyed(BossModule module) : Components.GenericGaze(module)
         {
             return [];
         }
-        var eyes = new Eye[count];
-
+        var eyes = new List<Eye>(count);
         for (var i = 0; i < count; ++i)
         {
-            eyes[i] = new(_affected[i].Position, _activation);
+            var a = _affected[i];
+            if (a == actor)
+            {
+                continue;
+            }
+            var loc = a.Position.Quantized();
+            eyes.Add(new(loc, _activation, eyeCenter: loc));
         }
-        return eyes;
+        return CollectionsMarshal.AsSpan(eyes);
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)

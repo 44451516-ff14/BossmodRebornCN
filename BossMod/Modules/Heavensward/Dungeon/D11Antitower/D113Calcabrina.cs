@@ -47,22 +47,24 @@ public enum IconID : uint
     Gaze = 73 // player
 }
 
-class TerrifyingGlanceBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(42.25f, 61f.Degrees()), (uint)IconID.Gaze, (uint)AID.TerrifyingGlance, 3.1f, source: module.Enemies((uint)OID.Calcabrina)[0]);
-class TerrifyingGlanceGaze(BossModule module) : Components.GenericGaze(module)
+sealed class TerrifyingGlanceBait(BossModule module) : Components.BaitAwayIcon(module, new AOEShapeCone(42.25f, 61f.Degrees()), (uint)IconID.Gaze, (uint)AID.TerrifyingGlance, 3.1d, source: module.Enemies((uint)OID.Calcabrina)[0]);
+sealed class TerrifyingGlanceGaze(BossModule module) : Components.GenericGaze(module)
 {
-    private DateTime activation;
     private readonly TerrifyingGlanceBait _bait = module.FindComponent<TerrifyingGlanceBait>()!;
-    private static readonly Angle a61 = 61f.Degrees();
+    private Eye[] _eye = [];
+    private readonly Actor boss = ((D113Calcabrina)module).Calcabrina!;
 
     public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
-        if (activation == default)
-            return [];
-        var primary = Module.Enemies((uint)OID.Calcabrina)[0].Position;
-        var dir = _bait.CurrentBaits[0].Target.Position - primary;
-        if (actor.Position.InCone(primary, dir, a61)) // 1° extra safety margin since calculated and actual rotation seems to be slightly off
+        if (_eye.Length == 0)
         {
-            return new Eye[1] { new(primary, activation) };
+            return _eye;
+        }
+        var primary = boss.Position;
+        var dir = _bait.CurrentBaits.Ref(0).Target.Position - primary;
+        if (actor.Position.InCone(primary, dir, 61f.Degrees())) // 1° extra safety margin since calculated and actual rotation seems to be slightly off
+        {
+            return _eye;
         }
         return [];
     }
@@ -70,31 +72,37 @@ class TerrifyingGlanceGaze(BossModule module) : Components.GenericGaze(module)
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.Gaze)
-            activation = WorldState.FutureTime(3.1d);
-
+        {
+            var loc = boss.Position.Quantized();
+            _eye = [(new(loc, WorldState.FutureTime(3.1d), eyeCenter: loc))];
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.TerrifyingGlance)
-            activation = default;
+        {
+            _eye = [];
+        }
     }
 }
 
-class Brace(BossModule module) : Components.DirectionalParry(module, [(uint)OID.Calcabrina])
+sealed class Brace(BossModule module) : Components.DirectionalParry(module, [(uint)OID.Calcabrina])
 {
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.Brace)
+        {
             PredictParrySide(caster.InstanceID, Side.Back | Side.Right | Side.Left);
+        }
     }
 }
 
-class HeatGazeBrina(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeatGazeBrina, new AOEShapeDonut(5f, 10f));
-class HeatGazeCalca(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeatGazeCalca, new AOEShapeCone(19.9f, 30f.Degrees()));
-class Knockout(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Knockout);
+sealed class HeatGazeBrina(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeatGazeBrina, new AOEShapeDonut(5f, 10f));
+sealed class HeatGazeCalca(BossModule module) : Components.SimpleAOEs(module, (uint)AID.HeatGazeCalca, new AOEShapeCone(19.9f, 30f.Degrees()));
+sealed class Knockout(BossModule module) : Components.SingleTargetCast(module, (uint)AID.Knockout);
 
-class Slapstick(BossModule module) : BossComponent(module)
+sealed class Slapstick(BossModule module) : BossComponent(module)
 {
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
@@ -111,7 +119,7 @@ class Slapstick(BossModule module) : BossComponent(module)
     }
 }
 
-class D113CalcabrinaStates : StateMachineBuilder
+sealed class D113CalcabrinaStates : StateMachineBuilder
 {
     public D113CalcabrinaStates(BossModule module) : base(module)
     {
@@ -128,11 +136,18 @@ class D113CalcabrinaStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 141, NameID = 4813)]
-public class D113Calcabrina(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+public sealed class D113Calcabrina(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
     private static readonly ArenaBoundsCustom arena = new([new Polygon(new(232f, -182f), 19.5f * CosPI.Pi36th, 36)], [new Rectangle(new(252f, -182f), 1.15f, 20f)]);
     private static readonly uint[] playerDolls = [(uint)OID.CalcaPlayer1, (uint)OID.CalcaPlayer2, (uint)OID.BrinaPlayer1, (uint)OID.BrinaPlayer2];
     public static readonly uint[] NpcDolls = [(uint)OID.Boss, (uint)OID.Brina, (uint)OID.Calcabrina];
+
+    public Actor? Calcabrina;
+
+    protected override void UpdateModule()
+    {
+        Calcabrina ??= GetActor((uint)OID.Calcabrina);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

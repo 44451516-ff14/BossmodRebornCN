@@ -77,11 +77,15 @@ sealed class Bombs(BossModule module) : Components.Adds(module, (uint)OID.Summon
     {
         if (ActiveActors.Count != 0)
         {
-            hints.PrioritizeTargetsByOID((uint)OID.SummonedBomb, 2);
-            // ignore forced targetting if current target is a PC
-            if (_config.ForceAddTargeting && WorldState.Actors.Find(actor.TargetID) is var target && target?.Type != ActorType.Player && target?.OID != (uint)OID.SummonedBomb)
+            // prioritize adds if boss still healthy
+            if (Module.PrimaryActor.HPRatio > 0.05f)
             {
-                hints.ForcedTarget = ActiveActors.MinBy(actor.DistanceToHitbox);
+                hints.PrioritizeTargetsByOID((uint)OID.SummonedBomb, 2);
+                // ignore forced targetting if current target is a PC
+                if (_config.ForceAddTargeting && WorldState.Actors.Find(actor.TargetID) is var target && target?.Type != ActorType.Player && target?.OID != (uint)OID.SummonedBomb)
+                {
+                    hints.ForcedTarget = ActiveActors.MinBy(actor.DistanceToHitbox);
+                }
             }
         }
         else if (_config.ForceBossTargeting && WorldState.Actors.Find(actor.TargetID) == null)

@@ -278,9 +278,17 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
         {
             if (Player.DistanceToHitbox(primaryTarget) > range)
             {
-                var newTarget = Hints.PriorityTargets.FirstOrDefault(x => Player.DistanceToHitbox(x.Actor) <= range);
-                if (newTarget != null)
-                    primaryTarget = newTarget;
+                var targets = Hints.PriorityTargetsSpan;
+                var len = targets.Length;
+                for (var i = 0; i < len; ++i)
+                {
+                    var candidate = targets[i];
+                    if (Player.DistanceToHitbox(candidate.Actor) <= range)
+                    {
+                        primaryTarget = candidate;
+                        break;
+                    }
+                }
             }
         }
     }
@@ -314,8 +322,29 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
 
         P targetPrio(Actor potentialTarget)
         {
-            var numForbidden = Hints.ForbiddenTargets.Count(enemy => isInAOE(potentialTarget, enemy.Actor));
-            var numOk = Hints.PriorityTargets.Count(enemy => isInAOE(potentialTarget, enemy.Actor));
+            var numForbidden = 0;
+            var pottargets = Hints.PotentialTargets;
+            var count = pottargets.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var enemy = pottargets[i];
+                if (isInAOE(potentialTarget, enemy.Actor))
+                {
+                    ++numForbidden;
+                }
+            }
+
+            var numOk = 0;
+            var targets = Hints.PriorityTargetsSpan;
+            var len = targets.Length;
+            for (var i = 0; i < len; ++i)
+            {
+                var enemy = targets[i];
+                if (isInAOE(potentialTarget, enemy.Actor))
+                {
+                    ++numOk;
+                }
+            }
 
             var numTargets = targetOutOfCombat && numForbidden == 1 && numOk == 0
                 // primary target will be the only one hit by aoe so they are ok to target
@@ -382,7 +411,7 @@ public abstract class Basexan<AID, TraitID, TValues>(RotationModuleManager manag
 
         var numTargets = 0;
 
-        foreach (var dotTarget in Hints.PriorityTargets)
+        foreach (var dotTarget in Hints.PriorityTargetsSpan)
         {
             if (dotTarget.ForbidDOTs)
                 continue;

@@ -12,6 +12,8 @@ public readonly struct Angle(float rad)
     public const float HalfPi = MathF.PI / 2f;
     public const float DoublePI = MathF.Tau;
 
+    public Angle(ref Vector4 v) : this(v.W) { }
+
     public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
     public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
 

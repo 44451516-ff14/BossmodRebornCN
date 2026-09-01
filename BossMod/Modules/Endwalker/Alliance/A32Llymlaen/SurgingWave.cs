@@ -30,7 +30,7 @@ sealed class SurgingWaveShockwave(BossModule module) : Components.SimpleKnockbac
         {
             if (!polyInit)
             {
-                poly = arena.Polygon.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
+                poly = arena.Shape.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
                 polyInit = true;
             }
 

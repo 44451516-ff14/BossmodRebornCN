@@ -313,12 +313,20 @@ public abstract class RotationModule(RotationModuleManager manager, Actor player
         bool inRange(Actor tar) => tar.Position.InCircle(Player.Position, maxDistanceFromPlayer + tar.HitboxRadius + 0.5f);
 
         if (initial != null && !inRange(initial))
+        {
             initial = null;
+        }
 
         var bestTarget = initial;
         var bestPrio = initial != null ? prioFunc(initial) : default;
-        foreach (var enemy in Hints.PriorityTargets.Where(x => x.Actor != initial && inRange(x.Actor) && (filterFunc?.Invoke(x) ?? true)))
+        var priorityTargets = Hints.PriorityTargetsSpan;
+        var len = priorityTargets.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var enemy = priorityTargets[i];
+            if (enemy.Actor == initial || !inRange(enemy.Actor) || filterFunc != null && !filterFunc(enemy))
+                continue;
+
             var newPrio = prioFunc(enemy.Actor);
             if (newPrio.CompareTo(bestPrio) > 0)
             {

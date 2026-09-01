@@ -47,8 +47,11 @@ public enum AID : uint
     AuroralDrape = 50355, // EmptyWeeper->self, 7.0s cast, range 7 width 7 rect
     EmptySeed = 50349, // MemoryReceptacle->self, 5.0s cast, range 10 circle
     UnknownAbility4 = 50455, // Alxaal->self, no cast, single-target
-    DeadlyRebirth = 50694, // Promathia->self, 8.0+2.0s cast, single-target
-    DeadlyRebirth1 = 50347, // EmptyThinker->self, 2.0s cast, range 50 circle
+    DeadlyRebirthCast = 50694, // Promathia->self, 8.0+2.0s cast, single-target
+    DeadlyRebirth = 50347, // EmptyThinker->self, 2.0s cast, range 50 circle
+    DeadlyRebirthEnrageCast = 50346, // Promathia->self, 5.7+1,3s cast, single-target
+    DeadlyRebirthEnrageVisual = 50420, // Promathia->self, no cast, single-target
+    DeadlyRebirthEnrage = 50348, // EmptyThinker->self, 1.3s cast, range 50 circle
     EarthboundHeaven = 50333, // Promathia->self, 2.0+1.0s cast, single-target
 
     MalevolentBlessing1 = 50326, // Promathia->self, 5.7+0.8s cast, single-target
@@ -59,6 +62,8 @@ public enum AID : uint
     PestilentPenanceLink = 50332, // LinkOfPromathia->self, 7.5s cast, range 50 width 5 rect
     InfernalDeliverance = 50334, // Promathia->self, 5.5+1.5s cast, single-target
     InfernalDeliveranceTower = 50335, // EmptyThinker->self, 7.0s cast, range 4 circle
+    UnmitigatedExplosion = 50336, // EmptyThinker->self, no cast, range 50 circle, tower explosion
+
     InfernalDeliveranceAOE = 50565, // EmptyThinker->self, 5.0s cast, range 8 circle
     Meteor = 50339, // Promathia->self, 4.5+0.5s cast, single-target
     Meteor1 = 50340, // EmptyThinker->players, 0.5s cast, range 6 circle

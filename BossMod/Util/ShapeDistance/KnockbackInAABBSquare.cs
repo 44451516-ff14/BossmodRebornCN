@@ -241,6 +241,29 @@ public sealed class SDKnockbackInAABBSquareFixedDirectionPlusAOECircles(WPos Cen
 }
 
 [SkipLocalsInit]
+public sealed class SDKnockbackInAABBSquareFixedDirectionIntoCircle(WPos Center, WDir Direction, float HalfWidth, WPos CircleOrigin, float Radius) : ShapeDistance
+{
+    private readonly WPos center = Center;
+    private readonly WDir direction = Direction; // direction includes distance, not normalized
+    private readonly float halfWidth = HalfWidth;
+    private readonly WPos circleOrigin = CircleOrigin;
+    private readonly float radius = Radius;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool Contains(in WPos p)
+    {
+        var projected = p + direction;
+        return !projected.InSquare(center, halfWidth) || !projected.InCircle(circleOrigin, radius);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override float Distance(in WPos p) => Contains(p) ? 0f : 1f;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+}
+
+[SkipLocalsInit]
 public sealed class SDKnockbackInAABBSquareAwayFromOriginPlusAOECirclesMixedRadii(WPos Center, WPos Origin, float Distance, float HalfWidth, (WPos Origin, float Radius)[] AOEs, int Length) : ShapeDistance
 {
     private readonly WPos center = Center;

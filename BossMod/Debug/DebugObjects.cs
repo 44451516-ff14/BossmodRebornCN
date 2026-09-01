@@ -53,7 +53,7 @@ public sealed class DebugObjects
                 _tree.LeafNode($"Targetable: {obj.IsTargetable}");
                 _tree.LeafNode($"Is character: {internalObj->IsCharacter()}");
                 _tree.LeafNode($"Event state: {Utils.GameObjectInternal(obj)->EventState}");
-                _tree.LeafNode($"Renderflags: {Utils.GameObjectInternal(obj)->RenderFlags}");
+                _tree.LeafNode($"Renderflags: {(int)Utils.GameObjectInternal(obj)->RenderFlags}");
                 foreach (var n1 in _tree.Node("Event IDs"))
                 {
                     _tree.LeafNode($"Primary: {internalObj->EventId.Id:X}");
@@ -108,16 +108,24 @@ public sealed class DebugObjects
 
         if (selected != null)
         {
-            var h = new Vector3(0, Utils.GameObjectInternal(selected)->Height, 0);
-            Camera.Instance?.DrawWorldLine(Service.ObjectTable.LocalPlayer?.Position ?? default, selected.Position, Colors.TextColor3);
-            Camera.Instance?.DrawWorldCircle(selected.Position, selected.HitboxRadius, Colors.TextColor4);
-            Camera.Instance?.DrawWorldCircle(selected.Position + h, selected.HitboxRadius, Colors.TextColor4);
-            Camera.Instance?.DrawWorldCircle(selected.Position + h * 2, selected.HitboxRadius, Colors.TextColor4);
-            var numSegments = CurveApprox.CalculateCircleSegments(selected.HitboxRadius, 360f.Degrees(), 1f);
-            for (var i = 0; i < numSegments; ++i)
+            var h = new Vector3(0f, Utils.GameObjectInternal(selected)->Height, 0f);
+            var h2 = 2f * h;
+            var pos = selected.Position;
+            var radius = selected.HitboxRadius;
+            if (Camera.Instance is Camera cam)
             {
-                var p = selected.Position + selected.HitboxRadius * (i * 360.0f / numSegments).Degrees().ToDirection().ToVec3();
-                Camera.Instance?.DrawWorldLine(p - h, p + h, Colors.TextColor4);
+                cam.DrawWorldLine(Service.ObjectTable.LocalPlayer?.Position ?? default, pos, Colors.TextColor3);
+                var col = Colors.TextColor4;
+                cam.DrawWorldCircle(pos, radius, col);
+                cam.DrawWorldCircle(pos + h, radius, col);
+                cam.DrawWorldCircle(pos + h * 2f, radius, col);
+                var numSegments = CurveApprox.CalculateCircleSegments(radius, 360f.Degrees(), 1f);
+                var invNumSegments = 1f / numSegments;
+                for (var i = 0; i < numSegments; ++i)
+                {
+                    var p = pos + radius * (i * 360f * invNumSegments).Degrees().ToDirection().ToVec3();
+                    cam.DrawWorldLine(p, p + h2, col);
+                }
             }
         }
     }

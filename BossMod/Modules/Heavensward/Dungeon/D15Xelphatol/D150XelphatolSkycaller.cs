@@ -39,7 +39,7 @@ class D150XelphatolSkycallerStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182, NameID = 5264, SortOrder = 5)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182u, NameID = 5264u, SortOrder = 5)]
 public sealed class D150XelphatolSkycaller : BossModule
 {
     public D150XelphatolSkycaller(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

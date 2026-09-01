@@ -19,7 +19,7 @@ public sealed class AutoAutosTweak(WorldState ws, AIHints hints)
 
     public bool GetDesiredState(bool currentState, ulong targetId)
     {
-        if (_config.PyreticThreshold > 0 && hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < ws.FutureTime(_config.PyreticThreshold))
+        if (_config.PyreticThreshold > 0f && hints.ImminentSpecialMode.mode == AIHints.SpecialMode.Pyretic && hints.ImminentSpecialMode.activation < ws.FutureTime(_config.PyreticThreshold))
         {
             return false; // pyretic => disable autos
         }
@@ -33,9 +33,11 @@ public sealed class AutoAutosTweak(WorldState ws, AIHints hints)
         var transcendent = false;
         if (player != null)
         {
-            foreach (var s in player.Statuses)
+            var statuses = player.Statuses.AsSpan();
+            var len = statuses.Length;
+            for (var i = 0; i < len; ++i)
             {
-                if (s.ID is 418u or 2648u)
+                if (statuses[i].ID is 418u or 2648u)
                 {
                     transcendent = true;
                     break;
@@ -55,7 +57,7 @@ public sealed class AutoAutosTweak(WorldState ws, AIHints hints)
 
         var enemy = hints.FindEnemy(target);
 
-        if (enemy?.Priority == AIHints.Enemy.PriorityForbidden || enemy?.Spikes == true)
+        if ((_config.PreventForbiddenTargets || AI.AIManager.Instance?.Beh != null || Autorotation.MiscAI.NormalMovement.Instance != null) && (enemy?.Priority == AIHints.Enemy.PriorityForbidden || enemy?.Spikes == true))
         {
             return false;
         }

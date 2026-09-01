@@ -141,7 +141,7 @@ public sealed class AkechiGNBPvP(RotationModuleManager manager, Actor player) : 
 
         var (roleCondition, roleAction, roleTarget) = strategy.Option(Track.RoleActions).As<RoleActionStrategy>() switch
         {
-            RoleActionStrategy.Rampage => (HasStatus(SID.RampageEquippedPvP) && ActionReady(AID.RampagePvP) && Hints.PriorityTargets.Any(h => h.Actor.IsDeadOrDestroyed && !h.Actor.IsFriendlyNPC && !h.Actor.IsAlly && h.Actor.DistanceToHitbox(Player) <= 10) && In10y(mainTarget), AID.RampagePvP, Player),
+            RoleActionStrategy.Rampage => (HasStatus(SID.RampageEquippedPvP) && ActionReady(AID.RampagePvP) && Hints.AnyPriorityTarget(h => h.Actor.IsDeadOrDestroyed && !h.Actor.IsFriendlyNPC && !h.Actor.IsAlly && h.Actor.DistanceToHitbox(Player) <= 10) && In10y(mainTarget), AID.RampagePvP, Player),
             RoleActionStrategy.Rampart => (HasStatus(SID.RampartEquippedPvP) && ActionReady(AID.RampartPvP) && ((Player.PendingHPRatio is < 1.0f and not 0.0f && EnemiesTargetingPlayer >= 2) || Player.PendingHPRatio is < 0.5f and not 0.0f), AID.RampartPvP, Player),
             RoleActionStrategy.FullSwing => (HasStatus(SID.FullSwingEquippedPvP) && ActionReady(AID.FullSwingPvP) && In5y(mainTarget), AID.FullSwingPvP, mainTarget),
             _ => (false, AID.None, null)

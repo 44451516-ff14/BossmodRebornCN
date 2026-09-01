@@ -69,6 +69,18 @@
     </ItemGroup>
 
     <ItemGroup>
+        <EmbeddedResource Include="Framework\Shaders\Compiled\*">
+            <LogicalName>BossMod.Shaders.Compiled.%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Framework\Fonts\Compiled\*">
+            <LogicalName>BossMod.Fonts.Compiled.%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
         <Reference Include="Dalamud.Common"/>
         <Reference Include="TerraFX.Interop.Windows"/>
     </ItemGroup>

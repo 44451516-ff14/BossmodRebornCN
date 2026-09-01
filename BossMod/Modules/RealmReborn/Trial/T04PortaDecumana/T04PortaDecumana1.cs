@@ -56,38 +56,48 @@ public enum SID : uint
     VortexBarrier = 3012, // Boss->Boss, extra=0x0
 }
 
-class EarthenFury(BossModule module) : Components.RaidwideCast(module, (uint)AID.EarthenFuryAOE);
-class Geocrush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geocrush, 25); // TODO: verify falloff...
+[SkipLocalsInit]
+sealed class EarthenFury(BossModule module) : Components.RaidwideCast(module, (uint)AID.EarthenFuryAOE);
+[SkipLocalsInit]
+sealed class Geocrush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Geocrush, 25f); // TODO: verify falloff...
 
-abstract class Landslide(BossModule module, uint aid) : Components.SimpleAOEs(module, aid, new AOEShapeRect(40, 3));
-class Landslide1(BossModule module) : Landslide(module, (uint)AID.Landslide1);
-class Landslide2(BossModule module) : Landslide(module, (uint)AID.Landslide2);
+[SkipLocalsInit]
+sealed class Landslide(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.Landslide1, (uint)AID.Landslide2], new AOEShapeRect(40f, 3f));
 
-class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLand, 6);
-class AerialBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.AerialBlastAOE);
-class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheStormAOE, new AOEShapeDonut(12.5f, 25));
-class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralShriek, 23);
-class Hellfire(BossModule module) : Components.RaidwideCast(module, (uint)AID.HellfireAOE);
-class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8);
+[SkipLocalsInit]
+sealed class WeightOfTheLand(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WeightOfTheLand, 6f);
+[SkipLocalsInit]
+sealed class AerialBlast(BossModule module) : Components.RaidwideCast(module, (uint)AID.AerialBlastAOE);
+[SkipLocalsInit]
+sealed class EyeOfTheStorm(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EyeOfTheStormAOE, new AOEShapeDonut(12.5f, 25f));
+[SkipLocalsInit]
+sealed class MistralShriek(BossModule module) : Components.SimpleAOEs(module, (uint)AID.MistralShriek, 23f);
+[SkipLocalsInit]
+sealed class Hellfire(BossModule module) : Components.RaidwideCast(module, (uint)AID.HellfireAOE);
+[SkipLocalsInit]
+sealed class RadiantPlume(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RadiantPlumeAOE, 8f);
 
-class VulcanBurst(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VulcanBurst, 15, stopAtWall: true)
+[SkipLocalsInit]
+sealed class VulcanBurst(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.VulcanBurst, 15f, stopAtWall: true)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (Casters.Count != 0)
+        {
             hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center, 5f), Casters.Ref(0).Activation);
+        }
     }
 }
 
-class T04PortaDecumana1States : StateMachineBuilder
+[SkipLocalsInit]
+sealed class T04PortaDecumana1States : StateMachineBuilder
 {
     public T04PortaDecumana1States(BossModule module) : base(module)
     {
         TrivialPhase()
             .ActivateOnEnter<EarthenFury>()
             .ActivateOnEnter<Geocrush>()
-            .ActivateOnEnter<Landslide1>()
-            .ActivateOnEnter<Landslide2>()
+            .ActivateOnEnter<Landslide>()
             .ActivateOnEnter<WeightOfTheLand>()
             .ActivateOnEnter<AerialBlast>()
             .ActivateOnEnter<EyeOfTheStorm>()
@@ -98,18 +108,26 @@ class T04PortaDecumana1States : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830, NameID = 2137, SortOrder = 1)]
-public class T04PortaDecumana1(WorldState ws, Actor primary) : BossModule(ws, primary, new(-772f, -600f), new ArenaBoundsCircle(19.5f))
+[ModuleInfo(BossModuleInfo.Maturity.Verified, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830u, NameID = 2137u, SortOrder = 1)]
+[SkipLocalsInit]
+public sealed class T04PortaDecumana1 : BossModule
 {
+    public T04PortaDecumana1(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private T04PortaDecumana1(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-772f, -600f), 19.5f, 36)]);
+        return (arena.Center, arena);
+    }
+
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (PrimaryActor.FindStatus((uint)SID.Invincibility) != null || PrimaryActor.FindStatus((uint)SID.VortexBarrier) != null)
         {
             var e = hints.FindEnemy(PrimaryActor);
-            if (e != null)
-            {
-                e.Priority = AIHints.Enemy.PriorityInvincible;
-            }
+            e?.Priority = AIHints.Enemy.PriorityInvincible;
         }
     }
 }

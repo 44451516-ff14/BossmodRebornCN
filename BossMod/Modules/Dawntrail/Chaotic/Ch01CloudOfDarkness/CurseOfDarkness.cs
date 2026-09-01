@@ -6,7 +6,7 @@ sealed class DarkEnergyParticleBeam(BossModule module) : Components.GenericBaitA
 {
     private readonly DateTime[] _activation = new DateTime[PartyState.MaxAllianceSize];
 
-    private static readonly AOEShapeCone _shape = new(25f, 7.5f.Degrees());
+    private readonly AOEShapeCone _shape = new(25f, 7.5f.Degrees());
 
     public override void Update()
     {

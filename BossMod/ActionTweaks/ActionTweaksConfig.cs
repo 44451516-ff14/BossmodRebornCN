@@ -73,6 +73,9 @@ public sealed class ActionTweaksConfig : ConfigNode
     [PropertyDisplay("自动下坐骑以执行技能")]
     public bool AutoDismount = true;
 
+    [PropertyDisplay("Allow forbidding targets", tooltip: "Some modules want to prevent attacking certain targets, for example to prevent an early enrage. This setting gets ignored while AI is on.")]
+    public bool PreventForbiddenTargets = true;
+
     public enum GroundTargetingMode
     {
         [PropertyDisplay("通过额外点击手动选择位置（正常游戏行为）")]

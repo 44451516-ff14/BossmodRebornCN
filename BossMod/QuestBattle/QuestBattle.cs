@@ -487,7 +487,18 @@ public abstract class QuestBattle : ZoneModule
     private Task<List<Vector3>>? Pathfind(Vector3 source, Vector3 target) => _pathfind.InvokeFunc(source, target, false);
     private bool MeshIsReady() => _meshIsReady.InvokeFunc();
 
-    public static bool HaveTarget(Actor player, AIHints hints) => player.InCombat || hints.PriorityTargets.Any(x => hints.PathfindMapBounds.Contains(x.Actor.Position - hints.PathfindMapCenter));
+    public static bool HaveTarget(Actor player, AIHints hints)
+    {
+        if (player.InCombat)
+            return true;
+
+        foreach (var target in hints.PriorityTargetsSpan)
+        {
+            if (hints.PathfindMapBounds.Contains(target.Actor.Position - hints.PathfindMapCenter))
+                return true;
+        }
+        return false;
+    }
 
     // returns true if we want to restart pathfinding
     private bool OnObjectiveChanged()

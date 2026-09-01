@@ -29,32 +29,23 @@ public enum SID : uint
     AetherochemicalBomb = 723, // none->player, extra=0x0
 }
 
-class SeedOfTheRivers(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeedOfTheRivers, 5f);
-class Sanctification(BossModule module) : Components.Cleave(module, (uint)AID.Sanctification, new AOEShapeCone(16.5f, 60f.Degrees()), activeWhileCasting: false);
+sealed class SeedOfTheRivers(BossModule module) : Components.SimpleAOEs(module, (uint)AID.SeedOfTheRivers, 5f);
+sealed class Sanctification(BossModule module) : Components.Cleave(module, (uint)AID.Sanctification, new AOEShapeCone(16.5f, 60f.Degrees()), activeWhileCasting: false);
 
-class Educator(BossModule module) : Components.GenericAOEs(module)
+sealed class Educator(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeRect square = new(5f, 5f, 5f);
+    private readonly WPos center = new(0f, -350f);
+    private readonly AOEShapeRect square = new(5f, 5f, 5f);
     private BitMask activeCells;
-    private static readonly Square[] defaultSquare = [new(D083TheCurator.ArenaCenter, 19.5f)];
-    public static readonly Square[] Tiles = GenerateTiles();
     private readonly List<AOEInstance> _aoes = [with(16)];
 
-    private static Square[] GenerateTiles()
+    public int CellIndex(WPos pos)
     {
-        var squares = new Square[16];
-        for (var i = 0; i < 16; ++i)
-            squares[i] = new Square(CellCenter(i), 5f);
-        return squares;
-    }
-
-    public static int CellIndex(WPos pos)
-    {
-        var off = pos - D083TheCurator.ArenaCenter;
+        var off = pos - center;
         return (CoordinateIndex(off.Z) << 2) | CoordinateIndex(off.X);
     }
 
-    private static int CoordinateIndex(float coord) => coord switch
+    private int CoordinateIndex(float coord) => coord switch
     {
         < -10f => 0,
         < 0f => 1,
@@ -62,18 +53,18 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
         _ => 3
     };
 
-    public static WPos CellCenter(int index)
+    public WPos CellCenter(int index)
     {
         var x = -15f + 10f * (index & 3);
         var z = -15f + 10f * (index >> 2);
-        return D083TheCurator.ArenaCenter + new WDir(x, z);
+        return center + new WDir(x, z);
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID == (uint)AID.TheEducator)
+        if (spell.Action.ID is var id && id == (uint)AID.TheEducator)
         {
             var centerIndex = CellIndex(spell.LocXZ);
             var rowStart = centerIndex & 3;
@@ -86,7 +77,7 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
             }
             UpdateArenaBounds();
         }
-        else if (spell.Action.ID == (uint)AID.TheEducatorBootSequence)
+        else if (id == (uint)AID.TheEducatorBootSequence)
         {
             _aoes.Add(new(square, CellCenter(CellIndex(spell.LocXZ)), default, Module.CastFinishAt(spell)));
         }
@@ -97,9 +88,10 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
         if (spell.Action.ID == (uint)AID.TheEducatorBootSequence)
         {
             var count = _aoes.Count;
+            var loc = spell.LocXZ;
             for (var i = 0; i < count; ++i)
             {
-                if (_aoes[i].Origin == CellCenter(CellIndex(spell.LocXZ)))
+                if (_aoes[i].Origin == CellCenter(CellIndex(loc)))
                 {
                     _aoes.RemoveAt(i);
                     return;
@@ -121,51 +113,61 @@ class Educator(BossModule module) : Components.GenericAOEs(module)
     public override void OnEventDirectorUpdate(uint updateID, uint param1, uint param2, uint param3, uint param4)
     {
         if (updateID == 0x80000004 || activeCells == default)
+        {
             return;
+        }
         activeCells = default;
-        Arena.Bounds = D083TheCurator.DefaultArena;
-        Arena.Center = D083TheCurator.ArenaCenter;
+        Arena.Bounds = new ArenaBoundsSquare(19.5f);
+        Arena.Center = center;
     }
 
     private void UpdateArenaBounds()
     {
-        List<Square> brokenTilesList = [];
-
-        var len = Tiles.Length;
-        for (var i = 0; i < len; ++i)
+        var brokenTiles = new Square[activeCells.NumSetBits()];
+        var index = 0;
+        for (var i = 0; i < 16; ++i)
         {
             if (activeCells[i])
-                brokenTilesList.Add(Tiles[i]);
+            {
+                brokenTiles[index++] = new Square(CellCenter(i), 5f);
+            }
         }
 
-        Square[] brokenTiles = [.. brokenTilesList];
         if (brokenTiles.Length == 16) // prevents empty sequence incase all tiles are active
+        {
             brokenTiles = [];
-        var arena = new ArenaBoundsCustom(defaultSquare, brokenTiles);
+        }
+        var arena = new ArenaBoundsCustom([new Square(center, 19.5f)], brokenTiles);
         Arena.Bounds = arena;
         Arena.Center = arena.Center;
     }
 }
 
-class AetherochemicalMine(BossModule module) : Components.GenericAOEs(module)
+sealed class AetherochemicalMine(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeCircle circle = new(5f);
+    private readonly AOEShapeCircle circle = new(5f);
     private readonly List<AOEInstance> _aoes = [with(4)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID == (uint)AID.AetherochemicalMine)
+        if (spell.Action.ID is var id && id == (uint)AID.AetherochemicalMine)
+        {
             _aoes.Add(new(circle, caster.Position));
-        else if (spell.Action.ID == (uint)AID.AetherochemicalExplosionMine)
+        }
+        else if (id == (uint)AID.AetherochemicalExplosionMine)
+        {
             RemoveAOE(caster.Position);
+        }
     }
 
     public override void OnActorDestroyed(Actor actor)
     {
         if (actor.OID == (uint)OID.AetherochemicalMine)
+        {
             RemoveAOE(actor.Position);
+        }
     }
 
     private void RemoveAOE(WPos pos)
@@ -182,24 +184,28 @@ class AetherochemicalMine(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class AetherochemicalBombStatus(BossModule module) : Components.CleansableDebuff(module, (uint)SID.AetherochemicalBomb, "Bomb", "targeted");
+sealed class AetherochemicalBombStatus(BossModule module) : Components.CleansableDebuff(module, (uint)SID.AetherochemicalBomb, "Bomb", "targeted");
 
-class AetherochemicalBomb(BossModule module) : Components.GenericStackSpread(module)
+sealed class AetherochemicalBomb(BossModule module) : Components.GenericStackSpread(module)
 {
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AetherochemicalBomb)
+        {
             Spreads.Add(new(actor, 8f, WorldState.FutureTime(6d))); // status effect hits every 6 seconds unless cleansed/times out, radius is either 7 or 8
+        }
     }
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
         if (status.ID == (uint)SID.AetherochemicalBomb)
+        {
             Spreads.Clear();
+        }
     }
 }
 
-class D083TheCuratorStates : StateMachineBuilder
+sealed class D083TheCuratorStates : StateMachineBuilder
 {
     public D083TheCuratorStates(BossModule module) : base(module)
     {
@@ -213,12 +219,9 @@ class D083TheCuratorStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35, NameID = 3434, SortOrder = 9)]
-public class D083TheCurator(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, DefaultArena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35u, NameID = 3434u, SortOrder = 9)]
+public sealed class D083TheCurator(WorldState ws, Actor primary) : BossModule(ws, primary, new(0f, -350f), new ArenaBoundsSquare(19.5f))
 {
-    public static readonly WPos ArenaCenter = new(default, -350f);
-    public static readonly ArenaBoundsSquare DefaultArena = new(19.5f);
-
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);

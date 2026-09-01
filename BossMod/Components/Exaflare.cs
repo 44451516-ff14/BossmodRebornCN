@@ -4,7 +4,8 @@
 [SkipLocalsInit]
 public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : GenericAOEs(module, aid, "GTFO from exaflare!")
 {
-    public sealed class Line(WPos next, WDir advance, DateTime nextExplosion, double timeToMove, int explosionsLeft, int maxShownExplosions, Angle rotation = default)
+    public sealed class Line(WPos next, WDir advance, DateTime nextExplosion, double timeToMove, int explosionsLeft, int maxShownExplosions, Angle rotation = default,
+        int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
     {
         public WPos Next = next;
         public WDir Advance = advance;
@@ -13,6 +14,8 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
         public int ExplosionsLeft = explosionsLeft;
         public int MaxShownExplosions = maxShownExplosions;
         public Angle Rotation = rotation;
+        public int? ArenaProjectionLayer = arenaProjectionLayer;
+        public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     }
 
     public readonly AOEShape Shape = shape;
@@ -33,7 +36,8 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
         var linesCount = Lines.Count;
         if (lastCount != linesCount || currentVersion != lastVersion)
         {
-            var futureAOEs = CollectionsMarshal.AsSpan(FutureAOEs(linesCount));
+            var futureProjectionLayers = new List<(int? layer, bool restrict)>();
+            var futureAOEs = CollectionsMarshal.AsSpan(FutureAOEs(linesCount, futureProjectionLayers));
             var imminentAOEs = ImminentAOEs(linesCount);
             var futureLen = futureAOEs.Length;
             var imminentLen = imminentAOEs.Length;
@@ -44,7 +48,9 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
                 ref var aoe = ref futureAOEs[i];
                 var origin = aoe.Item1;
                 var rotation = aoe.Item3;
-                _aoes[i] = new(Shape, origin, rotation, aoe.Item2, FutureColor, shapeDistance: Shape.Distance(origin, rotation));
+                var projectionLayer = futureProjectionLayers[i];
+                _aoes[i] = new(Shape, origin, rotation, aoe.Item2, FutureColor, shapeDistance: Shape.Distance(origin, rotation),
+                    arenaProjectionLayer: projectionLayer.layer, restrictToArenaProjectionLayer: projectionLayer.restrict);
             }
 
             for (var i = 0; i < imminentLen; ++i)
@@ -52,7 +58,9 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
                 ref var aoe = ref imminentAOEs[i];
                 var origin = aoe.Item1;
                 var rotation = aoe.Item3;
-                _aoes[futureLen + i] = new(Shape, origin, rotation, aoe.Item2, ImminentColor, shapeDistance: Shape.Distance(origin, rotation));
+                var line = Lines[i];
+                _aoes[futureLen + i] = new(Shape, origin, rotation, aoe.Item2, ImminentColor, shapeDistance: Shape.Distance(origin, rotation),
+                    arenaProjectionLayer: line.ArenaProjectionLayer, restrictToArenaProjectionLayer: line.RestrictToArenaProjectionLayer);
             }
             lastCount = linesCount;
             lastVersion = currentVersion;
@@ -73,7 +81,9 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
         return exas;
     }
 
-    protected List<(WPos, DateTime, Angle)> FutureAOEs(int count)
+    protected List<(WPos, DateTime, Angle)> FutureAOEs(int count) => FutureAOEs(count, null);
+
+    private List<(WPos, DateTime, Angle)> FutureAOEs(int count, List<(int? layer, bool restrict)>? projectionLayers)
     {
         var exas = new List<(WPos, DateTime, Angle)>(count);
         var currentTime = WorldState.CurrentTime;
@@ -88,6 +98,7 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
                 pos += l.Advance;
                 time = time.AddSeconds(l.TimeToMove);
                 exas.Add((pos.Quantized(), time, l.Rotation));
+                projectionLayers?.Add((l.ArenaProjectionLayer, l.RestrictToArenaProjectionLayer));
             }
         }
         return exas;
@@ -104,7 +115,7 @@ public class Exaflare(BossModule module, AOEShape shape, uint aid = default) : G
 
 [SkipLocalsInit]
 public class SimpleExaflare(BossModule module, AOEShape shape, uint aidFirst, uint aidRest, float distance, double timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false,
-bool locationBased = false, Angle rotation = default) : Exaflare(module, shape)
+bool locationBased = false, Angle rotation = default, float[]? arenaProjectionLayers = null, bool restrictToArenaProjectionLayer = true) : Exaflare(module, shape)
 {
     private readonly uint AIDFirst = aidFirst;
     private readonly uint AIDRest = aidRest;
@@ -115,16 +126,23 @@ bool locationBased = false, Angle rotation = default) : Exaflare(module, shape)
     private readonly bool CastEvent = castEvent; // if exaflare gets advanced by castevent instead of castfinished
     private readonly bool LocationBased = locationBased; // if cast is location based
     private readonly Angle Rotation = rotation;
+    public float[]? ArenaProjectionLayers = arenaProjectionLayers;
+    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     public int NumLinesFinished;
 
-    public SimpleExaflare(BossModule module, float radius, uint aidFirst, uint aidRest, float distance, double timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false, bool locationBased = false)
-    : this(module, new AOEShapeCircle(radius), aidFirst, aidRest, distance, timeToMove, explosionsLeft, maxShownExplosions, castEvent, locationBased) { }
+    public SimpleExaflare(BossModule module, float radius, uint aidFirst, uint aidRest, float distance, double timeToMove, int explosionsLeft, int maxShownExplosions, bool castEvent = false, bool locationBased = false,
+        float[]? arenaProjectionLayers = null, bool restrictToArenaProjectionLayer = true)
+    : this(module, new AOEShapeCircle(radius), aidFirst, aidRest, distance, timeToMove, explosionsLeft, maxShownExplosions, castEvent, locationBased, default, arenaProjectionLayers, restrictToArenaProjectionLayer) { }
+
+    private int? ResolveArenaProjectionLayer(float y)
+        => ArenaProjectionLayers is { Length: > 0 } layers ? GenericAOEs.IndexOfClosestLayer(layers, y) : null;
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == AIDFirst)
         {
-            Lines.Add(new(LocationBased ? spell.LocXZ : caster.Position, Distance * caster.Rotation.ToDirection(), Module.CastFinishAt(spell), TimeToMove, ExplosionsLeft, MaxShownExplosions, Rotation));
+            Lines.Add(new(LocationBased ? spell.LocXZ : caster.Position, Distance * caster.Rotation.ToDirection(), Module.CastFinishAt(spell), TimeToMove, ExplosionsLeft, MaxShownExplosions, Rotation,
+                ResolveArenaProjectionLayer(LocationBased ? spell.Location.Y : caster.PosRot.Y), RestrictToArenaProjectionLayer));
         }
     }
 

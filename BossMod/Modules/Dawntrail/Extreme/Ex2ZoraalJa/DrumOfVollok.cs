@@ -24,7 +24,7 @@ sealed class DrumOfVollokPlatforms(BossModule module) : BossComponent(module)
         {
             var a45 = 45f.Degrees();
             Active = true;
-            var arena = new ArenaBoundsCustom([new Square(center1, 10f, a45), new Square(Arena.Center, 10f, a45)], ScaleFactor: 1.24f, RotatePathfindingMap: true);
+            var arena = new ArenaBoundsCustom([new Square(center1, 10f, a45), new Square(Arena.Center, 10f, a45)], ScaleFactor: 1.24f);
             Arena.Bounds = arena;
             Arena.Center = arena.Center;
         }

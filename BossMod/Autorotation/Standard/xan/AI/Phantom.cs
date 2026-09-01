@@ -434,10 +434,15 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
 
         var bestTarget = primaryTarget?.IsAlly == false ? primaryTarget : null;
         var bestCount = bestTarget == null ? 0 : Hints.NumPriorityTargetsInAOECircle(bestTarget.Position, 5);
-        foreach (var tar in Hints.PriorityTargets.Where(x => Player.DistanceToHitbox(x.Actor) <= 30))
+        var targets = Hints.PriorityTargetsSpan;
+        var len = targets.Length;
+        for (var i = 0; i < len; ++i)
         {
-            if (tar.Actor == bestTarget)
+            var tar = targets[i];
+            if (tar.Actor == bestTarget || Player.DistanceToHitbox(tar.Actor) > 30f)
+            {
                 continue;
+            }
 
             var cnt = Hints.NumPriorityTargetsInAOECircle(tar.Actor.Position, 5);
             if (cnt > bestCount)
@@ -534,7 +539,7 @@ public sealed class PhantomAI(RotationModuleManager manager, Actor player) : AIB
             var prio = strategy.Monk.Priority(ActionQueue.Priority.Low);
 
             var counterLeft = SelfStatusDetails(PhantomSID.Counterstance, 60).Left;
-            if (counterLeft <= 30 && !Hints.PriorityTargets.Any())
+            if (counterLeft <= 30 && Hints.PriorityTargetsSpan.Length == 0)
                 UseAction(PhantomID.Counterstance, Player, prio);
 
             if (primaryTarget?.IsAlly == false)

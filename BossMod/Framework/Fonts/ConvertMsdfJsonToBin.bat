@@ -1,0 +1,1 @@
+MsdfJsonToBin arena_font_msdf.json arena_font_msdf.bin

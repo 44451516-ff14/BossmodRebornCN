@@ -153,7 +153,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
                 AutoQueue = default; // do not execute non-emergency actions when pyretic is imminent
             }
 
-            if (_hints.FindEnemy(AutoQueue.Target)?.Priority == AIHints.Enemy.PriorityForbidden)
+            if (Config.PreventForbiddenTargets && _hints.FindEnemy(AutoQueue.Target)?.Priority == AIHints.Enemy.PriorityForbidden)
             {
                 AutoQueue = default; // or if selected target is forbidden
             }
@@ -510,16 +510,18 @@ public sealed unsafe class ActionManagerEx : IDisposable
         _cooldownTweak.StopAdjustment(); // clear any potential adjustments
         _movement.MovementBlocked = blockMovement;
 
-        if (!GameMain.IsInPvPArea() && !Service.Condition.Any(ConditionFlag.DutyRecorderPlayback, ConditionFlag.InThisState89))
+        if (!Service.Condition.Any(ConditionFlag.DutyRecorderPlayback, ConditionFlag.InThisState89))
         {
             var autosEnabled = UIState.Instance()->WeaponState.AutoAttackState.IsAutoAttacking;
-            if (_autoAutosTweak.GetDesiredState(autosEnabled, _ws.Party.Player()?.TargetID ?? 0) != autosEnabled)
-                _inst->UseAction(CSActionType.GeneralAction, 1);
+            if (_autoAutosTweak.GetDesiredState(autosEnabled, _ws.Party.Player()?.TargetID ?? 0ul) != autosEnabled)
+            {
+                _inst->UseAction(CSActionType.GeneralAction, 1u);
+            }
         }
 
         if (_hints.WantDismount && !_movement.FollowPathActive() && _dismountTweak.AllowDismount())
         {
-            _inst->UseAction(CSActionType.GeneralAction, 23);
+            _inst->UseAction(CSActionType.GeneralAction, 23u);
         }
     }
 

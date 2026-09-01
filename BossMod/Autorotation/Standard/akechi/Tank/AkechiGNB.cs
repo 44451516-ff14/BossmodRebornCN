@@ -267,12 +267,28 @@ public sealed class AkechiGNB(RotationModuleManager manager, Actor player) : Ake
         Rstatus = Status(SID.ReadyToReign, 30f);
         (BestSplashTargets, NumSplashTargets) = GetBestTarget(primaryTarget, 3.5f, IsSplashTarget);
         BestSplashTarget = Unlocked(AID.ReignOfBeasts) && NumSplashTargets > 1 ? BestSplashTargets : primaryTarget;
-        BestDOTTarget = Hints.PriorityTargets.Where(x => Player.DistanceToHitbox(x.Actor) <= 3.5f).OrderByDescending(x => (float)x.Actor.HPMP.CurHP / x.Actor.HPMP.MaxHP).FirstOrDefault();
+        BestDOTTarget = null;
+        var bestDOTTargetHP = default(float);
+        var targets = Hints.PriorityTargetsSpan;
+        var len = targets.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var target = targets[i];
+            if (Player.DistanceToHitbox(target.Actor) > 3.5f)
+                continue;
+
+            var hp = (float)target.Actor.HPMP.CurHP / target.Actor.HPMP.MaxHP;
+            if (BestDOTTarget == null || hp.CompareTo(bestDOTTargetHP) > 0)
+            {
+                BestDOTTarget = target;
+                bestDOTTargetHP = hp;
+            }
+        }
         var aoe = strategy.Option(Track.AOE);
         var aoeStrat = aoe.As<AOEStrategy>();
         ForceAOE = aoeStrat is AOEStrategy.ForceAOEFinishWithoutOvercap or AOEStrategy.ForceAOEBreakWithoutOvercap or AOEStrategy.ForceAOEFinishWithOvercap or AOEStrategy.ForceAOEBreakWithOvercap;
         WantAOE = TargetsInAOECircle(5f, 2) || ForceAOE;
-        var open = (CombatTimer < 30 && (Unlocked(AID.ReignOfBeasts) ? ComboLastMove is AID.BrutalShell : ComboLastMove is AID.SolidBarrel)) || CombatTimer >= 30;
+        var open = CombatTimer < 30 && (Unlocked(AID.ReignOfBeasts) ? ComboLastMove is AID.BrutalShell : ComboLastMove is AID.SolidBarrel) || CombatTimer >= 30;
         var mainTarget = primaryTarget?.Actor;
 
         if (strategy.HoldEverything())

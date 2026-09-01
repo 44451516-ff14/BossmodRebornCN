@@ -16,7 +16,7 @@ public enum OID : uint
 
 public enum AID : uint
 {
-    AutoAttack_ = 40542, // 4D8D/4D8E->player, no cast, single-target
+    AutoAttack = 40542, // 4D8D/4D8E->player, no cast, single-target
     TightTornado1 = 50221, // 4D8D->self, 3.0s cast, range 15 width 4 rect
     TightTornado2 = 50222, // 4D8E->self, 3.0s cast, range 15 width 4 rect
     AeroIII = 50223, // 4D8E->self, 6.0s cast, range 20 circle

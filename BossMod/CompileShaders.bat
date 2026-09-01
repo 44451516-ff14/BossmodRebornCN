@@ -1,0 +1,1 @@
+Framework\Shaders\CompileShaders.bat "D:\windbg\bin\10.0.28000.0\x64\fxc.exe"

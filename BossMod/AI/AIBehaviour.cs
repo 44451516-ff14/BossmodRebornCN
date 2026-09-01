@@ -36,6 +36,13 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
     public async Task Execute(Actor player, Actor master)
     {
+        // lots of assumptions made in this AI are broken by being in flight (or diving)
+        // e.g. being inside an obstacle is fine, AOEs may not reach the player depending on vertical distance, etc
+        if (WorldState.Client.Flying)
+        {
+            return;
+        }
+
         if (await _semaphore.WaitAsync(0).ConfigureAwait(false))
         {
             try
@@ -135,8 +142,11 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         // if current target is not among valid targets, clear it - this opens way for future target selection heuristics
         var targetId = autorot.Hints.ForcedTarget?.InstanceID ?? player.TargetID;
         AIHints.Enemy? target = null;
-        foreach (var e in autorot.Hints.PriorityTargets)
+        var priorityTargets = autorot.Hints.PriorityTargetsSpan;
+        var len = priorityTargets.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var e = priorityTargets[i];
             if (e.Actor.InstanceID == targetId)
             {
                 target = e;
@@ -148,12 +158,15 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         // try assisting master, otherwise (if player is own master, or if master has no valid target) just select closest valid target
         if (target == null && master != player)
         {
-            foreach (var t in autorot.Hints.PriorityTargets)
+            for (var i = 0; i < len; ++i)
             {
-                if (master.TargetID == t.Actor.InstanceID)
+                var t = priorityTargets[i];
                 {
-                    target = t;
-                    break;
+                    if (master.TargetID == t.Actor.InstanceID)
+                    {
+                        target = t;
+                        break;
+                    }
                 }
             }
         }
@@ -161,8 +174,9 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         if (target == null)
         {
             var bestDistSq = float.MaxValue;
-            foreach (var e in autorot.Hints.PriorityTargets)
+            for (var i = 0; i < len; ++i)
             {
+                var e = priorityTargets[i];
                 var dsq = (e.Actor.Position - player.Position).LengthSq();
                 if (dsq < bestDistSq)
                 {
@@ -182,7 +196,7 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
         // now give class module a chance to improve targeting
         // typically it would switch targets for multidotting, or to hit more targets with AOE
         // in case of ties, it should prefer to return original target - this would prevent useless switches
-        var targeting = new Targeting(target!, player.Role is Role.Melee or Role.Tank ? 2.6f : 24.5f);
+        var targeting = new Targeting(target!, player.Role is Role.Melee or Role.Tank ? 3f : 24.5f);
 
         var pos = autorot.Hints.RecommendedPositional;
         if (pos.Target != null && targeting.Target.Actor == pos.Target)
@@ -414,8 +428,11 @@ sealed class AIBehaviour(AIController ctrl, RotationModuleManager autorot, Prese
 
     private bool TargetIsForbidden(ulong actorId)
     {
-        foreach (var e in autorot.Hints.ForbiddenTargets)
+        var priorityTargets = autorot.Hints.PriorityTargetsSpan;
+        var len = priorityTargets.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var e = priorityTargets[i];
             if (e.Actor.InstanceID == actorId)
             {
                 return true;

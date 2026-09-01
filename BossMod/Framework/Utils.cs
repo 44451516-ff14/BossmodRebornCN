@@ -40,12 +40,10 @@ public static partial class Utils
         return sb.ToString();
     }
 
-    public static Vector2 XY(this Vector4 v) => new(v.X, v.Y);
+    public static Vector2 XY(this Vector4 v) => v.AsVector2();
     public static Vector3 XYZ(this Vector4 v) => v.AsVector3();
     public static Vector2 XZ(this Vector4 v) => new(v.X, v.Z);
     public static Vector2 XZ(this Vector3 v) => new(v.X, v.Z);
-
-    public static WPos ToWPos(this Vector3 v) => new(v.X, v.Z);
 
     public static bool AlmostEqual(float a, float b, float eps) => Math.Abs(a - b) <= eps;
 
@@ -72,7 +70,7 @@ public static partial class Utils
 
     public static bool IsPlayerSyncedToFate(WorldState world)
     {
-        if (world.Client.ActiveFate.ID == 0)
+        if (world.Client.ActiveFate.ID == 0u)
         {
             return false;
         }
@@ -87,13 +85,9 @@ public static partial class Utils
 
     public static readonly Func<uint, uint> GetFateItem = Memoize((uint fateID) => Service.LuminaRow<Lumina.Excel.Sheets.Fate>(fateID)?.EventItem.RowId ?? 0);
 
-    public static bool IsPlayerUnsynced(WorldState world, bool mightyGuard = false)
-    {
-        if (Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(world.CurrentCFCID) is not { } cfc)
-            return false;
+    public static bool IsMultiplayerDuty(WorldState world) => Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(world.CurrentCFCID) is { } cfc && cfc.AllowUndersized;
 
-        return cfc.AllowUndersized && world.Party.WithoutSlot(includeDead: !mightyGuard, excludeNPCs: true).Length == 1;
-    }
+    public static bool IsUnsynced(WorldState world, Actor player) => Service.LuminaRow<Lumina.Excel.Sheets.ContentFinderCondition>(world.CurrentCFCID) is { } cfc && player.Level > cfc.ClassJobLevelSync;
 
     private static readonly Dictionary<uint, (byte, byte)> _fateCache = [];
     private static (byte ClassJobLevelMax, byte EurekaFate) GetFateData(uint fateID)
@@ -112,7 +106,8 @@ public static partial class Utils
     // lumina extensions
     public static int FindIndex<T>(this Lumina.Excel.Collection<T> collection, Func<T, bool> predicate) where T : struct
     {
-        for (var i = 0; i < collection.Count; ++i)
+        var count = collection.Count;
+        for (var i = 0; i < count; ++i)
         {
             if (predicate(collection[i]))
             {

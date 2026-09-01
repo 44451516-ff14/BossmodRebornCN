@@ -3,17 +3,18 @@
 public enum OID : uint
 {
     PhantomHydra = 0x4BC5,
-    Helper = 0x233C,
     BallOfLevin = 0x4BC9, // R2.300, x3
     SwirlingOrb = 0x4BC8, // R0.500, x3
     BallOfFire = 0x4BC7, // R1.500, x12
     HolySphere = 0x4BC6, // R1.200, x2
     PoisonOrb = 0x1EBFC7, // R0.500, x0 (spawn during fight), EventObj type
+    Helper = 0x233C
 }
 
 public enum AID : uint
 {
     AutoAttack = 50759, // PhantomHydra->player, no cast, single-target
+
     Discordance = 47209, // PhantomHydra->self, 5.0s cast, single-target - raidwide
     DiscordanceVisual = 47210, // Helper->self, no cast, ???
     NighDrawnEruption = 47197, // PhantomHydra->self, 5.0+2.0s cast, single-target
@@ -47,19 +48,19 @@ public enum AID : uint
     ManyHeadedBreath1 = 47205, // PhantomHydra->self, no cast, ???
     ManyHeadedBreath2 = 47207, // PhantomHydra->self, no cast, ???
     ManyHeadedBreath3 = 47206, // PhantomHydra->self, no cast, ???
-    RadiantBreath = 47208, // PhantomHydra->self, no cast, single-target
+    RadiantBreath = 47208 // PhantomHydra->self, no cast, single-target
 }
 
 sealed class ElementalCascade(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ElementalCascade, (uint)AID.ElementalCascade1,
-            (uint)AID.ElementalCascade2, (uint)AID.ElementalCascade3, (uint)AID.ElementalCascade4], new AOEShapeCircle(8.0f));
+            (uint)AID.ElementalCascade2, (uint)AID.ElementalCascade3, (uint)AID.ElementalCascade4], 8f);
 sealed class Discordance(BossModule module) : Components.RaidwideCast(module, (uint)AID.Discordance);
 sealed class ElementalCascadeElements(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ElementalCascadeFire, (uint)AID.ElementalCascadePoison,
-    (uint)AID.ElementalCascadeLightning, (uint)AID.ElementalCascadeLight, (uint)AID.ElementalCascadeIce ], new AOEShapeCircle(6.0f));
+    (uint)AID.ElementalCascadeLightning, (uint)AID.ElementalCascadeLight, (uint)AID.ElementalCascadeIce ], 6f);
 sealed class StunningSheen(BossModule module) : Components.CastGaze(module, (uint)AID.StunningSheen);
 
 sealed class ScarletThread : Components.SimpleAOEs
 {
-    public ScarletThread(BossModule module) : base(module, (uint)AID.ScarletThread, new AOEShapeRect(70.0f, 2.0f))
+    public ScarletThread(BossModule module) : base(module, (uint)AID.ScarletThread, new AOEShapeRect(70f, 2f))
     {
         Color = Colors.Danger;
     }
@@ -67,7 +68,7 @@ sealed class ScarletThread : Components.SimpleAOEs
 
 sealed class IceBurst : Components.SimpleAOEs
 {
-    public IceBurst(BossModule module) : base(module, (uint)AID.IceBurst, new AOEShapeCone(40.0f, 10.0f.Degrees()))
+    public IceBurst(BossModule module) : base(module, (uint)AID.IceBurst, new AOEShapeCone(40f, 10f.Degrees()))
     {
         Color = Colors.Danger;
     }
@@ -132,7 +133,7 @@ sealed class Shock(BossModule module) : Components.GenericAOEs(module)
 sealed class ManyHeadedBreath(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> aoes = [];
-    private readonly AOEShapeCone shape = new(30.0f, 60.0f.Degrees());
+    private readonly AOEShapeCone shape = new(30f, 60f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
@@ -244,7 +245,17 @@ sealed class CE203AheadoftheCompetitionStates : StateMachineBuilder
     SortOrder = 14,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class CE203AheadoftheCompetition(WorldState ws, Actor primary) : BossModule(ws, primary, new(-82.000f, 485.000f), new ArenaBoundsCircle(20f))
+public sealed class CE203AheadoftheCompetition : BossModule
 {
+    public CE203AheadoftheCompetition(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private CE203AheadoftheCompetition(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-82f, 485f), 19.5f, 32)]);
+        return (arena.Center, arena);
+    }
+
     protected override bool CheckPull() => base.CheckPull() && Raid.Player()!.Position.InCircle(Arena.Center, 20f);
 }

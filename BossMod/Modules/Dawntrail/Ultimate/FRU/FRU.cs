@@ -17,7 +17,7 @@ public sealed class FRU : BossModule
 
     public static (WPos center, ArenaBoundsCustom arena) BuildArena()
     {
-        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 20f, 64)]) { IsCircle = true };
+        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 20f, 64)]);
         return (arena.Center, arena);
     }
 

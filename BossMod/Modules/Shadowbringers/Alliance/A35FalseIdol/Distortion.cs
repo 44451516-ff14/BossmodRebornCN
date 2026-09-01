@@ -18,7 +18,8 @@ sealed class Distortion(BossModule module) : Components.GenericGaze(module)
             };
             if (inverted is bool inv)
             {
-                _eyes.Add(new(actor.Position.Quantized(), WorldState.FutureTime(8.1d), inverted: inv));
+                var loc = actor.Position.Quantized();
+                _eyes.Add(new(loc, WorldState.FutureTime(8.1d), inverted: inv, eyeCenter: loc));
             }
         }
     }
@@ -38,9 +39,10 @@ sealed class Distortion(BossModule module) : Components.GenericGaze(module)
             return;
         }
         ref readonly var eye = ref _eyes.Ref(0);
-        if (((actor.Rotation + eye.Forward).ToDirection().Dot((eye.Position - actor.Position).Normalized()) >= 0f) != eye.Inverted) // 0f = cos(pi/2)
+        var inverted = eye.Inverted;
+        if ((actor.Rotation.ToDirection().Dot((eye.Position - actor.Position).Normalized()) >= 0f) != inverted) // 0f = cos(pi/2)
         {
-            hints.Add(eye.Inverted ? "Face the eye!" : "Turn away from gaze!");
+            hints.Add(inverted ? "Face the eye!" : "Turn away from gaze!");
         }
     }
 
@@ -52,7 +54,8 @@ sealed class Distortion(BossModule module) : Components.GenericGaze(module)
         }
         ref readonly var eye = ref _eyes.Ref(0);
         var actorpos = actor.Position;
-        var direction = eye.Inverted ? Angle.FromDirection(actorpos - eye.Position) - eye.Forward : Angle.FromDirection(eye.Position - actorpos) - eye.Forward;
+        var pos = eye.Position;
+        var direction = eye.Inverted ? Angle.FromDirection(actorpos - pos) : Angle.FromDirection(pos - actorpos);
         hints.ForbiddenDirections.Add((direction, 90f.Degrees(), eye.Activation));
     }
 
@@ -65,12 +68,12 @@ sealed class Distortion(BossModule module) : Components.GenericGaze(module)
         ref readonly var eye = ref _eyes.Ref(0);
         var rot = pc.Rotation;
         var pos = pc.Position;
-        var danger = ((rot + eye.Forward).ToDirection().Dot((eye.Position - pos).Normalized()) >= 0f) != eye.Inverted;
-        var eyeCenter = Arena.WorldPositionToScreenPosition(eye.Position);
-        DrawEye(eyeCenter, danger);
+        var inverted = eye.Inverted;
+        var danger = (rot.ToDirection().Dot((eye.Position - pos).Normalized()) >= 0f) != inverted;
+        Arena.DrawEye(eye.EyeCenter!.Value, danger, inverted);
 
-        var (min, max) = eye.Inverted ? (90f, 270f) : (-90f, 90f);
-        Arena.PathArcTo(pos, 1f, (rot + eye.Forward + min.Degrees()).Rad, (rot + eye.Forward + max.Degrees()).Rad);
-        MiniArena.PathStroke(false, Colors.Enemy);
+        var (min, max) = inverted ? (90f, 270f) : (-90f, 90f);
+        Arena.PathArcTo(pos, 1.5f, (rot + min.Degrees()).Rad, (rot + max.Degrees()).Rad);
+        Arena.PathStroke(false, Colors.Enemy);
     }
 }

@@ -19,23 +19,25 @@ public enum AID : uint
     RapidSever = 3962 // Boss->players, 3.0s cast, single-target, tankbuster
 }
 
-class DoubleSever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSever, new AOEShapeCone(30.5f, 45f.Degrees()))
+sealed class DoubleSever(BossModule module) : Components.SimpleAOEs(module, (uint)AID.DoubleSever, new AOEShapeCone(30.5f, 45f.Degrees()))
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         var count = Casters.Count;
         if (count == 0)
+        {
             return;
+        }
         base.AddAIHints(slot, actor, assignment, hints);
         ref var aoe = ref Casters.Ref(0);
         // stay close to the origin
         hints.AddForbiddenZone(new SDInvertedCircle(aoe.Origin, 3f), aoe.Activation);
     }
 }
-class AtmosphericCompression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AtmosphericCompression, 5f);
-class RapidSever(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RapidSever);
+sealed class AtmosphericCompression(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AtmosphericCompression, 5f);
+sealed class RapidSever(BossModule module) : Components.SingleTargetCast(module, (uint)AID.RapidSever);
 
-class D081PhantomRayStates : StateMachineBuilder
+sealed class D081PhantomRayStates : StateMachineBuilder
 {
     public D081PhantomRayStates(BossModule module) : base(module)
     {
@@ -46,9 +48,17 @@ class D081PhantomRayStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35, NameID = 3428, SortOrder = 3)]
-public class D081PhantomRay(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35u, NameID = 3428u, SortOrder = 3)]
+public sealed class D081PhantomRay : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(121.858f, 45.368f), 19.5f, 24)],
-    [new Rectangle(new(139.011f, 35.299f), 20f, 1.25f, -60.946f.Degrees()), new Rectangle(new(104.832f, 55.061f), 20f, 1.25f, -58.455f.Degrees())]);
+    public D081PhantomRay(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D081PhantomRay(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(121.858f, 45.368f), 19.5f, 24)],
+            [new Rectangle(new(139.011f, 35.299f), 20f, 1.25f, -60.946f.Degrees()), new Rectangle(new(104.832f, 55.061f), 20f, 1.25f, -58.455f.Degrees())]);
+        return (arena.Center, arena);
+    }
 }

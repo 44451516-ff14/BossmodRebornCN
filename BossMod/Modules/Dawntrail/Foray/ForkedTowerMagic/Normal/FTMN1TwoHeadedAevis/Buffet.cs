@@ -51,30 +51,39 @@ sealed class Buffet(BossModule module) : BossComponent(module)
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (slot < PartyState.MaxAllianceSize && AssignedBoss[slot] is var assignedSlot && assignedSlot != null && WorldState.Actors.Find(actor.TargetID) is Actor target)
+        if (slot < PartyState.MaxAllianceSize && AssignedBoss[slot] is var assignedSlot /*&& assignedSlot != null*/ && WorldState.Actors.Find(actor.TargetID) is Actor target)
         {
-            var count = hints.PotentialTargets.Count;
-            for (var i = 0; i < count; ++i)
+            if (assignedSlot != null)
             {
-                var enemy = hints.PotentialTargets[i];
-                if (assignedSlot != null && enemy.Actor != assignedSlot)
+                var count = hints.PotentialTargets.Count;
+                for (var i = 0; i < count; ++i)
                 {
-                    enemy.Priority = AIHints.Enemy.PriorityInvincible;
+                    var enemy = hints.PotentialTargets[i];
+                    if (enemy.Actor != assignedSlot)
+                    {
+                        enemy.Priority = AIHints.Enemy.PriorityInvincible;
+                    }
                 }
-            }
-            // also ignore forced targeting if current target is a PC
-            if (_config.ForceTargeting && (target == null || target.Type != ActorType.Player))
-            {
-                if (assignedSlot == null)
-                {
-                    // one boss is dead, target healthier boss
-                    var green = Module.PrimaryActor;
-                    var blue = bossModule.BlueHead();
-                    hints.ForcedTarget = green.HPMP.CurHP > blue?.HPMP.CurHP ? green : blue;
-                }
-                else if (target != assignedSlot)
+                // also ignore forced targeting if current target is a PC
+                if (_config.ForceTargeting && (target == null || target.Type != ActorType.Player) && target != assignedSlot)
                 {
                     hints.ForcedTarget = assignedSlot;
+                }
+            }
+            else
+            {
+                var count = hints.PotentialTargets.Count;
+                for (var i = 0; i < count; ++i)
+                {
+                    var enemy = hints.PotentialTargets[i];
+                    if (enemy.Actor.HPMP.CurHP == 1u)
+                    {
+                        enemy.Priority = AIHints.Enemy.PriorityPointless;
+                    }
+                    else if (_config.ForceTargeting && (target == null || target.Type != ActorType.Player))
+                    {
+                        hints.ForcedTarget = enemy?.Actor;
+                    }
                 }
             }
         }

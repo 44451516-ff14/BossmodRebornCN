@@ -36,4 +36,4 @@ sealed class P2PlasmaShield(BossModule module) : Components.DirectionalParry(mod
     }
 }
 
-class P2CCInvincible(BossModule module) : Components.InvincibleStatus(module, (uint)SID.Invincibility);
+sealed class P2CCInvincible(BossModule module) : Components.InvincibleStatus(module, (uint)SID.Invincibility);

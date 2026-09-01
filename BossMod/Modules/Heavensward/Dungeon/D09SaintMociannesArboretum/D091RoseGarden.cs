@@ -57,12 +57,12 @@ sealed class VineProbe(BossModule module) : Components.Cleave(module, (uint)AID.
     }
 }
 
-sealed class ExtremelyBadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ExtremelyBadBreath, ExtremelyBadBreathRotation.Cone);
+sealed class ExtremelyBadBreath(BossModule module) : Components.SimpleAOEs(module, (uint)AID.ExtremelyBadBreath, new AOEShapeCone(24.775f, 45f.Degrees()));
 
 sealed class ExtremelyBadBreathRotation(BossModule module) : Components.GenericRotatingAOE(module)
 {
     private Angle _rot1;
-    public static readonly AOEShapeCone Cone = new(24.775f, 45f.Degrees());
+    public readonly AOEShapeCone cone = new(24.775f, 45f.Degrees());
     private bool first = true;
     private int correctSteps;
 
@@ -103,7 +103,7 @@ sealed class ExtremelyBadBreathRotation(BossModule module) : Components.GenericR
         {
             var rot = spell.Rotation + offset;
             var pos = spell.LocXZ;
-            _aoes.Add(new(Cone, pos, rot, Module.CastFinishAt(spell, delay), shapeDistance: Cone.Distance(pos, rot)));
+            _aoes.Add(new(cone, pos, rot, Module.CastFinishAt(spell, delay), shapeDistance: cone.Distance(pos, rot)));
         }
 
         if (spell.Action.ID == (uint)AID.ExtremelyBadBreathFirst)
@@ -137,7 +137,7 @@ sealed class ExtremelyBadBreathRotation(BossModule module) : Components.GenericR
                         return;
                     }
                     var inc = (rotDelta > 0f ? -1 : 1) * 11.6f.Degrees(); // last hit is only about 7.4°, but shouldnt matter for us, let's consider it extra safety margin
-                    Sequences.Add(new(Cone, Module.PrimaryActor.Position.Quantized(), rot2, inc, WorldState.FutureTime(1d), 1d, (first ? 13 : 25) - correctSteps, 8));
+                    Sequences.Add(new(cone, Module.PrimaryActor.Position.Quantized(), rot2, inc, WorldState.FutureTime(1d), 1d, (first ? 13 : 25) - correctSteps, 8));
                     first = false;
                 }
                 else
@@ -240,11 +240,19 @@ sealed class D091RoseGardenStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 41, NameID = 4653, SortOrder = 2)]
-public sealed class D091RoseGarden(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 41u, NameID = 4653u, SortOrder = 2)]
+public sealed class D091RoseGarden : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(default, -82.146f), 19.5f, 48)], [new Rectangle(new(18.221f, -90.993f), 20f, 1.25f, -65f.Degrees()),
-    new Rectangle(new(-20.214f, -82.492f), 20f, 1.25f, -88.9f.Degrees())]);
+    public D091RoseGarden(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D091RoseGarden(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(default, -82.146f), 19.5f, 48)], [new Rectangle(new(18.221f, -90.993f), 20f, 1.25f, -65f.Degrees()),
+            new Rectangle(new(-20.214f, -82.492f), 20f, 1.25f, -88.9f.Degrees())]);
+        return (arena.Center, arena);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {

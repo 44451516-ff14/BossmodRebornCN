@@ -77,11 +77,14 @@ sealed class HotBlast(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
+sealed class Invincibility(BossModule module) : Components.InvincibleStatus(module, (uint)SID.Invincibility);
+
 sealed class D151NuzalHuelocStates : StateMachineBuilder
 {
     public D151NuzalHuelocStates(BossModule module) : base(module)
     {
         TrivialPhase()
+            .ActivateOnEnter<Invincibility>()
             .ActivateOnEnter<Airstone>()
             .ActivateOnEnter<WindBlast>()
             .ActivateOnEnter<HotBlast>();
@@ -118,7 +121,9 @@ public sealed class D151NuzalHueloc : BossModule
         {
             var enemy = allEnemies[i];
             if (enemy.FindStatus((uint)SID.Invincibility) == null)
+            {
                 Arena.Actor(enemy);
+            }
         }
     }
 
@@ -128,11 +133,6 @@ public sealed class D151NuzalHueloc : BossModule
         for (var i = 0; i < count; ++i)
         {
             var e = hints.PotentialTargets[i];
-            if (e.Actor.FindStatus((uint)SID.Invincibility) != null)
-            {
-                e.Priority = AIHints.Enemy.PriorityInvincible;
-                continue;
-            }
             e.Priority = e.Actor.OID switch
             {
                 (uint)OID.Airstone => 2,

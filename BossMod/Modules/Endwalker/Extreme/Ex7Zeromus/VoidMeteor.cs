@@ -55,11 +55,10 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
             {
                 var count = _meteors.Count;
                 var center = Arena.Center;
-                var error = Arena.Bounds.MaxApproxError;
                 var pos = source.Position;
                 for (var i = 0; i < count; ++i)
                 {
-                    polygons.Add(new PolygonCustom(BuildShadowPolygon(pos - center, _meteors[i] - center, error)));
+                    polygons.Add(new PolygonCustom(BuildShadowPolygon(pos - center, _meteors[i] - center)));
                 }
                 var aoe = new AOEShapeCustom(center, [.. polygons]);
                 _aoe = [new(aoe, center, shapeDistance: aoe.Distance(center, default))];
@@ -88,7 +87,7 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
                     Arena.PathArcTo(target.Position, 2f, (rot + 90f.Degrees()).Rad, (rot - 90f.Degrees()).Rad);
                     Arena.PathLineTo(source.Position - norm);
                     Arena.PathLineTo(source.Position + norm);
-                    MiniArena.PathStroke(true, _playerStates[slot].NonClipping ? Colors.Safe : default, thickness);
+                    Arena.PathStroke(true, _playerStates[slot].NonClipping ? Colors.Safe : default, thickness);
                     Arena.AddLine(source.Position, target.Position, _playerStates[slot].Stretched ? Colors.Safe : default, thickness);
                 }
             }
@@ -144,7 +143,7 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
         };
     }
 
-    private static WPos[] BuildShadowPolygon(WDir sourceOffset, WDir meteorOffset, float maxerror)
+    private static WPos[] BuildShadowPolygon(WDir sourceOffset, WDir meteorOffset)
     {
         var center = Ex7Zeromus.ArenaCenter;
         var toMeteor = meteorOffset - sourceOffset;
@@ -153,7 +152,7 @@ sealed class MeteorImpactCharge(BossModule module) : Components.GenericAOEs(modu
         // intersection point is at dirToMeteor -+ halfAngle relative to source; relative to meteor, it is (dirToMeteor + 180) +- (90 - halfAngle)
         var dirFromMeteor = dirToMeteor + 180f.Degrees();
         var halfAngleFromMeteor = 90f.Degrees() - halfAngle;
-        var circlearc = CurveApprox.CircleArc(_radius * 2, dirFromMeteor + halfAngleFromMeteor, dirFromMeteor - halfAngleFromMeteor, maxerror);
+        var circlearc = CurveApprox.CircleArc(_radius * 2f, dirFromMeteor + halfAngleFromMeteor, dirFromMeteor - halfAngleFromMeteor, 0.01f);
         var count = circlearc.Length;
         var vertices = new WPos[count + 2];
         for (var i = 0; i < count; ++i)

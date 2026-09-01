@@ -20,8 +20,18 @@ sealed class LightOfJudgment(BossModule module) : Components.RaidwideCast(module
     SortOrder = 1,
     PlanLevel = 100)]
 [SkipLocalsInit]
-public sealed class DMU(WorldState ws, Actor primary) : BossModule(ws, primary, new(100f, 100f), new ArenaBoundsCircle(20f))
+public sealed class DMU : BossModule
 {
+    public DMU(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private DMU(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    public static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(100f, 100f), 20f, 64)]) { WorldProjectionHeight = 0f, Y = 0.1f, BorderY = 0f }; // looks ugly if we use any projection height due to weird floor geometry
+        return (arena.Center, arena);
+    }
+
     public override bool ShouldPrioritizeAllEnemies => true;
 
     //private Actor? bossP1;

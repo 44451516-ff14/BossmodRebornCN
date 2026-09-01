@@ -24,21 +24,22 @@ public enum AID : uint
     UnknownAbility = 50123, // AlexanderResurrected->location, no cast, single-target
     UrielBlade = 50392, // Alxaal->AlexanderResurrected/GordiusSystem, no cast, single-target
 
-    DivineArrow1 = 50124, // AlexanderResurrected->self, 10.0s cast, single-target
-    DivineArrow2 = 50125, // AlexanderResurrected->self, 10.0s cast, single-target
-    DivineArrow3 = 50126, // AlexanderResurrected->self, no cast, single-target
-    DivineArrow4 = 50128, // AlexanderResurrected->self, no cast, single-target
-    DivineArrow5 = 50129, // AlexanderResurrected->self, no cast, single-target
-    DivineArrowCone = 50130, // Helper->self, 1.0s cast, range 45 90.000-degree cone
+    DivineArrowCast1 = 50124, // AlexanderResurrected->self, 10.0s cast, single-target
+    DivineArrowCast2 = 50125, // AlexanderResurrected->self, 10.0s cast, single-target
+    DivineArrowVisual1 = 50126, // AlexanderResurrected->self, no cast, single-target
+    DivineArrowVisual2 = 50127, // AlexanderResurrected->self, no cast, single-target
+    DivineArrowVisual3 = 50128, // AlexanderResurrected->self, no cast, single-target
+    DivineArrowVisual4 = 50129, // AlexanderResurrected->self, no cast, single-target
+    DivineArrowCone = 50130, // Helper->self, 1.0s cast, range 45 90-degree cone
     DivineArrowClose2 = 50131, // Helper->self, no cast, range 10 circle
-    DivineArrowMid2 = 50132, // Helper->self, no cast, range ?-23 donut
-    DivineArrowFar2 = 50133, // Helper->self, no cast, range ?-36 donut
+    DivineArrowMid2 = 50132, // Helper->self, no cast, range 10-23 donut
+    DivineArrowFar2 = 50133, // Helper->self, no cast, range 23-36 donut
     DivineArrowClose = 50134, // Helper->self, 13.5s cast, range 10 circle
-    DivineArrowMid = 50135, // Helper->self, 11.5s cast, range ?-23 donut
-    DivineArrowFar = 50136, // Helper->self, 9.5s cast, range ?-36 donut
+    DivineArrowMid = 50135, // Helper->self, 11.5s cast, range 10-23 donut
+    DivineArrowFar = 50136, // Helper->self, 9.5s cast, range 23-36 donut
     DivineArrowLines = 50137, // Helper->self, 3.5s cast, range 60 width 10 rect
     DivineArrowLines2 = 50138, // Helper->self, 5.5s cast, range 60 width 10 rect
-    DivineArrowSpamCone = 50478, // Helper->self, no cast, range 45 ?-degree cone
+    DivineArrowSpamCone = 50478, // Helper->self, no cast, range 45 90-degree cone
 
     HolyII = 50165, // Helper->location, 5.0s cast, range 6 circle
     BanishgaIVSpread = 50163, // Helper->players, 5.0s cast, range 6 circle

@@ -75,17 +75,26 @@ sealed class D262YetiStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27, NameID = 3040, SortOrder = 3)]
-public sealed class D262Yeti(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 27u, NameID = 3040u, SortOrder = 3)]
+public sealed class D262Yeti : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new PolygonCustom([new(-98.24f, -135.15f), new(-93.57f, -134.53f), new(-88.72f, -132.58f),
-    new(-84.62f, -129.45f), new(-81.51f, -125.42f),
-    new(-79.55f, -120.71f), new(-78.84f, -115.47f), new(-78.44f, -115.05f), new(-78.5f, -114.39f), new(-82.38f, -104.18f),
-    new(-82.93f, -103.86f), new(-84.44f, -101.95f), new(-84.91f, -101.5f), new(-88.37f, -98.85f), new(-88.92f, -98.51f),
-    new(-92.98f, -96.83f), new(-93.61f, -96.64f), new(-98.08f, -96.05f), new(-98.74f, -96.04f), new(-100.64f, -96.29f),
-    new(-101.90f, -96.28f), new(-113.24f, -103.09f), new(-113.77f, -103.51f), new(-114.06f, -104.03f), new(-115.22f, -105.55f),
-    new(-115.55f, -106.11f), new(-117.24f, -110.21f), new(-117.41f, -110.84f), new(-118.00f, -115.27f), new(-117.99f, -115.93f),
-    new(-117.41f, -120.35f), new(-117.24f, -120.97f), new(-115.54f, -125.09f), new(-115.22f, -125.64f), new(-112.53f, -129.14f),
-    new(-112.08f, -129.61f), new(-108.50f, -132.36f), new(-107.92f, -132.69f), new(-103.82f, -134.38f), new(-103.16f, -134.56f),
-    new(-98.69f, -135.15f)])]);
+    public D262Yeti(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D262Yeti(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        PolygonCustom[] poly = [new PolygonCustom([new(-98.24f, -135.15f), new(-93.57f, -134.53f), new(-88.72f, -132.58f),
+        new(-84.62f, -129.45f), new(-81.51f, -125.42f),
+        new(-79.55f, -120.71f), new(-78.84f, -115.47f), new(-78.44f, -115.05f), new(-78.5f, -114.39f), new(-82.38f, -104.18f),
+        new(-82.93f, -103.86f), new(-84.44f, -101.95f), new(-84.91f, -101.5f), new(-88.37f, -98.85f), new(-88.92f, -98.51f),
+        new(-92.98f, -96.83f), new(-93.61f, -96.64f), new(-98.08f, -96.05f), new(-98.74f, -96.04f), new(-100.64f, -96.29f),
+        new(-101.90f, -96.28f), new(-113.24f, -103.09f), new(-113.77f, -103.51f), new(-114.06f, -104.03f), new(-115.22f, -105.55f),
+        new(-115.55f, -106.11f), new(-117.24f, -110.21f), new(-117.41f, -110.84f), new(-118.00f, -115.27f), new(-117.99f, -115.93f),
+        new(-117.41f, -120.35f), new(-117.24f, -120.97f), new(-115.54f, -125.09f), new(-115.22f, -125.64f), new(-112.53f, -129.14f),
+        new(-112.08f, -129.61f), new(-108.50f, -132.36f), new(-107.92f, -132.69f), new(-103.82f, -134.38f), new(-103.16f, -134.56f),
+        new(-98.69f, -135.15f)])];
+        var arena = new ArenaBoundsCustom(poly);
+        return (arena.Center, arena);
+    }
 }

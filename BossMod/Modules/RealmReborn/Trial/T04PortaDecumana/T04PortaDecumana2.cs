@@ -42,15 +42,21 @@ public enum AID : uint
     Ultima = 29024 // Boss->self, 71.0s cast, enrage
 }
 
+[SkipLocalsInit]
 sealed class TankPurge(BossModule module) : Components.RaidwideCast(module, (uint)AID.TankPurge);
+[SkipLocalsInit]
 sealed class HomingLasers(BossModule module) : Components.SingleTargetCast(module, (uint)AID.HomingLasers);
 
+[SkipLocalsInit]
 sealed class MagitekRay(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.MagitekRayAOEForward, (uint)AID.MagitekRayAOERight,
 (uint)AID.MagitekRayAOELeft], new AOEShapeRect(40f, 3f));
 
+[SkipLocalsInit]
 sealed class HomingRay(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.HomingRayAOE, 6f);
+[SkipLocalsInit]
 sealed class LaserFocus(BossModule module) : Components.StackWithCastTargets(module, (uint)AID.LaserFocusAOE, 6f, 4, 4);
 
+[SkipLocalsInit]
 sealed class AethericBoom(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.AethericBoom, 30f, stopAtWall: true)
 {
     public override void AddGlobalHints(GlobalHints hints)
@@ -69,6 +75,7 @@ sealed class AethericBoom(BossModule module) : Components.SimpleKnockbacks(modul
     }
 }
 
+[SkipLocalsInit]
 sealed class Aetheroplasm(BossModule module) : BossComponent(module)
 {
     public static List<Actor> GetOrbs(BossModule module)
@@ -123,9 +130,12 @@ sealed class Aetheroplasm(BossModule module) : BossComponent(module)
     }
 }
 
+[SkipLocalsInit]
 sealed class AssaultCannon(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AssaultCannon, new AOEShapeRect(40f, 2f));
+[SkipLocalsInit]
 sealed class CitadelBuster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.CitadelBuster, new AOEShapeRect(40f, 6f));
 
+[SkipLocalsInit]
 sealed class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Explosion, 16f) // TODO: verify falloff
 {
     private readonly AssaultCannon _aoe = module.FindComponent<AssaultCannon>()!;
@@ -138,8 +148,10 @@ sealed class Explosion(BossModule module) : Components.SimpleAOEs(module, (uint)
     }
 }
 
+[SkipLocalsInit]
 sealed class Ultima(BossModule module) : Components.CastHint(module, (uint)AID.Ultima, "Enrage!", true);
 
+[SkipLocalsInit]
 sealed class T04PortaDecumana2States : StateMachineBuilder
 {
     public T04PortaDecumana2States(BossModule module) : base(module)
@@ -160,8 +172,19 @@ sealed class T04PortaDecumana2States : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "Malediktus", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 830u, NameID = 2137u, SortOrder = 2)]
-public sealed class T04PortaDecumana2(WorldState ws, Actor primary) : BossModule(ws, primary, new(-704f, 480f), new ArenaBoundsCircle(19.5f))
+[SkipLocalsInit]
+public sealed class T04PortaDecumana2 : BossModule
 {
+    public T04PortaDecumana2(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private T04PortaDecumana2(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-704f, 480f), 19.5f, 64)]);
+        return (arena.Center, arena);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor, Colors.Enemy, true);

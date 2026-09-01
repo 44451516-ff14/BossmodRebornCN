@@ -35,6 +35,7 @@ public enum AID : uint
     FlaringEpigraph = 41809 // Helper->location, 5.0s cast, range 60 circle
 }
 
+[SkipLocalsInit]
 sealed class FlamingEpigraph : Components.SimpleAOEs
 {
     public FlamingEpigraph(BossModule module) : base(module, (uint)AID.FlamingEpigraph, new AOEShapeCone(60f, 30f.Degrees()), 4)
@@ -42,10 +43,14 @@ sealed class FlamingEpigraph : Components.SimpleAOEs
         MaxDangerColor = 2;
     }
 }
+[SkipLocalsInit]
 sealed class FlaringEpigraph(BossModule module) : Components.RaidwideCast(module, (uint)AID.FlaringEpigraph);
+[SkipLocalsInit]
 sealed class EpigraphicFireII(BossModule module) : Components.SimpleAOEs(module, (uint)AID.EpigraphicFireII, 5f);
+[SkipLocalsInit]
 sealed class Epigraph(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Epigraph, new AOEShapeRect(45f, 2.5f));
 
+[SkipLocalsInit]
 sealed class ErosiveEye(BossModule module) : Components.GenericGaze(module)
 {
     private readonly List<Eye> _eyes = [with(4)];
@@ -62,7 +67,8 @@ sealed class ErosiveEye(BossModule module) : Components.GenericGaze(module)
         };
         if (inverted is bool inv)
         {
-            _eyes.Add(new(spell.LocXZ, Module.CastFinishAt(spell), default, 50f, inv));
+            var loc = spell.LocXZ;
+            _eyes.Add(new(loc, Module.CastFinishAt(spell), default, 50f, inv, eyeCenter: IndicatorWorldPos(loc)));
         }
     }
 
@@ -75,14 +81,15 @@ sealed class ErosiveEye(BossModule module) : Components.GenericGaze(module)
     }
 }
 
-sealed class TongueLickOfFlameOutIn(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+[SkipLocalsInit]
+sealed class TongueLickOfFlameOutIn(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 40f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 40f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.TongueOfFlame1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -100,14 +107,15 @@ sealed class TongueLickOfFlameOutIn(BossModule module) : Components.ConcentricAO
     }
 }
 
-sealed class TongueLickOfFlameInOut(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+[SkipLocalsInit]
+sealed class TongueLickOfFlameInOut(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeDonut(10f, 40f), new AOEShapeCircle(10f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.LickOfFlame2)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -125,6 +133,7 @@ sealed class TongueLickOfFlameInOut(BossModule module) : Components.ConcentricAO
     }
 }
 
+[SkipLocalsInit]
 sealed class GoldenGuardianStates : StateMachineBuilder
 {
     public GoldenGuardianStates(BossModule module) : base(module)
@@ -134,11 +143,17 @@ sealed class GoldenGuardianStates : StateMachineBuilder
             .ActivateOnEnter<FlaringEpigraph>()
             .ActivateOnEnter<Epigraph>()
             .ActivateOnEnter<EpigraphicFireII>()
-            .ActivateOnEnter<ErosiveEye>()
-            .ActivateOnEnter<TongueLickOfFlameInOut>()
-            .ActivateOnEnter<TongueLickOfFlameOutIn>();
+            .ActivateOnEnter<ErosiveEye>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1963)]
-public sealed class GoldenGuardian(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
+[ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018u, NameID = 1963u)]
+[SkipLocalsInit]
+public sealed class GoldenGuardian : OpenWorldFate
+{
+    public GoldenGuardian(WorldState ws, Actor primary) : base(ws, primary)
+    {
+        ActivateComponent<TongueLickOfFlameOutIn>();
+        ActivateComponent<TongueLickOfFlameInOut>();
+    }
+}

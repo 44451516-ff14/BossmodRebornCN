@@ -10,8 +10,8 @@ sealed class GrimEmbraceBait(BossModule module) : Components.GenericBaitAway(mod
 
     private readonly PlayerState[] _states = new PlayerState[PartyState.MaxAllianceSize];
 
-    private static readonly AOEShapeRect _shapeForward = new(8f, 4f);
-    private static readonly AOEShapeRect _shapeBackward = new(default, 4f, 8f);
+    private readonly AOEShapeRect _shapeForward = new(8f, 4f);
+    private readonly AOEShapeRect _shapeBackward = new(default, 4f, 8f);
 
     public override void Update()
     {

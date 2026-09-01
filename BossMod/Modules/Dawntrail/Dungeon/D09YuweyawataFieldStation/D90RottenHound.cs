@@ -94,10 +94,5 @@ public sealed class D90RottenResearcher : BossModule
         Arena.ActorsInBounds(this, Trash);
     }
 
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
-            hints.PotentialTargets[i].Priority = 0;
-    }
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

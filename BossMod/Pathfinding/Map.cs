@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+
 namespace BossMod.Pathfinding;
 
 // 'map' used for running pathfinding algorithms
@@ -26,8 +27,8 @@ public sealed class Map
     public bool HasTeleporters;
 
     public float Resolution; // pixel size, in world units
-    public int Width; // always even
-    public int Height; // always even
+    public int Width;
+    public int Height;
     public float[] PixelMaxG = []; // == MaxValue if not dangerous (TODO: consider changing to a byte per pixel?), < 0 if impassable
     public float[] PixelPriority = [];
 
@@ -45,13 +46,14 @@ public sealed class Map
     public int MaxY;
 
     public Map() { }
-    public Map(float resolution, WPos center, float worldHalfWidth, float worldHalfHeight, Angle rotation = default) => Init(resolution, center, worldHalfWidth, worldHalfHeight, rotation);
 
-    public void Init(float resolution, WPos center, float worldHalfWidth, float worldHalfHeight, Angle rotation = default)
+    // Initialize an explicitly sized grid. Width/height may be odd; Center follows the existing grid-origin
+    // convention used by WorldToGrid/GridToWorld (for an odd dimension, the geometric midpoint is half a cellin the positive local axis from Center)
+    public void InitGrid(float resolution, WPos center, int width, int height, Angle rotation = default)
     {
         Resolution = resolution;
-        Width = 2 * (int)MathF.Ceiling(worldHalfWidth / resolution);
-        Height = 2 * (int)MathF.Ceiling(worldHalfHeight / resolution);
+        Width = width;
+        Height = height;
 
         var numPixels = Width * Height;
         if (PixelMaxG.Length < numPixels)

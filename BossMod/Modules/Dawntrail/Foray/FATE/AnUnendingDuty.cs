@@ -41,14 +41,14 @@ sealed class ThunderousResoundingMemoryCone(BossModule module) : Components.Simp
 sealed class ThunderousResoundingMemoryCircle(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ThunderousMemoryCircle, (uint)AID.ResoundingMemoryCircle], 10f);
 sealed class ThunderousResoundingMemoryDonut(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.ThunderousMemoryDonut, (uint)AID.ResoundingMemoryDonut], new AOEShapeDonut(10f, 30f));
 
-sealed class ThriceComeThunder(BossModule module) : Components.ConcentricAOEs(module, _shapes)
+sealed class ThriceComeThunder(BossModule module) : Components.ConcentricAOEs(module, [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)])
 {
-    private static readonly AOEShape[] _shapes = [new AOEShapeCircle(10f), new AOEShapeDonut(10f, 20f), new AOEShapeDonut(20f, 30f)];
-
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.ThriceComeThunder1)
+        {
             AddSequence(spell.LocXZ, Module.CastFinishAt(spell));
+        }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
@@ -72,7 +72,6 @@ sealed class AnUnendingDutyStates : StateMachineBuilder
     public AnUnendingDutyStates(BossModule module) : base(module)
     {
         TrivialPhase()
-            .ActivateOnEnter<ThriceComeThunder>()
             .ActivateOnEnter<Trounce>()
             .ActivateOnEnter<ThunderII>()
             .ActivateOnEnter<ThunderIV>()
@@ -83,4 +82,10 @@ sealed class AnUnendingDutyStates : StateMachineBuilder
 }
 
 [ModuleInfo(BossModuleInfo.Maturity.AISupport, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.ForayFATE, GroupID = 1018, NameID = 1966)]
-public sealed class AnUnendingDuty(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
+public sealed class AnUnendingDuty : OpenWorldFate
+{
+    public AnUnendingDuty(WorldState ws, Actor primary) : base(ws, primary)
+    {
+        ActivateComponent<ThriceComeThunder>();
+    }
+}

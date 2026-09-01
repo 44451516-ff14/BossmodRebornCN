@@ -52,10 +52,10 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
             switch (state)
             {
                 case 0x00020001u:
-                    SetArena(new(GetP2ShapeNoDonut(), GenerateIntersectionBlockers()));
+                    SetArena(new(GetP2ShapeNoDonut(), [.. GenerateIntersectionBlockers(), .. GetP2Donut()]) { WorldProjectionHeight = 0.2f });
                     break;
                 case 0x00080004u:
-                    SetArena(new([.. GetP2Donut(), .. GetP2ShapeNoDonut()], GenerateIntersectionBlockers()));
+                    SetArena(new([.. GetP2Donut(), .. GetP2ShapeNoDonut()], GenerateIntersectionBlockers()) { WorldProjectionHeight = 0.2f });
                     break;
             }
         }
@@ -74,7 +74,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
                 Arena.Center = new(100f, 100f);
                 break;
             case 0x20000000u: // (phase 2)
-                SetArena(new([.. GetP2ShapeNoDonut(), .. GetP2Donut()], GenerateIntersectionBlockers()));
+                SetArena(new([.. GetP2ShapeNoDonut(), .. GetP2Donut()], GenerateIntersectionBlockers()) { WorldProjectionHeight = 0.2f });
                 break;
             case 0x40000000u: // diamond arena (phase 1)
                 SetArena(new ArenaBoundsCustom(GetDiamondShape(), ScaleFactor: 1.414f));

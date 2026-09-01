@@ -76,7 +76,7 @@ sealed class Burst(BossModule module) : Components.SimpleAOEs(module, (uint)AID.
             {
                 if (seed.Position.InCircle(spell.LocXZ, 5.0f))
                 {
-                    Casters.Add(new(Shape, seed.Position, default, Module.CastFinishAt(spell, 3.5f), actorID: seed.InstanceID,
+                    Casters.Add(new(Shape, seed.Position, default, Module.CastFinishAt(spell, 3.5d), actorID: seed.InstanceID,
                         shapeDistance: Shape.Distance(seed.Position, default)));
                 }
             }

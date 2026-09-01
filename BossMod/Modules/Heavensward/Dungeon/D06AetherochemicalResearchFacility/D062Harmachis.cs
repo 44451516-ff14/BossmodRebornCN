@@ -41,11 +41,12 @@ public enum IconID : uint
     Stack = 93 // player
 }
 
-class Paradox(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Paradox, 5f);
-class Petrifaction(BossModule module) : Components.CastGaze(module, (uint)AID.Petrifaction);
-class Ka(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ka, new AOEShapeCone(45f, 30f.Degrees()));
-class GaseousBomb(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stack, (uint)AID.GaseousBomb, 5f, 4.1d, 4, 4);
-class BallisticMissile(BossModule module) : Components.UniformStackSpread(module, 4f, default, 2, 2)
+sealed class Paradox(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Paradox, 5f);
+sealed class Petrifaction(BossModule module) : Components.CastGaze(module, (uint)AID.Petrifaction);
+sealed class Ka(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Ka, new AOEShapeCone(45f, 30f.Degrees()));
+sealed class GaseousBomb(BossModule module) : Components.StackWithIcon(module, (uint)IconID.Stack, (uint)AID.GaseousBomb, 5f, 4.1d, 4, 4);
+
+sealed class BallisticMissile(BossModule module) : Components.UniformStackSpread(module, 4f, default, 2, 2)
 {
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
@@ -60,31 +61,37 @@ class BallisticMissile(BossModule module) : Components.UniformStackSpread(module
     }
 }
 
-class ChthonicHush(BossModule module) : Components.Cleave(module, (uint)AID.ChthonicHush, new AOEShapeCone(13.3f, 60f.Degrees()))
+sealed class ChthonicHush(BossModule module) : Components.Cleave(module, (uint)AID.ChthonicHush, new AOEShapeCone(13.3f, 60f.Degrees()))
 {
     private readonly GaseousBomb _stack1 = module.FindComponent<GaseousBomb>()!;
     private readonly BallisticMissile _stack2 = module.FindComponent<BallisticMissile>()!;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (_stack1.ActiveStacks.Count == 0 && _stack2.ActiveStacks.Count == 0)
+        if (_stack1.Stacks.Count == 0 && _stack2.Stacks.Count == 0)
+        {
             base.AddHints(slot, actor, hints);
+        }
     }
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (_stack1.ActiveStacks.Count == 0 && _stack2.ActiveStacks.Count == 0)
+        if (_stack1.Stacks.Count == 0 && _stack2.Stacks.Count == 0)
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        if (_stack1.ActiveStacks.Count == 0 && _stack2.ActiveStacks.Count == 0)
+        if (_stack1.Stacks.Count == 0 && _stack2.Stacks.Count == 0)
+        {
             base.DrawArenaForeground(pcSlot, pc);
+        }
     }
 }
 
-class D062HarmachisStates : StateMachineBuilder
+sealed class D062HarmachisStates : StateMachineBuilder
 {
     public D062HarmachisStates(BossModule module) : base(module)
     {
@@ -98,9 +105,17 @@ class D062HarmachisStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 3821, SortOrder = 6)]
-public class D062Harmachis(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38u, NameID = 3821u, SortOrder = 6)]
+public sealed class D062Harmachis : BossModule
 {
-    public static readonly ArenaBoundsCustom arena = new([new Polygon(new(248f, 272f), 19.25f, 44)], [new Rectangle(new(228f, 272f), 1.8f, 20f),
-    new Rectangle(new(268.25f, 272f), 2f, 20f)]);
+    public D062Harmachis(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D062Harmachis(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(248f, 272f), 19.25f, 44)], [new Rectangle(new(228f, 272f), 1.8f, 20f),
+            new Rectangle(new(268.25f, 272f), 2f, 20f)]);
+        return (arena.Center, arena);
+    }
 }

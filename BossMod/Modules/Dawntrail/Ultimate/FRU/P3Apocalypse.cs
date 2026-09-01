@@ -75,6 +75,7 @@ sealed class P3Apocalypse(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
+/*
 sealed class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4, includeDeadTargets: true)
 {
     public struct State
@@ -251,7 +252,228 @@ sealed class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackS
         return swap;
     }
 }
+*/
+sealed class P3ApocalypseDarkWater(BossModule module) : Components.UniformStackSpread(module, 6f, default, 4, 4, includeDeadTargets: true)
+{
+    public struct State
+    {
+        public int Order;
+        public int InitialGroup;
+        public int InitialPosition;
+        public int AssignedGroup;
+        public int AssignedPosition;
+        public DateTime Expiration;
+    }
 
+    public int NumStatuses;
+    public readonly State[] States = new State[PartyState.MaxPartySize];
+    private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
+    private readonly P3Apocalypse? _apoc = module.FindComponent<P3Apocalypse>();
+    private string _swaps = "";
+
+    // for uptime swaps, there are 6 possible swaps within each 'subgroup': no swaps, p1 with p1/p2, p2 with p1/p2 and both
+    private static readonly BitMask[] _uptimeSwaps = [default, BitMask.Build(0, 4), BitMask.Build(0, 5), BitMask.Build(1, 4), BitMask.Build(1, 5), BitMask.Build(0, 1, 4, 5)];
+
+    public void ShowOrder(int order)
+    {
+        for (var i = 0; i < States.Length; ++i)
+            if (States[i].Order == order && Raid[i] is var player && player != null)
+                AddStack(player, States[i].Expiration);
+    }
+
+    public override void AddHints(int slot, Actor actor, TextHints hints)
+    {
+        ref var state = ref States[slot];
+        if (state.AssignedGroup > 0)
+            hints.Add($"Group: {state.AssignedGroup}", false);
+        if (state.Order > 0)
+            hints.Add($"Order: {state.Order}", false);
+    }
+
+    public override void AddGlobalHints(GlobalHints hints)
+    {
+        var text = _swaps;
+
+        if (_apoc?.Starting != null)
+        {
+            var start = _apoc.Starting.Value;
+            var safe = (_apoc.Starting.Value - _apoc.Rotation).Normalized();
+
+            // Same calculation used by P3ApocalypseAIWater2.
+            var midDir = safe;
+            var midIsForG2 = midDir.Deg is >= -20 and < 160;
+            if (!midIsForG2)
+                midDir += 180f.Degrees();
+
+            var bait = (midDir - _apoc.Rotation).Normalized();
+
+            if (text.Length > 0)
+                text += "\n";
+
+            text += $"AOEs start {DirectionPair(start)} {(_apoc.Rotation.Rad < 0 ? "CW" : "CCW")}, Safe {DirectionPair(safe)}";
+            text += $"\nDarkest Dance Bait {DirectionPair(bait)}";
+        }
+
+        if (text.Length > 0)
+            hints.Add(text);
+    }
+
+    private static string DirectionPair(Angle dir)
+    {
+        var deg = dir.Normalized().Deg;
+
+        return deg switch
+        {
+            >= -22.5f and < 22.5f => "N/S [A/C]",
+            >= 22.5f and < 67.5f => "NW/SE [1/3]",
+            >= 67.5f and < 112.5f => "E/W [B/D]",
+            >= 112.5f and < 157.5f => "NE/SW [2/4]",
+            >= 157.5f or < -157.5f => "N/S [A/C]",
+            >= -157.5f and < -112.5f => "NW/SE [1/3]",
+            >= -112.5f and < -67.5f => "E/W [B/D]",
+            >= -67.5f and < -22.5f => "NE/SW [2/4]",
+            _ => "N/S [A/C]"
+        };
+    }
+
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints) { } // we have dedicated components for this...
+
+    public override void OnStatusGain(Actor actor, ref ActorStatus status)
+    {
+        if (status.ID == (uint)SID.SpellInWaitingDarkWater && Raid.FindSlot(actor.InstanceID) is var slot && slot >= 0)
+        {
+            States[slot].Expiration = status.ExpireAt;
+            States[slot].Order = (status.ExpireAt - WorldState.CurrentTime).TotalSeconds switch
+            {
+                < 15d => 1,
+                < 34d => 2,
+                _ => 3,
+            };
+            if (++NumStatuses == 6)
+                InitAssignments();
+        }
+    }
+
+    public override void OnEventCast(Actor caster, ActorCastEvent spell)
+    {
+        if (spell.Action.ID == (uint)AID.DarkWater)
+            Stacks.Clear();
+    }
+
+    private void InitAssignments()
+    {
+        Span<int> slotPerAssignment = [-1, -1, -1, -1, -1, -1, -1, -1];
+        foreach (var (slot, group) in _config.P3ApocalypseAssignments.Resolve(Raid))
+        {
+            ref var state = ref States[slot];
+            state.InitialGroup = state.AssignedGroup = group < 4 ? 1 : 2;
+            state.InitialPosition = state.AssignedPosition = group & 3;
+            slotPerAssignment[group] = slot;
+        }
+
+        if (slotPerAssignment[0] < 0)
+            return; // no valid assignments
+
+        var swap = _config.P3ApocalypseUptime ? FindUptimeSwap(slotPerAssignment) : FindStandardSwap(slotPerAssignment);
+        //var debugSwap = swap.Raw;
+        for (var role = 0; role < slotPerAssignment.Length; ++role)
+        {
+            if (!swap[role])
+                continue;
+
+            var slot = slotPerAssignment[role];
+            ref var state = ref States[slot];
+
+            // find partner to swap with; prioritize same position > neighbour position (eg melee with melee) > anyone that also swaps
+            int partnerRole = -1, partnerQuality = -1;
+            for (var candidateRole = role + 1; candidateRole < slotPerAssignment.Length; ++candidateRole)
+            {
+                if (!swap[candidateRole])
+                    continue; // this guy doesn't want to swap, skip
+
+                var candidateSlot = slotPerAssignment[candidateRole];
+                if (States[candidateSlot].AssignedGroup == state.AssignedGroup)
+                    continue; // this guy is from same group, skip
+
+                var positionDiff = state.AssignedPosition ^ States[candidateSlot].AssignedPosition;
+                var candidateQuality = positionDiff switch
+                {
+                    0 => 2, // same position, best
+                    1 => 1, // melee with melee / ranged with ranged (assuming sane config)
+                    _ => 0, // melee with ranged
+                };
+                if (candidateQuality > partnerQuality)
+                {
+                    partnerRole = candidateRole;
+                    partnerQuality = candidateQuality;
+                }
+            }
+
+            if (partnerRole < 0)
+            {
+                ReportError($"Failed to find swap for {slot}");
+                continue;
+            }
+
+            swap.Clear(role);
+            swap.Clear(partnerRole);
+            var partnerSlot = slotPerAssignment[partnerRole];
+            ref var partnerState = ref States[partnerSlot];
+            Utils.Swap(ref state.AssignedGroup, ref partnerState.AssignedGroup);
+            Utils.Swap(ref state.AssignedPosition, ref partnerState.AssignedPosition);
+            _swaps += $"{(_swaps.Length > 0 ? ", " : "")}{Raid[slot]?.Name} <-> {Raid[partnerSlot]?.Name}";
+        }
+        //ReportError($"FOO: {debugSwap:X2} == {_swaps}");
+        _swaps = $"Swaps: {(_swaps.Length > 0 ? _swaps : "none")}";
+    }
+
+    private bool IsSwapValid(BitMask assignmentSwaps, ReadOnlySpan<int> slotPerAssignment)
+    {
+        BitMask result = default; // bits 0-3 are set if order N is in G1, 4-7 for G2
+        for (var role = 0; role < slotPerAssignment.Length; ++role)
+        {
+            ref var state = ref States[slotPerAssignment[role]];
+            var isGroup2 = state.AssignedGroup == (assignmentSwaps[role] ? 1 : 2);
+            result.Set(state.Order + (isGroup2 ? 4 : 0));
+        }
+        return result.Raw == 0xFF;
+    }
+
+    private BitMask FindUptimeSwap(ReadOnlySpan<int> slotPerAssignment)
+    {
+        // search for first valid swap, starting with swaps that don't touch higher prios
+        foreach (var highSwap in _uptimeSwaps)
+        {
+            foreach (var lowSwap in _uptimeSwaps)
+            {
+                var swap = lowSwap ^ new BitMask(highSwap.Raw << 2);
+                if (IsSwapValid(swap, slotPerAssignment))
+                    return swap;
+            }
+        }
+
+        ReportError("Failed to find uptime swap");
+        return FindStandardSwap(slotPerAssignment);
+    }
+
+    private BitMask FindStandardSwap(ReadOnlySpan<int> slotPerAssignment)
+    {
+        BitMask swap = default;
+        Span<int> assignmentPerOrder = [-1, -1, -1, -1];
+        for (var role = 0; role < slotPerAssignment.Length; ++role)
+        {
+            var slot = slotPerAssignment[role];
+            var order = States[slot].Order;
+            ref var partner = ref assignmentPerOrder[order];
+            if (partner < 0)
+                partner = role;
+            else if ((role < 4) == (partner < 4))
+                swap.Set(partner);
+            // else: partner is naturally in other group
+        }
+        return swap;
+    }
+}
 sealed class P3ApocalypseSpiritTaker(BossModule module) : SpiritTaker(module)
 {
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -420,6 +642,7 @@ sealed class P3ApocalypseAIWater1(BossModule module) : BossComponent(module)
 }
 
 // position for second dark water & darkest dance - for simplicity, we position in the direction tank would take darkest dance
+/*
 sealed class P3ApocalypseAIWater2(BossModule module) : BossComponent(module)
 {
     private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
@@ -457,7 +680,56 @@ sealed class P3ApocalypseAIWater2(BossModule module) : BossComponent(module)
         hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + destOff, 1f), DateTime.MaxValue);
     }
 }
+*/
+sealed class P3ApocalypseAIWater2(BossModule module) : BossComponent(module)
+{
+    private readonly FRUConfig _config = Service.Config.Get<FRUConfig>();
+    private readonly P3Apocalypse? _apoc = module.FindComponent<P3Apocalypse>();
+    private readonly P3ApocalypseDarkWater? _water = module.FindComponent<P3ApocalypseDarkWater>();
 
+    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    {
+        if (_apoc?.Starting == null || _water == null)
+            return;
+
+        // add imminent apoc aoes
+        foreach (var aoe in _apoc.ActiveAOEs(slot, actor))
+            hints.AddForbiddenZone(aoe.Shape.Distance(aoe.Origin, aoe.Rotation), aoe.Activation);
+
+        ref var state = ref _water.States[slot];
+        if (state.AssignedGroup == 0)
+            return; // no assignments - oh well
+
+        var midDir = (_apoc.Starting.Value - _apoc.Rotation).Normalized();
+
+        // G1 takes dir CCW from N, G2 takes 0/45/90/135
+        var midIsForG2 = midDir.Deg is >= -20 and < 160;
+        if (midIsForG2 != (state.AssignedGroup == 2))
+            midDir += 180.Degrees();
+
+        var distance = 4.5f;
+        if (_apoc.NumCasts >= 28 && assignment == (_config.P3DarkestDanceOTBait ? PartyRolesConfig.Assignment.OT : PartyRolesConfig.Assignment.MT))
+        {
+            // bait darkest dance (but make sure to share water first!)
+            distance = _water.Stacks.Count == 0 ? 19 : 8;
+        }
+
+        var destOff = distance * (midDir - _apoc.Rotation).ToDirection();
+        hints.AddForbiddenZone(new SDInvertedCircle(Arena.Center + destOff, 1f), DateTime.MaxValue);
+    }
+
+    public override void DrawArenaForeground(int pcSlot, Actor pc)
+    {
+        if (pc.Role != Role.Tank || _apoc?.Starting == null || _water == null || _apoc.NumCasts < 16)
+            return;
+
+        var midDir = (_apoc.Starting.Value - _apoc.Rotation).Normalized();
+        var destOff = (_water.Stacks.Count == 0 ? 19f : 8f) * (midDir - _apoc.Rotation).ToDirection();
+
+        Arena.ZoneCircleOutline(Arena.Center + destOff, 1f, Colors.Safe);
+        Arena.ZoneCircleOutline(Arena.Center - destOff, 1f, Colors.Safe);
+    }
+}
 // position for darkest dance knockback & third dark water
 sealed class P3ApocalypseAIWater3(BossModule module) : BossComponent(module)
 {

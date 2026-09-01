@@ -30,46 +30,17 @@ public enum AID : uint
     ThunderboltPuddle8 = 49926, // 4D65->location, 9.0s cast, range 10 circle
 }
 
-sealed class RegalFulguration(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RegalFulguration, (uint)AID.RegalFulguration1], new AOEShapeCone(40.0f, 90.0f.Degrees()));
+sealed class RegalFulguration(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.RegalFulguration, (uint)AID.RegalFulguration1], new AOEShapeCone(40f, 90f.Degrees()));
 sealed class Thunderbolt(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Thunderbolt, 10f);
-sealed class NobleBlaster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NobleBlaster, new AOEShapeRect(50.0f, 2.5f));
+sealed class NobleBlaster(BossModule module) : Components.SimpleAOEs(module, (uint)AID.NobleBlaster, new AOEShapeRect(50f, 2.5f));
 
 sealed class ThunderboltPuddle : Components.SimpleAOEGroups
 {
     public ThunderboltPuddle(BossModule module) : base(module, [(uint)AID.ThunderboltPuddle, (uint)AID.ThunderboltPuddle1, (uint)AID.ThunderboltPuddle2,
             (uint)AID.ThunderboltPuddle3, (uint)AID.ThunderboltPuddle4, (uint)AID.ThunderboltPuddle5, (uint)AID.ThunderboltPuddle6,
-            (uint)AID.ThunderboltPuddle7, (uint)AID.ThunderboltPuddle8], new AOEShapeCircle(10.0f), 8, 9, 5.0f)
+            (uint)AID.ThunderboltPuddle7, (uint)AID.ThunderboltPuddle8], 10f, 8, 9, 5d)
     {
         MaxDangerColor = 5;
-    }
-
-    // Same function as the base, but changed so the MaxDangerColor is used for the final aoes instead of changing to the normal colour
-    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
-    {
-        var count = Casters.Count;
-        if (count == 0)
-        {
-            return [];
-        }
-
-        var time = WorldState.CurrentTime;
-        var max = count > MaxCasts ? MaxCasts : count;
-
-        var aoes = CollectionsMarshal.AsSpan(Casters);
-        for (var i = 0; i < max; ++i)
-        {
-            ref var aoe = ref aoes[i];
-            var color = i < MaxDangerColor ? Colors.Danger : Color;
-            var risky = Risky && (MaxRisky == null || i < MaxRisky);
-
-            if (RiskyWithSecondsLeft != default)
-            {
-                risky &= aoe.Activation.AddSeconds(-RiskyWithSecondsLeft) <= time;
-            }
-            aoe.Color = color;
-            aoe.Risky = risky;
-        }
-        return aoes[..max];
     }
 }
 

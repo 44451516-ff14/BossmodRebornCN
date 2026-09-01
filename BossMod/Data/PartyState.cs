@@ -66,7 +66,7 @@ public sealed class PartyState
     public Actor[] WithoutSlot(bool includeDead = false, bool excludeAlliance = false, bool excludeNPCs = false)
     {
         var limit = excludeNPCs && excludeAlliance ? MaxPartySize : excludeNPCs ? MaxAllianceSize : MaxAllies;
-        var result = new Actor[limit];
+        var result = new Actor[CountSelectedActors(includeDead, excludeAlliance, limit)];
         var count = 0;
 
         if (excludeAlliance)
@@ -80,17 +80,14 @@ public sealed class PartyState
                 }
                 result[count++] = player;
             }
-            if (!excludeNPCs)
+            for (var i = MaxAllianceSize; i < limit; ++i)
             {
-                for (var i = MaxAllianceSize; i < limit; ++i)
+                var player = _actors[i];
+                if (player == null || !includeDead && player.IsDead)
                 {
-                    var player = _actors[i];
-                    if (player == null || !includeDead && player.IsDead)
-                    {
-                        continue;
-                    }
-                    result[count++] = player;
+                    continue;
                 }
+                result[count++] = player;
             }
         }
         else
@@ -105,13 +102,13 @@ public sealed class PartyState
                 result[count++] = player;
             }
         }
-        return result[..count];
+        return result;
     }
 
     public (int, Actor)[] WithSlot(bool includeDead = false, bool excludeAlliance = false, bool excludeNPCs = false)
     {
         var limit = excludeNPCs && excludeAlliance ? MaxPartySize : excludeNPCs ? MaxAllianceSize : MaxAllies;
-        var result = new (int, Actor)[limit];
+        var result = new (int, Actor)[CountSelectedActors(includeDead, excludeAlliance, limit)];
         var count = 0;
 
         if (excludeAlliance)
@@ -125,17 +122,14 @@ public sealed class PartyState
                 }
                 result[count++] = (i, player);
             }
-            if (!excludeNPCs)
+            for (var i = MaxAllianceSize; i < limit; ++i)
             {
-                for (var i = MaxAllianceSize; i < limit; ++i)
+                var player = _actors[i];
+                if (player == null || !includeDead && player.IsDead)
                 {
-                    var player = _actors[i];
-                    if (player == null || !includeDead && player.IsDead)
-                    {
-                        continue;
-                    }
-                    result[count++] = (i, player);
+                    continue;
                 }
+                result[count++] = (i, player);
             }
         }
         else
@@ -150,7 +144,44 @@ public sealed class PartyState
                 result[count++] = (i, player);
             }
         }
-        return result[..count];
+        return result;
+    }
+
+    private int CountSelectedActors(bool includeDead, bool excludeAlliance, int limit)
+    {
+        var count = 0;
+        if (excludeAlliance)
+        {
+            for (var i = 0; i < MaxPartySize; ++i)
+            {
+                var actor = _actors[i];
+                if (actor != null && (includeDead || !actor.IsDead))
+                {
+                    ++count;
+                }
+            }
+
+            for (var i = MaxAllianceSize; i < limit; ++i)
+            {
+                var actor = _actors[i];
+                if (actor != null && (includeDead || !actor.IsDead))
+                {
+                    ++count;
+                }
+            }
+        }
+        else
+        {
+            for (var i = 0; i < limit; ++i)
+            {
+                var actor = _actors[i];
+                if (actor != null && (includeDead || !actor.IsDead))
+                {
+                    ++count;
+                }
+            }
+        }
+        return count;
     }
 
     // find a slot index containing specified player (by instance ID); returns -1 if not found

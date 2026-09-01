@@ -1466,7 +1466,8 @@ sealed class Gaze(BossModule module) : Components.GenericGaze(module)
     {
         if (state == (uint)Animations.EyeStart)
         {
-            _eye = [new Eye(actor.Position, WorldState.FutureTime(9.9d), inverted: actor.OID == (uint)OID.StatueYellowEye)];
+            var pos = actor.Position.Quantized();
+            _eye = [new Eye(pos, WorldState.FutureTime(9.9d), inverted: actor.OID == (uint)OID.StatueYellowEye, eyeCenter: IndicatorWorldPos(pos))];
         }
     }
 

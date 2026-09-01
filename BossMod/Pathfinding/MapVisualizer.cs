@@ -64,9 +64,11 @@ public sealed class MapVisualizer
         // blocked squares / goal
         var nodeIndex = 0;
         var hoverNode = -1;
-        for (var y = 0; y < Map.Height; ++y)
+        var height = Map.Height;
+        var width = Map.Width;
+        for (var y = 0; y < height; ++y)
         {
-            for (var x = 0; x < Map.Width; ++x, ++nodeIndex)
+            for (var x = 0; x < width; ++x, ++nodeIndex)
             {
                 var corner = tl + new Vector2(x, y) * ScreenPixelSize;
                 var cornerEnd = corner + new Vector2(ScreenPixelSize, ScreenPixelSize);

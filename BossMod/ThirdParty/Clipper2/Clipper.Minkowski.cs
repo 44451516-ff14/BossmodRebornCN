@@ -7,92 +7,158 @@
 * License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
-#nullable enable
-namespace Clipper2Lib
+using System.Buffers;
+
+namespace Clipper2Lib;
+
+[SkipLocalsInit]
+public static class Minkowski
 {
-	public static class Minkowski
-	{
-		private static Paths64 MinkowskiInternal(Path64 pattern, Path64 path, bool isSum, bool isClosed)
-		{
-			int delta = isClosed ? 0 : 1;
-			int patLen = pattern.Count, pathLen = path.Count;
-			var tmp = new Paths64(pathLen);
-			var pathC = path.Count;
-			var patternC = pattern.Count;
-			if (isSum)
-			{
-				for (var i = 0; i < pathC; ++i)
-				{
-					var path2 = new Path64(patLen);
-					for (var j = 0; j < patternC; ++j)
-					{
-						path2.Add(path[i] + pattern[j]);
-					}
-					tmp.Add(path2);
-				}
-			}
-			else
-			{
-				for (var i = 0; i < pathC; ++i)
-				{
-					var path2 = new Path64(patLen);
-					for (var j = 0; j < patternC; ++j)
-					{
-						path2.Add(path[i] - pattern[j]);
-					}
-					tmp.Add(path2);
-				}
-			}
+    private const int StackScratchThreshold = 128;
 
-			Paths64 result = new Paths64((pathLen - delta) * patLen);
-			int g = isClosed ? pathLen - 1 : 0;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void TranslatePattern(ReadOnlySpan<Point64> pattern, Point64 offset, bool isSum, Span<Point64> destination)
+    {
+        var len = pattern.Length;
+        if (isSum)
+        {
 
-			int h = patLen - 1;
-			for (int i = delta; i < pathLen; ++i)
-			{
-				for (int j = 0; j < patLen; ++j)
-				{
-					Path64 quad = new Path64(4)
-		  {
-			tmp[g][h], tmp[i][h], tmp[i][j], tmp[g][j]
-		  };
-					if (!Clipper.IsPositive(quad))
-						result.Add(Clipper.ReversePath(quad));
-					else
-						result.Add(quad);
-					h = j;
-				}
-				g = i;
-			}
-			return result;
-		}
+            for (var i = 0; i < len; ++i)
+            {
+                destination[i] = offset + pattern[i];
+            }
+        }
+        else
+        {
+            for (var i = 0; i < len; ++i)
+            {
+                destination[i] = offset - pattern[i];
+            }
+        }
+    }
 
-		public static Paths64 Sum(Path64 pattern, Path64 path, bool isClosed)
-		{
-			return Clipper.Union(MinkowskiInternal(pattern, path, true, isClosed), FillRule.NonZero);
-		}
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsPositiveQuad(ReadOnlySpan<Point64> quad)
+    {
+        double area = 0;
+        var previous = quad[3];
+        for (var i = 0; i < 4; ++i)
+        {
+            var point = quad[i];
+            area += (double)(previous.Y + point.Y) * (previous.X - point.X);
+            previous = point;
+        }
+        return area * 0.5 >= 0d;
+    }
 
-		public static PathsD Sum(PathD pattern, PathD path, bool isClosed, int decimalPlaces = 2)
-		{
-			double scale = Math.Pow(10, decimalPlaces);
-			Paths64 tmp = Clipper.Union(MinkowskiInternal(Clipper.ScalePath64(pattern, scale),
-			  Clipper.ScalePath64(path, scale), true, isClosed), FillRule.NonZero);
-			return Clipper.ScalePathsD(tmp, 1 / scale);
-		}
+    private static void AddTranslatedQuads(Clipper64 clipper, ReadOnlySpan<Point64> pattern,
+      ReadOnlySpan<Point64> path, bool isSum, int delta, Span<Point64> previous, Span<Point64> current)
+    {
+        Span<Point64> quad = stackalloc Point64[4];
+        var lenPath = path.Length;
+        var lenPattern = lenPath;
+        var g = delta == 0 ? lenPath - 1 : 0;
+        TranslatePattern(pattern, path[g], isSum, previous);
+        for (var i = delta; i < lenPath; ++i)
+        {
+            TranslatePattern(pattern, path[i], isSum, current);
+            var h = pattern.Length - 1;
+            for (var j = 0; j < lenPattern; ++j)
+            {
+                quad[0] = previous[h];
+                quad[1] = current[h];
+                quad[2] = current[j];
+                quad[3] = previous[j];
+                if (!IsPositiveQuad(quad))
+                {
+                    quad.Reverse();
+                }
+                clipper.AddPath(quad, PathType.Subject);
+                h = j;
+            }
+            var swap = previous;
+            previous = current;
+            current = swap;
+        }
+    }
 
-		public static Paths64 Diff(Path64 pattern, Path64 path, bool isClosed)
-		{
-			return Clipper.Union(MinkowskiInternal(pattern, path, false, isClosed), FillRule.NonZero);
-		}
+    private static Paths64 ExecuteMinkowski(ReadOnlySpan<Point64> pattern, ReadOnlySpan<Point64> path, bool isSum, int delta, int quadCount,
+      Span<Point64> previous, Span<Point64> current)
+    {
+        Paths64 result = [];
+        var clipper = Clipper.RentClipper64();
+        try
+        {
+            clipper.EnsureVertexCapacity(quadCount * 4);
+            AddTranslatedQuads(clipper, pattern, path, isSum, delta, previous, current);
+            clipper.Execute(ClipType.Union, FillRule.NonZero, result);
+        }
+        finally
+        {
+            Clipper.ReturnClipper64(clipper);
+        }
+        return result;
+    }
 
-		public static PathsD Diff(PathD pattern, PathD path, bool isClosed, int decimalPlaces = 2)
-		{
-			double scale = Math.Pow(10, decimalPlaces);
-			Paths64 tmp = Clipper.Union(MinkowskiInternal(Clipper.ScalePath64(pattern, scale),
-			  Clipper.ScalePath64(path, scale), false, isClosed), FillRule.NonZero);
-			return Clipper.ScalePathsD(tmp, 1 / scale);
-		}
+    private static Paths64 MinkowskiInternal(Path64 pattern, Path64 path, bool isSum, bool isClosed)
+    {
+        var delta = isClosed ? 0 : 1;
+        int patLen = pattern.Count, pathLen = path.Count;
+        var quadCount = (pathLen - delta) * patLen;
 
-	}
+        if (patLen == 0 || pathLen <= delta)
+        {
+            return [];
+        }
 
-} // namespace
+        var pathPoints = CollectionsMarshal.AsSpan(path);
+        var patternPoints = CollectionsMarshal.AsSpan(pattern);
+        if (patLen <= StackScratchThreshold)
+        {
+            Span<Point64> scratch = stackalloc Point64[patLen * 2];
+            return ExecuteMinkowski(patternPoints, pathPoints, isSum, delta, quadCount,
+              scratch[..patLen], scratch[patLen..]);
+        }
+
+        var rentedPrevious = ArrayPool<Point64>.Shared.Rent(patLen);
+        Point64[]? rentedCurrent = null;
+        try
+        {
+            rentedCurrent = ArrayPool<Point64>.Shared.Rent(patLen);
+            return ExecuteMinkowski(patternPoints, pathPoints, isSum, delta, quadCount,
+              rentedPrevious.AsSpan(0, patLen), rentedCurrent!.AsSpan(0, patLen));
+        }
+        finally
+        {
+            ArrayPool<Point64>.Shared.Return(rentedPrevious);
+            if (rentedCurrent != null)
+            {
+                ArrayPool<Point64>.Shared.Return(rentedCurrent);
+            }
+        }
+    }
+
+    public static Paths64 Sum(Path64 pattern, Path64 path, bool isClosed)
+    {
+        return MinkowskiInternal(pattern, path, true, isClosed);
+    }
+
+    public static PathsD Sum(PathD pattern, PathD path, bool isClosed, int decimalPlaces = 2)
+    {
+        var scale = Math.Pow(10, decimalPlaces);
+        var tmp = MinkowskiInternal(Clipper.ScalePath64(pattern, scale), Clipper.ScalePath64(path, scale), true, isClosed);
+        return Clipper.ScalePathsD(tmp, 1 / scale);
+    }
+
+    public static Paths64 Diff(Path64 pattern, Path64 path, bool isClosed)
+    {
+        return MinkowskiInternal(pattern, path, false, isClosed);
+    }
+
+    public static PathsD Diff(PathD pattern, PathD path, bool isClosed, int decimalPlaces = 2)
+    {
+        var scale = Math.Pow(10, decimalPlaces);
+        var tmp = MinkowskiInternal(Clipper.ScalePath64(pattern, scale), Clipper.ScalePath64(path, scale), false, isClosed);
+        return Clipper.ScalePathsD(tmp, 1d / scale);
+    }
+}

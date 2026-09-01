@@ -51,15 +51,15 @@ public enum TetherID : uint
     StarTether = 110 // BurningStar/FrozenStar->BurningStar/FrozenStar
 }
 
-class ShadowFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShadowFlare);
-class GripOfNight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GripOfNight, new AOEShapeCone(40f, 75f.Degrees()));
-class DarkFireIIAOE(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkFireIIAOE, 6f);
-class EndOfDays(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.EndOfDays, (uint)AID.EndOfDays2);
+sealed class ShadowFlare(BossModule module) : Components.RaidwideCast(module, (uint)AID.ShadowFlare);
+sealed class GripOfNight(BossModule module) : Components.SimpleAOEs(module, (uint)AID.GripOfNight, new AOEShapeCone(40f, 75f.Degrees()));
+sealed class DarkFireIIAOE(BossModule module) : Components.SpreadFromCastTargets(module, (uint)AID.DarkFireIIAOE, 6f);
+sealed class EndOfDays(BossModule module) : Components.LineStack(module, aidMarker: (uint)AID.EndOfDays, (uint)AID.EndOfDays2);
 
-class Stars(BossModule module) : Components.GenericAOEs(module)
+sealed class Stars(BossModule module) : Components.GenericAOEs(module)
 {
-    private static readonly AOEShapeDonut donutSmall = new(5f, 15f), donutBig = new(5f, 40f);
-    private static readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(16f);
+    private readonly AOEShapeDonut donutSmall = new(5f, 15f), donutBig = new(5f, 40f);
+    private readonly AOEShapeCircle circleSmall = new(8f), circleBig = new(16f);
     private readonly List<AOEInstance> _aoes = [with(5)];
     private readonly List<Actor> _stars = [with(8)];
 
@@ -105,14 +105,18 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
                 break;
             }
             else
+            {
                 ++circleBigCount;
+            }
         }
 
         if (hasDonutBig || circleBigCount == 2)
         {
             var countS = _stars.Count;
             for (var i = 0; i < countS; ++i)
+            {
                 _aoes.Add(new(smallShape, _stars[i].Position, default, activation));
+            }
             _stars.Clear();
         }
     }
@@ -132,16 +136,24 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
             for (var i = 0; i < count; ++i)
             {
                 var star = _stars[i];
-                if (star.OID == (uint)OID.FrozenStar)
+                if (star.OID is var oid && oid == (uint)OID.FrozenStar)
+                {
                     ++frozenStarCount;
-                else if (star.OID == (uint)OID.BurningStar)
+                }
+                else if (oid == (uint)OID.BurningStar)
+                {
                     ++burningStarCount;
+                }
             }
 
             if (!_tutorialIce && frozenStarCount == 4)
+            {
                 Tutorial(donutSmall, ref _tutorialIce);
+            }
             else if (!_tutorialFire && burningStarCount == 5)
+            {
                 Tutorial(circleSmall, ref _tutorialFire);
+            }
         }
     }
 
@@ -151,7 +163,9 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
         var activation = WorldState.FutureTime(7.8d);
         var count = _stars.Count;
         for (var i = 0; i < count; ++i)
+        {
             _aoes.Add(new(shape, _stars[i].Position, default, activation));
+        }
         _stars.Clear();
     }
 
@@ -165,7 +179,7 @@ class Stars(BossModule module) : Components.GenericAOEs(module)
     }
 }
 
-class D063LahabreaIgeyorhmStates : StateMachineBuilder
+sealed class D063LahabreaIgeyorhmStates : StateMachineBuilder
 {
     public D063LahabreaIgeyorhmStates(BossModule module) : base(module)
     {
@@ -178,13 +192,24 @@ class D063LahabreaIgeyorhmStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 2143, SortOrder = 10)]
-public class D063LahabreaIgeyorhm(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus, LTS)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38u, NameID = 2143u, SortOrder = 10)]
+public sealed class D063LahabreaIgeyorhm : BossModule
 {
-    public static readonly ArenaBoundsCustom arena = new([new Polygon(new(230f, -181f), 20.26f, 24)], [new Rectangle(new(230f, -160f), 20f, 1.94f)]);
+    public D063LahabreaIgeyorhm(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D063LahabreaIgeyorhm(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(230f, -181f), 20.26f, 24)], [new Rectangle(new(230f, -160f), 20f, 1.94f)]);
+        return (arena.Center, arena);
+    }
+
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actor(PrimaryActor);
         Arena.Actors(Enemies((uint)OID.Igeyorhm));
     }
+
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

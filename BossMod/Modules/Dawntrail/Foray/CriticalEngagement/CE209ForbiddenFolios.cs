@@ -116,16 +116,18 @@ sealed class CoverToCover(BossModule module) : Components.GenericAOEs(module)
     {
         if (spell.Action.ID == (uint)AID.CoverToCoverForward)
         {
-            AddAOE();
-            AddAOE(180f.Degrees(), 4.2d);
-        }
-        void AddAOE(Angle offset = default, double delay = default)
-        {
             var loc = spell.LocXZ;
             var rot = spell.Rotation;
-            var pos = delay != default ? loc - 5f * rot.ToDirection() : loc;
-            var rot2 = rot + offset;
-            _aoes.Add(new(cone, pos, rot2, Module.CastFinishAt(spell, delay), shapeDistance: cone.Distance(pos, rot2)));
+            var act = Module.CastFinishAt(spell);
+            AddAOE();
+            AddAOE(180f.Degrees(), 4.2d);
+
+            void AddAOE(Angle offset = default, double delay = default)
+            {
+                var pos = delay != default ? loc - 5f * rot.ToDirection() : loc;
+                var rot2 = rot + offset;
+                _aoes.Add(new(cone, pos, rot2, delay != default ? act.AddSeconds(delay) : act, shapeDistance: cone.Distance(pos, rot2)));
+            }
         }
     }
 

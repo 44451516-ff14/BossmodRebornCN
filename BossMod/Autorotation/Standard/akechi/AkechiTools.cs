@@ -191,7 +191,7 @@ public abstract class AkechiTools<AID, TraitID>(RotationModuleManager manager, A
         var currentTarget = primaryTarget?.Actor;
         if (currentTarget == null || Player.DistanceToHitbox(currentTarget) > range)
         {
-            var newTarget = Hints.PriorityTargets.FirstOrDefault(x => Player.DistanceToHitbox(x.Actor) <= range);
+            var newTarget = Hints.FirstPriorityTarget(x => Player.DistanceToHitbox(x.Actor) <= range);
             if (newTarget != null)
             {
                 if (strategy.AutoTargeting())
@@ -237,8 +237,11 @@ public abstract class AkechiTools<AID, TraitID>(RotationModuleManager manager, A
         var bestTimer = getTimer(initial.Actor);
         var count = 0;
 
-        foreach (var target in Hints.PriorityTargets)
+        var targets = Hints.PriorityTargetsSpan;
+        var len = targets.Length;
+        for (var i = 0; i < len; ++i)
         {
+            var target = targets[i];
             if (target.ForbidDOTs || Player.DistanceToHitbox(target.Actor) > range)
                 continue;
 
@@ -320,8 +323,8 @@ public abstract class AkechiTools<AID, TraitID>(RotationModuleManager manager, A
 
         //MCH: prioritize Wildfire debuffed targets
         var wfTarget = Player.Class == Class.MCH && Player.FindStatus(MCH.SID.WildfirePlayerPvP) != null
-            ? Hints.PriorityTargets.FirstOrDefault(x => HasLOS(x.Actor) && Player.DistanceToHitbox(x.Actor) <= range && x.Actor.FindStatus(MCH.SID.WildfireTargetPvP) != null) : null;
-        var bigIce = Hints.PriorityTargets.FirstOrDefault(x => HasLOS(x.Actor) && Player.DistanceToHitbox(x.Actor) <= range && x.Actor.OID == 0x15E7);
+            ? Hints.FirstPriorityTarget(x => HasLOS(x.Actor) && Player.DistanceToHitbox(x.Actor) <= range && x.Actor.FindStatus(MCH.SID.WildfireTargetPvP) != null) : null;
+        var bigIce = Hints.FirstPriorityTarget(x => HasLOS(x.Actor) && Player.DistanceToHitbox(x.Actor) <= range && x.Actor.OID == 0x15E7);
 
         //Focus Target's target - if any enemies are targeting our focus target, prioritize them if the option is enabled; useful in duo-queue scenarios
         var focusTarget = Service.TargetManager.FocusTarget;

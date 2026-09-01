@@ -181,9 +181,9 @@ public sealed class RotationModuleManager : IDisposable
     {
         StrategyTarget.Self => Player,
         StrategyTarget.PartyByAssignment => _prc.SlotsPerAssignment(WorldState.Party) is var spa && param < spa.Length ? WorldState.Party[spa[param]] : null,
-        StrategyTarget.PartyWithLowestHP => FilteredPartyMembers((StrategyPartyFiltering)param).MinBy(a => a.HPMP.CurHP),
-        StrategyTarget.EnemyWithHighestPriority => Hints.PriorityTargets.MaxBy(RateEnemy((StrategyEnemySelection)param))?.Actor,
-        StrategyTarget.EnemyByOID => Player != null && (uint)param is var oid && oid != 0 ? Hints.PotentialTargets.Where(e => e.Actor.OID == oid).MinBy(e => (e.Actor.Position - Player.Position).LengthSq())?.Actor : null,
+        StrategyTarget.PartyWithLowestHP => ResolvePartyWithLowestHP((StrategyPartyFiltering)param),
+        StrategyTarget.EnemyWithHighestPriority => ResolvePriorityEnemy((StrategyEnemySelection)param),
+        StrategyTarget.EnemyByOID => ResolveEnemyByOID((uint)param),
         _ => null
     };
 
@@ -197,44 +197,116 @@ public sealed class RotationModuleManager : IDisposable
 
     public override string ToString() => string.Join(", ", ActiveModules?.Select(m => m.Module.GetType().Name) ?? []);
 
-    private IEnumerable<Actor> FilteredPartyMembers(StrategyPartyFiltering filter)
+    private Actor? ResolvePartyWithLowestHP(StrategyPartyFiltering filter)
     {
         var fullMask = new BitMask(~0ul);
         var allowedMask = fullMask;
         if (!filter.HasFlag(StrategyPartyFiltering.IncludeSelf))
+        {
             allowedMask.Clear(PlayerSlot);
+        }
         if (filter.HasFlag(StrategyPartyFiltering.ExcludeNoPredictedDamage))
         {
-            var predictedDamage = Hints.PredictedDamage.Aggregate(default(BitMask), (s, p) => s | p.Players);
+            var predictedDamage = default(BitMask);
+            var predicteddamage = Hints.PredictedDamage;
+            var count = predicteddamage.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var prediction = predicteddamage[i];
+                predictedDamage |= prediction.Players;
+            }
             allowedMask &= predictedDamage;
         }
 
         if (allowedMask.None())
-            return [];
-        var players = allowedMask != fullMask ? WorldState.Party.WithSlot().IncludedInMask(allowedMask).Actors() : WorldState.Party.WithoutSlot();
-        if ((filter & (StrategyPartyFiltering.ExcludeTanks | StrategyPartyFiltering.ExcludeHealers | StrategyPartyFiltering.ExcludeMelee | StrategyPartyFiltering.ExcludeRanged)) != StrategyPartyFiltering.None)
         {
-            players = players.Where(p => p.Role switch
-            {
-                Role.Tank => !filter.HasFlag(StrategyPartyFiltering.ExcludeTanks),
-                Role.Healer => !filter.HasFlag(StrategyPartyFiltering.ExcludeHealers),
-                Role.Melee => !filter.HasFlag(StrategyPartyFiltering.ExcludeMelee),
-                Role.Ranged => !filter.HasFlag(StrategyPartyFiltering.ExcludeRanged),
-                _ => true,
-            });
+            return null;
         }
-        return players;
+
+        Actor? best = null;
+        var bestHP = uint.MaxValue;
+        for (var slot = 0; slot < PartyState.MaxAllies; ++slot)
+        {
+            var player = allowedMask[slot] ? WorldState.Party[slot] : null;
+            if (player == null || player.IsDead)
+                continue;
+
+            var excluded = player.Role switch
+            {
+                Role.Tank => filter.HasFlag(StrategyPartyFiltering.ExcludeTanks),
+                Role.Healer => filter.HasFlag(StrategyPartyFiltering.ExcludeHealers),
+                Role.Melee => filter.HasFlag(StrategyPartyFiltering.ExcludeMelee),
+                Role.Ranged => filter.HasFlag(StrategyPartyFiltering.ExcludeRanged),
+                _ => false,
+            };
+            if (excluded || best != null && player.HPMP.CurHP >= bestHP)
+            {
+                continue;
+            }
+
+            best = player;
+            bestHP = player.HPMP.CurHP;
+        }
+        return best;
     }
 
-    private Func<AIHints.Enemy, float> RateEnemy(StrategyEnemySelection criterion) => criterion switch
+    private Actor? ResolvePriorityEnemy(StrategyEnemySelection criterion)
     {
-        StrategyEnemySelection.Closest => Player != null ? e => -Player.DistanceToHitbox(e.Actor) : _ => 0,
-        StrategyEnemySelection.LowestCurHP => e => -e.Actor.HPMP.CurHP,
-        StrategyEnemySelection.HighestCurHP => e => e.Actor.HPMP.CurHP,
-        StrategyEnemySelection.LowestMaxHP => e => -e.Actor.HPMP.MaxHP,
-        StrategyEnemySelection.HighestMaxHP => e => e.Actor.HPMP.MaxHP,
-        _ => _ => 0
-    };
+        var player = Player;
+        AIHints.Enemy? best = null;
+        var bestRating = default(float);
+        var priorityTargets = Hints.PriorityTargetsSpan;
+        var len = priorityTargets.Length;
+        for (var i = 0; i < len; ++i)
+        {
+            var enemy = priorityTargets[i];
+            var rating = criterion switch
+            {
+                StrategyEnemySelection.Closest => player != null ? -player.DistanceToHitbox(enemy.Actor) : 0f,
+                StrategyEnemySelection.LowestCurHP => -enemy.Actor.HPMP.CurHP,
+                StrategyEnemySelection.HighestCurHP => enemy.Actor.HPMP.CurHP,
+                StrategyEnemySelection.LowestMaxHP => -enemy.Actor.HPMP.MaxHP,
+                StrategyEnemySelection.HighestMaxHP => enemy.Actor.HPMP.MaxHP,
+                _ => 0f
+            };
+            if (best == null || rating.CompareTo(bestRating) > 0)
+            {
+                best = enemy;
+                bestRating = rating;
+            }
+        }
+        return best?.Actor;
+    }
+
+    private Actor? ResolveEnemyByOID(uint oid)
+    {
+        var player = Player;
+        if (player == null || oid == 0u)
+        {
+            return null;
+        }
+
+        Actor? best = null;
+        var bestDistanceSq = float.MaxValue;
+        var targets = Hints.PotentialTargets;
+        var count = targets.Count;
+        for (var i = 0; i < count; ++i)
+        {
+            var enemy = targets[i];
+            if (enemy.Actor.OID != oid)
+            {
+                continue;
+            }
+
+            var distanceSq = (enemy.Actor.Position - player.Position).LengthSq();
+            if (best == null || distanceSq.CompareTo(bestDistanceSq) < 0f)
+            {
+                best = enemy.Actor;
+                bestDistanceSq = distanceSq;
+            }
+        }
+        return best;
+    }
 
     private Plan? CalculateExpectedPlan()
     {
@@ -255,7 +327,8 @@ public sealed class RotationModuleManager : IDisposable
         if (player != null)
         {
             var isRPMode = player.Statuses.Any(IsTransformStatus);
-            for (var i = 0; i < modules.Count; ++i)
+            var count = modules.Count;
+            for (var i = 0; i < count; ++i)
             {
                 var def = modules[i].Definition;
                 if (!def.Classes[(int)player.Class] || player.Level < def.MinLevel || player.Level > def.MaxLevel)

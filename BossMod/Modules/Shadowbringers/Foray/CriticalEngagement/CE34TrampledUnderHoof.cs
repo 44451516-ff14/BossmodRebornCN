@@ -113,7 +113,8 @@ sealed class DemonEye(BossModule module) : Components.GenericGaze(module)
         var id = spell.Action.ID;
         if (id == (uint)AID.FalseDemonEye)
         {
-            _eyes.Add(new(spell.LocXZ, Module.CastFinishAt(spell), inverted: inverted));
+            var loc = spell.LocXZ;
+            _eyes.Add(new(loc, Module.CastFinishAt(spell), inverted: inverted, eyeCenter: IndicatorWorldPos(loc)));
         }
         else if (id == (uint)AID.DemonEye)
         {
@@ -122,8 +123,11 @@ sealed class DemonEye(BossModule module) : Components.GenericGaze(module)
             var eyes = CollectionsMarshal.AsSpan(_eyes);
             for (var i = 0; i < count; ++i)
             {
-                ref var eye = ref eyes[i];
-                eye = new(eye.Position, eye.Activation, inverted: true);
+                ref readonly var eye = ref eyes[i];
+                if (!eye.Inverted)
+                {
+                    eyes[i] = new(eye.Position, eye.Activation, inverted: true, eyeCenter: eye.EyeCenter);
+                }
             }
         }
     }

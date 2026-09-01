@@ -715,9 +715,9 @@ sealed class HeadTailWind(BossModule module) : Components.GenericKnockback(modul
             var toSource = (knockback.Origin - pc.Position).Normalized();
             var safeFacing = (Direction[pcSlot] == (uint)SID.Headwind ? -toSource : toSource).ToAngle();
             Arena.PathArcTo(pc.Position, 1, (safeFacing + 45f.Degrees()).Rad, (safeFacing - 45f.Degrees()).Rad);
-            MiniArena.PathStroke(false, Colors.Safe);
+            Arena.PathStroke(false, Colors.Safe);
             Arena.PathArcTo(pc.Position, 1, (safeFacing + 225f.Degrees()).Rad, (safeFacing + 135f.Degrees()).Rad);
-            MiniArena.PathStroke(false, Colors.Danger);
+            Arena.PathStroke(false, Colors.Danger);
         }
     }
 

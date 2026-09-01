@@ -33,7 +33,7 @@ sealed class NeoBombarianSpecialKB(BossModule module) : Components.SimpleKnockba
         {
             if (!polyInit)
             {
-                poly = KnockbackArena.Polygon.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
+                poly = KnockbackArena.Shape.Offset(-1f); // shrink polygon by 1 yalm for less suspect kb
                 polyInit = true;
             }
             ref readonly var c = ref Casters.Ref(0);

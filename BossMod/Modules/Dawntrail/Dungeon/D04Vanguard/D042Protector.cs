@@ -118,6 +118,7 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         if (preparedArena != null && activation <= WorldState.CurrentTime)
         {
             Arena.Bounds = preparedArena;
+            preparedArena = null;
             _aoe = [];
         }
     }
@@ -167,15 +168,14 @@ sealed class ArenaChanges(BossModule module) : Components.GenericAOEs(module)
         void AddAOEAndPrepareArenaChange(ReadOnlySpan<int> rectangleIndices, ReadOnlySpan<int> circleIndices)
         {
             var center = Arena.Center;
-            Rectangle[] defaultBounds = [new Rectangle(center, 12f, 20f)];
             var removedShapes = CreateShapes(rectangleIndices, circleIndices);
 
-            var shape = new AOEShapeCustom(center, defaultBounds, removedShapes);
+            var shape = new AOEShapeCustom(center, removedShapes);
             activation = WorldState.FutureTime(3d);
 
             _aoe = [new(shape, center, default, activation, shapeDistance: shape.Distance(center, default))];
 
-            preparedArena = new ArenaBoundsCustom(defaultBounds, removedShapes);
+            preparedArena = new ArenaBoundsCustom([new Rectangle(center, 12f, 20f)], removedShapes);
 
             Shape[] CreateShapes(ReadOnlySpan<int> rectangleIndices, ReadOnlySpan<int> circleIndices)
             {

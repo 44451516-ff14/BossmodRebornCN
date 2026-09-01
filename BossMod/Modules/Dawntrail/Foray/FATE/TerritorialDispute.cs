@@ -24,12 +24,12 @@ public enum AID : uint
     TheStormWithout1 = 49767, // 4D60->location, no cast, range ?-40 donut
 }
 
-sealed class IcePillar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcePillar, new AOEShapeCircle(4.0f));
-sealed class RoaringBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RoaringBlizzard, new AOEShapeCone(50.0f, 30.0f.Degrees()));
-sealed class Rush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rush, new AOEShapeRect(80.0f, 2.0f));
-sealed class AgeOfEndlessFrost(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AgeOfEndlessFrost, new AOEShapeCone(40.0f, 30.0f.Degrees()));
-sealed class TheStormWithin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStormWithin, new AOEShapeCircle(10.0f));
-sealed class TheStormWithout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStormWithout, new AOEShapeDonut(10.0f, 40.0f));
+sealed class IcePillar(BossModule module) : Components.SimpleAOEs(module, (uint)AID.IcePillar, 4f);
+sealed class RoaringBlizzard(BossModule module) : Components.SimpleAOEs(module, (uint)AID.RoaringBlizzard, new AOEShapeCone(50f, 30f.Degrees()));
+sealed class Rush(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rush, new AOEShapeRect(80f, 2f));
+sealed class AgeOfEndlessFrost(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AgeOfEndlessFrost, new AOEShapeCone(40f, 30f.Degrees()));
+sealed class TheStormWithin(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStormWithin, 10f);
+sealed class TheStormWithout(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TheStormWithout, new AOEShapeDonut(10f, 40f));
 
 [SkipLocalsInit]
 sealed class TerritorialDisputeStates : StateMachineBuilder

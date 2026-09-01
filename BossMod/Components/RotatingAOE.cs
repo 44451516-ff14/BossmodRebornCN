@@ -4,7 +4,8 @@
 [SkipLocalsInit]
 public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
 {
-    public struct Sequence(AOEShape shape, WPos origin, Angle rotation, Angle increment, DateTime nextActivation, double secondsBetweenActivations, int numRemainingCasts, int maxShownAOEs = 2, ulong actorID = default)
+    public struct Sequence(AOEShape shape, WPos origin, Angle rotation, Angle increment, DateTime nextActivation, double secondsBetweenActivations, int numRemainingCasts, int maxShownAOEs = 2, ulong actorID = default,
+        int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
     {
         public AOEShape Shape = shape;
         public WPos Origin = origin;
@@ -15,6 +16,8 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
         public int NumRemainingCasts = numRemainingCasts;
         public int MaxShownAOEs = maxShownAOEs;
         public ulong ActorID = actorID;
+        public int? ArenaProjectionLayer = arenaProjectionLayer;
+        public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
     }
 
     public readonly List<Sequence> Sequences = [];
@@ -60,14 +63,16 @@ public class GenericRotatingAOE(BossModule module) : GenericAOEs(module)
                     {
                         rot += inc;
                         time = time.AddSeconds(timeBetween);
-                        _aoes.Add(new(shape, origin, rot, time, FutureColor, shapeDistance: shape.Distance(origin, rot)));
+                        _aoes.Add(new(shape, origin, rot, time, FutureColor, shapeDistance: shape.Distance(origin, rot),
+                            arenaProjectionLayer: s.ArenaProjectionLayer, restrictToArenaProjectionLayer: s.RestrictToArenaProjectionLayer));
                     }
                 }
                 // imminent AOEs
                 if (remaining != 0)
                 {
                     var rot2 = s.Rotation;
-                    _aoes.Add(new(shape, origin, rot2, nextAct, remaining > 1 ? ImminentColor : FutureColor, shapeDistance: shape.Distance(origin, rot2)));
+                    _aoes.Add(new(shape, origin, rot2, nextAct, remaining > 1 ? ImminentColor : FutureColor, shapeDistance: shape.Distance(origin, rot2),
+                        arenaProjectionLayer: s.ArenaProjectionLayer, restrictToArenaProjectionLayer: s.RestrictToArenaProjectionLayer));
                 }
             }
         }

@@ -74,8 +74,10 @@ sealed class PalladionArena(BossModule module) : BossComponent(module)
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
         for (var i = 0; i < 8; ++i)
+        {
             Arena.PathLineTo(Arena.Center + 14f * (i * 45f).Degrees().ToDirection());
-        MiniArena.PathStroke(true, Colors.Border, 2);
+        }
+        Arena.PathStroke(true, Colors.Border, 2);
     }
 }
 

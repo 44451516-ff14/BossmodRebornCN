@@ -118,24 +118,22 @@ sealed class FalseGenesis(BossModule module) : BossComponent(module)
 
 sealed class ArenaChanges(BossModule module) : BossComponent(module)
 {
-    private static readonly WPos _arenacentre = new(-820f, -820f);
-    private static readonly ArenaBoundsCircle _startingboundscircle = new(25f);
-
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.FalseGenesis)
         {
-            var bounds = new ArenaBoundsCustom([new Square(new(-820f, -807f), 6.5f), new Square(new(-808.724f, -826.5f), 6.5f, 120f.Degrees()), new Square(new(-831.258f, -826.5f), 6.5f, -120f.Degrees())]);
-            Module.Arena.Bounds = bounds;
-            Module.Arena.Center = bounds.Center;
+            var bounds = new ArenaBoundsCustom([new Square(new(-820f, -807f), 6.5f), new Square(new(-808.724f, -826.5f), 6.5f, 120f.Degrees()),
+                new Square(new(-831.258f, -826.5f), 6.5f, -120f.Degrees())]);
+            Arena.Bounds = bounds;
+            Arena.Center = bounds.Center;
         }
     }
     public override void OnMapEffect(byte index, uint state)
     {
-        if (index == 0x0C && state == 0x00080004)
+        if (index == 0x0C && state == 0x00080004u)
         {
-            Module.Arena.Bounds = _startingboundscircle;
-            Module.Arena.Center = _arenacentre;
+            Arena.Bounds = new ArenaBoundsCircle(25f);
+            Arena.Center = new(-820f, -820f);
         }
     }
 }
@@ -253,7 +251,7 @@ sealed class DeadlyRebirth(BossModule module) : Components.RaidwideCast(module, 
 
 [ModuleInfo(BossModuleInfo.Maturity.Contributed, Contributors = "The Combat Reborn Team, HerStolenLight", PrimaryActorOID = (uint)OID.Promathia, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 1117u, NameID = 14779u, Category = BossModuleInfo.Category.Alliance, Expansion = BossModuleInfo.Expansion.Dawntrail, SortOrder = 5)]
 
-public sealed class A34Promathia(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsCircle(25f))
+public sealed class A34Promathia(WorldState ws, Actor primary) : BossModule(ws, primary, new(-820f, -820f), new ArenaBoundsCircle(25f))
 {
-    public static readonly WPos ArenaCenter = new(-820f, -820f);
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

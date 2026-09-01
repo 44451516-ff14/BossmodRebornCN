@@ -1,0 +1,537 @@
+﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+// MSDF JSON -> BossMod fixed-layout BMSF v2 metadata.
+//
+// Intended runtime loader:
+//   MemoryMarshal.Cast<byte, ArenaFontBinaryHeader>()
+//   MemoryMarshal.Cast<byte, ArenaFontBinaryVariant>()
+//   MemoryMarshal.Cast<byte, ArenaFontBinaryGlyph>()
+//   MemoryMarshal.Cast<byte, ArenaFontBinaryKerning>()
+//
+// Usage:
+//   MsdfJsonToBin.MemoryMarshal <input.json> [output.bin]
+//
+// Recommended:
+//   MsdfJsonToBin.MemoryMarshal arena_font_msdf.json arena_font_msdf.bin
+//
+// This format is deliberately little-endian and CLR-layout-oriented.
+// BossMod's DX11 renderer is a Windows target, so that is intentional.
+
+internal static class Program
+{
+    private const uint Magic = 0x46534D42u; // bytes B M S F
+    private const uint Version = 2u;
+    private const uint AtlasTypeMsdf = 1u;
+    private const uint YOriginBottom = 0u;
+    private const uint YOriginTop = 1u;
+
+    private const uint VariantUnknown = 0u;
+    private const uint VariantText = 1u;
+    private const uint VariantIcons = 2u;
+
+    private const uint GlyphHasQuad = 1u;
+
+    private const int HeaderSize = 40;
+    private const int VariantSize = 44;
+    private const int GlyphSize = 44;
+    private const int KerningSize = 12;
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct ArenaFontBinaryHeader
+    {
+        public uint Magic;
+        public uint Version;
+        public uint AtlasType;
+        public uint YOrigin;
+        public float DistanceRange;
+        public float DistanceRangeMiddle;
+        public float Size;
+        public int Width;
+        public int Height;
+        public int VariantCount;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct ArenaFontBinaryVariant
+    {
+        public uint Kind;
+        public float EmSize;
+        public float LineHeight;
+        public float Ascender;
+        public float Descender;
+        public float UnderlineY;
+        public float UnderlineThickness;
+        public int GlyphOffset;
+        public int GlyphCount;
+        public int KerningOffset;
+        public int KerningCount;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct ArenaFontBinaryGlyph
+    {
+        public uint Unicode;
+        public float Advance;
+
+        public float PlaneLeft;
+        public float PlaneBottom;
+        public float PlaneRight;
+        public float PlaneTop;
+
+        // Already normalized to D3D top-left texture coordinates.
+        public float U0;
+        public float V0;
+        public float U1;
+        public float V1;
+
+        public uint Flags;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    private struct ArenaFontBinaryKerning
+    {
+        public uint Unicode1;
+        public uint Unicode2;
+        public float Advance;
+    }
+
+    public static int Main(string[] args)
+    {
+        try
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                Console.Error.WriteLine("BMSF v2 requires a little-endian runtime.");
+                return 2;
+            }
+
+            ValidateRuntimeLayout();
+
+            if (args.Length < 1 || args.Length > 2)
+            {
+                PrintUsage();
+                return 2;
+            }
+
+            var inputPath = Path.GetFullPath(args[0]);
+            if (!File.Exists(inputPath))
+            {
+                Console.Error.WriteLine("Input file does not exist: " + inputPath);
+                return 2;
+            }
+
+            var outputPath = args.Length == 2
+                ? Path.GetFullPath(args[1])
+                : Path.ChangeExtension(inputPath, ".bin");
+
+            if (string.Equals(inputPath, outputPath, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.Error.WriteLine("Input and output paths must be different.");
+                return 2;
+            }
+
+            var root = ReadJson(inputPath);
+            ValidateJson(root);
+
+            var outputDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(outputDirectory))
+                Directory.CreateDirectory(outputDirectory);
+
+            WriteBinary(root, outputPath);
+
+            var inputSize = new FileInfo(inputPath).Length;
+            var outputSize = new FileInfo(outputPath).Length;
+
+            var glyphCount = 0;
+            var kerningCount = 0;
+            foreach (var variant in root.Variants)
+            {
+                glyphCount += variant.Glyphs.Length;
+                kerningCount += variant.Kerning.Length;
+            }
+
+            Console.WriteLine("Converted MSDF metadata successfully.");
+            Console.WriteLine("Format:   BMSF v2 / MemoryMarshal");
+            Console.WriteLine("Input:    " + inputPath);
+            Console.WriteLine("Output:   " + outputPath);
+            Console.WriteLine("Variants: " + root.Variants.Length);
+            Console.WriteLine("Glyphs:   " + glyphCount);
+            Console.WriteLine("Kerning:  " + kerningCount);
+            Console.WriteLine("JSON:     " + inputSize + " bytes");
+            Console.WriteLine("Binary:   " + outputSize + " bytes");
+
+            if (inputSize > 0)
+                Console.WriteLine("Size:     " + (100.0 * outputSize / inputSize).ToString("F1") + "% of JSON");
+
+            return 0;
+        }
+        catch (JsonException ex)
+        {
+            Console.Error.WriteLine("Invalid JSON:");
+            Console.Error.WriteLine(ex.Message);
+            return 1;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("Conversion failed:");
+            Console.Error.WriteLine(ex.Message);
+            return 1;
+        }
+    }
+
+    private static void PrintUsage()
+    {
+        Console.Error.WriteLine("Usage:");
+        Console.Error.WriteLine("  MsdfJsonToBin.MemoryMarshal <input.json> [output.bin]");
+        Console.Error.WriteLine();
+        Console.Error.WriteLine("Recommended output name for the matching renderer:");
+        Console.Error.WriteLine("  arena_font_msdf.bin");
+    }
+
+    private static void ValidateRuntimeLayout()
+    {
+        if (Marshal.SizeOf<ArenaFontBinaryHeader>() != HeaderSize ||
+            Marshal.SizeOf<ArenaFontBinaryVariant>() != VariantSize ||
+            Marshal.SizeOf<ArenaFontBinaryGlyph>() != GlyphSize ||
+            Marshal.SizeOf<ArenaFontBinaryKerning>() != KerningSize)
+        {
+            throw new PlatformNotSupportedException("Unexpected CLR struct layout for BMSF v2.");
+        }
+    }
+
+    private static MsdfJson ReadJson(string path)
+    {
+        using var stream = File.OpenRead(path);
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        };
+
+        return JsonSerializer.Deserialize<MsdfJson>(stream, options)
+            ?? throw new InvalidDataException("The JSON document deserialized to null.");
+    }
+
+    private static void ValidateJson(MsdfJson root)
+    {
+        if (!string.Equals(root.Atlas.Type, "msdf", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"Unsupported atlas type '{root.Atlas.Type}'. Expected 'msdf'.");
+
+        if (root.Atlas.Width <= 0 || root.Atlas.Height <= 0)
+            throw new InvalidDataException("Atlas width and height must be positive.");
+
+        if (root.Atlas.Size <= 0)
+            throw new InvalidDataException("Atlas size must be positive.");
+
+        if (root.Atlas.DistanceRange < 0)
+            throw new InvalidDataException("Atlas distanceRange cannot be negative.");
+
+        if (!string.Equals(root.Atlas.YOrigin, "bottom", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(root.Atlas.YOrigin, "top", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException($"Unsupported yOrigin '{root.Atlas.YOrigin}'.");
+        }
+
+        if (root.Variants.Length == 0)
+            throw new InvalidDataException("JSON contains no variants.");
+
+        foreach (var variant in root.Variants)
+        {
+            if (string.IsNullOrWhiteSpace(variant.Name))
+                throw new InvalidDataException("A variant has no name.");
+
+            variant.Kerning ??= Array.Empty<KerningJson>();
+        }
+    }
+
+    private static void WriteBinary(MsdfJson root, string path)
+    {
+        var variants = new ArenaFontBinaryVariant[root.Variants.Length];
+
+        var dataOffset = checked(HeaderSize + variants.Length * VariantSize);
+        for (var i = 0; i < variants.Length; ++i)
+        {
+            var source = root.Variants[i];
+            var glyphBytes = checked(source.Glyphs.Length * GlyphSize);
+            var kerningBytes = checked(source.Kerning.Length * KerningSize);
+
+            variants[i] = new ArenaFontBinaryVariant
+            {
+                Kind = VariantKind(source.Name),
+                EmSize = ToFloat(source.Metrics.EmSize, $"{source.Name}.metrics.emSize"),
+                LineHeight = ToFloat(source.Metrics.LineHeight, $"{source.Name}.metrics.lineHeight"),
+                Ascender = ToFloat(source.Metrics.Ascender, $"{source.Name}.metrics.ascender"),
+                Descender = ToFloat(source.Metrics.Descender, $"{source.Name}.metrics.descender"),
+                UnderlineY = ToFloat(source.Metrics.UnderlineY, $"{source.Name}.metrics.underlineY"),
+                UnderlineThickness = ToFloat(source.Metrics.UnderlineThickness, $"{source.Name}.metrics.underlineThickness"),
+                GlyphOffset = dataOffset,
+                GlyphCount = source.Glyphs.Length,
+                KerningOffset = checked(dataOffset + glyphBytes),
+                KerningCount = source.Kerning.Length
+            };
+
+            dataOffset = checked(dataOffset + glyphBytes + kerningBytes);
+        }
+
+        var header = new ArenaFontBinaryHeader
+        {
+            Magic = Magic,
+            Version = Version,
+            AtlasType = AtlasTypeMsdf,
+            YOrigin = string.Equals(root.Atlas.YOrigin, "top", StringComparison.OrdinalIgnoreCase) ? YOriginTop : YOriginBottom,
+            DistanceRange = ToFloat(root.Atlas.DistanceRange, "atlas.distanceRange"),
+            DistanceRangeMiddle = ToFloat(root.Atlas.DistanceRangeMiddle, "atlas.distanceRangeMiddle"),
+            Size = ToFloat(root.Atlas.Size, "atlas.size"),
+            Width = root.Atlas.Width,
+            Height = root.Atlas.Height,
+            VariantCount = root.Variants.Length
+        };
+
+        var tempPath = path + ".tmp";
+        try
+        {
+            using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                WriteOne(stream, header);
+                stream.Write(MemoryMarshal.AsBytes(variants.AsSpan()));
+
+                for (var i = 0; i < root.Variants.Length; ++i)
+                {
+                    WriteGlyphBlock(stream, root, root.Variants[i]);
+                    WriteKerningBlock(stream, root.Variants[i]);
+                }
+            }
+
+            var actualLength = new FileInfo(tempPath).Length;
+            if (actualLength != dataOffset)
+                throw new InvalidDataException($"Internal size mismatch: expected {dataOffset}, wrote {actualLength}.");
+
+            File.Move(tempPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(tempPath))
+                File.Delete(tempPath);
+        }
+    }
+
+    private static void WriteGlyphBlock(Stream stream, MsdfJson root, VariantJson variant)
+    {
+        if (variant.Glyphs.Length == 0)
+            return;
+
+        var records = new ArenaFontBinaryGlyph[variant.Glyphs.Length];
+        var width = root.Atlas.Width;
+        var height = root.Atlas.Height;
+        var bottomOrigin = string.Equals(root.Atlas.YOrigin, "bottom", StringComparison.OrdinalIgnoreCase);
+
+        for (var i = 0; i < records.Length; ++i)
+        {
+            var source = variant.Glyphs[i];
+            var hasQuad = source.PlaneBounds != null && source.AtlasBounds != null;
+
+            var record = new ArenaFontBinaryGlyph
+            {
+                Unicode = source.Unicode,
+                Advance = ToFloat(source.Advance, $"{variant.Name}.glyphs[{i}].advance"),
+                Flags = hasQuad ? GlyphHasQuad : 0u
+            };
+
+            if (hasQuad)
+            {
+                var plane = source.PlaneBounds!;
+                var atlas = source.AtlasBounds!;
+
+                record.PlaneLeft = ToFloat(plane.Left, $"{variant.Name}.glyphs[{i}].planeBounds.left");
+                record.PlaneBottom = ToFloat(plane.Bottom, $"{variant.Name}.glyphs[{i}].planeBounds.bottom");
+                record.PlaneRight = ToFloat(plane.Right, $"{variant.Name}.glyphs[{i}].planeBounds.right");
+                record.PlaneTop = ToFloat(plane.Top, $"{variant.Name}.glyphs[{i}].planeBounds.top");
+
+                var left = ToFloat(atlas.Left, $"{variant.Name}.glyphs[{i}].atlasBounds.left");
+                var bottom = ToFloat(atlas.Bottom, $"{variant.Name}.glyphs[{i}].atlasBounds.bottom");
+                var right = ToFloat(atlas.Right, $"{variant.Name}.glyphs[{i}].atlasBounds.right");
+                var top = ToFloat(atlas.Top, $"{variant.Name}.glyphs[{i}].atlasBounds.top");
+
+                record.U0 = left / width;
+                record.U1 = right / width;
+
+                if (bottomOrigin)
+                {
+                    record.V0 = 1f - top / height;
+                    record.V1 = 1f - bottom / height;
+                }
+                else
+                {
+                    record.V0 = top / height;
+                    record.V1 = bottom / height;
+                }
+            }
+
+            records[i] = record;
+        }
+
+        stream.Write(MemoryMarshal.AsBytes(records.AsSpan()));
+    }
+
+    private static void WriteKerningBlock(Stream stream, VariantJson variant)
+    {
+        if (variant.Kerning.Length == 0)
+            return;
+
+        var records = new ArenaFontBinaryKerning[variant.Kerning.Length];
+        for (var i = 0; i < records.Length; ++i)
+        {
+            var source = variant.Kerning[i];
+            records[i] = new ArenaFontBinaryKerning
+            {
+                Unicode1 = source.Unicode1,
+                Unicode2 = source.Unicode2,
+                Advance = ToFloat(source.Advance, $"{variant.Name}.kerning[{i}].advance")
+            };
+        }
+
+        stream.Write(MemoryMarshal.AsBytes(records.AsSpan()));
+    }
+
+    private static uint VariantKind(string name)
+        => name switch
+        {
+            "ArenaText" => VariantText,
+            "ArenaIcons" => VariantIcons,
+            _ => VariantUnknown
+        };
+
+    private static void WriteOne<T>(Stream stream, T value) where T : unmanaged
+    {
+        Span<T> one = stackalloc T[1];
+        one[0] = value;
+        stream.Write(MemoryMarshal.AsBytes(one));
+    }
+
+    private static float ToFloat(double value, string fieldName)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value))
+            throw new InvalidDataException(fieldName + " is not finite.");
+
+        if (value > float.MaxValue || value < -float.MaxValue)
+            throw new InvalidDataException(fieldName + " does not fit in a Single.");
+
+        return (float)value;
+    }
+}
+
+internal sealed class MsdfJson
+{
+    [JsonPropertyName("atlas")]
+    public AtlasJson Atlas { get; set; } = new();
+
+    [JsonPropertyName("variants")]
+    public VariantJson[] Variants { get; set; } = Array.Empty<VariantJson>();
+}
+
+internal sealed class AtlasJson
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonPropertyName("distanceRange")]
+    public double DistanceRange { get; set; }
+
+    [JsonPropertyName("distanceRangeMiddle")]
+    public double DistanceRangeMiddle { get; set; }
+
+    [JsonPropertyName("size")]
+    public double Size { get; set; }
+
+    [JsonPropertyName("width")]
+    public int Width { get; set; }
+
+    [JsonPropertyName("height")]
+    public int Height { get; set; }
+
+    [JsonPropertyName("yOrigin")]
+    public string YOrigin { get; set; } = string.Empty;
+}
+
+internal sealed class VariantJson
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("metrics")]
+    public MetricsJson Metrics { get; set; } = new();
+
+    [JsonPropertyName("glyphs")]
+    public GlyphJson[] Glyphs { get; set; } = Array.Empty<GlyphJson>();
+
+    [JsonPropertyName("kerning")]
+    public KerningJson[] Kerning { get; set; } = Array.Empty<KerningJson>();
+}
+
+internal sealed class MetricsJson
+{
+    [JsonPropertyName("emSize")]
+    public double EmSize { get; set; }
+
+    [JsonPropertyName("lineHeight")]
+    public double LineHeight { get; set; }
+
+    [JsonPropertyName("ascender")]
+    public double Ascender { get; set; }
+
+    [JsonPropertyName("descender")]
+    public double Descender { get; set; }
+
+    [JsonPropertyName("underlineY")]
+    public double UnderlineY { get; set; }
+
+    [JsonPropertyName("underlineThickness")]
+    public double UnderlineThickness { get; set; }
+}
+
+internal sealed class GlyphJson
+{
+    [JsonPropertyName("unicode")]
+    public uint Unicode { get; set; }
+
+    [JsonPropertyName("advance")]
+    public double Advance { get; set; }
+
+    [JsonPropertyName("planeBounds")]
+    public BoundsJson? PlaneBounds { get; set; }
+
+    [JsonPropertyName("atlasBounds")]
+    public BoundsJson? AtlasBounds { get; set; }
+}
+
+internal sealed class BoundsJson
+{
+    [JsonPropertyName("left")]
+    public double Left { get; set; }
+
+    [JsonPropertyName("bottom")]
+    public double Bottom { get; set; }
+
+    [JsonPropertyName("right")]
+    public double Right { get; set; }
+
+    [JsonPropertyName("top")]
+    public double Top { get; set; }
+}
+
+internal sealed class KerningJson
+{
+    [JsonPropertyName("unicode1")]
+    public uint Unicode1 { get; set; }
+
+    [JsonPropertyName("unicode2")]
+    public uint Unicode2 { get; set; }
+
+    [JsonPropertyName("advance")]
+    public double Advance { get; set; }
+}

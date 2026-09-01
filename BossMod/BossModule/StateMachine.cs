@@ -1,5 +1,3 @@
-using Dalamud.Bindings.ImGui;
-
 namespace BossMod;
 
 // a lot of boss fights can be modeled as state machines
@@ -73,6 +71,15 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
     public Phase? ActivePhase => ActivePhaseIndex >= 0 && ActivePhaseIndex < Phases.Count ? Phases[ActivePhaseIndex] : null;
     public State? ActiveState;
 
+    // State names and the future chain are immutable after the builder finishes. Only the active
+    // countdown changes, and its f1 rendering changes at most ten times per second. Cache the exact
+    // submitted lines so the normal 60/120-Hz draw path performs no chain/string construction.
+    private State? _drawCachedState;
+    private string _drawCurrentLine = "";
+    private string _drawFutureLine = "";
+    private long _drawCountdownKey;
+    private bool _drawCacheValid;
+
     public void Start(DateTime now)
     {
         _activation = _curTime = now;
@@ -114,18 +121,56 @@ public sealed class StateMachine(List<StateMachine.Phase> phases)
 
     public void Draw()
     {
-        (var activeName, var next) = ActiveState != null ? BuildComplexStateNameAndDuration(ActiveState, TimeSinceTransition, true) : ("Inactive", null);
-        ImGui.TextUnformatted($"Cur: {activeName}");
+        var active = ActiveState;
+        var countdownKey = active != null ? DrawCountdownKey(active, TimeSinceTransition) : long.MinValue;
+        if (!_drawCacheValid || !ReferenceEquals(_drawCachedState, active))
+        {
+            (var activeName, var next) = active != null ? BuildComplexStateNameAndDuration(active, TimeSinceTransition, true) : ("Inactive", null);
+            _drawCurrentLine = $"Cur: {activeName}";
+            var future = BuildStateChain(next, " ---> ");
+            _drawFutureLine = future.Length == 0 ? "" : $"Then: {future}";
+            _drawCachedState = active;
+            _drawCountdownKey = countdownKey;
+            _drawCacheValid = true;
+        }
+        else if (_drawCountdownKey != countdownKey)
+        {
+            var activeName = BuildComplexStateNameAndDuration(active!, TimeSinceTransition, true).Item1;
+            _drawCurrentLine = $"Cur: {activeName}";
+            _drawCountdownKey = countdownKey;
+        }
 
-        var future = BuildStateChain(next, " ---> ");
-        if (future.Length == 0)
+        UIText.TextUnformatted(_drawCurrentLine);
+        UIText.TextUnformatted(_drawFutureLine);
+    }
+
+    // Returns a key for the only countdown affected by timeActive. The high half identifies which
+    // grouped state owns the suffix and the low half stores the value rounded exactly as f1; this
+    // distinguishes equal countdowns rendered at different points in a grouped state name.
+    // long.MinValue denotes a chain with no dynamic time suffix.
+    private static long DrawCountdownKey(State start, float timeActive)
+    {
+        var timeLeft = Math.Max(0, start.Duration - timeActive);
+        if (start.Name.Length > 0)
         {
-            ImGui.TextUnformatted("");
+            return Key(0, timeLeft);
         }
-        else
+
+        var stateIndex = 0;
+        while (start.EndHint.HasFlag(StateHint.GroupWithNext) && start.NextStates?.Length == 1)
         {
-            ImGui.TextUnformatted($"Then: {future}");
+            start = start.NextStates[0];
+            ++stateIndex;
+            timeLeft += Math.Max(0f, start.Duration);
+            if (start.Name.Length > 0 && timeLeft > 0f)
+            {
+                return Key(stateIndex, timeLeft);
+            }
         }
+
+        return timeLeft > 0f ? Key(int.MaxValue, timeLeft) : long.MinValue;
+
+        static long Key(int owner, float value) => ((long)owner << 32) | (uint)BitConverter.SingleToInt32Bits(MathF.Round(value, 1, MidpointRounding.ToEven));
     }
 
     public string BuildStateChain(State? start, string sep, int maxCount = 5)

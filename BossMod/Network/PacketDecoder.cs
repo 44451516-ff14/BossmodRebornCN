@@ -464,8 +464,16 @@ public abstract unsafe class PacketDecoder
             effects.Add(v3);
         }
 
-        var effectSb = new System.Text.StringBuilder();
-        foreach (var e in effects) { if (effectSb.Length > 0) { effectSb.Append(", "); } effectSb.Append(e.Name); }
+        var effectSb = new StringBuilder();
+        foreach (var e in effects)
+        {
+            if (effectSb.Length > 0)
+            {
+                effectSb.Append(", ");
+            }
+
+            effectSb.Append(e.Name);
+        }
         return new($"Layout={p->LayoutInitType}, effects=[{effectSb}]");
     }
 

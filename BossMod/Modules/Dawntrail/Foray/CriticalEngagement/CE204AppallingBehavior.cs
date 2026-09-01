@@ -296,7 +296,7 @@ sealed class CE204AppallingBehaviorStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(CE204AppallingBehaviorStates),
     ConfigType = null, // replace null with typeof(PallmagiaConfig) if applicable
     ObjectIDType = typeof(OID),

@@ -326,7 +326,7 @@ sealed class CE205CursedResurgenceStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.WIP,
+[ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(CE205CursedResurgenceStates),
     ConfigType = null, // replace null with typeof(CursedResurgenceConfig) if applicable
     ObjectIDType = typeof(OID),

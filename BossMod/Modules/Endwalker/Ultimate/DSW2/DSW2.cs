@@ -21,7 +21,7 @@ sealed class P7AlternativeEnd(BossModule module) : Components.CastCounter(module
 [ModuleInfo(BossModuleInfo.Maturity.Verified, PrimaryActorOID = (uint)OID.BossP2, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 788u, NameID = 11319u, PlanLevel = 90)]
 public sealed class DSW2(WorldState ws, Actor primary) : BossModule(ws, primary, BoundsCircle.Center, BoundsCircle)
 {
-    public static readonly ArenaBoundsCustom BoundsCircle = new([new Polygon(new(100f, 100f), 21f, 48)]) { IsCircle = true };
+    public static readonly ArenaBoundsCustom BoundsCircle = new([new Polygon(new(100f, 100f), 21f, 48)]);
 
     private Actor? _bossP3;
     private Actor? _leftEyeP4;

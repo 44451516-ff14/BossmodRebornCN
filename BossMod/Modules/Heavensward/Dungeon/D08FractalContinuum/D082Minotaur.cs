@@ -29,11 +29,11 @@ public enum AID : uint
     TenTonzeSlash = 3971 // Boss->self, 4.0s cast, range 40+R 60-degree cone
 }
 
-class OneOneTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneTonzeSwipe, new AOEShapeCone(9f, 60f.Degrees()));
-class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 12f);
-class TenTonzeSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTonzeSlash, new AOEShapeCone(44f, 30f.Degrees()));
+sealed class OneOneTonzeSwipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneTonzeSwipe, new AOEShapeCone(9f, 60f.Degrees()));
+sealed class OneOneOneTonzeSwing(BossModule module) : Components.SimpleAOEs(module, (uint)AID.OneOneOneTonzeSwing, 12f);
+sealed class TenTonzeSlash(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TenTonzeSlash, new AOEShapeCone(44f, 30f.Degrees()));
 
-class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
+sealed class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
 {
     private bool casting;
     private readonly List<Actor> _incubators = module.Enemies([(uint)OID.BiomassIncubator1, (uint)OID.BiomassIncubator2, (uint)OID.BiomassIncubator3, (uint)OID.BiomassIncubator4]);
@@ -119,9 +119,9 @@ class OneOneOneOneTonzeSwing(BossModule module) : BossComponent(module)
     }
 }
 
-class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DisorientingGroan, 20f, stopAtWall: true);
+sealed class DisorientingGroan(BossModule module) : Components.SimpleKnockbacks(module, (uint)AID.DisorientingGroan, 20f, stopAtWall: true);
 
-class D082MinotaurStates : StateMachineBuilder
+sealed class D082MinotaurStates : StateMachineBuilder
 {
     public D082MinotaurStates(BossModule module) : base(module)
     {
@@ -134,11 +134,19 @@ class D082MinotaurStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35, NameID = 3429, SortOrder = 5)]
-public class D082Minotaur(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 35u, NameID = 3429u, SortOrder = 5)]
+public sealed class D082Minotaur : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-160.632f, 91.323f), 19.5f, 24)],
-    [new Rectangle(new(-180.138f, 96.181f), 20f, 1.25f, -74.089f.Degrees()), new Rectangle(new(-141.271f, 85.777f), 20f, 1.25f, -74.205f.Degrees())]);
+    public D082Minotaur(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D082Minotaur(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-160.632f, 91.323f), 19.5f, 24)],
+        [new Rectangle(new(-180.138f, 96.181f), 20f, 1.25f, -74.089f.Degrees()), new Rectangle(new(-141.271f, 85.777f), 20f, 1.25f, -74.205f.Degrees())]);
+        return (arena.Center, arena);
+    }
 
     private static readonly uint[] adds = [(uint)OID.FlawedShabti, (uint)OID.ContinuumConservator, (uint)OID.Urstrix, (uint)OID.FlawedNaga];
 

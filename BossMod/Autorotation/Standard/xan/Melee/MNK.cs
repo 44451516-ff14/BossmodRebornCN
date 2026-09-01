@@ -452,7 +452,7 @@ public sealed class MNK(RotationModuleManager manager, Actor player) : Attackxan
     (Enemy? Best, int Targets) OrSelectTarget<T>(in Strategy strategy, Enemy? primaryTarget, in Track<T> strategyTrack, float range, PositionCheck isInAOE) where T : struct
     {
         return ResolveEnemy(strategyTrack) is { } targetOverride
-            ? (targetOverride, Hints.PriorityTargets.Count(p => isInAOE(targetOverride.Actor, p.Actor)))
+            ? (targetOverride, Hints.CountPriorityTargets(p => isInAOE(targetOverride.Actor, p.Actor)))
             : SelectTarget(strategy, primaryTarget, range, isInAOE);
     }
 

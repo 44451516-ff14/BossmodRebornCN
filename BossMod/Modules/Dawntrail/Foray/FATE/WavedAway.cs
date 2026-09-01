@@ -21,9 +21,12 @@ public enum AID : uint
     StormWaveNext = 47388, // 4B5B->location, no cast, range 50 width 5 rect
 }
 
-sealed class WaveWhistle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaveWhistle, new AOEShapeRect(25.0f, 25.0f));
+[SkipLocalsInit]
+sealed class WaveWhistle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WaveWhistle, new AOEShapeRect(25f, 25f));
+[SkipLocalsInit]
 sealed class WaterIV(BossModule module) : Components.RaidwideCast(module, (uint)AID.WaterIV);
 
+[SkipLocalsInit]
 sealed class BloodyPuddle : Components.SimpleAOEs
 {
     public BloodyPuddle(BossModule module) : base(module, (uint)AID.BloodyPuddle, 8f)
@@ -32,121 +35,137 @@ sealed class BloodyPuddle : Components.SimpleAOEs
     }
 }
 
-class StormWaveStart : Components.SimpleAOEs
+[SkipLocalsInit]
+sealed class StormWave(BossModule module) : Components.GenericAOEs(module)
 {
-    public StormWaveStart(BossModule module) : base(module, (uint)AID.StormWaveStart, new AOEShapeRect(50.0f, 5.0f))
+    private readonly List<AOEInstance> _cardinal = [with(9)];
+    private readonly List<AOEInstance> _intercardinal = [with(9)];
+    private readonly AOEInstance[] _active = new AOEInstance[8];
+    private readonly AOEShapeRect _rect1 = new(50f, 5f), _rect2 = new(50f, 2.5f);
+    private int aoeAmount;
+
+    public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        Color = Colors.Danger;
+        return _active.AsSpan()[..aoeAmount];
     }
 
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
+    private void UpdateActiveAOEs()
     {
-        base.AddAIHints(slot, actor, assignment, hints);
-        var casters = CollectionsMarshal.AsSpan(Casters);
-        var count = casters.Length;
-        for (var i = 0; i < count; i++)
+        aoeAmount = CopyActive(_cardinal, _active);
+        aoeAmount += CopyActive(_intercardinal, _active.AsSpan()[aoeAmount..]);
+    }
+
+    private static int CopyActive(List<AOEInstance> source, Span<AOEInstance> dest)
+    {
+        var count = source.Count;
+        if (count == 0)
         {
-            var aoe = casters[i];
-            var right = aoe.Origin + aoe.Rotation.ToDirection().OrthoR() * 1.0f;
-            var left = aoe.Origin + aoe.Rotation.ToDirection().OrthoL() * 1.0f;
-            hints.GoalZones.Add(p => aoe.Shape.Check(p, right, aoe.Rotation) || aoe.Shape.Check(p, left, aoe.Rotation) ? 100.0f : 0.0f);
+            return 0;
         }
+
+        var max = count == 9 ? 3 : count > 3 ? 4 : count;
+        CollectionsMarshal.AsSpan(source)[..max].CopyTo(dest);
+        return max;
     }
-}
 
-class StormWave(BossModule module) : Components.Exaflare(module, new AOEShapeRect(25.0f, 2.5f, 25.0f))
-{
-    private readonly List<WaveSet> waves = [];
-
-    private class WaveSet(Line right, Line left, ulong casterID)
+    private static void UpdateAOEs(List<AOEInstance> aoes)
     {
-        public readonly Line RightLine = right;
-        public readonly Line LeftLine = left;
-        public bool waveStart = false;
-        public ulong casterInstanceID = casterID;
+        var count = aoes.Count;
+        var max = count == 9 ? 3 : count > 3 ? 4 : count;
+        var active = CollectionsMarshal.AsSpan(aoes)[..max];
+
+        var isFourAOEs = max == 4;
+        var isThreeAOEs = max == 3;
+
+        for (var i = 0; i < max; ++i)
+        {
+            ref var aoe = ref active[i];
+
+            var shouldBeDanger = isFourAOEs && i < 2 || isThreeAOEs && i == 0;
+            var shouldBeRisky = shouldBeDanger || max == 2 && i < 2;
+
+            if (shouldBeDanger)
+            {
+                aoe.Color = Colors.Danger;
+            }
+
+            if (shouldBeRisky)
+            {
+                aoe.Risky = true;
+            }
+        }
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        if ((AID)spell.Action.ID == AID.StormWaveStart)
+        if (spell.Action.ID != (uint)AID.StormWaveStart)
         {
-            var directionRight = caster.Rotation.ToDirection().OrthoR() * 5.0f;
-            var directionLeft = caster.Rotation.ToDirection().OrthoL() * 5.0f;
-
-            var rightLine = new Line(caster.Position + directionRight + directionRight / 2, directionRight, Module.CastFinishAt(spell), 2.0f, 4, 2,
-                caster.Rotation.ToDirection().ToAngle());
-            Lines.Add(rightLine);
-
-            var leftLine = new Line(caster.Position + directionLeft + directionLeft / 2, directionLeft, Module.CastFinishAt(spell), 2.0f, 4, 2,
-                caster.Rotation.ToDirection().ToAngle());
-            Lines.Add(leftLine);
-            waves.Add(new WaveSet(rightLine, leftLine, caster.InstanceID));
+            return;
         }
-    }
 
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.StormWaveStart)
+        var rot = spell.Rotation;
+        var aoes = IsCardinal(rot) ? _cardinal : _intercardinal;
+
+        var pos = caster.Position;
+        var activation = Module.CastFinishAt(spell);
+
+        AddAOE(_rect1, activation, spell.LocXZ, rot);
+
+        var a180 = 180f.Degrees();
+        var dir1 = (rot + a180).Round(1f).ToDirection();
+        var dir2 = rot.Round(1f).ToDirection();
+        var dirOrtho = (rot + a180 + 90f.Degrees()).Round(1f).ToDirection();
+
+        for (var i = 0; i < 4; ++i)
         {
-            var set = waves.Find(w => w.casterInstanceID == caster.InstanceID);
-            if (set != null)
-            {
-                set.waveStart = true;
-                currentVersion++;
-            }
+            var act = activation.AddSeconds(2d + 2d * i);
+            var dirOrthoAdj = (7.5f + 5f * i) * dirOrtho;
+
+            AddAOE(_rect2, act, (pos - 25f * dir1 + dirOrthoAdj).Quantized(), rot + a180);
+            AddAOE(_rect2, act, (pos - 25f * dir2 - dirOrthoAdj).Quantized(), rot);
         }
+
+        UpdateAOEs(aoes);
+        UpdateActiveAOEs();
+        void AddAOE(AOEShapeRect shape, DateTime act, WPos position, Angle rotation)
+            => aoes.Add(new(shape, position, rotation, act, risky: false));
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if ((AID)spell.Action.ID is AID.StormWaveStart or AID.StormWaveNext)
+        if (spell.Action.ID is not ((uint)AID.StormWaveStart or (uint)AID.StormWaveNext))
         {
-            var ix = Lines.FindIndex(l => l.Next.AlmostEqual(caster.Position + l.Advance / 2, 1.0f));
-            if (ix >= 0)
-            {
-                var line = Lines[ix];
-                AdvanceLine(Lines[ix], caster.Position + Lines[ix].Advance / 2);
-                if (Lines[ix].ExplosionsLeft <= 0)
-                {
-                    Lines.RemoveAt(ix);
-                    waves.RemoveAll(w => (w.RightLine == line || w.LeftLine == line) && !Lines.Contains(w.RightLine) && !Lines.Contains(w.LeftLine));
-                }
-            }
+            return;
         }
+
+        var aoes = IsCardinal(spell.Rotation) ? _cardinal : _intercardinal;
+        var count = aoes.Count;
+
+        if (count == 0)
+        {
+            return;
+        }
+
+        aoes.RemoveAt(0);
+
+        if (count >= 4)
+        {
+            UpdateAOEs(aoes);
+        }
+        UpdateActiveAOEs();
     }
 
-    public override void Update()
+    private static bool IsCardinal(Angle rotation)
     {
-        var linesCount = Lines.Count;
-        if (lastCount != linesCount || currentVersion != lastVersion)
+        for (var i = 0; i < 4; ++i)
         {
-            var futureAOEs = CollectionsMarshal.AsSpan(FutureAOEs(linesCount));
-            var imminentAOEs = ImminentAOEs(linesCount);
-            var futureLen = futureAOEs.Length;
-            var imminentLen = imminentAOEs.Length;
-
-            _aoes = new AOEInstance[futureLen + imminentLen];
-            for (var i = 0; i < futureLen; ++i)
+            if (Angle.AnglesCardinals[i].AlmostEqual(rotation, Angle.DegToRad))
             {
-                ref var aoe = ref futureAOEs[i];
-                var origin = aoe.Item1;
-                var rotation = aoe.Item3;
-                _aoes[i] = new(Shape, origin, rotation, aoe.Item2, FutureColor, false, shapeDistance: Shape.Distance(origin, rotation));
+                return true;
             }
-
-            for (var i = 0; i < imminentLen; ++i)
-            {
-                ref var aoe = ref imminentAOEs[i];
-                var origin = aoe.Item1;
-                var rotation = aoe.Item3;
-                var line = Lines[i];
-                var waveStarted = waves.Find(w => w.RightLine == line || w.LeftLine == line)?.waveStart ?? true;
-                var color = waveStarted ? ImminentColor : FutureColor;
-                _aoes[futureLen + i] = new(Shape, origin, rotation, aoe.Item2, color, waveStarted, shapeDistance: Shape.Distance(origin, rotation));
-            }
-            lastCount = linesCount;
-            lastVersion = currentVersion;
         }
+
+        return false;
     }
 }
 
@@ -158,9 +177,7 @@ sealed class WavedAwayStates : StateMachineBuilder
         TrivialPhase()
             .ActivateOnEnter<WaveWhistle>()
             .ActivateOnEnter<WaterIV>()
-            .ActivateOnEnter<BloodyPuddle>()
-            .ActivateOnEnter<StormWaveStart>()
-            .ActivateOnEnter<StormWave>();
+            .ActivateOnEnter<BloodyPuddle>();
     }
 }
 
@@ -182,4 +199,10 @@ sealed class WavedAwayStates : StateMachineBuilder
     SortOrder = 6,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class WavedAway(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
+public sealed class WavedAway : OpenWorldFate
+{
+    public WavedAway(WorldState ws, Actor primary) : base(ws, primary)
+    {
+        ActivateComponent<StormWave>();
+    }
+}

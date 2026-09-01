@@ -30,6 +30,27 @@ public sealed class BossModuleConfig : ConfigNode
     [PropertyDisplay("启用雷达")]
     public bool Enable = true;
 
+    [PropertyDisplay("将雷达投影到 3D 世界")]
+    public bool ProjectRadarInto3DWorld = false;
+
+    [PropertyDisplay("在 3D 世界中绘制竞技场轮廓", tooltip: "启用雷达 3D 投影后，可同时绘制竞技场轮廓")]
+    public bool EnableArenaOutlineIn3DWorld = true;
+
+    [PropertyDisplay("允许在 3D 世界绘制文本与图标广告牌", tooltip: "启用雷达 3D 投影后，可绘制文本与图标广告牌")]
+    public bool EnableTextIconBillboards = true;
+
+    [PropertyDisplay("广告牌高度偏移", tooltip: "广告牌相对地面的高度（yalms）。包含视线、文本与图标。")]
+    [PropertySlider(0f, 20f, Speed = 0.1f, Logarithmic = true)]
+    public float BillboardHeightOffset = 5f;
+
+    [PropertyDisplay("文本广告牌字号", tooltip: "调整 3D 世界文本广告牌大小")]
+    [PropertySlider(17f, 250f, Speed = 0.5f, Logarithmic = true)]
+    public float TextBillboardFontSize = 110f;
+
+    [PropertyDisplay("图标广告牌字号", tooltip: "调整 3D 世界图标广告牌大小")]
+    [PropertySlider(17f, 250f, Speed = 0.5f, Logarithmic = true)]
+    public float IconBillboardFontSize = 110f;
+
     [PropertyDisplay("锁定雷达和提示窗口的位置及鼠标交互")]
     public bool Lock = false;
 
@@ -44,12 +65,11 @@ public sealed class BossModuleConfig : ConfigNode
 
     [PropertyDisplay("雷达竞技场缩放比例", tooltip: "雷达窗口中竞技场的显示比例")]
     [PropertySlider(0.1f, 10, Speed = 0.1f, Logarithmic = true)]
-    public float ArenaScale = 1;
-
+    public float ArenaScale = 1f;
 
     [PropertyDisplay("雷达元素厚度[thickness]缩放因子", tooltip: "全局缩放雷达元素厚度[thickness]的厚度")]
     [PropertySlider(0.1f, 10, Speed = 0.1f, Logarithmic = true)]
-    public float ThicknessScale = 1;
+    public float ThicknessScale = 1f;
 
     [PropertyDisplay("根据镜头方向旋转雷达")]
     public bool RotateArena = true;

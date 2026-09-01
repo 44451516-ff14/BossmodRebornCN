@@ -85,7 +85,7 @@ sealed class EnaeroAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
     private bool _delayed;
-    private static readonly AOEShapeCircle _shape = new(8f);
+    private readonly AOEShapeCircle _shape = new(8f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 
@@ -133,8 +133,8 @@ sealed class EndeathAOE(BossModule module) : Components.GenericAOEs(module)
 {
     private readonly List<AOEInstance> _aoes = [with(2)];
     private bool _delayed;
-    private static readonly AOEShapeCircle _shapeOut = new(6f);
-    private static readonly AOEShapeDonut _shapeIn = new(6f, 40f);
+    private readonly AOEShapeCircle _shapeOut = new(6f);
+    private readonly AOEShapeDonut _shapeIn = new(6f, 40f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoes.Count != 0 ? CollectionsMarshal.AsSpan(_aoes)[..1] : [];
 

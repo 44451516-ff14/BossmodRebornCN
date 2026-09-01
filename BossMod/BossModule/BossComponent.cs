@@ -76,6 +76,12 @@ public class BossComponent(BossModule module)
     protected WorldState WorldState => Module.WorldState;
     protected PartyState Raid => Module.Raid;
     protected void ReportError(string message) => Module.ReportError(this, message);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected bool ArenaProjectionLayerApplies(Actor actor, int? mechanicLayer, bool restrictToLayer)
+        => Module.MechanicAppliesToArenaProjectionLayer(actor, mechanicLayer, restrictToLayer);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected bool ArenaProjectionLayerParticipantApplies(Actor actor, int? mechanicLayer, bool restrictToLayer)
+        => Module.ActorMatchesArenaProjectionLayer(actor, mechanicLayer, restrictToLayer);
 
     // utility to try to determine who has the highest enmity in the party
     // this is useful for a lot of savage mechanics, but we only get this information if the player is currently targeting the relevant enemy (:/), so we allow fallback behavior of returning players in order tank -> dps -> healer -> (other)

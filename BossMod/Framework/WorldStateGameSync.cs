@@ -401,7 +401,9 @@ sealed class WorldStateGameSync : IDisposable
         var forayInfo = forayInfoPtr == null ? default : new ActorForayInfo(forayInfoPtr->Level, forayInfoPtr->Element);
         var isOpenTreasure = obj->ObjectKind == ObjectKind.Treasure && ((Treasure*)obj)->Flags.HasFlag(Treasure.TreasureFlags.Opened);
 
-        var visibility = targetable ? DetermineVisibility(obj) : Visibility.Unknown;
+        // currently we don't care about Actors that are not targetable, not an enemy or more than 50 yalms away because the raycasting is stupidly expensive
+        // targetable returns true even if the actor is not actually targetable due to being too far away
+        var visibility = targetable && act?.Type == ActorType.Enemy ? DetermineVisibility(obj) : Visibility.Unknown;
 
         if (act == null)
         {
@@ -587,7 +589,12 @@ sealed class WorldStateGameSync : IDisposable
         sourcePos.Y += 2f;
         targetPos.Y += 2f;
         var offset = targetPos - sourcePos;
-        var distance = offset.Magnitude;
+        var distanceSq = offset.SqrMagnitude;
+        if (distanceSq > 2500f)
+        {
+            return Visibility.Blocked;
+        }
+        var distance = MathF.Sqrt(distanceSq);
         var direction = offset / distance;
         return BGCollisionModule.RaycastMaterialFilter(sourcePos, direction, out _, distance) ? Visibility.Blocked : Visibility.Visible;
     }

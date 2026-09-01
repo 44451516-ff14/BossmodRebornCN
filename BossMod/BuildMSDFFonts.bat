@@ -1,0 +1,1 @@
+Framework\Fonts\BuildArenaFont.bat "D:\windbg\msdf-atlas-gen.exe"

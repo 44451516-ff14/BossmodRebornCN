@@ -36,17 +36,19 @@ sealed class FocusedTremor(BossModule module) : Components.RaidwideCast(module, 
 sealed class BruntOfTheBattlefield(BossModule module) : Components.SimpleAOEs(module, (uint)AID.BruntOfTheBattlefield, 10.0f);
 sealed class Uplift(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Uplift, 6.0f);
 
-sealed class FocusedTremorCircle(BossModule module) : Components.GenericAOEs(module)
+sealed class FocusedTremorConcentric(BossModule module) : Components.GenericAOEs(module)
 {
-    public readonly List<AOEInstance> Casters = [];
+    private readonly List<AOEInstance> _aoes = [with(6)];
+    private readonly AOEShapeCircle circle = new(10f);
+    private readonly AOEShapeDonut donutInner = new(10f, 20f), donutOuter = new(20f, 30f);
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
-        AOEShape? shape = (AID)spell.Action.ID switch
+        AOEShape? shape = spell.Action.ID switch
         {
-            AID.FocusedTremorInner => new AOEShapeCircle(10.0f),
-            AID.FocusedTremorMiddle => new AOEShapeDonut(10.0f, 20.0f),
-            AID.FocusedTremorOuter => new AOEShapeDonut(20.0f, 30.0f),
+            (uint)AID.FocusedTremorInner => circle,
+            (uint)AID.FocusedTremorMiddle => donutInner,
+            (uint)AID.FocusedTremorOuter => donutOuter,
             _ => null
         };
 
@@ -54,87 +56,95 @@ sealed class FocusedTremorCircle(BossModule module) : Components.GenericAOEs(mod
         {
             var origin = spell.LocXZ;
             var rotation = spell.Rotation;
-            Casters.Add(new(shape, origin, rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(origin, rotation)));
-            SortHelpers.SortAOEByActivation(Casters);
+            _aoes.Add(new(shape, origin, rotation, Module.CastFinishAt(spell), actorID: caster.InstanceID, shapeDistance: shape.Distance(origin, rotation)));
+            if (_aoes.Count >= 3)
+            {
+                SortHelpers.SortAOEByActivation(_aoes);
+                UpdateAOEs();
+            }
+        }
+    }
+
+    private void UpdateAOEs()
+    {
+        var count = _aoes.Count;
+        var max = count > 2 ? 2 : count;
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        for (var i = 0; i < max; i++)
+        {
+            ref var aoe = ref aoes[i];
+            var isFirst = i == 0;
+            aoe.Color = isFirst ? Colors.Danger : default;
+            aoe.Risky = isFirst;
         }
     }
 
     public override void OnCastFinished(Actor caster, ActorCastInfo spell)
     {
-        if (spell.Action.ID is (uint)AID.FocusedTremorInner or (uint)AID.FocusedTremorMiddle or (uint)AID.FocusedTremorOuter)
+        if (_aoes.Count > 0 && spell.Action.ID is (uint)AID.FocusedTremorInner or (uint)AID.FocusedTremorMiddle or (uint)AID.FocusedTremorOuter)
         {
-            if (Casters.Count > 0)
-            {
-                Casters.RemoveAt(0);
-            }
+            _aoes.RemoveAt(0);
+            UpdateAOEs();
         }
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = Casters.Count;
+        var count = _aoes.Count;
         if (count == 0)
         {
             return [];
         }
 
         var max = count > 2 ? 2 : count;
-        var aoes = CollectionsMarshal.AsSpan(Casters);
-
-        for (var i = 0; i < max; i++)
-        {
-            ref var aoe = ref aoes[i];
-            aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
-            aoe.Risky = i == 0;
-        }
-
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
         return aoes[..max];
     }
 }
 
 sealed class OctupleSwipe(BossModule module) : Components.GenericAOEs(module)
 {
-    private readonly List<AOEInstance> aoes = [];
-    private readonly AOEShapeCone shape = new(40.0f, 45.0f.Degrees());
+    private readonly List<AOEInstance> _aoes = [with(8)];
+    private readonly AOEShapeCone shape = new(40f, 45f.Degrees());
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.OctupleSwipeVisual)
         {
-            aoes.Add(new(shape, spell.LocXZ, spell.Rotation));
+            var rot = spell.Rotation;
+            var loc = spell.LocXZ;
+            var count = _aoes.Count;
+            _aoes.Add(new(shape, loc, rot, count == 0 ? Module.CastFinishAt(spell, 8.3d) : _aoes.Ref(0).Activation.AddSeconds(count * 2d), shapeDistance: shape.Distance(loc, rot)));
+            if (count == 1)
+            {
+                _aoes.Ref(0).Color = Colors.Danger;
+            }
         }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
-        if (spell.Action.ID is (uint)AID.OctupleSwipe1 or (uint)AID.OctupleSwipe2 or (uint)AID.OctupleSwipe3 or (uint)AID.OctupleSwipe4)
+        var count = _aoes.Count;
+        if (count != 0 && spell.Action.ID is (uint)AID.OctupleSwipe1 or (uint)AID.OctupleSwipe2 or (uint)AID.OctupleSwipe3 or (uint)AID.OctupleSwipe4)
         {
-            if (aoes.Count > 0)
+            _aoes.RemoveAt(0);
+            if (count > 1)
             {
-                aoes.RemoveAt(0);
+                _aoes.Ref(0).Color = Colors.Danger;
             }
         }
     }
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
-        var count = aoes.Count;
+        var count = _aoes.Count;
         if (count == 0)
         {
             return [];
         }
-
         var max = count > 2 ? 2 : count;
-        var nextAOEs = CollectionsMarshal.AsSpan(aoes);
-
-        for (var i = 0; i < max; i++)
-        {
-            ref var aoe = ref nextAOEs[i];
-            aoe.Color = i == 0 ? Colors.Danger : Colors.AOE;
-            aoe.Risky = i == 0;
-        }
-
-        return nextAOEs[..max];
+        var aoes = CollectionsMarshal.AsSpan(_aoes);
+        return aoes[..max];
     }
 }
 
@@ -145,10 +155,8 @@ sealed class RagingThrallStates : StateMachineBuilder
     {
         TrivialPhase()
             .ActivateOnEnter<FocusedTremor>()
-            .ActivateOnEnter<FocusedTremorCircle>()
             .ActivateOnEnter<BruntOfTheBattlefield>()
-            .ActivateOnEnter<Uplift>()
-            .ActivateOnEnter<OctupleSwipe>();
+            .ActivateOnEnter<Uplift>();
     }
 }
 
@@ -170,4 +178,11 @@ sealed class RagingThrallStates : StateMachineBuilder
     SortOrder = 3,
     PlanLevel = 0)]
 [SkipLocalsInit]
-public sealed class RagingThrall(WorldState ws, Actor primary) : OpenWorldFate(ws, primary);
+public sealed class RagingThrall : OpenWorldFate
+{
+    public RagingThrall(WorldState ws, Actor primary) : base(ws, primary)
+    {
+        ActivateComponent<FocusedTremorConcentric>();
+        ActivateComponent<OctupleSwipe>();
+    }
+}

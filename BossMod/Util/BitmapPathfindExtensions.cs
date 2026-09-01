@@ -65,3 +65,159 @@ public static class BitmapPathfindExtensions
     public static bool HasObstacleMapLineOfSight(this Bitmap.Region region, WPos mapCenter, WPos from, WPos to)
         => region.Bitmap.HasObstacleMapLineOfSight(region.Rect, mapCenter, from, to);
 }
+
+// Scratch-allocation-free symmetric shadowcasting for obstacle bitmaps.
+// Uses the exact-rational model described at https://www.albertford.com/shadowcasting/ (CC0).
+// Input bits are opaque cells; output bits are visible, non-opaque cells.
+public static class BitmapShadowcasting
+{
+    private readonly struct Slope(int numerator, int denominator)
+    {
+        public readonly int Numerator = numerator;
+        public readonly int Denominator = denominator;
+    }
+
+    // Build a circular field of view centered on an obstacle-map cell.
+    // Radius follows follwing LOS convention: cells at exactly radius are excluded
+    public static Bitmap BuildFieldOfView(Bitmap obstacles, int originX, int originY, int radius)
+    {
+        var visible = new Bitmap(obstacles.Width, obstacles.Height, obstacles.Color0, obstacles.Color1, obstacles.Resolution);
+        if (radius <= 0 || (uint)originX >= (uint)obstacles.Width || (uint)originY >= (uint)obstacles.Height)
+        {
+            return visible;
+        }
+
+        // current behaviour: it is visible even if bad map metadata happens to place the caster in a bit marked as an obstacle
+        visible[originX, originY] = true;
+
+        // No in-bounds cell is farther away than its Manhattan distance. Capping oversized ranges here preserves every possible result while bounding scan depth
+        var maxDeltaX = Math.Max(originX, obstacles.Width - 1 - originX);
+        var maxDeltaY = Math.Max(originY, obstacles.Height - 1 - originY);
+        var maxUsefulRadius = (int)Math.Min(int.MaxValue, (long)maxDeltaX + maxDeltaY + 1);
+        if (radius > maxUsefulRadius)
+        {
+            radius = maxUsefulRadius;
+        }
+
+        if (radius == 1)
+        {
+            return visible;
+        }
+
+        var radiusSquared = (long)radius * radius;
+        var initialStart = new Slope(-1, 1);
+        var initialEnd = new Slope(1, 1);
+
+        // Four 90-degree quadrants cover the field. Their diagonal edges overlap deliberately;
+        // setting an existing output bit again is cheaper than maintaining edge special cases.
+        ScanQuadrant(obstacles, visible, originX, originY, radius, radiusSquared, 0, 1, initialStart, initialEnd); // north
+        ScanQuadrant(obstacles, visible, originX, originY, radius, radiusSquared, 1, 1, initialStart, initialEnd); // east
+        ScanQuadrant(obstacles, visible, originX, originY, radius, radiusSquared, 2, 1, initialStart, initialEnd); // south
+        ScanQuadrant(obstacles, visible, originX, originY, radius, radiusSquared, 3, 1, initialStart, initialEnd); // west
+
+        return visible;
+    }
+
+    // Scan one visible slope interval in a quadrant. Exact rational comparisons give reciprocal
+    // floor-to-floor visibility and avoid floating-point cracks along long wall edges.
+    private static void ScanQuadrant(Bitmap obstacles, Bitmap visible, int originX, int originY, int radius, long radiusSquared,
+        int quadrant, int depth, Slope startSlope, Slope endSlope)
+    {
+        if (depth >= radius)
+        {
+            return;
+        }
+
+        var minColumn = RoundTiesUp(depth, startSlope);
+        var maxColumn = RoundTiesDown(depth, endSlope);
+        var havePrevious = false;
+        var previousOpaque = false;
+
+        for (var column = minColumn; column <= maxColumn; ++column)
+        {
+            Transform(quadrant, originX, originY, depth, column, out var x, out var y);
+            var inBounds = (uint)x < (uint)obstacles.Width && (uint)y < (uint)obstacles.Height;
+
+            // The map boundary is transparent to the angular sweep but can never be revealed. This avoids boundary cells casting artificial shadows back into the rectangular map
+            var opaque = inBounds && obstacles[x, y];
+
+            if (inBounds && !opaque && IsSymmetric(depth, column, startSlope, endSlope)
+                && (long)depth * depth + (long)column * column < radiusSquared)
+            {
+                visible[x, y] = true;
+            }
+
+            if (havePrevious)
+            {
+                if (previousOpaque && !opaque)
+                {
+                    // Leaving a wall: trim the beginning of this row's remaining interval
+                    startSlope = SlopeAt(depth, column);
+                }
+                else if (!previousOpaque && opaque)
+                {
+                    // Entering a wall: the floor interval before it continues into the next row
+                    ScanQuadrant(obstacles, visible, originX, originY, radius, radiusSquared, quadrant, depth + 1, startSlope, SlopeAt(depth, column));
+                }
+            }
+
+            havePrevious = true;
+            previousOpaque = opaque;
+        }
+
+        // If this row ends on floor, its remaining slope interval continues outward
+        if (havePrevious && !previousOpaque)
+        {
+            ScanQuadrant(obstacles, visible, originX, originY, radius, radiusSquared, quadrant, depth + 1, startSlope, endSlope);
+        }
+    }
+
+    private static void Transform(int quadrant, int originX, int originY, int depth, int column, out int x, out int y)
+    {
+        switch (quadrant)
+        {
+            case 0:
+                x = originX + column;
+                y = originY - depth;
+                break;
+            case 1:
+                x = originX + depth;
+                y = originY + column;
+                break;
+            case 2:
+                x = originX + column;
+                y = originY + depth;
+                break;
+            default:
+                x = originX - depth;
+                y = originY + column;
+                break;
+        }
+    }
+
+    private static Slope SlopeAt(int depth, int column) => new(2 * column - 1, 2 * depth);
+
+    private static bool IsSymmetric(int depth, int column, Slope startSlope, Slope endSlope)
+        => (long)column * startSlope.Denominator >= (long)depth * startSlope.Numerator
+            && (long)column * endSlope.Denominator <= (long)depth * endSlope.Numerator;
+
+    // floor(n + 0.5), with ties toward positive infinity
+    private static int RoundTiesUp(int depth, Slope slope)
+        => (int)FloorDiv(2L * depth * slope.Numerator + slope.Denominator, 2L * slope.Denominator);
+
+    // ceil(n - 0.5), with ties toward negative infinity
+    private static int RoundTiesDown(int depth, Slope slope)
+        => (int)CeilingDiv(2L * depth * slope.Numerator - slope.Denominator, 2L * slope.Denominator);
+
+    private static long FloorDiv(long numerator, long denominator)
+    {
+        var quotient = numerator / denominator;
+        return numerator < 0 && numerator % denominator != 0 ? quotient - 1 : quotient;
+    }
+
+    private static long CeilingDiv(long numerator, long denominator)
+    {
+        var quotient = numerator / denominator;
+        return numerator > 0 && numerator % denominator != 0 ? quotient + 1 : quotient;
+    }
+}

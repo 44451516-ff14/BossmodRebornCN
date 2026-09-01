@@ -5,8 +5,9 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
     private readonly List<SafeWall> _walls = [];
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {//Build safewalls when we see the phase start, walk 6.5f left and right from the actors, then draw it 24 towards the edge (usually over the edge) to make sure we don't leave any gaps. It's an approximation but seems good enough in practice.
-        if (spell.Action.ID == (uint)AID.SuperiorStoneII1)
+    {
+        //Build safewalls when we see the phase start, walk 6.5f left and right from the actors, then draw it 24 towards the edge (usually over the edge) to make sure we don't leave any gaps. It's an approximation but seems good enough in practice.
+        if (spell.Action.ID is var id && id == (uint)AID.SuperiorStoneII1)
         {
             var left = caster.Position + caster.Rotation.ToDirection() + 90.Degrees().ToDirection() * 6.5f;
             var leftback = left + caster.Rotation.ToDirection() * 24f;
@@ -15,7 +16,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
             var rightback = right + caster.Rotation.ToDirection() * 24f;
             _walls.Add(new(right, rightback));
         }
-        if (spell.Action.ID == (uint)AID.GroundbreakingQuake)
+        else if (id == (uint)AID.GroundbreakingQuake)
         {
             _walls.Clear();
         }
@@ -39,7 +40,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
     {
-        if (status.ID == (uint)SID.WesterlyWinds)
+        if (status.ID is var id && id == (uint)SID.WesterlyWinds)
         {
             var p = Raid.FindSlot(actor.InstanceID);
             if (p >= 0)
@@ -48,7 +49,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
                 //Service.Log($"Adding West: {p}");
             }
         }
-        if (status.ID == (uint)SID.EasterlyWinds)
+        else if (id == (uint)SID.EasterlyWinds)
         {
             var p = Raid.FindSlot(actor.InstanceID);
             if (p >= 0)
@@ -61,7 +62,7 @@ sealed class AeroDynamics(BossModule module) : Components.GenericKnockback(modul
 
     public override void OnStatusLose(Actor actor, ref ActorStatus status)
     {
-        if (status.ID is ((uint)SID.EasterlyWinds) or ((uint)SID.WesterlyWinds))
+        if (status.ID is (uint)SID.EasterlyWinds or (uint)SID.WesterlyWinds)
         {
             var p = Raid.FindSlot(actor.InstanceID);
             if (p >= 0)

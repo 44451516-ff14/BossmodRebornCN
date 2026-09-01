@@ -97,12 +97,10 @@ sealed class AllThingsEnding(BossModule module) : Components.GenericBaitAway(mod
             if (dmuConfig.P2Forsaken is DMUConfig.P2ForsakenStrategy.Meow_Markerless or DMUConfig.P2ForsakenStrategy.Meow_DN_ZENITH_Markers)
             {
                 var waymark = WorldState.Waymarks.GetFieldMark((int)Waymark.A);
-                if (waymark == null)
+                if (waymark is Vector3 way)
                 {
-                    return;
+                    Arena.ZoneCircleOutline(new WPos(way), 1.0f, Colors.Safe, 2.0f);
                 }
-
-                Arena.ZoneCircleOutline(waymark.Value.ToWPos(), 1.0f, Colors.Safe, 2.0f);
                 return;
             }
 
@@ -113,17 +111,17 @@ sealed class AllThingsEnding(BossModule module) : Components.GenericBaitAway(mod
                     BaitSafeSpot(lastKnownTowerMidPoint.Value);
                 }
             }
-
             return;
         }
 
-        if (towers.Towers.Count != 2 || towers.CurrentSE == null || towers.CurrentSW == null)
+        if (towers.Towers.Count != 2)
         {
             return;
         }
-
-        var midpoint = new WPos((towers.CurrentSW.Value.Position.X + towers.CurrentSE.Value.Position.X) * 0.5f,
-                                (towers.CurrentSW.Value.Position.Z + towers.CurrentSE.Value.Position.Z) * 0.5f);
+        var towersSpan = CollectionsMarshal.AsSpan(towers.Towers);
+        var posSW = towersSpan[0].Position;
+        var posSE = towersSpan[1].Position;
+        var midpoint = new WPos((posSW.X + posSE.X) * 0.5f, (posSW.Z + posSE.Z) * 0.5f);
         lastKnownTowerMidPoint = midpoint;
 
         if (shapes.currentTowerSet == 8)

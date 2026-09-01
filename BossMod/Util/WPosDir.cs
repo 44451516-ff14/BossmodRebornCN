@@ -86,6 +86,8 @@ public readonly struct WPos(float x, float z)
     public readonly float X = x;
     public readonly float Z = z;
     public WPos(Vector2 v) : this(v.X, v.Y) { }
+    public WPos(Vector3 v) : this(v.X, v.Z) { }
+    public WPos(ref Vector4 v) : this(v.X, v.Z) { }
     public readonly Vector2 ToVec2() => new(X, Z);
     public readonly Vector3 ToVec3(float y = 0) => new(X, y, Z);
     public readonly Vector4 ToVec4(float y = 0, float w = 0) => new(X, y, Z, w);

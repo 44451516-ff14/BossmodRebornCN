@@ -28,11 +28,11 @@ public enum SID : uint
     Seduced = 991 // Boss->player, extra=0x19 (run speed is status extra * 0.1)
 }
 
-class DarkMistVoidFireIII(BossModule module) : Components.GenericAOEs(module)
+sealed class DarkMistVoidFireIII(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
     bool done;
-    private static readonly AOEShapeCircle circle = new(25f); // circle + minimum distance to survive seducing status
+    private readonly AOEShapeCircle circle = new(25f); // circle + minimum distance to survive seducing status
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

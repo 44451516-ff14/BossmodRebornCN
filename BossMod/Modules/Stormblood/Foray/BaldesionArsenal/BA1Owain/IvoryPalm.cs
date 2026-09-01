@@ -8,14 +8,17 @@ sealed class IvoryPalm(BossModule module) : Components.GenericGaze(module)
     {
         var count = Tethers.Count;
         if (count == 0)
+        {
             return [];
+        }
 
         for (var i = 0; i < count; ++i)
         {
             var tether = Tethers[i];
             if (tether.target == actor && !tether.source.IsDead) // apparently tethers don't get removed immediately upon death
             {
-                return new Eye[1] { new(tether.source.Position, inverted: true) };
+                var loc = tether.source.Position.Quantized();
+                return new Eye[1] { new(loc, inverted: true, eyeCenter: loc) };
             }
         }
         return [];
@@ -28,7 +31,7 @@ sealed class IvoryPalm(BossModule module) : Components.GenericGaze(module)
         for (var i = 0; i < len; ++i)
         {
             ref readonly var eye = ref eyes[i];
-            if (HitByEye(ref actor, eye) != eye.Inverted)
+            if (HitByEye(actor, eye) != eye.Inverted)
             {
                 hints.Add("Face the hand to petrify it!");
                 break;

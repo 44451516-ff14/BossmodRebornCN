@@ -26,7 +26,7 @@ sealed class Shockwave(BossModule module) : Components.SimpleKnockbacks(module, 
                 {
                     if (Arena.Bounds is ArenaBoundsCustom arena)
                     {
-                        polygon = arena.Polygon.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
+                        polygon = arena.Shape.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
                         polygonInit = true;
                     }
                 }

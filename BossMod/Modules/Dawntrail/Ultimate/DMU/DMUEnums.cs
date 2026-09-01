@@ -400,21 +400,21 @@ public enum IconID : uint
 public enum Animations : uint
 {
     // Phase 1
-    PulseOrbStart = 4194432,
-    PulseOrbEnd = 16777728,
-    PuddleSoakReady = 1048608,
-    PuddleExplosion = 262152,
-    EyeStart = 4194432,
-    EyeEnd = 16777728,
+    PulseOrbStart = 0x400080,
+    PulseOrbEnd = 0x1000200,
+    PuddleSoakReady = 0x100020,
+    PuddleExplosion = 0x40008,
+    EyeStart = 0x400080,
+    EyeEnd = 0x1000200,
 
     // Phase 2
-    TriangleFlyingDown = 1048608,
-    TriangleLanded = 4194432,
-    TriangleExplosion = 262152,
+    TriangleFlyingDown = 0x100020,
+    TriangleLanded = 0x400080,
+    TriangleExplosion = 0x40008,
 
     // Phase 5
-    TowerGlow = 1048608,
-    TowerExplosion = 65600,
+    TowerGlow = 0x100020,
+    TowerExplosion = 0x10040,
 }
 
 public enum TetherID : uint

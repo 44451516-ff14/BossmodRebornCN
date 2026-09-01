@@ -192,7 +192,7 @@ public class DirectionalParry(BossModule module, uint[] actorOID, int forbiddenP
     {
         var dir = actor.Rotation + offset;
         Arena.PathArcTo(actor.Position, 1.5f, (dir - 45f.Degrees()).Rad, (dir + 45f.Degrees()).Rad);
-        MiniArena.PathStroke(false, color);
+        Arena.PathStroke(false, color);
     }
 
     public int ActorState(ulong instanceID) => ActorStates.GetValueOrDefault(instanceID, 0);

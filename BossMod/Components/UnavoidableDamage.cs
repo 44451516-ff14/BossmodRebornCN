@@ -2,19 +2,54 @@ namespace BossMod.Components;
 
 // generic unavoidable raidwide, started and finished by a single cast
 [SkipLocalsInit]
-public class RaidwideCast(BossModule module, uint aid, string hint = "全屏伤害") : CastHint(module, aid, hint)
+public class RaidwideCast(BossModule module, uint aid, string hint = "全屏伤害", int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : CastHint(module, aid, hint)
 {
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
+
+    public override void AddGlobalHints(GlobalHints hints)
+    {
+        if (Raid.Player() is not Actor player || ArenaProjectionLayerParticipantApplies(player, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+        {
+            base.AddGlobalHints(hints);
+        }
+    }
+
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
+        if (!ArenaProjectionLayerApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            return;
+
+        var affected = AffectedPlayers();
         var count = Casters.Count;
         for (var i = 0; i < count; ++i)
         {
-            hints.AddPredictedDamage(Raid.WithSlot().Mask(), Module.CastFinishAt(Casters[i].CastInfo));
+            if (affected != default)
+            {
+                hints.AddPredictedDamage(affected, Module.CastFinishAt(Casters[i].CastInfo));
+            }
         }
+    }
+
+    protected BitMask AffectedPlayers()
+    {
+        BitMask affected = default;
+        var raid = Raid.WithSlot();
+        var count = raid.Length;
+        for (var i = 0; i < count; ++i)
+        {
+            var p = raid[i];
+            if (ArenaProjectionLayerParticipantApplies(p.Item2, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+            {
+                affected.Set(p.Item1);
+            }
+        }
+        return affected;
     }
 }
 
-public class RaidwideCasts(BossModule module, uint[] aids, string hint = "全屏伤害") : RaidwideCast(module, default, hint)
+public class RaidwideCasts(BossModule module, uint[] aids, string hint = "全屏伤害", int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
+    : RaidwideCast(module, default, hint, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     private readonly uint[] AIDs = aids;
 
@@ -60,15 +95,18 @@ public class RaidwideCasts(BossModule module, uint[] aids, string hint = "全屏
 
 // generic unavoidable raidwide, initiated by a custom condition and applied by an instant cast after a delay
 [SkipLocalsInit]
-public class RaidwideInstant(BossModule module, uint aid, double delay = default, string hint = "全屏伤害") : CastCounter(module, aid)
+public class RaidwideInstant(BossModule module, uint aid, double delay = default, string hint = "全屏伤害", int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false) : CastCounter(module, aid)
 {
     public readonly double Delay = delay;
     public readonly string Hint = hint;
     public DateTime Activation; // default if inactive, otherwise expected cast time
+    public int? ArenaProjectionLayer = arenaProjectionLayer;
+    public bool RestrictToArenaProjectionLayer = restrictToArenaProjectionLayer;
 
     public override void AddGlobalHints(GlobalHints hints)
     {
-        if (Activation != default && Hint.Length > 0)
+        if (Activation != default && Hint.Length > 0
+            && (Raid.Player() is not Actor player || ArenaProjectionLayerParticipantApplies(player, ArenaProjectionLayer, RestrictToArenaProjectionLayer)))
         {
             hints.Add(Hint);
         }
@@ -76,9 +114,25 @@ public class RaidwideInstant(BossModule module, uint aid, double delay = default
 
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
-        if (Activation != default)
+        if (Activation != default && ArenaProjectionLayerApplies(actor, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
         {
-            hints.AddPredictedDamage(Raid.WithSlot().Mask(), Activation);
+            BitMask affected = default;
+            var raid = Raid.WithSlot();
+            var count = raid.Length;
+            for (var i = 0; i < count; ++i)
+            {
+                var p = raid[i];
+                {
+                    if (ArenaProjectionLayerParticipantApplies(p.Item2, ArenaProjectionLayer, RestrictToArenaProjectionLayer))
+                    {
+                        affected.Set(p.Item1);
+                    }
+                }
+                if (affected != default)
+                {
+                    hints.AddPredictedDamage(affected, Activation);
+                }
+            }
         }
     }
 
@@ -94,7 +148,8 @@ public class RaidwideInstant(BossModule module, uint aid, double delay = default
 
 // generic unavoidable instant raidwide initiated by a cast (usually visual-only)
 [SkipLocalsInit]
-public class RaidwideCastDelay(BossModule module, uint actionVisual, uint actionAOE, double delay, string hint = "全屏伤害") : RaidwideInstant(module, actionAOE, delay, hint)
+public class RaidwideCastDelay(BossModule module, uint actionVisual, uint actionAOE, double delay, string hint = "全屏伤害", int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
+    : RaidwideInstant(module, actionAOE, delay, hint, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     public uint ActionVisual = actionVisual;
 
@@ -108,7 +163,8 @@ public class RaidwideCastDelay(BossModule module, uint actionVisual, uint action
 }
 
 [SkipLocalsInit]
-public class RaidwideCastsDelay(BossModule module, uint[] aidsVisual, uint[] aidsAOE, double delay, string hint = "全屏伤害") : RaidwideCastDelay(module, default, default, delay, hint)
+public class RaidwideCastsDelay(BossModule module, uint[] aidsVisual, uint[] aidsAOE, double delay, string hint = "全屏伤害", int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
+    : RaidwideCastDelay(module, default, default, delay, hint, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     private readonly uint[] AIDsVisual = aidsVisual;
     private readonly uint[] AIDsAOE = aidsAOE;
@@ -143,7 +199,8 @@ public class RaidwideCastsDelay(BossModule module, uint[] aidsVisual, uint[] aid
 
 // generic unavoidable instant raidwide cast initiated by NPC yell
 [SkipLocalsInit]
-public class RaidwideAfterNPCYell(BossModule module, uint aid, uint npcYellID, double delay, string hint = "全屏伤害") : RaidwideInstant(module, aid, delay, hint)
+public class RaidwideAfterNPCYell(BossModule module, uint aid, uint npcYellID, double delay, string hint = "全屏伤害", int? arenaProjectionLayer = null, bool restrictToArenaProjectionLayer = false)
+    : RaidwideInstant(module, aid, delay, hint, arenaProjectionLayer, restrictToArenaProjectionLayer)
 {
     public uint NPCYellID = npcYellID;
 

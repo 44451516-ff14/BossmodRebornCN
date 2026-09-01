@@ -350,7 +350,7 @@ public sealed class RDM(RotationModuleManager manager, Actor player) : Castxan<A
         if (strategy.Buffs == OffensiveStrategy.Delay)
             return;
 
-        if (Player.InCombat && CombatTimer > 5 && Hints.PriorityTargets.Any())
+        if (Player.InCombat && CombatTimer > 5 && Hints.PriorityTargetsSpan.Length != 0)
             PushOGCD(AID.Embolden, Player, OGCDPriority.Embolden);
     }
 

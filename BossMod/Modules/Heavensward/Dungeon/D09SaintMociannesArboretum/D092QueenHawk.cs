@@ -98,6 +98,7 @@ sealed class Apitoxin(BossModule module) : Components.VoidzoneAtCastTarget(modul
 
 sealed class StraightSpindle(BossModule module) : Components.SimpleAOEs(module, (uint)AID.StraightSpindle, new AOEShapeRect(51.08f, 1.5f));
 sealed class Crossfire(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Crossfire, new AOEShapeRect(50.5f, 7f));
+sealed class StoneskinPhysical(BossModule module) : Components.InvincibleStatus(module, (uint)SID.StoneskinPhysical);
 
 sealed class D092QueenHawkStates : StateMachineBuilder
 {
@@ -107,33 +108,30 @@ sealed class D092QueenHawkStates : StateMachineBuilder
             .ActivateOnEnter<StingerCell>()
             .ActivateOnEnter<Apitoxin>()
             .ActivateOnEnter<StraightSpindle>()
+            .ActivateOnEnter<StoneskinPhysical>()
             .ActivateOnEnter<Crossfire>();
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 41, NameID = 4656, SortOrder = 4)]
-public sealed class D092QueenHawk(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaBounds.Center, ArenaBounds)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 41u, NameID = 4656u, SortOrder = 4)]
+public sealed class D092QueenHawk : BossModule
 {
-    public static readonly ArenaBoundsCustom ArenaBounds = new([new Polygon(new(-268f, -134f), 19.5f * CosPI.Pi48th, 48)]);
+    public D092QueenHawk(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D092QueenHawk(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-268f, -134f), 19.5f * CosPI.Pi48th, 48)]);
+        return (arena.Center, arena);
+    }
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         if (PrimaryActor.FindStatus((uint)SID.StoneskinPhysical) == null)
-            Arena.Actor(PrimaryActor);
-        Arena.Actors(Enemies((uint)OID.KnightHawk));
-    }
-
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
         {
-            var e = hints.PotentialTargets[i];
-            if (e.Actor.FindStatus((uint)SID.StoneskinPhysical) != null)
-            {
-                e.Priority = AIHints.Enemy.PriorityInvincible;
-                break;
-            }
+            Arena.Actor(PrimaryActor);
         }
+        Arena.Actors(Enemies((uint)OID.KnightHawk));
     }
 }

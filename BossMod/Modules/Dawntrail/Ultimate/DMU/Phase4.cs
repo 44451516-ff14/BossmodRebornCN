@@ -616,8 +616,8 @@ sealed class CursedShriek(BossModule module) : Components.GenericGaze(module)
             {
                 continue;
             }
-
-            eyes.Add(new Eye(actor.Position, expireAt, inverted: inverted));
+            var loc = actor.Position.Quantized();
+            eyes.Add(new(loc, expireAt, inverted: inverted, eyeCenter: loc));
         }
 
         return CollectionsMarshal.AsSpan(eyes);

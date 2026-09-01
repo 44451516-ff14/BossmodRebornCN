@@ -38,8 +38,6 @@ public sealed class ThetaStar
     private float _deltaGSide;
     private float _deltaGDiag;
 
-    private float _mapResolution;
-    private float _mapHalfResolution;
     public int StartNodeIndex;
     private float _startMaxG;
     private float _startPrio;
@@ -74,8 +72,6 @@ public sealed class ThetaStar
         _openList.Clear();
         _deltaGSide = map.Resolution * gMultiplier;
         _deltaGDiag = _deltaGSide * 1.414214f;
-        _mapResolution = map.Resolution;
-        _mapHalfResolution = map.Resolution * 0.5f;
         _hasTeleporters = map.HasTeleporters;
 
         var startFrac = map.WorldToGridFrac(startPos);
@@ -350,6 +346,12 @@ public sealed class ThetaStar
         approachLeeway = float.MaxValue;
         approachMinG = float.MaxValue;
 
+        if (!_map.InBounds(x0, y0) || !_map.InBounds(xe, ye))
+        {
+            approachDist = 0f;
+            return false;
+        }
+
         var dxRaw = xe - x0;
         var dyRaw = ye - y0;
         var shiftdx = dxRaw >> 31;
@@ -359,20 +361,23 @@ public sealed class ThetaStar
         var dx = (dxRaw ^ shiftdx) - shiftdx;
         var dy = (dyRaw ^ shiftdy) - shiftdy;
 
-        approachDist = MathF.Sqrt(dx * dx + dy * dy);
+        approachDist = MathF.Sqrt((float)dx * dx + (float)dy * dy);
 
-        var invdx = dx != 0 ? 1f / dx : float.MaxValue;
-        var invdy = dy != 0 ? 1f / dy : float.MaxValue;
-        var tMaxX = _mapHalfResolution * invdx;
-        var tMaxY = _mapHalfResolution * invdy;
-        var tDeltaX = _mapResolution * invdx;
-        var tDeltaY = _mapResolution * invdy;
+        // Exact supercover traversal from cell center to cell center. The next X crossing is at
+        // (crossedX + 0.5) / dx and the next Y crossing at (crossedY + 0.5) / dy.
+        // Cross-multiplying and multiplying by 2 gives integer keys:
+        //   nextX = (2 * crossedX + 1) * dy
+        //   nextY = (2 * crossedY + 1) * dx
+        // We maintain them incrementally, so the hot loop only needs integer compares/adds.
+        ulong nextX = (uint)dy;
+        ulong nextY = (uint)dx;
+        var deltaX = 2ul * (uint)dy;
+        var deltaY = 2ul * (uint)dx;
 
         int x = x0, y = y0;
         var w = _map.Width;
         var pixG = _map.PixelMaxG;
         var cumulativeG = parentGScore;
-        const float kEps = 0.003f;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool CheckCell(int cx, int cy, float gAtEntry, ref float minG, ref float minLeeway)
@@ -407,21 +412,21 @@ public sealed class ThetaStar
                 return true;
             }
 
-            var diff = tMaxX - tMaxY;
-            if (diff < -kEps)
+            if (nextX < nextY)
             {
-                tMaxX += tDeltaX;
+                nextX += deltaX;
                 x += stepX;
                 cumulativeG += _deltaGSide;
             }
-            else if (diff > kEps)
+            else if (nextY < nextX)
             {
-                tMaxY += tDeltaY;
+                nextY += deltaY;
                 y += stepY;
                 cumulativeG += _deltaGSide;
             }
             else
             {
+                // Exact corner hit: supercover includes both cells touching the corner
                 var gAtCorner = cumulativeG + _deltaGSide;
                 if (!CheckCell(x + stepX, y, gAtCorner, ref approachMinG, ref approachLeeway))
                 {
@@ -431,8 +436,8 @@ public sealed class ThetaStar
                 {
                     return false;
                 }
-                tMaxX += tDeltaX;
-                tMaxY += tDeltaY;
+                nextX += deltaX;
+                nextY += deltaY;
                 x += stepX;
                 y += stepY;
                 cumulativeG += _deltaGDiag;
@@ -548,6 +553,12 @@ public sealed class ThetaStar
         lineOfSightLeeway = float.MaxValue;
         lineOfSightMinG = float.MaxValue;
 
+        if (!_map.InBounds(x0, y0) || !_map.InBounds(x1, y1))
+        {
+            lineOfSightDist = 0f;
+            return false;
+        }
+
         var dxRaw = x1 - x0;
         var dyRaw = y1 - y0;
 
@@ -559,16 +570,13 @@ public sealed class ThetaStar
         var dx = (dxRaw ^ shiftdx) - shiftdx;
         var dy = (dyRaw ^ shiftdy) - shiftdy;
 
-        lineOfSightDist = MathF.Sqrt(dx * dx + dy * dy);
+        lineOfSightDist = MathF.Sqrt((float)dx * dx + (float)dy * dy);
 
-        var invdx = dx != 0 ? 1f / dx : float.MaxValue;
-        var invdy = dy != 0 ? 1f / dy : float.MaxValue;
-
-        // DDA params
-        var tMaxX = _mapHalfResolution * invdx;
-        var tMaxY = _mapHalfResolution * invdy;
-        var tDeltaX = _mapResolution * invdx;
-        var tDeltaY = _mapResolution * invdy;
+        // Exact center-to-center supercover DDA. Compare the next grid-boundary crossings: (2*crossedX+1)*dy versus (2*crossedY+1)*dx
+        ulong nextX = (uint)dy;
+        ulong nextY = (uint)dx;
+        var deltaX = 2ul * (uint)dy;
+        var deltaY = 2ul * (uint)dx;
 
         int x = x0, y = y0;
         var w = _map.Width;
@@ -592,8 +600,6 @@ public sealed class ThetaStar
             }
             startedInShadow = _map.IsTeleShadow(startIdx);
         }
-
-        const float kEps = 0.003f;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool CheckCellAndUpdate(int cx, int cy, float gAtEntry, ref float minG, ref float minLeeway)
@@ -639,22 +645,21 @@ public sealed class ThetaStar
                 return true;
             }
 
-            var diff = tMaxX - tMaxY;
-            if (diff < -kEps)
+            if (nextX < nextY)
             {
-                tMaxX += tDeltaX;
+                nextX += deltaX;
                 x += stepX;
                 cumulativeG += _deltaGSide;
             }
-            else if (diff > kEps)
+            else if (nextY < nextX)
             {
-                tMaxY += tDeltaY;
+                nextY += deltaY;
                 y += stepY;
                 cumulativeG += _deltaGSide;
             }
             else
             {
-                // corner: check both side-adjacent cells too (supercover)
+                // Exact corner hit: check both side-adjacent cells too (supercover)
                 var gAtCorner = cumulativeG + _deltaGSide;
 
                 // peek X side
@@ -662,15 +667,14 @@ public sealed class ThetaStar
                 {
                     return false;
                 }
-
                 // peek Y side
                 if (!CheckCellAndUpdate(x, y + stepY, gAtCorner, ref lineOfSightMinG, ref lineOfSightLeeway))
                 {
                     return false;
                 }
 
-                tMaxX += tDeltaX;
-                tMaxY += tDeltaY;
+                nextX += deltaX;
+                nextY += deltaY;
                 x += stepX;
                 y += stepY;
                 cumulativeG += _deltaGDiag;

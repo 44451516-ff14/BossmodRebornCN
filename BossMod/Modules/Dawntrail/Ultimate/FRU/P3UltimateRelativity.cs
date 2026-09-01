@@ -158,7 +158,9 @@ sealed class P3UltimateRelativity(BossModule module) : Components.CastCounter(mo
             case (uint)SID.Return:
                 slot = Raid.FindSlot(actor.InstanceID);
                 if (slot >= 0)
-                    States[slot].ReturnPos = actor.Position;
+                {
+                    States[slot].ReturnPos = actor.Position.Quantized();
+                }
                 break;
             case (uint)SID.Stun:
                 ++NumReturnStuns;
@@ -312,7 +314,7 @@ sealed class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Compo
 {
     private readonly P3UltimateRelativity? _rel = module.FindComponent<P3UltimateRelativity>();
 
-    private static readonly AOEShapeRect _shape = new(60, 2.5f);
+    private readonly AOEShapeRect _shape = new(60f, 2.5f);
 
     public override void Update()
     {
@@ -352,20 +354,43 @@ sealed class P3UltimateRelativitySinboundMeltdownBait(BossModule module) : Compo
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
     {
-        foreach (var bait in ActiveBaitsOn(pc))
+        if (CurrentBaits.Count == 0)
         {
-            if (bait.Source.Position.AlmostEqual(AssignedHourglass(pcSlot), 1) && _rel != null)
+            return;
+        }
+        var baits = CollectionsMarshal.AsSpan(ActiveBaitsOn(pc));
+        var len = baits.Length;
+        for (var j = 0; j < len; ++j)
+        {
+            ref var bait = ref baits[j];
+            var pos = bait.Source.Position;
+            if (pos.AlmostEqual(AssignedHourglass(pcSlot), 1f) && _rel != null)
             {
                 // draw extra rotation hints for correctly baited hourglass
                 // note: we don't want to draw 'short' edges of the rectangle (farther one is far outside arena bounds anyway, and closer one messes visualization up too much
-                var rot = _rel.LaserRotationAt(bait.Source.Position);
+                // we are calculating the intersection with the arena border so we don't draw ugly long lines
+                var rot = _rel.LaserRotationAt(pos);
+                var halfWidth = _shape.HalfWidth;
+                var offset = pos - Arena.Center;
+                var rotB = bait.Rotation;
+                var color = Colors.Danger;
+
                 for (var i = 0; i < 10; ++i)
                 {
-                    var dir = (bait.Rotation + i * rot).ToDirection();
-                    var side = _shape.HalfWidth * dir.OrthoR();
-                    var end = bait.Source.Position + _shape.LengthFront * dir;
-                    Arena.AddLine(bait.Source.Position + side, end + side, Colors.Danger);
-                    Arena.AddLine(bait.Source.Position - side, end - side, Colors.Danger);
+                    var dir = (rotB + i * rot).ToDirection();
+                    var side = halfWidth * dir.OrthoR();
+
+                    var startP = pos + side;
+                    var startM = pos - side;
+
+                    var distP = Intersect.RayCircle(offset + side, dir, 20f);
+                    var distM = Intersect.RayCircle(offset - side, dir, 20f);
+
+                    var endP = startP + dir * distP;
+                    var endM = startM + dir * distM;
+
+                    Arena.AddLine(startP, endP, color);
+                    Arena.AddLine(startM, endM, color);
                 }
             }
             else
@@ -392,7 +417,7 @@ sealed class P3UltimateRelativitySinboundMeltdownAOE(BossModule module) : Compon
     private readonly P3UltimateRelativity? _rel = module.FindComponent<P3UltimateRelativity>();
     private readonly List<AOEInstance> _aoes = [];
 
-    private static readonly AOEShapeRect _shape = new(50, 2.5f);
+    private readonly AOEShapeRect _shape = new(50f, 2.5f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(_aoes);
 
@@ -405,7 +430,7 @@ sealed class P3UltimateRelativitySinboundMeltdownAOE(BossModule module) : Compon
             case (uint)AID.UltimateRelativitySinboundMeltdownAOEFirst:
                 var rot = _rel?.LaserRotationAt(caster.Position) ?? default;
                 for (var i = 1; i < 10; ++i)
-                    _aoes.Add(new(_shape, caster.Position, spell.Rotation + i * rot, WorldState.FutureTime(i + 1)));
+                    _aoes.Add(new(_shape, caster.Position, spell.Rotation + i * rot, WorldState.FutureTime(i + 1d)));
                 break;
             case (uint)AID.UltimateRelativitySinboundMeltdownAOERest:
                 ++NumCasts;
@@ -422,7 +447,7 @@ sealed class P3UltimateRelativityDarkBlizzard(BossModule module) : Components.Ge
     private readonly List<Actor> _sources = [];
     private DateTime _activation;
 
-    private static readonly AOEShapeDonut _shape = new(3f, 12f); // TODO: verify inner radius
+    private readonly AOEShapeDonut _shape = new(3f, 12f); // TODO: verify inner radius
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
@@ -449,25 +474,31 @@ sealed class P3UltimateRelativityDarkBlizzard(BossModule module) : Components.Ge
     }
 }
 
-sealed class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(module)
+sealed class P3UltimateRelativityShadoweye(BossModule module) : Components.GenericGaze(module)
 {
     private readonly P3UltimateRelativity? _rel = module.FindComponent<P3UltimateRelativity>();
-    private readonly List<WPos> _eyes = [];
+    private readonly List<Eye> _eyes = [with(3)];
     private DateTime _activation;
 
-    public override void AddHints(int slot, Actor actor, TextHints hints)
+    public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
     {
+        var count = _eyes.Count;
+        if (count == 0)
+        {
+            return [];
+        }
         var pos = _rel?.States[slot].ReturnPos ?? actor.Position;
-        if (_eyes.Any(eye => eye != pos && HitByEye(pos, actor.Rotation, eye)))
-            hints.Add("Turn away from gaze!");
-    }
-
-    public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var pos = _rel?.States[slot].ReturnPos ?? actor.Position;
-        foreach (var eye in _eyes)
-            if (eye != pos)
-                hints.ForbiddenDirections.Add((Angle.FromDirection(eye - pos), 45f.Degrees(), _activation));
+        var relevantEyes = new List<Eye>(count);
+        var eyes = CollectionsMarshal.AsSpan(_eyes);
+        for (var i = 0; i < count; ++i)
+        {
+            ref readonly var eye = ref eyes[i];
+            if (pos != eye.Position)
+            {
+                relevantEyes.Add(eye);
+            }
+        }
+        return CollectionsMarshal.AsSpan(relevantEyes);
     }
 
     public override void DrawArenaForeground(int pcSlot, Actor pc)
@@ -475,19 +506,7 @@ sealed class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(mo
         var pos = _rel?.States[pcSlot].ReturnPos ?? pc.Position;
         Arena.Actor(pos, pc.Rotation, Colors.Object);
         Arena.AddLine(pos, pc.Position, Colors.Safe);
-        foreach (var eye in _eyes)
-        {
-            if (eye == pos)
-                continue;
-
-            var danger = HitByEye(pos, pc.Rotation, eye);
-            var eyeCenter = Arena.WorldPositionToScreenPosition(eye);
-            Components.GenericGaze.DrawEye(eyeCenter, danger);
-
-            var (min, max) = (-45f, 45f);
-            Arena.PathArcTo(pos, 1, (pc.Rotation + min.Degrees()).Rad, (pc.Rotation + max.Degrees()).Rad);
-            MiniArena.PathStroke(false, Colors.Enemy);
-        }
+        base.DrawArenaForeground(pcSlot, pc);
     }
 
     public override void OnStatusGain(Actor actor, ref ActorStatus status)
@@ -497,7 +516,10 @@ sealed class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(mo
             case (uint)SID.SpellInWaitingShadoweye:
                 var slot = Raid.FindSlot(actor.InstanceID);
                 if (slot >= 0 && _rel != null)
-                    _eyes.Add(_rel.States[slot].ReturnPos);
+                {
+                    var pos = _rel.States[slot].ReturnPos.Quantized();
+                    _eyes.Add(new(pos, _activation, eyeCenter: pos));
+                }
                 break;
             case (uint)SID.Return:
                 _activation = status.ExpireAt;
@@ -508,10 +530,10 @@ sealed class P3UltimateRelativityShadoweye(BossModule module) : BossComponent(mo
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
     {
         if (spell.Action.ID == (uint)AID.UltimateRelativityShadoweye)
+        {
             _eyes.Clear();
+        }
     }
-
-    private bool HitByEye(WPos pos, Angle rot, WPos eye) => rot.ToDirection().Dot((eye - pos).Normalized()) >= 0.707107f; // 45-degree
 }
 
 sealed class P3ShellCrusher(BossModule module) : Components.UniformStackSpread(module, 6f, default, 8, 8, includeDeadTargets: true)
@@ -523,7 +545,9 @@ sealed class P3ShellCrusher(BossModule module) : Components.UniformStackSpread(m
             // note: target is random?..
             var target = WorldState.Actors.Find(caster.TargetID);
             if (target != null)
-                AddStack(target, Module.CastFinishAt(spell, 0.4f));
+            {
+                AddStack(target, Module.CastFinishAt(spell, 0.4d));
+            }
         }
     }
 

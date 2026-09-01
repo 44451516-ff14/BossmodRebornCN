@@ -38,7 +38,7 @@ public sealed class ActorCastInfo
     public bool Interruptible;
     public bool EventHappened;
 
-    public WPos LocXZ => new(Location.XZ());
+    public WPos LocXZ => new(Location);
     public float RemainingTime => TotalTime - ElapsedTime;
     public float NPCTotalTime => TotalTime + NPCFinishDelay;
     public float NPCRemainingTime => NPCTotalTime - ElapsedTime;
@@ -70,7 +70,7 @@ public sealed class ActorCastEvent(ActionID action, ulong mainTargetID, float an
 
     public readonly List<Target> Targets = [];
 
-    public WPos TargetXZ => new(TargetPos.XZ());
+    public WPos TargetXZ => new(TargetPos);
 
     public bool IsSpell() => Action.Type == ActionType.Spell;
     public bool IsSpell<AID>(AID aid) where AID : Enum => Action == ActionID.MakeSpell(aid);
@@ -228,11 +228,11 @@ public sealed class Actor(ulong instanceID, uint oid, int spawnIndex, uint layou
 
     public Role Role => Class.GetRole();
     public ClassCategory ClassCategory => Class.GetClassCategory();
-    public WPos Position => new(PosRot.X, PosRot.Z);
-    public WPos PrevPosition => new(PrevPosRot.X, PrevPosRot.Z);
+    public WPos Position => new(ref PosRot);
+    public WPos PrevPosition => new(ref PrevPosRot);
     public WDir LastFrameMovement => Position - PrevPosition;
     public Vector4 LastFrameMovementVec4 => PosRot - PrevPosRot;
-    public Angle Rotation => PosRot.W.Radians();
+    public Angle Rotation => new(ref PosRot);
     public bool Omnidirectional
     {
         get;

@@ -334,5 +334,12 @@ public sealed class BossModuleManager : IDisposable
             }
             UnloadModule(i);
         }
+        count = PendingModules.Count;
+        for (var i = count - 1; i >= 0; --i)
+        {
+            var m = PendingModules[i];
+            m.Dispose();
+            PendingModules.RemoveAt(i);
+        }
     }
 }

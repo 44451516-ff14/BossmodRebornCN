@@ -7,7 +7,7 @@ sealed class P2IcicleImpact(BossModule module) : Components.GenericAOEs(module, 
 {
     public readonly List<AOEInstance> AOEs = []; // note: we don't remove finished aoes, since we use them in other components to detect safespots
 
-    private static readonly AOEShapeCircle _shape = new(10f);
+    private readonly AOEShapeCircle _shape = new(10f);
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => CollectionsMarshal.AsSpan(AOEs)[NumCasts..];
 
@@ -64,7 +64,7 @@ sealed class P2DiamondDustHouseOfLight(BossModule module) : Components.GenericBa
     private Actor? _source;
     private DateTime _activation;
 
-    private static readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
+    private readonly AOEShapeCone _shape = new(60f, 15f.Degrees());
 
     public override void Update()
     {
@@ -354,7 +354,7 @@ sealed class P2SinboundHoly(BossModule module) : Components.UniformStackSpread(m
     {
         if (spell.Action.ID == (uint)AID.SinboundHoly)
         {
-            AddStacks(Raid.WithoutSlot(false, true, true).Where(p => p.Role == Role.Healer), Module.CastFinishAt(spell, 0.9f));
+            AddStacks(Raid.WithoutSlot(false, true, true).Where(p => p.Role == Role.Healer), Module.CastFinishAt(spell, 0.9d));
         }
     }
 
@@ -363,11 +363,15 @@ sealed class P2SinboundHoly(BossModule module) : Components.UniformStackSpread(m
         if (spell.Action.ID == (uint)AID.SinboundHolyAOE && WorldState.CurrentTime > _nextExplosion)
         {
             if (NumCasts == 0)
+            {
                 foreach (var (i, p) in Raid.WithSlot(false, true, true))
+                {
                     _initialSpots[i] = p.Position;
+                }
+            }
 
             ++NumCasts;
-            _nextExplosion = WorldState.FutureTime(0.5f);
+            _nextExplosion = WorldState.FutureTime(0.5d);
         }
     }
 }
@@ -379,7 +383,9 @@ sealed class P2SinboundHolyVoidzone(BossModule module) : Components.Voidzone(mod
     public override void AddAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
     {
         if (AIHintsEnabled)
+        {
             base.AddAIHints(slot, actor, assignment, hints);
+        }
     }
 
     private static Actor[] GetVoidzones(BossModule module)
@@ -403,22 +409,16 @@ sealed class P2SinboundHolyVoidzone(BossModule module) : Components.Voidzone(mod
 
 sealed class P2ShiningArmor(BossModule module) : Components.GenericGaze(module, (uint)AID.ShiningArmor)
 {
-    private Actor? _source;
-    private DateTime _activation;
+    private Eye[] _eye = [];
 
-    public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor)
-    {
-        if (_source != null)
-            return new Eye[1] { new(_source.Position, _activation) };
-        return [];
-    }
+    public override ReadOnlySpan<Eye> ActiveEyes(int slot, Actor actor) => _eye;
 
     public override void OnActorPlayActionTimelineEvent(Actor actor, ushort id)
     {
         if (actor.OID == (uint)OID.BossP2 && id == 0x1E43)
         {
-            _source = actor;
-            _activation = WorldState.FutureTime(7.2d);
+            var loc = actor.Position.Quantized();
+            _eye = [new(loc, WorldState.FutureTime(7.2d), eyeCenter: loc)];
         }
     }
 }
@@ -426,11 +426,11 @@ sealed class P2ShiningArmor(BossModule module) : Components.GenericGaze(module, 
 sealed class P2TwinStillnessSilence(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [];
-    private readonly Actor? _source = module.Enemies((uint)OID.OraclesReflection).FirstOrDefault();
+    private readonly Actor? _source = module.GetActor((uint)OID.OraclesReflection);
     private BitMask _thinIce;
     private readonly WPos[] _slideBackPos = new WPos[PartyState.MaxPartySize]; // used for hints only
     private P2SinboundHolyVoidzone? _voidzones; // used for hints only
-    private const float SlideDistance = 32;
+    private const float SlideDistance = 32f;
 
     private readonly AOEShapeCone _shapeFront = new(30f, 135f.Degrees());
     private readonly AOEShapeCone _shapeBack = new(30f, 45f.Degrees());

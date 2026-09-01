@@ -15,9 +15,9 @@ public enum AID : uint
     WreckingBall = 4557 // Boss->location, 4.0s cast, range 8 circle
 }
 
-class Rotoswipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rotoswipe, new AOEShapeCone(11f, 60f.Degrees()));
-class AutoCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AutoCannons, new AOEShapeRect(42.4f, 2.5f));
-class WreckingBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WreckingBall, 8f);
+sealed class Rotoswipe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Rotoswipe, new AOEShapeCone(11f, 60f.Degrees()));
+sealed class AutoCannons(BossModule module) : Components.SimpleAOEs(module, (uint)AID.AutoCannons, new AOEShapeRect(42.4f, 2.5f));
+sealed class WreckingBall(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WreckingBall, 8f);
 
 class D060FacilityDreadnaughtStates : StateMachineBuilder
 {
@@ -31,10 +31,19 @@ class D060FacilityDreadnaughtStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38, NameID = 3836, SortOrder = 7)]
-public class D060FacilityDreadnaught(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 38u, NameID = 3836u, SortOrder = 7)]
+public sealed class D060FacilityDreadnaught : BossModule
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-360f, -250f), 9f, 6)]);
+    public D060FacilityDreadnaught(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }
+
+    private D060FacilityDreadnaught(WorldState ws, Actor primary, (WPos center, ArenaBoundsCustom arena) a) : base(ws, primary, a.center, a.arena) { }
+
+    private static (WPos center, ArenaBoundsCustom arena) BuildArena()
+    {
+        var arena = new ArenaBoundsCustom([new Polygon(new(-360f, -250f), 9f, 6)]);
+        return (arena.Center, arena);
+    }
+
     public static readonly uint[] Trash = [(uint)OID.Boss, (uint)OID.MonitoringDrone];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
@@ -42,12 +51,5 @@ public class D060FacilityDreadnaught(WorldState ws, Actor primary) : BossModule(
         Arena.Actors(this, Trash);
     }
 
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            hints.PotentialTargets[i].Priority = 0;
-        }
-    }
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

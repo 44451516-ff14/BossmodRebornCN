@@ -45,7 +45,7 @@ public sealed class SmartRotationTweak(WorldState ws, AIHints hints)
 
     public Angle? GetSafeRotation(Angle currentDirection, Angle? preferredDirection, Angle preferredHalfWidth)
     {
-        var aiEnabled = AI.AIManager.Instance?.Beh != null;
+        var aiEnabled = AI.AIManager.Instance?.Beh != null || Autorotation.MiscAI.NormalMovement.Instance != null;
         if (!_config.Enabled && !aiEnabled)
         {
             return null;

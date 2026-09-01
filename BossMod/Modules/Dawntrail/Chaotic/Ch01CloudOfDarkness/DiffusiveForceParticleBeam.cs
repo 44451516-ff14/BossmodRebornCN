@@ -12,7 +12,9 @@ sealed class DiffusiveForceParticleBeam(BossModule module) : Components.UniformS
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         if (spell.Action.ID == (uint)AID.DiffusiveForceParticleBeam)
+        {
             AddSpreads(Raid.WithoutSlot(true, false, true), Module.CastFinishAt(spell, 0.7d));
+        }
     }
 
     public override void OnEventCast(Actor caster, ActorCastEvent spell)
@@ -20,7 +22,17 @@ sealed class DiffusiveForceParticleBeam(BossModule module) : Components.UniformS
         if (spell.Action.ID is (uint)AID.DiffusiveForceParticleBeamAOE1 or (uint)AID.DiffusiveForceParticleBeamAOE2)
         {
             ++NumCasts;
-            Spreads.RemoveAll(s => s.Target.InstanceID == spell.MainTargetID);
+            var spreads = CollectionsMarshal.AsSpan(Spreads);
+            var len = spreads.Length;
+            var id = spell.MainTargetID;
+            for (var i = 0; i < len; ++i)
+            {
+                if (id == spreads[i].Target.InstanceID)
+                {
+                    Spreads.RemoveAt(i);
+                    return;
+                }
+            }
         }
     }
 }

@@ -122,7 +122,6 @@ public sealed class D150SiegeGobbue : BossModule
         var arena = new ArenaBoundsCustom([new PolygonCustom(vertices)]);
         return (arena.Center, arena);
     }
-
     private static (WPos center, ArenaBoundsCustom arena) BuildArena2()
     {
         WPos[] vertices = [new(177.66f, -18.69f), new(183.93f, -18.6f), new(184.47f, -18.16f), new(192.47f, -10.16f), new(192.43f, 1.63f),
@@ -142,12 +141,5 @@ public sealed class D150SiegeGobbue : BossModule
         Arena.ActorsInBounds(this, Trash);
     }
 
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            hints.PotentialTargets[i].Priority = 0;
-        }
-    }
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

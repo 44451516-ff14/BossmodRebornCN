@@ -268,7 +268,7 @@ public sealed class BLM(RotationModuleManager manager, Actor player) : Castxan<A
             return;
         }
 
-        if (!Hints.PriorityTargets.Any(p => Player.DistanceToHitbox(p.Actor) < 40))
+        if (!Hints.AnyPriorityTarget(p => Player.DistanceToHitbox(p.Actor) < 40f))
         {
             if (ReadyIn(AID.Transpose) == 0)
             {

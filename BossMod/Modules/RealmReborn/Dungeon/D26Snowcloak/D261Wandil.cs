@@ -24,7 +24,7 @@ public enum AID : uint
 sealed class TundraArenaChange(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    public static Polygon[] GetSmallPolygon() => [new Polygon(new(new(56.41631f, -88.51856f)), 12f, 20)];
+    public static Polygon[] GetSmallPolygon() => [new Polygon(new(56.41631f, -88.51856f), 12f, 20)];
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

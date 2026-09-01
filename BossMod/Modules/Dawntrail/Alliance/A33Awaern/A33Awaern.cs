@@ -42,7 +42,6 @@ class AwaernStates : StateMachineBuilder
     }
 }
 
-
 [ModuleInfo(BossModuleInfo.Maturity.Contributed,
     StatesType = typeof(AwaernStates),
     ConfigType = null,
@@ -57,18 +56,16 @@ class AwaernStates : StateMachineBuilder
     NameID = 14838u,
     SortOrder = 4,
     PlanLevel = 0)]
-
-
-public sealed class A33Awaern(WorldState ws, Actor primary) : BossModule(ws, primary, ArenaCenter, new ArenaBoundsRect(30f, 24f))
+public sealed class A33Awaern(WorldState ws, Actor primary) : BossModule(ws, primary, new(-720f, 720f), new ArenaBoundsRect(30f, 24f))
 {
-    public static readonly WPos ArenaCenter = new(-720f, 720f);
-
     public static readonly uint[] GardenofRuHmetMobs = [(uint)OID.Awaern, (uint)OID.Awzdei];
 
     protected override void DrawEnemies(int pcSlot, Actor pc)
     {
         Arena.Actors(this, GardenofRuHmetMobs);
     }
+
+    public override bool ShouldPrioritizeAllEnemies => true;
 }
 
 // Aw'aern = 14838u

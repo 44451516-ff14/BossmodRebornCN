@@ -25,6 +25,9 @@ public static class SortHelpers
     public static void SortAOEByActivation(List<Components.GenericAOEs.AOEInstance> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new AOEActivationComparer());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SortEyesByActivation(List<Components.GenericGaze.Eye> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new EyeActivationComparer());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SortForbiddenZonesByActivation(List<(ShapeDistance, DateTime, ulong)> list) => RefSort.Sort(CollectionsMarshal.AsSpan(list), new ForbiddenZonesActivationComparer());
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,6 +43,12 @@ public static class SortHelpers
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Compare(ref Components.GenericAOEs.AOEInstance a, ref Components.GenericAOEs.AOEInstance b) => a.Activation.CompareTo(b.Activation);
+    }
+
+    private readonly struct EyeActivationComparer : IRefComparer<Components.GenericGaze.Eye>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int Compare(ref Components.GenericGaze.Eye a, ref Components.GenericGaze.Eye b) => a.Activation.CompareTo(b.Activation);
     }
 
     private readonly struct ForbiddenZonesActivationComparer : IRefComparer<(ShapeDistance, DateTime, ulong)>

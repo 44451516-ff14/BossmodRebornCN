@@ -39,9 +39,9 @@ sealed class DebugGraphics
     ]; // Need to implement shape functions if new options added.
 
     private int _selectedShapeIndex = -1;
-    private List<Shape> _unionShapes = [];
-    private List<Shape> _diffShapes = [];
-    private List<Shape> _additionalShapes = [];
+    private readonly List<Shape> _unionShapes = [];
+    private readonly List<Shape> _diffShapes = [];
+    private readonly List<Shape> _additionalShapes = [];
     private int _selectedUnionShapesIdx = -1;
     private int _selectedDiffShapesIdx = -1;
     private int _selectedAdditionalShapesIdx = -1;
@@ -483,8 +483,8 @@ sealed class DebugGraphics
 
         var rotationMatrix = Matrix3x2.CreateRotation(-_overlayRotation.Rad);
 
-        Vector2 TransformPoint(Vector2 point) =>
-            Vector2.Transform(point - _overlayCenter, rotationMatrix) + _overlayCenter;
+        Vector2 TransformPoint(Vector2 point)
+            => Vector2.Transform(point - _overlayCenter, rotationMatrix) + _overlayCenter;
 
         if (_overlayCircle)
         {
@@ -927,7 +927,7 @@ sealed class DebugGraphics
         {
             // DrawWorldPoly for drawing the arena bounds or a custom polygon as needed.
             var center = new Vector3(arena.Center.X, Service.ObjectTable.LocalPlayer!.Position.Y, arena.Center.Z);
-            Camera.Instance!.DrawWorldPoly(center, arena.Polygon, Colors.Border, 3f);
+            Camera.Instance!.DrawWorldPoly(center, arena.Shape, Colors.Border, 3f);
         }
     }
 
@@ -963,7 +963,7 @@ sealed class DebugGraphics
             // Column 1: _unionShapes List
             ImGui.TableSetColumnIndex(0);
             ImGui.Text("UnionShapes");
-            ImGui.BeginChild("UnionRegion", new System.Numerics.Vector2(0, 100), true);
+            ImGui.BeginChild("UnionRegion", new Vector2(0, 100), true);
             for (int i = 0; i < _unionShapes.Count; i++)
             {
                 bool isUnionSelected = (_selectedUnionShapesIdx == i);
@@ -981,7 +981,7 @@ sealed class DebugGraphics
 
             // Column 2: Transfer Buttons
             ImGui.TableSetColumnIndex(1);
-            ImGui.Dummy(new System.Numerics.Vector2(0, 40)); // spacing
+            ImGui.Dummy(new Vector2(0, 40)); // spacing
             if (ImGui.Button(" > ## column 2 move right") && _selectedUnionShapesIdx >= 0 &&
                 _selectedUnionShapesIdx < _unionShapes.Count)
             {
@@ -1001,7 +1001,7 @@ sealed class DebugGraphics
             // Column 3: _diffShapes List
             ImGui.TableSetColumnIndex(2);
             ImGui.Text("DiffShapes");
-            ImGui.BeginChild("DiffRegion", new System.Numerics.Vector2(0, 100), true);
+            ImGui.BeginChild("DiffRegion", new Vector2(0, 100), true);
             for (int i = 0; i < _diffShapes.Count; i++)
             {
                 bool isSelected = (_selectedDiffShapesIdx == i);
@@ -1020,7 +1020,7 @@ sealed class DebugGraphics
             // Column 3: Transfer Buttons between _diffShapes and _additionalShapes
             // Transfer buttons become '>>' and '<<' to avoid problems with existing buttons called '>' and '<'
             ImGui.TableSetColumnIndex(3);
-            ImGui.Dummy(new System.Numerics.Vector2(0, 40)); // spacing
+            ImGui.Dummy(new Vector2(0, 40)); // spacing
             if (ImGui.Button(" > ## column 4 move right") && _selectedDiffShapesIdx >= 0 &&
                 _selectedDiffShapesIdx < _diffShapes.Count)
             {
@@ -1040,10 +1040,10 @@ sealed class DebugGraphics
             // Column 5: _additionalShapes List
             ImGui.TableSetColumnIndex(4);
             ImGui.Text("AdditionalShapes");
-            ImGui.BeginChild("AdditionalRegion", new System.Numerics.Vector2(0, 100), true);
+            ImGui.BeginChild("AdditionalRegion", new Vector2(0, 100), true);
             for (int i = 0; i < _additionalShapes.Count; i++)
             {
-                bool isSelected = (_selectedAdditionalShapesIdx == i);
+                bool isSelected = _selectedAdditionalShapesIdx == i;
                 if (ImGui.Selectable(_additionalShapes[i].ToString(), isSelected))
                 {
                     _selectedAdditionalShapesIdx = i;

@@ -396,27 +396,30 @@ sealed class ReplayDetailsWindow : UIWindow
     // x, z, rot, hp, name, target, cast, statuses
     private void DrawCommonColumns(Actor actor)
     {
-        (WPos center, float radius) bounds = _mgr.ActiveModule == null ? (new(100, 100), 20) : (_mgr.ActiveModule.Center, _mgr.ActiveModule.Bounds.Radius);
+        (WPos center, float radius) bounds = _mgr.ActiveModule == null ? (new(100f, 100f), 20f) : (_mgr.ActiveModule.Center, _mgr.ActiveModule.Bounds.Radius);
         var radius = bounds.radius;
         var center = bounds.center;
         var minx = center.X - radius;
         var maxx = center.X + radius;
         var minz = center.Z - radius;
         var maxz = center.Z + radius;
-        var pos = actor.Position;
+        var pos = actor.PosRot;
         var posX = pos.X;
+        var posY = pos.Y;
         var posZ = pos.Z;
-        var rot = actor.Rotation.Deg;
+        var rot = pos.W.Radians().Deg;
         var modified = false;
         ImGui.TableNextColumn();
         modified |= ImGui.DragFloat("###X", ref posX, 0.25f, minx, maxx);
+        ImGui.TableNextColumn();
+        modified |= ImGui.DragFloat("###Y", ref posY, 0.25f, -1000, 1000);
         ImGui.TableNextColumn();
         modified |= ImGui.DragFloat("###Z", ref posZ, 0.25f, minz, maxz);
         ImGui.TableNextColumn();
         modified |= ImGui.DragFloat("###Rot", ref rot, 1, -180f, 180f);
         if (modified)
         {
-            actor.PosRot = new(posX, actor.PosRot.Y, posZ, rot.Degrees().Rad);
+            actor.PosRot = new(posX, posY, posZ, rot.Degrees().Rad);
         }
 
         ImGui.TableNextColumn();
@@ -507,19 +510,20 @@ sealed class ReplayDetailsWindow : UIWindow
         }
 
         var resetPF = false;
-        ImGui.BeginTable("party", 12, ImGuiTableFlags.Resizable);
-        ImGui.TableSetupColumn("POV", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 25);
-        ImGui.TableSetupColumn("Class", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 30);
-        ImGui.TableSetupColumn("Assign", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 50);
-        ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200);
-        ImGui.TableSetupColumn("名称", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("目标", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("咏唱", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("状态", ImGuiTableColumnFlags.None, 100);
-        ImGui.TableSetupColumn("Hints", ImGuiTableColumnFlags.None, 250);
+        ImGui.BeginTable("party", 13, ImGuiTableFlags.Resizable);
+        ImGui.TableSetupColumn("POV", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 25f);
+        ImGui.TableSetupColumn("Class", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 30f);
+        ImGui.TableSetupColumn("Assign", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 50f);
+        ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Y", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200f);
+        ImGui.TableSetupColumn("名称", ImGuiTableColumnFlags.WidthFixed, 100f);
+        ImGui.TableSetupColumn("目标", ImGuiTableColumnFlags.WidthFixed, 100f);
+        ImGui.TableSetupColumn("咏唱", ImGuiTableColumnFlags.WidthFixed, 100f);
+        ImGui.TableSetupColumn("状态", ImGuiTableColumnFlags.WidthFixed, 100f);
+        ImGui.TableSetupColumn("Hints", ImGuiTableColumnFlags.WidthFixed, 250f);
         ImGui.TableHeadersRow();
         foreach ((var slot, var player) in _player.WorldState.Party.WithSlot(true))
         {
@@ -592,11 +596,12 @@ sealed class ReplayDetailsWindow : UIWindow
             return;
         }
 
-        ImGui.BeginTable($"enemy_{oid}", 8, ImGuiTableFlags.Resizable);
-        ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200);
+        ImGui.BeginTable($"enemy_{oid}", 9, ImGuiTableFlags.Resizable);
+        ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Y", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200f);
         ImGui.TableSetupColumn("名称");
         ImGui.TableSetupColumn("目标");
         ImGui.TableSetupColumn("咏唱");
@@ -619,11 +624,12 @@ sealed class ReplayDetailsWindow : UIWindow
             return;
         }
 
-        ImGui.BeginTable($"actors", 8, ImGuiTableFlags.Resizable);
-        ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90);
-        ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200);
+        ImGui.BeginTable($"actors", 9, ImGuiTableFlags.Resizable);
+        ImGui.TableSetupColumn("X", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Y", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Z", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("Rot", ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize, 90f);
+        ImGui.TableSetupColumn("HP", ImGuiTableColumnFlags.WidthFixed, 200f);
         ImGui.TableSetupColumn("名称");
         ImGui.TableSetupColumn("目标");
         ImGui.TableSetupColumn("咏唱");
@@ -721,12 +727,12 @@ sealed class ReplayDetailsWindow : UIWindow
         player.WorldState.Frame.Timestamp = _player.Replay.Ops[0].Timestamp; // so that we get correct name etc.
         using (var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, false, new FileInfo(_player.Replay.Path).Directory!, "Before", false))
         {
-            player.AdvanceTo(_curTime, () => { });
+            player.AdvanceTo(_curTime, static () => { });
         }
 
         using (var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, "After", false))
         {
-            player.AdvanceTo(DateTime.MaxValue, () => { });
+            player.AdvanceTo(DateTime.MaxValue, static () => { });
         }
     }
 
@@ -747,8 +753,8 @@ sealed class ReplayDetailsWindow : UIWindow
 
         var player = new ReplayPlayer(_player.Replay);
         player.WorldState.Frame.Timestamp = _player.Replay.Ops[0].Timestamp;
-        player.AdvanceTo(enc.Time.Start, () => { });
+        player.AdvanceTo(enc.Time.Start, static () => { });
         using var relogger = new ReplayRecorder(player.WorldState, ReplayLogFormat.BinaryCompressed, true, new FileInfo(_player.Replay.Path).Directory!, $"Encounter_{Utils.StringToIdentifier(primaryActorName ?? "未知")}", false);
-        player.AdvanceTo(enc.Time.End, () => { });
+        player.AdvanceTo(enc.Time.End, static () => { });
     }
 }

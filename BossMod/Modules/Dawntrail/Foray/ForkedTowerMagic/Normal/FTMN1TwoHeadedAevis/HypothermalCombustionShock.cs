@@ -99,6 +99,11 @@ sealed class HypothermalCombustionShock(BossModule module) : Components.GenericA
         if (knockbacks == null || knockbacks.ActiveKnockbacks(slot, actor).Length == 0)
         {
             base.AddAIHints(slot, actor, assignment, hints);
+            if (_aoes.Count != 0)
+            {
+                // avoid standing on edge to look less sus
+                hints.AddForbiddenZone(new SDInvertedRect(Arena.Center, 0f.Degrees(), 18f, 18f, 18f));
+            }
         }
     }
 }

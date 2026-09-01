@@ -1,5 +1,6 @@
 ﻿namespace BossMod.Dawntrail.Alliance.A30Shantoto;
 
+[SkipLocalsInit]
 sealed class A30ShantotoStates : StateMachineBuilder
 {
     public A30ShantotoStates(BossModule module) : base(module)
@@ -23,6 +24,7 @@ sealed class A30ShantotoStates : StateMachineBuilder
             .ActivateOnEnter<FallingRubble2>()
             .ActivateOnEnter<FallingRubble3>()
             .ActivateOnEnter<AeroDynamics>()
-            .ActivateOnEnter<FinalExam>();
+            .ActivateOnEnter<FinalExam>()
+            .Raw.Update = () => Module.PrimaryActor is var primary && primary.IsDeadOrDestroyed || primary.HPMP.CurHP <= 1u;
     }
 }

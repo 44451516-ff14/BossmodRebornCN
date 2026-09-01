@@ -43,6 +43,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
     private DateTime _throttleInteract;
     private DateTime _throttleFateSync;
     private DateTime _throttleLeaveDuty;
+    private WorldOverlayNode? _worldOverlayNode;
 
     // windows
     private ConfigUI _configUI = null!; // TODO: should be a proper window!
@@ -72,7 +73,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
 
         InteropGenerator.Runtime.Resolver.GetInstance.Setup(sigScanner.SearchBase, _gameVersion, new(dalamud.ConfigDirectory.FullName + "/cs.json"));
         FFXIVClientStructs.Interop.Generated.Addresses.Register();
-
+        Dx11ArenaRenderer.Initialize(_dalamud.UiBuilder.DeviceHandle);
         dalamud.Create<Service>();
         Service.LogHandlerDebug = msg => Service.Logger.Debug(msg);
         Service.LogHandlerVerbose = msg => Service.Logger.Verbose(msg);
@@ -103,6 +104,8 @@ public sealed class Plugin : IAsyncDalamudPlugin
         Service.Condition.ConditionChange += OnConditionChanged;
         MultiboxUnlock.Exec();
         Camera.Instance = new();
+        _worldOverlayNode = new();
+        Dx11ArenaRenderer.SetWorldOverlayNode(_worldOverlayNode);
 
         Service.Config.Modified.Subscribe(() => Task.Run(() => Service.Config.SaveToFile(_dalamud.ConfigFile)));
 
@@ -152,6 +155,10 @@ public sealed class Plugin : IAsyncDalamudPlugin
         {
             _dalamud.UiBuilder.Draw -= DrawUI;
             Service.Condition.ConditionChange -= OnConditionChanged;
+            Dx11ArenaRenderer.SetWorldOverlayNode(null);
+            _worldOverlayNode?.Dispose();
+            _worldOverlayNode = null;
+            Dx11ArenaRenderer.Shutdown();
         });
         ReplayVisualization.GaugeVisualizer.Dispose();
         _wndDebug.Dispose();
@@ -330,7 +337,7 @@ public sealed class Plugin : IAsyncDalamudPlugin
         var gameMain = FFXIVClientStructs.FFXIV.Client.Game.GameMain.Instance();
         return link == 0
             || Service.LuminaRow<Lumina.Excel.Sheets.TerritoryType>(gameMain->CurrentTerritoryTypeId)?.TerritoryIntendedUse.RowId == 31u // deep dungeons check is hardcoded in game
-            || FFXIVClientStructs.FFXIV.Client.Game.UI.UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(link);
+            || UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(link);
     }
 
     private unsafe void ExecuteHints()

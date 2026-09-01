@@ -83,7 +83,7 @@ sealed class IncendiaryBombingBait : Components.GenericBaitAway
         {
             if (!polygonInit)
             {
-                polygon = A22SuperiorFlightUnits.ArenaShape.Polygon.Offset(-1.5f);
+                polygon = A22SuperiorFlightUnits.ArenaShape.Shape.Offset(-1.5f);
                 polygonInit = true;
             }
 

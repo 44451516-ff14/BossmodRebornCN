@@ -26,12 +26,12 @@ public enum AID : uint
     WildRattle = 408, // ChasmCobra->player, no cast, single-target
 }
 
-class FlashFlood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlashFlood, new AOEShapeCone(8.16f, 60f.Degrees()));
-class LaboredLeap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LaboredLeap, 10.32f);
-class FallenRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 4f);
-class WingsOfWoe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingsOfWoe, 6f);
+sealed class FlashFlood(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FlashFlood, new AOEShapeCone(8.16f, 60f.Degrees()));
+sealed class LaboredLeap(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LaboredLeap, 10.32f);
+sealed class FallenRock(BossModule module) : Components.SimpleAOEs(module, (uint)AID.FallingRock, 4f);
+sealed class WingsOfWoe(BossModule module) : Components.SimpleAOEs(module, (uint)AID.WingsOfWoe, 6f);
 
-class D150ChasmHarpeiaStates : StateMachineBuilder
+sealed class D150ChasmHarpeiaStates : StateMachineBuilder
 {
     public D150ChasmHarpeiaStates(BossModule module) : base(module)
     {
@@ -44,7 +44,7 @@ class D150ChasmHarpeiaStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182, NameID = 5253, SortOrder = 1)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182u, NameID = 5253u, SortOrder = 1)]
 public sealed class D150ChasmHarpeia : BossModule
 {
     public D150ChasmHarpeia(WorldState ws, Actor primary) : this(ws, primary, primary.PosRot.X < -130f ? BuildArena1() : BuildArena2()) { }
@@ -67,7 +67,7 @@ public sealed class D150ChasmHarpeia : BossModule
         new(-134.1f, 212.61f), new(-134.62f, 212.94f), new(-134.86f, 219.11f), new(-135.36f, 222.6f), new(-135.29f, 223.3f),
         new(-135.17f, 223.91f), new(-133.35f, 228.29f), new(-132.91f, 228.64f), new(-132.4f, 232.12f), new(-132.85f, 232.36f),
         new(-135.39f, 233.28f), new(-136.02f, 233.59f), new(-137.76f, 234.73f), new(-138.43f, 235.08f), new(-138.91f, 235.3f),
-        new(-141.55f, 235.2f), new(-142.16f, 235.37f), new(-142.43f, 236), new(-142.83f, 237.41f), new(-143.11f, 238.12f),
+        new(-141.55f, 235.2f), new(-142.16f, 235.37f), new(-142.43f, 236f), new(-142.83f, 237.41f), new(-143.11f, 238.12f),
         new(-143.62f, 238.12f), new(-144.93f, 238.01f), new(-145.56f, 237.87f), new(-147.99f, 236.86f), new(-148.47f, 236.4f),
         new(-148.95f, 236.24f), new(-149.59f, 236.2f), new(-150.74f, 235.72f), new(-151.33f, 235.81f), new(-151.95f, 235.97f),
         new(-152.64f, 235.96f), new(-154.06f, 234.75f), new(-154.63f, 234.8f), new(-157.62f, 235.69f), new(-158.26f, 235.57f),
@@ -112,7 +112,7 @@ public sealed class D150ChasmHarpeia : BossModule
         new(-133.71f, 193.02f), new(-132.7f, 192.31f), new(-132.36f, 191.87f), new(-132.18f, 190.56f), new(-131.95f, 189.94f),
         new(-129.76f, 188.83f), new(-129.64f, 188.29f), new(-129.65f, 187.65f), new(-129.55f, 186.97f), new(-129.02f, 186.58f),
         new(-128.59f, 186.19f), new(-128.63f, 185.63f), new(-129.05f, 183.71f), new(-126.83f, 182.42f), new(-126.38f, 182.02f),
-        new(-126.21f, 180), new(-126.2f, 179.31f), new(-126.33f, 177.29f), new(-126.46f, 176.8f), new(-130.99f, 174.6f),
+        new(-126.21f, 180f), new(-126.2f, 179.31f), new(-126.33f, 177.29f), new(-126.46f, 176.8f), new(-130.99f, 174.6f),
         new(-130.93f, 173.91f), new(-130.63f, 172.12f), new(-130.94f, 171.68f), new(-133.41f, 170.6f), new(-133.53f, 169.91f),
         new(-133.53f, 168.66f), new(-135.31f, 166.64f), new(-135.64f, 166.22f), new(-134.17f, 164.02f), new(-134.25f, 163.46f),
         new(-135.28f, 160.93f), new(-135.24f, 160.27f), new(-134.93f, 158.3f), new(-134.45f, 158.12f), new(-130.68f, 157.55f),
@@ -168,7 +168,7 @@ public sealed class D150ChasmHarpeia : BossModule
         new(-131.68f, 103.09f), new(-132.16f, 103.65f), new(-132.65f, 104.06f), new(-133.35f, 104.25f), new(-134.39f, 104.27f),
         new(-135.47f, 104.88f), new(-135.95f, 105.24f), new(-136.12f, 105.81f), new(-136.12f, 106.46f), new(-136.45f, 107.07f),
         new(-137.31f, 108.14f), new(-138.78f, 108.15f), new(-139.41f, 108.42f), new(-139.57f, 108.92f), new(-139.49f, 109.45f),
-        new(-139.09f, 110), new(-139.36f, 110.53f), new(-139.28f, 111.15f), new(-129.07f, 133.18f), new(-129.09f, 133.8f),
+        new(-139.09f, 110f), new(-139.36f, 110.53f), new(-139.28f, 111.15f), new(-129.07f, 133.18f), new(-129.09f, 133.8f),
         new(-131.66f, 135.65f), new(-132.22f, 135.96f), new(-132.83f, 136.12f), new(-133.45f, 136.22f), new(-133.97f, 136.26f),
         new(-134.62f, 136.01f), new(-135.04f, 135.46f), new(-145.02f, 114.04f), new(-145.49f, 113.86f), new(-145.95f, 113.43f),
         new(-146.21f, 112.87f), new(-146.53f, 112.33f), new(-147.08f, 111.96f), new(-147.62f, 110.84f), new(-148.14f, 110.64f),
@@ -179,7 +179,7 @@ public sealed class D150ChasmHarpeia : BossModule
         new(-164.34f, 97.49f), new(-164.37f, 96.82f), new(-164.12f, 96.23f), new(-164.18f, 95.68f), new(-164.93f, 94.58f),
         new(-164.76f, 94.09f), new(-163.25f, 92.46f), new(-163.11f, 91.91f), new(-163.49f, 91.48f), new(-163.97f, 91.03f),
         new(-164.21f, 90.41f), new(-164.23f, 89.72f), new(-163.45f, 88.57f), new(-162.78f, 88.23f), new(-162.17f, 88.38f),
-        new(-161.53f, 88.02f), new(-161.13f, 87.62f), new(-161.11f, 87), new(-162.16f, 85.41f), new(-162.4f, 83.41f),
+        new(-161.53f, 88.02f), new(-161.13f, 87.62f), new(-161.11f, 87f), new(-162.16f, 85.41f), new(-162.4f, 83.41f),
         new(-160.98f, 81.87f), new(-158.32f, 82.09f), new(-157.85f, 81.76f), new(-156.86f, 80.84f), new(-156.3f, 80.42f),
         new(-154.91f, 80.48f), new(-154.44f, 80.67f), new(-154.03f, 81.01f), new(-153.44f, 81.08f), new(-152.83f, 81.07f),
         new(-151.59f, 80.62f), new(-151.06f, 80.29f), new(-148.32f, 79.44f), new(-145.77f, 80.2f), new(-145.22f, 79.96f),
@@ -212,12 +212,5 @@ public sealed class D150ChasmHarpeia : BossModule
         Arena.ActorsInBounds(this, Trash);
     }
 
-    protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
-    {
-        var count = hints.PotentialTargets.Count;
-        for (var i = 0; i < count; ++i)
-        {
-            hints.PotentialTargets[i].Priority = 0;
-        }
-    }
+    public override bool ShouldPrioritizeAllEnemies => true;
 }

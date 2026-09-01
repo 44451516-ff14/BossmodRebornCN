@@ -58,7 +58,7 @@ sealed class D153TozolHuatotlStates : StateMachineBuilder
     }
 }
 
-[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182, NameID = 5272, SortOrder = 7)]
+[ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", GroupType = BossModuleInfo.GroupType.CFC, GroupID = 182u, NameID = 5272u, SortOrder = 7)]
 public sealed class D153TozolHuatotl : BossModule
 {
     public D153TozolHuatotl(WorldState ws, Actor primary) : this(ws, primary, BuildArena()) { }

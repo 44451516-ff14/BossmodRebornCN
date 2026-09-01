@@ -26,30 +26,13 @@ public enum SID : uint
 
 sealed class ExplosiveDehiscence(BossModule module) : Components.CastGaze(module, (uint)AID.ExplosiveDehiscence)
 {
-    public bool casting;
     public BitMask _blinded;
 
     public override void AddHints(int slot, Actor actor, TextHints hints)
     {
-        if (!_blinded[slot] && casting)
+        if (Eyes.Count != 0 && !_blinded[slot])
         {
             hints.Add("Cast Ink Jet on boss to get blinded!");
-        }
-    }
-
-    public override void OnCastStarted(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.Schizocarps)
-        {
-            casting = true;
-        }
-    }
-
-    public override void OnCastFinished(Actor caster, ActorCastInfo spell)
-    {
-        if (spell.Action.ID == (uint)AID.ExplosiveDehiscence)
-        {
-            casting = false;
         }
     }
 
@@ -57,7 +40,7 @@ sealed class ExplosiveDehiscence(BossModule module) : Components.CastGaze(module
     {
         if (status.ID == (uint)SID.Blind)
         {
-            _blinded[Raid.FindSlot(actor.InstanceID)] = true;
+            _blinded.Set(Raid.FindSlot(actor.InstanceID));
         }
     }
 
@@ -65,7 +48,7 @@ sealed class ExplosiveDehiscence(BossModule module) : Components.CastGaze(module
     {
         if (status.ID == (uint)SID.Blind)
         {
-            _blinded[Raid.FindSlot(actor.InstanceID)] = false;
+            _blinded.Clear(Raid.FindSlot(actor.InstanceID));
         }
     }
 

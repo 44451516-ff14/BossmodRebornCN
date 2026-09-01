@@ -19,7 +19,7 @@ sealed class EasternEwers(BossModule module) : Components.Exaflare(module, 4f)
             for (var i = 0; i < count; ++i)
             {
                 var line = Lines[i];
-                if (line.Next.AlmostEqual(pos, 0.1f))
+                if (line.Next.AlmostEqual(pos, 1f))
                 {
                     AdvanceLine(line, pos);
                     if (line.Next.Z > -135f)
@@ -30,6 +30,24 @@ sealed class EasternEwers(BossModule module) : Components.Exaflare(module, 4f)
                     {
                         Lines.RemoveAt(i);
                     }
+                    return;
+                }
+            }
+        }
+    }
+
+    public override void OnActorDestroyed(Actor actor) // fallback, sometimes for whatever reason the ewers die before the 14th hit happens
+    {
+        if (actor.OID == (uint)OID.EasternEwer)
+        {
+            var pos = actor.Position;
+            var count = Lines.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var line = Lines[i];
+                if (line.Next.AlmostEqual(pos, 1f))
+                {
+                    Lines.RemoveAt(i);
                     return;
                 }
             }

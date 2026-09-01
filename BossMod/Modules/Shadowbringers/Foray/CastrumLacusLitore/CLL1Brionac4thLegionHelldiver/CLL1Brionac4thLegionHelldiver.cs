@@ -147,11 +147,11 @@ sealed class DetermineArena(BossModule module) : BossComponent(module)
 
 sealed class BossHealths(BossModule module) : BossComponent(module)
 {
-    private readonly Actor? _bossHellDiver = module.Enemies((uint)OID.FourthLegionHelldiver1)[0];
+    private readonly Actor BossHelldiver = ((CLL1Brionac4thLegionHelldiver)module).BossHellDiver!;
 
     public override void AddGlobalHints(GlobalHints hints)
     {
-        hints.Add($"Top: {Module.PrimaryActor.HPRatio * 100f:f1}%, Bottom: {_bossHellDiver?.HPRatio * 100f:f1}%");
+        hints.Add($"Top: {Module.PrimaryActor.HPRatio * 100f:f1}%, Bottom: {BossHelldiver.HPRatio * 100f:f1}%");
     }
 }
 
@@ -164,10 +164,12 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
     }
 
     public Actor? BossHellDiver;
+    private Actor? tunnelArmor;
 
     protected override void UpdateModule()
     {
         BossHellDiver ??= GetActor((uint)OID.FourthLegionHelldiver1);
+        tunnelArmor ??= GetActor((uint)OID.TunnelArmor);
     }
 
     protected override bool CheckPull() => base.CheckPull() || (BossHellDiver?.InCombat ?? false);
@@ -197,7 +199,7 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
 
     public static readonly WPos ArenaCenterBottom = new(80f, -179.41f);
     public static readonly ArenaBoundsRect ArenaBottom = new(29.58f, 24.59f);
-    public static readonly WPos ArenaCenterTop = new(new(80f, -222f));
+    public static readonly WPos ArenaCenterTop = new(80f, -222f);
     public static readonly ArenaBoundsRect ArenaTop = new(29.5f, 14.5f);
 
     protected override void CalculateModuleAIHints(int slot, Actor actor, PartyRolesConfig.Assignment assignment, AIHints hints)
@@ -214,24 +216,43 @@ public sealed class CLL1Brionac4thLegionHelldiver : BossModule
             if (center == ArenaCenterTop)
             {
                 if (oid == (uint)OID.MagitekCore)
+                {
                     enemyPrio = 1;
-                else if (e == PrimaryActor && e.HPRatio - BossHellDiver?.HPRatio < -0.1f)
+                }
+                // if top boss got less than 20% hp, but hp difference to bottom boss is > 10%, forbid attacking
+                else if (e == PrimaryActor && e.HPRatio is var ratio && ratio <= 0.2f && ratio - BossHellDiver?.HPRatio < -0.1f)
+                {
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
+                }
                 else if (oid == (uint)OID.FourthLegionSkyArmor && Arena.InBounds(e.Position))
+                {
                     enemyPrio = 0;
+                }
                 else if (oid != (uint)OID.Boss)
+                {
                     enemyPrio = AIHints.Enemy.PriorityInvincible;
+                }
             }
             else
             {
                 if (oid == (uint)OID.FourthLegionHelldiver3)
+                {
                     enemyPrio = 1;
-                else if (e == BossHellDiver && e.HPRatio - PrimaryActor.HPRatio < -0.1f)
+                }
+                // if bottom boss got less than 20% hp, but hp difference to upper boss is > 10%, forbid attacking
+                // unless tunnel armor is almost dead, then risk the enrage sequence
+                else if (e == BossHellDiver && e.HPRatio is var ratio && ratio <= 0.2f && ratio - PrimaryActor.HPRatio < -0.1f && tunnelArmor?.HPRatio > 0.1f)
+                {
                     enemyPrio = AIHints.Enemy.PriorityForbidden;
+                }
                 else if (oid == (uint)OID.FourthLegionSkyArmor && Arena.InBounds(e.Position))
+                {
                     enemyPrio = 0;
+                }
                 else if (oid != (uint)OID.FourthLegionHelldiver1)
+                {
                     enemyPrio = AIHints.Enemy.PriorityInvincible;
+                }
             }
             h.Priority = enemyPrio;
         }

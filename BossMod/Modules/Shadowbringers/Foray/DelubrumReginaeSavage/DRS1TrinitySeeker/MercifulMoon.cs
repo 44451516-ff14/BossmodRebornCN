@@ -10,7 +10,8 @@ sealed class MercifulMoon(BossModule module) : Components.GenericGaze(module, (u
     {
         if (actor.OID == (uint)OID.AetherialOrb)
         {
-            _eye = [new(actor.Position, WorldState.FutureTime(5.8d))];
+            var loc = actor.Position.Quantized();
+            _eye = [(new(loc, WorldState.FutureTime(5.8d), eyeCenter: loc))];
         }
     }
 }

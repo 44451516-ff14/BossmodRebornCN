@@ -64,8 +64,8 @@ sealed class PetrifactionPlayer(BossModule module) : Components.GenericGaze(modu
         {
             return [];
         }
-
-        return new Eye[] { new(target.Position, activation) };
+        var loc = target.Position.Quantized();
+        return new Eye[1] { new(loc, activation, eyeCenter: loc) };
     }
 
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)

@@ -21,7 +21,7 @@ sealed class AuroralUppercut(BossModule module) : Components.GenericKnockback(mo
             _kb = [new(Arena.Center, distance, Module.CastFinishAt(spell, 1.6d), ignoreImmunes: true)];
             if (Arena.Bounds is ArenaBoundsCustom arena)
             {
-                poly = arena.Polygon.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
+                poly = arena.Shape.Offset(-1f); // pretend polygon is 1y smaller than real for less suspect knockbacks
             }
         }
     }

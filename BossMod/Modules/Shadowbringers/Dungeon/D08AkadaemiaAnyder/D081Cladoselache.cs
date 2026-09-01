@@ -69,7 +69,7 @@ sealed class D081CladoselacheStates : StateMachineBuilder
 [ModuleInfo(BossModuleInfo.Maturity.Verified, Contributors = "The Combat Reborn Team (Malediktus)", PrimaryActorOID = (uint)OID.Cladoselache, GroupType = BossModuleInfo.GroupType.CFC, GroupID = 661u, NameID = 8235u, Category = BossModuleInfo.Category.Dungeon, Expansion = BossModuleInfo.Expansion.Shadowbringers, SortOrder = 1)]
 public sealed class D081Cladoselache(WorldState ws, Actor primary) : BossModule(ws, primary, arena.Center, arena)
 {
-    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(new(-305f, 211.49998f)), 19.5f * CosPI.Pi60th, 60)]);
+    private static readonly ArenaBoundsCustom arena = new([new Polygon(new(-305f, 211.49998f), 19.5f * CosPI.Pi60th, 60)]);
     public Actor? Doliodus;
 
     protected override void UpdateModule()

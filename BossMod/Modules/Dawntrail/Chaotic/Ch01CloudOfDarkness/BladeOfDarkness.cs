@@ -3,8 +3,8 @@
 sealed class BladeOfDarkness(BossModule module) : Components.GenericAOEs(module)
 {
     private AOEInstance[] _aoe = [];
-    private static readonly AOEShapeDonutSector _shapeIn = new(12f, 60f, 75f.Degrees());
-    private static readonly AOEShapeCone _shapeOut = new(30f, 90f.Degrees());
+    private readonly AOEShapeDonutSector _shapeIn = new(12f, 60f, 75f.Degrees());
+    private readonly AOEShapeCone _shapeOut = new(30f, 90f.Degrees());
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor) => _aoe;
 

@@ -62,7 +62,7 @@ public sealed class PolygonClipper
 
         public void Assign(Clipper64 clipper, PathType role) => clipper.AddReuseableData(_data, role);
 
-        private void AddContour(Path64 contour, bool isOpen) => _data.AddPaths([contour], PathType.Subject, isOpen);
+        private void AddContour(Path64 contour, bool isOpen) => _data.AddPath(contour, PathType.Subject, isOpen);
     }
 
     private readonly Clipper64 _clipper = new() { PreserveCollinear = false };

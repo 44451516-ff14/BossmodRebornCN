@@ -31,9 +31,19 @@ sealed class RazingVolleyParticleBeam(BossModule module) : Components.SimpleAOEs
     public override void OnCastStarted(Actor caster, ActorCastInfo spell)
     {
         base.OnCastStarted(caster, spell);
-        if (spell.Action.ID == WatchedAction)
+        if (spell.Action.ID is var id && id == WatchedAction)
         {
             NumCasts = 0;
+        }
+        else if (id is (uint)AID.BladeOfDarknessL or (uint)AID.BladeOfDarknessR)
+        {
+            var aoes = CollectionsMarshal.AsSpan(Casters);
+            var len = aoes.Length;
+            var color = Colors.Danger;
+            for (var i = 0; i < len; ++i)
+            {
+                aoes[i].Color = color;
+            }
         }
     }
 

@@ -234,6 +234,7 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
 
     private readonly int _rows;
     private readonly int _sourceEdgeCount;
+
     private readonly float _minY, _cellH, _invCellH;
     private readonly float _bbMinX, _bbMinY, _bbMaxX, _bbMaxY;
 
@@ -281,6 +282,20 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
     }
 
     ~PolygonBoundaryIndex2D() => Dispose(false);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetBounds(out WDir min, out WDir max)
+    {
+        min = new(_bbMinX, _bbMinY);
+        max = new(_bbMaxX, _bbMaxY);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void GetBounds(out Vector2 min, out Vector2 max)
+    {
+        min = new(_bbMinX, _bbMinY);
+        max = new(_bbMaxX, _bbMaxY);
+    }
 
     public void Dispose()
     {
@@ -418,11 +433,21 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
             var y1 = MathF.BitDecrement(e.y1); // top-exclusive
             var r0 = (int)((e.y0 - bbMinY) * invCellH);
             var r1 = (int)((y1 - bbMinY) * invCellH);
+
             if (r0 < 0)
             {
                 r0 = 0;
             }
-            if (r1 >= rows)
+            else if (r0 >= rows)
+            {
+                r0 = rows - 1;
+            }
+
+            if (r1 < 0)
+            {
+                r1 = 0;
+            }
+            else if (r1 >= rows)
             {
                 r1 = rows - 1;
             }
@@ -669,102 +694,377 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
         return new PolygonBoundaryIndex2D(y0Ptr, y1Ptr, x0Ptr, kPtr, bPtr, minXPtr, maxXPtr, dxPtr, dyPtr, invL2Ptr, total,
             rowOffsets, rowEndingStarts, rowNewStarts, rowSingleStarts, rowEnds, hEdgesByRow, hRowOffsets, rows, lenEdges + lenH, bbMinY, cellH, invCellH,
             bbMinX, bbMinY, bbMaxX, bbMaxY, rowMinX, rowMaxX, [.. contourSamples], rawBlock);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int RoundUp(int v, int m) => (v + m - 1) & -m;
+    // Reduced index for temporary grid rasterization. ClassifyAABBRect only needs point containment
+    // plus segment/AABB intersection, so we omit x0, dx, dy, inverse-length, contour-sample and
+    // closest-point row metadata. The returned index must not be used for other query families.
+    public static PolygonBoundaryIndex2D BuildForAABBRectClassification(RelSimplifiedComplexPolygon complex)
+    {
+        var (eList, hList, bbMinX, bbMinY, bbMaxX, bbMaxY) = CollectEdgesForAABBRectClassification(complex);
+        var edges = CollectionsMarshal.AsSpan(eList);
+        var hEdges = CollectionsMarshal.AsSpan(hList);
+        var lenEdges = edges.Length;
+        var lenH = hEdges.Length;
+        var nEdges = Math.Max(lenEdges + lenH, 1);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void ProcessExteriorContour(ReadOnlySpan<WDir> contour, List<E> eList, List<H> hList,
-            ref float bbMinX, ref float bbMinY, ref float bbMaxX, ref float bbMaxY)
+        const int MaxRows = 512;
+        const int MinRows = 4;
+        var rows = nEdges switch
         {
-            var count = contour.Length;
-            if (count == 0)
+            <= 4 => 1,
+            <= 8 => 2,
+            <= 16 => 4,
+            _ => Math.Clamp((int)MathF.Round(MathF.Sqrt(nEdges) * 0.9f) + 8, MinRows, MaxRows)
+        };
+
+        var height = bbMaxY - bbMinY;
+        if (height <= 0f)
+        {
+            rows = 1;
+        }
+        var cellH = height > 0f ? height / rows : 1f;
+        var invCellH = 1f / cellH;
+
+        Span<int> counts = stackalloc int[rows];
+        Span<int> countDeltas = stackalloc int[rows + 1];
+        Span<int> newCounts = stackalloc int[rows];
+        Span<int> hCounts = stackalloc int[rows];
+        counts.Clear();
+        countDeltas.Clear();
+        newCounts.Clear();
+        hCounts.Clear();
+
+        const int MaxStackEdges = 4096;
+        var stackEdges = lenEdges <= MaxStackEdges;
+        var edgeRowStarts = stackEdges ? stackalloc int[lenEdges] : new int[lenEdges];
+        var edgeRowEnds = stackEdges ? stackalloc int[lenEdges] : new int[lenEdges];
+
+        for (var idx = 0; idx < lenEdges; ++idx)
+        {
+            ref readonly var edge = ref edges[idx];
+            var lastY = MathF.BitDecrement(edge.y1);
+            var r0 = (int)((edge.y0 - bbMinY) * invCellH);
+            var r1 = (int)((lastY - bbMinY) * invCellH);
+
+            if (r0 < 0)
             {
-                return;
+                r0 = 0;
+            }
+            else if (r0 >= rows)
+            {
+                r0 = rows - 1;
+            }
+            if (r1 < 0)
+            {
+                r1 = 0;
+            }
+            else if (r1 >= rows)
+            {
+                r1 = rows - 1;
             }
 
-            if (count == 1)
+            edgeRowStarts[idx] = r0;
+            edgeRowEnds[idx] = r1;
+            ++countDeltas[r0];
+            --countDeltas[r1 + 1];
+            ++newCounts[r0];
+        }
+
+        var activeCount = 0;
+        for (var row = 0; row < rows; ++row)
+        {
+            activeCount += countDeltas[row];
+            counts[row] = activeCount;
+        }
+
+        for (var idx = 0; idx < lenH; ++idx)
+        {
+            ref readonly var edge = ref hEdges[idx];
+            var row = (int)((edge.y - bbMinY) * invCellH);
+            if (row < 0)
             {
-                var point = contour[0];
-                var pointX = point.X;
-                var pointZ = point.Z;
-                bbMinX = Math.Min(bbMinX, pointX);
-                bbMaxX = Math.Max(bbMaxX, pointX);
-                bbMinY = Math.Min(bbMinY, pointZ);
-                bbMaxY = Math.Max(bbMaxY, pointZ);
-                return;
+                row = 0;
             }
-
-            var prev = contour[count - 1];
-            for (var i = 0; i < count; ++i)
+            else if (row >= rows)
             {
-                var curr = contour[i];
-                var ax = prev.X;
-                var ay = prev.Z;
-                var bx = curr.X;
-                var by = curr.Z;
+                row = rows - 1;
+            }
+            ++hCounts[row];
+        }
 
-                if (bx < bbMinX)
-                {
-                    bbMinX = bx;
-                }
-                if (bx > bbMaxX)
-                {
-                    bbMaxX = bx;
-                }
-                if (by < bbMinY)
-                {
-                    bbMinY = by;
-                }
-                if (by > bbMaxY)
-                {
-                    bbMaxY = by;
-                }
+        var padWidth = Avx512F.IsSupported ? 16 : Avx2.IsSupported ? 8 : 1;
+        var rowOffsets = new int[rows + 1];
+        var rowNewStarts = new int[rows];
+        var rowEnds = new int[rows];
+        var total = 0;
+        for (var row = 0; row < rows; ++row)
+        {
+            rowOffsets[row] = total;
+            var count = counts[row];
+            rowNewStarts[row] = total + count - newCounts[row];
+            rowEnds[row] = total + count;
+            total += padWidth == 1 ? count : RoundUp(count, padWidth);
+        }
+        rowOffsets[rows] = total;
 
-                if (ay == by)
-                {
-                    hList.Add(new(ax, ay, bx));
-                }
-                else
-                {
-                    eList.Add(new(ax, ay, bx, by));
-                }
+        var hRowOffsets = new int[rows + 1];
+        var hTotal = 0;
+        for (var row = 0; row < rows; ++row)
+        {
+            hRowOffsets[row] = hTotal;
+            hTotal += hCounts[row];
+        }
+        hRowOffsets[rows] = hTotal;
+        var hEdgesByRow = new H[hTotal];
 
-                prev = curr;
+        // y0, y1, k, b, minX, maxX: the complete per-edge dependency set of
+        // Contains and KernelAABBRectIntersectsDispatch.
+        const int Fields = 6;
+        var rawBlock = AllocAlignedBlock(Fields * (nuint)total * sizeof(float), (nuint)(padWidth * sizeof(float)));
+        var basePtr = (byte*)rawBlock;
+        var stride = (nuint)(total * sizeof(float));
+        var y0Ptr = (float*)(basePtr + stride * 0);
+        var y1Ptr = (float*)(basePtr + stride * 1);
+        var kPtr = (float*)(basePtr + stride * 2);
+        var bPtr = (float*)(basePtr + stride * 3);
+        var minXPtr = (float*)(basePtr + stride * 4);
+        var maxXPtr = (float*)(basePtr + stride * 5);
+
+        // Carry-in edges precede edges starting in this row. This is the only ordering distinction
+        // AABB classification needs: after one complete active set, later rows test new edges only.
+        Span<int> carryWpos = stackalloc int[rows];
+        Span<int> newWpos = stackalloc int[rows];
+        rowOffsets.AsSpan(0, rows).CopyTo(carryWpos);
+        rowNewStarts.AsSpan().CopyTo(newWpos);
+
+        var rowMinX = new float[rows];
+        var rowMaxX = new float[rows];
+        Array.Fill(rowMinX, float.PositiveInfinity);
+        Array.Fill(rowMaxX, float.NegativeInfinity);
+
+        for (var idx = 0; idx < lenEdges; ++idx)
+        {
+            ref readonly var edge = ref edges[idx];
+            var r0 = edgeRowStarts[idx];
+            var r1 = edgeRowEnds[idx];
+            var edgeY0 = edge.y0;
+            var edgeY1 = edge.y1;
+            var edgeX0 = edge.x0;
+            var edgeK = edge.k;
+            var edgeB = edgeX0 - edgeK * edgeY0;
+            var rowMinY = bbMinY + r0 * cellH;
+
+            for (var row = r0; row <= r1; ++row, rowMinY += cellH)
+            {
+                var write = row == r0 ? newWpos[row]++ : carryWpos[row]++;
+                y0Ptr[write] = edgeY0;
+                y1Ptr[write] = edgeY1;
+                kPtr[write] = edgeK;
+                bPtr[write] = edgeB;
+                minXPtr[write] = edge.minX;
+                maxXPtr[write] = edge.maxX;
+
+                var clippedY0 = Math.Max(edgeY0, rowMinY);
+                var clippedY1 = Math.Min(edgeY1, rowMinY + cellH);
+                var clippedX0 = edgeX0 + edgeK * (clippedY0 - edgeY0);
+                var clippedX1 = edgeX0 + edgeK * (clippedY1 - edgeY0);
+                var lo = Math.Min(clippedX0, clippedX1);
+                var hi = Math.Max(clippedX0, clippedX1);
+                if (lo < rowMinX[row])
+                {
+                    rowMinX[row] = lo;
+                }
+                if (hi > rowMaxX[row])
+                {
+                    rowMaxX[row] = hi;
+                }
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void ProcessContour(ReadOnlySpan<WDir> contour, List<E> eList, List<H> hList)
+        // Contains scans padded row slices; NaN sentinels make every padded lane inactive.
+        for (var row = 0; row < rows; ++row)
         {
-            var count = contour.Length;
-            if (count < 2)
+            for (var i = rowEnds[row]; i < rowOffsets[row + 1]; ++i)
             {
-                return;
+                y0Ptr[i] = float.NaN;
+                y1Ptr[i] = float.NaN;
+                kPtr[i] = 0f;
+                bPtr[i] = float.NaN;
+                minXPtr[i] = float.NaN;
+                maxXPtr[i] = float.NaN;
+            }
+        }
+
+        Span<int> horizontalWpos = stackalloc int[rows];
+        hRowOffsets.AsSpan(0, rows).CopyTo(horizontalWpos);
+        for (var idx = 0; idx < lenH; ++idx)
+        {
+            ref readonly var edge = ref hEdges[idx];
+            var row = (int)((edge.y - bbMinY) * invCellH);
+            if (row < 0)
+            {
+                row = 0;
+            }
+            else if (row >= rows)
+            {
+                row = rows - 1;
+            }
+            hEdgesByRow[horizontalWpos[row]++] = edge;
+            if (edge.minX < rowMinX[row])
+            {
+                rowMinX[row] = edge.minX;
+            }
+            if (edge.maxX > rowMaxX[row])
+            {
+                rowMaxX[row] = edge.maxX;
+            }
+        }
+
+        for (var row = 0; row < rows; ++row)
+        {
+            if (rowMinX[row] != float.PositiveInfinity)
+            {
+                rowMinX[row] = MathF.BitDecrement(rowMinX[row]);
+                rowMaxX[row] = MathF.BitIncrement(rowMaxX[row]);
             }
 
-            var prev = contour[count - 1];
-
-            for (var i = 0; i < count; ++i)
+            var start = hRowOffsets[row];
+            var count = hRowOffsets[row + 1] - start;
+            if (count > 1)
             {
-                var curr = contour[i];
-
-                var ax = prev.X;
-                var ay = prev.Z;
-                var bx = curr.X;
-                var by = curr.Z;
-
-                if (ay == by)
-                {
-                    hList.Add(new(ax, ay, bx));
-                }
-                else
-                {
-                    eList.Add(new(ax, ay, bx, by));
-                }
-
-                prev = curr;
+                Array.Sort(hEdgesByRow, start, count, HorizontalComparer);
             }
+        }
+
+        return new PolygonBoundaryIndex2D(y0Ptr, y1Ptr, null, kPtr, bPtr, minXPtr, maxXPtr, null, null, null, total,
+            rowOffsets, [], rowNewStarts, [], rowEnds, hEdgesByRow, hRowOffsets, rows, 0, bbMinY, cellH, invCellH,
+            bbMinX, bbMinY, bbMaxX, bbMaxY, rowMinX, rowMaxX, [], rawBlock);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int RoundUp(int v, int m) => (v + m - 1) & -m;
+
+    private static (List<E> edges, List<H> horizontals, float bbMinX, float bbMinY, float bbMaxX, float bbMaxY) CollectEdgesForAABBRectClassification(RelSimplifiedComplexPolygon complex)
+    {
+        var parts = CollectionsMarshal.AsSpan(complex.Parts);
+        var lenP = parts.Length;
+        var vertsCount = 0;
+        for (var i = 0; i < lenP; ++i)
+        {
+            vertsCount += parts[i].Vertices.Count;
+        }
+
+        var eList = new List<E>(vertsCount);
+        var hList = new List<H>(Math.Max(8, vertsCount / 2));
+        float bbMinX = float.MaxValue, bbMinY = float.MaxValue;
+        float bbMaxX = float.MinValue, bbMaxY = float.MinValue;
+
+        for (var i = 0; i < lenP; ++i)
+        {
+            var part = parts[i];
+            var ext = part.Exterior;
+            ProcessExteriorContour(ext, eList, hList, ref bbMinX, ref bbMinY, ref bbMaxX, ref bbMaxY);
+            var countHoles = part.HoleStarts.Count;
+            for (var h = 0; h < countHoles; ++h)
+            {
+                var interior = part.Interior(h);
+                ProcessContour(interior, eList, hList);
+            }
+        }
+
+        return (eList, hList, bbMinX, bbMinY, bbMaxX, bbMaxY);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ProcessExteriorContour(ReadOnlySpan<WDir> contour, List<E> eList, List<H> hList,
+        ref float bbMinX, ref float bbMinY, ref float bbMaxX, ref float bbMaxY)
+    {
+        var count = contour.Length;
+        if (count == 0)
+        {
+            return;
+        }
+
+        if (count == 1)
+        {
+            var point = contour[0];
+            var pointX = point.X;
+            var pointZ = point.Z;
+            bbMinX = Math.Min(bbMinX, pointX);
+            bbMaxX = Math.Max(bbMaxX, pointX);
+            bbMinY = Math.Min(bbMinY, pointZ);
+            bbMaxY = Math.Max(bbMaxY, pointZ);
+            return;
+        }
+
+        var prev = contour[count - 1];
+        for (var i = 0; i < count; ++i)
+        {
+            var curr = contour[i];
+            var ax = prev.X;
+            var ay = prev.Z;
+            var bx = curr.X;
+            var by = curr.Z;
+
+            if (bx < bbMinX)
+            {
+                bbMinX = bx;
+            }
+            if (bx > bbMaxX)
+            {
+                bbMaxX = bx;
+            }
+            if (by < bbMinY)
+            {
+                bbMinY = by;
+            }
+            if (by > bbMaxY)
+            {
+                bbMaxY = by;
+            }
+
+            if (ay == by)
+            {
+                hList.Add(new(ax, ay, bx));
+            }
+            else
+            {
+                eList.Add(new(ax, ay, bx, by));
+            }
+
+            prev = curr;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void ProcessContour(ReadOnlySpan<WDir> contour, List<E> eList, List<H> hList)
+    {
+        var count = contour.Length;
+        if (count < 2)
+        {
+            return;
+        }
+
+        var prev = contour[count - 1];
+        for (var i = 0; i < count; ++i)
+        {
+            var curr = contour[i];
+            var ax = prev.X;
+            var ay = prev.Z;
+            var bx = curr.X;
+            var by = curr.Z;
+
+            if (ay == by)
+            {
+                hList.Add(new(ax, ay, bx));
+            }
+            else
+            {
+                eList.Add(new(ax, ay, bx, by));
+            }
+
+            prev = curr;
         }
     }
 
@@ -909,6 +1209,100 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
                     continue;
                 }
 
+                var x = _k[i] * py + _b[i];
+                if (x == px)
+                {
+                    return true;
+                }
+                if (x > px)
+                {
+                    parity ^= 1;
+                }
+            }
+            return (parity & 1) != 0;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool ContainsAtKnownRow(float px, float py, int row)
+    {
+        if (px < _bbMinX || px > _bbMaxX || py < _bbMinY || py > _bbMaxY)
+        {
+            return false;
+        }
+        if (px < _rowMinX[row] || px > _rowMaxX[row])
+        {
+            return false;
+        }
+
+        int hs = _hRowOffsets[row], he = _hRowOffsets[row + 1];
+        hs = FirstHorizontalAtOrAbove(hs, he, py);
+        for (var i = hs; i < he; ++i)
+        {
+            ref readonly var h = ref _hEdges[i];
+            if (h.y != py)
+            {
+                break;
+            }
+            if (px >= h.minX && px <= h.maxX)
+            {
+                return true;
+            }
+        }
+
+        int es = _rowOffsets[row], ee = _rowOffsets[row + 1];
+        if (ee - es == 0)
+        {
+            return false;
+        }
+
+        var parity = 0;
+        if (Avx512F.IsSupported)
+        {
+            var v_py = Vector512.Create(py);
+            var v_px = Vector512.Create(px);
+            var i0 = es;
+            for (; i0 + 16 <= ee; i0 += 16)
+            {
+                parity ^= ContainsBlock512(i0, v_py, v_px);
+                if ((parity & 2) != 0)
+                {
+                    return true;
+                }
+                parity &= 1;
+            }
+            return (parity & 1) != 0;
+        }
+        else if (Avx2.IsSupported)
+        {
+            var v_py = Vector256.Create(py);
+            var v_px = Vector256.Create(px);
+            var i0 = es;
+            for (; i0 + 8 <= ee; i0 += 8)
+            {
+                parity ^= ContainsBlock256(i0, v_py, v_px);
+                if ((parity & 2) != 0)
+                {
+                    return true;
+                }
+                parity &= 1;
+            }
+            return (parity & 1) != 0;
+        }
+        else
+        {
+            for (var i = es; i < ee; ++i)
+            {
+                var y0s = _y0[i];
+                if (py < y0s)
+                {
+                    continue;
+                }
+                var y1s = _y1[i];
+                if (py >= y1s)
+                {
+                    continue;
+                }
                 var x = _k[i] * py + _b[i];
                 if (x == px)
                 {
@@ -1189,14 +1583,6 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
                 return;
             }
 
-            var rMinX = _rowMinX[row];
-            var rMaxX = _rowMaxX[row];
-            var hDist = Math.Max(0f, Math.Max(rMinX - px, px - rMaxX));
-            if (vDistSq + hDist * hDist >= bestSq)
-            {
-                return;
-            }
-
             if (direction > 0)
             {
                 ProcessEdges(rownewstart, rowend);
@@ -1212,11 +1598,23 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
             }
             else
             {
-                // Preserve the padded, aligned initial-row fast path
-                ProcessEdges(_rowOffsets[row], _rowOffsets[row + 1]);
+                // Row starts remain aligned, but stop at the actual end. The distance SIMD reduction
+                // is not NaN-safe, so feeding it the row padding can discard finite candidates
+                ProcessEdges(_rowOffsets[row], _rowEnds[row]);
             }
 
-            if (bestSq == 0f)
+            if (bestSq == 0f || hs == he)
+            {
+                return;
+            }
+
+            // The row X hull is only a valid lower bound for geometry contained in this row.
+            // Non-horizontal edges above are evaluated as complete source segments, so culling them by
+            // the clipped row hull could permanently skip a long edge that approaches the query later
+            var rMinX = _rowMinX[row];
+            var rMaxX = _rowMaxX[row];
+            var hDist = Math.Max(0f, Math.Max(rMinX - px, px - rMaxX));
+            if (vDistSq + hDist * hDist >= bestSq)
             {
                 return;
             }
@@ -1340,6 +1738,233 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
         }
 
         return new(bestX, bestY);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal float DistanceSqToBoundary(in WDir p)
+        => DistanceSqToBoundaryAtKnownRow(p.X, p.Z, ClampRow(p.Z));
+
+    private float DistanceSqToBoundaryAtKnownRow(float px, float py, int row0)
+    {
+        int rNeg = row0, rPos = row0 + 1;
+
+        var bestSq = float.PositiveInfinity;
+        var cellH = _cellH;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static float VDistSq(float py, float minY, float maxY)
+        {
+            var vDist = Math.Max(0f, Math.Max(minY - py, py - maxY));
+            return vDist * vDist;
+        }
+
+        void ProcessEdges(int es, int ee) => KernelDistanceDispatch(es, ee, px, py, ref bestSq);
+
+        // direction: 0 = initial row, +1 = ascending, -1 = descending
+        // After the initial row, only edges first encountered in that direction are evaluated; long edges are not projected once per copied row
+        void ProcessRow(int row, float vDistSq, int direction)
+        {
+            int hs = _hRowOffsets[row], he = _hRowOffsets[row + 1];
+            var rownewstart = _rowNewStarts[row];
+            var rowend = _rowEnds[row];
+
+            var hasEdges = direction switch
+            {
+                > 0 => rownewstart < rowend,
+                < 0 => _rowEndingStarts[row] < rownewstart || _rowSingleStarts[row] < rowend,
+                _ => _rowOffsets[row] < rowend
+            };
+            if (!hasEdges && hs == he)
+            {
+                return;
+            }
+
+            if (direction > 0)
+            {
+                ProcessEdges(rownewstart, rowend);
+            }
+            else if (direction < 0)
+            {
+                ProcessEdges(_rowEndingStarts[row], rownewstart);
+                if (bestSq == 0f)
+                {
+                    return;
+                }
+                ProcessEdges(_rowSingleStarts[row], rowend);
+            }
+            else
+            {
+                // Row starts are aligned, but stop at the actual end. The distance SIMD reduction
+                // is not NaN-safe, so feeding it the row padding can discard finite candidates
+                ProcessEdges(_rowOffsets[row], _rowEnds[row]);
+            }
+
+            if (bestSq == 0f || hs == he)
+            {
+                return;
+            }
+
+            // The row X hull is only a valid lower bound for geometry contained in this row.
+            // Non-horizontal edges above are evaluated as complete source segments, so culling them by
+            // the clipped row hull could permanently skip a long edge that approaches the query later
+            var rMinX = _rowMinX[row];
+            var rMaxX = _rowMaxX[row];
+            var hDist = Math.Max(0f, Math.Max(rMinX - px, px - rMaxX));
+            if (vDistSq + hDist * hDist >= bestSq)
+            {
+                return;
+            }
+
+            // Horizontals are Y-sorted. Search outward from py so the vertical-distance lower bound tightens quickly, without repeatedly taking square roots as bestSq improves
+            if (he - hs >= 8)
+            {
+                var above = FirstHorizontalAtOrAbove(hs, he, py);
+                var below = above - 1;
+                while (below >= hs || above < he)
+                {
+                    var belowDY = below >= hs ? py - _hEdges[below].y : float.PositiveInfinity;
+                    var aboveDY = above < he ? _hEdges[above].y - py : float.PositiveInfinity;
+
+                    int h;
+                    float dyAbs;
+                    if (belowDY <= aboveDY)
+                    {
+                        h = below--;
+                        dyAbs = belowDY;
+                    }
+                    else
+                    {
+                        h = above++;
+                        dyAbs = aboveDY;
+                    }
+                    var dySq = dyAbs * dyAbs;
+                    if (dySq >= bestSq)
+                    {
+                        // the selected side is the nearer remaining side; all later horizontals are farther in Y
+                        break;
+                    }
+
+                    ref readonly var edge = ref _hEdges[h];
+                    var cx = Math.Min(Math.Max(px, edge.minX), edge.maxX);
+                    var dxp = cx - px;
+                    var d2 = dxp * dxp + dySq;
+                    if (d2 < bestSq)
+                    {
+                        bestSq = d2;
+                        if (d2 == 0f)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (var h = hs; h < he; ++h)
+                {
+                    ref readonly var edge = ref _hEdges[h];
+                    var dyp = edge.y - py;
+                    var dySq = dyp * dyp;
+                    if (dySq >= bestSq)
+                    {
+                        continue;
+                    }
+                    var cx = Math.Min(Math.Max(px, edge.minX), edge.maxX);
+                    var dxp = cx - px;
+                    var d2 = dxp * dxp + dySq;
+                    if (d2 < bestSq)
+                    {
+                        bestSq = d2;
+                        if (d2 == 0f)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        var minY0 = _minY;
+        if ((uint)row0 < (uint)_rows)
+        {
+            var minY = minY0 + row0 * cellH;
+            var maxY = minY + cellH;
+            ProcessRow(row0, VDistSq(py, minY, maxY), 0);
+        }
+
+        var maxRow = _rows - 1;
+        while (true)
+        {
+            var progressed = false;
+
+            if (rNeg - 1 >= 0)
+            {
+                var rn = --rNeg;
+                var rMinY = minY0 + rn * cellH;
+                var rMaxY = rMinY + cellH;
+                var vDistSq = VDistSq(py, rMinY, rMaxY);
+                if (vDistSq < bestSq)
+                {
+                    ProcessRow(rn, vDistSq, -1);
+                    progressed = true;
+                }
+            }
+
+            if (rPos <= maxRow)
+            {
+                var rp = rPos++;
+                var rMinY = minY0 + rp * cellH;
+                var rMaxY = rMinY + cellH;
+                var vDistSq = VDistSq(py, rMinY, rMaxY);
+                if (vDistSq < bestSq)
+                {
+                    ProcessRow(rp, vDistSq, +1);
+                    progressed = true;
+                }
+            }
+
+            if (!progressed || bestSq == 0f || rNeg <= 0 && rPos > maxRow)
+            {
+                break;
+            }
+        }
+
+        return bestSq;
+    }
+
+    // Renderer-oriented bulk SDF builder. All samples on one output scanline share the same polygon-index row, avoiding a ClampRow and row selection for every texel
+    internal void FillSignedDistanceGrid(float[] destination, int width, int height, float minX, float minZ, float spanX, float spanZ)
+    {
+        var stepX = spanX / width;
+        var stepZ = spanZ / height;
+        // for very small grids we should skip the parallel computing
+        if ((long)width * height < 64L)
+        {
+            for (var y = 0; y < height; ++y)
+            {
+                FillSignedDistanceRow(destination, width, y, minX, minZ, stepX, stepZ);
+            }
+            return;
+        }
+
+        Parallel.For(0, height, y =>
+        {
+            FillSignedDistanceRow(destination, width, y, minX, minZ, stepX, stepZ);
+        });
+    }
+
+    private void FillSignedDistanceRow(float[] destination, int width, int y, float minX, float minZ, float stepX, float stepZ)
+    {
+        var pz = minZ + (y + 0.5f) * stepZ;
+        var indexRow = ClampRow(pz);
+        var dstRow = y * width;
+        for (var x = 0; x < width; ++x)
+        {
+            var px = minX + (x + 0.5f) * stepX;
+            var distanceSq = DistanceSqToBoundaryAtKnownRow(px, pz, indexRow);
+            var distance = MathF.Sqrt(MathF.Max(0f, distanceSq));
+            destination[dstRow + x] = ContainsAtKnownRow(px, pz, indexRow) ? -distance : distance;
+        }
     }
 
     public WDir[] VisibilityFrom(in WDir origin, RelSimplifiedComplexPolygon polygon)
@@ -1905,6 +2530,22 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
     private static float HorizontalMin(Vector512<float> value) => HorizontalMin(Avx.Min(value.GetLower(), value.GetUpper()));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void UpdateDistance(Vector256<float> d2, ref float bestSq)
+    {
+        var blockBest = HorizontalMin(d2);
+        if (blockBest < bestSq)
+            bestSq = blockBest;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void UpdateDistance(Vector512<float> d2, ref float bestSq)
+    {
+        var blockBest = HorizontalMin(d2);
+        if (blockBest < bestSq)
+            bestSq = blockBest;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void UpdateClosest(Vector256<float> d2, Vector256<float> nx, Vector256<float> ny, Vector256<float> improving,
         ref float bestSq, ref float bestX, ref float bestY)
     {
@@ -2341,6 +2982,122 @@ internal sealed unsafe class PolygonBoundaryIndex2D : IDisposable
                         best = cand;
                     }
                 }
+            }
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void KernelDistanceDispatch(int es, int ee, float px, float py, ref float bestSq)
+    {
+        var count = ee - es;
+        if (count >= 16 && Avx512F.IsSupported)
+            KernelDistance512(es, ee, px, py, ref bestSq);
+        else if (count >= 8 && Avx2.IsSupported)
+            KernelDistance256(es, ee, px, py, ref bestSq);
+        else if (count > 0)
+            KernelDistanceScalar(es, ee, px, py, ref bestSq);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void KernelDistance512(int es, int ee, float px, float py, ref float bestSq)
+    {
+        var vPx = Vector512.Create(px);
+        var vPy = Vector512.Create(py);
+        var vOne = Vector512<float>.One;
+        var vZero = Vector512<float>.Zero;
+
+        var i = es;
+        for (; i + 16 <= ee; i += 16)
+        {
+            var y0 = Load512(_y0, i);
+            var dy = Load512(_dy, i);
+            var x0 = Load512(_x0, i);
+            var dx = Load512(_dx, i);
+            var invL2 = Load512(_invLen2, i);
+
+            var relx = Avx512F.Subtract(vPx, x0);
+            var rely = Avx512F.Subtract(vPy, y0);
+            var t = Avx512F.Multiply(Avx512F.FusedMultiplyAdd(relx, dx, Avx512F.Multiply(rely, dy)), invL2);
+            t = Avx512F.Min(Avx512F.Max(t, vZero), vOne);
+
+            var nx = Avx512F.FusedMultiplyAdd(t, dx, x0);
+            var ny = Avx512F.FusedMultiplyAdd(t, dy, y0);
+            var dxp = Avx512F.Subtract(nx, vPx);
+            var dyp = Avx512F.Subtract(ny, vPy);
+            var d2 = Avx512F.FusedMultiplyAdd(dxp, dxp, Avx512F.Multiply(dyp, dyp));
+            UpdateDistance(d2, ref bestSq);
+        }
+
+        if (i + 8 <= ee && Avx2.IsSupported)
+            KernelDistance256(i, ee, px, py, ref bestSq);
+        else if (i < ee)
+            KernelDistanceScalar(i, ee, px, py, ref bestSq);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void KernelDistance256(int es, int ee, float px, float py, ref float bestSq)
+    {
+        var vPx = Vector256.Create(px);
+        var vPy = Vector256.Create(py);
+        var vOne = Vector256<float>.One;
+        var vZero = Vector256<float>.Zero;
+
+        var i = es;
+        for (; i + 8 <= ee; i += 8)
+        {
+            var y0 = Load256(_y0, i);
+            var dy = Load256(_dy, i);
+            var x0 = Load256(_x0, i);
+            var dx = Load256(_dx, i);
+            var invL2 = Load256(_invLen2, i);
+
+            var relx = Avx.Subtract(vPx, x0);
+            var rely = Avx.Subtract(vPy, y0);
+            var dot = Fma.IsSupported ? Fma.MultiplyAdd(relx, dx, Avx.Multiply(rely, dy)) : Avx.Add(Avx.Multiply(relx, dx), Avx.Multiply(rely, dy));
+            var t = Avx.Multiply(dot, invL2);
+            t = Avx.Min(Avx.Max(t, vZero), vOne);
+
+            var nx = Avx.Add(x0, Avx.Multiply(t, dx));
+            var ny = Avx.Add(y0, Avx.Multiply(t, dy));
+            var dxp = Avx.Subtract(nx, vPx);
+            var dyp = Avx.Subtract(ny, vPy);
+            var d2 = Fma.IsSupported ? Fma.MultiplyAdd(dxp, dxp, Avx.Multiply(dyp, dyp)) : Avx.Add(Avx.Multiply(dxp, dxp), Avx.Multiply(dyp, dyp));
+            UpdateDistance(d2, ref bestSq);
+        }
+
+        if (i < ee)
+        {
+            KernelDistanceScalar(i, ee, px, py, ref bestSq);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void KernelDistanceScalar(int es, int ee, float px, float py, ref float bestSq)
+    {
+        for (var i = es; i < ee; ++i)
+        {
+            var rx = px - _x0[i];
+            var ry = py - _y0[i];
+            var dx = _dx[i];
+            var dy = _dy[i];
+            var t = (rx * dx + ry * dy) * _invLen2[i];
+            if (t < 0f)
+            {
+                t = 0f;
+            }
+            else if (t > 1f)
+            {
+                t = 1f;
+            }
+
+            var qx = _x0[i] + t * dx;
+            var qy = _y0[i] + t * dy;
+            var ex = qx - px;
+            var ey = qy - py;
+            var d2 = ex * ex + ey * ey;
+            if (d2 < bestSq)
+            {
+                bestSq = d2;
             }
         }
     }

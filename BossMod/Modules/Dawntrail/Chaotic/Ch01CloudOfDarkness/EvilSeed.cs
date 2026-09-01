@@ -13,7 +13,9 @@ sealed class EvilSeedBait(BossModule module) : BossComponent(module)
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.EvilSeed)
+        {
             Baiters.Set(Raid.FindSlot(actor.InstanceID));
+        }
     }
 }
 
@@ -28,6 +30,8 @@ sealed class ThornyVine(BossModule module) : Components.Chains(module, (uint)Tet
     public override void OnEventIcon(Actor actor, uint iconID, ulong targetID)
     {
         if (iconID == (uint)IconID.ThornyVineBait)
-            Targets[Raid.FindSlot(actor.InstanceID)] = true;
+        {
+            Targets.Set(Raid.FindSlot(actor.InstanceID));
+        }
     }
 }

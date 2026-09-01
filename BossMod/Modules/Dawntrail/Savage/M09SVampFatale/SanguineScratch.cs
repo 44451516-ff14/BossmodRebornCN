@@ -1,4 +1,3 @@
-﻿
 namespace BossMod.Dawntrail.Savage.M09SVampFatale;
 
 // TODO: track bat players are tethered to, figure out max distance; still OK within boss hitbox (12f from center, say 10f max?)
@@ -185,6 +184,11 @@ sealed class SanguineScratch(BossModule module) : Components.GenericAOEs(module)
             {
                 if ((NumCasts & 7) == 0)
                 {
+                    if (NumCasts is 40 or 80)
+                    {
+                        _aoes.Clear();
+                        return;
+                    }
                     var act = WorldState.FutureTime(2.4d);
                     var a23 = 22.5f.Degrees();
                     var aoes = CollectionsMarshal.AsSpan(_aoes);

@@ -31,9 +31,8 @@ public enum AID : uint
     TortoiseStomp = 50598, // 4E28->self, 3.0s cast, range 8 circle
 }
 
-sealed class CursedSight(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CursedSight, (uint)AID.CursedSight1],
-    new AOEShapeCone(60.0f, 30.0f.Degrees()));
-sealed class LamianLesion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LamianLesion, new AOEShapeCone(25.0f, 90.0f.Degrees()));
+sealed class CursedSight(BossModule module) : Components.SimpleAOEGroups(module, [(uint)AID.CursedSight, (uint)AID.CursedSight1], new AOEShapeCone(60f, 30f.Degrees()));
+sealed class LamianLesion(BossModule module) : Components.SimpleAOEs(module, (uint)AID.LamianLesion, new AOEShapeCone(25f, 90f.Degrees()));
 sealed class Dark(BossModule module) : Components.SimpleAOEs(module, (uint)AID.Dark, 6f);
 sealed class TortoiseStomp(BossModule module) : Components.SimpleAOEs(module, (uint)AID.TortoiseStomp, 8f);
 

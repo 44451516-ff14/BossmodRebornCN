@@ -351,39 +351,9 @@ public sealed class AOEShapeCross(float length, float halfWidth, Angle direction
 
     public override string ToString() => $"Cross: l={Length:f3}, w={HalfWidth * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
     public override bool Check(WPos position, WPos origin, Angle rotation) => position.InCross(origin, rotation + DirectionOffset, Length, HalfWidth);
-    public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = default) => arena.ZoneCross(origin, rotation + DirectionOffset, Length, HalfWidth, ContourPoints(origin, rotation), color);
-    public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = default, float thickness = 1f) => arena.ZoneCrossOutline(origin, rotation + DirectionOffset, Length, HalfWidth, ContourPoints(origin, rotation), color, thickness);
+    public override void Draw(MiniArena arena, WPos origin, Angle rotation, uint color = default) => arena.ZoneCross(origin, rotation + DirectionOffset, Length, HalfWidth, color);
 
-    private WPos[] ContourPoints(WPos origin, Angle rotation, float offset = default)
-    {
-        var dx = (rotation + DirectionOffset).ToDirection();
-        var dy = dx.OrthoL();
-
-        var lengthOffset = Length + offset;
-        var halfWidthOffset = HalfWidth + offset;
-
-        var dxLength = dx * lengthOffset;
-        var dxWidth = dx * halfWidthOffset;
-        var dyLength = dy * lengthOffset;
-        var dyWidth = dy * halfWidthOffset;
-
-        return
-        [
-            origin + dxLength - dyWidth,
-            origin + dxWidth - dyWidth,
-            origin + dxWidth - dyLength,
-            origin - dxWidth - dyLength,
-            origin - dxWidth - dyWidth,
-            origin - dxLength - dyWidth,
-            origin - dxLength + dyWidth,
-            origin - dxWidth + dyWidth,
-            origin - dxWidth + dyLength,
-            origin + dxWidth + dyLength,
-            origin + dxWidth + dyWidth,
-            origin + dxLength + dyWidth
-        ];
-    }
-
+    public override void Outline(MiniArena arena, WPos origin, Angle rotation, uint color = default, float thickness = 1f) => arena.ZoneCrossOutline(origin, rotation + DirectionOffset, Length, HalfWidth, color, thickness);
     public override ShapeDistance Distance(WPos origin, Angle rotation) => !InvertForbiddenZone
             ? new SDCross(origin, rotation + DirectionOffset, Length, HalfWidth)
             : new SDInvertedCross(origin, rotation + DirectionOffset, Length, HalfWidth);

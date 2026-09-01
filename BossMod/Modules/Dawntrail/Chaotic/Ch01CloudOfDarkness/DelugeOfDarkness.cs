@@ -9,13 +9,15 @@ sealed class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module
 {
     private readonly Ch01CloudOfDarknessConfig _config = Service.Config.Get<Ch01CloudOfDarknessConfig>();
     private readonly DateTime[] _breakTime = new DateTime[28];
-    private static readonly AOEShapeRect square = new(3f, 3f, 3f);
-    private static readonly Dictionary<int, (int x, int y)> _cellIndexToCoordinates = GenerateCellIndexToCoordinates();
+    private readonly AOEShapeRect square = new(3f, 3f, 3f);
+    private readonly Dictionary<int, (int x, int y)> _cellIndexToCoordinates = GenerateCellIndexToCoordinates();
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
     {
         if (!_config.ShowOccupiedTiles)
+        {
             return [];
+        }
         var cell = CellIndex(actor.Position - Arena.Center) - 3;
         var tiles = new AOEInstance[28];
         var index = 0;
@@ -32,7 +34,9 @@ sealed class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module
                     }
                 }
                 else
+                {
                     tiles[index++] = new(square, CellCenter(i), color: Colors.FutureVulnerable);
+                }
             }
         }
         return tiles.AsSpan()[..index];
@@ -128,7 +132,7 @@ sealed class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module
         return map;
     }
 
-    public static WPos CellCenter(int breakTimeIndex)
+    public WPos CellCenter(int breakTimeIndex)
     {
         var cellIndex = breakTimeIndex + 3;
         if (_cellIndexToCoordinates.TryGetValue(cellIndex, out var coordinates))
@@ -138,7 +142,9 @@ sealed class Phase2InnerCells(BossModule module) : Components.GenericAOEs(module
             return new WPos(100f, 100f) + new WDir(worldX, worldZ);
         }
         else
+        {
             return default;
+        }
     }
 }
 
@@ -156,17 +162,25 @@ sealed class Phase2AIHints(BossModule module) : BossComponent(module)
             {
                 case (uint)OID.Atomos:
                     if (isInside[slot])
+                    {
                         e.Priority = AIHints.Enemy.PriorityInvincible;
+                    }
                     else if (actor.Class.GetRole() == Role.Ranged)
+                    {
                         e.Priority = 5;
+                    }
                     break;
                 case (uint)OID.StygianShadow:
                     if (isInside[slot])
+                    {
                         e.Priority = AIHints.Enemy.PriorityInvincible;
+                    }
                     break;
                 case (uint)OID.Boss:
                     if (!isInside[slot])
+                    {
                         e.Priority = AIHints.Enemy.PriorityInvincible;
+                    }
                     break;
 
             }

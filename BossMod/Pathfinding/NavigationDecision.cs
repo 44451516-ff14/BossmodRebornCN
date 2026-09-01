@@ -48,9 +48,9 @@ public struct NavigationDecision
         }
         if (player.CastInfo == null) // don't rasterize goal zones if casting or if inside a very dangerous pixel
         {
-            var index = ctx.Map.GridToIndex(ctx.Map.WorldToGrid(pos));
-            var len = ctx.Map.PixelMaxG.Length;
-            if (index >= 0 && len > index && ctx.Map.PixelMaxG[index] >= 1f || index < 0 || index >= len) // prioritize safety over uptime
+            var gridPos = ctx.Map.WorldToGrid(pos);
+            var inBounds = ctx.Map.InBounds(gridPos.x, gridPos.y);
+            if (!inBounds || ctx.Map.PixelMaxG[ctx.Map.GridToIndex(gridPos)] >= 1f) // prioritize safety over uptime
             {
                 if (hints.GoalZones.Count != 0)
                 {
@@ -198,7 +198,7 @@ public struct NavigationDecision
         var pixelMaxG = map.PixelMaxG;
         var pixelPriority = map.PixelPriority;
         var height = map.Height;
-        var lenPixelMaxG = pixelMaxG.Length;
+        var lenPixelMaxG = width * height;
 
         var resolution = map.Resolution;
         var cushion = resolution * 0.5f;

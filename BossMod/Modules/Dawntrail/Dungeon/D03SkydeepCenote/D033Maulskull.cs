@@ -70,7 +70,7 @@ public enum AID : uint
 sealed class Stonecarver(BossModule module) : Components.GenericAOEs(module)
 {
     public readonly List<AOEInstance> AOEs = [with(2)];
-    private static readonly AOEShapeRect rect = new(40f, 10f);
+    private readonly AOEShapeRect rect = new(40f, 10f);
     private Impact2? _kb;
 
     public override ReadOnlySpan<AOEInstance> ActiveAOEs(int slot, Actor actor)
